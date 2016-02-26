@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/WorldWindAndroid.iml" filepath="$PROJECT_DIR$/WorldWindAndroid.iml" />
+      <module fileurl="file://$PROJECT_DIR$/worldwind/worldwind.iml" filepath="$PROJECT_DIR$/worldwind/worldwind.iml" />
+      <module fileurl="file://$PROJECT_DIR$/worldwind-examples/worldwind-examples.iml" filepath="$PROJECT_DIR$/worldwind-examples/worldwind-examples.iml" />
+    </modules>
+  </component>
+</project>
