@@ -3,6 +3,18 @@
   <component name="ProjectCodeStyleSettingsManager">
     <option name="PER_PROJECT_SETTINGS">
       <value>
+        <option name="OTHER_INDENT_OPTIONS">
+          <value>
+            <option name="INDENT_SIZE" value="4" />
+            <option name="CONTINUATION_INDENT_SIZE" value="4" />
+            <option name="TAB_SIZE" value="4" />
+            <option name="USE_TAB_CHARACTER" value="false" />
+            <option name="SMART_TABS" value="false" />
+            <option name="LABEL_INDENT_SIZE" value="0" />
+            <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+            <option name="USE_RELATIVE_INDENTS" value="false" />
+          </value>
+        </option>
         <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="99" />
         <option name="NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND" value="99" />
         <option name="PACKAGES_TO_USE_IMPORT_ON_DEMAND">
@@ -66,10 +78,15 @@
           </extensions>
         </Objective-C-extensions>
         <XML>
-          <option name="XML_KEEP_LINE_BREAKS" value="false" />
-          <option name="XML_ALIGN_ATTRIBUTES" value="false" />
-          <option name="XML_SPACE_INSIDE_EMPTY_TAG" value="true" />
+          <option name="XML_LEGACY_SETTINGS_IMPORTED" value="true" />
         </XML>
+        <codeStyleSettings language="JAVA">
+          <option name="BLANK_LINES_AROUND_FIELD" value="1" />
+          <option name="BLANK_LINES_AFTER_CLASS_HEADER" value="1" />
+          <indentOptions>
+            <option name="CONTINUATION_INDENT_SIZE" value="4" />
+          </indentOptions>
+        </codeStyleSettings>
         <codeStyleSettings language="XML">
           <option name="FORCE_REARRANGE_MODE" value="1" />
           <indentOptions>
@@ -82,7 +99,7 @@
                   <match>
                     <AND>
                       <NAME>xmlns:android</NAME>
-                      <XML_NAMESPACE />
+                      <XML_NAMESPACE>Namespace:</XML_NAMESPACE>
                     </AND>
                   </match>
                 </rule>
@@ -92,7 +109,7 @@
                   <match>
                     <AND>
                       <NAME>xmlns:.*</NAME>
-                      <XML_NAMESPACE />
+                      <XML_NAMESPACE>Namespace:</XML_NAMESPACE>
                     </AND>
                   </match>
                   <order>BY_NAME</order>
