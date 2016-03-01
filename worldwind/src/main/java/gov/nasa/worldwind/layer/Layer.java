@@ -11,7 +11,7 @@ public interface Layer {
 
     String getDisplayName();
 
-    void setDisplayName(String name);
+    void setDisplayName(String displayName);
 
     boolean isEnabled();
 
