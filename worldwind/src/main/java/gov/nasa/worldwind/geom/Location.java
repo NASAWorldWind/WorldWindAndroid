@@ -33,6 +33,14 @@ public class Location {
     public double longitude;
 
     /**
+     * Constructs a location with a zero latitude and longitude in degrees.
+     */
+    public Location() {
+        this.latitude = 0;
+        this.longitude = 0;
+    }
+
+    /**
      * Constructs a location from a specified latitude and longitude in degrees.
      *
      * @param latitude  the latitude in degrees.
@@ -68,19 +76,21 @@ public class Location {
     }
 
     /**
-     * Normalizes a specified value to be within the range of [-180, 180] degrees.
+     * Normalizes a specified value to be within the range of [0, 360] degrees.
      *
      * @param degrees the value to normalize, in degrees.
      *
-     * @return the specified value normalized to [-180, 180] degrees.
+     * @return the specified value normalized to [0, 360] degrees.
      */
     public static double normalizeDegrees(double degrees) {
         double angle = degrees % 360;
-        return angle > 180 ? angle - 360 : angle < -180 ? 360 + angle : angle;
+        return angle >= 0 ? angle : angle < 0 ? 360 + angle : 360 - angle;
     }
 
     /**
-     * Normalizes a specified value to be within the range of [-90, 90] degrees.
+     * Normalizes a specified value to be within the range of [-90, 90] degrees. Normalization takes
+     * place along a constant line of longitude which may pass through the poles. In which case, 135
+     * degrees normalizes to 45 degrees; 181 degrees normalizes to -1 degree.
      *
      * @param degreesLatitude the value to normalize, in degrees.
      *
@@ -88,7 +98,10 @@ public class Location {
      */
     public static double normalizeLatitude(double degreesLatitude) {
         double lat = degreesLatitude % 180;
-        return lat > 90 ? 180 - lat : lat < -90 ? -180 - lat : lat;
+        double normalizedLat = lat > 90 ? 180 - lat : lat < -90 ? -180 - lat : lat;
+        // Determine whether whether the latitude is in the north or south hemisphere
+        int numEquatorCrosses = (int) (degreesLatitude / 180);
+        return (numEquatorCrosses % 2 == 0) ? normalizedLat : -normalizedLat;
     }
 
     /**
@@ -104,13 +117,27 @@ public class Location {
     }
 
     /**
-     * Returns a new location with latitude and longitude both 0.
+     * Clamps the specified value to be within the range of [-90, 90] degrees.
      *
-     * @return a location at 0.
+     * @param degreesLatitude the value to clamp, in degrees.
+     *
+     * @return the specified value clamped to the normal range of latitude.
      */
-    public static Location zero() {
-        return new Location(0, 0);
+    public static double clampLatitude(double degreesLatitude) {
+        return degreesLatitude > 90 ? 90 : degreesLatitude < -90 ? -90 : degreesLatitude;
     }
+
+    /**
+     * Normalizes a specified value to be within the range of [-180, 180] degrees.
+     *
+     * @param degreesLongitude the value to normalize, in degrees.
+     *
+     * @return the specified value clamped to the normal range of longitude.
+     */
+    public static double clampLongitude(double degreesLongitude) {
+        return degreesLongitude > 180 ? 180 : degreesLongitude < -180 ? -180 : degreesLongitude;
+    }
+
 
     @Override
     public boolean equals(Object o) {
