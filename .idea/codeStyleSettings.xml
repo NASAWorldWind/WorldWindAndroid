@@ -42,7 +42,6 @@
             <emptyLine />
           </value>
         </option>
-        <option name="RIGHT_MARGIN" value="100" />
         <option name="JD_ADD_BLANK_AFTER_PARM_COMMENTS" value="true" />
         <option name="JD_ADD_BLANK_AFTER_RETURN" value="true" />
         <option name="WRAP_COMMENTS" value="true" />
