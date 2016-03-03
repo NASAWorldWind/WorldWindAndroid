@@ -5,6 +5,8 @@
 
 .idea/libraries
 
+.idea/shelf
+
 .idea/workspace.xml
 
 build
