@@ -18,8 +18,13 @@ public class Position extends Location {
     public double altitude;
 
     /**
-     * Constructs a position from a specified latitude and longitude in degrees and altitude in
-     * meters.
+     * Constructs a position with latitude, longitude and altitude all 0.
+     */
+    public Position() {
+    }
+
+    /**
+     * Constructs a position from a specified latitude and longitude in degrees and altitude in meters.
      *
      * @param latitude  the latitude in degrees.
      * @param longitude the longitude in degrees.
@@ -31,8 +36,7 @@ public class Position extends Location {
     }
 
     /**
-     * Constructs a position from a specified latitude and longitude in degrees and altitude in
-     * meters.
+     * Constructs a position from a specified latitude and longitude in degrees and altitude in meters.
      *
      * @param latitudeDegrees  the latitude in degrees.
      * @param longitudeDegrees the longitude in degrees.
@@ -45,8 +49,7 @@ public class Position extends Location {
     }
 
     /**
-     * Constructs a position from a specified latitude and longitude in radians and altitude in
-     * meters.
+     * Constructs a position from a specified latitude and longitude in radians and altitude in meters.
      *
      * @param latitudeRadians  the latitude in radians.
      * @param longitudeRadians the longitude in radians.
@@ -55,16 +58,7 @@ public class Position extends Location {
      * @return the new position.
      */
     public static Position fromRadians(double latitudeRadians, double longitudeRadians, double altitude) {
-        return new Position(latitudeRadians * RADIANS_TO_DEGREES, longitudeRadians * RADIANS_TO_DEGREES, altitude);
-    }
-
-    /**
-     * Returns a new position with latitude, longitude and altitude all 0.
-     *
-     * @return a position at 0.
-     */
-    public static Position zero() {
-        return new Position(0, 0, 0);
+        return new Position(Math.toDegrees(latitudeRadians), Math.toDegrees(longitudeRadians), altitude);
     }
 
     @Override

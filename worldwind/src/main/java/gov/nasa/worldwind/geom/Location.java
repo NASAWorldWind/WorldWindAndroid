@@ -13,16 +13,6 @@ import gov.nasa.worldwind.util.Logger;
 public class Location {
 
     /**
-     * Conversion factor for degrees to radians.
-     */
-    public static final double DEGREES_TO_RADIANS = Math.PI / 180.0;
-
-    /**
-     * Conversion factor for radians to degrees.
-     */
-    public static final double RADIANS_TO_DEGREES = 180.0 / Math.PI;
-
-    /**
      * The location's latitude in degrees.
      */
     public double latitude;
@@ -33,11 +23,9 @@ public class Location {
     public double longitude;
 
     /**
-     * Constructs a location with a zero latitude and longitude in degrees.
+     * Constructs a location with latitude and longitude both 0.
      */
     public Location() {
-        this.latitude = 0;
-        this.longitude = 0;
     }
 
     /**
@@ -72,25 +60,13 @@ public class Location {
      * @return the new location.
      */
     public static Location fromRadians(double latitudeRadians, double longitudeRadians) {
-        return new Location(latitudeRadians * RADIANS_TO_DEGREES, longitudeRadians * RADIANS_TO_DEGREES);
+        return new Location(Math.toDegrees(latitudeRadians), Math.toDegrees(longitudeRadians));
     }
 
     /**
-     * Normalizes a specified value to be within the range of [0, 360] degrees.
-     *
-     * @param degrees the value to normalize, in degrees.
-     *
-     * @return the specified value normalized to [0, 360] degrees.
-     */
-    public static double normalizeDegrees(double degrees) {
-        double angle = degrees % 360;
-        return angle >= 0 ? angle : angle < 0 ? 360 + angle : 360 - angle;
-    }
-
-    /**
-     * Normalizes a specified value to be within the range of [-90, 90] degrees. Normalization takes
-     * place along a constant line of longitude which may pass through the poles. In which case, 135
-     * degrees normalizes to 45 degrees; 181 degrees normalizes to -1 degree.
+     * Normalizes a specified value to be within the range of [-90, 90] degrees. Normalization takes place along a
+     * constant line of longitude which may pass through the poles. In which case, 135 degrees normalizes to 45 degrees;
+     * 181 degrees normalizes to -1 degree.
      *
      * @param degreesLatitude the value to normalize, in degrees.
      *
@@ -138,6 +114,37 @@ public class Location {
         return degreesLongitude > 180 ? 180 : degreesLongitude < -180 ? -180 : degreesLongitude;
     }
 
+    /**
+     * Determines whether a list of locations crosses the antimeridian.
+     *
+     * @param locations The locations to test.
+     *
+     * @return true if the dateline is crossed, else false.
+     *
+     * @throws IllegalArgumentException If the locations list is null.
+     */
+    public static boolean locationsCrossAntimeridian(Iterable<? extends Location> locations) {
+        if (locations == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Location", "locationsCrossAntimeridian", "missingList"));
+        }
+
+        Location pos = null;
+        for (Location posNext : locations) {
+            if (pos != null) {
+                // A segment cross the line if end pos have different longitude signs
+                // and are more than 180 degrees longitude apart
+                if (Math.signum(pos.longitude) != Math.signum(posNext.longitude)) {
+                    double delta = Math.abs(pos.longitude - posNext.longitude);
+                    if (delta > 180 && delta < 360)
+                        return true;
+                }
+            }
+            pos = posNext;
+        }
+
+        return false;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -186,9 +193,8 @@ public class Location {
      * Compute a location along a path at a specified distance between two specified locations.
      *
      * @param pathType    the type of path to assume.
-     * @param amount      The fraction of the path between the two locations at which to compute the
-     *                    new location. This number should be between 0 and 1. If not, it is clamped
-     *                    to the nearest of those values.
+     * @param amount      The fraction of the path between the two locations at which to compute the new location. This
+     *                    number should be between 0 and 1. If not, it is clamped to the nearest of those values.
      * @param endLocation The ending location.
      * @param result      A Location in which to return the result.
      *
@@ -227,10 +233,9 @@ public class Location {
     }
 
     /**
-     * Computes the azimuth angle (clockwise from North) that points from the first location to the
-     * second location. This angle can be used as the starting azimuth for a great circle arc that
-     * begins at the first location, and passes through the second location. This function uses a
-     * spherical model, not elliptical.
+     * Computes the azimuth angle (clockwise from North) that points from the first location to the second location.
+     * This angle can be used as the starting azimuth for a great circle arc that begins at the first location, and
+     * passes through the second location. This function uses a spherical model, not elliptical.
      *
      * @param that The ending location.
      *
@@ -244,10 +249,10 @@ public class Location {
                 Logger.logMessage(Logger.ERROR, "Location", "greatCircleAzimuth", "missingLocation"));
         }
 
-        double lat1 = this.latitude * DEGREES_TO_RADIANS;
-        double lat2 = that.latitude * DEGREES_TO_RADIANS;
-        double lon1 = this.longitude * DEGREES_TO_RADIANS;
-        double lon2 = that.longitude * DEGREES_TO_RADIANS;
+        double lat1 = Math.toRadians(this.latitude);
+        double lat2 = Math.toRadians(that.latitude);
+        double lon1 = Math.toRadians(this.longitude);
+        double lon2 = Math.toRadians(that.longitude);
 
         if (lat1 == lat2 && lon1 == lon2) {
             return 0;
@@ -263,15 +268,14 @@ public class Location {
         double x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
         double azimuthRadians = Math.atan2(y, x);
 
-        return Double.isNaN(azimuthRadians) ? 0 : azimuthRadians * RADIANS_TO_DEGREES;
+        return Double.isNaN(azimuthRadians) ? 0 : Math.toDegrees(azimuthRadians);
     }
 
     /**
-     * Computes the great circle angular distance between two locations. The return value gives the
-     * distance as the angle between the two positions. In radians, this angle is the arc length of
-     * the segment between the two positions. To compute a distance in meters from this value,
-     * multiply the return value by the radius of the globe. This function uses a spherical model,
-     * not elliptical.
+     * Computes the great circle angular distance between two locations. The return value gives the distance as the
+     * angle between the two positions. In radians, this angle is the arc length of the segment between the two
+     * positions. To compute a distance in meters from this value, multiply the return value by the radius of the globe.
+     * This function uses a spherical model, not elliptical.
      *
      * @param that The ending location.
      *
@@ -285,10 +289,10 @@ public class Location {
                 Logger.logMessage(Logger.ERROR, "Location", "greatCircleDistance", "missingLocation"));
         }
 
-        double lat1Radians = this.latitude * DEGREES_TO_RADIANS;
-        double lat2Radians = that.latitude * DEGREES_TO_RADIANS;
-        double lon1Radians = this.longitude * DEGREES_TO_RADIANS;
-        double lon2Radians = that.longitude * DEGREES_TO_RADIANS;
+        double lat1Radians = Math.toRadians(this.latitude);
+        double lat2Radians = Math.toRadians(that.latitude);
+        double lon1Radians = Math.toRadians(this.longitude);
+        double lon2Radians = Math.toRadians(that.longitude);
 
         if (lat1Radians == lat2Radians && lon1Radians == lon2Radians) {
             return 0;
@@ -304,18 +308,16 @@ public class Location {
     }
 
     /**
-     * Computes the location on a great circle path corresponding to a given starting location,
-     * azimuth, and arc distance. This function uses a spherical model, not elliptical.
+     * Computes the location on a great circle path corresponding to a given starting location, azimuth, and arc
+     * distance. This function uses a spherical model, not elliptical.
      *
      * @param azimuthDegrees  The azimuth in degrees.
-     * @param distanceRadians The radian distance along the path at which to compute the end
-     *                        location.
+     * @param distanceRadians The radian distance along the path at which to compute the end location.
      * @param result          A Location in which to return the result.
      *
      * @return The specified result location.
      *
-     * @throws IllegalArgumentException If the specified location or the result argument is null or
-     *                                  undefined.
+     * @throws IllegalArgumentException If the specified location or the result argument is null or undefined.
      */
     public Location greatCircleLocation(double azimuthDegrees, double distanceRadians, Location result) {
         if (result == null) {
@@ -329,9 +331,9 @@ public class Location {
             return result;
         }
 
-        double latRadians = this.latitude * DEGREES_TO_RADIANS;
-        double lonRadians = this.longitude * DEGREES_TO_RADIANS;
-        double azimuthRadians = azimuthDegrees * DEGREES_TO_RADIANS;
+        double latRadians = Math.toRadians(this.latitude);
+        double lonRadians = Math.toRadians(this.longitude);
+        double azimuthRadians = Math.toRadians(azimuthDegrees);
 
         // Taken from "Map Projections - A Working Manual", page 31, equation 5-5 and 5-6.
         double endLatRadians = Math.asin(Math.sin(latRadians) * Math.cos(distanceRadians) +
@@ -345,18 +347,17 @@ public class Location {
             result.latitude = this.latitude;
             result.longitude = this.longitude;
         } else {
-            result.latitude = normalizeLatitude(endLatRadians * RADIANS_TO_DEGREES);
-            result.longitude = normalizeLongitude(endLonRadians * RADIANS_TO_DEGREES);
+            result.latitude = normalizeLatitude(Math.toDegrees(endLatRadians));
+            result.longitude = normalizeLongitude(Math.toDegrees(endLonRadians));
         }
 
         return result;
     }
 
     /**
-     * Computes the azimuth angle (clockwise from North) that points from the first location to the
-     * second location. This angle can be used as the azimuth for a rhumb arc that begins at the
-     * first location, and passes through the second location. This function uses a spherical model,
-     * not elliptical.
+     * Computes the azimuth angle (clockwise from North) that points from the first location to the second location.
+     * This angle can be used as the azimuth for a rhumb arc that begins at the first location, and passes through the
+     * second location. This function uses a spherical model, not elliptical.
      *
      * @param that The ending location.
      *
@@ -370,10 +371,10 @@ public class Location {
                 Logger.logMessage(Logger.ERROR, "Location", "rhumbAzimuth", "missingLocation"));
         }
 
-        double lat1 = this.latitude * DEGREES_TO_RADIANS;
-        double lat2 = that.latitude * DEGREES_TO_RADIANS;
-        double lon1 = this.longitude * DEGREES_TO_RADIANS;
-        double lon2 = that.longitude * DEGREES_TO_RADIANS;
+        double lat1 = Math.toRadians(this.latitude);
+        double lat2 = Math.toRadians(that.latitude);
+        double lon1 = Math.toRadians(this.longitude);
+        double lon2 = Math.toRadians(that.longitude);
 
         if (lat1 == lat2 && lon1 == lon2) {
             return 0;
@@ -390,15 +391,14 @@ public class Location {
 
         double azimuthRadians = Math.atan2(dLon, dPhi);
 
-        return Double.isNaN(azimuthRadians) ? 0 : azimuthRadians * RADIANS_TO_DEGREES;
+        return Double.isNaN(azimuthRadians) ? 0 : Math.toDegrees(azimuthRadians);
     }
 
     /**
-     * Computes the rhumb angular distance between two locations. The return value gives the
-     * distance as the angle between the two positions in radians. This angle is the arc length of
-     * the segment between the two positions. To compute a distance in meters from this value,
-     * multiply the return value by the radius of the globe. This function uses a spherical model,
-     * not elliptical.
+     * Computes the rhumb angular distance between two locations. The return value gives the distance as the angle
+     * between the two positions in radians. This angle is the arc length of the segment between the two positions. To
+     * compute a distance in meters from this value, multiply the return value by the radius of the globe. This function
+     * uses a spherical model, not elliptical.
      *
      * @param that The ending location.
      *
@@ -412,10 +412,10 @@ public class Location {
                 Logger.logMessage(Logger.ERROR, "Location", "rhumbDistance", "missingLocation"));
         }
 
-        double lat1 = this.latitude * DEGREES_TO_RADIANS;
-        double lat2 = that.latitude * DEGREES_TO_RADIANS;
-        double lon1 = this.longitude * DEGREES_TO_RADIANS;
-        double lon2 = that.longitude * DEGREES_TO_RADIANS;
+        double lat1 = Math.toRadians(this.latitude);
+        double lat2 = Math.toRadians(that.latitude);
+        double lon1 = Math.toRadians(this.longitude);
+        double lon2 = Math.toRadians(that.longitude);
 
         if (lat1 == lat2 && lon1 == lon2) {
             return 0;
@@ -442,8 +442,8 @@ public class Location {
     }
 
     /**
-     * Computes the location on a rhumb arc with the given starting location, azimuth, and arc
-     * distance. This function uses a spherical model, not elliptical.
+     * Computes the location on a rhumb arc with the given starting location, azimuth, and arc distance. This function
+     * uses a spherical model, not elliptical.
      *
      * @param azimuthDegrees  The azimuth in degrees.
      * @param distanceRadians The radian distance along the path at which to compute the location.
@@ -451,8 +451,7 @@ public class Location {
      *
      * @return The specified result location.
      *
-     * @throws IllegalArgumentException If the specified location or the result argument is null or
-     *                                  undefined.
+     * @throws IllegalArgumentException If the specified location or the result argument is null or undefined.
      */
     public Location rhumbLocation(double azimuthDegrees, double distanceRadians, Location result) {
         if (result == null) {
@@ -466,9 +465,9 @@ public class Location {
             return result;
         }
 
-        double latRadians = this.latitude * DEGREES_TO_RADIANS;
-        double lonRadians = this.longitude * DEGREES_TO_RADIANS;
-        double azimuthRadians = azimuthDegrees * DEGREES_TO_RADIANS;
+        double latRadians = Math.toRadians(this.latitude);
+        double lonRadians = Math.toRadians(this.longitude);
+        double azimuthRadians = Math.toRadians(azimuthDegrees);
         double endLatRadians = latRadians + distanceRadians * Math.cos(azimuthRadians);
         double endLonRadians;
         double dPhi = Math.log(Math.tan(endLatRadians / 2 + Math.PI / 4) /
@@ -492,17 +491,17 @@ public class Location {
             result.latitude = this.latitude;
             result.longitude = this.longitude;
         } else {
-            result.latitude = normalizeLatitude(endLatRadians * RADIANS_TO_DEGREES);
-            result.longitude = normalizeLongitude(endLonRadians * RADIANS_TO_DEGREES);
+            result.latitude = normalizeLatitude(Math.toDegrees(endLatRadians));
+            result.longitude = normalizeLongitude(Math.toDegrees(endLonRadians));
         }
 
         return result;
     }
 
     /**
-     * Computes the azimuth angle (clockwise from North) that points from the first location to the
-     * second location. This angle can be used as the azimuth for a linear arc that begins at the
-     * first location, and passes through the second location.
+     * Computes the azimuth angle (clockwise from North) that points from the first location to the second location.
+     * This angle can be used as the azimuth for a linear arc that begins at the first location, and passes through the
+     * second location.
      *
      * @param that The ending location.
      *
@@ -516,10 +515,10 @@ public class Location {
                 Logger.logMessage(Logger.ERROR, "Location", "linearAzimuth", "missingLocation"));
         }
 
-        double lat1 = this.latitude * DEGREES_TO_RADIANS;
-        double lat2 = that.latitude * DEGREES_TO_RADIANS;
-        double lon1 = this.longitude * DEGREES_TO_RADIANS;
-        double lon2 = that.longitude * DEGREES_TO_RADIANS;
+        double lat1 = Math.toRadians(this.latitude);
+        double lat2 = Math.toRadians(that.latitude);
+        double lon1 = Math.toRadians(this.longitude);
+        double lon2 = Math.toRadians(that.longitude);
 
         if (lat1 == lat2 && lon1 == lon2) {
             return 0;
@@ -535,14 +534,13 @@ public class Location {
 
         double azimuthRadians = Math.atan2(dLon, dPhi);
 
-        return Double.isNaN(azimuthRadians) ? 0 : azimuthRadians * RADIANS_TO_DEGREES;
+        return Double.isNaN(azimuthRadians) ? 0 : Math.toDegrees(azimuthRadians);
     }
 
     /**
-     * Computes the linear angular distance between two locations. The return value gives the
-     * distance as the angle between the two positions in radians. This angle is the arc length of
-     * the segment between the two positions. To compute a distance in meters from this value,
-     * multiply the return value by the radius of the globe.
+     * Computes the linear angular distance between two locations. The return value gives the distance as the angle
+     * between the two positions in radians. This angle is the arc length of the segment between the two positions. To
+     * compute a distance in meters from this value, multiply the return value by the radius of the globe.
      *
      * @param that The ending location.
      *
@@ -556,10 +554,10 @@ public class Location {
                 Logger.logMessage(Logger.ERROR, "Location", "linearDistance", "missingLocation"));
         }
 
-        double lat1 = this.latitude * DEGREES_TO_RADIANS;
-        double lat2 = that.latitude * DEGREES_TO_RADIANS;
-        double lon1 = this.longitude * DEGREES_TO_RADIANS;
-        double lon2 = that.longitude * DEGREES_TO_RADIANS;
+        double lat1 = Math.toRadians(this.latitude);
+        double lat2 = Math.toRadians(that.latitude);
+        double lon1 = Math.toRadians(this.longitude);
+        double lon2 = Math.toRadians(that.longitude);
 
         if (lat1 == lat2 && lon1 == lon2) {
             return 0;
@@ -579,8 +577,7 @@ public class Location {
     }
 
     /**
-     * Computes the location on a linear path with the given starting location, azimuth, and arc
-     * distance.
+     * Computes the location on a linear path with the given starting location, azimuth, and arc distance.
      *
      * @param azimuthDegrees  The azimuth in degrees.
      * @param distanceRadians The radian distance along the path at which to compute the location.
@@ -588,8 +585,7 @@ public class Location {
      *
      * @return The specified result location.
      *
-     * @throws IllegalArgumentException If the specified location or the result argument is null or
-     *                                  undefined.
+     * @throws IllegalArgumentException If the specified location or the result argument is null or undefined.
      */
     public Location linearLocation(double azimuthDegrees, double distanceRadians, Location result) {
         if (result == null) {
@@ -603,9 +599,9 @@ public class Location {
             return result;
         }
 
-        double latRadians = this.latitude * DEGREES_TO_RADIANS;
-        double lonRadians = this.longitude * DEGREES_TO_RADIANS;
-        double azimuthRadians = azimuthDegrees * DEGREES_TO_RADIANS;
+        double latRadians = Math.toRadians(this.latitude);
+        double lonRadians = Math.toRadians(this.longitude);
+        double azimuthRadians = Math.toRadians(azimuthDegrees);
         double endLatRadians = latRadians + distanceRadians * Math.cos(azimuthRadians);
         double endLonRadians;
 
@@ -621,8 +617,8 @@ public class Location {
             result.latitude = this.latitude;
             result.longitude = this.longitude;
         } else {
-            result.latitude = normalizeLatitude(endLatRadians * RADIANS_TO_DEGREES);
-            result.longitude = normalizeLongitude(endLonRadians * RADIANS_TO_DEGREES);
+            result.latitude = normalizeLatitude(Math.toDegrees(endLatRadians));
+            result.longitude = normalizeLongitude(Math.toDegrees(endLonRadians));
         }
 
         return result;
