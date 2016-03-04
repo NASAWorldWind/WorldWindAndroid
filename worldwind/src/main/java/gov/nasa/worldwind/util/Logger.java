@@ -24,9 +24,16 @@ public class Logger {
 
     static {
         messageTable = new HashMap<>();
+        messageTable.put("invalidHeight", "The specified height is invalid");
+        messageTable.put("invalidStride", "The specified stride is invalid");
+        messageTable.put("invalidWidth", "The specified width is invalid");
+        messageTable.put("missingBuffer", "The specified buffer is null or empty");
+        messageTable.put("missingList", "The specified list is null or empty");
         messageTable.put("missingLocation", "The specified location is null");
+        messageTable.put("missingMatrix", "The specified matrix is null");
         messageTable.put("missingPosition", "The specified position is null");
         messageTable.put("missingResult", "The specified result argument is null");
+        messageTable.put("missingVector", "The specified vector is null");
     }
 
     public static void log(int level, String message) {

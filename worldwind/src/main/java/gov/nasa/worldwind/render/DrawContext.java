@@ -9,7 +9,7 @@ import android.content.Context;
 
 import java.util.List;
 
-import gov.nasa.worldwind.geom.Matrix;
+import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.Globe;
@@ -19,21 +19,37 @@ import gov.nasa.worldwind.layer.Layer;
 public class DrawContext {
 
     protected Context context;
+
     protected Globe globe;
+
     protected Terrain terrain;
+
     protected List<Layer> layers;
+
     protected Layer currentLayer;
-    protected Matrix modelview;
-    protected Matrix projection;
-    protected Matrix modelviewProjection;
-    protected Matrix modelviewProjectionInv;
+
+    protected Matrix4 modelview;
+
+    protected Matrix4 projection;
+
+    protected Matrix4 modelviewProjection;
+
+    protected Matrix4 modelviewProjectionInv;
+
     protected Vec3 eyePoint;
+
     protected Position eyePosition;
+
     protected double heading;
+
     protected double tilt;
+
     protected double roll;
+
     protected double fieldOfView;
+
     protected boolean pickingMode;
+
     protected boolean renderRequested;
 
     public DrawContext(Context context) {
@@ -76,27 +92,27 @@ public class DrawContext {
         this.currentLayer = currentLayer;
     }
 
-    public Matrix getModelview() {
+    public Matrix4 getModelview() {
         return modelview;
     }
 
-    public void setModelview(Matrix modelview) {
+    public void setModelview(Matrix4 modelview) {
         this.modelview = modelview;
     }
 
-    public Matrix getProjection() {
+    public Matrix4 getProjection() {
         return projection;
     }
 
-    public void setProjection(Matrix projection) {
+    public void setProjection(Matrix4 projection) {
         this.projection = projection;
     }
 
-    public Matrix getModelviewProjection() {
+    public Matrix4 getModelviewProjection() {
         return modelviewProjection;
     }
 
-    public Matrix getModelviewProjectionInverse() {
+    public Matrix4 getModelviewProjectionInverse() {
         return modelviewProjectionInv;
     }
 
