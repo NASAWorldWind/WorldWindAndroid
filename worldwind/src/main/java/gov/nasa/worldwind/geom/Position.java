@@ -5,6 +5,7 @@
 
 package gov.nasa.worldwind.geom;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -115,7 +116,24 @@ public class Position extends Location {
         return this;
     }
 
-    public Position interpolateAlongPath(PathType pathType, double amount, Position endPosition, Position result) {
+    /**
+     * Compute the position along a path at a fractional amount between two positions. The amount argument is a fraction
+     * of the path at which to compute a position. This value is typically between 0 and 1, with 0 indicating the this
+     * position and 1 indicating the end position.
+     *
+     * The position's latitude and longitude
+     *
+     * @param endPosition the end position
+     * @param pathType    {@link gov.nasa.worldwind.WorldWind.PathType} indicating type of path to assume
+     * @param amount      the fraction of the path at which to compute a position
+     * @param result      a pre-allocated Position in which to return the interpolated position
+     *
+     * @return the result argument set to the interpolated position
+     *
+     * @throws IllegalArgumentException If either of the end position or the result argument is null
+     */
+    public Position interpolateAlongPath(Position endPosition, @WorldWind.PathType int pathType, double amount,
+                                         Position result) {
         if (endPosition == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Position", "interpolateAlongPath", "missingPosition"));
@@ -127,7 +145,7 @@ public class Position extends Location {
         }
 
         // Interpolate latitude and longitude.
-        super.interpolateAlongPath(pathType, amount, endPosition, result);
+        super.interpolateAlongPath(endPosition, pathType, amount, result);
         // Interpolate altitude.
         result.altitude = (1 - amount) * this.altitude + amount * endPosition.altitude;
 

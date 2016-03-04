@@ -5,10 +5,11 @@
 
 package gov.nasa.worldwind.globe;
 
-import gov.nasa.worldwind.geom.AltitudeMode;
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Vec3;
 
 public interface Terrain {
 
-    Vec3 computeSurfacePoint(double latitude, double longitude, double altitude, AltitudeMode altitudeMode, Vec3 result);
+    Vec3 computeSurfacePoint(double latitude, double longitude, double altitude,
+                             @WorldWind.AltitudeMode int altitudeMode, Vec3 result);
 }
