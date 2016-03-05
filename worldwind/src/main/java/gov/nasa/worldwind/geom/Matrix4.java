@@ -71,128 +71,6 @@ public class Matrix4 {
         this.m[15] = m44;
     }
 
-    /**
-     * Utility method to solve a linear system with an LU factorization of a matrix. Solves Ax=b, where A is in LU
-     * factorized form. Algorithm derived from "Numerical Recipes in C", Press et al., 1988
-     *
-     * @param A an LU factorization of a matrix
-     * @param index permutation vector of that LU factorization
-     * @param b vector to be solved
-     */
-    private static void lubksb(double[][] A, int[] index, double[] b) {
-        int ii = -1;
-
-        for (int i = 0; i < 4; i += 1) {
-            int ip = index[i];
-            double sum = b[ip];
-            b[ip] = b[i];
-
-            if (ii != -1) {
-                for (int j = ii; j <= i - 1; j += 1) {
-                    sum -= A[i][j] * b[j];
-                }
-            } else if (sum != 0.0) {
-                ii = i;
-            }
-
-            b[i] = sum;
-        }
-
-        for (int i = 3; i >= 0; i -= 1) {
-            double sum = b[i];
-            for (int j = i + 1; j < 4; j += 1) {
-                sum -= A[i][j] * b[j];
-            }
-
-            b[i] = sum / A[i][i];
-        }
-    }
-
-
-    /**
-     * Utility method to perform an LU factorization of a matrix. Algorithm derived from "Numerical Recipes in C", Press
-     * et al., 1988.
-     *
-     * @param A matrix to be factored
-     * @param index permutation vector
-     *
-     * @return condition number of matrix
-     */
-    protected static double ludcmp(double[][] A, int[] index) {
-        final double TINY = 1.0e-20;
-        double[] vv = new double[4];
-        double d = 1;
-        double temp, sum;
-
-        for (int i = 0; i < 4; i += 1) {
-            double big = 0;
-            for (int j = 0; j < 4; j += 1) {
-                if ((temp = Math.abs(A[i][j])) > big) {
-                    big = temp;
-                }
-            }
-
-            if (big == 0) {
-                return 0; // Matrix is singular if the entire row contains zero.
-            } else {
-                vv[i] = 1 / big;
-            }
-        }
-
-        for (int j = 0; j < 4; j += 1) {
-            for (int i = 0; i < j; i += 1) {
-                sum = A[i][j];
-                for (int k = 0; k < i; k += 1) {
-                    sum -= A[i][k] * A[k][j];
-                }
-
-                A[i][j] = sum;
-            }
-
-            double big = 0;
-            double dum;
-            int imax = -1;
-
-            for (int i = j; i < 4; i += 1) {
-                sum = A[i][j];
-                for (int k = 0; k < j; k++) {
-                    sum -= A[i][k] * A[k][j];
-                }
-
-                A[i][j] = sum;
-
-                if ((dum = vv[i] * Math.abs(sum)) >= big) {
-                    big = dum;
-                    imax = i;
-                }
-            }
-
-            if (j != imax) {
-                for (int k = 0; k < 4; k += 1) {
-                    dum = A[imax][k];
-                    A[imax][k] = A[j][k];
-                    A[j][k] = dum;
-                }
-
-                d = -d;
-                vv[imax] = vv[j];
-            }
-
-            index[j] = imax;
-            if (A[j][j] == 0.0)
-                A[j][j] = TINY;
-
-            if (j != 3) {
-                dum = 1.0 / A[j][j];
-                for (int i = j + 1; i < 4; i += 1) {
-                    A[i][j] *= dum;
-                }
-            }
-        }
-
-        return d;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (o == null || this.getClass() != o.getClass()) {
@@ -1376,5 +1254,126 @@ public class Matrix4 {
         result[2].multiply(m33);
 
         return result;
+    }
+
+    /**
+     * Utility method to perform an LU factorization of a matrix. Algorithm derived from "Numerical Recipes in C", Press
+     * et al., 1988.
+     *
+     * @param A     matrix to be factored
+     * @param index permutation vector
+     *
+     * @return condition number of matrix
+     */
+    protected static double ludcmp(double[][] A, int[] index) {
+        final double TINY = 1.0e-20;
+        double[] vv = new double[4];
+        double d = 1;
+        double temp, sum;
+
+        for (int i = 0; i < 4; i += 1) {
+            double big = 0;
+            for (int j = 0; j < 4; j += 1) {
+                if ((temp = Math.abs(A[i][j])) > big) {
+                    big = temp;
+                }
+            }
+
+            if (big == 0) {
+                return 0; // Matrix is singular if the entire row contains zero.
+            } else {
+                vv[i] = 1 / big;
+            }
+        }
+
+        for (int j = 0; j < 4; j += 1) {
+            for (int i = 0; i < j; i += 1) {
+                sum = A[i][j];
+                for (int k = 0; k < i; k += 1) {
+                    sum -= A[i][k] * A[k][j];
+                }
+
+                A[i][j] = sum;
+            }
+
+            double big = 0;
+            double dum;
+            int imax = -1;
+
+            for (int i = j; i < 4; i += 1) {
+                sum = A[i][j];
+                for (int k = 0; k < j; k++) {
+                    sum -= A[i][k] * A[k][j];
+                }
+
+                A[i][j] = sum;
+
+                if ((dum = vv[i] * Math.abs(sum)) >= big) {
+                    big = dum;
+                    imax = i;
+                }
+            }
+
+            if (j != imax) {
+                for (int k = 0; k < 4; k += 1) {
+                    dum = A[imax][k];
+                    A[imax][k] = A[j][k];
+                    A[j][k] = dum;
+                }
+
+                d = -d;
+                vv[imax] = vv[j];
+            }
+
+            index[j] = imax;
+            if (A[j][j] == 0.0)
+                A[j][j] = TINY;
+
+            if (j != 3) {
+                dum = 1.0 / A[j][j];
+                for (int i = j + 1; i < 4; i += 1) {
+                    A[i][j] *= dum;
+                }
+            }
+        }
+
+        return d;
+    }
+
+    /**
+     * Utility method to solve a linear system with an LU factorization of a matrix. Solves Ax=b, where A is in LU
+     * factorized form. Algorithm derived from "Numerical Recipes in C", Press et al., 1988
+     *
+     * @param A     an LU factorization of a matrix
+     * @param index permutation vector of that LU factorization
+     * @param b     vector to be solved
+     */
+    private static void lubksb(double[][] A, int[] index, double[] b) {
+        int ii = -1;
+
+        for (int i = 0; i < 4; i += 1) {
+            int ip = index[i];
+            double sum = b[ip];
+            b[ip] = b[i];
+
+            if (ii != -1) {
+                for (int j = ii; j <= i - 1; j += 1) {
+                    sum -= A[i][j] * b[j];
+                }
+            } else if (sum != 0.0) {
+                ii = i;
+            }
+
+            b[i] = sum;
+        }
+
+        for (int i = 3; i >= 0; i -= 1) {
+            double sum = b[i];
+            for (int j = i + 1; j < 4; j += 1) {
+                sum -= A[i][j] * b[j];
+            }
+
+            b[i] = sum / A[i][i];
+        }
     }
 }

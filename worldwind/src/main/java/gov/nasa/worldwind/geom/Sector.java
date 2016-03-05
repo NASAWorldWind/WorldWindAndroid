@@ -8,7 +8,10 @@ package gov.nasa.worldwind.geom;
 public class Sector {
 
     public double minLatitude;
+
     public double maxLatitude;
+
     public double minLongitude;
+
     public double maxLongitude;
 }
