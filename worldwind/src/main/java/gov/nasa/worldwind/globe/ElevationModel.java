@@ -6,4 +6,5 @@
 package gov.nasa.worldwind.globe;
 
 public interface ElevationModel {
+
 }

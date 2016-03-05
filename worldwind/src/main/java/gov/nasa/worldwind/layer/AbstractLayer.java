@@ -5,16 +5,20 @@
 
 package gov.nasa.worldwind.layer;
 
-import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.render.DrawContext;
 
 public abstract class AbstractLayer implements Layer {
 
     protected String displayName;
+
     protected boolean enabled;
+
     protected boolean pickEnabled;
+
     protected double opacity;
+
     protected double minActiveAltitude;
+
     protected double maxActiveAltitude;
 
     @Override

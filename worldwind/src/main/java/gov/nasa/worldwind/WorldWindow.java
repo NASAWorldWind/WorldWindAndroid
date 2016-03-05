@@ -22,15 +22,20 @@ import gov.nasa.worldwind.render.FrameStatistics;
 public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer {
 
     protected Navigator navigator;
+
     protected NavigatorController navigatorController;
+
     protected FrameController frameController;
+
     protected Globe globe;
+
     protected List<Layer> layers;
+
     protected double verticalExaggeration;
 
     /**
-     * Constructs a WorldWindow associated with the specified application context. This is the
-     * constructor to use when creating a WorldWindow from code.
+     * Constructs a WorldWindow associated with the specified application context. This is the constructor to use when
+     * creating a WorldWindow from code.
      */
     public WorldWindow(Context context) {
         super(context);
@@ -38,13 +43,13 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     }
 
     /**
-     * Constructs a WorldWindow associated with the specified application context and attributes
-     * from an XML tag. This constructor is included to provide support for creating WorldWindow
-     * from an Android XML layout file, and is not intended to be used directly.
-     * <p/>
-     * This is called when a view is being constructed from an XML file, supplying attributes that
-     * were specified in the XML file. This version uses a default style of 0, so the only attribute
-     * values applied are those in the Context's Theme and the given AttributeSet.
+     * Constructs a WorldWindow associated with the specified application context and attributes from an XML tag. This
+     * constructor is included to provide support for creating WorldWindow from an Android XML layout file, and is not
+     * intended to be used directly.
+     * <p>
+     * This is called when a view is being constructed from an XML file, supplying attributes that were specified in the
+     * XML file. This version uses a default style of 0, so the only attribute values applied are those in the Context's
+     * Theme and the given AttributeSet.
      */
     public WorldWindow(Context context, AttributeSet attrs) {
         super(context, attrs);
