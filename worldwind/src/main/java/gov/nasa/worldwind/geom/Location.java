@@ -5,6 +5,7 @@
 
 package gov.nasa.worldwind.geom;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -190,19 +191,21 @@ public class Location {
     }
 
     /**
-     * Compute a location along a path at a specified distance between two specified locations.
+     * Compute the location along a path at a fractional amount between two locations. The amount argument is a fraction
+     * of the path at which to compute a location. This value is typically between 0 and 1, with 0 indicating the this
+     * location and 1 indicating the end location.
      *
-     * @param pathType    the type of path to assume.
-     * @param amount      The fraction of the path between the two locations at which to compute the new location. This
-     *                    number should be between 0 and 1. If not, it is clamped to the nearest of those values.
-     * @param endLocation The ending location.
-     * @param result      A Location in which to return the result.
+     * @param endLocation the end location
+     * @param pathType    {@link gov.nasa.worldwind.WorldWind.PathType} indicating type of path to assume
+     * @param amount      the fraction of the path at which to compute a location
+     * @param result      a pre-allocated Location in which to return the interpolated location
      *
-     * @return The specified result location.
+     * @return the result argument set to the interpolated location
      *
-     * @throws IllegalArgumentException If the specified location or the result argument is null.
+     * @throws IllegalArgumentException If either of the end location or the result argument is null
      */
-    public Location interpolateAlongPath(PathType pathType, double amount, Location endLocation, Location result) {
+    public Location interpolateAlongPath(Location endLocation, @WorldWind.PathType int pathType, double amount,
+                                         Location result) {
         if (endLocation == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Location", "interpolateAlongPath", "missingLocation"));
@@ -217,11 +220,11 @@ public class Location {
             return result.set(this);
         }
 
-        if (pathType == PathType.GREAT_CIRCLE) {
+        if (pathType == WorldWind.GREAT_CIRCLE) {
             double azimuthDegrees = this.greatCircleAzimuth(endLocation);
             double distanceRadians = this.greatCircleDistance(endLocation) * amount;
             return this.greatCircleLocation(azimuthDegrees, distanceRadians, result);
-        } else if (pathType == PathType.RHUMB_LINE) {
+        } else if (pathType == WorldWind.RHUMB_LINE) {
             double azimuthDegrees = this.rhumbAzimuth(endLocation);
             double distanceRadians = this.rhumbDistance(endLocation) * amount;
             return this.rhumbLocation(azimuthDegrees, distanceRadians, result);
@@ -241,7 +244,7 @@ public class Location {
      *
      * @return The computed azimuth, in degrees.
      *
-     * @throws IllegalArgumentException If either specified location is null or undefined.
+     * @throws IllegalArgumentException If either location is null.
      */
     public double greatCircleAzimuth(Location that) {
         if (that == null) {
