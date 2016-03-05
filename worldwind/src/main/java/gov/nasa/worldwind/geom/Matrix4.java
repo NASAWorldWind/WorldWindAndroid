@@ -29,22 +29,22 @@ public class Matrix4 {
     /**
      * Constructs a 4 x 4 matrix with specified components.
      *
-     * @param m11 matrix element at row 1, column 1.
-     * @param m12 matrix element at row 1, column 2.
-     * @param m13 matrix element at row 1, column 3.
-     * @param m14 matrix element at row 1, column 4.
-     * @param m21 matrix element at row 2, column 1.
-     * @param m22 matrix element at row 2, column 2.
-     * @param m23 matrix element at row 2, column 3.
-     * @param m24 matrix element at row 2, column 4.
-     * @param m31 matrix element at row 3, column 1.
-     * @param m32 matrix element at row 3, column 2.
-     * @param m33 matrix element at row 3, column 3.
-     * @param m34 matrix element at row 3, column 4.
-     * @param m41 matrix element at row 4, column 1.
-     * @param m42 matrix element at row 4, column 2.
-     * @param m43 matrix element at row 4, column 3.
-     * @param m44 matrix element at row 4, column 4.
+     * @param m11 matrix element at row 1, column 1
+     * @param m12 matrix element at row 1, column 2
+     * @param m13 matrix element at row 1, column 3
+     * @param m14 matrix element at row 1, column 4
+     * @param m21 matrix element at row 2, column 1
+     * @param m22 matrix element at row 2, column 2
+     * @param m23 matrix element at row 2, column 3
+     * @param m24 matrix element at row 2, column 4
+     * @param m31 matrix element at row 3, column 1
+     * @param m32 matrix element at row 3, column 2
+     * @param m33 matrix element at row 3, column 3
+     * @param m34 matrix element at row 3, column 4
+     * @param m41 matrix element at row 4, column 1
+     * @param m42 matrix element at row 4, column 2
+     * @param m43 matrix element at row 4, column 3
+     * @param m44 matrix element at row 4, column 4
      */
     public Matrix4(double m11, double m12, double m13, double m14,
                    double m21, double m22, double m23, double m24,
@@ -71,13 +71,14 @@ public class Matrix4 {
         this.m[15] = m44;
     }
 
-    // Method "lubksb" derived from "Numerical Recipes in C", Press et al., 1988
-    // Utility method to solve a linear system with an LU factorization of a matrix.
-    // Solves Ax=b, where A is in LU factorized form.
-    // Algorithm derived from "Numerical Recipes in C", Press et al., 1988.
-    // param A - An LU factorization of a matrix.
-    // param - index Permutation vector of that LU factorization.
-    // param - b Vector to be solved.
+    /**
+     * Utility method to solve a linear system with an LU factorization of a matrix. Solves Ax=b, where A is in LU
+     * factorized form. Algorithm derived from "Numerical Recipes in C", Press et al., 1988
+     *
+     * @param A an LU factorization of a matrix
+     * @param index permutation vector of that LU factorization
+     * @param b vector to be solved
+     */
     private static void lubksb(double[][] A, int[] index, double[] b) {
         int ii = -1;
 
@@ -107,11 +108,16 @@ public class Matrix4 {
         }
     }
 
-    // Method "ludcmp" derived from "Numerical Recipes in C", Press et al., 1988.
-    // Utility method to perform an LU factorization of a matrix.
-    // param A - matrix to be factored
-    // param index - permutation vector
-    // returns condition number of matrix.
+
+    /**
+     * Utility method to perform an LU factorization of a matrix. Algorithm derived from "Numerical Recipes in C", Press
+     * et al., 1988.
+     *
+     * @param A matrix to be factored
+     * @param index permutation vector
+     *
+     * @return condition number of matrix
+     */
     protected static double ludcmp(double[][] A, int[] index) {
         final double TINY = 1.0e-20;
         double[] vv = new double[4];
@@ -223,24 +229,24 @@ public class Matrix4 {
     /**
      * Sets this 4 x 4 matrix's components to specified components.
      *
-     * @param m11 matrix element at row 1, column 1.
-     * @param m12 matrix element at row 1, column 2.
-     * @param m13 matrix element at row 1, column 3.
-     * @param m14 matrix element at row 1, column 4.
-     * @param m21 matrix element at row 2, column 1.
-     * @param m22 matrix element at row 2, column 2.
-     * @param m23 matrix element at row 2, column 3.
-     * @param m24 matrix element at row 2, column 4.
-     * @param m31 matrix element at row 3, column 1.
-     * @param m32 matrix element at row 3, column 2.
-     * @param m33 matrix element at row 3, column 3.
-     * @param m34 matrix element at row 3, column 4.
-     * @param m41 matrix element at row 4, column 1.
-     * @param m42 matrix element at row 4, column 2.
-     * @param m43 matrix element at row 4, column 3.
-     * @param m44 matrix element at row 4, column 4.
+     * @param m11 matrix element at row 1, column 1
+     * @param m12 matrix element at row 1, column 2
+     * @param m13 matrix element at row 1, column 3
+     * @param m14 matrix element at row 1, column 4
+     * @param m21 matrix element at row 2, column 1
+     * @param m22 matrix element at row 2, column 2
+     * @param m23 matrix element at row 2, column 3
+     * @param m24 matrix element at row 2, column 4
+     * @param m31 matrix element at row 3, column 1
+     * @param m32 matrix element at row 3, column 2
+     * @param m33 matrix element at row 3, column 3
+     * @param m34 matrix element at row 3, column 4
+     * @param m41 matrix element at row 4, column 1
+     * @param m42 matrix element at row 4, column 2
+     * @param m43 matrix element at row 4, column 3
+     * @param m44 matrix element at row 4, column 4
      *
-     * @return this matrix set to the specified components.
+     * @return this matrix set to the specified components
      */
     public Matrix4 set(double m11, double m12, double m13, double m14,
                        double m21, double m22, double m23, double m24,
@@ -272,12 +278,12 @@ public class Matrix4 {
     /**
      * Sets the translation components of this matrix to specified values.
      *
-     * @param x the X translation component.
-     * @param y the Y translation component.
-     * @param z the Z translation component.
+     * @param x the X translation component
+     * @param y the Y translation component
+     * @param z the Z translation component
      *
      * @return this matrix with its translation components set to the specified values and all other components
-     * unmodified.
+     * unmodified
      */
     public Matrix4 setTranslation(double x, double y, double z) {
         this.m[3] = x;
@@ -291,12 +297,12 @@ public class Matrix4 {
      * Sets the rotation components of this matrix to a specified axis and angle. Positive angles are interpreted as
      * counter-clockwise rotation about the axis.
      *
-     * @param x            the X component of the rotation axis.
-     * @param y            the Y component of the rotation axis.
-     * @param z            the Z component of the rotation axis.
-     * @param angleDegrees the angle of rotation in degrees.
+     * @param x            the X component of the rotation axis
+     * @param y            the Y component of the rotation axis
+     * @param z            the Z component of the rotation axis
+     * @param angleDegrees the angle of rotation in degrees
      *
-     * @return this matrix with its rotation components set to the specified values and all other components unmodified.
+     * @return this matrix with its rotation components set to the specified values and all other components unmodified
      */
     public Matrix4 setRotation(double x, double y, double z, double angleDegrees) {
         double c = Math.cos(Math.toRadians(angleDegrees));
@@ -320,11 +326,11 @@ public class Matrix4 {
     /**
      * Sets the scale components of this matrix to specified values.
      *
-     * @param xScale the X scale component.
-     * @param yScale the Y scale component.
-     * @param zScale the Z scale component.
+     * @param xScale the X scale component
+     * @param yScale the Y scale component
+     * @param zScale the Z scale component
      *
-     * @return this matrix with its scale components set to the specified values and all other components unmodified.
+     * @return this matrix with its scale components set to the specified values and all other components unmodified
      */
     public Matrix4 setScale(double xScale, double yScale, double zScale) {
         this.m[0] = xScale;
@@ -337,7 +343,7 @@ public class Matrix4 {
     /**
      * Sets this matrix to the 4 x 4 identity matrix.
      *
-     * @return this matrix, set to the identity matrix.
+     * @return this matrix, set to the identity matrix
      */
     public Matrix4 setToIdentity() {
         this.m[0] = 1;
@@ -366,12 +372,12 @@ public class Matrix4 {
     /**
      * Sets this matrix to a translation matrix with specified translation components.
      *
-     * @param x the X translation component.
-     * @param y the Y translation component.
-     * @param z the Z translation component.
+     * @param x the X translation component
+     * @param y the Y translation component
+     * @param z the Z translation component
      *
      * @return this matrix with its translation components set to those specified and all other components set to that
-     * of an identity matrix.
+     * of an identity matrix
      */
     public Matrix4 setToTranslation(double x, double y, double z) {
         this.m[0] = 1;
@@ -401,13 +407,13 @@ public class Matrix4 {
      * Sets this matrix to a rotation matrix with a specified axis and angle. Positive angles are interpreted as
      * counter-clockwise rotation about the axis.
      *
-     * @param x            the X component of the rotation axis.
-     * @param y            the Y component of the rotation axis.
-     * @param z            the Z component of the rotation axis.
-     * @param angleDegrees the angle of rotation in degrees.
+     * @param x            the X component of the rotation axis
+     * @param y            the Y component of the rotation axis
+     * @param z            the Z component of the rotation axis
+     * @param angleDegrees the angle of rotation in degrees
      *
      * @return this matrix with its rotation components set to those specified and all other components set to that of
-     * an identity matrix.
+     * an identity matrix
      */
     public Matrix4 setToRotation(double x, double y, double z, double angleDegrees) {
         double c = Math.cos(Math.toRadians(angleDegrees));
@@ -439,12 +445,12 @@ public class Matrix4 {
     /**
      * Sets this matrix to a scale matrix with specified scale components.
      *
-     * @param xScale the X scale component.
-     * @param yScale the Y scale component.
-     * @param zScale the Z scale component.
+     * @param xScale the X scale component
+     * @param yScale the Y scale component
+     * @param zScale the Z scale component
      *
      * @return this matrix with its scale components set to those specified and all other components set to that of an
-     * identity matrix.
+     * identity matrix
      */
     public Matrix4 setToScale(double xScale, double yScale, double zScale) {
         this.m[0] = xScale;
@@ -473,12 +479,12 @@ public class Matrix4 {
     /**
      * Sets this matrix to the matrix product of two specified matrices.
      *
-     * @param a the first matrix multiplicand.
-     * @param b The second matrix multiplicand.
+     * @param a the first matrix multiplicand
+     * @param b The second matrix multiplicand
      *
-     * @return this matrix set to the product of a x b.
+     * @return this matrix set to the product of a x b
      *
-     * @throws IllegalArgumentException If either specified matrix is null.
+     * @throws IllegalArgumentException If either matrix is null
      */
     public Matrix4 setToMultiply(Matrix4 a, Matrix4 b) {
         if (a == null || b == null) {
@@ -525,16 +531,16 @@ public class Matrix4 {
      * The field of view must be positive and not larger than 180. Near and far distances must be positive and must not
      * be equal to one another.
      *
-     * @param viewportWidth  the viewport width in screen coordinates.
-     * @param viewportHeight the viewport height in screen coordinates.
-     * @param fovyDegrees    the vertical field of view in degrees.
-     * @param nearDistance   the near clip plane distance in model coordinates.
-     * @param farDistance    the far clip plane distance in model coordinates.
+     * @param viewportWidth  the viewport width in screen coordinates
+     * @param viewportHeight the viewport height in screen coordinates
+     * @param fovyDegrees    the vertical field of view in degrees
+     * @param nearDistance   the near clip plane distance in model coordinates
+     * @param farDistance    the far clip plane distance in model coordinates
      *
      * @throws IllegalArgumentException If either the width or the height is less than or equal to zero, if the field of
      *                                  view is less than or equal to zero or greater than 180, if the near and far
      *                                  distances are equal, or if either the near or far distance are less than or
-     *                                  equal to zero.
+     *                                  equal to zero
      */
     public Matrix4 setToPerspectiveProjection(double viewportWidth, double viewportHeight, double fovyDegrees,
                                               double nearDistance, double farDistance) {
@@ -606,10 +612,10 @@ public class Matrix4 {
      * Additionally, the screen projection matrix preserves the depth value returned by
      * <code>DrawContext.project</code>.
      *
-     * @param viewportWidth  the viewport width in screen coordinates.
-     * @param viewportHeight the viewport height in screen coordinates.
+     * @param viewportWidth  the viewport width in screen coordinates
+     * @param viewportHeight the viewport height in screen coordinates
      *
-     * @throws IllegalArgumentException If either the width or the height is less than or equal to zero.
+     * @throws IllegalArgumentException If either the width or the height is less than or equal to zero
      */
     public Matrix4 setToScreenProjection(double viewportWidth, double viewportHeight) {
         if (viewportWidth <= 0) {
@@ -678,12 +684,12 @@ public class Matrix4 {
      * returned matrix is diagonal, then all three coordinates are uncorrelated, and the specified point is distributed
      * evenly about its mean point.
      *
-     * @param points the buffer of points to consider.
-     * @param stride the number of coordinates between the first coordinate of adjacent points. Must be at least 3.
+     * @param points the buffer of points to consider
+     * @param stride the number of coordinates between the first coordinate of adjacent points - must be at least 3
      *
-     * @return this matrix set to the covariance matrix for the specified buffer of points.
+     * @return this matrix set to the covariance matrix for the specified buffer of points
      *
-     * @throws IllegalArgumentException If the buffer of points is null or empty or if the stride is less than 3.
+     * @throws IllegalArgumentException If the buffer of points is null or empty or if the stride is less than 3
      */
     public Matrix4 setToCovarianceOfBuffer(FloatBuffer points, int stride) {
         if (points == null || points.remaining() < stride) {
@@ -748,11 +754,11 @@ public class Matrix4 {
     /**
      * Multiplies this matrix by a translation matrix with specified translation values.
      *
-     * @param x the X translation component.
-     * @param y the Y translation component.
-     * @param z the Z translation component.
+     * @param x the X translation component
+     * @param y the Y translation component
+     * @param z the Z translation component
      *
-     * @return this matrix multiplied by the translation matrix implied by the specified values.
+     * @return this matrix multiplied by the translation matrix implied by the specified values
      */
     public Matrix4 multiplyByTranslation(double x, double y, double z) {
         this.multiplyByMatrix(
@@ -768,12 +774,12 @@ public class Matrix4 {
      * Multiplies this matrix by a rotation matrix about a specified axis and angle. Positive angles are interpreted as
      * counter-clockwise rotation about the axis.
      *
-     * @param x            the X component of the rotation axis.
-     * @param y            the Y component of the rotation axis.
-     * @param z            the Z component of the rotation axis.
-     * @param angleDegrees the angle of rotation in degrees.
+     * @param x            the X component of the rotation axis
+     * @param y            the Y component of the rotation axis
+     * @param z            the Z component of the rotation axis
+     * @param angleDegrees the angle of rotation in degrees
      *
-     * @return this matrix multiplied by the rotation matrix implied by the specified values.
+     * @return this matrix multiplied by the rotation matrix implied by the specified values
      */
     public Matrix4 multiplyByRotation(double x, double y, double z, double angleDegrees) {
         double c = Math.cos(Math.toRadians(angleDegrees));
@@ -791,11 +797,11 @@ public class Matrix4 {
     /**
      * Multiplies this matrix by a scale matrix with specified values.
      *
-     * @param xScale the X scale component.
-     * @param yScale the Y scale component.
-     * @param zScale the Z scale component.
+     * @param xScale the X scale component
+     * @param yScale the Y scale component
+     * @param zScale the Z scale component
      *
-     * @return this matrix multiplied by the scale matrix implied by the specified values.
+     * @return this matrix multiplied by the scale matrix implied by the specified values
      */
     public Matrix4 multiplyByScale(double xScale, double yScale, double zScale) {
 
@@ -811,11 +817,11 @@ public class Matrix4 {
     /**
      * Multiplies this matrix by a specified matrix.
      *
-     * @param matrix the matrix to multiply with this matrix.
+     * @param matrix the matrix to multiply with this matrix
      *
-     * @return this matrix after multiplying it by the specified matrix.
+     * @return this matrix after multiplying it by the specified matrix
      *
-     * @throws IllegalArgumentException If the matrix is null.
+     * @throws IllegalArgumentException If the matrix is null
      */
     public Matrix4 multiplyByMatrix(Matrix4 matrix) {
         if (matrix == null) {
@@ -869,24 +875,24 @@ public class Matrix4 {
     /**
      * Multiplies this matrix by a matrix specified by individual components.
      *
-     * @param m11 matrix element at row 1, column 1.
-     * @param m12 matrix element at row 1, column 2.
-     * @param m13 matrix element at row 1, column 3.
-     * @param m14 matrix element at row 1, column 4.
-     * @param m21 matrix element at row 2, column 1.
-     * @param m22 matrix element at row 2, column 2.
-     * @param m23 matrix element at row 2, column 3.
-     * @param m24 matrix element at row 2, column 4.
-     * @param m31 matrix element at row 3, column 1.
-     * @param m32 matrix element at row 3, column 2.
-     * @param m33 matrix element at row 3, column 3.
-     * @param m34 matrix element at row 3, column 4.
-     * @param m41 matrix element at row 4, column 1.
-     * @param m42 matrix element at row 4, column 2.
-     * @param m43 matrix element at row 4, column 3.
-     * @param m44 matrix element at row 4, column 4.
+     * @param m11 matrix element at row 1, column 1
+     * @param m12 matrix element at row 1, column 2
+     * @param m13 matrix element at row 1, column 3
+     * @param m14 matrix element at row 1, column 4
+     * @param m21 matrix element at row 2, column 1
+     * @param m22 matrix element at row 2, column 2
+     * @param m23 matrix element at row 2, column 3
+     * @param m24 matrix element at row 2, column 4
+     * @param m31 matrix element at row 3, column 1
+     * @param m32 matrix element at row 3, column 2
+     * @param m33 matrix element at row 3, column 3
+     * @param m34 matrix element at row 3, column 4
+     * @param m41 matrix element at row 4, column 1
+     * @param m42 matrix element at row 4, column 2
+     * @param m43 matrix element at row 4, column 3
+     * @param m44 matrix element at row 4, column 4
      *
-     * @return this matrix with its components multiplied by the specified values.
+     * @return this matrix with its components multiplied by the specified values
      */
     public Matrix4 multiplyByMatrix(double m11, double m12, double m13, double m14,
                                     double m21, double m22, double m23, double m24,
@@ -938,11 +944,11 @@ public class Matrix4 {
     /**
      * Sets this matrix to the transpose of a specified matrix.
      *
-     * @param matrix the matrix whose transpose is to be computed.
+     * @param matrix the matrix whose transpose is to be computed
      *
-     * @return this matrix with its values set to the transpose of the specified matrix.
+     * @return this matrix with its values set to the transpose of the specified matrix
      *
-     * @throws IllegalArgumentException If the matrix in null.
+     * @throws IllegalArgumentException If the matrix in null
      */
     public Matrix4 transposeMatrix(Matrix4 matrix) {
         if (matrix == null) {
@@ -980,11 +986,11 @@ public class Matrix4 {
      * <p>
      * The result of this method is undefined if this matrix is passed in as the matrix to invert.
      *
-     * @param matrix the matrix whose inverse is computed.
+     * @param matrix the matrix whose inverse is computed
      *
-     * @return this matrix set to the inverse of the specified matrix.
+     * @return this matrix set to the inverse of the specified matrix
      *
-     * @throws IllegalArgumentException If the matrix is null or cannot be inverted.
+     * @throws IllegalArgumentException If the matrix is null or cannot be inverted
      */
     public Matrix4 invertMatrix(Matrix4 matrix) {
         if (matrix == null) {
@@ -1071,12 +1077,12 @@ public class Matrix4 {
      * The result of this method is undefined if this matrix is passed in as the matrix to invert, or if the matrix's
      * values are not consistent with those of an orthonormal transform.
      *
-     * @param matrix the matrix whose inverse is computed. This matrix is assumed to represent an orthonormal transform
+     * @param matrix the matrix whose inverse is computed This matrix is assumed to represent an orthonormal transform
      *               matrix.
      *
-     * @return this matrix set to the inverse of the specified matrix.
+     * @return this matrix set to the inverse of the specified matrix
      *
-     * @throws IllegalArgumentException If the matrix is null.
+     * @throws IllegalArgumentException If the matrix is null
      */
     public Matrix4 invertOrthonormalMatrix(Matrix4 matrix) {
         if (matrix == null) {
@@ -1138,9 +1144,9 @@ public class Matrix4 {
      * original perspective projection. The method <code>DrawContext.project</code> performs the correct behavior for
      * the projection type used to draw the scene.
      *
-     * @param depthOffset the amount of offset to apply.
+     * @param depthOffset the amount of offset to apply
      *
-     * @return this matrix with its components adjusted to account for the specified depth offset.
+     * @return this matrix with its components adjusted to account for the specified depth offset
      */
     public Matrix4 offsetProjectionDepth(double depthOffset) {
 
@@ -1155,11 +1161,11 @@ public class Matrix4 {
      * <p>
      * The result of this method is undefined if this matrix is not a viewing matrix.
      *
-     * @param result a pre-allocated <code>Vec3</code> in which to return the extracted value.
+     * @param result a pre-allocated <code>Vec3</code> in which to return the extracted value
      *
-     * @return the specified result argument containing the viewing matrix's eye point.
+     * @return the specified result argument containing the viewing matrix's eye point
      *
-     * @throws IllegalArgumentException If the result argument is null.
+     * @throws IllegalArgumentException If the result argument is null
      */
     public Vec3 extractEyePoint(Vec3 result) {
         if (result == null) {
@@ -1167,9 +1173,9 @@ public class Matrix4 {
                 Logger.logMessage(Logger.ERROR, "Matrix4", "extractEyePoint", "missingResult"));
         }
 
-        // The eye point of a modelview matrix is computed by transforming the origin (0, 0, 0, 1) by the matrix's inverse.
-        // This is equivalent to transforming the inverse of this matrix's translation components in the rightmost column by
-        // the transpose of its upper 3x3 components.
+        // The eye point of a modelview matrix is computed by transforming the origin (0, 0, 0, 1) by the matrix's
+        // inverse. This is equivalent to transforming the inverse of this matrix's translation components in the
+        // rightmost column by the transpose of its upper 3x3 components.
         result.x = -(this.m[0] * this.m[3]) - (this.m[4] * this.m[7]) - (this.m[8] * this.m[11]);
         result.y = -(this.m[1] * this.m[3]) - (this.m[5] * this.m[7]) - (this.m[9] * this.m[11]);
         result.z = -(this.m[2] * this.m[3]) - (this.m[6] * this.m[7]) - (this.m[10] * this.m[11]);
@@ -1182,11 +1188,11 @@ public class Matrix4 {
      * <p>
      * The result of this method is undefined if this matrix is not a viewing matrix.
      *
-     * @param result a pre-allocated <code>Vec3</code> in which to return the extracted value.
+     * @param result a pre-allocated <code>Vec3</code> in which to return the extracted value
      *
-     * @return the specified result argument containing the viewing matrix's forward vector.
+     * @return the specified result argument containing the viewing matrix's forward vector
      *
-     * @throws IllegalArgumentException If the result argument is null.
+     * @throws IllegalArgumentException If the result argument is null
      */
     public Vec3 extractForwardVector(Vec3 result) {
         if (result == null) {
@@ -1207,9 +1213,9 @@ public class Matrix4 {
      * Computes the eigenvectors of this matrix. The eigenvectors are returned sorted in order of descending magnitude
      * (most prominent to least prominent). Each eigenvector has length equal to its corresponding eigenvalue.
      *
-     * @param result a pre-allocated Vec3 array of length 3 in which to return the computed eigenvectors.
+     * @param result a pre-allocated Vec3 array of length 3 in which to return the computed eigenvectors
      *
-     * @throws IllegalArgumentException If any argument is null or if this matrix is not symmetric.
+     * @throws IllegalArgumentException If any argument is null or if this matrix is not symmetric
      */
     public Vec3[] eigensystemFromSymmetricMatrix(Vec3[] result) {
         if (result == null || result.length < 3) {

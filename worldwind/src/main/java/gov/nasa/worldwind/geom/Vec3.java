@@ -21,12 +21,12 @@ public class Vec3 {
     public double x;
 
     /**
-     * The vector'x Y component.
+     * The vector's Y component.
      */
     public double y;
 
     /**
-     * The vector'x z component.
+     * The vector's Z component.
      */
     public double z;
 
@@ -39,9 +39,9 @@ public class Vec3 {
     /**
      * Constructs a three-component vector from a specified X, Y and Z.
      *
-     * @param x the vector's X component.
-     * @param y the vector's Y component.
-     * @param z the vector's Z component.
+     * @param x the vector's X component
+     * @param y the vector's Y component
+     * @param z the vector's Z component
      */
     public Vec3(double x, double y, double z) {
         this.x = x;
@@ -52,14 +52,14 @@ public class Vec3 {
     /**
      * Computes the average of a specified array of points packed into an NIO buffer.
      *
-     * @param points the buffer of points to consider.
-     * @param stride the number of coordinates between the first coordinate of adjacent points. Must be at least 3.
-     * @param result a pre-allocated Vec3 in which to return the computed average.
+     * @param points the buffer of points to consider
+     * @param stride the number of coordinates between the first coordinate of adjacent points - must be at least 3
+     * @param result a pre-allocated Vec3 in which to return the computed average
      *
-     * @return the result argument set to the average of the specified array of points.
+     * @return the result argument set to the average of the specified array of points
      *
      * @throws IllegalArgumentException If the buffer of points is null or empty, if the stride is less than 3, or the
-     *                                  result argument is null.
+     *                                  result argument is null
      */
     public static Vec3 averageOfBuffer(FloatBuffer points, int stride, Vec3 result) {
         if (points == null || points.remaining() < stride) {
@@ -106,12 +106,12 @@ public class Vec3 {
      * Computes the principal axes of a specified array of points packed into an NIO buffer. The computed axes are
      * stored in the pre-allocated array sorted by descending magnitude (longest to shortest).
      *
-     * @param points the buffer of points to consider.
-     * @param stride the number of coordinates between the first coordinate of adjacent points. Must be at least 3.
-     * @param result a pre-allocated Vec3 array of length 3 in which to return the computed axes.
+     * @param points the buffer of points to consider
+     * @param stride the number of coordinates between the first coordinate of adjacent points - must be at least 3
+     * @param result a pre-allocated Vec3 array of length 3 in which to return the computed axes
      *
      * @throws IllegalArgumentException If the buffer of points is null or empty, if the stride is less than 3, or if
-     *                                  any result argument is null.
+     *                                  any result argument is null
      */
     public static Vec3[] principalAxesOfBuffer(FloatBuffer points, int stride, Vec3[] result) {
         if (points == null || points.remaining() < stride) {
@@ -163,7 +163,7 @@ public class Vec3 {
     /**
      * Computes the magnitude of this vector.
      *
-     * @return the magnitude of this vector.
+     * @return the magnitude of this vector
      */
     public double magnitude() {
         return Math.sqrt(this.magnitudeSquared());
@@ -173,7 +173,7 @@ public class Vec3 {
      * Computes the squared magnitude of this vector. This is equivalent to squaring the result of
      * <code>magnitude</code> but is potentially much more efficient.
      *
-     * @return the squared magnitude of this vector.
+     * @return the squared magnitude of this vector
      */
     public double magnitudeSquared() {
         return this.x * this.x +
@@ -184,11 +184,11 @@ public class Vec3 {
     /**
      * Computes the distance from this vector to another vector.
      *
-     * @param vector The vector to compute the distance to.
+     * @param vector The vector to compute the distance to
      *
-     * @return the distance between the vectors.
+     * @return the distance between the vectors
      *
-     * @throws IllegalArgumentException If the vector is null.
+     * @throws IllegalArgumentException If the vector is null
      */
     public double distanceTo(Vec3 vector) {
         if (vector == null) {
@@ -203,11 +203,11 @@ public class Vec3 {
      * Computes the squared distance from this vector to a specified vector. This is equivalent to squaring the result
      * of <code>distanceTo</code> but is potentially much more efficient.
      *
-     * @param vector the vector to compute the distance to.
+     * @param vector the vector to compute the distance to
      *
-     * @return the squared distance between the vectors.
+     * @return the squared distance between the vectors
      *
-     * @throws IllegalArgumentException If the vector is null.
+     * @throws IllegalArgumentException If the vector is null
      */
     public double distanceToSquared(Vec3 vector) {
         if (vector == null) {
@@ -225,11 +225,11 @@ public class Vec3 {
     /**
      * Sets this vector's components to the specified X, Y and Z.
      *
-     * @param x the vector's new X component.
-     * @param y the vector's new Y component.
-     * @param z the vector's new Z component.
+     * @param x the vector's new X component
+     * @param y the vector's new Y component
+     * @param z the vector's new Z component
      *
-     * @return this vector set to the specified values.
+     * @return this vector set to the specified values
      */
     public Vec3 set(double x, double y, double z) {
         this.x = x;
@@ -243,9 +243,9 @@ public class Vec3 {
      * Swaps this vector with the specified vector. This vector's components are set to the values of the specified
      * vector's components, and the specified vector's components are set to the values of this vector's components.
      *
-     * @param vector the vector to swap with this vector.
+     * @param vector the vector to swap with this vector
      *
-     * @return this vector set to the values of the specified vector.
+     * @return this vector set to the values of the specified vector
      */
     public Vec3 swap(Vec3 vector) {
         double tmp = this.x;
@@ -266,11 +266,11 @@ public class Vec3 {
     /**
      * Adds a specified vector to this vector.
      *
-     * @param vector the vector to add.
+     * @param vector the vector to add
      *
-     * @return this vector after adding the specified vector to it.
+     * @return this vector after adding the specified vector to it
      *
-     * @throws IllegalArgumentException If the vector is null.
+     * @throws IllegalArgumentException If the vector is null
      */
     public Vec3 add(Vec3 vector) {
         if (vector == null) {
@@ -290,9 +290,9 @@ public class Vec3 {
      *
      * @param vector the vector to subtract
      *
-     * @return this vector after subtracting the specified vector from it.
+     * @return this vector after subtracting the specified vector from it
      *
-     * @throws IllegalArgumentException If the vector is null.
+     * @throws IllegalArgumentException If the vector is null
      */
     public Vec3 subtract(Vec3 vector) {
         if (vector == null) {
@@ -310,9 +310,9 @@ public class Vec3 {
     /**
      * Multiplies this vector by a scalar.
      *
-     * @param scalar the scalar to multiply this vector by.
+     * @param scalar the scalar to multiply this vector by
      *
-     * @return this vector multiplied by the specified scalar.
+     * @return this vector multiplied by the specified scalar
      */
     public Vec3 multiply(double scalar) {
         this.x *= scalar;
@@ -326,11 +326,11 @@ public class Vec3 {
      * Multiplies this vector by a 4x4 matrix. The multiplication is performed with an implicit W component of 1. The
      * resultant W component of the product is then divided through the X, Y, and Z components.
      *
-     * @param matrix the matrix to multiply this vector by.
+     * @param matrix the matrix to multiply this vector by
      *
-     * @return this vector multiplied by the specified matrix.
+     * @return this vector multiplied by the specified matrix
      *
-     * @throws IllegalArgumentException If the matrix is null.
+     * @throws IllegalArgumentException If the matrix is null
      */
     public Vec3 multiplyByMatrix(Matrix4 matrix) {
         if (matrix == null) {
@@ -354,9 +354,9 @@ public class Vec3 {
     /**
      * Divides this vector by a scalar.
      *
-     * @param divisor the scalar to divide this vector by.
+     * @param divisor the scalar to divide this vector by
      *
-     * @return this vector divided by the specified scalar.
+     * @return this vector divided by the specified scalar
      */
     public Vec3 divide(double divisor) {
         this.x /= divisor;
@@ -369,7 +369,7 @@ public class Vec3 {
     /**
      * Negates the components of this vector.
      *
-     * @return this vector, negated.
+     * @return this vector, negated
      */
     public Vec3 negate() {
         this.x = -this.x;
@@ -382,7 +382,7 @@ public class Vec3 {
     /**
      * Normalizes this vector to a unit vector.
      *
-     * @return this vector, normalized.
+     * @return this vector, normalized
      */
     public Vec3 normalize() {
         double magnitude = this.magnitude();
@@ -397,11 +397,11 @@ public class Vec3 {
     /**
      * Computes the scalar dot product of this vector and a specified vector.
      *
-     * @param vector the vector to multiply.
+     * @param vector the vector to multiply
      *
-     * @return the dot product of the two vectors.
+     * @return the dot product of the two vectors
      *
-     * @throws IllegalArgumentException If the vector is null.
+     * @throws IllegalArgumentException If the vector is null
      */
     public double dot(Vec3 vector) {
         if (vector == null) {
@@ -417,11 +417,11 @@ public class Vec3 {
     /**
      * Computes the cross product of this vector and a specified vector, modifying this vector.
      *
-     * @param vector the vector to cross with this vector.
+     * @param vector the vector to cross with this vector
      *
-     * @return this vector set to the cross product of itself and the specified vector.
+     * @return this vector set to the cross product of itself and the specified vector
      *
-     * @throws IllegalArgumentException If the vector is null.
+     * @throws IllegalArgumentException If the vector is null
      */
     public Vec3 cross(Vec3 vector) {
         if (vector == null) {
@@ -443,12 +443,12 @@ public class Vec3 {
     /**
      * Mixes (interpolates) a specified vector with this vector, modifying this vector.
      *
-     * @param vector The vector to mix with this one.
-     * @param weight The relative weight of this vector, typically in the range [0,1].
+     * @param vector The vector to mix with this one
+     * @param weight The relative weight of this vector, typically in the range [0,1]
      *
-     * @return this vector modified to the mix of itself and the specified vector.
+     * @return this vector modified to the mix of itself and the specified vector
      *
-     * @throws IllegalArgumentException If the vector is null.
+     * @throws IllegalArgumentException If the vector is null
      */
     public Vec3 mix(Vec3 vector, double weight) {
         if (vector == null) {
@@ -469,11 +469,11 @@ public class Vec3 {
     /**
      * Computes the average of a specified list of vectors, setting this vector to the result.
      *
-     * @param vectors the vectors whose average to compute.
+     * @param vectors the vectors whose average to compute
      *
-     * @return this vector set to the average of the specified list of vectors.
+     * @return this vector set to the average of the specified list of vectors
      *
-     * @throws IllegalArgumentException If the array null or empty.
+     * @throws IllegalArgumentException If the array null or empty
      */
     public Vec3 averageOfList(List<Vec3> vectors) {
         if (vectors == null || vectors.size() == 0) {
@@ -502,13 +502,13 @@ public class Vec3 {
     /**
      * Computes the normal vector of a specified triangle, setting this vector to the result.
      *
-     * @param a the triangle's first vertex.
-     * @param b the triangle's second vertex.
-     * @param c the triangle's third vertex.
+     * @param a the triangle's first vertex
+     * @param b the triangle's second vertex
+     * @param c the triangle's third vertex
      *
-     * @return this vector set to the normal of the specified triangle.
+     * @return this vector set to the normal of the specified triangle
      *
-     * @throws IllegalArgumentException If any of the vectors are null.
+     * @throws IllegalArgumentException If any of the vectors are null
      */
     public Vec3 triangleNormal(Vec3 a, Vec3 b, Vec3 c) {
         if (a == null || b == null || c == null) {

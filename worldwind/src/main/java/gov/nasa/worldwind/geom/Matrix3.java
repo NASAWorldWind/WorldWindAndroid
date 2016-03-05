@@ -28,15 +28,15 @@ public class Matrix3 {
     /**
      * Constructs a 3 x 3 matrix with specified components.
      *
-     * @param m11 matrix element at row 1, column 1.
-     * @param m12 matrix element at row 1, column 2.
-     * @param m13 matrix element at row 1, column 3.
-     * @param m21 matrix element at row 2, column 1.
-     * @param m22 matrix element at row 2, column 2.
-     * @param m23 matrix element at row 2, column 3.
-     * @param m31 matrix element at row 3, column 1.
-     * @param m32 matrix element at row 3, column 2.
-     * @param m33 matrix element at row 3, column 3.
+     * @param m11 matrix element at row 1, column 1
+     * @param m12 matrix element at row 1, column 2
+     * @param m13 matrix element at row 1, column 3
+     * @param m21 matrix element at row 2, column 1
+     * @param m22 matrix element at row 2, column 2
+     * @param m23 matrix element at row 2, column 3
+     * @param m31 matrix element at row 3, column 1
+     * @param m32 matrix element at row 3, column 2
+     * @param m33 matrix element at row 3, column 3
      */
     public Matrix3(double m11, double m12, double m13,
                    double m21, double m22, double m23,
@@ -82,17 +82,17 @@ public class Matrix3 {
     /**
      * Sets this 3 x 3 matrix's components to specified components.
      *
-     * @param m11 matrix element at row 1, column 1.
-     * @param m12 matrix element at row 1, column 2.
-     * @param m13 matrix element at row 1, column 3.
-     * @param m21 matrix element at row 2, column 1.
-     * @param m22 matrix element at row 2, column 2.
-     * @param m23 matrix element at row 2, column 3.
-     * @param m31 matrix element at row 3, column 1.
-     * @param m32 matrix element at row 3, column 2.
-     * @param m33 matrix element at row 3, column 3.
+     * @param m11 matrix element at row 1, column 1
+     * @param m12 matrix element at row 1, column 2
+     * @param m13 matrix element at row 1, column 3
+     * @param m21 matrix element at row 2, column 1
+     * @param m22 matrix element at row 2, column 2
+     * @param m23 matrix element at row 2, column 3
+     * @param m31 matrix element at row 3, column 1
+     * @param m32 matrix element at row 3, column 2
+     * @param m33 matrix element at row 3, column 3
      *
-     * @return this matrix set to the specified components.
+     * @return this matrix set to the specified components
      */
     public Matrix3 set(double m11, double m12, double m13,
                        double m21, double m22, double m23,
@@ -115,11 +115,11 @@ public class Matrix3 {
     /**
      * Sets the translation components of this matrix to specified values.
      *
-     * @param x the X translation component.
-     * @param y the Y translation component.
+     * @param x the X translation component
+     * @param y the Y translation component
      *
      * @return this matrix with its translation components set to the specified values and all other components
-     * unmodified.
+     * unmodified
      */
     public Matrix3 setTranslation(double x, double y) {
         this.m[2] = x;
@@ -132,9 +132,9 @@ public class Matrix3 {
      * Sets the rotation components of this matrix to a specified angle. Positive angles are interpreted as
      * counter-clockwise rotation.
      *
-     * @param angleDegrees the angle of rotation in degrees.
+     * @param angleDegrees the angle of rotation in degrees
      *
-     * @return this matrix with its rotation components set to the specified values and all other components unmodified.
+     * @return this matrix with its rotation components set to the specified values and all other components unmodified
      */
     public Matrix3 setRotation(double angleDegrees) {
         double c = Math.cos(Math.toRadians(angleDegrees));
@@ -152,10 +152,10 @@ public class Matrix3 {
     /**
      * Sets the scale components of this matrix to specified values.
      *
-     * @param xScale the X scale component.
-     * @param yScale the Y scale component.
+     * @param xScale the X scale component
+     * @param yScale the Y scale component
      *
-     * @return this matrix with its scale components set to the specified values and all other components unmodified.
+     * @return this matrix with its scale components set to the specified values and all other components unmodified
      */
     public Matrix3 setScale(double xScale, double yScale) {
         this.m[0] = xScale;
@@ -167,7 +167,7 @@ public class Matrix3 {
     /**
      * Sets this matrix to the 3 x 3 identity matrix.
      *
-     * @return this matrix, set to the identity matrix.
+     * @return this matrix, set to the identity matrix
      */
     public Matrix3 setToIdentity() {
         this.m[0] = 1;
@@ -188,11 +188,11 @@ public class Matrix3 {
     /**
      * Sets this matrix to a translation matrix with specified translation components.
      *
-     * @param x the X translation component.
-     * @param y the Y translation component.
+     * @param x the X translation component
+     * @param y the Y translation component
      *
      * @return this matrix with its translation components set to those specified and all other components set to that
-     * of an identity matrix.
+     * of an identity matrix
      */
     public Matrix3 setToTranslation(double x, double y) {
         this.m[0] = 1;
@@ -214,10 +214,10 @@ public class Matrix3 {
      * Sets this matrix to a rotation matrix with a specified angle. Positive angles are interpreted as
      * counter-clockwise rotation.
      *
-     * @param angleDegrees the angle of rotation in degrees.
+     * @param angleDegrees the angle of rotation in degrees
      *
      * @return this matrix with its rotation components set to those specified and all other components set to that of
-     * an identity matrix.
+     * an identity matrix
      */
     public Matrix3 setToRotation(double angleDegrees) {
         double c = Math.cos(Math.toRadians(angleDegrees));
@@ -241,11 +241,11 @@ public class Matrix3 {
     /**
      * Sets this matrix to a scale matrix with specified scale components.
      *
-     * @param xScale the X scale component.
-     * @param yScale the Y scale component.
+     * @param xScale the X scale component
+     * @param yScale the Y scale component
      *
      * @return this matrix with its scale components set to those specified and all other components set to that of an
-     * identity matrix.
+     * identity matrix
      */
     public Matrix3 setToScale(double xScale, double yScale) {
 
@@ -272,7 +272,7 @@ public class Matrix3 {
      * is typically necessary to align the coordinate system of images (top-left origin) with that of OpenGL
      * (bottom-left origin).
      *
-     * @return this matrix set to values described above.
+     * @return this matrix set to values described above
      */
     public Matrix3 setToVerticalFlip() {
 
@@ -294,12 +294,12 @@ public class Matrix3 {
     /**
      * Sets this matrix to the matrix product of two specified matrices.
      *
-     * @param a the first matrix multiplicand.
-     * @param b The second matrix multiplicand.
+     * @param a the first matrix multiplicand
+     * @param b The second matrix multiplicand
      *
-     * @return this matrix set to the product of a x b.
+     * @return this matrix set to the product of a x b
      *
-     * @throws IllegalArgumentException If either specified matrix is null.
+     * @throws IllegalArgumentException If either matrix is null
      */
     public Matrix3 setToMultiply(Matrix3 a, Matrix3 b) {
         if (a == null || b == null) {
@@ -328,10 +328,10 @@ public class Matrix3 {
     /**
      * Multiplies this matrix by a translation matrix with specified translation values.
      *
-     * @param x the X translation component.
-     * @param y the Y translation component.
+     * @param x the X translation component
+     * @param y the Y translation component
      *
-     * @return this matrix multiplied by the translation matrix implied by the specified values.
+     * @return this matrix multiplied by the translation matrix implied by the specified values
      */
     public Matrix3 multiplyByTranslation(double x, double y) {
 
@@ -347,9 +347,9 @@ public class Matrix3 {
      * Multiplies this matrix by a rotation matrix about a specified axis and angle. Positive angles are interpreted as
      * counter-clockwise rotation.
      *
-     * @param angleDegrees the angle of rotation in degrees.
+     * @param angleDegrees the angle of rotation in degrees
      *
-     * @return this matrix multiplied by the rotation matrix implied by the specified values.
+     * @return this matrix multiplied by the rotation matrix implied by the specified values
      */
     public Matrix3 multiplyByRotation(double angleDegrees) {
 
@@ -367,10 +367,10 @@ public class Matrix3 {
     /**
      * Multiplies this matrix by a scale matrix with specified values.
      *
-     * @param xScale the X scale component.
-     * @param yScale the Y scale component.
+     * @param xScale the X scale component
+     * @param yScale the Y scale component
      *
-     * @return this matrix multiplied by the scale matrix implied by the specified values.
+     * @return this matrix multiplied by the scale matrix implied by the specified values
      */
     public Matrix3 multiplyByScale(double xScale, double yScale) {
 
@@ -389,7 +389,7 @@ public class Matrix3 {
      * origin from an upper left coordinate origin to a lower left coordinate origin. This is typically necessary to
      * align the coordinate system of images (top-left origin) with that of OpenGL (bottom-left origin).
      *
-     * @return this matrix multiplied by a vertical flip matrix implied by values described above.
+     * @return this matrix multiplied by a vertical flip matrix implied by values described above
      */
     public Matrix3 multiplyByVerticalFlip() {
 
@@ -404,11 +404,11 @@ public class Matrix3 {
     /**
      * Multiplies this matrix by a specified matrix.
      *
-     * @param matrix the matrix to multiply with this matrix.
+     * @param matrix the matrix to multiply with this matrix
      *
-     * @return this matrix after multiplying it by the specified matrix.
+     * @return this matrix after multiplying it by the specified matrix
      *
-     * @throws IllegalArgumentException If the matrix is null.
+     * @throws IllegalArgumentException If the matrix is null
      */
     public Matrix3 multiplyByMatrix(Matrix3 matrix) {
         if (matrix == null) {
@@ -447,17 +447,17 @@ public class Matrix3 {
     /**
      * Multiplies this matrix by a matrix specified by individual components.
      *
-     * @param m11 matrix element at row 1, column 1.
-     * @param m12 matrix element at row 1, column 2.
-     * @param m13 matrix element at row 1, column 3.
-     * @param m21 matrix element at row 2, column 1.
-     * @param m22 matrix element at row 2, column 2.
-     * @param m23 matrix element at row 2, column 3.
-     * @param m31 matrix element at row 3, column 1.
-     * @param m32 matrix element at row 3, column 2.
-     * @param m33 matrix element at row 3, column 3.
+     * @param m11 matrix element at row 1, column 1
+     * @param m12 matrix element at row 1, column 2
+     * @param m13 matrix element at row 1, column 3
+     * @param m21 matrix element at row 2, column 1
+     * @param m22 matrix element at row 2, column 2
+     * @param m23 matrix element at row 2, column 3
+     * @param m31 matrix element at row 3, column 1
+     * @param m32 matrix element at row 3, column 2
+     * @param m33 matrix element at row 3, column 3
      *
-     * @return this matrix with its components multiplied by the specified values.
+     * @return this matrix with its components multiplied by the specified values
      */
     public Matrix3 multiplyByMatrix(double m11, double m12, double m13,
                                     double m21, double m22, double m23,
@@ -493,11 +493,11 @@ public class Matrix3 {
     /**
      * Transposes the specified matrix and stores the result in this matrix.
      *
-     * @param matrix the matrix whose transpose is computed.
+     * @param matrix the matrix whose transpose is computed
      *
-     * @return this matrix set to the transpose of the specified matrix.
+     * @return this matrix set to the transpose of the specified matrix
      *
-     * @throws IllegalArgumentException If the matrix in null.
+     * @throws IllegalArgumentException If the matrix in null
      */
     public Matrix3 transposeMatrix(Matrix3 matrix) {
         if (matrix == null) {
@@ -523,15 +523,15 @@ public class Matrix3 {
     /**
      * Inverts the specified matrix and stores the result in this matrix.
      * <p>
-     * This throws an exception if the specified matrix is singular.
+     * This throws an exception if the matrix is singular.
      * <p>
      * The result of this method is undefined if this matrix is passed in as the matrix to invert.
      *
-     * @param matrix the matrix whose inverse is computed.
+     * @param matrix the matrix whose inverse is computed
      *
-     * @return this matrix set to the inverse of the specified matrix.
+     * @return this matrix set to the inverse of the specified matrix
      *
-     * @throws IllegalArgumentException If the matrix is null or cannot be inverted.
+     * @throws IllegalArgumentException If the matrix is null or cannot be inverted
      */
     public Matrix3 invertMatrix(Matrix3 matrix) {
         if (matrix == null) {
