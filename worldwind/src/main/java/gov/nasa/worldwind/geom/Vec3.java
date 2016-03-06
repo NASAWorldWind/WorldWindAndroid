@@ -248,6 +248,10 @@ public class Vec3 {
      * @return this vector set to the values of the specified vector
      */
     public Vec3 swap(Vec3 vector) {
+        if (vector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Vec3", "swap", "missingVector"));
+        }
         double tmp = this.x;
         this.x = vector.x;
         vector.x = tmp;
