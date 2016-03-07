@@ -204,9 +204,8 @@ public class Vec2Test {
         // Mock all the static methods in Logger
         PowerMockito.mockStatic(Logger.class);
 
-        Vec2 u = new Vec2(3, 4);
-        Vec2 v = null;
-        double distanceTo = u.distanceTo(v);
+        Vec2 u = new Vec2();
+        double distanceTo = u.distanceTo(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -237,9 +236,8 @@ public class Vec2Test {
         // Mock all the static methods in Logger
         PowerMockito.mockStatic(Logger.class);
 
-        Vec2 u = new Vec2(3, 4);
-        Vec2 v = null;
-        double distanceToSquared = u.distanceToSquared(v);
+        Vec2 u = new Vec2();
+        double distanceToSquared = u.distanceToSquared(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -294,9 +292,8 @@ public class Vec2Test {
     public void testSwap_WithNull() throws Exception {
         PowerMockito.mockStatic(Logger.class);
 
-        Vec2 u = new Vec2(3, 4);
-        Vec2 v = null;
-        Vec2 w = u.swap(v);
+        Vec2 u = new Vec2();
+        u.swap(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -335,9 +332,8 @@ public class Vec2Test {
     public void testAdd_WithNull() throws Exception {
         PowerMockito.mockStatic(Logger.class);
 
-        Vec2 u = new Vec2(3, 4);
-        Vec2 v = null;
-        Vec2 w = u.add(v);
+        Vec2 u = new Vec2();
+        u.add(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -378,9 +374,8 @@ public class Vec2Test {
     public void testSubtract_WithNull() throws Exception {
         PowerMockito.mockStatic(Logger.class);
 
-        Vec2 u = new Vec2(3, 4);
-        Vec2 v = null;
-        Vec2 w = u.subtract(v);
+        Vec2 u = new Vec2();
+        u.subtract(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -512,9 +507,8 @@ public class Vec2Test {
     public void testDot_WithNull() throws Exception {
         PowerMockito.mockStatic(Logger.class);
 
-        Vec2 u = new Vec2(3, 4);
-        Vec2 v = null;
-        double dot = u.dot(v);
+        Vec2 u = new Vec2();
+        double dot = u.dot(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -555,11 +549,10 @@ public class Vec2Test {
     @Test(expected = IllegalArgumentException.class)
     public void testMix_WithNull() throws Exception {
         PowerMockito.mockStatic(Logger.class);
-
         final double weight = 5d;
-        Vec2 u = new Vec2(3, 4);
-        Vec2 v = null;
-        Vec2 w = u.mix(v, weight);
+
+        Vec2 u = new Vec2();
+        u.mix(null, weight);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
