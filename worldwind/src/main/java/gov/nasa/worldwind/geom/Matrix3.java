@@ -6,6 +6,8 @@
 package gov.nasa.worldwind.geom;
 
 
+import java.util.Arrays;
+
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -80,6 +82,11 @@ public class Matrix3 {
             && this.m[6] == that.m[6]
             && this.m[7] == that.m[7]
             && this.m[8] == that.m[8];
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(m);
     }
 
     @Override
@@ -286,7 +293,7 @@ public class Matrix3 {
 
     /**
      * Sets this matrix to one that flips and shifts the y-axis.
-     * <p>
+     * <p/>
      * The resultant matrix maps Y=0 to Y=1 and Y=1 to Y=0. All existing values are overwritten. This matrix is usually
      * used to change the coordinate origin from an upper left coordinate origin to a lower left coordinate origin. This
      * is typically necessary to align the coordinate system of images (top-left origin) with that of OpenGL
@@ -404,7 +411,7 @@ public class Matrix3 {
 
     /**
      * Multiplies this matrix by a matrix that flips and shifts the y-axis.
-     * <p>
+     * <p/>
      * The vertical flip matrix maps Y=0 to Y=1 and Y=1 to Y=0. This matrix is usually used to change the coordinate
      * origin from an upper left coordinate origin to a lower left coordinate origin. This is typically necessary to
      * align the coordinate system of images (top-left origin) with that of OpenGL (bottom-left origin).
@@ -542,9 +549,9 @@ public class Matrix3 {
 
     /**
      * Inverts the specified matrix and stores the result in this matrix.
-     * <p>
+     * <p/>
      * This throws an exception if the matrix is singular.
-     * <p>
+     * <p/>
      * The result of this method is undefined if this matrix is passed in as the matrix to invert.
      *
      * @param matrix the matrix whose inverse is computed
