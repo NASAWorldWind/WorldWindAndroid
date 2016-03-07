@@ -12,6 +12,9 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import gov.nasa.worldwind.util.Logger;
 
 import static org.junit.Assert.*;
@@ -76,11 +79,25 @@ public class Vec3Test {
         Vec3 u = new Vec3(x1, y1, z1);
         Vec3 v = new Vec3(x1, y1, z1);
 
-        assertEquals("equality", u, u); // equality with self
-        assertEquals("equality", u, v); // equality with other
         assertEquals("equality: x", x1, u.x, 0);
         assertEquals("equality: y", y1, u.y, 0);
         assertEquals("equality: z", z1, u.z, 0);
+        assertEquals("equality", u, u); // equality with self
+        assertEquals("equality", u, v); // equality with other
+    }
+
+    /**
+     * Ensures inequality with null object.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testEquals_WithNull() throws Exception {
+
+        Vec3 u = new Vec3();
+        Vec3 v = null;
+
+        assertNotEquals("inequality with null", u, v);
     }
 
     /**
@@ -90,20 +107,20 @@ public class Vec3Test {
      */
     @Test
     public void testEquals_Inequality() throws Exception {
-
         final double x1 = 3.1;
         final double y1 = 4.2;
         final double z1 = 5.3;
+        final double val = 17d;
 
         Vec3 u = new Vec3(x1, y1, z1);
-        Vec3 v = new Vec3(y1, y1, z1);
-        Vec3 w = new Vec3(x1, x1, z1);
-        Vec3 r = new Vec3(x1, y1, y1);
+        // Vary a each component to assert equals() tests all components
+        Vec3 vx = new Vec3(val, y1, z1);
+        Vec3 vy = new Vec3(x1, val, z1);
+        Vec3 vz = new Vec3(x1, y1, val);
 
-        assertNotEquals("inequality", u, v);
-        assertNotEquals("inequality: x component", u, v);
-        assertNotEquals("inequality: y component", u, w);
-        assertNotEquals("inequality: z component", u, r);
+        assertNotEquals("inequality: x component", u, vx);
+        assertNotEquals("inequality: y component", u, vy);
+        assertNotEquals("inequality: z component", u, vz);
     }
 
     /**
@@ -214,7 +231,7 @@ public class Vec3Test {
     }
 
     /**
-     * Ensures null argument is handled correctly.
+     * Ensures distanceTo with null argument is handled correctly.
      *
      * @throws Exception
      */
@@ -224,8 +241,7 @@ public class Vec3Test {
         PowerMockito.mockStatic(Logger.class);
 
         Vec3 u = new Vec3(3, 4, 5);
-        Vec3 v = null;
-        double distanceTo = u.distanceTo(v);
+        double distanceTo = u.distanceTo(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -253,7 +269,7 @@ public class Vec3Test {
     }
 
     /**
-     * Ensures null argument is handled correctly.
+     * Ensures distanceToSquared with null argument is handled correctly.
      *
      * @throws Exception
      */
@@ -263,8 +279,7 @@ public class Vec3Test {
         PowerMockito.mockStatic(Logger.class);
 
         Vec3 u = new Vec3(3, 4, 5);
-        Vec3 v = null;
-        double distanceToSquared = u.distanceToSquared(v);
+        double distanceToSquared = u.distanceToSquared(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -315,11 +330,11 @@ public class Vec3Test {
         assertEquals("v.y", y1, v.y, 0d);
         assertEquals("v.z", z1, v.z, 0d);
         // Assert fluent API returns u
-        assertEquals("w == u", u, w);
+        assertSame("w == u", u, w);
     }
 
     /**
-     * Ensures null argument is handled correctly.
+     * Ensures swap with null argument is handled correctly.
      *
      * @throws Exception
      */
@@ -328,8 +343,7 @@ public class Vec3Test {
         PowerMockito.mockStatic(Logger.class);
 
         Vec3 u = new Vec3(3, 4, 5);
-        Vec3 v = null;
-        Vec3 w = u.swap(v);
+        u.swap(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -360,11 +374,11 @@ public class Vec3Test {
         assertEquals("v.y", y2, v.y, 0d);
         assertEquals("v.z", z2, v.z, 0d);
         // Assert fluent API returns u
-        assertEquals("w == u", u, w);
+        assertSame("w == u", u, w);
     }
 
     /**
-     * Ensures null argument is handled correctly.
+     * Ensures add with null argument is handled correctly.
      *
      * @throws Exception
      */
@@ -373,8 +387,7 @@ public class Vec3Test {
         PowerMockito.mockStatic(Logger.class);
 
         Vec3 u = new Vec3(3, 4, 5);
-        Vec3 v = null;
-        Vec3 w = u.add(v);
+        u.add(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -406,12 +419,11 @@ public class Vec3Test {
         assertEquals("v.y", y2, v.y, 0d);
         assertEquals("v.z", z2, v.z, 0d);
         // Assert fluent API returns u
-        assertEquals("w == u", u, w);
-
+        assertSame("w == u", u, w);
     }
 
     /**
-     * Ensures null argument is handled correctly.
+     * Ensures subtract with null argument is handled correctly.
      *
      * @throws Exception
      */
@@ -420,8 +432,7 @@ public class Vec3Test {
         PowerMockito.mockStatic(Logger.class);
 
         Vec3 u = new Vec3(3, 4, 5);
-        Vec3 v = null;
-        Vec3 w = u.subtract(v);
+        u.subtract(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -445,7 +456,7 @@ public class Vec3Test {
         assertEquals("u.y", y1 * scalar, u.y, 0d);
         assertEquals("u.z", z1 * scalar, u.z, 0d);
         // Assert fluent API returns u
-        assertEquals("v == u", u, v);
+        assertSame("v == u", u, v);
     }
 
 
@@ -476,7 +487,7 @@ public class Vec3Test {
         assertEquals("u.y", y1 / divisor, u.y, 0d);
         assertEquals("u.z", z1 / divisor, u.z, 0d);
         // Assert fluent API returns u
-        assertEquals("v == u", u, v);
+        assertSame("v == u", u, v);
     }
 
     /**
@@ -497,7 +508,7 @@ public class Vec3Test {
         assertEquals("u.y", -y1, u.y, 0d);
         assertEquals("u.z", -z1, u.z, 0d);
         // Assert fluent API returns u
-        assertEquals("v == u", u, v);
+        assertSame("v == u", u, v);
 
     }
 
@@ -522,11 +533,11 @@ public class Vec3Test {
         assertEquals("u.z", (1 / length) * z1, u.z, 0d);
         assertEquals("unit length", 1.0, magnitude, TOLERANCE);
         // Assert fluent API returns u
-        assertEquals("v == u", u, v);
+        assertSame("v == u", u, v);
     }
 
     /**
-     * Ensures the correct dot product of two vectors and vectors are not mutated.
+     * Ensures the correct dot product (or inner product) of two vectors and vectors are not mutated.
      *
      * @throws Exception
      */
@@ -556,7 +567,7 @@ public class Vec3Test {
     }
 
     /**
-     * Ensures null argument is handled correctly.
+     * Ensures dot with null argument is handled correctly.
      *
      * @throws Exception
      */
@@ -565,11 +576,62 @@ public class Vec3Test {
         PowerMockito.mockStatic(Logger.class);
 
         Vec3 u = new Vec3(3, 4, 5);
-        Vec3 v = null;
-        double dot = u.dot(v);
+        double dot = u.dot(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
+
+    /**
+     * Ensures the correct cross product (or outer product), arguments are not mutated, and the fluent API is
+     * maintained.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testCross() throws Exception {
+        final double x1 = 1d;
+        final double y1 = 3d;
+        final double z1 = -4d;
+        final double x2 = 2d;
+        final double y2 = -5d;
+        final double z2 = 8d;
+        // expected result
+        final double x3 = 4d;
+        final double y3 = -16d;
+        final double z3 = -11d;
+
+        Vec3 u = new Vec3(x1, y1, z1);
+        Vec3 v = new Vec3(x2, y2, z2);
+        Vec3 r = new Vec3(x3, y3, z3);
+        Vec3 w = u.cross(v);
+
+        assertEquals("u.x", y1 * z2 - z1 * y2, u.x, 0d);
+        assertEquals("u.y", z1 * x2 - x1 * z2, u.y, 0d);
+        assertEquals("u.z", x1 * y2 - y1 * x2, u.z, 0d);
+        assertEquals("u == r", r, u);
+        // Assert v is not altered
+        assertEquals("v.x", x2, v.x, 0d);
+        assertEquals("v.y", y2, v.y, 0d);
+        assertEquals("v.z", z2, v.z, 0d);
+        // Assert fluent API returns u
+        assertSame("w == u", u, w);
+    }
+
+    /**
+     * Ensures cross with null argument is handled correctly.
+     *
+     * @throws Exception
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testCross_WithNull() throws Exception {
+        PowerMockito.mockStatic(Logger.class);
+
+        Vec3 u = new Vec3(3, 4, 5);
+        u.cross(null);
+
+        fail("Expected an IllegalArgumentException to be thrown.");
+    }
+
 
     /**
      * Ensures the correct interpolation between two vectors, arguments are not mutated, and the proper fluent API
@@ -599,34 +661,25 @@ public class Vec3Test {
         assertEquals("v.y", y2, v.y, 0d);
         assertEquals("v.z", z2, v.z, 0d);
         // Assert fluent API returns u
-        assertEquals("w == u", u, w);
-
+        assertSame("w == u", u, w);
     }
 
     /**
-     * Ensures null argument is handled correctly.
+     * Ensures mix with null argument is handled correctly.
      *
      * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
     public void testMix_WithNull() throws Exception {
         PowerMockito.mockStatic(Logger.class);
-
         final double weight = 5d;
+
         Vec3 u = new Vec3(3, 4, 5);
-        Vec3 v = null;
-        Vec3 w = u.mix(v, weight);
+        u.mix(null, weight);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
 
-    @Ignore("not implemented")
-    @Test
-    public void testCross() throws Exception {
-
-        fail("The test case is a stub.");
-
-    }
 
     @Ignore("not implemented")
     @Test
@@ -644,12 +697,52 @@ public class Vec3Test {
 
     }
 
-    @Ignore("not implemented")
     @Test
     public void testAverageOfList() throws Exception {
+        List<Vec3> list = new ArrayList<>();
+        list.add(new Vec3(1, 2, 3));
+        list.add(new Vec3(7, 8, 9));
+        list.add(new Vec3(7, 8, 9));
+        Vec3 r = new Vec3(5, 6, 7); // result: simple avg of components
 
-        fail("The test case is a stub.");
+        Vec3 u = new Vec3();
+        Vec3 w = u.averageOfList(list);
 
+        assertEquals("u.x", r.x, u.x, 0);
+        assertEquals("u.y", r.y, u.y, 0);
+        assertEquals("u.z", r.z, u.z, 0);
+        // Assert fluent API returns u
+        assertSame("w == u", u, w);
+    }
+
+    /**
+     *  Ensures averageOfList handles a null list correctly.
+
+     * @throws Exception
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAverageOfList_NullList() throws Exception {
+        PowerMockito.mockStatic(Logger.class);
+
+        Vec3 u = new Vec3();
+        Vec3 w = u.averageOfList(null);
+
+        fail("Expected an IllegalArgumentException to be thrown.");
+    }
+
+    /**
+     * Ensures averageOfList handles an empty list correctly.
+     *
+     * @throws Exception
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testAverageOfList_EmptyList() throws Exception {
+        PowerMockito.mockStatic(Logger.class);
+
+        Vec3 u = new Vec3();
+        u.averageOfList(new ArrayList<Vec3>());
+
+        fail("Expected an IllegalArgumentException to be thrown.");
     }
 
     @Ignore("not implemented")
