@@ -158,6 +158,11 @@ public class Vec2 {
      * @return this vector set to the values of the specified vector
      */
     public Vec2 swap(Vec2 vector) {
+        if (vector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Vec2", "swap", "missingVector"));
+        }
+
         double tmp = this.x;
         this.x = vector.x;
         vector.x = tmp;
