@@ -165,6 +165,17 @@ public class Location {
     }
 
     @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        temp = Double.doubleToLongBits(latitude);
+        result = (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(longitude);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        return result;
+    }
+
+    @Override
     public String toString() {
         return this.latitude + "\u00b0, " + this.longitude + "\u00b0";
     }
@@ -519,7 +530,7 @@ public class Location {
     /**
      * Computes the azimuth angle (clockwise from North) for the linear path between this location and a specified
      * location. This angle can be used as the starting azimuth for a linear path beginning at this location, and
-     * passing through the specified location. This function uses a spherical model, not elliptical.
+     * passing through the specified location. This function uses a flat-earth approximation proximal to this location.
      *
      * @param location the linear path's ending location
      *
@@ -558,8 +569,8 @@ public class Location {
     /**
      * Computes the angular distance of the linear path between this location and a specified location. In radians, this
      * angle is the arc length of the segment between the two positions. To compute a distance in meters from this
-     * value, multiply the return value by the radius of the globe. This function uses a spherical model, not
-     * elliptical.
+     * value, multiply the return value by the radius of the globe. This function uses a flat-earth approximation
+     * proximal to this location.
      *
      * @param location the great circle path's ending location
      *
@@ -597,7 +608,7 @@ public class Location {
 
     /**
      * Computes the location on the linear path starting at this location and traversing with the specified azimuth and
-     * angular distance. This function uses a spherical model, not elliptical.
+     * angular distance. This function uses a flat-earth approximation proximal to this location.
      *
      * @param azimuthDegrees  the starting azimuth in degrees
      * @param distanceRadians the angular distance along the path in radians
