@@ -15,15 +15,27 @@ import gov.nasa.worldwind.util.Logger;
 public class Matrix4 {
 
     /**
-     * The matrix's components, stored in row-major order.
+     * The components for the 4 x 4 identity matrix, stored in row-major order.
      */
-    public final double[] m = new double[16];
+    protected static final double[] identity = new double[]{
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1};
+
+    /**
+     * The matrix's components, stored in row-major order. Initialized to the 4 x 4 identity matrix.
+     */
+    public final double[] m = new double[]{
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1};
 
     /**
      * Constructs a 4 x 4 identity matrix.
      */
     public Matrix4() {
-        m[0] = m[5] = m[10] = m[15] = 1;
     }
 
     /**
@@ -105,7 +117,7 @@ public class Matrix4 {
     }
 
     /**
-     * Sets this 4 x 4 matrix's components to specified components.
+     * Sets this 4 x 4 matrix to specified components.
      *
      * @param m11 matrix element at row 1, column 1
      * @param m12 matrix element at row 1, column 2
@@ -149,6 +161,26 @@ public class Matrix4 {
         this.m[13] = m42;
         this.m[14] = m43;
         this.m[15] = m44;
+
+        return this;
+    }
+
+    /**
+     * Sets this 4 x 4 matrix to the components of a specified matrix.
+     *
+     * @param matrix the matrix specifying the new components
+     *
+     * @return this matrix with its components set to that of the specified matrix
+     *
+     * @throws IllegalArgumentException If the matrix is null
+     */
+    public Matrix4 set(Matrix4 matrix) {
+        if (matrix == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Matrix4", "set", "missingMatrix"));
+        }
+
+        System.arraycopy(matrix.m, 0, this.m, 0, 16);
 
         return this;
     }
@@ -224,25 +256,7 @@ public class Matrix4 {
      * @return this matrix, set to the identity matrix
      */
     public Matrix4 setToIdentity() {
-        this.m[0] = 1;
-        this.m[1] = 0;
-        this.m[2] = 0;
-        this.m[3] = 0;
-
-        this.m[4] = 0;
-        this.m[5] = 1;
-        this.m[6] = 0;
-        this.m[7] = 0;
-
-        this.m[8] = 0;
-        this.m[9] = 0;
-        this.m[10] = 1;
-        this.m[11] = 0;
-
-        this.m[12] = 0;
-        this.m[13] = 0;
-        this.m[14] = 0;
-        this.m[15] = 1;
+        System.arraycopy(identity, 0, this.m, 0, 16);
 
         return this;
     }
@@ -1348,7 +1362,7 @@ public class Matrix4 {
      * @param index permutation vector of that LU factorization
      * @param b     vector to be solved
      */
-    private static void lubksb(double[][] A, int[] index, double[] b) {
+    protected static void lubksb(double[][] A, int[] index, double[] b) {
         int ii = -1;
 
         for (int i = 0; i < 4; i += 1) {

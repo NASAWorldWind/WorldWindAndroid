@@ -110,6 +110,8 @@ public class Vec3 {
      * @param stride the number of coordinates between the first coordinate of adjacent points - must be at least 3
      * @param result a pre-allocated Vec3 array of length 3 in which to return the computed axes
      *
+     * @return the specified result argument set to the computed axes
+     *
      * @throws IllegalArgumentException If the buffer of points is null or empty, if the stride is less than 3, or if
      *                                  any result argument is null
      */
@@ -223,11 +225,11 @@ public class Vec3 {
     }
 
     /**
-     * Sets this vector's components to the specified X, Y and Z.
+     * Sets this vector to the specified X, Y and Z.
      *
-     * @param x the vector's new X component
-     * @param y the vector's new Y component
-     * @param z the vector's new Z component
+     * @param x the new X component
+     * @param y the new Y component
+     * @param z the new Z component
      *
      * @return this vector set to the specified values
      */
@@ -235,6 +237,28 @@ public class Vec3 {
         this.x = x;
         this.y = y;
         this.z = z;
+
+        return this;
+    }
+
+    /**
+     * Sets this vector to the X, Y and Z of a specified vector.
+     *
+     * @param vector the vector specifying the new components
+     *
+     * @return this vector with its X, Y and Z set to that of the specified vector
+     *
+     * @throws IllegalArgumentException If the vector is null
+     */
+    public Vec3 set(Vec3 vector) {
+        if (vector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Vec3", "set", "missingVector"));
+        }
+
+        this.x = vector.x;
+        this.y = vector.y;
+        this.z = vector.z;
 
         return this;
     }

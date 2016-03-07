@@ -14,15 +14,25 @@ import gov.nasa.worldwind.util.Logger;
 public class Matrix3 {
 
     /**
-     * The matrix's components, stored in row-major order.
+     * The components for the 3 x 3 identity matrix, stored in row-major order.
      */
-    public final double[] m = new double[9];
+    protected static final double[] identity = new double[]{
+        1, 0, 0,
+        0, 1, 0,
+        0, 0, 1};
+
+    /**
+     * The matrix's components, stored in row-major order. Initialized to the 3 x 3 identity matrix.
+     */
+    public final double[] m = new double[]{
+        1, 0, 0,
+        0, 1, 0,
+        0, 0, 1};
 
     /**
      * Constructs a 3 x 3 identity matrix.
      */
     public Matrix3() {
-        m[0] = m[4] = m[8] = 1;
     }
 
     /**
@@ -80,7 +90,7 @@ public class Matrix3 {
     }
 
     /**
-     * Sets this 3 x 3 matrix's components to specified components.
+     * Sets this 3 x 3 matrix to specified components.
      *
      * @param m11 matrix element at row 1, column 1
      * @param m12 matrix element at row 1, column 2
@@ -108,6 +118,26 @@ public class Matrix3 {
         this.m[6] = m31;
         this.m[7] = m32;
         this.m[8] = m33;
+
+        return this;
+    }
+
+    /**
+     * Sets this 3 x 3 matrix to the components of a specified matrix.
+     *
+     * @param matrix the matrix specifying the new components
+     *
+     * @return this matrix with its components set to that of the specified matrix
+     *
+     * @throws IllegalArgumentException If the matrix is null
+     */
+    public Matrix3 set(Matrix3 matrix) {
+        if (matrix == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Matrix3", "set", "missingMatrix"));
+        }
+
+        System.arraycopy(matrix.m, 0, this.m, 0, 9);
 
         return this;
     }
@@ -170,17 +200,7 @@ public class Matrix3 {
      * @return this matrix, set to the identity matrix
      */
     public Matrix3 setToIdentity() {
-        this.m[0] = 1;
-        this.m[1] = 0;
-        this.m[2] = 0;
-
-        this.m[3] = 0;
-        this.m[4] = 1;
-        this.m[5] = 0;
-
-        this.m[6] = 0;
-        this.m[7] = 0;
-        this.m[8] = 1;
+        System.arraycopy(identity, 0, this.m, 0, 9);
 
         return this;
     }

@@ -114,16 +114,37 @@ public class Vec2 {
     }
 
     /**
-     * Sets this vector's components to the specified X and Y.
+     * Sets this vector to the specified X and Y.
      *
-     * @param x the vector's new X component
-     * @param y the vector's new Y component
+     * @param x the new X component
+     * @param y the new Y component
      *
      * @return this vector set to the specified values
      */
     public Vec2 set(double x, double y) {
         this.x = x;
         this.y = y;
+
+        return this;
+    }
+
+    /**
+     * Sets this vector to the X and Y of a specified vector.
+     *
+     * @param vector the vector specifying the new components
+     *
+     * @return this vector with its X and Y set to that of the specified vector
+     *
+     * @throws IllegalArgumentException If the vector is null
+     */
+    public Vec2 set(Vec2 vector) {
+        if (vector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Vec2", "set", "missingVector"));
+        }
+
+        this.x = vector.x;
+        this.y = vector.y;
 
         return this;
     }
