@@ -156,6 +156,8 @@ public class Vec2 {
      * @param vector the vector to swap with this vector
      *
      * @return this vector set to the values of the specified vector
+     *
+     * @throws IllegalArgumentException If the vector is null
      */
     public Vec2 swap(Vec2 vector) {
         if (vector == null) {
