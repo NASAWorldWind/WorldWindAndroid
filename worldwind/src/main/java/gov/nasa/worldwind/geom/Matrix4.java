@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.geom;
 
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 
 import gov.nasa.worldwind.util.Logger;
 
@@ -106,6 +107,11 @@ public class Matrix4 {
             && this.m[13] == that.m[13]
             && this.m[14] == that.m[14]
             && this.m[15] == that.m[15];
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(m);
     }
 
     @Override
@@ -413,13 +419,13 @@ public class Matrix4 {
     /**
      * Sets this matrix to a perspective projection matrix for the specified viewport dimensions, vertical field of view
      * and clip distances.
-     * <p>
+     * <p/>
      * A perspective projection matrix maps points in eye coordinates into clip coordinates in a way that causes distant
      * objects to appear smaller, and preserves the appropriate depth information for each point. In model coordinates,
      * a perspective projection is defined by frustum originating at the eye position and extending outward in the
      * viewer's direction. The near distance and the far distance identify the minimum and maximum distance,
      * respectively, at which an object in the scene is visible.
-     * <p>
+     * <p/>
      * The field of view must be positive and not larger than 180. Near and far distances must be positive and must not
      * be equal to one another.
      *
@@ -496,7 +502,7 @@ public class Matrix4 {
 
     /**
      * Sets this matrix to a screen projection matrix for the specified viewport dimensions.
-     * <p>
+     * <p/>
      * A screen projection matrix is an orthographic projection that interprets points in model coordinates as
      * representing a screen XY and a Z depth. Screen projection matrices therefore map coordinates directly into screen
      * coordinates without modification. A point's XY coordinates are interpreted as literal screen coordinates and must
@@ -565,12 +571,12 @@ public class Matrix4 {
 
     /**
      * Sets this matrix to the symmetric covariance Matrix computed from an array of points packed into an NIO buffer.
-     * <p>
+     * <p/>
      * The computed covariance matrix represents the correlation between each pair of x-, y-, and z-coordinates as
      * they're distributed about the point array's arithmetic mean. Its layout is as follows:
-     * <p>
+     * <p/>
      * <code> C(x, x)  C(x, y)  C(x, z) <br/> C(x, y)  C(y, y)  C(y, z) <br/> C(x, z)  C(y, z)  C(z, z) </code>
-     * <p>
+     * <p/>
      * C(i, j) is the covariance of coordinates i and j, where i or j are a coordinate's dispersion about its mean
      * value. If any entry is zero, then there's no correlation between the two coordinates defining that entry. If the
      * returned matrix is diagonal, then all three coordinates are uncorrelated, and the specified point is distributed
@@ -873,9 +879,9 @@ public class Matrix4 {
 
     /**
      * Inverts the specified matrix and stores the result in this matrix.
-     * <p>
+     * <p/>
      * This throws an exception if the specified matrix is singular.
-     * <p>
+     * <p/>
      * The result of this method is undefined if this matrix is passed in as the matrix to invert.
      *
      * @param matrix the matrix whose inverse is computed
@@ -965,7 +971,7 @@ public class Matrix4 {
     /**
      * Inverts the specified orthonormal transform matrix and stores the result in this matrix. This matrix's upper 3x3
      * is transposed, then its fourth column is transformed by the transposed upper 3x3 and negated.
-     * <p>
+     * <p/>
      * The result of this method is undefined if this matrix is passed in as the matrix to invert, or if the matrix's
      * values are not consistent with those of an orthonormal transform.
      *
@@ -1013,22 +1019,22 @@ public class Matrix4 {
      * typically used to draw geometry slightly closer to the user's eye in order to give those shapes visual priority
      * over nearby or geometry. An offset of zero has no effect. An offset less than zero brings depth values closer to
      * the eye, while an offset greater than zero pushes depth values away from the eye.
-     * <p>
+     * <p/>
      * The result of this method is undefined if this matrix is not a projection matrix. Projection matrices can be
      * created by calling <code>setToPerspectiveProjection</code> or <code>setToScreenProjection</code>
-     * <p>
+     * <p/>
      * Depth offset may be applied to both perspective and screen projection matrices. The effect on each type is
      * outlined here:
-     * <p>
+     * <p/>
      * <strong>Perspective Projection</strong>
-     * <p>
+     * <p/>
      * The effect of depth offset on a perspective projection increases exponentially with distance from the eye. This
      * has the effect of adjusting the offset for the loss in depth precision with geometry drawn further from the eye.
      * Distant geometry requires a greater offset to differentiate itself from nearby geometry, while close geometry
      * does not.
-     * <p>
+     * <p/>
      * <strong>Screen Projection</strong>
-     * <p>
+     * <p/>
      * The effect of depth offset on an screen projection increases linearly with distance from the eye. While it is
      * reasonable to apply a depth offset to an screen projection, the effect is most appropriate when applied to the
      * projection used to draw the scene. For example, when an object's coordinates are projected by a perspective
@@ -1050,7 +1056,7 @@ public class Matrix4 {
     /**
      * Returns this viewing matrix's eye point. In model coordinates, a viewing matrix's eye point is the point the
      * viewer is looking from and maps to the center of the screen.
-     * <p>
+     * <p/>
      * The result of this method is undefined if this matrix is not a viewing matrix.
      *
      * @param result a pre-allocated <code>Vec3</code> in which to return the extracted value
@@ -1077,7 +1083,7 @@ public class Matrix4 {
 
     /**
      * Returns this viewing matrix's forward vector.
-     * <p>
+     * <p/>
      * The result of this method is undefined if this matrix is not a viewing matrix.
      *
      * @param result a pre-allocated <code>Vec3</code> in which to return the extracted value
