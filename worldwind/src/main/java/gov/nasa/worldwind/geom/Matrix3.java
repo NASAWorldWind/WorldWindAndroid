@@ -454,16 +454,16 @@ public class Matrix3 {
         ma[1] = (ma0 * mb[1]) + (ma1 * mb[4]) + (ma2 * mb[7]);
         ma[2] = (ma0 * mb[2]) + (ma1 * mb[5]) + (ma2 * mb[8]);
 
-        ma0 = ma[4];
-        ma1 = ma[5];
-        ma2 = ma[6];
+        ma0 = ma[3];
+        ma1 = ma[4];
+        ma2 = ma[5];
         ma[3] = (ma0 * mb[0]) + (ma1 * mb[3]) + (ma2 * mb[6]);
         ma[4] = (ma0 * mb[1]) + (ma1 * mb[4]) + (ma2 * mb[7]);
         ma[5] = (ma0 * mb[2]) + (ma1 * mb[5]) + (ma2 * mb[8]);
 
-        ma0 = ma[8];
-        ma1 = ma[9];
-        ma2 = ma[10];
+        ma0 = ma[6];
+        ma1 = ma[7];
+        ma2 = ma[8];
         ma[6] = (ma0 * mb[0]) + (ma1 * mb[3]) + (ma2 * mb[6]);
         ma[7] = (ma0 * mb[1]) + (ma1 * mb[4]) + (ma2 * mb[7]);
         ma[8] = (ma0 * mb[2]) + (ma1 * mb[5]) + (ma2 * mb[8]);
