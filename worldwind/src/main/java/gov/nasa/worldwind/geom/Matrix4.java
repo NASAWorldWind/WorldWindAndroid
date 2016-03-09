@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.geom;
 
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 
 import gov.nasa.worldwind.util.Logger;
 
@@ -122,6 +123,11 @@ public class Matrix4 {
             && this.m[13] == that.m[13]
             && this.m[14] == that.m[14]
             && this.m[15] == that.m[15];
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(this.m);
     }
 
     @Override
