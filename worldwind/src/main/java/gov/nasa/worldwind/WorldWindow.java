@@ -6,32 +6,40 @@
 package gov.nasa.worldwind;
 
 import android.content.Context;
+import android.graphics.Rect;
+import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
-
-import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import gov.nasa.worldwind.globe.GlobeWgs84;
 import gov.nasa.worldwind.globe.Globe;
-import gov.nasa.worldwind.layer.Layer;
+import gov.nasa.worldwind.layer.LayerList;
+import gov.nasa.worldwind.render.BasicFrameController;
+import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.FrameController;
 import gov.nasa.worldwind.render.FrameStatistics;
+import gov.nasa.worldwind.util.Logger;
 
 public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer {
 
-    protected Navigator navigator;
+    protected Globe globe = new GlobeWgs84();
 
-    protected NavigatorController navigatorController;
+    protected LayerList layers = new LayerList();
 
-    protected FrameController frameController;
+    protected double verticalExaggeration = 1;
 
-    protected Globe globe;
+    protected Navigator navigator = new BasicNavigator();
 
-    protected List<Layer> layers;
+    protected NavigatorController navigatorController = new BasicNavigatorController();
 
-    protected double verticalExaggeration;
+    protected FrameController frameController = new BasicFrameController();
+
+    protected Rect viewport = new Rect();
+
+    protected DrawContext dc;
 
     /**
      * Constructs a WorldWindow associated with the specified application context. This is the constructor to use when
@@ -60,38 +68,15 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
      * Prepares this WorldWindow for drawing and event handling.
      */
     protected void init() {
-        // Set up to render on demand with OpenGL ES 2.x.
+
+        // Initialize the drawing context with the Android context.
+        this.navigatorController.setWorldWindow(this);
+        this.dc = new DrawContext(this.getContext());
+
+        // Set up to render on demand to an OpenGL ES 2.x context
         this.setEGLContextClientVersion(2); // must be called before setRenderer
         this.setRenderer(this);
         this.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY); // must be called after setRenderer
-    }
-
-    public Navigator getNavigator() {
-        return navigator;
-    }
-
-    public void setNavigator(Navigator navigator) {
-        this.navigator = navigator;
-    }
-
-    public NavigatorController getNavigatorController() {
-        return navigatorController;
-    }
-
-    public void setNavigatorController(NavigatorController navigatorController) {
-        this.navigatorController = navigatorController;
-    }
-
-    public FrameController getFrameController() {
-        return frameController;
-    }
-
-    public void setFrameController(FrameController frameController) {
-        this.frameController = frameController;
-    }
-
-    public FrameStatistics getFrameStatistics() {
-        return this.frameController.getFrameStatistics();
     }
 
     public Globe getGlobe() {
@@ -99,14 +84,24 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     }
 
     public void setGlobe(Globe globe) {
+        if (globe == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "setGlobe", "missingGlobe"));
+        }
+
         this.globe = globe;
     }
 
-    public List<Layer> getLayers() {
+    public LayerList getLayers() {
         return layers;
     }
 
-    public void setLayers(List<Layer> layers) {
+    public void setLayers(LayerList layers) {
+        if (layers == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "setLayers", "missingList"));
+        }
+
         this.layers = layers;
     }
 
@@ -115,20 +110,93 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     }
 
     public void setVerticalExaggeration(double verticalExaggeration) {
+        if (verticalExaggeration <= 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "setVerticalExaggeration", "invalidVerticalExaggeration"));
+        }
+
         this.verticalExaggeration = verticalExaggeration;
     }
 
-    @Override
-    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+    public Navigator getNavigator() {
+        return navigator;
+    }
 
+    public void setNavigator(Navigator navigator) {
+        if (navigator == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "setNavigator", "missingNavigator"));
+        }
+
+        this.navigator = navigator;
+    }
+
+    public NavigatorController getNavigatorController() {
+        return navigatorController;
+    }
+
+    public void setNavigatorController(NavigatorController navigatorController) {
+        if (navigatorController == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "setNavigatorController", "missingController"));
+        }
+
+        this.navigatorController.setWorldWindow(null); // detach the old controller
+        this.navigatorController = navigatorController; // switch to the new controller
+        this.navigatorController.setWorldWindow(this); // attach the new controller
+    }
+
+    public FrameController getFrameController() {
+        return frameController;
+    }
+
+    public void setFrameController(FrameController frameController) {
+        if (frameController == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "setFrameController", "missingController"));
+        }
+
+        this.frameController = frameController;
+    }
+
+    public FrameStatistics getFrameStatistics() {
+        return this.frameController.getFrameStatistics();
     }
 
     @Override
-    public void onSurfaceChanged(GL10 gl, int width, int height) {
-
+    public void onSurfaceCreated(GL10 unused, EGLConfig config) {
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glEnable(GLES20.GL_CULL_FACE);
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES20.glDepthFunc(GLES20.GL_LEQUAL);
     }
 
     @Override
-    public void onDrawFrame(GL10 gl) {
+    public void onSurfaceChanged(GL10 unused, int width, int height) {
+        GLES20.glViewport(0, 0, width, height);
+        this.viewport.set(0, 0, width, height);
+    }
+
+    @Override
+    public void onDrawFrame(GL10 unused) {
+        // Setup the draw context and render the WorldWindow's current state.
+        this.prepareToDrawFrame();
+        this.navigator.applyState(dc);
+        this.frameController.drawFrame(this.dc);
+
+        // Propagate render requests submitted during rendering to the WorldWindow. The draw context provides a layer of
+        // indirection that insulates rendering code from establishing a dependency on a specific WorldWindow.
+        if (this.dc.isRenderRequested()) {
+            this.requestRender();
+        }
+    }
+
+    protected void prepareToDrawFrame() {
+        this.dc.reset();
+        this.dc.setGlobe(this.globe);
+        this.dc.setLayers(this.layers);
+        this.dc.setVerticalExaggeration(this.verticalExaggeration);
+        this.dc.setViewport(this.viewport);
     }
 }
