@@ -66,6 +66,22 @@ public class Matrix3 {
         this.m[8] = m33;
     }
 
+    /**
+     * Constructs a 3 x 3 matrix with the components of a specified matrix.
+     *
+     * @param matrix the matrix specifying the new components
+     *
+     * @throws IllegalArgumentException If the matrix is null
+     */
+    public Matrix3(Matrix3 matrix) {
+        if (matrix == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Matrix3", "constructor", "missingMatrix"));
+        }
+
+        System.arraycopy(matrix.m, 0, this.m, 0, 9);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || this.getClass() != o.getClass()) {
@@ -86,7 +102,7 @@ public class Matrix3 {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(m);
+        return Arrays.hashCode(this.m);
     }
 
     @Override
@@ -518,6 +534,29 @@ public class Matrix3 {
     }
 
     /**
+     * Transposes this matrix in place.
+     *
+     * @return this matrix, transposed.
+     */
+    public Matrix3 transpose() {
+
+        double[] m = this.m;
+        double tmp = m[1];
+        m[1] = m[3];
+        m[3] = tmp;
+
+        tmp = m[2];
+        m[2] = m[6];
+        m[6] = tmp;
+
+        tmp = m[5];
+        m[5] = m[7];
+        m[7] = tmp;
+
+        return this;
+    }
+
+    /**
      * Transposes the specified matrix and stores the result in this matrix.
      *
      * @param matrix the matrix whose transpose is computed
@@ -548,6 +587,20 @@ public class Matrix3 {
     }
 
     /**
+     * Inverts this matrix in place.
+     * <p/>
+     * This throws an exception if this matrix is singular.
+     *
+     * @return this matrix, inverted
+     *
+     * @throws IllegalArgumentException If this matrix cannot be inverted
+     */
+    public Matrix4 invert() {
+
+        throw new UnsupportedOperationException("Matrix3.invert is not implemented"); // TODO
+    }
+
+    /**
      * Inverts the specified matrix and stores the result in this matrix.
      * <p/>
      * This throws an exception if the matrix is singular.
@@ -566,6 +619,6 @@ public class Matrix3 {
                 Logger.logMessage(Logger.ERROR, "Matrix3", "invertMatrix", "missingMatrix"));
         }
 
-        return null; // TODO implement general inverse of 3x3 matrix
+        throw new UnsupportedOperationException("Matrix3.invertMatrix is not implemented"); // TODO
     }
 }

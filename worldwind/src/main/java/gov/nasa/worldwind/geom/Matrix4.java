@@ -83,6 +83,22 @@ public class Matrix4 {
         this.m[15] = m44;
     }
 
+    /**
+     * Constructs a 4 x 4 matrix with the components of a specified matrix.
+     *
+     * @param matrix the matrix specifying the new components
+     *
+     * @throws IllegalArgumentException If the matrix is null
+     */
+    public Matrix4(Matrix4 matrix) {
+        if (matrix == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Matrix4", "constructor", "missingMatrix"));
+        }
+
+        System.arraycopy(matrix.m, 0, this.m, 0, 16);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || this.getClass() != o.getClass()) {
@@ -215,8 +231,9 @@ public class Matrix4 {
      * @return this matrix with its rotation components set to the specified values and all other components unmodified
      */
     public Matrix4 setRotation(double x, double y, double z, double angleDegrees) {
-        double c = Math.cos(Math.toRadians(angleDegrees));
-        double s = Math.sin(Math.toRadians(angleDegrees));
+        double rad = Math.toRadians(angleDegrees);
+        double c = Math.cos(rad);
+        double s = Math.sin(rad);
 
         this.m[0] = c + (1 - c) * x * x;
         this.m[1] = (1 - c) * x * y - s * z;
@@ -308,8 +325,9 @@ public class Matrix4 {
      * an identity matrix
      */
     public Matrix4 setToRotation(double x, double y, double z, double angleDegrees) {
-        double c = Math.cos(Math.toRadians(angleDegrees));
-        double s = Math.sin(Math.toRadians(angleDegrees));
+        double rad = Math.toRadians(angleDegrees);
+        double c = Math.cos(rad);
+        double s = Math.sin(rad);
 
         this.m[0] = c + (1 - c) * x * x;
         this.m[1] = (1 - c) * x * y - s * z;
@@ -413,15 +431,15 @@ public class Matrix4 {
     /**
      * Sets this matrix to a perspective projection matrix for the specified viewport dimensions, vertical field of view
      * and clip distances.
-     * <p>
+     * <p/>
      * A perspective projection matrix maps points in eye coordinates into clip coordinates in a way that causes distant
      * objects to appear smaller, and preserves the appropriate depth information for each point. In model coordinates,
      * a perspective projection is defined by frustum originating at the eye position and extending outward in the
      * viewer's direction. The near distance and the far distance identify the minimum and maximum distance,
      * respectively, at which an object in the scene is visible.
-     * <p>
-     * The field of view must be positive and not larger than 180. Near and far distances must be positive and must not
-     * be equal to one another.
+     * <p/>
+     * The field of view must be positive and less than 180. Near and far distances must be positive and must not be
+     * equal to one another.
      *
      * @param viewportWidth  the viewport width in screen coordinates
      * @param viewportHeight the viewport height in screen coordinates
@@ -446,19 +464,19 @@ public class Matrix4 {
                 "invalidHeight"));
         }
 
-        if (fovyDegrees <= 0 || fovyDegrees > 180) {
+        if (fovyDegrees <= 0 || fovyDegrees >= 180) {
             throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Matrix4", "setToPerspectiveProjection",
-                "Invalid field of view"));
+                "invalidFieldOfView"));
         }
 
         if (nearDistance == farDistance) {
             throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Matrix4", "setToPerspectiveProjection",
-                "Near distance or far distance is invalid"));
+                "invalidClipDistance"));
         }
 
         if (nearDistance <= 0 || farDistance <= 0) {
             throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Matrix4", "setToPerspectiveProjection",
-                "Near distance or far distance is invalid"));
+                "invalidClipDistance"));
         }
 
         // Compute the dimensions of the near rectangle given the specified parameters.
@@ -496,7 +514,7 @@ public class Matrix4 {
 
     /**
      * Sets this matrix to a screen projection matrix for the specified viewport dimensions.
-     * <p>
+     * <p/>
      * A screen projection matrix is an orthographic projection that interprets points in model coordinates as
      * representing a screen XY and a Z depth. Screen projection matrices therefore map coordinates directly into screen
      * coordinates without modification. A point's XY coordinates are interpreted as literal screen coordinates and must
@@ -565,12 +583,12 @@ public class Matrix4 {
 
     /**
      * Sets this matrix to the symmetric covariance Matrix computed from an array of points packed into an NIO buffer.
-     * <p>
+     * <p/>
      * The computed covariance matrix represents the correlation between each pair of x-, y-, and z-coordinates as
      * they're distributed about the point array's arithmetic mean. Its layout is as follows:
-     * <p>
+     * <p/>
      * <code> C(x, x)  C(x, y)  C(x, z) <br/> C(x, y)  C(y, y)  C(y, z) <br/> C(x, z)  C(y, z)  C(z, z) </code>
-     * <p>
+     * <p/>
      * C(i, j) is the covariance of coordinates i and j, where i or j are a coordinate's dispersion about its mean
      * value. If any entry is zero, then there's no correlation between the two coordinates defining that entry. If the
      * returned matrix is diagonal, then all three coordinates are uncorrelated, and the specified point is distributed
@@ -674,8 +692,9 @@ public class Matrix4 {
      * @return this matrix multiplied by the rotation matrix implied by the specified values
      */
     public Matrix4 multiplyByRotation(double x, double y, double z, double angleDegrees) {
-        double c = Math.cos(Math.toRadians(angleDegrees));
-        double s = Math.sin(Math.toRadians(angleDegrees));
+        double rad = Math.toRadians(angleDegrees);
+        double c = Math.cos(rad);
+        double s = Math.sin(rad);
 
         this.multiplyByMatrix(
             c + (1 - c) * x * x, (1 - c) * x * y - s * z, (1 - c) * x * z + s * y, 0,
@@ -834,6 +853,41 @@ public class Matrix4 {
     }
 
     /**
+     * Transposes this matrix in place.
+     *
+     * @return this matrix, transposed.
+     */
+    public Matrix4 transpose() {
+
+        double[] m = this.m;
+        double tmp = m[1];
+        m[1] = m[4];
+        m[4] = tmp;
+
+        tmp = m[2];
+        m[2] = m[8];
+        m[8] = tmp;
+
+        tmp = m[3];
+        m[3] = m[12];
+        m[12] = tmp;
+
+        tmp = m[6];
+        m[6] = m[9];
+        m[9] = tmp;
+
+        tmp = m[7];
+        m[7] = m[13];
+        m[13] = tmp;
+
+        tmp = m[11];
+        m[11] = m[14];
+        m[14] = tmp;
+
+        return this;
+    }
+
+    /**
      * Sets this matrix to the transpose of a specified matrix.
      *
      * @param matrix the matrix whose transpose is to be computed
@@ -872,10 +926,31 @@ public class Matrix4 {
     }
 
     /**
+     * Inverts this matrix in place.
+     * <p/>
+     * This throws an exception if this matrix is singular.
+     *
+     * @return this matrix, inverted
+     *
+     * @throws IllegalArgumentException If this matrix cannot be inverted
+     */
+    public Matrix4 invert() {
+
+        boolean success = invert(this.m, this.m); // passing the same array as src and dst is supported
+
+        if (!success) { // the matrix is singular
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Matrix4", "invertMatrix", "singularMatrix"));
+        }
+
+        return this;
+    }
+
+    /**
      * Inverts the specified matrix and stores the result in this matrix.
-     * <p>
+     * <p/>
      * This throws an exception if the specified matrix is singular.
-     * <p>
+     * <p/>
      * The result of this method is undefined if this matrix is passed in as the matrix to invert.
      *
      * @param matrix the matrix whose inverse is computed
@@ -890,74 +965,54 @@ public class Matrix4 {
                 Logger.logMessage(Logger.ERROR, "Matrix4", "invertMatrix", "missingMatrix"));
         }
 
-        final double NEAR_ZERO_THRESHOLD = 1.0e-8;
+        boolean success = invert(matrix.m, this.m); // store inverse of matrix in this matrix
 
-        // Copy the specified matrix into a mutable two-dimensional array.
-        double[][] A = new double[4][4];
-        A[0][0] = matrix.m[0];
-        A[0][1] = matrix.m[1];
-        A[0][2] = matrix.m[2];
-        A[0][3] = matrix.m[3];
-        A[1][0] = matrix.m[4];
-        A[1][1] = matrix.m[5];
-        A[1][2] = matrix.m[6];
-        A[1][3] = matrix.m[7];
-        A[2][0] = matrix.m[8];
-        A[2][1] = matrix.m[9];
-        A[2][2] = matrix.m[10];
-        A[2][3] = matrix.m[11];
-        A[3][0] = matrix.m[12];
-        A[3][1] = matrix.m[13];
-        A[3][2] = matrix.m[14];
-        A[3][3] = matrix.m[15];
-
-        int[] index = new int[4];
-        double d = ludcmp(A, index);
-
-        // Compute the matrix's determinant.
-        for (int i = 0; i < 4; i += 1) {
-            d *= A[i][i];
+        if (!success) { // the matrix is singular
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Matrix4", "invertMatrix", "singularMatrix"));
         }
 
-        // The matrix is singular if its determinant is zero or very close to zero.
-        if (Math.abs(d) < NEAR_ZERO_THRESHOLD) {
-            return null;
-        }
+        return this;
+    }
 
-        double[][] Y = new double[4][4];
-        double[] col = new double[4];
-        for (int j = 0; j < 4; j += 1) {
-            for (int i = 0; i < 4; i += 1) {
-                col[i] = 0.0;
-            }
+    /**
+     * Inverts this orthonormal transform matrix in place. This matrix's upper 3x3 is transposed, then its fourth column
+     * is transformed by the transposed upper 3x3 and negated.
+     * <p/>
+     * The result of this method is undefined if this matrix's values are not consistent with those of an orthonormal
+     * transform.
+     *
+     * @return this matrix, inverted
+     */
+    public Matrix4 invertOrthonormal() {
 
-            col[j] = 1.0;
-            lubksb(A, index, col);
+        // This is assumed to contain matrix 3D transformation matrix. The upper 3x3 is inverted, the translation
+        // components are multiplied by the inverted-upper-3x3 and negated.
 
-            for (int i = 0; i < 4; i += 1) {
-                Y[i][j] = col[i];
-            }
-        }
+        double[] m = this.m;
+        double tmp = m[1];
+        m[1] = m[4];
+        m[4] = tmp;
 
-        this.m[0] = Y[0][0];
-        this.m[1] = Y[0][1];
-        this.m[2] = Y[0][2];
-        this.m[3] = Y[0][3];
+        tmp = m[2];
+        m[2] = m[8];
+        m[8] = tmp;
 
-        this.m[4] = Y[1][0];
-        this.m[5] = Y[1][1];
-        this.m[6] = Y[1][2];
-        this.m[7] = Y[1][3];
+        tmp = m[6];
+        m[6] = m[9];
+        m[9] = tmp;
 
-        this.m[8] = Y[2][0];
-        this.m[9] = Y[2][1];
-        this.m[10] = Y[2][2];
-        this.m[11] = Y[2][3];
+        double x = m[3];
+        double y = m[7];
+        double z = m[11];
+        m[3] = -(m[0] * x) - (m[1] * y) - (m[2] * z);
+        m[7] = -(m[4] * x) - (m[5] * y) - (m[6] * z);
+        m[11] = -(m[8] * x) - (m[9] * y) - (m[10] * z);
 
-        this.m[12] = Y[3][0];
-        this.m[13] = Y[3][1];
-        this.m[14] = Y[3][2];
-        this.m[15] = Y[3][3];
+        m[12] = 0;
+        m[13] = 0;
+        m[14] = 0;
+        m[15] = 1;
 
         return this;
     }
@@ -965,7 +1020,7 @@ public class Matrix4 {
     /**
      * Inverts the specified orthonormal transform matrix and stores the result in this matrix. This matrix's upper 3x3
      * is transposed, then its fourth column is transformed by the transposed upper 3x3 and negated.
-     * <p>
+     * <p/>
      * The result of this method is undefined if this matrix is passed in as the matrix to invert, or if the matrix's
      * values are not consistent with those of an orthonormal transform.
      *
@@ -982,23 +1037,23 @@ public class Matrix4 {
                 Logger.logMessage(Logger.ERROR, "Matrix4", "invertOrthonormalMatrix", "missingMatrix"));
         }
 
-        // 'matrix' is assumed to contain matrix 3D transformation matrix.
-        // Upper-3x3 is inverted, translation is transformed by inverted-upper-3x3 and negated.
+        // The matrix is assumed to contain matrix 3D transformation matrix. The upper 3x3 is inverted, the translation
+        // components are multiplied by the inverted-upper-3x3 and negated.
 
         this.m[0] = matrix.m[0];
         this.m[1] = matrix.m[4];
         this.m[2] = matrix.m[8];
-        this.m[3] = 0.0 - (matrix.m[0] * matrix.m[3]) - (matrix.m[4] * matrix.m[7]) - (matrix.m[8] * matrix.m[11]);
+        this.m[3] = -(matrix.m[0] * matrix.m[3]) - (matrix.m[4] * matrix.m[7]) - (matrix.m[8] * matrix.m[11]);
 
         this.m[4] = matrix.m[1];
         this.m[5] = matrix.m[5];
         this.m[6] = matrix.m[9];
-        this.m[7] = 0.0 - (matrix.m[1] * matrix.m[3]) - (matrix.m[5] * matrix.m[7]) - (matrix.m[9] * matrix.m[11]);
+        this.m[7] = -(matrix.m[1] * matrix.m[3]) - (matrix.m[5] * matrix.m[7]) - (matrix.m[9] * matrix.m[11]);
 
         this.m[8] = matrix.m[2];
         this.m[9] = matrix.m[6];
         this.m[10] = matrix.m[10];
-        this.m[11] = 0.0 - (matrix.m[2] * matrix.m[3]) - (matrix.m[6] * matrix.m[7]) - (matrix.m[10] * matrix.m[11]);
+        this.m[11] = -(matrix.m[2] * matrix.m[3]) - (matrix.m[6] * matrix.m[7]) - (matrix.m[10] * matrix.m[11]);
 
         this.m[12] = 0;
         this.m[13] = 0;
@@ -1013,22 +1068,22 @@ public class Matrix4 {
      * typically used to draw geometry slightly closer to the user's eye in order to give those shapes visual priority
      * over nearby or geometry. An offset of zero has no effect. An offset less than zero brings depth values closer to
      * the eye, while an offset greater than zero pushes depth values away from the eye.
-     * <p>
+     * <p/>
      * The result of this method is undefined if this matrix is not a projection matrix. Projection matrices can be
      * created by calling <code>setToPerspectiveProjection</code> or <code>setToScreenProjection</code>
-     * <p>
+     * <p/>
      * Depth offset may be applied to both perspective and screen projection matrices. The effect on each type is
      * outlined here:
-     * <p>
+     * <p/>
      * <strong>Perspective Projection</strong>
-     * <p>
+     * <p/>
      * The effect of depth offset on a perspective projection increases exponentially with distance from the eye. This
      * has the effect of adjusting the offset for the loss in depth precision with geometry drawn further from the eye.
      * Distant geometry requires a greater offset to differentiate itself from nearby geometry, while close geometry
      * does not.
-     * <p>
+     * <p/>
      * <strong>Screen Projection</strong>
-     * <p>
+     * <p/>
      * The effect of depth offset on an screen projection increases linearly with distance from the eye. While it is
      * reasonable to apply a depth offset to an screen projection, the effect is most appropriate when applied to the
      * projection used to draw the scene. For example, when an object's coordinates are projected by a perspective
@@ -1050,7 +1105,7 @@ public class Matrix4 {
     /**
      * Returns this viewing matrix's eye point. In model coordinates, a viewing matrix's eye point is the point the
      * viewer is looking from and maps to the center of the screen.
-     * <p>
+     * <p/>
      * The result of this method is undefined if this matrix is not a viewing matrix.
      *
      * @param result a pre-allocated <code>Vec3</code> in which to return the extracted value
@@ -1077,7 +1132,7 @@ public class Matrix4 {
 
     /**
      * Returns this viewing matrix's forward vector.
-     * <p>
+     * <p/>
      * The result of this method is undefined if this matrix is not a viewing matrix.
      *
      * @param result a pre-allocated <code>Vec3</code> in which to return the extracted value
@@ -1268,6 +1323,88 @@ public class Matrix4 {
         result[2].multiply(m33);
 
         return result;
+    }
+
+    /**
+     * Inverts a 4 x 4 matrix, storing the result in a destination argument. The source and destination arguments
+     * represent a 4 x 4 matrix with a one-dimensional array in row-major order. The source and destination may
+     * reference the same array.
+     *
+     * @param src the matrix components to invert in row-major order
+     * @param dst the inverted components in row-major order
+     *
+     * @return true if the matrix was successfully inverted, false otherwise
+     */
+    protected static boolean invert(double[] src, double[] dst) {
+        // Copy the specified matrix into a mutable two-dimensional array.
+        double[][] A = new double[4][4];
+        A[0][0] = src[0];
+        A[0][1] = src[1];
+        A[0][2] = src[2];
+        A[0][3] = src[3];
+        A[1][0] = src[4];
+        A[1][1] = src[5];
+        A[1][2] = src[6];
+        A[1][3] = src[7];
+        A[2][0] = src[8];
+        A[2][1] = src[9];
+        A[2][2] = src[10];
+        A[2][3] = src[11];
+        A[3][0] = src[12];
+        A[3][1] = src[13];
+        A[3][2] = src[14];
+        A[3][3] = src[15];
+
+        int[] index = new int[4];
+        double d = ludcmp(A, index);
+
+        // Compute the matrix's determinant.
+        for (int i = 0; i < 4; i += 1) {
+            d *= A[i][i];
+        }
+
+        // The matrix is singular if its determinant is zero or very close to zero.
+        final double NEAR_ZERO_THRESHOLD = 1.0e-8;
+        if (Math.abs(d) < NEAR_ZERO_THRESHOLD) {
+            return false;
+        }
+
+        double[][] Y = new double[4][4];
+        double[] col = new double[4];
+        for (int j = 0; j < 4; j += 1) {
+            for (int i = 0; i < 4; i += 1) {
+                col[i] = 0.0;
+            }
+
+            col[j] = 1.0;
+            lubksb(A, index, col);
+
+            for (int i = 0; i < 4; i += 1) {
+                Y[i][j] = col[i];
+            }
+        }
+
+        dst[0] = Y[0][0];
+        dst[1] = Y[0][1];
+        dst[2] = Y[0][2];
+        dst[3] = Y[0][3];
+
+        dst[4] = Y[1][0];
+        dst[5] = Y[1][1];
+        dst[6] = Y[1][2];
+        dst[7] = Y[1][3];
+
+        dst[8] = Y[2][0];
+        dst[9] = Y[2][1];
+        dst[10] = Y[2][2];
+        dst[11] = Y[2][3];
+
+        dst[12] = Y[3][0];
+        dst[13] = Y[3][1];
+        dst[14] = Y[3][2];
+        dst[15] = Y[3][3];
+
+        return true;
     }
 
     /**
