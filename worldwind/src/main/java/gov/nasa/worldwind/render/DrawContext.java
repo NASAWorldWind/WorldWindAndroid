@@ -6,8 +6,7 @@
 package gov.nasa.worldwind.render;
 
 import android.content.Context;
-
-import java.util.List;
+import android.graphics.Rect;
 
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
@@ -15,6 +14,8 @@ import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.layer.Layer;
+import gov.nasa.worldwind.layer.LayerList;
+import gov.nasa.worldwind.util.Logger;
 
 public class DrawContext {
 
@@ -24,21 +25,13 @@ public class DrawContext {
 
     protected Terrain terrain;
 
-    protected List<Layer> layers;
+    protected LayerList layers = new LayerList();
 
     protected Layer currentLayer;
 
-    protected Matrix4 modelview;
+    protected double verticalExaggeration = 1;
 
-    protected Matrix4 projection;
-
-    protected Matrix4 modelviewProjection;
-
-    protected Matrix4 modelviewProjectionInv;
-
-    protected Vec3 eyePoint;
-
-    protected Position eyePosition;
+    protected Position eyePosition = new Position();
 
     protected double heading;
 
@@ -47,6 +40,18 @@ public class DrawContext {
     protected double roll;
 
     protected double fieldOfView;
+
+    protected Rect viewport = new Rect();
+
+    protected Matrix4 modelview = new Matrix4();
+
+    protected Matrix4 projection = new Matrix4();
+
+    protected Matrix4 modelviewProjection = new Matrix4();
+
+    protected Matrix4 modelviewProjectionInv = new Matrix4();
+
+    protected Vec3 eyePoint = new Vec3();
 
     protected boolean pickingMode;
 
@@ -76,36 +81,85 @@ public class DrawContext {
         this.terrain = terrain;
     }
 
-    public List<Layer> getLayers() {
+    public LayerList getLayers() {
         return layers;
     }
 
-    public void setLayers(List<Layer> layers) {
-        this.layers = layers;
+    public void setLayers(LayerList layers) {
+        this.layers.clearLayers();
+        this.layers.addAllLayers(layers);
     }
 
     public Layer getCurrentLayer() {
         return currentLayer;
     }
 
-    public void setCurrentLayer(Layer currentLayer) {
-        this.currentLayer = currentLayer;
+    public void setCurrentLayer(Layer layer) {
+        this.currentLayer = layer;
+    }
+
+    public double getVerticalExaggeration() {
+        return verticalExaggeration;
+    }
+
+    public void setVerticalExaggeration(double verticalExaggeration) {
+        this.verticalExaggeration = verticalExaggeration;
+    }
+
+    public Position getEyePosition() {
+        return eyePosition;
+    }
+
+    public void setEyePosition(Position position) {
+        this.eyePosition.set(position);
+    }
+
+    public double getHeading() {
+        return heading;
+    }
+
+    public void setHeading(double headingDegrees) {
+        this.heading = headingDegrees;
+    }
+
+    public double getTilt() {
+        return tilt;
+    }
+
+    public void setTilt(double tiltDegrees) {
+        this.tilt = tiltDegrees;
+    }
+
+    public double getRoll() {
+        return roll;
+    }
+
+    public void setRoll(double rollDegrees) {
+        this.roll = rollDegrees;
+    }
+
+    public double getFieldOfView() {
+        return fieldOfView;
+    }
+
+    public void setFieldOfView(double fovyDegrees) {
+        this.fieldOfView = fovyDegrees;
+    }
+
+    public Rect getViewport() {
+        return viewport;
+    }
+
+    public void setViewport(Rect rect) {
+        this.viewport.set(rect);
     }
 
     public Matrix4 getModelview() {
         return modelview;
     }
 
-    public void setModelview(Matrix4 modelview) {
-        this.modelview = modelview;
-    }
-
     public Matrix4 getProjection() {
         return projection;
-    }
-
-    public void setProjection(Matrix4 projection) {
-        this.projection = projection;
     }
 
     public Matrix4 getModelviewProjection() {
@@ -120,44 +174,17 @@ public class DrawContext {
         return eyePoint;
     }
 
-    public Position getEyePosition() {
-        return eyePosition;
-    }
+    public void setModelviewProjection(Matrix4 modelview, Matrix4 projection) {
+        if (modelview == null || projection == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "DrawContext", "setModelview", "missingMatrix"));
+        }
 
-    public void setEyePosition(Position eyePosition) {
-        this.eyePosition = eyePosition;
-    }
-
-    public double getHeading() {
-        return heading;
-    }
-
-    public void setHeading(double heading) {
-        this.heading = heading;
-    }
-
-    public double getTilt() {
-        return tilt;
-    }
-
-    public void setTilt(double tilt) {
-        this.tilt = tilt;
-    }
-
-    public double getRoll() {
-        return roll;
-    }
-
-    public void setRoll(double roll) {
-        this.roll = roll;
-    }
-
-    public double getFieldOfView() {
-        return fieldOfView;
-    }
-
-    public void setFieldOfView(double fieldOfView) {
-        this.fieldOfView = fieldOfView;
+        this.modelview.set(modelview);
+        this.projection.set(projection);
+        this.modelviewProjection.setToMultiply(modelview, projection);
+        this.modelviewProjectionInv.invertMatrix(this.modelviewProjection);
+        this.modelview.extractEyePoint(this.eyePoint);
     }
 
     public boolean isPickingMode() {
@@ -174,5 +201,27 @@ public class DrawContext {
 
     public void requestRender() {
         this.renderRequested = true;
+    }
+
+    public void reset() {
+        // Reset the draw context's internal properties.
+        this.globe = null;
+        this.terrain = null;
+        this.layers.clearLayers();
+        this.currentLayer = null;
+        this.verticalExaggeration = 1;
+        this.eyePosition.set(0, 0, 0);
+        this.heading = 0;
+        this.tilt = 0;
+        this.roll = 0;
+        this.fieldOfView = 0;
+        this.viewport.setEmpty();
+        this.modelview.setToIdentity();
+        this.projection.setToIdentity();
+        this.modelviewProjection.setToIdentity();
+        this.modelviewProjectionInv.setToIdentity();
+        this.eyePoint.set(0, 0, 0);
+        this.pickingMode = false;
+        this.renderRequested = false;
     }
 }
