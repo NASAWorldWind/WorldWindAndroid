@@ -29,7 +29,7 @@ public class Vec2 {
     }
 
     /**
-     * Constructs a two-component vector from a specified X and Y.
+     * Constructs a two-component vector with a specified X and Y.
      *
      * @param x the vector's X component
      * @param y the vector's Y component
@@ -37,6 +37,23 @@ public class Vec2 {
     public Vec2(double x, double y) {
         this.x = x;
         this.y = y;
+    }
+
+    /**
+     * Constructs a two-component vector with the X and Y of a specified vector.
+     *
+     * @param vector the vector specifying the components
+     *
+     * @throws IllegalArgumentException If the vector is null
+     */
+    public Vec2(Vec2 vector) {
+        if (vector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Vec2", "constructor", "missingVector"));
+        }
+
+        this.x = vector.x;
+        this.y = vector.y;
     }
 
     @Override

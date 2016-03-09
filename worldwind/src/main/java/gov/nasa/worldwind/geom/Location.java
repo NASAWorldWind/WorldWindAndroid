@@ -30,7 +30,7 @@ public class Location {
     }
 
     /**
-     * Constructs a location from a specified latitude and longitude in degrees.
+     * Constructs a location with a specified latitude and longitude in degrees.
      *
      * @param latitude  the latitude in degrees
      * @param longitude the longitude in degrees
@@ -38,6 +38,23 @@ public class Location {
     public Location(double latitude, double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
+    }
+
+    /**
+     * Constructs a location with the latitude and longitude of a specified location.
+     *
+     * @param location the location specifying the coordinates
+     *
+     * @throws IllegalArgumentException If the location is null
+     */
+    public Location(Location location) {
+        if (location == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Location", "constructor", "missingLocation"));
+        }
+
+        this.latitude = location.latitude;
+        this.longitude = location.longitude;
     }
 
     /**
@@ -206,7 +223,7 @@ public class Location {
     public Location set(Location location) {
         if (location == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Position", "set", "missingPosition"));
+                Logger.logMessage(Logger.ERROR, "Location", "set", "missingLocation"));
         }
 
         this.latitude = location.latitude;
@@ -302,7 +319,7 @@ public class Location {
 
     /**
      * Computes the angular distance of the great circle path between this location and a specified location. In
-     * radians, this angle is the arc length of the segment between the two positions. To compute a distance in meters
+     * radians, this angle is the arc length of the segment between the two locations. To compute a distance in meters
      * from this value, multiply the return value by the radius of the globe. This function uses a spherical model, not
      * elliptical.
      *
@@ -425,7 +442,7 @@ public class Location {
 
     /**
      * Computes the angular distance of the rhumb path (line of constant azimuth) between this location and a specified
-     * location. In radians, this angle is the arc length of the segment between the two positions. To compute a
+     * location. In radians, this angle is the arc length of the segment between the two locations. To compute a
      * distance in meters from this value, multiply the return value by the radius of the globe. This function uses a
      * spherical model, not elliptical.
      *
@@ -568,7 +585,7 @@ public class Location {
 
     /**
      * Computes the angular distance of the linear path between this location and a specified location. In radians, this
-     * angle is the arc length of the segment between the two positions. To compute a distance in meters from this
+     * angle is the arc length of the segment between the two locations. To compute a distance in meters from this
      * value, multiply the return value by the radius of the globe. This function uses a flat-earth approximation
      * proximal to this location.
      *

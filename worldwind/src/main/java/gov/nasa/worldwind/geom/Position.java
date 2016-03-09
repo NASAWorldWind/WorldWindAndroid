@@ -37,6 +37,24 @@ public class Position extends Location {
     }
 
     /**
+     * Constructs a position with the latitude, longitude and altitude of a specified position.
+     *
+     * @param position the position specifying the coordinates
+     *
+     * @throws IllegalArgumentException If the position is null
+     */
+    public Position(Position position) {
+        if (position == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Position", "constructor", "missingPosition"));
+        }
+
+        this.latitude = position.latitude;
+        this.longitude = position.longitude;
+        this.altitude = position.altitude;
+    }
+
+    /**
      * Constructs a position from a specified latitude and longitude in degrees and altitude in meters.
      *
      * @param latitudeDegrees  the latitude in degrees

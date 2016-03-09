@@ -37,7 +37,7 @@ public class Vec3 {
     }
 
     /**
-     * Constructs a three-component vector from a specified X, Y and Z.
+     * Constructs a three-component vector with a specified X, Y and Z.
      *
      * @param x the vector's X component
      * @param y the vector's Y component
@@ -47,6 +47,24 @@ public class Vec3 {
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+
+    /**
+     * Constructs a three-component vector with the X, Y and Z of a specified vector.
+     *
+     * @param vector the vector specifying the components
+     *
+     * @throws IllegalArgumentException If the vector is null
+     */
+    public Vec3(Vec3 vector) {
+        if (vector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Vec3", "constructor", "missingVector"));
+        }
+
+        this.x = vector.x;
+        this.y = vector.y;
+        this.z = vector.z;
     }
 
     /**
