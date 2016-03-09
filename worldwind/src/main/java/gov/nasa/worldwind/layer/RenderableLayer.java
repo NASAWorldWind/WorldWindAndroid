@@ -5,142 +5,174 @@
 
 package gov.nasa.worldwind.layer;
 
-import android.support.annotation.NonNull;
-
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.Renderable;
+import gov.nasa.worldwind.util.Logger;
 
-public class RenderableLayer extends AbstractLayer implements List<Renderable> {
+public class RenderableLayer extends AbstractLayer implements Iterable<Renderable> {
 
-    protected List<Renderable> renderables;
+    protected List<Renderable> renderables = new ArrayList<>();
 
-    @Override
-    public void add(int location, Renderable object) {
+    public RenderableLayer(String displayName) {
+        super(displayName);
+    }
+
+    public int count() {
+        return this.renderables.size();
+    }
+
+    public Renderable getRenderable(int index) {
+        if (index < 0 || index >= this.renderables.size()) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "RenderableLayer", "getRenderable", "invalidIndex"));
+        }
+
+        return this.renderables.get(index);
+    }
+
+    public Renderable setRenderable(int index, Renderable renderable) {
+        if (index < 0 || index >= this.renderables.size()) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "RenderableLayer", "setRenderable", "invalidIndex"));
+        }
+
+        if (renderable == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "RenderableLayer", "setRenderable", "missingRenderable"));
+        }
+
+        return this.renderables.set(index, renderable);
+    }
+
+    public int indexOfRenderable(Renderable renderable) {
+        if (renderable == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "RenderableLayer", "indexOfRenderable", "missingRenderable"));
+        }
+
+        return this.renderables.indexOf(renderable);
+    }
+
+    public int indexOfRenderableNamed(String name) {
+
+        for (int i = 0; i < this.renderables.size(); i++) {
+            String renderableName = this.renderables.get(i).getDisplayName();
+            if ((renderableName == null) ? (name == null) : renderableName.equals(name)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    public int indexOfRenderableWithProperty(Object key, Object value) {
+
+        for (int i = 0; i < this.renderables.size(); i++) {
+            Renderable renderable = this.renderables.get(i);
+            if (renderable.hasUserProperty(key)) {
+                Object layerValue = renderable.getUserProperty(key);
+                if ((layerValue == null) ? (value == null) : layerValue.equals(value)) {
+                    return i;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    public void addRenderable(Renderable renderable) {
+        if (renderable == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "RenderableLayer", "addRenderable", "missingRenderable"));
+        }
 
     }
 
-    @Override
-    public boolean add(Renderable object) {
-        return false;
+    public void addRenderable(int index, Renderable renderable) {
+        if (index < 0 || index > this.renderables.size()) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "RenderableLayer", "addRenderable", "invalidIndex"));
+        }
     }
 
-    @Override
-    public boolean addAll(int location, Collection<? extends Renderable> collection) {
-        return false;
+    public void addAllRenderables(Iterable<? extends Renderable> renderables) {
+        if (renderables == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "RenderableLayer", "addAllRenderables", "missingList"));
+        }
+
+        for (Renderable renderable : renderables) {
+            if (renderable == null) {
+                throw new IllegalArgumentException(
+                    Logger.logMessage(Logger.ERROR, "RenderableLayer", "addAllRenderables", "missingRenderable"));
+            }
+
+            this.renderables.add(renderable);
+        }
     }
 
-    @Override
-    public boolean addAll(Collection<? extends Renderable> collection) {
-        return false;
+    public boolean removeRenderable(Renderable renderable) {
+        if (renderable == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "RenderableLayer", "removeRenderable", "missingRenderable"));
+        }
+
+        return this.renderables.remove(renderable);
     }
 
-    @Override
-    public void clear() {
+    public Renderable removeRenderable(int index) {
+        if (index < 0 || index >= this.renderables.size()) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "RenderableLayer", "removeRenderable", "invalidIndex"));
+        }
 
+        return this.renderables.remove(index);
     }
 
-    @Override
-    public boolean contains(Object object) {
-        return false;
+    public boolean removeAllRenderables(Iterable<? extends Renderable> renderables) {
+        if (renderables == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "RenderableLayer", "removeAllRenderables", "missingList"));
+        }
+
+        boolean removed = false;
+
+        for (Renderable renderable : renderables) {
+            if (renderable == null) {
+                throw new IllegalArgumentException(
+                    Logger.logMessage(Logger.ERROR, "RenderableLayer", "removeAllRenderables", "missingRenderable"));
+            }
+
+            removed |= this.renderables.remove(renderable);
+        }
+
+        return removed;
     }
 
-    @Override
-    public boolean containsAll(Collection<?> collection) {
-        return false;
+    public void clearRenderables() {
+        this.renderables.clear();
     }
 
-    @Override
-    public Renderable get(int location) {
-        return null;
-    }
-
-    @Override
-    public int indexOf(Object object) {
-        return 0;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return false;
-    }
-
-    @NonNull
     @Override
     public Iterator<Renderable> iterator() {
-        return null;
-    }
-
-    @Override
-    public int lastIndexOf(Object object) {
-        return 0;
-    }
-
-    @Override
-    public ListIterator<Renderable> listIterator() {
-        return null;
-    }
-
-    @NonNull
-    @Override
-    public ListIterator<Renderable> listIterator(int location) {
-        return null;
-    }
-
-    @Override
-    public Renderable remove(int location) {
-        return null;
-    }
-
-    @Override
-    public boolean remove(Object object) {
-        return false;
-    }
-
-    @Override
-    public boolean removeAll(Collection<?> collection) {
-        return false;
-    }
-
-    @Override
-    public boolean retainAll(Collection<?> collection) {
-        return false;
-    }
-
-    @Override
-    public Renderable set(int location, Renderable object) {
-        return null;
-    }
-
-    @Override
-    public int size() {
-        return 0;
-    }
-
-    @NonNull
-    @Override
-    public List<Renderable> subList(int start, int end) {
-        return null;
-    }
-
-    @NonNull
-    @Override
-    public Object[] toArray() {
-        return new Object[0];
-    }
-
-    @NonNull
-    @Override
-    public <T> T[] toArray(T[] array) {
-        return null;
+        return this.renderables.iterator();
     }
 
     @Override
     protected void doRender(DrawContext dc) {
 
+        for (Renderable renderable : this.renderables) {
+            try {
+                renderable.render(dc);
+            } catch (Exception e) {
+                Logger.logMessage(Logger.ERROR, "RenderableLayer", "doRender",
+                    "Exception while rendering shape " + renderable.getDisplayName(), e);
+                // Keep going. Draw the remaining renderables.
+            }
+        }
     }
 }

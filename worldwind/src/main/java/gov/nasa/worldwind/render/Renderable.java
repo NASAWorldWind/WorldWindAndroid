@@ -19,5 +19,13 @@ public interface Renderable {
 
     void setPickDelegate(Object pickDelegate);
 
+    Object getUserProperty(Object key);
+
+    Object putUserProperty(Object key, Object value);
+
+    Object removeUserProperty(Object key);
+
+    boolean hasUserProperty(Object key);
+
     void render(DrawContext dc);
 }

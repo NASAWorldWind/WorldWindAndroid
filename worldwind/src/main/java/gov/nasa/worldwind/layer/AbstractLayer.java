@@ -5,21 +5,29 @@
 
 package gov.nasa.worldwind.layer;
 
+import java.util.HashMap;
+
 import gov.nasa.worldwind.render.DrawContext;
 
 public abstract class AbstractLayer implements Layer {
 
     protected String displayName;
 
-    protected boolean enabled;
+    protected boolean enabled = true;
 
-    protected boolean pickEnabled;
+    protected boolean pickEnabled = true;
 
-    protected double opacity;
+    protected double opacity = 1;
 
-    protected double minActiveAltitude;
+    protected double minActiveAltitude = Double.NEGATIVE_INFINITY;
 
-    protected double maxActiveAltitude;
+    protected double maxActiveAltitude = Double.POSITIVE_INFINITY;
+
+    protected HashMap<Object, Object> userProperties;
+
+    public AbstractLayer(String displayName) {
+        this.displayName = displayName;
+    }
 
     @Override
     public String getDisplayName() {
@@ -79,6 +87,30 @@ public abstract class AbstractLayer implements Layer {
     @Override
     public void setMaxActiveAltitude(double maxActiveAltitude) {
         this.maxActiveAltitude = maxActiveAltitude;
+    }
+
+    @Override
+    public Object getUserProperty(Object key) {
+        return (this.userProperties != null) ? this.userProperties.get(key) : null;
+    }
+
+    @Override
+    public Object putUserProperty(Object key, Object value) {
+        if (this.userProperties == null) {
+            this.userProperties = new HashMap<>();
+        }
+
+        return this.userProperties.put(key, value);
+    }
+
+    @Override
+    public Object removeUserProperty(Object key) {
+        return (this.userProperties != null) ? this.userProperties.remove(key) : null;
+    }
+
+    @Override
+    public boolean hasUserProperty(Object key) {
+        return (this.userProperties != null) && this.userProperties.containsKey(key);
     }
 
     @Override

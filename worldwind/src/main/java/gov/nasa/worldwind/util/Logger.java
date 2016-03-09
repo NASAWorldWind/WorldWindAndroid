@@ -24,27 +24,50 @@ public class Logger {
 
     static {
         messageTable = new HashMap<>();
-        messageTable.put("invalidHeight", "The specified height is invalid");
-        messageTable.put("invalidStride", "The specified stride is invalid");
-        messageTable.put("invalidWidth", "The specified width is invalid");
-        messageTable.put("missingBuffer", "The specified buffer is null or empty");
-        messageTable.put("missingList", "The specified list is null or empty");
-        messageTable.put("missingLocation", "The specified location is null");
-        messageTable.put("missingMatrix", "The specified matrix is null");
-        messageTable.put("missingPosition", "The specified position is null");
-        messageTable.put("missingResult", "The specified result argument is null");
-        messageTable.put("missingVector", "The specified vector is null");
+        messageTable.put("invalidClipDistance", "The clip distance is invalid");
+        messageTable.put("invalidFieldOfView", "The field of view is invalid");
+        messageTable.put("invalidHeight", "The height is invalid");
+        messageTable.put("invalidIndex", "The index is invalid");
+        messageTable.put("invalidRadius", "The radius is invalid");
+        messageTable.put("invalidStride", "The stride is invalid");
+        messageTable.put("invalidWidth", "The width is invalid");
+        messageTable.put("missingArray", "The array is null or insufficient length");
+        messageTable.put("missingBuffer", "The buffer is null or insufficient length");
+        messageTable.put("missingLayer", "The layer is null");
+        messageTable.put("missingList", "The list is null or empty");
+        messageTable.put("missingLocation", "The location is null");
+        messageTable.put("missingMatrix", "The matrix is null");
+        messageTable.put("missingPosition", "The position is null");
+        messageTable.put("missingProjection", "The projection is null");
+        messageTable.put("missingRenderable", "The renderable is null");
+        messageTable.put("missingResult", "The result argument is null");
+        messageTable.put("missingSector", "The sector is null");
+        messageTable.put("missingVector", "The vector is null");
+        messageTable.put("singularMatrix", "The matrix cannot be inverted");
     }
 
-    public static void log(int level, String message) {
-        if (Log.isLoggable(TAG, level)) {
-            Log.println(level, TAG, message);
+    public static void log(int priority, String message) {
+        if (Log.isLoggable(TAG, priority)) {
+            Log.println(priority, TAG, message);
+        }
+    }
+
+    public static void log(int priority, String message, Throwable tr) {
+        if (Log.isLoggable(TAG, priority)) {
+            Log.println(priority, TAG, message + '\n' + Log.getStackTraceString(tr));
         }
     }
 
     public static String logMessage(int level, String className, String methodName, String message) {
         String msg = makeMessage(className, methodName, message);
         log(level, msg);
+
+        return msg;
+    }
+
+    public static String logMessage(int level, String className, String methodName, String message, Throwable tr) {
+        String msg = makeMessage(className, methodName, message);
+        log(level, msg, tr);
 
         return msg;
     }

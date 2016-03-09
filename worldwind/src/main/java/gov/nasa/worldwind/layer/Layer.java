@@ -33,6 +33,14 @@ public interface Layer {
 
     void setMaxActiveAltitude(double maxActiveAltitude);
 
+    Object getUserProperty(Object key);
+
+    Object putUserProperty(Object key, Object value);
+
+    Object removeUserProperty(Object key);
+
+    boolean hasUserProperty(Object key);
+
     void render(DrawContext dc);
 
     boolean isWithinActiveAltitudes(DrawContext dc);
