@@ -10,9 +10,9 @@ import android.view.View;
 
 public interface NavigatorController {
 
-    Navigator getNavigator();
+    WorldWindow getWorldWindow();
 
-    void setNavigator(Navigator navigator);
+    void setWorldWindow(WorldWindow wwd);
 
     void onTouch(View view, MotionEvent event);
 }

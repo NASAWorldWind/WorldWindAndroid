@@ -6,30 +6,29 @@
 package gov.nasa.worldwind;
 
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.render.DrawContext;
 
 public interface Navigator {
 
-    Position getEyePosition();
+    Position getPosition();
 
-    void setEyePosition(Position eyePosition);
+    void setPosition(Position position);
 
     double getHeading();
 
-    void setHeading(double heading);
+    void setHeading(double headingDegrees);
 
     double getTilt();
 
-    void setTilt(double tilt);
+    void setTilt(double tiltDegrees);
 
     double getRoll();
 
-    void setRoll(double roll);
+    void setRoll(double rollDegrees);
 
     double getFieldOfView();
 
-    void setFieldOfView(double fieldOfView);
+    void setFieldOfView(double fovyDegrees);
 
-    // TODO methods for setting from kml-style camera and look-at arguments
-
-    // TODO method for applying state to DrawContext, such as NavigatorState
+    void applyState(DrawContext dc);
 }
