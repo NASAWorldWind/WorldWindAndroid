@@ -5,6 +5,7 @@
 
 package gov.nasa.worldwind.geom;
 
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +15,13 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import gov.nasa.worldwind.util.Logger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Unit tests for Matrix3, a 3x3 square matrix in row, column order.
@@ -23,7 +30,11 @@ import static org.junit.Assert.*;
 @PrepareForTest(Logger.class)   // We mock the Logger class to avoid its calls to android.util.log
 public class Matrix3Test {
 
-    static final double TOLERANCE = 1e-10;
+    @Before
+    public void setup() {
+        PowerMockito.mockStatic(Logger.class);
+    }
+
 
     /**
      * @throws Exception
@@ -81,6 +92,14 @@ public class Matrix3Test {
     }
 
     @Test
+    public void testToString() throws Exception {
+        String string = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d).toString();
+
+        assertTrue("all elements in proper order", string.contains("11.0, 12.0, 13.0, 21.0, 22.0, 23.0, 31.0, 32.0, 33.0"));
+    }
+
+
+    @Test
     public void testSet() throws Exception {
         Matrix3 m1 = new Matrix3(); // matrix under test
         Matrix3 m2 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
@@ -93,7 +112,7 @@ public class Matrix3Test {
 
     @Test(expected = IllegalArgumentException.class)
     public void testSet_WithNull() throws Exception {
-        PowerMockito.mockStatic(Logger.class);
+        //PowerMockito.mockStatic(Logger.class);
         Matrix3 m1 = new Matrix3(); // matrix under test
 
         m1.set(null);
@@ -125,7 +144,6 @@ public class Matrix3Test {
         assertEquals("m31", m31, m1.m[6], 0);
         assertEquals("m32", m32, m1.m[7], 0);
         assertEquals("m33", m33, m1.m[8], 0);
-
         assertSame("fluent api result", m2, m1);
     }
 
@@ -145,15 +163,12 @@ public class Matrix3Test {
         assertEquals("m11", m2.m[0], m1.m[0], 0);
         assertEquals("m12", m2.m[1], m1.m[1], 0);
         assertEquals("m13", dx, m1.m[2], 0);
-
         assertEquals("m21", m2.m[3], m1.m[3], 0);
         assertEquals("m22", m2.m[4], m1.m[4], 0);
         assertEquals("m23", dy, m1.m[5], 0);
-
         assertEquals("m31", m2.m[6], m1.m[6], 0);
         assertEquals("m32", m2.m[7], m1.m[7], 0);
         assertEquals("m33", m2.m[8], m1.m[8], 0);
-
         assertSame("fluent api result", m3, m1);
     }
 
@@ -174,15 +189,12 @@ public class Matrix3Test {
         assertEquals("m11", c, m1.m[0], 0);
         assertEquals("m12", -s, m1.m[1], 0);
         assertEquals("m13", m2.m[2], m1.m[2], 0);
-
         assertEquals("m21", s, m1.m[3], 0);
         assertEquals("m22", c, m1.m[4], 0);
         assertEquals("m23", m2.m[5], m1.m[5], 0);
-
         assertEquals("m31", m2.m[6], m1.m[6], 0);
         assertEquals("m32", m2.m[7], m1.m[7], 0);
         assertEquals("m33", m2.m[8], m1.m[8], 0);
-
         assertSame("fluent api result", m3, m1);
     }
 
@@ -202,15 +214,12 @@ public class Matrix3Test {
         assertEquals("m11", sx, m1.m[0], 0);
         assertEquals("m12", m2.m[1], m1.m[1], 0);
         assertEquals("m13", m2.m[2], m1.m[2], 0);
-
         assertEquals("m21", m2.m[3], m1.m[3], 0);
         assertEquals("m22", sy, m1.m[4], 0);
         assertEquals("m23", m2.m[5], m1.m[5], 0);
-
         assertEquals("m31", m2.m[6], m1.m[6], 0);
         assertEquals("m32", m2.m[7], m1.m[7], 0);
         assertEquals("m33", m2.m[8], m1.m[8], 0);
-
         assertSame("fluent api result", m3, m1);
     }
 
@@ -239,15 +248,12 @@ public class Matrix3Test {
         assertEquals("m11", 1d, m1.m[0], 0);
         assertEquals("m12", 0d, m1.m[1], 0);
         assertEquals("m13", dx, m1.m[2], 0);
-
         assertEquals("m21", 0d, m1.m[3], 0);
         assertEquals("m22", 1d, m1.m[4], 0);
         assertEquals("m23", dy, m1.m[5], 0);
-
         assertEquals("m31", 0d, m1.m[6], 0);
         assertEquals("m32", 0d, m1.m[7], 0);
         assertEquals("m33", 1d, m1.m[8], 0);
-
         assertSame("fluent api result", m2, m1);
     }
 
@@ -267,11 +273,9 @@ public class Matrix3Test {
         assertEquals("m11", c, m1.m[0], 0);
         assertEquals("m12", -s, m1.m[1], 0);
         assertEquals("m13", 0d, m1.m[2], 0);
-
         assertEquals("m21", s, m1.m[3], 0);
         assertEquals("m22", c, m1.m[4], 0);
         assertEquals("m23", 0d, m1.m[5], 0);
-
         assertEquals("m31", 0d, m1.m[6], 0);
         assertEquals("m32", 0d, m1.m[7], 0);
         assertEquals("m33", 1d, m1.m[8], 0);
@@ -294,15 +298,12 @@ public class Matrix3Test {
         assertEquals("m11", sx, m1.m[0], 0);
         assertEquals("m12", 0d, m1.m[1], 0);
         assertEquals("m13", 0d, m1.m[2], 0);
-
         assertEquals("m21", 0d, m1.m[3], 0);
         assertEquals("m22", sy, m1.m[4], 0);
         assertEquals("m23", 0d, m1.m[5], 0);
-
         assertEquals("m31", 0d, m1.m[6], 0);
         assertEquals("m32", 0d, m1.m[7], 0);
         assertEquals("m33", 1d, m1.m[8], 0);
-
         assertSame("fluent api result", m2, m1);
     }
 
@@ -319,11 +320,9 @@ public class Matrix3Test {
         assertEquals("m11", 1d, m1.m[0], 0);
         assertEquals("m12", 0d, m1.m[1], 0);
         assertEquals("m13", 0d, m1.m[2], 0);
-
         assertEquals("m21", 0d, m1.m[3], 0);
         assertEquals("m22", -1d, m1.m[4], 0);   // *
         assertEquals("m23", 1d, m1.m[5], 0);    // *
-
         assertEquals("m31", 0d, m1.m[6], 0);
         assertEquals("m32", 0d, m1.m[7], 0);
         assertEquals("m33", 1d, m1.m[8], 0);
@@ -363,7 +362,7 @@ public class Matrix3Test {
         assertEquals("m13", (a.m[0] * b.m[2]) + (a.m[1] * b.m[5]) + (a.m[2] * b.m[8]), m1.m[2], 0);
         assertEquals("m32", (a.m[3] * b.m[2]) + (a.m[4] * b.m[5]) + (a.m[5] * b.m[8]), m1.m[5], 0);
         assertEquals("m33", (a.m[6] * b.m[2]) + (a.m[7] * b.m[5]) + (a.m[8] * b.m[8]), m1.m[8], 0);
-
+        //
         assertSame("fluent api result", m2, m1);
     }
 
@@ -382,11 +381,9 @@ public class Matrix3Test {
         assertEquals("m11", 1d, m1.m[0], 0);
         assertEquals("m12", 0d, m1.m[1], 0);
         assertEquals("m13", dx, m1.m[2], 0);
-
         assertEquals("m21", 0d, m1.m[3], 0);
         assertEquals("m22", 1d, m1.m[4], 0);
         assertEquals("m23", dy, m1.m[5], 0);
-
         assertEquals("m31", 0d, m1.m[6], 0);
         assertEquals("m32", 0d, m1.m[7], 0);
         assertEquals("m33", 1d, m1.m[8], 0);
@@ -410,11 +407,9 @@ public class Matrix3Test {
         assertEquals("m11", c, m1.m[0], 0);
         assertEquals("m12", -s, m1.m[1], 0);
         assertEquals("m13", 0d, m1.m[2], 0);
-
         assertEquals("m21", s, m1.m[3], 0);
         assertEquals("m22", c, m1.m[4], 0);
         assertEquals("m23", 0d, m1.m[5], 0);
-
         assertEquals("m31", 0d, m1.m[6], 0);
         assertEquals("m32", 0d, m1.m[7], 0);
         assertEquals("m33", 1d, m1.m[8], 0);
@@ -437,15 +432,12 @@ public class Matrix3Test {
         assertEquals("m11", sx, m1.m[0], 0);
         assertEquals("m12", 0d, m1.m[1], 0);
         assertEquals("m13", 0d, m1.m[2], 0);
-
         assertEquals("m21", 0d, m1.m[3], 0);
         assertEquals("m22", sy, m1.m[4], 0);
         assertEquals("m23", 0d, m1.m[5], 0);
-
         assertEquals("m31", 0d, m1.m[6], 0);
         assertEquals("m32", 0d, m1.m[7], 0);
         assertEquals("m33", 1d, m1.m[8], 0);
-
         assertSame("fluent api result", m2, m1);
     }
 
@@ -462,15 +454,12 @@ public class Matrix3Test {
         assertEquals("m11", 1d, m1.m[0], 0);
         assertEquals("m12", 0d, m1.m[1], 0);
         assertEquals("m13", 0d, m1.m[2], 0);
-
         assertEquals("m21", 0d, m1.m[3], 0);
         assertEquals("m22", -1d, m1.m[4], 0);   // *
         assertEquals("m23", 1d, m1.m[5], 0);    // *
-
         assertEquals("m31", 0d, m1.m[6], 0);
         assertEquals("m32", 0d, m1.m[7], 0);
         assertEquals("m33", 1d, m1.m[8], 0);
-
         assertSame("fluent api result", m2, m1);
 
     }
@@ -508,7 +497,7 @@ public class Matrix3Test {
         assertEquals("m13", (copy.m[0] * m2.m[2]) + (copy.m[1] * m2.m[5]) + (copy.m[2] * m2.m[8]), m1.m[2], 0);
         assertEquals("m32", (copy.m[3] * m2.m[2]) + (copy.m[4] * m2.m[5]) + (copy.m[5] * m2.m[8]), m1.m[5], 0);
         assertEquals("m33", (copy.m[6] * m2.m[2]) + (copy.m[7] * m2.m[5]) + (copy.m[8] * m2.m[8]), m1.m[8], 0);
-
+        //
         assertSame("fluent api result", m3, m1);
     }
 
@@ -555,8 +544,35 @@ public class Matrix3Test {
         assertEquals("m13", (copy.m[0] * m13) + (copy.m[1] * m23) + (copy.m[2] * m33), m1.m[2], 0);
         assertEquals("m32", (copy.m[3] * m13) + (copy.m[4] * m23) + (copy.m[5] * m33), m1.m[5], 0);
         assertEquals("m33", (copy.m[6] * m13) + (copy.m[7] * m23) + (copy.m[8] * m33), m1.m[8], 0);
-
+        //
         assertSame("fluent api result", m3, m1);
+    }
+
+    @Test
+    public void testTranspose() throws Exception {
+        final double m11 = 11d;
+        final double m12 = 12d;
+        final double m13 = 13d;
+        final double m21 = 21d;
+        final double m22 = 22d;
+        final double m23 = 23d;
+        final double m31 = 31d;
+        final double m32 = 32d;
+        final double m33 = 33d;
+        Matrix3 m1 = new Matrix3(m11, m12, m13, m21, m22, m23, m31, m32, m33); // matrix to be tested/transposed
+
+        Matrix3 m2 = m1.transpose();
+
+        assertEquals("m11", m11, m1.m[0], 0);
+        assertEquals("m12", m21, m1.m[1], 0);
+        assertEquals("m13", m31, m1.m[2], 0);
+        assertEquals("m21", m12, m1.m[3], 0);
+        assertEquals("m22", m22, m1.m[4], 0);
+        assertEquals("m23", m32, m1.m[5], 0);
+        assertEquals("m31", m13, m1.m[6], 0);
+        assertEquals("m32", m23, m1.m[7], 0);
+        assertEquals("m33", m33, m1.m[8], 0);
+        assertSame("fluent api result", m2, m1);
     }
 
     @Test
@@ -578,29 +594,70 @@ public class Matrix3Test {
         assertEquals("m11", m11, m1.m[0], 0);
         assertEquals("m12", m21, m1.m[1], 0);
         assertEquals("m13", m31, m1.m[2], 0);
-
         assertEquals("m21", m12, m1.m[3], 0);
         assertEquals("m22", m22, m1.m[4], 0);
         assertEquals("m23", m32, m1.m[5], 0);
-
         assertEquals("m31", m13, m1.m[6], 0);
         assertEquals("m32", m23, m1.m[7], 0);
         assertEquals("m33", m33, m1.m[8], 0);
-
         assertSame("fluent api result", m3, m1);
     }
 
-    @Ignore("not implemented")
     @Test
-    public void testInvertMatrix() throws Exception {
+    public void testInvert() throws Exception {
+        Matrix3 m1 = new Matrix3(   // matrix to be tested/inverted
+            -4, -3, 3,
+            0, 2, -2,
+            1, 4, -1);
+        Matrix3 mOriginal = new Matrix3(m1);
 
-        fail("The test case is a stub.");
+        Matrix3 m2 = m1.invert();
+        Matrix3 mIdentity = new Matrix3(m1).multiplyByMatrix(mOriginal);
 
+        assertArrayEquals("identity matrix array", Matrix3.identity, mIdentity.m, 0);
+        assertSame("fluent api result", m2, m1);
     }
 
-    void prettyPrint(Matrix3 m) {
+    @Test
+    public void testInvertMatrix() throws Exception {
+        Matrix3 m1 = new Matrix3();
+        Matrix3 m2 = new Matrix3(   // matrix to be inverted
+            -4, -3, 3,
+            0, 2, -2,
+            1, 4, -1);
+        double det = computeDeterminant(m2);
+        System.out.println(m2);
+        System.out.println("Determinate: " + det);
+
+        Matrix3 mInv = m1.invertMatrix(m2);
+        Matrix3 mIdentity = mInv.multiplyByMatrix(m2);
+
+        assertArrayEquals("identity matrix array", Matrix3.identity, mIdentity.m, 0);
+        assertSame("fluent api result", mInv, m1);
+    }
+
+    //////////////////////
+    // Helper methods
+    //////////////////////
+
+    static private double computeDeterminant(Matrix3 matrix) {
+        // |m11  m12  m13|
+        // |m21  m22  m23| = m11(m22*m33 - m23*m32) + m12(m23*m31 - m21*m33) + m13(m21*m32 - m22*m31)
+        // |m31  m32  m33|
+        double[] m = matrix.m;
+        double d
+            = (m[0] * (m[4] * m[8] - m[5] * m[7])) //m11(m22*m33 - m23*m32)
+            + (m[1] * (m[5] * m[6] - m[3] * m[8])) //m12(m23*m31 - m21*m33)
+            + (m[2] * (m[3] * m[7] - m[4] * m[6]));//m13(m21*m32 - m22*m31)
+
+        return d;
+    }
+
+    static private void prettyPrint(Matrix3 m) {
         System.out.println("[ " + m.m[0] + "  " + m.m[1] + "  " + m.m[2] + " ]");
         System.out.println("[ " + m.m[3] + "  " + m.m[4] + "  " + m.m[5] + " ]");
         System.out.println("[ " + m.m[6] + "  " + m.m[7] + "  " + m.m[8] + " ]");
     }
+
+
 }
