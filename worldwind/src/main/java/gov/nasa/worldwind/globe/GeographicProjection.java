@@ -74,7 +74,7 @@ public interface GeographicProjection {
      * @return
      */
     FloatBuffer geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon, double[] elevations,
-                                           Vec3 referencePoint, Vec3 offset, FloatBuffer result);
+                                           Vec3 referencePoint, Vec3 offset, FloatBuffer result, int stride);
 
     /**
      *

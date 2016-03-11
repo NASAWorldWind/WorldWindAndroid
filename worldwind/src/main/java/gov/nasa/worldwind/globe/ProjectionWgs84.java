@@ -41,12 +41,13 @@ public class ProjectionWgs84 implements GeographicProjection {
         double sinLat = Math.sin(radLat);
         double cosLon = Math.cos(radLon);
         double sinLon = Math.sin(radLon);
+
         double ec2 = globe.getEccentricitySquared();
         double rpm = globe.getEquatorialRadius() / Math.sqrt(1.0 - ec2 * sinLat * sinLat);
 
-        result.x = (rpm + altitude) * cosLat * sinLon;
-        result.y = (rpm * (1.0 - ec2) + altitude) * sinLat;
-        result.z = (rpm + altitude) * cosLat * cosLon;
+        result.x = (altitude + rpm) * cosLat * sinLon;
+        result.y = (altitude + rpm * (1.0 - ec2)) * sinLat;
+        result.z = (altitude + rpm) * cosLat * cosLon;
 
         return result;
     }
@@ -69,24 +70,155 @@ public class ProjectionWgs84 implements GeographicProjection {
         double sinLat = Math.sin(radLat);
         double cosLon = Math.cos(radLon);
         double sinLon = Math.sin(radLon);
+
         double eqr2 = globe.getEquatorialRadius() * globe.getEquatorialRadius();
         double pol2 = globe.getPolarRadius() * globe.getPolarRadius();
 
         result.x = cosLat * sinLon / eqr2;
         result.y = (1 - globe.getEccentricitySquared()) * sinLat / pol2;
-        result.z = cosLat * cosLon / pol2;
+        result.z = cosLat * cosLon / eqr2;
+
+        return result.normalize();
+    }
+
+    protected Vec3 geographicToCartesianNorth(Globe globe, double latitude, double longitude, Vec3 result) {
+        if (globe == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianNormal", "missingGlobe"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianNormal", "missingResult"));
+        }
+
+        double radLat = Math.toRadians(latitude);
+        double radLon = Math.toRadians(longitude);
+        double cosLat = Math.cos(radLat);
+        double sinLat = Math.sin(radLat);
+        double cosLon = Math.cos(radLon);
+        double sinLon = Math.sin(radLon);
+
+        // The north-pointing tangent is derived by rotating the vector (0, 1, 0) about the Y-axis by longitude degrees,
+        // then rotating it about the X-axis by -latitude degrees. The latitude angle must be inverted because latitude
+        // is a clockwise rotation about the X-axis, and standard rotation matrices assume counter-clockwise rotation.
+        // The combined rotation can be represented by a combining two rotation matrices Rlat, and Rlon, then
+        // transforming the vector (0, 1, 0) by the combined transform:
+        //
+        // NorthTangent = (Rlon * Rlat) * (0, 1, 0)
+        //
+        // This computation can be simplified and encoded inline by making two observations:
+        // - The vector's X and Z coordinates are always 0, and its Y coordinate is always 1.
+        // - Inverting the latitude rotation angle is equivalent to inverting sinLat. We know this by the
+        //  trigonometric identities cos(-x) = cos(x), and sin(-x) = -sin(x).
+        result.x = -sinLat * sinLon;
+        result.y = cosLat;
+        result.z = -sinLat * cosLon;
 
         return result.normalize();
     }
 
     @Override
     public Matrix4 geographicToCartesianTransform(Globe globe, double latitude, double longitude, double altitude, Vec3 offset, Matrix4 result) {
+        if (globe == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianTransform", "missingGlobe"));
+        }
 
-        return null; // TODO
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianTransform", "missingResult"));
+        }
+
+//        Vec3 e = new Vec3();
+//        Vec3 n = new Vec3();
+//        Vec3 u = new Vec3();
+//        Vec3 p = new Vec3();
+//
+//        this.geographicToCartesian(globe, latitude, longitude, altitude, offset, p);
+//        this.geographicToCartesianNormal(globe, latitude, longitude, u);
+//        this.geographicToCartesianNorth(globe, latitude, longitude, n);
+//
+//        e.cross(n, u);
+//        n.cross(u, e);
+//
+//        result.set(
+//            e.x, n.x, u.x, p.x,
+//            e.y, n.y, u.y, p.y,
+//            e.z, n.z, u.z, p.z,
+//            0, 0, 0, 1);
+//
+//        return result;
+
+        double radLat = Math.toRadians(latitude);
+        double radLon = Math.toRadians(longitude);
+        double cosLat = Math.cos(radLat);
+        double sinLat = Math.sin(radLat);
+        double cosLon = Math.cos(radLon);
+        double sinLon = Math.sin(radLon);
+
+        double ec2 = globe.getEccentricitySquared();
+        double rpm = globe.getEquatorialRadius() / Math.sqrt(1.0 - ec2 * sinLat * sinLat);
+        double eqr2 = globe.getEquatorialRadius() * globe.getEquatorialRadius();
+        double pol2 = globe.getPolarRadius() * globe.getPolarRadius();
+
+        double px = (rpm + altitude) * cosLat * sinLon;
+        double py = (rpm * (1.0 - ec2) + altitude) * sinLat;
+        double pz = (rpm + altitude) * cosLat * cosLon;
+
+        double ux = cosLat * sinLon / eqr2;
+        double uy = (1 - globe.getEccentricitySquared()) * sinLat / pol2;
+        double uz = cosLat * cosLon / eqr2;
+
+        double len = Math.sqrt(ux * ux + uy * uy + uz * uz);
+        ux /= len;
+        uy /= len;
+        uz /= len;
+
+        // The north-pointing tangent is derived by rotating the vector (0, 1, 0) about the Y-axis by longitude degrees,
+        // then rotating it about the X-axis by -latitude degrees. The latitude angle must be inverted because latitude
+        // is a clockwise rotation about the X-axis, and standard rotation matrices assume counter-clockwise rotation.
+        // The combined rotation can be represented by a combining two rotation matrices Rlat, and Rlon, then
+        // transforming the vector (0, 1, 0) by the combined transform:
+        //
+        // NorthTangent = (Rlon * Rlat) * (0, 1, 0)
+        //
+        // This computation can be simplified and encoded inline by making two observations:
+        // - The vector's X and Z coordinates are always 0, and its Y coordinate is always 1.
+        // - Inverting the latitude rotation angle is equivalent to inverting sinLat. We know this by the
+        //  trigonometric identities cos(-x) = cos(x), and sin(-x) = -sin(x).
+        double nx = -sinLat * sinLon;
+        double ny = cosLat;
+        double nz = -sinLat * cosLon;
+
+        len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+        nx /= len;
+        ny /= len;
+        nz /= len;
+
+        // East axis is the cross product of the north and up axes.
+        double ex = ny * uz - nz * uy;
+        double ey = nz * ux - nx * uz;
+        double ez = nx * uy - ny * ux;
+
+        // Re-compute the north axis as the cross product of the up and east axes. This ensures that all three axes are orthogonal.
+        // Though the initial y axis computed above is likely to be very nearly orthogonal, we re-compute it using cross
+        // products to reduce the effect of floating point rounding errors caused by working with Earth sized coordinates.
+        nx = uy * ez - uz * ey;
+        ny = uz * ex - ux * ez;
+        nz = ux * ey - uy * ex;
+
+        result.set(
+            ex, nx, ux, px,
+            ey, ny, uy, py,
+            ez, nz, uz, pz,
+            0, 0, 0, 1);
+
+        return result;
     }
 
     @Override
-    public FloatBuffer geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon, double[] elevations, Vec3 referencePoint, Vec3 offset, FloatBuffer result) {
+    public FloatBuffer geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon, double[] elevations, Vec3 referencePoint, Vec3 offset, FloatBuffer result, int stride) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianGrid", "missingGlobe"));
@@ -103,18 +235,15 @@ public class ProjectionWgs84 implements GeographicProjection {
         }
 
         int numPoints = numLat * numLon;
-        if (elevations == null || elevations.length < numPoints) {
+        if (elevations != null && elevations.length < numPoints) {
             throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "ProjectionWgs84",
                 "geographicToCartesianGrid", "missingArray"));
         }
 
-        if (result == null || result.remaining() < numPoints * 3) {
+        if (result == null || result.remaining() < numPoints * stride) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingResult"));
         }
-
-        double eqr = globe.getEquatorialRadius();
-        double ec2 = globe.getEccentricitySquared();
 
         double minLat = Math.toRadians(sector.minLatitude);
         double maxLat = Math.toRadians(sector.maxLatitude);
@@ -123,13 +252,18 @@ public class ProjectionWgs84 implements GeographicProjection {
         double deltaLat = (maxLat - minLat) / (numLat > 1 ? numLat - 1 : 1);
         double deltaLon = (maxLon - minLon) / (numLon > 1 ? numLon - 1 : 1);
 
-        Vec3 refCenter = referencePoint != null ? referencePoint : new Vec3();
+        double eqr = globe.getEquatorialRadius();
+        double ec2 = globe.getEccentricitySquared();
+
         int latIndex, lonIndex, elevIndex = 0;
         double lat, lon;
+        double xOffset = (referencePoint != null) ? -referencePoint.x : 0;
+        double yOffset = (referencePoint != null) ? -referencePoint.y : 0;
+        double zOffset = (referencePoint != null) ? -referencePoint.z : 0;
 
         double[] cosLon = new double[numLon];
         double[] sinLon = new double[numLon];
-        float[] coords = new float[3];
+        float[] coords = new float[stride];
 
         // Compute and save values that are a function of each unique longitude value in the specified sector. This
         // eliminates the need to re-compute these values for each column of constant longitude.
@@ -146,7 +280,7 @@ public class ProjectionWgs84 implements GeographicProjection {
         // point corresponding to each latitude and longitude.
         for (latIndex = 0, lat = minLat; latIndex < numLat; latIndex++, lat += deltaLat) {
             if (latIndex == numLat - 1) {
-                lat = maxLat; // explicitly set the last lat to the max longitude to ensure alignment
+                lat = maxLat; // explicitly set the last lat to the max latitude to ensure alignment
             }
 
             // Latitude is constant for each row. Values that are a function of latitude can be computed once per row.
@@ -155,11 +289,11 @@ public class ProjectionWgs84 implements GeographicProjection {
             double rpm = eqr / Math.sqrt(1.0 - ec2 * sinLat * sinLat);
 
             for (lonIndex = 0; lonIndex < numLon; lonIndex++) {
-                double elev = elevations[elevIndex++];
-                coords[0] = (float) ((elev + rpm) * cosLat * sinLon[lonIndex] - refCenter.x);
-                coords[1] = (float) ((elev + rpm * (1.0 - ec2)) * sinLat - refCenter.y);
-                coords[2] = (float) ((elev + rpm) * cosLat * cosLon[lonIndex] - refCenter.z);
-                result.put(coords, 0, 3);
+                double elev = (elevations != null) ? elevations[elevIndex++] : 0;
+                coords[0] = (float) ((elev + rpm) * cosLat * sinLon[lonIndex] + xOffset);
+                coords[1] = (float) ((elev + rpm * (1.0 - ec2)) * sinLat + yOffset);
+                coords[2] = (float) ((elev + rpm) * cosLat * cosLon[lonIndex] + zOffset);
+                result.put(coords, 0, stride);
             }
         }
 

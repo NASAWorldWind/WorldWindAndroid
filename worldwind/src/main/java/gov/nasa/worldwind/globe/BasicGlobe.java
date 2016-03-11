@@ -23,10 +23,15 @@ public class BasicGlobe implements Globe {
 
     protected GeographicProjection projection;
 
-    public BasicGlobe(double equatorialRadius, double polarRadius, double eccentricitySquared, GeographicProjection projection) {
-        if (equatorialRadius <= 0 || polarRadius <= 0) {
+    public BasicGlobe(double semiMajorAxis, double inverseFlattening, GeographicProjection projection) {
+        if (semiMajorAxis <= 0) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicGlobe", "constructor", "invalidRadius"));
+                Logger.logMessage(Logger.ERROR, "BasicGlobe", "constructor", "Semi-major axis is invalid"));
+        }
+
+        if (inverseFlattening <= 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicGlobe", "constructor", "Inverse flattening is invalid"));
         }
 
         if (projection == null) {
@@ -34,9 +39,10 @@ public class BasicGlobe implements Globe {
                 Logger.logMessage(Logger.ERROR, "BasicGlobe", "constructor", "missingProjection"));
         }
 
-        this.equatorialRadius = equatorialRadius;
-        this.polarRadius = polarRadius;
-        this.eccentricitySquared = eccentricitySquared;
+        double f = 1 / inverseFlattening;
+        this.equatorialRadius = semiMajorAxis;
+        this.polarRadius = semiMajorAxis * (1 - f);
+        this.eccentricitySquared = 2 * f - f * f;
         this.projection = projection;
     }
 
@@ -53,9 +59,9 @@ public class BasicGlobe implements Globe {
     @Override
     public double getRadiusAt(double latitude, double longitude) {
         double sinLat = Math.sin(Math.toRadians(latitude));
-        double rpm = this.equatorialRadius / Math.sqrt(1.0 - this.eccentricitySquared * sinLat * sinLat);
-
-        return rpm * Math.sqrt(1.0 + (this.eccentricitySquared * this.eccentricitySquared - 2.0 * this.eccentricitySquared) * sinLat * sinLat);
+        double ec2 = this.eccentricitySquared;
+        double rpm = this.equatorialRadius / Math.sqrt(1 - ec2 * sinLat * sinLat);
+        return rpm * Math.sqrt(1 + (ec2 * ec2 - 2 * ec2) * sinLat * sinLat);
     }
 
 
@@ -110,7 +116,8 @@ public class BasicGlobe implements Globe {
     }
 
     @Override
-    public FloatBuffer geographicToCartesianGrid(Sector sector, int numLat, int numLon, double[] elevations, Vec3 referencePoint, FloatBuffer result) {
+    public FloatBuffer geographicToCartesianGrid(Sector sector, int numLat, int numLon, double[] elevations,
+                                                 Vec3 referencePoint, FloatBuffer result, int stride) {
         if (sector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingSector"));
@@ -122,17 +129,18 @@ public class BasicGlobe implements Globe {
         }
 
         int numPoints = numLat * numLon;
-        if (elevations == null || elevations.length < numPoints) {
+        if (elevations != null && elevations.length < numPoints) {
             throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "BasicGlobe",
                 "geographicToCartesianGrid", "missingArray"));
         }
 
-        if (result == null || result.remaining() < numPoints * 3) {
+        if (result == null || result.remaining() < numPoints * stride) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingResult"));
         }
 
-        return this.projection.geographicToCartesianGrid(this, sector, numLat, numLon, elevations, referencePoint, null, result);
+        return this.projection.geographicToCartesianGrid(this, sector, numLat, numLon, elevations,
+            referencePoint, null, result, stride);
     }
 
     @Override

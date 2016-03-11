@@ -96,7 +96,7 @@ public interface Globe {
      * @return
      */
     FloatBuffer geographicToCartesianGrid(Sector sector, int numLat, int numLon, double[] elevations,
-                                           Vec3 referencePoint, FloatBuffer result);
+                                           Vec3 referencePoint, FloatBuffer result, int stride);
 
     /**
      *
