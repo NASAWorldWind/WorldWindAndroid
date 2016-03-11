@@ -595,7 +595,7 @@ public class Matrix3 {
      *
      * @throws IllegalArgumentException If this matrix cannot be inverted
      */
-    public Matrix4 invert() {
+    public Matrix3 invert() {
 
         throw new UnsupportedOperationException("Matrix3.invert is not implemented"); // TODO
     }
