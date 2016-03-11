@@ -227,11 +227,14 @@ public class Matrix4 {
 
     /**
      * Sets the rotation components of this matrix to a specified axis and angle. Positive angles are interpreted as
-     * counter-clockwise rotation about the axis.
+     * counter-clockwise rotation about the axis when viewed when viewed from the positive end of the axis, looking
+     * toward the negative end of the axis.
+     * <p/>
+     * The result of this method is undefined if the axis components are not a unit vector.
      *
-     * @param x            the X component of the rotation axis
-     * @param y            the Y component of the rotation axis
-     * @param z            the Z component of the rotation axis
+     * @param x            the X component of the rotation axis unit vector
+     * @param y            the Y component of the rotation axis unit vector
+     * @param z            the Z component of the rotation axis unit vector
      * @param angleDegrees the angle of rotation in degrees
      *
      * @return this matrix with its rotation components set to the specified values and all other components unmodified
@@ -320,11 +323,14 @@ public class Matrix4 {
 
     /**
      * Sets this matrix to a rotation matrix with a specified axis and angle. Positive angles are interpreted as
-     * counter-clockwise rotation about the axis.
+     * counter-clockwise rotation about the axis when viewed when viewed from the positive end of the axis, looking
+     * toward the negative end of the axis.
+     * <p/>
+     * The result of this method is undefined if the axis components are not a unit vector.
      *
-     * @param x            the X component of the rotation axis
-     * @param y            the Y component of the rotation axis
-     * @param z            the Z component of the rotation axis
+     * @param x            the X component of the rotation axis unit vector
+     * @param y            the Y component of the rotation axis unit vector
+     * @param z            the Z component of the rotation axis unit vector
      * @param angleDegrees the angle of rotation in degrees
      *
      * @return this matrix with its rotation components set to those specified and all other components set to that of
@@ -992,8 +998,8 @@ public class Matrix4 {
      */
     public Matrix4 invertOrthonormal() {
 
-        // This is assumed to contain matrix 3D transformation matrix. The upper 3x3 is inverted, the translation
-        // components are multiplied by the inverted-upper-3x3 and negated.
+        // This is assumed to contain matrix 3D transformation matrix. The upper 3x3 is transposed, the translation
+        // components are multiplied by the transposed-upper-3x3 and negated.
 
         double[] m = this.m;
         double tmp = m[1];
@@ -1024,13 +1030,14 @@ public class Matrix4 {
     }
 
     /**
-     * Inverts the specified orthonormal transform matrix and stores the result in this matrix. This matrix's upper 3x3
-     * is transposed, then its fourth column is transformed by the transposed upper 3x3 and negated.
+     * Inverts the specified orthonormal transform matrix and stores the result in 'this' matrix. The specified matrix's
+     * upper 3x3 is transposed, then its fourth column is transformed by the transposed upper 3x3 and negated.  The
+     * result is stored in 'this' matrix.
      * <p/>
      * The result of this method is undefined if this matrix is passed in as the matrix to invert, or if the matrix's
      * values are not consistent with those of an orthonormal transform.
      *
-     * @param matrix the matrix whose inverse is computed This matrix is assumed to represent an orthonormal transform
+     * @param matrix the matrix whose inverse is computed. The matrix is assumed to represent an orthonormal transform
      *               matrix.
      *
      * @return this matrix set to the inverse of the specified matrix
@@ -1043,8 +1050,8 @@ public class Matrix4 {
                 Logger.logMessage(Logger.ERROR, "Matrix4", "invertOrthonormalMatrix", "missingMatrix"));
         }
 
-        // The matrix is assumed to contain matrix 3D transformation matrix. The upper 3x3 is inverted, the translation
-        // components are multiplied by the inverted-upper-3x3 and negated.
+        // The matrix is assumed to contain matrix 3D transformation matrix. The upper 3x3 is transposed, the translation
+        // components are multiplied by the transposed-upper-3x3 and negated.
 
         this.m[0] = matrix.m[0];
         this.m[1] = matrix.m[4];
@@ -1533,4 +1540,5 @@ public class Matrix4 {
             b[i] = sum / A[i][i];
         }
     }
+
 }
