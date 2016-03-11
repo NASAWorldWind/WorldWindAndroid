@@ -7,6 +7,7 @@ package gov.nasa.worldwind.render;
 
 import android.content.Context;
 import android.graphics.Rect;
+import android.opengl.GLES20;
 
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
@@ -56,6 +57,12 @@ public class DrawContext {
     protected boolean pickingMode;
 
     protected boolean renderRequested;
+
+    protected int currentProgramId;
+
+    protected int currentTexUnit = GLES20.GL_TEXTURE0;
+
+    protected int[] currentTexId = new int[32];
 
     public DrawContext(Context context) {
         this.context = context;
@@ -182,7 +189,7 @@ public class DrawContext {
 
         this.modelview.set(modelview);
         this.projection.set(projection);
-        this.modelviewProjection.setToMultiply(modelview, projection);
+        this.modelviewProjection.setToMultiply(projection, modelview);
         this.modelviewProjectionInv.invertMatrix(this.modelviewProjection);
         this.modelview.extractEyePoint(this.eyePoint);
     }
@@ -203,8 +210,40 @@ public class DrawContext {
         this.renderRequested = true;
     }
 
+    public void useProgram(GpuProgram program) {
+        int objectId = (program != null) ? program.getObjectId() : 0;
+
+        if (this.currentProgramId != objectId) {
+            this.currentProgramId = objectId;
+            GLES20.glUseProgram(objectId);
+        }
+    }
+
+    public void bindTexture(int unit, GpuTexture texture) {
+        int unitIndex = unit - GLES20.GL_TEXTURE0;
+        int objectId = (texture != null) ? texture.getObjectId() : 0;
+
+        if (this.currentTexUnit != unit) {
+            this.currentTexUnit = unit;
+            GLES20.glActiveTexture(unit);
+        }
+
+        if (this.currentTexId[unitIndex] != objectId) {
+            this.currentTexId[unitIndex] = objectId;
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, objectId);
+        }
+    }
+
+    public void contextLost() {
+        this.currentProgramId = 0;
+        this.currentTexUnit = GLES20.GL_TEXTURE0;
+
+        for (int i = 0; i < this.currentTexId.length; i++) {
+            this.currentTexId[i] = 0;
+        }
+    }
+
     public void reset() {
-        // Reset the draw context's internal properties.
         this.globe = null;
         this.terrain = null;
         this.layers.clearLayers();

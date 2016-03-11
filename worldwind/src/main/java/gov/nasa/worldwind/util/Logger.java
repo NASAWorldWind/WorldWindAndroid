@@ -24,6 +24,7 @@ public class Logger {
 
     static {
         messageTable = new HashMap<>();
+        messageTable.put("invalidBitmap", "The bitmap is null or recycled");
         messageTable.put("invalidClipDistance", "The clip distance is invalid");
         messageTable.put("invalidFieldOfView", "The field of view is invalid");
         messageTable.put("invalidHeight", "The height is invalid");
