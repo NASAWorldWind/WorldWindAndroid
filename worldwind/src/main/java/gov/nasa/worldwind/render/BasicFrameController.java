@@ -50,7 +50,7 @@ public class BasicFrameController implements FrameController {
                     layer.render(dc);
                 } catch (Exception e) {
                     Logger.logMessage(Logger.ERROR, "BasicFrameController", "drawLayers",
-                        "Exception while rendering layer " + layer.getDisplayName(), e);
+                        "Exception while rendering layer \'" + layer.getDisplayName() + "\'", e);
                     // Keep going. Draw the remaining layers.
                 }
             }

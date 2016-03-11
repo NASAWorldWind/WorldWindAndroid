@@ -170,7 +170,7 @@ public class RenderableLayer extends AbstractLayer implements Iterable<Renderabl
                 renderable.render(dc);
             } catch (Exception e) {
                 Logger.logMessage(Logger.ERROR, "RenderableLayer", "doRender",
-                    "Exception while rendering shape " + renderable.getDisplayName(), e);
+                    "Exception while rendering shape \'" + renderable.getDisplayName() + "\'", e);
                 // Keep going. Draw the remaining renderables.
             }
         }
