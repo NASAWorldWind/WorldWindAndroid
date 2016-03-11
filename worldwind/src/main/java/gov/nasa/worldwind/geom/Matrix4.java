@@ -932,6 +932,43 @@ public class Matrix4 {
     }
 
     /**
+     * Transposes this matrix, storing the result in the specified single precision array. The result is compatible with
+     * GLSL uniform matrices, and can be passed to the function glUniformMatrix4fv.
+     *
+     * @param result a pre-allocated array of length 16 in which to return the transposed components
+     *
+     * @return the result argument set to the transponsed components
+     */
+    public float[] transposeToArray(float[] result, int offset) {
+        if (result == null || result.length - offset < 16) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Matrix4", "transposeToArray", "missingResult"));
+        }
+
+        result[offset++] = (float) this.m[0];
+        result[offset++] = (float) this.m[4];
+        result[offset++] = (float) this.m[8];
+        result[offset++] = (float) this.m[12];
+
+        result[offset++] = (float) this.m[1];
+        result[offset++] = (float) this.m[5];
+        result[offset++] = (float) this.m[9];
+        result[offset++] = (float) this.m[13];
+
+        result[offset++] = (float) this.m[2];
+        result[offset++] = (float) this.m[6];
+        result[offset++] = (float) this.m[10];
+        result[offset++] = (float) this.m[14];
+
+        result[offset++] = (float) this.m[3];
+        result[offset++] = (float) this.m[7];
+        result[offset++] = (float) this.m[11];
+        result[offset] = (float) this.m[15];
+
+        return result;
+    }
+
+    /**
      * Inverts this matrix in place.
      * <p/>
      * This throws an exception if this matrix is singular.

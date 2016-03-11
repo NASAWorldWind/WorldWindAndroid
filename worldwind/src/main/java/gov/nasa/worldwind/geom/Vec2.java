@@ -72,6 +72,26 @@ public class Vec2 {
     }
 
     /**
+     * Copies this vector's components to the specified single precision array. The result is compatible with GLSL
+     * uniform vectors, and can be passed to the function glUniform2fv.
+     *
+     * @param result a pre-allocated array of length 2 in which to return the components
+     *
+     * @return the result argument set to this vector's components
+     */
+    public float[] toArray(float[] result, int offset) {
+        if (result == null || result.length - offset < 2) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Vec2", "toArray", "missingResult"));
+        }
+
+        result[offset++] = (float) this.x;
+        result[offset] = (float) this.y;
+
+        return result;
+    }
+
+    /**
      * Computes the magnitude of this vector.
      *
      * @return the magnitude of this vector
@@ -309,10 +329,10 @@ public class Vec2 {
      */
     public Vec2 normalize() {
         double magnitude = this.magnitude();
-        double magnitudeInverse = 1 / magnitude;
-
-        this.x *= magnitudeInverse;
-        this.y *= magnitudeInverse;
+        if (magnitude != 0) {
+            this.x /= magnitude;
+            this.y /= magnitude;
+        }
 
         return this;
     }

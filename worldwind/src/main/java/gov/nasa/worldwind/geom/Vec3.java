@@ -181,6 +181,27 @@ public class Vec3 {
     }
 
     /**
+     * Copies this vector's components to the specified single precision array. The result is compatible with GLSL
+     * uniform vectors, and can be passed to the function glUniform3fv.
+     *
+     * @param result a pre-allocated array of length 3 in which to return the components
+     *
+     * @return the result argument set to this vector's components
+     */
+    public float[] toArray(float[] result, int offset) {
+        if (result == null || result.length - offset < 3) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Vec3", "toArray", "missingResult"));
+        }
+
+        result[offset++] = (float) this.x;
+        result[offset++] = (float) this.y;
+        result[offset] = (float) this.z;
+
+        return result;
+    }
+
+    /**
      * Computes the magnitude of this vector.
      *
      * @return the magnitude of this vector
@@ -435,10 +456,11 @@ public class Vec3 {
      */
     public Vec3 normalize() {
         double magnitude = this.magnitude();
-        double magnitudeInverse = 1 / magnitude;
-        this.x *= magnitudeInverse;
-        this.y *= magnitudeInverse;
-        this.z *= magnitudeInverse;
+        if (magnitude != 0) {
+            this.x /= magnitude;
+            this.y /= magnitude;
+            this.z /= magnitude;
+        }
 
         return this;
     }
@@ -485,6 +507,29 @@ public class Vec3 {
         this.x = x;
         this.y = y;
         this.z = z;
+
+        return this;
+    }
+
+    /**
+     * Computes the cross product of two vectors, setting this vector to the result.
+     *
+     * @param a the first vector
+     * @param b the second vector
+     *
+     * @return this vector set to the cross product of the two specified vectors
+     *
+     * @throws IllegalArgumentException If either vector is null
+     */
+    public Vec3 cross(Vec3 a, Vec3 b) {
+        if (a == null || b == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Vec3", "cross", "missingVector"));
+        }
+
+        this.x = a.y * b.z - a.z * b.y;
+        this.y = a.z * b.x - a.x * b.z;
+        this.z = a.x * b.y - a.y * b.x;
 
         return this;
     }
