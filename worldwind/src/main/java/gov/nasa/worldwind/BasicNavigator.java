@@ -127,12 +127,12 @@ public class BasicNavigator implements Navigator {
         // Initialize to the identity matrix.
         result.setToIdentity();
 
-        // Transform by heading, tilt and roll. Rotate about the local coordinate system.
-        result.multiplyByRotation(0, 0, 1, -this.roll); // rotate counter-clockwise about the Z axis
-        result.multiplyByRotation(1, 0, 0, -this.tilt); // rotate counter-clockwise about the X axis
-        result.multiplyByRotation(0, 0, 1, this.heading); // rotate clockwise about the Z axis (again)
+        // Transform by heading, tilt and roll, inverting the rotation angles.
+        result.multiplyByRotation(0, 0, 1, -this.roll); // rotate clockwise about the Z axis
+        result.multiplyByRotation(1, 0, 0, -this.tilt); // rotate clockwise about the X axis
+        result.multiplyByRotation(0, 0, 1, this.heading); // rotate counter-clockwise about the Z axis (again)
 
-        // Transform to the local cartesian coordinate system at the position.
+        // Transform by the inverse of the local cartesian transform at the navigator's position.
         Position origin = this.position;
         globe.geographicToCartesianTransform(origin.latitude, origin.longitude, origin.altitude, this.localCartesian);
         this.localCartesian.invertOrthonormal();
@@ -143,8 +143,9 @@ public class BasicNavigator implements Navigator {
 
     protected Matrix4 computeProjection(DrawContext dc, Matrix4 result) {
 
+        // TODO compute clip plane distances appropriate for the current frame
         Rect viewport = dc.getViewport();
-        result.setToPerspectiveProjection(viewport.width(), viewport.height(), this.fieldOfView, 1e3, 1e7);
+        result.setToPerspectiveProjection(viewport.width(), viewport.height(), this.fieldOfView, 1e3, 1e8);
 
         return result;
     }

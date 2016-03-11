@@ -6,7 +6,8 @@
 package gov.nasa.worldwind;
 
 import android.view.MotionEvent;
-import android.view.View;
+
+import gov.nasa.worldwind.render.DrawContext;
 
 public interface NavigatorController {
 
@@ -14,5 +15,9 @@ public interface NavigatorController {
 
     void setWorldWindow(WorldWindow wwd);
 
-    void onTouch(View view, MotionEvent event);
+    void windowWillDraw(DrawContext dc);
+
+    void windowDidDraw(DrawContext dc);
+
+    void onTouch(MotionEvent event);
 }

@@ -14,6 +14,7 @@ import android.util.AttributeSet;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.globe.GlobeWgs84;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.layer.LayerList;
@@ -68,15 +69,15 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
      * Prepares this WorldWindow for drawing and event handling.
      */
     protected void init() {
-
-        // Initialize the drawing context with the Android context.
-        this.navigatorController.setWorldWindow(this);
-        this.dc = new DrawContext(this.getContext());
-
         // Set up to render on demand to an OpenGL ES 2.x context
+        this.dc = new DrawContext(this.getContext());
         this.setEGLContextClientVersion(2); // must be called before setRenderer
         this.setRenderer(this);
         this.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY); // must be called after setRenderer
+
+        // Initialize the world window's navigator and controller.
+        this.navigator.setPosition(Position.fromDegrees(0, 0, 3e7)); // TODO adaptive initial position
+        this.navigatorController.setWorldWindow(this);
     }
 
     public Globe getGlobe() {
@@ -165,6 +166,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
+        this.dc.contextLost();
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glEnable(GLES20.GL_CULL_FACE);
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
@@ -180,10 +182,14 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
     @Override
     public void onDrawFrame(GL10 unused) {
-        // Setup the draw context and render the WorldWindow's current state.
+        // Setup the draw context according to the World Window's current state.
         this.prepareToDrawFrame();
-        this.navigator.applyState(dc);
+        this.navigator.applyState(this.dc);
+
+        // Draw the WorldWindow's current state.
+        this.navigatorController.windowWillDraw(this.dc);
         this.frameController.drawFrame(this.dc);
+        this.navigatorController.windowDidDraw(this.dc);
 
         // Propagate render requests submitted during rendering to the WorldWindow. The draw context provides a layer of
         // indirection that insulates rendering code from establishing a dependency on a specific WorldWindow.

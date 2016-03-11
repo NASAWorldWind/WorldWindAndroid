@@ -6,7 +6,8 @@
 package gov.nasa.worldwind;
 
 import android.view.MotionEvent;
-import android.view.View;
+
+import gov.nasa.worldwind.render.DrawContext;
 
 public class BasicNavigatorController implements NavigatorController {
 
@@ -26,7 +27,17 @@ public class BasicNavigatorController implements NavigatorController {
     }
 
     @Override
-    public void onTouch(View view, MotionEvent event) {
+    public void windowWillDraw(DrawContext dc) {
+
+    }
+
+    @Override
+    public void windowDidDraw(DrawContext dc) {
+
+    }
+
+    @Override
+    public void onTouch(MotionEvent event) {
 
     }
 }
