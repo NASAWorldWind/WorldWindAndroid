@@ -58,12 +58,16 @@ public class BasicGlobe implements Globe {
 
     @Override
     public double getRadiusAt(double latitude, double longitude) {
+        // The radius for an ellipsoidal globe is a function of its latitude. The following solution was derived by
+        // observing that the length of the ellipsoidal point at the specified latitude and longitude indicates the
+        // radius at that location. The formula for the length of the ellipsoidal point was then converted into the
+        // simplified form below.
+
         double sinLat = Math.sin(Math.toRadians(latitude));
         double ec2 = this.eccentricitySquared;
         double rpm = this.equatorialRadius / Math.sqrt(1 - ec2 * sinLat * sinLat);
         return rpm * Math.sqrt(1 + (ec2 * ec2 - 2 * ec2) * sinLat * sinLat);
     }
-
 
     @Override
     public double getEccentricitySquared() {
