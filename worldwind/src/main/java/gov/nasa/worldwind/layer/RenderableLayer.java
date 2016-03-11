@@ -21,6 +21,17 @@ public class RenderableLayer extends AbstractLayer implements Iterable<Renderabl
         super(displayName);
     }
 
+    public RenderableLayer(String displayName, Iterable<? extends Renderable> renderables) {
+        super(displayName);
+
+        if (renderables == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "RenderableLayer", "constructor", "missingList"));
+        }
+
+        this.addAllRenderables(renderables);
+    }
+
     public int count() {
         return this.renderables.size();
     }
@@ -90,6 +101,7 @@ public class RenderableLayer extends AbstractLayer implements Iterable<Renderabl
                 Logger.logMessage(Logger.ERROR, "RenderableLayer", "addRenderable", "missingRenderable"));
         }
 
+        this.renderables.add(renderable);
     }
 
     public void addRenderable(int index, Renderable renderable) {
@@ -97,6 +109,13 @@ public class RenderableLayer extends AbstractLayer implements Iterable<Renderabl
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "RenderableLayer", "addRenderable", "invalidIndex"));
         }
+
+        if (renderable == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "RenderableLayer", "addRenderable", "missingRenderable"));
+        }
+
+        this.renderables.add(index, renderable);
     }
 
     public void addAllRenderables(Iterable<? extends Renderable> renderables) {

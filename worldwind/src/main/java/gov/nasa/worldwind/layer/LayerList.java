@@ -18,6 +18,15 @@ public class LayerList implements Iterable<Layer> {
     public LayerList() {
     }
 
+    public LayerList(Iterable<? extends Layer> layers) {
+        if (layers == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerList", "constructor", "missingList"));
+        }
+
+        this.addAllLayers(layers);
+    }
+
     public int count() {
         return this.layers.size();
     }
