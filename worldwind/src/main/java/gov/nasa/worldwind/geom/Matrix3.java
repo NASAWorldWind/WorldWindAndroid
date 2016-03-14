@@ -595,7 +595,7 @@ public class Matrix3 {
      * @return the result argument set to the transponsed components
      */
     public float[] transposeToArray(float[] result, int offset) {
-        if (result == null || result.length - offset < 16) {
+        if (result == null || result.length - offset < 9) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Matrix4", "transposeToArray", "missingResult"));
         }
