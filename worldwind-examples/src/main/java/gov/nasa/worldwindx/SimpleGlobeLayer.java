@@ -72,7 +72,9 @@ public class SimpleGlobeLayer extends AbstractLayer {
         this.program = new GpuProgram(vertexShaderSource, fragmentShaderSource, new String[]{"vertexPoint", "vertexTexCoord"});
 
         // TODO invalid once GL context is lost
-        Bitmap bitmap = BitmapFactory.decodeResource(dc.getContext().getResources(), R.drawable.bmng_world_topo_bathy_1024);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inScaled = false;
+        Bitmap bitmap = BitmapFactory.decodeResource(dc.getContext().getResources(), R.drawable.world_topo_bathy_200405_3, options);
         this.texture = new GpuTexture(bitmap);
 
         // Initialize the vertex coordinate buffer and wireframe index buffer.
@@ -82,8 +84,8 @@ public class SimpleGlobeLayer extends AbstractLayer {
         sector.minLongitude = -180;
         sector.maxLongitude = 180;
 
-        int numLat = 17;
-        int numLon = 33;
+        int numLat = 50;
+        int numLon = 100;
         this.vertices = this.assembleVertices(dc.getGlobe(), sector, numLat, numLon);
         this.triStrip = this.assembleTriStripIndices(numLat, numLon);
         this.lines = this.assembleLineIndices(numLat, numLon);
@@ -207,6 +209,10 @@ public class SimpleGlobeLayer extends AbstractLayer {
         texCoordMatrix.transposeToArray(this.matrix, 0);
         GLES20.glUniformMatrix3fv(location, 1, false, this.matrix, 0);
 
+        // Disable the texture.
+        location = GLES20.glGetUniformLocation(this.program.getObjectId(), "enableTexture");
+        GLES20.glUniform1i(location, 0);
+
         // Draw the lines in white.
         location = GLES20.glGetUniformLocation(this.program.getObjectId(), "color");
         GLES20.glUniform4fv(location, 1, this.colorWhite, 0);
@@ -227,9 +233,5 @@ public class SimpleGlobeLayer extends AbstractLayer {
         GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, this.triStrip.remaining(), GLES20.GL_UNSIGNED_SHORT, this.triStrip);
         GLES20.glDisable(GLES20.GL_POLYGON_OFFSET_FILL);
         GLES20.glPolygonOffset(0, 0);
-
-        // Disable the texture.
-        location = GLES20.glGetUniformLocation(this.program.getObjectId(), "enableTexture");
-        GLES20.glUniform1i(location, 0);
     }
 }
