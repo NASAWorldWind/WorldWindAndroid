@@ -254,16 +254,16 @@ public class ProjectionWgs84 implements GeographicProjection {
 
         double eqr = globe.getEquatorialRadius();
         double ec2 = globe.getEccentricitySquared();
+        double cosLat, sinLat, rpm;
+        double[] cosLon = new double[numLon];
+        double[] sinLon = new double[numLon];
 
-        int latIndex, lonIndex, elevIndex = 0;
-        double lat, lon;
+        int latIndex, lonIndex, elevIndex = 0, pos;
+        double lat, lon, elev;
         double xOffset = (referencePoint != null) ? -referencePoint.x : 0;
         double yOffset = (referencePoint != null) ? -referencePoint.y : 0;
         double zOffset = (referencePoint != null) ? -referencePoint.z : 0;
-
-        double[] cosLon = new double[numLon];
-        double[] sinLon = new double[numLon];
-        float[] coords = new float[stride];
+        float[] xyz = new float[3];
 
         // Compute and save values that are a function of each unique longitude value in the specified sector. This
         // eliminates the need to re-compute these values for each column of constant longitude.
@@ -284,22 +284,28 @@ public class ProjectionWgs84 implements GeographicProjection {
             }
 
             // Latitude is constant for each row. Values that are a function of latitude can be computed once per row.
-            double cosLat = Math.cos(lat);
-            double sinLat = Math.sin(lat);
-            double rpm = eqr / Math.sqrt(1.0 - ec2 * sinLat * sinLat);
+            cosLat = Math.cos(lat);
+            sinLat = Math.sin(lat);
+            rpm = eqr / Math.sqrt(1.0 - ec2 * sinLat * sinLat);
 
             for (lonIndex = 0; lonIndex < numLon; lonIndex++) {
-                double elev = (elevations != null) ? elevations[elevIndex++] : 0;
-                coords[0] = (float) ((elev + rpm) * cosLat * sinLon[lonIndex] + xOffset);
-                coords[1] = (float) ((elev + rpm * (1.0 - ec2)) * sinLat + yOffset);
-                coords[2] = (float) ((elev + rpm) * cosLat * cosLon[lonIndex] + zOffset);
-                result.put(coords, 0, stride);
+                pos = result.position();
+                elev = (elevations != null) ? elevations[elevIndex++] : 0;
+                xyz[0] = (float) ((elev + rpm) * cosLat * sinLon[lonIndex] + xOffset);
+                xyz[1] = (float) ((elev + rpm * (1.0 - ec2)) * sinLat + yOffset);
+                xyz[2] = (float) ((elev + rpm) * cosLat * cosLon[lonIndex] + zOffset);
+                result.put(xyz, 0, 3);
+
+                if (result.limit() >= pos + stride) {
+                    result.position(pos + stride);
+                }
             }
         }
 
         return result;
     }
 
+    @SuppressWarnings({"UnnecessaryLocalVariable", "SuspiciousNameCombination"})
     @Override
     public Position cartesianToGeographic(Globe globe, double x, double y, double z, Vec3 offset, Position result) {
         if (globe == null) {
