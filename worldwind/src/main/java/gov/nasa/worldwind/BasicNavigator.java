@@ -145,7 +145,7 @@ public class BasicNavigator implements Navigator {
 
         // TODO compute clip plane distances appropriate for the current frame
         Rect viewport = dc.getViewport();
-        result.setToPerspectiveProjection(viewport.width(), viewport.height(), this.fieldOfView, 1e3, 1e8);
+        result.setToPerspectiveProjection(viewport.width(), viewport.height(), this.fieldOfView, 1e3, 3.7e7);
 
         return result;
     }
