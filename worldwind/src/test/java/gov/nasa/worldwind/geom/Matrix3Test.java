@@ -636,6 +636,20 @@ public class Matrix3Test {
         assertSame("fluent api result", mInv, m1);
     }
 
+    @Test
+    public void testTransposeToArray() throws Exception {
+
+        Matrix3 m1 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
+
+        float[] result = m1.transposeToArray(new float[9], 0);
+
+        double[] expected = m1.transpose().m;
+        for (int i = 0; i < 9; i++) {
+            assertEquals(Integer.toString(i), expected[i], result[i], 0d);
+        }
+
+    }
+
     //////////////////////
     // Helper methods
     //////////////////////
