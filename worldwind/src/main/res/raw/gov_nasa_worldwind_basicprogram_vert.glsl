@@ -3,12 +3,12 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-attribute vec4 vertexPoint;
-attribute vec2 vertexTexCoord;
-
 uniform mat4 mvpMatrix;
 uniform mat3 texCoordMatrix;
 uniform bool enableTexture;
+
+attribute vec4 vertexPoint;
+attribute vec2 vertexTexCoord;
 
 varying vec2 texCoord;
 
