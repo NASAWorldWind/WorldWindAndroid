@@ -35,4 +35,15 @@ public class WWMath {
         double angle = degrees % 360;
         return angle >= 0 ? angle : (angle < 0 ? 360 + angle : 360 - angle);
     }
+
+    /**
+     * Indicates whether a specified value is a power of two.
+     *
+     * @param value the value to test
+     *
+     * @return true if the specified value is a power of two, false othwerwise
+     */
+    public static boolean isPowerOfTwo(int value) {
+        return value != 0 && (value & (value - 1)) == 0;
+    }
 }

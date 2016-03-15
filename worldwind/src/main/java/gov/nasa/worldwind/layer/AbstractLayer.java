@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.layer;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import gov.nasa.worldwind.render.DrawContext;
 
@@ -23,7 +24,7 @@ public abstract class AbstractLayer implements Layer {
 
     protected double maxActiveAltitude = Double.POSITIVE_INFINITY;
 
-    protected HashMap<Object, Object> userProperties;
+    protected Map<Object, Object> userProperties;
 
     public AbstractLayer(String displayName) {
         this.displayName = displayName;

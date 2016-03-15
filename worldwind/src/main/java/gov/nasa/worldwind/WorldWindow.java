@@ -5,6 +5,7 @@
 
 package gov.nasa.worldwind;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Rect;
 import android.opengl.GLES20;
@@ -15,13 +16,14 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.globe.GlobeWgs84;
 import gov.nasa.worldwind.globe.Globe;
+import gov.nasa.worldwind.globe.GlobeWgs84;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.render.BasicFrameController;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.FrameController;
 import gov.nasa.worldwind.render.FrameStatistics;
+import gov.nasa.worldwind.render.GpuObjectCache;
 import gov.nasa.worldwind.util.Logger;
 
 public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer {
@@ -40,6 +42,8 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
     protected Rect viewport = new Rect();
 
+    protected GpuObjectCache gpuObjectCache;
+
     protected DrawContext dc;
 
     /**
@@ -55,7 +59,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
      * Constructs a WorldWindow associated with the specified application context and attributes from an XML tag. This
      * constructor is included to provide support for creating WorldWindow from an Android XML layout file, and is not
      * intended to be used directly.
-     * <p>
+     * <p/>
      * This is called when a view is being constructed from an XML file, supplying attributes that were specified in the
      * XML file. This version uses a default style of 0, so the only attribute values applied are those in the Context's
      * Theme and the given AttributeSet.
@@ -69,15 +73,21 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
      * Prepares this WorldWindow for drawing and event handling.
      */
     protected void init() {
+        // Initialize the world window's navigator and controller.
+        this.navigator.setPosition(Position.fromDegrees(0, 0, 3e7)); // TODO adaptive initial position
+        this.navigatorController.setWorldWindow(this);
+
+        // Initialize the World Window's global caches. // TODO can we use ActivityManager.getLargeMemoryClass?
+        ActivityManager am = (ActivityManager) this.getContext().getSystemService(Context.ACTIVITY_SERVICE);
+        int totalBytes = (am != null) ? (am.getMemoryClass() * 1024 * 1024) : (64 * 1024 * 1024);
+        int gpuBytes = totalBytes / 2;
+        this.gpuObjectCache = new GpuObjectCache(gpuBytes, (int) (gpuBytes * 0.75));
+
         // Set up to render on demand to an OpenGL ES 2.x context
         this.dc = new DrawContext(this.getContext());
         this.setEGLContextClientVersion(2); // must be called before setRenderer
         this.setRenderer(this);
         this.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY); // must be called after setRenderer
-
-        // Initialize the world window's navigator and controller.
-        this.navigator.setPosition(Position.fromDegrees(0, 0, 3e7)); // TODO adaptive initial position
-        this.navigatorController.setWorldWindow(this);
     }
 
     public Globe getGlobe() {
@@ -166,12 +176,16 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
-        this.dc.contextLost();
+        // Specify the default World Wind OpenGL state.
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glEnable(GLES20.GL_CULL_FACE);
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glDepthFunc(GLES20.GL_LEQUAL);
+
+        // Clear any cached OpenGL resources and state, which are now invalid.
+        this.dc.contextLost();
+        this.gpuObjectCache.clear();
     }
 
     @Override
@@ -204,5 +218,6 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.dc.setLayers(this.layers);
         this.dc.setVerticalExaggeration(this.verticalExaggeration);
         this.dc.setViewport(this.viewport);
+        this.dc.setGpuObjectCache(this.gpuObjectCache);
     }
 }

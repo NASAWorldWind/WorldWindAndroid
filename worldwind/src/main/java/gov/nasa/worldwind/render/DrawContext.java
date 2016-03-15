@@ -9,6 +9,9 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.opengl.GLES20;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec3;
@@ -58,11 +61,15 @@ public class DrawContext {
 
     protected boolean renderRequested;
 
+    protected GpuObjectCache gpuObjectCache;
+
     protected int currentProgramId;
 
     protected int currentTexUnit = GLES20.GL_TEXTURE0;
 
     protected int[] currentTexId = new int[32];
+
+    protected Map<Object, Object> userProperties = new HashMap<>();
 
     public DrawContext(Context context) {
         this.context = context;
@@ -210,6 +217,63 @@ public class DrawContext {
         this.renderRequested = true;
     }
 
+    public GpuObjectCache getGpuObjectCache() {
+        return gpuObjectCache;
+    }
+
+    public void setGpuObjectCache(GpuObjectCache gpuObjectCache) {
+        this.gpuObjectCache = gpuObjectCache;
+    }
+
+    public Object getUserProperty(Object key) {
+        return this.userProperties.get(key);
+    }
+
+    public Object putUserProperty(Object key, Object value) {
+        return this.userProperties.put(key, value);
+    }
+
+    public Object removeUserProperty(Object key) {
+        return this.userProperties.remove(key);
+    }
+
+    public boolean hasUserProperty(Object key) {
+        return this.userProperties.containsKey(key);
+    }
+
+    public void reset() {
+        this.globe = null;
+        this.terrain = null;
+        this.layers.clearLayers();
+        this.currentLayer = null;
+        this.verticalExaggeration = 1;
+        this.eyePosition.set(0, 0, 0);
+        this.heading = 0;
+        this.tilt = 0;
+        this.roll = 0;
+        this.fieldOfView = 0;
+        this.viewport.setEmpty();
+        this.modelview.setToIdentity();
+        this.projection.setToIdentity();
+        this.modelviewProjection.setToIdentity();
+        this.modelviewProjectionInv.setToIdentity();
+        this.eyePoint.set(0, 0, 0);
+        this.pickingMode = false;
+        this.renderRequested = false;
+        this.gpuObjectCache = null;
+        this.userProperties.clear();
+    }
+
+    public void contextLost() {
+        // Reset properties tracking the current OpenGL state, which are now invalid.
+        this.currentProgramId = 0;
+        this.currentTexUnit = GLES20.GL_TEXTURE0;
+
+        for (int i = 0; i < this.currentTexId.length; i++) {
+            this.currentTexId[i] = 0;
+        }
+    }
+
     public void useProgram(GpuProgram program) {
         int objectId = (program != null) ? program.getObjectId() : 0;
 
@@ -232,35 +296,5 @@ public class DrawContext {
             this.currentTexId[unitIndex] = objectId;
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, objectId);
         }
-    }
-
-    public void contextLost() {
-        this.currentProgramId = 0;
-        this.currentTexUnit = GLES20.GL_TEXTURE0;
-
-        for (int i = 0; i < this.currentTexId.length; i++) {
-            this.currentTexId[i] = 0;
-        }
-    }
-
-    public void reset() {
-        this.globe = null;
-        this.terrain = null;
-        this.layers.clearLayers();
-        this.currentLayer = null;
-        this.verticalExaggeration = 1;
-        this.eyePosition.set(0, 0, 0);
-        this.heading = 0;
-        this.tilt = 0;
-        this.roll = 0;
-        this.fieldOfView = 0;
-        this.viewport.setEmpty();
-        this.modelview.setToIdentity();
-        this.projection.setToIdentity();
-        this.modelviewProjection.setToIdentity();
-        this.modelviewProjectionInv.setToIdentity();
-        this.eyePoint.set(0, 0, 0);
-        this.pickingMode = false;
-        this.renderRequested = false;
     }
 }

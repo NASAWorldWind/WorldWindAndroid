@@ -19,6 +19,13 @@ public interface GpuObject {
     int getObjectId();
 
     /**
+     * Returns the approximate size of the GPU resources associated with this instance.
+     *
+     * @return an approximation for the size of this instance's GPU resources.
+     */
+    int getObjectSize();
+
+    /**
      * Frees any GPU resources associated with this instance. After this method returns the referenced GPU object is
      * invalid, and <code>getObjectId</code> returns zero.
      */

@@ -22,6 +22,11 @@ public class GpuProgram implements GpuObject {
     protected int programId;
 
     /**
+     * Indicates the approximate size of the OpenGL resources referenced by this GPU program.
+     */
+    protected int programSize;
+
+    /**
      * Indicates the OpenGL vertex shader object associated with this GPU program.
      */
     protected int vertexShaderId;
@@ -92,6 +97,7 @@ public class GpuProgram implements GpuObject {
         }
 
         this.programId = program;
+        this.programSize = vertexShaderSource.length() + fragmentShaderSource.length(); // proportional to program complexity
         this.vertexShaderId = vs;
         this.fragmentShaderId = fs;
     }
@@ -99,6 +105,11 @@ public class GpuProgram implements GpuObject {
     @Override
     public int getObjectId() {
         return programId;
+    }
+
+    @Override
+    public int getObjectSize() {
+        return programSize;
     }
 
     @Override
