@@ -12,18 +12,13 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Mockito.*;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.junit.Assert.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(PowerMockRunner.class) // Support for mocking static methods
 public class WorldWindowTest {
 
-    @Mock
-    Context mockContext;
 
     @Before
     public void setUp() throws Exception {
@@ -35,10 +30,10 @@ public class WorldWindowTest {
 
     }
 
+    @Ignore("not implemented")
     @Test
     public void testConstructor_WithContext() throws Exception {
-        assertNotNull("null Context", new WorldWindow(null));
-        assertNotNull("mock Context", new WorldWindow(mockContext));
+        fail("The test case is a stub");
     }
 
     @Ignore("not implemented")
