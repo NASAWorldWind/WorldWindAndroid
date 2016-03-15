@@ -25,15 +25,19 @@ public class Logger {
     static {
         messageTable = new HashMap<>();
         messageTable.put("invalidBitmap", "The bitmap is null or recycled");
+        messageTable.put("invalidClass", "The class is null or cannot be found");
         messageTable.put("invalidClipDistance", "The clip distance is invalid");
         messageTable.put("invalidFieldOfView", "The field of view is invalid");
         messageTable.put("invalidHeight", "The height is invalid");
         messageTable.put("invalidIndex", "The index is invalid");
         messageTable.put("invalidRadius", "The radius is invalid");
+        messageTable.put("invalidResource", "The resource is invalid");
+        messageTable.put("invalidSize", "The size is invalid");
         messageTable.put("invalidStride", "The stride is invalid");
         messageTable.put("invalidWidth", "The width is invalid");
         messageTable.put("missingArray", "The array is null or insufficient length");
         messageTable.put("missingBuffer", "The buffer is null or insufficient length");
+        messageTable.put("missingKey", "The key is null");
         messageTable.put("missingLayer", "The layer is null");
         messageTable.put("missingList", "The list is null or empty");
         messageTable.put("missingLocation", "The location is null");
@@ -43,6 +47,8 @@ public class Logger {
         messageTable.put("missingRenderable", "The renderable is null");
         messageTable.put("missingResult", "The result argument is null");
         messageTable.put("missingSector", "The sector is null");
+        messageTable.put("missingSource", "The source is null");
+        messageTable.put("missingValue", "The value is null");
         messageTable.put("missingVector", "The vector is null");
         messageTable.put("singularMatrix", "The matrix cannot be inverted");
     }
