@@ -466,9 +466,9 @@ public class Vec2Test {
         Vec2 v = u.normalize();
         double magnitude = u.magnitude();
 
-        assertEquals("u.x", (1 / length) * x1, u.x, 0d);
-        assertEquals("u.y", (1 / length) * y1, u.y, 0d);
-        assertEquals("magnitude", 1.0, magnitude, 0d);
+        assertEquals("u.x", (1 / length) * x1, u.x, 1e-15);
+        assertEquals("u.y", (1 / length) * y1, u.y, 1e-15);
+        assertEquals("magnitude", 1.0, magnitude,1e-15);
         // Assert fluent API returns u
         assertEquals("v == u", u, v);
     }
