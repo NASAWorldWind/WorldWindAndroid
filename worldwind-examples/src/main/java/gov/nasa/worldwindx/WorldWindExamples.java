@@ -1,9 +1,14 @@
 package gov.nasa.worldwindx;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
 import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwindx.layer.GroundLayer;
+import gov.nasa.worldwindx.layer.ImageLayer;
+import gov.nasa.worldwindx.layer.SimpleTessellationLayer;
+import gov.nasa.worldwindx.layer.SkyLayer;
+import gov.nasa.worldwindx.layer.WireframeLayer;
 
 public class WorldWindExamples extends AppCompatActivity {
 
@@ -18,11 +23,14 @@ public class WorldWindExamples extends AppCompatActivity {
         this.setContentView(this.wwd);
 
         // Setup the World Window's layers.
-        this.wwd.getLayers().addLayer(new SimpleGlobeLayer());
+        this.wwd.getLayers().addLayer(new SimpleTessellationLayer());
+        this.wwd.getLayers().addLayer(new WireframeLayer());
+        this.wwd.getLayers().addLayer(new SkyLayer());
+        this.wwd.getLayers().addLayer(new ImageLayer(R.drawable.world_topo_bathy_200405_3));
+        this.wwd.getLayers().addLayer(new GroundLayer(R.drawable.dnb_land_ocean_ice_2012));
 
-        // Setup to spin the globe automatically.
-        this.wwd.getNavigator().getPosition().latitude = 30;
-        this.wwd.setNavigatorController(new SimpleNavigatorController());
+        // Configure a custom navigation controller to spin the globe automatically.
+        this.wwd.setNavigatorController(new ExampleController());
     }
 
     @Override
