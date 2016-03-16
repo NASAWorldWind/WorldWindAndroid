@@ -16,6 +16,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.globe.GeographicProjection;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.GlobeWgs84;
 import gov.nasa.worldwind.layer.LayerList;
@@ -26,8 +27,15 @@ import gov.nasa.worldwind.render.FrameStatistics;
 import gov.nasa.worldwind.render.GpuObjectCache;
 import gov.nasa.worldwind.util.Logger;
 
+/**
+ * Provides a World Wind window that implements a virtual globe inside of the Android view hierarchy. By default, World
+ * Window is configured to display an ellipsoidal globe using the WGS 84 reference values.
+ */
 public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer {
 
+    /**
+     * Indicates the planet or celestial object displayed by this World Window.
+     */
     protected Globe globe = new GlobeWgs84();
 
     protected LayerList layers = new LayerList();
@@ -90,10 +98,24 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY); // must be called after setRenderer
     }
 
+    /**
+     * Indicates the planet or celestial object displayed by this World Window. The Cartesian coordinate system is
+     * specified by the globe's {@link GeographicProjection}. Defaults to {@link GlobeWgs84}.
+     *
+     * @return the globe displayed by this World Window
+     */
     public Globe getGlobe() {
         return globe;
     }
 
+    /**
+     * Sets the planet or celestial object displayed by this World Window. The Cartesian coordinate system is specified
+     * by the globe's {@link GeographicProjection}.
+     *
+     * @param globe the globe to display
+     *
+     * @throws IllegalArgumentException if the globe is null
+     */
     public void setGlobe(Globe globe) {
         if (globe == null) {
             throw new IllegalArgumentException(

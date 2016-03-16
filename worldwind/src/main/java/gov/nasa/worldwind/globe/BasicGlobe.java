@@ -13,16 +13,46 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.util.Logger;
 
+/**
+ * Generic ellipsoidal Globe enabling construction with standard ellipsoid values.
+ */
 public class BasicGlobe implements Globe {
 
+    /**
+     * Indicates the radius in meters of the globe's ellipsoid at the equator.
+     */
     protected double equatorialRadius;
 
+    /**
+     * Indicates the radius in meters of the globe's ellipsoid at the poles. This is equivalent to <code>semiMajorAxis *
+     * (1 - f)</code>, where <code>semiMajorAxis</code> and <code>f</code> are the arguments specified at construction.
+     */
     protected double polarRadius;
 
+    /**
+     * Indicates the eccentricity squared parameter of the globe's ellipsoid. This is equivalent to <code>2*f -
+     * f*f</code>, where <code>f</code> is the flattening argument specified at construction.
+     */
     protected double eccentricitySquared;
 
+    /**
+     * Indicates the geographic projection used by this globe. The projection specifies this globe's Cartesian
+     * coordinate system.
+     */
     protected GeographicProjection projection;
 
+    /**
+     * Constructs a generic Globe implementation with specified ellipsoid parameters.
+     *
+     * @param semiMajorAxis     one half of the globe's major axis, which runs through the center to opposite points on
+     *                          the equator
+     * @param inverseFlattening a measure of the ellipsoid's compression
+     * @param projection        the geographic projection used by this globe, which specifies the Cartesian coordinate
+     *                          system
+     *
+     * @throws IllegalArgumentException if either of the semi-major axis or the inverse flattening are less than or
+     *                                  equal to zero, or if the projection is null
+     */
     public BasicGlobe(double semiMajorAxis, double inverseFlattening, GeographicProjection projection) {
         if (semiMajorAxis <= 0) {
             throw new IllegalArgumentException(
