@@ -93,6 +93,15 @@ public class Position extends Location {
     }
 
     @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        long temp;
+        temp = Double.doubleToLongBits(altitude);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        return result;
+    }
+
+    @Override
     public String toString() {
         return this.latitude + "\u00b0, " + this.longitude + "\u00b0, " + this.altitude;
     }
