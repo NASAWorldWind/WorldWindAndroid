@@ -463,6 +463,37 @@ public class Sector {
     }
 
     /**
+     * Sets this sector to the union of itself and a specified location.
+     *
+     * @param latitude  the location's latitude in degrees
+     * @param longitude the location's longitude in degrees
+     *
+     * @return this sector, set to its union with the specified location
+     */
+    public Sector union(double latitude, double longitude) {
+        return this; // TODO
+    }
+
+    /**
+     * Sets this sector to the union of itself and a list of specified locations. If this sector is empty, it bounds the
+     * specified locations.
+     *
+     * @param locations the list of locations to union with
+     *
+     * @return this sector, set to its union with the specified sector
+     *
+     * @throws IllegalArgumentException If the list is null
+     */
+    public Sector union(Iterable<? extends Location> locations) {
+        if (locations == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Sector", "union", "missingList"));
+        }
+
+        return this; // TODO
+    }
+
+    /**
      * Sets this sector to the union of itself and a specified sector. This has no effect if the specified sector is
      * empty. If this sector is empty, it is set to the specified sector.
      *
@@ -534,24 +565,5 @@ public class Sector {
         }
 
         return this;
-    }
-
-    /**
-     * Sets this sector to the union of itself and a list of specified locations. If this sector is empty, it bounds the
-     * specified locations.
-     *
-     * @param locations the list of locations to union with
-     *
-     * @return this sector, set to its union with the specified sector
-     *
-     * @throws IllegalArgumentException If the list is null
-     */
-    public Sector union(Iterable<? extends Location> locations) {
-        if (locations == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Sector", "union", "missingList"));
-        }
-
-        return null; // TODO
     }
 }
