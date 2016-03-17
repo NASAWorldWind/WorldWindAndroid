@@ -23,7 +23,6 @@ import java.util.Map;
 
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Matrix4;
-import gov.nasa.worldwind.geom.Matrix4Test;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
@@ -77,48 +76,8 @@ public class ProjectionWgs84Test {
      */
     @Test
     public void testGeographicToCartesian() throws Exception {
-        /**
-         * Geodetic Coordinates 2001 epoch:
-         * Air Force Station    Station  Lat             Lon             Ellipsoid Height
-         * -------------------------------------------------------------------------------
-         * Colorado Springs      85128   38.80305456     255.47540844    1911.755
-         * Ascension             85129   -7.95132970     345.58786950    106.558
-         * Diego Garcia          85130   -7.26984347     72.37092177     -64.063
-         * Kwajalein             85131   8.72250074      167.73052625    39.927
-         * Hawaii                85132   21.56149086     201.76066922    426.077
-         * Cape Canaveral        85143   28.48373800     279.42769549    -24.005
-         *
-         * Cartesian Coordinates 2001 epoch (positive Z points to north pole)
-         * Air Force Station    Station  X(km)           Y(km)           Z(km)
-         * -------------------------------------------------------------------------------
-         * Colorado Springs      85128   -1248.597295    -4819.433239    3976.500175
-         * Ascension             85129   6118.524122     -1572.350853    -876.463990
-         * Diego Garcia          85130   1916.197142     6029.999007     -801.737366
-         * Kwajalein             85131   -6160.884370    1339.851965     960.843071
-         * Hawaii                85132   -5511.980484    -2200.247093    2329.480952
-         * Cape Canaveral        85143   918.988120      -5534.552966    3023.721377
-         */
         ProjectionWgs84 wgs84 = new ProjectionWgs84();
-        Map<String, Object[]> stations = new HashMap<>();
-        stations.put("Colorado Springs", new Object[]{
-            new Position(38.80305456, 255.47540844, 1911.755),
-            new Vec3(-1248.597295e3, -4819.433239e3, 3976.500175e3)});
-        stations.put("Ascension", new Object[]{
-            new Position(-7.95132970, 345.58786950, 106.558),
-            new Vec3(6118.524122e3, -1572.350853e3, -876.463990e3)});
-        stations.put("Diego Garcia", new Object[]{
-            new Position(-7.26984347, 72.37092177, -64.063),
-            new Vec3(1916.197142e3, 6029.999007e3, -801.737366e3)});
-        stations.put("Kwajalein", new Object[]{
-            new Position(8.72250074, 167.73052625, 39.927),
-            new Vec3(-6160.884370e3, 1339.851965e3, 960.843071e3)});
-        stations.put("Hawaii", new Object[]{
-            new Position(21.56149086, 201.76066922, 426.077),
-            new Vec3(-5511.980484e3, -2200.247093e3, 2329.480952e3)});
-        stations.put("Cape Canaveral", new Object[]{
-            new Position(28.48373800, 279.42769549, -24.005),
-            new Vec3(918.988120e3, -5534.552966e3, 3023.721377e3)});
-
+        Map<String, Object[]> stations = getStations();
         for (Map.Entry<String, Object[]> station : stations.entrySet()) {
             Position p = (Position) station.getValue()[0];
             Vec3 v = (Vec3) station.getValue()[1];
@@ -129,9 +88,9 @@ public class ProjectionWgs84Test {
             // Note: we must rotate the axis to match the WW coord system to the WGS coord system
             // WW: Y is polar axis, X and Z line on the equatorial plane with X +/-90 and Z +/-180
             // WGS: Z is polar axis
-            assertEquals(station.getKey(), v.y, result.x, 1e-3);
-            assertEquals(station.getKey(), v.z, result.y, 1e-3);
-            assertEquals(station.getKey(), v.x, result.z, 1e-3);
+            assertEquals(station.getKey(), v.x, result.x, 1e-3);
+            assertEquals(station.getKey(), v.y, result.y, 1e-3);
+            assertEquals(station.getKey(), v.z, result.z, 1e-3);
         }
 
     }
@@ -245,49 +204,8 @@ public class ProjectionWgs84Test {
      */
     @Test
     public void testCartesianToGeographic() throws Exception {
-
-        /**
-         * Geodetic Coordinates 2001 epoch:
-         * Air Force Station    Station  Lat             Lon             Ellipsoid Height
-         * -------------------------------------------------------------------------------
-         * Colorado Springs      85128   38.80305456     255.47540844    1911.755
-         * Ascension             85129   -7.95132970     345.58786950    106.558
-         * Diego Garcia          85130   -7.26984347     72.37092177     -64.063
-         * Kwajalein             85131   8.72250074      167.73052625    39.927
-         * Hawaii                85132   21.56149086     201.76066922    426.077
-         * Cape Canaveral        85143   28.48373800     279.42769549    -24.005
-         *
-         * Cartesian Coordinates 2001 epoch (positive Z points to north pole)
-         * Air Force Station    Station  X(km)           Y(km)           Z(km)
-         * -------------------------------------------------------------------------------
-         * Colorado Springs      85128   -1248.597295    -4819.433239    3976.500175
-         * Ascension             85129   6118.524122     -1572.350853    -876.463990
-         * Diego Garcia          85130   1916.197142     6029.999007     -801.737366
-         * Kwajalein             85131   -6160.884370    1339.851965     960.843071
-         * Hawaii                85132   -5511.980484    -2200.247093    2329.480952
-         * Cape Canaveral        85143   918.988120      -5534.552966    3023.721377
-         */
         ProjectionWgs84 wgs84 = new ProjectionWgs84();
-        Map<String, Object[]> stations = new HashMap<>();
-        stations.put("Colorado Springs", new Object[]{
-            new Position(38.80305456, 255.47540844, 1911.755),
-            new Vec3(-1248.597295e3, -4819.433239e3, 3976.500175e3)});
-        stations.put("Ascension", new Object[]{
-            new Position(-7.95132970, 345.58786950, 106.558),
-            new Vec3(6118.524122e3, -1572.350853e3, -876.463990e3)});
-        stations.put("Diego Garcia", new Object[]{
-            new Position(-7.26984347, 72.37092177, -64.063),
-            new Vec3(1916.197142e3, 6029.999007e3, -801.737366e3)});
-        stations.put("Kwajalein", new Object[]{
-            new Position(8.72250074, 167.73052625, 39.927),
-            new Vec3(-6160.884370e3, 1339.851965e3, 960.843071e3)});
-        stations.put("Hawaii", new Object[]{
-            new Position(21.56149086, 201.76066922, 426.077),
-            new Vec3(-5511.980484e3, -2200.247093e3, 2329.480952e3)});
-        stations.put("Cape Canaveral", new Object[]{
-            new Position(28.48373800, 279.42769549, -24.005),
-            new Vec3(918.988120e3, -5534.552966e3, 3023.721377e3)});
-
+        Map<String, Object[]> stations = getStations();
         for (Map.Entry<String, Object[]> station : stations.entrySet()) {
             Position p = (Position) station.getValue()[0];
             Vec3 v = (Vec3) station.getValue()[1];
@@ -295,7 +213,7 @@ public class ProjectionWgs84Test {
 
             // Note: we must rotate the axis to match the WW coord system to the WGS ECEF coord system
             // WW: Y is polar axis, X and Z line on the equatorial plane with X coincident with +/-90 and Z +/-180
-            wgs84.cartesianToGeographic(globe, v.y, v.z, v.x, null, result);
+            wgs84.cartesianToGeographic(globe, v.x, v.y, v.z, null, result);
 
             assertEquals(station.getKey(), Location.normalizeLatitude(p.latitude), result.latitude, 1e-6);
             assertEquals(station.getKey(), Location.normalizeLongitude(p.longitude), result.longitude, 1e-6);
@@ -327,6 +245,10 @@ public class ProjectionWgs84Test {
         assertEquals("z", z, vec.z, 1e-6);
     }
 
+    //////////////////////////////////////////
+    //           Helper Methods
+    //////////////////////////////////////////
+
     public double radiusOfPrimeVeritcal(double geographicLat) {
         double a = globe.getEquatorialRadius();
         double e2 = globe.getEccentricitySquared();
@@ -335,4 +257,68 @@ public class ProjectionWgs84Test {
         return a / Math.sqrt(1 - e2 * sinSquared);
     }
 
+    /**
+     * Creates a Vec3 in the WorldWind coordinate system from WGS84 ECEF coordinates.
+     *
+     * @param xEcef
+     * @param yEcef
+     * @param zEcef
+     *
+     * @return a Vec3 compatible with the WorldWind graphics coordinate system.
+     */
+    public static Vec3 fromEcef(double xEcef, double yEcef, double zEcef) {
+        return new Vec3(yEcef, zEcef, xEcef);
+    }
+
+
+    /**
+     * Returns a Map of station names with Position and Vec3 pairs.
+     * <pre>
+     * Geodetic Coordinates 2001 epoch:
+     * Air Force Station    Station  Lat             Lon             Ellipsoid Height
+     * -------------------------------------------------------------------------------
+     * Colorado Springs      85128   38.80305456     255.47540844    1911.755
+     * Ascension             85129   -7.95132970     345.58786950    106.558
+     * Diego Garcia          85130   -7.26984347     72.37092177     -64.063
+     * Kwajalein             85131   8.72250074      167.73052625    39.927
+     * Hawaii                85132   21.56149086     201.76066922    426.077
+     * Cape Canaveral        85143   28.48373800     279.42769549    -24.005
+     *
+     * Cartesian Coordinates 2001 epoch (ECEF coordinates positive Z points up)
+     * Air Force Station    Station  X(km)           Y(km)           Z(km)
+     * -------------------------------------------------------------------------------
+     * Colorado Springs      85128   -1248.597295    -4819.433239    3976.500175
+     * Ascension             85129   6118.524122     -1572.350853    -876.463990
+     * Diego Garcia          85130   1916.197142     6029.999007     -801.737366
+     * Kwajalein             85131   -6160.884370    1339.851965     960.843071
+     * Hawaii                85132   -5511.980484    -2200.247093    2329.480952
+     * Cape Canaveral        85143   918.988120      -5534.552966    3023.721377
+     * </pre>
+     * http://earth-info.nga.mil/GandG/publications/tr8350.2/Addendum%20NIMA%20TR8350.2.pdf
+     *
+     * @return a Map collection containing station names with reference positions and ECEF coordinates.
+     */
+    public static Map<String, Object[]> getStations() {
+        Map<String, Object[]> stations = new HashMap<>();
+        stations.put("Colorado Springs", new Object[]{
+            Position.fromDegrees(38.80305456, 255.47540844, 1911.755),
+            fromEcef(-1248.597295e3, -4819.433239e3, 3976.500175e3)});
+        stations.put("Ascension", new Object[]{
+            Position.fromDegrees(-7.95132970, 345.58786950, 106.558),
+            fromEcef(6118.524122e3, -1572.350853e3, -876.463990e3)});
+        stations.put("Diego Garcia", new Object[]{
+            Position.fromDegrees(-7.26984347, 72.37092177, -64.063),
+            fromEcef(1916.197142e3, 6029.999007e3, -801.737366e3)});
+        stations.put("Kwajalein", new Object[]{
+            Position.fromDegrees(8.72250074, 167.73052625, 39.927),
+            fromEcef(-6160.884370e3, 1339.851965e3, 960.843071e3)});
+        stations.put("Hawaii", new Object[]{
+            Position.fromDegrees(21.56149086, 201.76066922, 426.077),
+            fromEcef(-5511.980484e3, -2200.247093e3, 2329.480952e3)});
+        stations.put("Cape Canaveral", new Object[]{
+            Position.fromDegrees(28.48373800, 279.42769549, -24.005),
+            fromEcef(918.988120e3, -5534.552966e3, 3023.721377e3)});
+
+        return stations;
+    }
 }
