@@ -15,6 +15,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.ArrayList;
 import java.util.List;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.util.Logger;
 
 import static org.junit.Assert.*;
@@ -26,9 +27,9 @@ import static org.junit.Assert.*;
 @PrepareForTest(Logger.class) // We mock the Logger class to avoid its calls to android.util.log
 public class LocationTest {
 
-    static final double THETA = Math.PI;    // latitude, arbitrary floating point num
+    static final double THETA = 34.2;    // arbitrary latitude, using KOXR airport
 
-    static final double PHI = Math.E;       // longitude, arbitrary floating point num
+    static final double PHI = -119.2;    // arbitrarylongitude, using KOXR airport
 
     static final double TOLERANCE = 1e-10;
 
@@ -62,6 +63,38 @@ public class LocationTest {
         assertEquals("longitude", PHI, location.longitude, 0);
     }
 
+
+    /**
+     * Tests the copy constructor.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testConstructor_Copy() throws Exception {
+        // KOXR Airport
+        double lat = 34.2;
+        double lon = -119.2;
+        Location oxr = new Location(lat, lon);
+
+        Location copy = new Location(oxr);
+
+        assertNotNull(oxr);
+        assertEquals("latitude", lat, copy.latitude, 0);
+        assertEquals("longitude", lon, copy.longitude, 0);
+    }
+
+    /**
+     * Ensures null argument is handled correctly.
+     *
+     * @throws Exception
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructor_WithNull() throws Exception {
+
+        Location location = new Location(null);
+
+        fail("Expected an IllegalArgumentException to be thrown.");
+    }
 
     /**
      * Tests factory method's member initialization from degrees.
@@ -232,12 +265,16 @@ public class LocationTest {
      */
     @Test
     public void testEquals() throws Exception {
-        Location a = new Location(THETA, PHI);
-        Location b = new Location(THETA, PHI);
+        double lat = 34.2;
+        double lon = -119.2;
+
+        Location a = new Location(lat, lon);
+        Location b = new Location(lat, lon);
 
         // Assert that each member is checked for equality
         assertEquals("equality: latitude", b.latitude, a.latitude, 0);
         assertEquals("equality: longitude", b.longitude, a.longitude, 0);
+        assertEquals("equality", a, a); // equality with self
         assertEquals("equality", a, b);
     }
 
@@ -248,25 +285,18 @@ public class LocationTest {
      */
     @Test
     public void testEquals_Inequality() throws Exception {
-        Location a = new Location(THETA, PHI);
-        Location b = new Location(THETA, THETA);
-        Location c = new Location(PHI, PHI);
+        // KOXR Airport
+        double lat = 34.2;
+        double lon = -119.2;
+        Location a = new Location(lat, lon);
+        Location b = new Location(lat, lat);
+        Location c = new Location(lon, lon);
 
         assertNotEquals("inequality", a, b);
         assertNotEquals("inequality", a, c);
+        assertNotEquals("inequality", a, null);
     }
 
-    /**
-     * Tests inequality with null.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testEquals_WithNull() throws Exception {
-        Location a = new Location(THETA, PHI);
-
-        assertNotEquals("inequality: null", null, a);
-    }
 
     /**
      * Ensures hash codes are unique.
@@ -283,6 +313,26 @@ public class LocationTest {
 
         assertNotEquals("jfk hash vs lax hash", jfkHash, laxHash);
     }
+
+
+    /**
+     * Ensures string output contains member representations.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testToString() throws Exception {
+        // KOXR Airport
+        double lat = 34.2;
+        double lon = -119.2;
+        Location oxr = new Location(lat, lon);
+
+        String string = oxr.toString();
+
+        assertTrue("lat", string.contains(Double.toString(lat)));
+        assertTrue("lon", string.contains(Double.toString(lon)));
+    }
+
 
     /**
      * @throws Exception
@@ -388,12 +438,14 @@ public class LocationTest {
      */
     @Test
     public void testSet_WithDoubles() throws Exception {
+        double lat = 34.2;
+        double lon = -119.2;
         Location location = new Location();
 
-        location.set(THETA, PHI);
+        location.set(lat, lon);
 
-        assertEquals("latitude", THETA, location.latitude, 0);
-        assertEquals("longitude", PHI, location.longitude, 0);
+        assertEquals("latitude", lat, location.latitude, 0);
+        assertEquals("longitude", lon, location.longitude, 0);
     }
 
     /**
@@ -402,23 +454,143 @@ public class LocationTest {
      * @throws Exception
      */
     @Test
-    public void testSet_WithLocation() throws Exception {
+    public void testSet() throws Exception {
+        double lat = 34.2;
+        double lon = -119.2;
+        Location oxr = new Location(lat, lon);
         Location location = new Location();
-        Location other = new Location(THETA, PHI);
 
-        location.set(other);
+        location.set(oxr);
 
-        assertEquals("latitude", other.latitude, location.latitude, 0);
-        assertEquals("longitude", other.longitude, location.longitude, 0);
-
+        assertEquals("latitude", oxr.latitude, location.latitude, 0);
+        assertEquals("longitude", oxr.longitude, location.longitude, 0);
     }
 
-    @Ignore("not implemented yet")
+    /**
+     * Tests that we handled a null argument correctly.
+     *
+     * @throws Exception
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testSet_WithNull() throws Exception {
+        Location location = new Location();
+
+        location.set(null);
+
+        fail("Expected a InvalidArgumentException.");
+    }
+
+    /**
+     * Tests the great circle path interpolation. Ensures the interpolated location lies on the great circle path
+     * between start and end.
+     *
+     * @throws Exception
+     */
     @Test
     public void testInterpolateAlongPath() throws Exception {
+        Location lax = Location.fromRadians(0.592539, -2.066470);
+        Location jfk = Location.fromRadians(0.709185, -1.287762);
+        double distanceToJfk = lax.greatCircleDistance(jfk);
+        double azimuthToJfk = lax.greatCircleAzimuth(jfk);
+        double amount = 0.25; // percent
 
-        fail("The test case is a stub.");
+        Location result = lax.interpolateAlongPath(jfk, WorldWind.GREAT_CIRCLE, amount, new Location());
 
+        double distanceToResult = lax.greatCircleDistance(result);
+        Location test = lax.greatCircleLocation(azimuthToJfk, distanceToResult, new Location());
+        assertEquals("interpolated distance", distanceToJfk * amount, distanceToResult, TOLERANCE);
+        assertEquals("latitude", test.latitude, result.latitude, 0);
+        assertEquals("longitude", test.longitude, result.longitude, 0);
+    }
+
+    /**
+     * Tests the rhumbline path interpolation. Ensures the interpolated location lies on the rhumb line path between
+     * start and end.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testInterpolateAlongPath_Rhumbline() throws Exception {
+        Location lax = Location.fromRadians(0.592539, -2.066470);
+        Location jfk = Location.fromRadians(0.709185, -1.287762);
+        double distanceToJfk = lax.rhumbDistance(jfk);
+        double azimuthToJfk = lax.rhumbAzimuth(jfk);
+        double amount = 0.25; // percent
+
+        Location result = lax.interpolateAlongPath(jfk, WorldWind.RHUMB_LINE, amount, new Location());
+
+        double distanceToResult = lax.rhumbDistance(result);
+        Location test = lax.rhumbLocation(azimuthToJfk, distanceToResult, new Location());
+        assertEquals("interpolated distance", distanceToJfk * amount, distanceToResult, TOLERANCE);
+        assertEquals("latitude", test.latitude, result.latitude, 0);
+        assertEquals("longitude", test.longitude, result.longitude, 0);
+    }
+
+    /**
+     * Tests the linear path interpolation. Ensures the interpolated location lies on the linear path between start and
+     * end.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testInterpolateAlongPath_Linear() throws Exception {
+        Location lax = Location.fromRadians(0.592539, -2.066470);
+        Location oxr = Location.fromDegrees(34.2, -119.2);
+        double distanceToOxr = lax.linearDistance(oxr);
+        double azimuthToOxr = lax.linearAzimuth(oxr);
+        double amount = 0.25; // percent
+
+        Location result = lax.interpolateAlongPath(oxr, WorldWind.LINEAR, amount, new Location());
+
+        double distanceToResult = lax.linearDistance(result);
+        Location test = lax.linearLocation(azimuthToOxr, distanceToResult, new Location());
+        assertEquals("interpolated distance", distanceToOxr * amount, distanceToResult, TOLERANCE);
+        assertEquals("latitude", test.latitude, result.latitude, 0);
+        assertEquals("longitude", test.longitude, result.longitude, 0);
+    }
+
+    /**
+     * Tests the path interpolation using coincident start and end points.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testInterpolateAlongPath_Coincident() throws Exception {
+        Location start = Location.fromRadians(0.592539, -2.066470);
+        Location end = Location.fromDegrees(34.2, -119.2);
+        double amount = 0.25; // percent
+
+        Location result = start.interpolateAlongPath(end, WorldWind.LINEAR, amount, new Location());
+
+        assertEquals(result, end);
+    }
+
+    /**
+     * Tests that we handle a null argument correctly.
+     *
+     * @throws Exception
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInterpolateAlongPath_NullEnd() throws Exception {
+        Location location = new Location();
+
+        location.interpolateAlongPath(null, WorldWind.GREAT_CIRCLE, 0.25, new Location());
+
+        fail("Expected a InvalidArgumentException.");
+    }
+
+    /**
+     * Tests that we handled a null argument correctly.
+     *
+     * @throws Exception
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInterpolateAlongPath_NullResult() throws Exception {
+        Location location = new Location();
+
+        location.interpolateAlongPath(location, WorldWind.GREAT_CIRCLE, 0.25, null);
+
+        fail("Expected a InvalidArgumentException.");
     }
 
     /**
