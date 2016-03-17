@@ -13,8 +13,19 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.util.Logger;
 
+/*
+ * GeographicProjection implementing coordinate transformations based on the WGS 84 reference system (aka WGS 1984,
+ * EPSG:4326).
+ *
+ * The WGS 84 projection defines a Cartesian coordinate system whose origin is at the globe's center. It's Y axis points
+ * to the North pole, the Z axis points to the intersection of the prime meridian and the equator, and the X axis
+ * completes a right-handed coordinate system, is in the equatorial plane and 90 degrees East of the Z axis.
+ */
 public class ProjectionWgs84 implements GeographicProjection {
 
+    /**
+     * Constructs a WGS 84 geographic projection.
+     */
     public ProjectionWgs84() {
     }
 
@@ -81,43 +92,6 @@ public class ProjectionWgs84 implements GeographicProjection {
         return result.normalize();
     }
 
-    protected Vec3 geographicToCartesianNorth(Globe globe, double latitude, double longitude, Vec3 result) {
-        if (globe == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianNormal", "missingGlobe"));
-        }
-
-        if (result == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianNormal", "missingResult"));
-        }
-
-        double radLat = Math.toRadians(latitude);
-        double radLon = Math.toRadians(longitude);
-        double cosLat = Math.cos(radLat);
-        double sinLat = Math.sin(radLat);
-        double cosLon = Math.cos(radLon);
-        double sinLon = Math.sin(radLon);
-
-        // The north-pointing tangent is derived by rotating the vector (0, 1, 0) about the Y-axis by longitude degrees,
-        // then rotating it about the X-axis by -latitude degrees. The latitude angle must be inverted because latitude
-        // is a clockwise rotation about the X-axis, and standard rotation matrices assume counter-clockwise rotation.
-        // The combined rotation can be represented by a combining two rotation matrices Rlat, and Rlon, then
-        // transforming the vector (0, 1, 0) by the combined transform:
-        //
-        // NorthTangent = (Rlon * Rlat) * (0, 1, 0)
-        //
-        // This computation can be simplified and encoded inline by making two observations:
-        // - The vector's X and Z coordinates are always 0, and its Y coordinate is always 1.
-        // - Inverting the latitude rotation angle is equivalent to inverting sinLat. We know this by the
-        //  trigonometric identities cos(-x) = cos(x), and sin(-x) = -sin(x).
-        result.x = -sinLat * sinLon;
-        result.y = cosLat;
-        result.z = -sinLat * cosLon;
-
-        return result.normalize();
-    }
-
     @Override
     public Matrix4 geographicToCartesianTransform(Globe globe, double latitude, double longitude, double altitude, Vec3 offset, Matrix4 result) {
         if (globe == null) {
@@ -129,26 +103,6 @@ public class ProjectionWgs84 implements GeographicProjection {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianTransform", "missingResult"));
         }
-
-//        Vec3 e = new Vec3();
-//        Vec3 n = new Vec3();
-//        Vec3 u = new Vec3();
-//        Vec3 p = new Vec3();
-//
-//        this.geographicToCartesian(globe, latitude, longitude, altitude, offset, p);
-//        this.geographicToCartesianNormal(globe, latitude, longitude, u);
-//        this.geographicToCartesianNorth(globe, latitude, longitude, n);
-//
-//        e.cross(n, u);
-//        n.cross(u, e);
-//
-//        result.set(
-//            e.x, n.x, u.x, p.x,
-//            e.y, n.y, u.y, p.y,
-//            e.z, n.z, u.z, p.z,
-//            0, 0, 0, 1);
-//
-//        return result;
 
         double radLat = Math.toRadians(latitude);
         double radLon = Math.toRadians(longitude);
@@ -162,52 +116,58 @@ public class ProjectionWgs84 implements GeographicProjection {
         double eqr2 = globe.getEquatorialRadius() * globe.getEquatorialRadius();
         double pol2 = globe.getPolarRadius() * globe.getPolarRadius();
 
+        // Convert the geographic position to Cartesian coordinates. This is equivalent to calling geographicToCartesian
+        // but is much more efficient as an inline computation, as the results of cosLat/sinLat/etc. can be computed
+        // once and reused.
         double px = (rpm + altitude) * cosLat * sinLon;
         double py = (rpm * (1.0 - ec2) + altitude) * sinLat;
         double pz = (rpm + altitude) * cosLat * cosLon;
 
+        // Compute the surface normal at the geographic position. This is equivalent to calling
+        // geographicToCartesianNormal but is much more efficient as an inline computation.
         double ux = cosLat * sinLon / eqr2;
         double uy = (1 - globe.getEccentricitySquared()) * sinLat / pol2;
         double uz = cosLat * cosLon / eqr2;
-
         double len = Math.sqrt(ux * ux + uy * uy + uz * uz);
         ux /= len;
         uy /= len;
         uz /= len;
 
-        // The north-pointing tangent is derived by rotating the vector (0, 1, 0) about the Y-axis by longitude degrees,
-        // then rotating it about the X-axis by -latitude degrees. The latitude angle must be inverted because latitude
-        // is a clockwise rotation about the X-axis, and standard rotation matrices assume counter-clockwise rotation.
-        // The combined rotation can be represented by a combining two rotation matrices Rlat, and Rlon, then
-        // transforming the vector (0, 1, 0) by the combined transform:
+        // Compute the north pointing tangent at the geographic position. This computation could be encoded in its own
+        // method, but is much more efficient as an inline computation. The north-pointing tangent is derived by
+        // rotating the vector (0, 1, 0) about the Y-axis by longitude degrees, then rotating it about the X-axis by
+        // -latitude degrees. The latitude angle must be inverted because latitude is a clockwise rotation about the
+        // X-axis, and standard rotation matrices assume counter-clockwise rotation. The combined rotation can be
+        // represented by a combining two rotation matrices Rlat, and Rlon, then transforming the vector (0, 1, 0) by
+        // the combined transform: NorthTangent = (Rlon * Rlat) * (0, 1, 0)
         //
-        // NorthTangent = (Rlon * Rlat) * (0, 1, 0)
-        //
-        // This computation can be simplified and encoded inline by making two observations:
+        // Additionally, this computation can be simplified by making two observations:
         // - The vector's X and Z coordinates are always 0, and its Y coordinate is always 1.
         // - Inverting the latitude rotation angle is equivalent to inverting sinLat. We know this by the
-        //  trigonometric identities cos(-x) = cos(x), and sin(-x) = -sin(x).
+        //   trigonometric identities cos(-x) = cos(x), and sin(-x) = -sin(x).
         double nx = -sinLat * sinLon;
         double ny = cosLat;
         double nz = -sinLat * cosLon;
-
         len = Math.sqrt(nx * nx + ny * ny + nz * nz);
         nx /= len;
         ny /= len;
         nz /= len;
 
-        // East axis is the cross product of the north and up axes.
+        // Compute the east pointing tangent as the cross product of the north and up axes. This is much more efficient
+        // as an inline computation.
         double ex = ny * uz - nz * uy;
         double ey = nz * ux - nx * uz;
         double ez = nx * uy - ny * ux;
 
-        // Re-compute the north axis as the cross product of the up and east axes. This ensures that all three axes are orthogonal.
-        // Though the initial y axis computed above is likely to be very nearly orthogonal, we re-compute it using cross
-        // products to reduce the effect of floating point rounding errors caused by working with Earth sized coordinates.
+        // Ensure the normal, north and east vectors represent an orthonormal basis by ensuring that the north vector is
+        // perpendicular to normal and east vectors. This should already be the case, but rounding errors can be
+        // introduced when working with Earth sized coordinates.
         nx = uy * ez - uz * ey;
         ny = uz * ex - ux * ez;
         nz = ux * ey - uy * ex;
 
+        // Set the result to an orthonormal basis with the East, North, and Up vectors forming the X, Y and Z axes,
+        // respectively, and the Cartesian point indicating the coordinate system's origin.
         result.set(
             ex, nx, ux, px,
             ey, ny, uy, py,
