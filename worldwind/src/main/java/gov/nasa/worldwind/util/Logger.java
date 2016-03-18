@@ -37,8 +37,10 @@ public class Logger {
         messageTable.put("invalidWidth", "The width is invalid");
         messageTable.put("missingArray", "The array is null or insufficient length");
         messageTable.put("missingBuffer", "The buffer is null or insufficient length");
+        messageTable.put("missingGlobe", "The globe is null");
         messageTable.put("missingKey", "The key is null");
         messageTable.put("missingLayer", "The layer is null");
+        messageTable.put("missingLevel", "The level is null");
         messageTable.put("missingList", "The list is null or empty");
         messageTable.put("missingLocation", "The location is null");
         messageTable.put("missingMatrix", "The matrix is null");
@@ -48,6 +50,8 @@ public class Logger {
         messageTable.put("missingResult", "The result argument is null");
         messageTable.put("missingSector", "The sector is null");
         messageTable.put("missingSource", "The source is null");
+        messageTable.put("missingTile", "The tile is null");
+        messageTable.put("missingTessellator", "The tessellator is null");
         messageTable.put("missingValue", "The value is null");
         messageTable.put("missingVector", "The vector is null");
         messageTable.put("singularMatrix", "The matrix cannot be inverted");
