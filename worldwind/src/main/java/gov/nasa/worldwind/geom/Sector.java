@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.geom;
 
+import java.util.Iterator;
+
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -15,42 +17,43 @@ public class Sector {
     /**
      * The sector's minimum latitude in degrees.
      */
-    public double minLatitude;
+    protected double minLatitude = Double.NaN;
 
     /**
      * The sector's maximum latitude in degrees.
      */
-    public double maxLatitude;
+    protected double maxLatitude = Double.NaN;
 
     /**
      * The sector's minimum longitude in degrees.
      */
-    public double minLongitude;
+    protected double minLongitude = Double.NaN;
 
     /**
      * The sector's maximum longitude in degrees.
      */
-    public double maxLongitude;
+    protected double maxLongitude = Double.NaN;
 
     /**
-     * Constructs an empty sector with minimum and maximum latitudes and longitudes all zero.
+     * Constructs an empty sector with minimum and maximum latitudes and longitudes all NaN.
      */
     public Sector() {
     }
 
+
     /**
-     * Constructs a sector with specified minimum and maximum latitudes and longitudes in degrees.
+     * Constructs a sector with the specified latitude and longitude values in degrees.
      *
-     * @param minLatitude  the minimum latitude in degrees
-     * @param maxLatitude  the maximum latitude in degrees
-     * @param minLongitude the minimum longitude in degrees
-     * @param maxLongitude the maximum longitude in degrees
+     * @param minLatitude    the minimum latitude, i.e., the latitude at the southwest corner of the sector.
+     * @param minLongitude   the minimum longitude, i.e., the longitude at the southwest corner of the sector.
+     * @param deltaLatitude  the width of the sector, specified in degrees; must equal to or greater than zero.
+     * @param deltaLongitude the height of the sector, specified in degrees; must equal to or greater than zero.
      */
-    public Sector(double minLatitude, double maxLatitude, double minLongitude, double maxLongitude) {
+    public Sector(double minLatitude, double minLongitude, double deltaLatitude, double deltaLongitude) {
         this.minLatitude = minLatitude;
-        this.maxLatitude = maxLatitude;
         this.minLongitude = minLongitude;
-        this.maxLongitude = maxLongitude;
+        this.maxLatitude = Location.clampLatitude(minLatitude + (deltaLatitude > 0 ? deltaLatitude : Double.NaN));
+        this.maxLongitude = Location.clampLongitude(minLongitude + (deltaLongitude > 0 ? deltaLongitude : Double.NaN));
     }
 
     /**
@@ -65,25 +68,24 @@ public class Sector {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Sector", "constructor", "missingSector"));
         }
-
         this.minLatitude = sector.minLatitude;
         this.maxLatitude = sector.maxLatitude;
         this.minLongitude = sector.minLongitude;
         this.maxLongitude = sector.maxLongitude;
     }
 
-    public static Sector fromDegrees(double minLatitudeDegrees, double maxLatitudeDegrees,
-                                     double minLongitudeDegrees, double maxLongitudeDegrees) {
+    public static Sector fromDegrees(double latitudeDegrees, double longitudeDegrees,
+                                     double deltaLatitudeDegrees, double deltaLongitudeDegrees) {
         return new Sector(
-            minLatitudeDegrees, maxLatitudeDegrees,
-            minLongitudeDegrees, maxLongitudeDegrees);
+            latitudeDegrees, longitudeDegrees,
+            deltaLatitudeDegrees, deltaLongitudeDegrees);
     }
 
-    public static Sector fromRadians(double minLatitudeRadians, double maxLatitudeRadians,
-                                     double minLongitudeRadians, double maxLongitudeRadians) {
+    public static Sector fromRadians(double latitudeRadians, double longitudeRadians,
+                                     double deltaLatitudeRadians, double deltaLongitudeRadians) {
         return new Sector(
-            Math.toDegrees(minLatitudeRadians), Math.toDegrees(maxLatitudeRadians),
-            Math.toDegrees(minLongitudeRadians), Math.toDegrees(maxLongitudeRadians));
+            Math.toDegrees(latitudeRadians), Math.toDegrees(longitudeRadians),
+            Math.toDegrees(deltaLatitudeRadians), Math.toDegrees(deltaLongitudeRadians));
     }
 
     @Override
@@ -115,14 +117,54 @@ public class Sector {
     }
 
     /**
-     * Indicates whether this sector has a non-empty width or height.
+     * Indicates whether this sector has non-zero width and height.
      *
-     * @return true if either of this sector's minimum and maximum latitudes or minimum and maximum longitudes do not
-     * differ, false otherwise
+     * @return true if either of this sector's delta latitude and/or delta longitude are zero, false otherwise.
      */
     public boolean isEmpty() {
-        return this.minLatitude >= this.maxLatitude || this.minLongitude >= this.maxLongitude;
+        // Note: Comparison with a NaN is always false.
+        return !(this.minLatitude < this.maxLatitude && this.minLongitude < this.maxLongitude);
     }
+
+    /**
+     * Returns the this sector's minimum latitude.
+     *
+     * @return the minimum latitude of this sector or NaN if this sector's location is nas not been defined.
+     */
+    public double minLatitude() {
+        return minLatitude;
+    }
+
+
+    /**
+     * Returns this sector's maximum latitude.
+     *
+     * @return the maximum latitude of this sector or NaN if this sector's location is nas not been defined.
+     */
+    public double maxLatitude() {
+        return maxLatitude;
+    }
+
+
+    /**
+     * Returns this sector's minimum longitude.
+     *
+     * @return the minimum longitude of this sector or NaN if this sector's location is nas not been defined.
+     */
+    public double minLongitude() {
+        return minLongitude;
+    }
+
+
+    /**
+     * Returns this sector's maximum longitude.
+     *
+     * @return the maximum longitude of this sector or NaN if this sector's location is nas not been defined.
+     */
+    public double maxLongitude() {
+        return maxLongitude;
+    }
+
 
     /**
      * Returns the angle between this sector's minimum and maximum latitudes.
@@ -183,20 +225,20 @@ public class Sector {
     }
 
     /**
-     * Sets this sector to a specified minimum and maximum latitudes and longitudes in degrees.
+     * Sets this sector to the specified latitude, longitude and dimension in degrees.
      *
-     * @param minLatitude  the new minimum latitude in degrees
-     * @param maxLatitude  the new maximum latitude in degrees
-     * @param minLongitude the new minimum longitude in degrees
-     * @param maxLongitude the new maximum longitude in degrees
+     * @param minLatitude    the minimum latitude, i.e., the latitude at the southwest corner of the sector.
+     * @param minLongitude   the minimum longitude, i.e., the longitude at the southwest corner of the sector.
+     * @param deltaLatitude  the width of the sector, specified in degrees; must equal to or greater than zero.
+     * @param deltaLongitude the height of the sector, specified in degrees; must equal to or greater than zero.
      *
      * @return this sector with its coordinates set to the specified values
      */
-    public Sector set(double minLatitude, double maxLatitude, double minLongitude, double maxLongitude) {
+    public Sector set(double minLatitude, double minLongitude, double deltaLatitude, double deltaLongitude) {
         this.minLatitude = minLatitude;
-        this.maxLatitude = maxLatitude;
         this.minLongitude = minLongitude;
-        this.maxLongitude = maxLongitude;
+        this.maxLatitude = Location.clampLatitude(minLatitude + (deltaLatitude > 0 ? deltaLatitude : Double.NaN));
+        this.maxLongitude = Location.clampLongitude(minLongitude + (deltaLongitude > 0 ? deltaLongitude : Double.NaN));
         return this;
     }
 
@@ -228,8 +270,8 @@ public class Sector {
      * @return this sector with its coordinates set to an empty sector
      */
     public Sector setEmpty() {
-        this.minLatitude = this.maxLatitude = 0;
-        this.minLongitude = this.maxLongitude = 0;
+        this.minLatitude = this.maxLatitude = Double.NaN;
+        this.minLongitude = this.maxLongitude = Double.NaN;
         return this;
     }
 
@@ -254,21 +296,19 @@ public class Sector {
      * The sectors are assumed to have normalized angles (angles within the range [-90, +90] latitude and [-180, +180]
      * longitude).
      *
-     * @param minLatitude  the minimum latitude of the sector to test intersection with, in degrees
-     * @param maxLatitude  the maximum latitude of the sector to test intersection with, in degrees
-     * @param minLongitude the minimum longitude of the sector to test intersection with, in degrees
-     * @param maxLongitude the maximum longitude of the sector to test intersection with, in degrees
+     * @param minLatitude    the minimum latitude of the sector to test intersection with, in degrees
+     * @param minLongitude   the minimum longitude of the sector to test intersection with, in degrees
+     * @param deltaLatitude  the width of the sector to test intersection with, in degrees
+     * @param deltaLongitude the height of the sector to test intersection with, in degrees
      *
      * @return true if the specified sector intersections this sector, false otherwise
      */
-    public boolean intersects(double minLatitude, double maxLatitude, double minLongitude, double maxLongitude) {
-        // Assumes normalized angles: [-90, +90], [-180, +180]
-        // Assumes normalized angles: [-90, +90], [-180, +180]
-        return minLatitude < maxLatitude
-            && minLongitude < maxLongitude // specified sector not empty
-            && this.minLatitude < this.maxLatitude
-            && this.minLongitude < this.maxLongitude // this sector not empty
-            && this.minLatitude < maxLatitude
+    public boolean intersects(double minLatitude, double minLongitude, double deltaLatitude, double deltaLongitude) {
+        // Assumes normalized latitude and longitude: [-90, +90], [-180, +180]
+        double maxLatitude = Location.clampLatitude(minLatitude + (deltaLatitude > 0 ? deltaLatitude : Double.NaN));
+        double maxLongitude = Location.clampLongitude(minLongitude + (deltaLongitude > 0 ? deltaLongitude : Double.NaN));
+        // Note: comparisons with NaN are always false.
+        return this.minLatitude < maxLatitude
             && this.maxLatitude > minLatitude
             && this.minLongitude < maxLongitude
             && this.maxLongitude > minLongitude;
@@ -295,11 +335,8 @@ public class Sector {
         }
 
         // Assumes normalized angles: [-90, +90], [-180, +180]
-        return sector.minLatitude < sector.maxLatitude
-            && sector.minLongitude < sector.maxLongitude // specified sector not empty
-            && this.minLatitude < this.maxLatitude
-            && this.minLongitude < this.maxLongitude // this sector not empty
-            && this.minLatitude < sector.maxLatitude
+        // Note: comparisons with NaN are always false
+        return this.minLatitude < sector.maxLatitude
             && this.maxLatitude > sector.minLatitude
             && this.minLongitude < sector.maxLongitude
             && this.maxLongitude > sector.minLongitude;
@@ -314,18 +351,19 @@ public class Sector {
      * The sectors are assumed to have normalized angles (angles within the range [-90, +90] latitude and [-180, +180]
      * longitude).
      *
-     * @param minLatitude  the minimum latitude of the sector to intersect with, in degrees
-     * @param maxLatitude  the maximum latitude of the sector to intersect with, in degrees
-     * @param minLongitude the minimum longitude of the sector to intersect with, in degrees
-     * @param maxLongitude the maximum longitude of the sector to intersect with, in degrees
+     * @param minLatitude    the minimum latitude of the sector to intersect with, in degrees
+     * @param minLongitude   the minimum longitude of the sector to intersect with, in degrees
+     * @param deltaLatitude  the width of the sector to intersect with, in degrees
+     * @param deltaLongitude the height of the sector to intersect with, in degrees
      *
      * @return this sector, set to its intersection with the specified sector
      */
-    public boolean intersect(double minLatitude, double maxLatitude, double minLongitude, double maxLongitude) {
-        // Assumes normalized angles: [-90, +90], [-180, +180]
-        if ((minLatitude < maxLatitude) && (minLongitude < maxLongitude) // specified sector not empty
-            && (this.minLatitude < this.maxLatitude) && (this.minLongitude < this.maxLongitude) // this sector not empty
-            && (this.minLatitude < maxLatitude) && (this.maxLatitude > minLatitude) // latitudes intersect
+    public boolean intersect(double minLatitude, double minLongitude, double deltaLatitude, double deltaLongitude) {
+        // Assumes normalized latitude and longitude: [-90, +90], [-180, +180]
+        double maxLatitude = Location.clampLatitude(minLatitude + (deltaLatitude > 0 ? deltaLatitude : Double.NaN));
+        double maxLongitude = Location.clampLongitude(minLongitude + (deltaLongitude > 0 ? deltaLongitude : Double.NaN));
+        // Note: comparisons with NaN are always false
+        if ((this.minLatitude < maxLatitude) && (this.maxLatitude > minLatitude) // latitudes intersect
             && (this.minLongitude < maxLongitude) && (this.maxLongitude > minLongitude)) { // longitudes intersect
 
             if (this.minLatitude < minLatitude)
@@ -364,10 +402,8 @@ public class Sector {
                 Logger.logMessage(Logger.ERROR, "Sector", "intersect", "missingSector"));
         }
 
-        // Assumes normalized angles: [-90, +90], [-180, +180]
-        if ((sector.minLatitude < sector.maxLatitude) && (sector.minLongitude < sector.maxLongitude) // specified sector not empty
-            && (this.minLatitude < this.maxLatitude) && (this.minLongitude < this.maxLongitude) // this sector not empty
-            && (this.minLatitude < sector.maxLatitude) && (this.maxLatitude > sector.minLatitude) // latitudes intersect
+        // Assumes normalized angles: [-90, +90], [-180, +180] and comparisons with NaN are always false
+        if ((this.minLatitude < sector.maxLatitude) && (this.maxLatitude > sector.minLatitude) // latitudes intersect
             && (this.minLongitude < sector.maxLongitude) && (this.maxLongitude > sector.minLongitude)) { // longitudes intersect
 
             if (this.minLatitude < sector.minLatitude)
@@ -395,10 +431,8 @@ public class Sector {
      * @return true if this sector contains the location, false otherwise
      */
     public boolean contains(double latitude, double longitude) {
-        // Assumes normalized angles: [-90, +90], [-180, +180]
-        return this.minLatitude < this.maxLatitude
-            && this.minLongitude < this.maxLongitude // this sector not empty
-            && this.minLatitude <= latitude
+        // Assumes normalized angles: [-90, +90], [-180, +180] and comparisons with NaN are always false
+        return this.minLatitude <= latitude
             && this.maxLatitude >= latitude
             && this.minLongitude <= longitude
             && this.maxLongitude >= longitude;
@@ -412,20 +446,20 @@ public class Sector {
      * The sectors are assumed to have normalized angles (angles within the range [-90, +90] latitude and [-180, +180]
      * longitude).
      *
-     * @param minLatitude  the minimum latitude of the sector to test containment with, in degrees
-     * @param maxLatitude  the maximum latitude of the sector to test containment with, in degrees
-     * @param minLongitude the minimum longitude of the sector to test containment with, in degrees
-     * @param maxLongitude the maximum longitude of the sector to test containment with, in degrees
+     * @param minLatitude    the minimum latitude of the sector to test containment with, in degrees
+     * @param minLongitude   the minimum longitude of the sector to test containment with, in degrees
+     * @param deltaLatitude  the width of the sector to test containment with, in degrees
+     * @param deltaLongitude the height of the sector to test containment with, in degrees
      *
      * @return true if the specified sector contains this sector, false otherwise
      */
-    public boolean contains(double minLatitude, double maxLatitude, double minLongitude, double maxLongitude) {
-        // Assumes normalized angles: [-90, +90], [-180, +180]
-        return minLatitude < maxLatitude
-            && minLongitude < maxLongitude // specified sector not empty
-            && this.minLatitude < this.maxLatitude
-            && this.minLongitude < this.maxLongitude // this sector not empty
-            && this.minLatitude <= minLatitude
+    public boolean contains(double minLatitude, double minLongitude, double deltaLatitude, double deltaLongitude) {
+        // Assumes normalized latitude and longitude: [-90, +90], [-180, +180]
+        double maxLatitude = Location.clampLatitude(minLatitude + (deltaLatitude > 0 ? deltaLatitude : Double.NaN));
+        double maxLongitude = Location.clampLongitude(minLongitude + (deltaLongitude > 0 ? deltaLongitude : Double.NaN));
+
+        // Note: comparisons with NaN are always false
+        return this.minLatitude <= minLatitude
             && this.maxLatitude >= maxLatitude
             && this.minLongitude <= minLongitude
             && this.maxLongitude >= maxLongitude;
@@ -451,12 +485,8 @@ public class Sector {
                 Logger.logMessage(Logger.ERROR, "Sector", "contains", "missingSector"));
         }
 
-        // Assumes normalized angles: [-90, +90], [-180, +180]
-        return sector.minLatitude < sector.maxLatitude
-            && sector.minLongitude < sector.maxLongitude // specified sector not empty
-            && this.minLatitude < this.maxLatitude
-            && this.minLongitude < this.maxLongitude // this sector not empty
-            && this.minLatitude <= sector.minLatitude
+        // Assumes normalized angles: [-90, +90], [-180, +180], and comparisons with NaN are always false
+        return this.minLatitude <= sector.minLatitude
             && this.maxLatitude >= sector.maxLatitude
             && this.minLongitude <= sector.minLongitude
             && this.maxLongitude >= sector.maxLongitude;
@@ -471,7 +501,25 @@ public class Sector {
      * @return this sector, set to its union with the specified location
      */
     public Sector union(double latitude, double longitude) {
-        return this; // TODO
+        // Assumes normalized angles: [-90, +90], [-180, +180], and comparisons with NaN are always false
+        if (this.minLatitude < this.maxLatitude && this.minLongitude < this.maxLongitude) {
+            this.maxLatitude = Math.max(this.maxLatitude, latitude);
+            this.minLatitude = Math.min(this.minLatitude, latitude);
+            this.maxLongitude = Math.max(this.maxLongitude, longitude);
+            this.minLongitude = Math.min(this.minLongitude, longitude);
+        } else if (!Double.isNaN(this.minLatitude) && !Double.isNaN(this.minLongitude)) {
+            // Note, order is important, set the max members first
+            this.maxLatitude = Math.max(this.minLatitude, latitude);
+            this.maxLongitude = Math.max(this.minLongitude, longitude);
+            this.minLatitude = Math.min(this.minLatitude, latitude);
+            this.minLongitude = Math.min(this.minLongitude, longitude);
+        } else {
+            this.minLatitude = latitude;
+            this.minLongitude = longitude;
+            this.maxLatitude = Double.NaN;
+            this.maxLongitude = Double.NaN;
+        }
+        return this;
     }
 
     /**
@@ -489,23 +537,53 @@ public class Sector {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Sector", "union", "missingList"));
         }
+        double minLat = Double.isNaN(this.minLatitude) ? Double.MAX_VALUE : this.minLatitude;
+        double maxLat = Double.isNaN(this.maxLatitude) ? -Double.MAX_VALUE : this.maxLatitude;
+        double minLon = Double.isNaN(this.minLongitude) ? Double.MAX_VALUE : this.minLongitude;
+        double maxLon = Double.isNaN(this.maxLongitude) ? -Double.MAX_VALUE : this.maxLongitude;
 
-        return this; // TODO
+        for (Location location : locations) {
+            if (location == null) {
+                throw new IllegalArgumentException(
+                    Logger.logMessage(Logger.ERROR, "Sector", "union", "missingLocation"));
+            }
+            maxLat = Math.max(maxLat, location.latitude);
+            minLat = Math.min(minLat, location.latitude);
+            maxLon = Math.max(maxLon, location.longitude);
+            minLon = Math.min(minLon, location.longitude);
+        }
+
+        if (minLat < Double.MAX_VALUE) {
+            this.minLatitude = minLat;
+        }
+        if (maxLat > -Double.MAX_VALUE) {
+            this.maxLatitude = maxLat;
+        }
+        if (minLon < Double.MAX_VALUE) {
+            this.minLongitude = minLon;
+        }
+        if (maxLon > -Double.MAX_VALUE) {
+            this.maxLongitude = maxLon;
+        }
+        return this;
     }
 
     /**
      * Sets this sector to the union of itself and a specified sector. This has no effect if the specified sector is
      * empty. If this sector is empty, it is set to the specified sector.
      *
-     * @param minLatitude  the minimum latitude of the sector to union with, in degrees
-     * @param maxLatitude  the maximum latitude of the sector to union with, in degrees
-     * @param minLongitude the minimum longitude of the sector to union with, in degrees
-     * @param maxLongitude the maximum longitude of the sector to union with, in degrees
+     * @param minLatitude    the minimum latitude of the sector to union with, in degrees
+     * @param minLongitude   the minimum longitude of the sector to union with, in degrees
+     * @param deltaLatitude  the width of the sector to union with, in degrees
+     * @param deltaLongitude the height of the sector to union with, in degrees
      *
      * @return this sector, set to its union with the specified sector
      */
-    public Sector union(double minLatitude, double maxLatitude, double minLongitude, double maxLongitude) {
-        // Assumes normalized angles: [-90, +90], [-180, +180]
+    public Sector union(double minLatitude, double minLongitude, double deltaLatitude, double deltaLongitude) {
+        // Assumes normalized latitude and longitude: [-90, +90], [-180, +180]
+        double maxLatitude = Location.clampLatitude(minLatitude + (deltaLatitude > 0 ? deltaLatitude : Double.NaN));
+        double maxLongitude = Location.clampLongitude(minLongitude + (deltaLongitude > 0 ? deltaLongitude : Double.NaN));
+
         if ((minLatitude < maxLatitude) && (minLongitude < maxLongitude)) { // specified sector not empty
             if ((this.minLatitude < this.maxLatitude) && (this.minLongitude < this.maxLongitude)) { // this sector not empty
                 if (this.minLatitude > minLatitude)
