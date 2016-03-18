@@ -10,6 +10,8 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
+// TODO #1 move this into a basic tessellator implementation in World Wind
+// TODO #2 SkyLayer needs the TriStripIndices - could we add these to the Globe interface? (no, needs to be on a static context)
 public class ExampleUtil {
 
     public static FloatBuffer assembleTexCoords(int numLat, int numLon, FloatBuffer result, int stride) {

@@ -7,17 +7,23 @@ package gov.nasa.worldwindx.render;
 
 import android.opengl.GLES20;
 
+import java.util.Arrays;
+
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.GpuProgram;
 import gov.nasa.worldwind.util.Logger;
 
+// TODO Merge GroundProgram and SkyProgram into AtmosphereProgram, including the GLSL sources
+// TODO Test the effect of working in local coordinates (reference point) on the GLSL atmosphere programs
 public class AtmosphereProgram extends GpuProgram {
 
     protected double altitude;
 
     protected int mvpMatrixId;
+
+    protected int vertexOriginId;
 
     protected int eyePointId;
 
@@ -94,6 +100,10 @@ public class AtmosphereProgram extends GpuProgram {
         new Matrix4().transposeToArray(this.array, 0); // 4 x 4 identity matrix
         GLES20.glUniformMatrix4fv(this.mvpMatrixId, 1, false, this.array, 0);
 
+        this.vertexOriginId = GLES20.glGetUniformLocation(this.programId, "vertexOrigin");
+        Arrays.fill(this.array, 0);
+        GLES20.glUniform3fv(this.vertexOriginId, 1, this.array, 0);
+
         // Configure the program's constant uniform variables.
         this.invWavelengthId = GLES20.glGetUniformLocation(this.getObjectId(), "invWavelength");
         invWavelength.toArray(this.array, 0);
@@ -146,12 +156,17 @@ public class AtmosphereProgram extends GpuProgram {
         GLES20.glUniformMatrix4fv(this.mvpMatrixId, 1, false, this.array, 0);
     }
 
-    public void loadUniforms(DrawContext dc) {
-        if (dc == null) {
+    public void loadVertexOrigin(Vec3 vector) {
+        if (vector == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "AtmosphereProgram", "loadUniforms", "missingContext"));
+                Logger.logMessage(Logger.ERROR, "GroundProgram", "loadVertexOrigin", "missingVector"));
         }
 
+        vector.toArray(this.array, 0);
+        GLES20.glUniform3fv(this.vertexOriginId, 1, this.array, 0);
+    }
+
+    public void loadUniforms(DrawContext dc) {
         // Use the draw context's eye point.
         dc.getEyePoint().toArray(this.array, 0);
         GLES20.glUniform3fv(this.eyePointId, 1, this.array, 0);

@@ -46,7 +46,7 @@ public class ExampleController extends BasicNavigatorController implements Runna
     public void windowWillDraw(DrawContext dc) {
 
         // Rotate the light direction after the composition sequence completes.
-        if (this.sequence == 5) {
+        if (this.sequence == 3) {
             this.lightDirection.multiplyByMatrix(this.lightTransform);
         }
 
@@ -58,7 +58,7 @@ public class ExampleController extends BasicNavigatorController implements Runna
     public void windowDidDraw(DrawContext dc) {
 
         // Rotate the viewer after the composition sequence completes.
-        if (this.sequence == 5) {
+        if (this.sequence == 3) {
             WorldWindow wwd = this.getWorldWindow();
             wwd.getNavigator().getPosition().longitude -= 0.03;
             dc.requestRender();
@@ -70,38 +70,23 @@ public class ExampleController extends BasicNavigatorController implements Runna
         LayerList layers = this.getWorldWindow().getLayers();
 
         switch (this.sequence) {
-            case 0: // enable only wireframe
-                layers.getLayer(1).setEnabled(true);
-                layers.getLayer(2).setEnabled(false);
-                layers.getLayer(3).setEnabled(false);
-                layers.getLayer(4).setEnabled(false);
-                this.sequence++;
-                this.handler.postDelayed(this, this.sequenceMillis);
-                this.getWorldWindow().requestRender();
-                break;
-            case 1: // disable wireframe and enable the simple image layer
+            case 0: // enable only the tessellation layer
+                layers.getLayer(0).setEnabled(true);
                 layers.getLayer(1).setEnabled(false);
-                layers.getLayer(3).setEnabled(true);
-                this.sequence++;
+                layers.getLayer(2).setEnabled(false);
                 this.handler.postDelayed(this, this.sequenceMillis);
-                this.getWorldWindow().requestRender();
                 break;
-            case 2: // enable the sky atmospheric effect
+            case 1: // disable the tessellation layer and enable the image layer
+                layers.getLayer(0).setEnabled(false);
+                layers.getLayer(1).setEnabled(true);
+                this.handler.postDelayed(this, this.sequenceMillis);
+                break;
+            case 2: // enable the atmosphere layer
                 layers.getLayer(2).setEnabled(true);
-                this.sequence++;
-                this.handler.postDelayed(this, this.sequenceMillis);
-                this.getWorldWindow().requestRender();
-                break;
-            case 3: // enable the ground atmospheric effect
-                layers.getLayer(4).setEnabled(true);
-                this.sequence++;
-                this.handler.postDelayed(this, this.sequenceMillis);
-                this.getWorldWindow().requestRender();
-                break;
-            case 4:
-                this.sequence++;
-                this.getWorldWindow().requestRender();
                 break;
         }
+
+        this.sequence++;
+        this.getWorldWindow().requestRender();
     }
 }
