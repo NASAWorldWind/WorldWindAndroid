@@ -72,6 +72,17 @@ public interface Globe {
     void setProjection(GeographicProjection projection);
 
     /**
+     * @return
+     */
+    Tessellator getTessellator();
+
+    /**
+     *
+     * @param tessellator
+     */
+    void setTessellator(Tessellator tessellator);
+
+    /**
      * Converts a geographic position to Cartesian coordinates. This globe's projection specifies the Cartesian
      * coordinate system.
      *
@@ -114,15 +125,15 @@ public interface Globe {
      * @param numLat
      * @param numLon
      * @param elevations
-     * @param referencePoint
+     * @param origin
      * @param result
      *
      * @return
      *
      * @throws IllegalArgumentException if any argument is null,
      */
-    FloatBuffer geographicToCartesianGrid(Sector sector, int numLat, int numLon, double[] elevations,
-                                          Vec3 referencePoint, FloatBuffer result, int stride);
+    FloatBuffer geographicToCartesianGrid(Sector sector, int numLat, int numLon, double[] elevations, Vec3 origin,
+                                          FloatBuffer result, int stride);
 
     /**
      * Converts a Cartesian point to a geographic position. This globe's projection specifies the Cartesian coordinate

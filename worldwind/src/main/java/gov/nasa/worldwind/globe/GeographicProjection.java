@@ -69,14 +69,14 @@ public interface GeographicProjection {
      * @param numLat
      * @param numLon
      * @param elevations
-     * @param referencePoint
+     * @param origin
      * @param offset
      * @param result
      *
      * @return
      */
     FloatBuffer geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon, double[] elevations,
-                                          Vec3 referencePoint, Vec3 offset, FloatBuffer result, int stride);
+                                          Vec3 origin, Vec3 offset, FloatBuffer result, int stride);
 
     /**
      * Converts a Cartesian point to a geographic position.

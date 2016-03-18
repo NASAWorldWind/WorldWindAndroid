@@ -178,7 +178,9 @@ public class ProjectionWgs84 implements GeographicProjection {
     }
 
     @Override
-    public FloatBuffer geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon, double[] elevations, Vec3 referencePoint, Vec3 offset, FloatBuffer result, int stride) {
+    public FloatBuffer geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon,
+                                                 double[] elevations, Vec3 origin, Vec3 offset,
+                                                 FloatBuffer result, int stride) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianGrid", "missingGlobe"));
@@ -220,9 +222,9 @@ public class ProjectionWgs84 implements GeographicProjection {
 
         int latIndex, lonIndex, elevIndex = 0, pos;
         double lat, lon, elev;
-        double xOffset = (referencePoint != null) ? -referencePoint.x : 0;
-        double yOffset = (referencePoint != null) ? -referencePoint.y : 0;
-        double zOffset = (referencePoint != null) ? -referencePoint.z : 0;
+        double xOffset = (origin != null) ? -origin.x : 0;
+        double yOffset = (origin != null) ? -origin.y : 0;
+        double zOffset = (origin != null) ? -origin.z : 0;
         float[] xyz = new float[3];
 
         // Compute and save values that are a function of each unique longitude value in the specified sector. This
