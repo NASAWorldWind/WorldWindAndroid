@@ -297,9 +297,9 @@ public class Vec2 {
         }
 
         double[] m = matrix.m;
-        double x = m[0] * this.x + m[1] * this.y + m[2];
-        double y = m[3] * this.x + m[4] * this.y + m[5];
-        double z = m[6] * this.x + m[7] * this.y + m[8];
+        double x = (m[0] * this.x) + (m[1] * this.y) + m[2];
+        double y = (m[3] * this.x) + (m[4] * this.y) + m[5];
+        double z = (m[6] * this.x) + (m[7] * this.y) + m[8];
 
         this.x = x / z;
         this.y = y / z;

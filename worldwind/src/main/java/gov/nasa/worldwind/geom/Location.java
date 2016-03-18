@@ -8,6 +8,7 @@ package gov.nasa.worldwind.geom;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.util.Logger;
 
+// TODO test performance of making all geom methods final
 /**
  * Geographic location with a latitude and longitude in degrees.
  */
