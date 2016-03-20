@@ -95,7 +95,7 @@ public class BasicTerrain implements Terrain {
     }
 
     @Override
-    public Vec3 getTileOrigin(int index) {
+    public Vec3 getTileVertexOrigin(int index) {
         if (index < 0 || index >= this.tiles.size()) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicTerrain", "getTileOrigin", "invalidIndex"));
@@ -104,14 +104,15 @@ public class BasicTerrain implements Terrain {
         return this.tiles.get(index).tileOrigin;
     }
 
+
     @Override
-    public Matrix3 applyTexCoordTransform(int index, Sector sector, Matrix3 result) {
+    public void applyTexCoordTransform(int index, Sector dst, Matrix3 result) {
         if (index < 0 || index >= this.tiles.size()) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicTerrain", "applyTexCoordTransform", "invalidIndex"));
         }
 
-        if (sector == null) {
+        if (dst == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicTerrain", "applyTexCoordTransform", "missingSector"));
         }
@@ -121,8 +122,8 @@ public class BasicTerrain implements Terrain {
                 Logger.logMessage(Logger.ERROR, "BasicTerrain", "applyTexCoordTransform", "missingResult"));
         }
 
-        Sector tileSector = this.tiles.get(index).sector;
-        return result.multiplyByNormalizedGeographicTransform(tileSector, sector);
+        Sector src = this.tiles.get(index).sector;
+        result.multiplyByTileTransform(src, dst);
     }
 
     @Override

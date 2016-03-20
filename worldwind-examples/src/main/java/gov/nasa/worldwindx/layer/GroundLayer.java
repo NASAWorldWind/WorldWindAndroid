@@ -79,40 +79,40 @@ public class GroundLayer extends AbstractLayer {
 
         // Get the draw context's tessellated terrain and modelview projection matrix.
         Terrain terrain = dc.getTerrain();
-        Matrix4 dcmvp = dc.getModelviewProjection();
 
         // Set up to use the shared tile tex coord attributes.
         GLES20.glEnableVertexAttribArray(1);
         terrain.useVertexTexCoordAttrib(dc, 1);
 
-        for (int tileIdx = 0; tileIdx < terrain.getTileCount(); tileIdx++) {
+        for (int idx = 0, len = terrain.getTileCount(); idx < len; idx++) {
 
-            // Use the draw context's modelview projection matrix, offset by the tile's origin.
-            Vec3 origin = terrain.getTileOrigin(tileIdx);
-            this.mvpMatrix.set(dcmvp).multiplyByTranslation(origin.x, origin.y, origin.z);
+            // Use the draw context's modelview projection matrix, transformed to the tile's local coordinates.
+            Vec3 terrainOrigin = terrain.getTileVertexOrigin(idx);
+            this.mvpMatrix.set(dc.getModelviewProjection());
+            this.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
             program.loadModelviewProjection(this.mvpMatrix);
-            program.loadVertexOrigin(origin);
+            program.loadVertexOrigin(terrainOrigin);
 
             // Use the texture's transform matrix.
             if (texture != null) {
                 this.texCoordMatrix.setToIdentity();
                 texture.applyTexCoordTransform(this.texCoordMatrix);
-                terrain.applyTexCoordTransform(tileIdx, this.fullSphereSector, this.texCoordMatrix);
-                program.loadTextureTransform(this.texCoordMatrix);
+                terrain.applyTexCoordTransform(idx, this.fullSphereSector, this.texCoordMatrix);
+                program.loadTexCoordMatrix(this.texCoordMatrix);
             }
 
             // Use the tile's vertex point attribute.
-            terrain.useVertexPointAttrib(dc, tileIdx, 0);
+            terrain.useVertexPointAttrib(dc, idx, 0);
 
             // Draw the tile, multiplying the current fragment color by the program's secondary color.
             program.loadFragColor(GroundProgram.FRAGCOLOR_SECONDARY);
             GLES20.glBlendFunc(GLES20.GL_DST_COLOR, GLES20.GL_ZERO);
-            terrain.drawTileTriangles(dc, tileIdx);
+            terrain.drawTileTriangles(dc, idx);
 
             // Draw the tile, adding the current fragment color to the program's primary color.
             program.loadFragColor(GroundProgram.FRAGCOLOR_PRIMARY_TEX_BLEND);
             GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE);
-            terrain.drawTileTriangles(dc, tileIdx);
+            terrain.drawTileTriangles(dc, idx);
         }
 
         // Restore the default World Wind OpenGL state.

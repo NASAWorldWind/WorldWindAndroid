@@ -52,7 +52,6 @@ public class ImageLayer extends AbstractLayer {
 
         // Use this layer's texture.
         program.enableTexture(true);
-        program.loadTextureSampler(0); // GL_TEXTURE0
         program.loadColor(1, 1, 1, 1); // don't modify texture fragment colors
         dc.bindTexture(GLES20.GL_TEXTURE0, texture);
 
@@ -72,7 +71,7 @@ public class ImageLayer extends AbstractLayer {
             }
 
             // Use the draw context's modelview projection matrix, offset by the tile's origin.
-            Vec3 origin = terrain.getTileOrigin(tileIdx);
+            Vec3 origin = terrain.getTileVertexOrigin(tileIdx);
             this.mvpMatrix.set(dcmvp).multiplyByTranslation(origin.x, origin.y, origin.z);
             program.loadModelviewProjection(this.mvpMatrix);
 
@@ -80,7 +79,7 @@ public class ImageLayer extends AbstractLayer {
             this.texCoordMatrix.setToIdentity();
             texture.applyTexCoordTransform(this.texCoordMatrix);
             terrain.applyTexCoordTransform(tileIdx, this.sector, this.texCoordMatrix);
-            program.loadTextureTransform(this.texCoordMatrix);
+            program.loadTexCoordMatrix(this.texCoordMatrix);
 
             // Use the tile's vertex point attribute.
             terrain.useVertexPointAttrib(dc, tileIdx, 0);

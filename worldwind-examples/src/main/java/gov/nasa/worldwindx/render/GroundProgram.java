@@ -67,7 +67,7 @@ public class GroundProgram extends AtmosphereProgram {
         GLES20.glUseProgram(prevProgram[0]);
     }
 
-    public void loadTextureTransform(Matrix3 matrix) {
+    public void loadTexCoordMatrix(Matrix3 matrix) {
         if (matrix == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "GroundProgram", "loadTextureTransform", "missingMatrix"));

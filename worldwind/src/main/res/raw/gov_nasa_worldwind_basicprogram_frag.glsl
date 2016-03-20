@@ -5,16 +5,18 @@
 
 precision mediump float;
 
+uniform bool enableTexture;
 uniform vec4 color;
 uniform sampler2D texSampler;
-uniform bool enableTexture;
 
 varying vec2 texCoord;
 
 void main() {
     if (enableTexture) {
+        /* Modulate the specified fragment color by the specified 2D texture's color */
         gl_FragColor = color * texture2D(texSampler, texCoord);
     } else {
+        /* Return the specified fragment color */
         gl_FragColor = color;
     }
 }
