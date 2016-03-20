@@ -15,6 +15,8 @@ import gov.nasa.worldwind.util.Logger;
 
 public class LruMemoryCache<K, V> {
 
+    protected static long keyPool; // overflows after generating quintillions of cache keys
+
     protected final Map<K, Entry<K, V>> entries = new HashMap<>();
 
     protected final Comparator<Entry<K, V>> lruComparator = new Comparator<Entry<K, V>>() {
@@ -32,8 +34,6 @@ public class LruMemoryCache<K, V> {
 
     protected long lastUsedSequence; // overflows after thousands of years, given 1.0+E6 cache accesses per frame at 60Hz
 
-    protected static long keyPool;
-
     public LruMemoryCache(int capacity, int lowWater) {
         if (capacity < 1) {
             throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "LruMemoryCache", "constructor",
@@ -49,6 +49,11 @@ public class LruMemoryCache<K, V> {
         this.lowWater = lowWater;
     }
 
+    /**
+     * Generates cache keys that are unique to all instances of LruMemoryCache within the current Java runtime.
+     *
+     * @return a unique runtime cache key.
+     */
     public String generateCacheKey() {
         return "LruMemoryCache " + (++keyPool);
     }

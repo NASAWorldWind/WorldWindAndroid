@@ -29,5 +29,5 @@ public interface GpuObject {
      * Frees any GPU resources associated with this instance. After this method returns the referenced GPU object is
      * invalid, and <code>getObjectId</code> returns zero.
      */
-    void dispose();
+    void dispose(); // TODO refactor to accept DrawContext argument
 }
