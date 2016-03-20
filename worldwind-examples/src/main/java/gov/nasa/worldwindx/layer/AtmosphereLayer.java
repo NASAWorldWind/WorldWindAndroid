@@ -27,7 +27,7 @@ import gov.nasa.worldwindx.render.AtmosphereProgram;
 import gov.nasa.worldwindx.render.GroundProgram;
 import gov.nasa.worldwindx.render.SkyProgram;
 
-public class GroundLayer extends AbstractLayer {
+public class AtmosphereLayer extends AbstractLayer {
 
     protected int nightImageId = R.drawable.dnb_land_ocean_ice_2012;
 
@@ -45,7 +45,7 @@ public class GroundLayer extends AbstractLayer {
 
     protected Sector fullSphereSector = new Sector().setFullSphere();
 
-    public GroundLayer() {
+    public AtmosphereLayer() {
         super("Atmosphere");
     }
 

@@ -5,7 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.layer.BMNGOneImageLayer;
-import gov.nasa.worldwindx.layer.GroundLayer;
+import gov.nasa.worldwindx.layer.AtmosphereLayer;
 
 public class WorldWindExamples extends AppCompatActivity {
 
@@ -21,7 +21,7 @@ public class WorldWindExamples extends AppCompatActivity {
 
         // Setup the World Window's layers.
         this.wwd.getLayers().addLayer(new BMNGOneImageLayer());
-        this.wwd.getLayers().addLayer(new GroundLayer());
+        this.wwd.getLayers().addLayer(new AtmosphereLayer());
 
         // Configure a custom navigation controller to spin the globe automatically.
         this.wwd.setNavigatorController(new ExampleController());
