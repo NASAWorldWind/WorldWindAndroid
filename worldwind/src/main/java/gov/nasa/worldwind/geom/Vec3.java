@@ -422,10 +422,10 @@ public class Vec3 {
         }
 
         double[] m = matrix.m;
-        double x = m[0] * this.x + m[1] * this.y + m[2] * this.z + m[3];
-        double y = m[4] * this.x + m[5] * this.y + m[6] * this.z + m[7];
-        double z = m[8] * this.x + m[9] * this.y + m[10] * this.z + m[11];
-        double w = m[12] * this.x + m[13] * this.y + m[14] * this.z + m[15];
+        double x = (m[0] * this.x) + (m[1] * this.y) + (m[2] * this.z) + m[3];
+        double y = (m[4] * this.x) + (m[5] * this.y) + (m[6] * this.z) + m[7];
+        double z = (m[8] * this.x) + (m[9] * this.y) + (m[10] * this.z) + m[11];
+        double w = (m[12] * this.x) + (m[13] * this.y) + (m[14] * this.z) + m[15];
 
         this.x = x / w;
         this.y = y / w;

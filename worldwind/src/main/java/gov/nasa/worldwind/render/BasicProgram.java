@@ -50,13 +50,13 @@ public class BasicProgram extends GpuProgram {
         GLES20.glUniformMatrix3fv(this.texCoordMatrixId, 1, false, this.array, 0);
 
         this.texSamplerId = GLES20.glGetUniformLocation(this.programId, "texSampler");
-        GLES20.glUniform1i(this.texSamplerId, 0);
+        GLES20.glUniform1i(this.texSamplerId, 0); // GL_TEXTURE0
 
         this.enableTextureId = GLES20.glGetUniformLocation(this.programId, "enableTexture");
-        GLES20.glUniform1i(this.enableTextureId, 0);
+        GLES20.glUniform1i(this.enableTextureId, 0); // disable texture
 
         this.colorId = GLES20.glGetUniformLocation(this.programId, "color");
-        GLES20.glUniform4f(this.colorId, 1, 1, 1, 1);
+        GLES20.glUniform4f(this.colorId, 1, 1, 1, 1); // opaque white
 
         GLES20.glUseProgram(prevProgram[0]);
     }

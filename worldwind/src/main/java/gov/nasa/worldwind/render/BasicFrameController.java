@@ -7,6 +7,7 @@ package gov.nasa.worldwind.render;
 
 import android.opengl.GLES20;
 
+import gov.nasa.worldwind.globe.Tessellator;
 import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.util.Logger;
 
@@ -34,11 +35,17 @@ public class BasicFrameController implements FrameController {
 
     protected void doDrawFrame(DrawContext dc) {
         this.clearFrame(dc);
+        this.createTerrain(dc);
         this.drawLayers(dc);
     }
 
     protected void clearFrame(DrawContext dc) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+    }
+
+    protected void createTerrain(DrawContext dc) {
+        Tessellator tess = dc.getGlobe().getTessellator();
+        dc.setTerrain(tess.tessellate(dc));
     }
 
     protected void drawLayers(DrawContext dc) {

@@ -68,10 +68,10 @@ public class GpuTexture implements GpuObject {
         }
     }
 
-    public Matrix3 applyTextureTransform(Matrix3 result) {
+    public Matrix3 applyTexCoordTransform(Matrix3 result) {
         if (result == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "GpuTexture", "applyTexTransform", "nullResult"));
+                Logger.logMessage(Logger.ERROR, "GpuTexture", "applyTexCoordTransform", "missingResult"));
         }
 
         return result.multiplyByVerticalFlip();

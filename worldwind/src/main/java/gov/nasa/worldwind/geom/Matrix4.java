@@ -683,11 +683,24 @@ public class Matrix4 {
      * @return this matrix multiplied by the translation matrix implied by the specified values
      */
     public Matrix4 multiplyByTranslation(double x, double y, double z) {
-        this.multiplyByMatrix(
-            1, 0, 0, x,
-            0, 1, 0, y,
-            0, 0, 1, z,
-            0, 0, 0, 1);
+
+        // This is equivalent to the following operation, but is potentially much faster:
+        //
+        // multiplyByMatrix(
+        //     1, 0, 0, x,
+        //     0, 1, 0, y,
+        //     0, 0, 1, z,
+        //     0, 0, 0, 1);
+        //
+        // This inline version eliminates unnecessary multiplication by 1 and 0 in the translation matrix's components,
+        // reducing the total number of primitive operations from 144 to 24.
+
+        double[] m = this.m;
+
+        m[3] += (m[0] * x) + (m[1] * y) + (m[2] * z);
+        m[7] += (m[4] * x) + (m[5] * y) + (m[6] * z);
+        m[11] += (m[8] * x) + (m[9] * y) + (m[10] * z);
+        m[15] += (m[12] * x) + (m[13] * y) + (m[14] * z);
 
         return this;
     }

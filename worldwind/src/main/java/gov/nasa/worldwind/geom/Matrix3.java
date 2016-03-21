@@ -308,11 +308,11 @@ public class Matrix3 {
     }
 
     /**
-     * Sets this matrix to one that flips and shifts the y-axis.
+     * Sets this matrix to one that flips and shifts the y-axis. The resultant matrix maps Y=0 to Y=1 and Y=1 to Y=0.
+     * All existing values are overwritten. This matrix is usually used to change the coordinate origin from an upper
+     * left coordinate origin to a lower left coordinate origin.
      * <p/>
-     * The resultant matrix maps Y=0 to Y=1 and Y=1 to Y=0. All existing values are overwritten. This matrix is usually
-     * used to change the coordinate origin from an upper left coordinate origin to a lower left coordinate origin. This
-     * is typically necessary to align the coordinate system of images (top-left origin) with that of OpenGL
+     * This matrix is typically necessary to align the coordinate system of images (top-left origin) with that of OpenGL
      * (bottom-left origin).
      *
      * @return this matrix set to values described above
@@ -330,6 +330,66 @@ public class Matrix3 {
         this.m[6] = 0;
         this.m[7] = 0;
         this.m[8] = 1;
+
+        return this;
+    }
+
+    /**
+     * Sets this matrix to one that transforms normalized coordinates from a source rectangle to a destination rectangle
+     * in geographic coordinates. Normalized coordinates within a sector range from 0 to 1, with (0, 0) indicating the
+     * lower left corner and (1, 1) indicating the upper right. The resultant matrix maps a normalized source coordinate
+     * (X, Y) to its corresponding normalized destination coordinate (X', Y').
+     * <p/>
+     * This matrix typically necessary to transform texture coordinates from one geographic region to another. For
+     * example, the texture coordinates for a terrain tile spanning one region must be transformed to coordinates
+     * appropriate for an image tile spanning a potentially different region.
+     *
+     * @param src the source sector
+     * @param dst the destination sector
+     *
+     * @return this matrix set to values described above
+     */
+    public Matrix3 setToNormalizedGeographicTransform(Sector src, Sector dst) {
+        if (src == null || dst == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Sector", "setToNormalizedGeographicTransform", "missingSector"));
+        }
+
+        double srcDeltaLat = src.deltaLatitude();
+        double srcDeltaLon = src.deltaLongitude();
+        double dstDeltaLat = dst.deltaLatitude();
+        double dstDeltaLon = dst.deltaLongitude();
+
+        double xs = srcDeltaLon / dstDeltaLon;
+        double ys = srcDeltaLat / dstDeltaLat;
+        double xt = (src.minLongitude - dst.minLongitude) / dstDeltaLon;
+        double yt = (src.minLatitude - dst.minLatitude) / dstDeltaLat;
+
+        // This is equivalent to the following operation, but is potentially much faster:
+        //
+        // multiplyByMatrix(
+        //     xs, 0, xt
+        //     0, yx, yt,
+        //     0, 0, 1);
+        //
+        // This inline version eliminates unnecessary multiplication by 1 and 0 in the matrix's components, reducing
+        // the total number of primitive operations from 63 to 18.
+
+        double[] m = this.m;
+
+        // Must be done before modifying m0, m1, etc. below.
+        m[2] += (m[0] * xt) + (m[1] * yt);
+        m[5] += (m[3] * xt) + (m[4] * yt);
+        m[8] += (m[6] * xt) + (m[6] * yt);
+
+        m[0] *= xs;
+        m[1] *= ys;
+
+        m[3] *= xs;
+        m[4] *= ys;
+
+        m[6] *= xs;
+        m[7] *= ys;
 
         return this;
     }
@@ -426,20 +486,97 @@ public class Matrix3 {
     }
 
     /**
-     * Multiplies this matrix by a matrix that flips and shifts the y-axis.
+     * Multiplies this matrix by a matrix that flips and shifts the y-axis. The vertical flip matrix maps Y=0 to Y=1 and
+     * Y=1 to Y=0. This matrix is usually used to change the coordinate origin from an upper left coordinate origin to a
+     * lower left coordinate origin.
      * <p/>
-     * The vertical flip matrix maps Y=0 to Y=1 and Y=1 to Y=0. This matrix is usually used to change the coordinate
-     * origin from an upper left coordinate origin to a lower left coordinate origin. This is typically necessary to
-     * align the coordinate system of images (top-left origin) with that of OpenGL (bottom-left origin).
+     * This is typically necessary to align the coordinate system of images (top-left origin) with that of OpenGL
+     * (bottom-left origin).
      *
      * @return this matrix multiplied by a vertical flip matrix implied by values described above
      */
     public Matrix3 multiplyByVerticalFlip() {
 
-        this.multiplyByMatrix(
-            1, 0, 0,
-            0, -1, 1,
-            0, 0, 1);
+        // This is equivalent to the following operation, but is potentially much faster:
+        //
+        // multiplyByMatrix(
+        //     1, 0, 0
+        //     0, -1, 1,
+        //     0, 0, 1);
+        //
+        // This inline version eliminates unnecessary multiplication by 1 and 0 in the matrix's components, reducing
+        // the total number of primitive operations from 63 to 6.
+
+        double[] m = this.m;
+
+        // Must be done before modifying m1, m4, m7 below.
+        m[2] += m[1];
+        m[5] += m[4];
+        m[8] += m[7];
+
+        m[1] = -m[1];
+        m[4] = -m[4];
+        m[7] = -m[7];
+
+        return this;
+    }
+
+    /**
+     * Multiplies this matrix by a matrix that transforms normalized coordinates from a source rectangle to a
+     * destination rectangle in geographic coordinates. Normalized coordinates within a sector range from 0 to 1, with
+     * (0, 0) indicating the lower left corner and (1, 1) indicating the upper right. The resultant matrix maps a
+     * normalized source coordinate (X, Y) to its corresponding normalized destination coordinate (X', Y').
+     * <p/>
+     * This matrix typically necessary to transform texture coordinates from one geographic region to another. For
+     * example, the texture coordinates for a terrain tile spanning one region must be transformed to coordinates
+     * appropriate for an image tile spanning a potentially different region.
+     *
+     * @param src the source sector
+     * @param dst the destination sector
+     *
+     * @return this matrix multiplied by the transform matrix implied by values described above
+     */
+    public Matrix3 multiplyByNormalizedGeographicTransform(Sector src, Sector dst) {
+        if (src == null || dst == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Sector", "multiplyByNormalizedGeographicTransform", "missingSector"));
+        }
+
+        double srcDeltaLat = src.deltaLatitude();
+        double srcDeltaLon = src.deltaLongitude();
+        double dstDeltaLat = dst.deltaLatitude();
+        double dstDeltaLon = dst.deltaLongitude();
+
+        double xs = srcDeltaLon / dstDeltaLon;
+        double ys = srcDeltaLat / dstDeltaLat;
+        double xt = (src.minLongitude - dst.minLongitude) / dstDeltaLon;
+        double yt = (src.minLatitude - dst.minLatitude) / dstDeltaLat;
+
+        // This is equivalent to the following operation, but is potentially much faster:
+        //
+        // multiplyByMatrix(
+        //     xs, 0, xt
+        //     0, yx, yt,
+        //     0, 0, 1);
+        //
+        // This inline version eliminates unnecessary multiplication by 1 and 0 in the matrix's components, reducing
+        // the total number of primitive operations from 63 to 18.
+
+        double[] m = this.m;
+
+        // Must be done before modifying m0, m1, etc. below.
+        m[2] += (m[0] * xt) + (m[1] * yt);
+        m[5] += (m[3] * xt) + (m[4] * yt);
+        m[8] += (m[6] * xt) + (m[6] * yt);
+
+        m[0] *= xs;
+        m[1] *= ys;
+
+        m[3] *= xs;
+        m[4] *= ys;
+
+        m[6] *= xs;
+        m[7] *= ys;
 
         return this;
     }

@@ -41,11 +41,6 @@ public class GpuObjectCache extends LruMemoryCache<Object, GpuObject> {
     }
 
     public GpuProgram retrieveProgram(DrawContext dc, Class<? extends GpuProgram> clazz) {
-        if (dc == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "GpuObjectCache", "retrieveProgram", "missingContext"));
-        }
-
         if (clazz == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "GpuObjectCache", "retrieveProgram", "invalidClass"));
@@ -72,11 +67,6 @@ public class GpuObjectCache extends LruMemoryCache<Object, GpuObject> {
     }
 
     public GpuTexture retrieveTexture(DrawContext dc, @DrawableRes int id) {
-        if (dc == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "GpuObjectCache", "retrieveTexture", "missingContext"));
-        }
-
         Integer key = id;
         GpuTexture texture = (GpuTexture) this.get(key);
         if (texture != null) {

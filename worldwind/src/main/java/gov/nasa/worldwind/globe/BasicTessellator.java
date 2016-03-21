@@ -3,26 +3,98 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-package gov.nasa.worldwindx;
+package gov.nasa.worldwind.globe;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
-// TODO #1 move this into a basic tessellator implementation in World Wind
-// TODO #2 SkyLayer needs the TriStripIndices - could we add these to the Globe interface? (no, needs to be on a static context)
-public class ExampleUtil {
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.util.Level;
+import gov.nasa.worldwind.util.LevelSet;
+import gov.nasa.worldwind.util.Tile;
+import gov.nasa.worldwind.util.TileFactory;
 
-    public static FloatBuffer assembleTexCoords(int numLat, int numLon, FloatBuffer result, int stride) {
+public class BasicTessellator implements Tessellator, TileFactory {
+
+    protected LevelSet levels = new LevelSet(new Sector().setFullSphere(), 90, 20, 32, 32);
+
+    protected List<Tile> topLevelTiles = new ArrayList<>();
+
+    protected BasicTerrain terrain = new BasicTerrain();
+
+    public BasicTessellator() {
+    }
+
+    @Override
+    public Terrain tessellate(DrawContext dc) {
+        this.assembleTiles(dc);
+        this.assembleSharedBuffers();
+
+        return this.terrain;
+    }
+
+    @Override
+    public Tile createTile(Sector sector, Level level, int row, int column) {
+        return new TerrainTile(sector, level, row, column);
+    }
+
+    protected void assembleTiles(DrawContext dc) {
+        this.terrain.clearTiles();
+
+        if (this.topLevelTiles.isEmpty()) {
+            Tile.assembleTilesForLevel(this.levels.firstLevel(), this, this.topLevelTiles);
+        }
+
+        for (Tile tile : this.topLevelTiles) {
+            TerrainTile tt = (TerrainTile) tile;
+
+            // TODO test visibility against draw context frustum
+            // TODO addTileOrDescendants
+            // TODO subdivide into lru cache with capacity for 300 tiles, ignoring estimates on actual size
+
+            if (tt.mustAssembleTileVertices(dc)) {
+                tt.assembleTileVertices(dc);
+            }
+
+            this.terrain.addTile((TerrainTile) tile);
+        }
+    }
+
+    protected void assembleSharedBuffers() {
+        int numLat = this.levels.tileHeight;
+        int numLon = this.levels.tileWidth;
+
+        if (this.terrain.getTileTexCoords() == null) {
+            FloatBuffer buffer = ByteBuffer.allocateDirect(numLat * numLon * 8).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            this.assembleTexCoords(numLat, numLon, buffer, 2).rewind();
+            this.terrain.setTileTexCoords(buffer);
+        }
+
+        if (this.terrain.getTileTriStripIndices() == null) {
+            ShortBuffer buffer = this.assembleTriStripIndices(numLat, numLon);
+            this.terrain.setTileTriStripIndices(buffer);
+        }
+
+        if (this.terrain.getTileLineIndices() == null) {
+            ShortBuffer buffer = this.assembleLineIndices(numLat, numLon);
+            this.terrain.setTileLineIndices(buffer);
+        }
+    }
+
+    protected FloatBuffer assembleTexCoords(int numLat, int numLon, FloatBuffer result, int stride) {
 
         float ds = 1f / (numLon > 1 ? numLon - 1 : 1);
         float dt = 1f / (numLat > 1 ? numLat - 1 : 1);
         float[] st = new float[2];
         int sIndex, tIndex, pos;
 
-        // Iterate over the latitude and longitude coordinates in the specified sector, computing the Cartesian
-        // point corresponding to each latitude and longitude.
+        // Iterate over the number of latitude and longitude vertices, computing the parameterized S and T coordinates
+        // corresponding to each vertex.
         for (tIndex = 0, st[1] = 0; tIndex < numLat; tIndex++, st[1] += dt) {
             if (tIndex == numLat - 1) {
                 st[1] = 1; // explicitly set the last T coordinate to 1 to ensure alignment
@@ -45,7 +117,7 @@ public class ExampleUtil {
         return result;
     }
 
-    public static ShortBuffer assembleTriStripIndices(int numLat, int numLon) {
+    protected ShortBuffer assembleTriStripIndices(int numLat, int numLon) {
 
         // Allocate a buffer to hold the indices.
         int count = ((numLat - 1) * numLon + (numLat - 2)) * 2;
@@ -77,7 +149,7 @@ public class ExampleUtil {
         return (ShortBuffer) result.rewind();
     }
 
-    public static ShortBuffer assembleLineIndices(int numLat, int numLon) {
+    protected ShortBuffer assembleLineIndices(int numLat, int numLon) {
 
         // Allocate a buffer to hold the indices.
         int count = (numLat * (numLon - 1) + numLon * (numLat - 1)) * 2;

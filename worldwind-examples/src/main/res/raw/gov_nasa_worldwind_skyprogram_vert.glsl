@@ -9,6 +9,7 @@ const int sampleCount = 2;
 const float samples = 2.0;
 
 uniform mat4 mvpMatrix;
+uniform vec3 vertexOrigin;
 uniform vec3 eyePoint;
 uniform float eyeMagnitude;	        /* The eye point's magnitude */
 uniform float eyeMagnitude2;	    /* eyeMagnitude^2 */
@@ -41,7 +42,7 @@ float scaleFunc(float cos) {
 void main() {
 	/* Get the ray from the camera to the vertex and its length (which is the far point of the ray passing through the
 	atmosphere) */
-	vec3 point = vertexPoint.xyz;
+    vec3 point = vertexPoint.xyz + vertexOrigin;
 	vec3 ray = point - eyePoint;
 	float far = length(ray);
 	ray /= far;
