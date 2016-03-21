@@ -163,10 +163,10 @@ public class Tile {
         Sector sector = level.parent.sector;
         double tileDelta = level.tileDelta;
 
-        int firstRow = Tile.computeRow(tileDelta, sector.minLatitude);
-        int lastRow = Tile.computeLastRow(tileDelta, sector.maxLatitude);
-        int firstCol = Tile.computeColumn(tileDelta, sector.minLongitude);
-        int lastCol = Tile.computeLastColumn(tileDelta, sector.maxLongitude);
+        int firstRow = Tile.computeRow(tileDelta, sector.minLatitude());
+        int lastRow = Tile.computeLastRow(tileDelta, sector.maxLatitude());
+        int firstCol = Tile.computeColumn(tileDelta, sector.minLongitude());
+        int lastCol = Tile.computeLastColumn(tileDelta, sector.maxLongitude());
 
         double firstRowLat = -90 + firstRow * tileDelta;
         double firstRowLon = -180 + firstCol * tileDelta;
@@ -181,10 +181,10 @@ public class Tile {
             minLon = firstRowLon;
 
             for (int col = firstCol; col <= lastCol; col++) {
-                maxLon = minLon + tileDelta;
-                Sector tileSector = new Sector(minLat, maxLat, minLon, maxLon);
+                Sector tileSector = new Sector(minLat, minLon, tileDelta, tileDelta);
                 result.add(tileFactory.createTile(tileSector, level, row, col));
 
+                maxLon = minLon + tileDelta;
                 minLon = maxLon;
             }
 

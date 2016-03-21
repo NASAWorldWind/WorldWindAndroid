@@ -207,10 +207,10 @@ public class ProjectionWgs84 implements GeographicProjection {
                 Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingResult"));
         }
 
-        double minLat = Math.toRadians(sector.minLatitude);
-        double maxLat = Math.toRadians(sector.maxLatitude);
-        double minLon = Math.toRadians(sector.minLongitude);
-        double maxLon = Math.toRadians(sector.maxLongitude);
+        double minLat = Math.toRadians(sector.minLatitude());
+        double maxLat = Math.toRadians(sector.maxLatitude());
+        double minLon = Math.toRadians(sector.minLongitude());
+        double maxLon = Math.toRadians(sector.maxLongitude());
         double deltaLat = (maxLat - minLat) / (numLat > 1 ? numLat - 1 : 1);
         double deltaLon = (maxLon - minLon) / (numLon > 1 ? numLon - 1 : 1);
 
