@@ -5,6 +5,7 @@
 
 package gov.nasa.worldwind.geom;
 
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +33,12 @@ public class LocationTest {
     static final double PHI = -119.2;    // arbitrarylongitude, using KOXR airport
 
     static final double TOLERANCE = 1e-10;
+
+    @Before
+    public void setup() {
+        PowerMockito.mockStatic(Logger.class);
+    }
+
 
     /**
      * Tests default constructor's member initialization.
