@@ -460,12 +460,19 @@ public class Vec3Test {
     }
 
 
-    @Ignore("not implemented")
     @Test
     public void testMultiplyByMatrix() throws Exception {
+        double theta = 30d;
+        double x = 2;
+        double y = 3;
+        double z = 0;
+        // Rotate and translate a unit vector
+        Matrix4 m = new Matrix4().multiplyByRotation(0, 0, 1, theta).setTranslation(x, y, z);
 
-        fail("The test case is a stub.");
+        Vec3 u = new Vec3(1, 0, 0).multiplyByMatrix(m);
 
+        assertEquals("acos u.x", theta, Math.toDegrees(Math.acos(u.x - x)), 1e-10);
+        assertEquals("asin u.y", theta, Math.toDegrees(Math.asin(u.y - y)), 1e-10);
     }
 
     /**
@@ -716,8 +723,8 @@ public class Vec3Test {
     }
 
     /**
-     *  Ensures averageOfList handles a null list correctly.
-
+     * Ensures averageOfList handles a null list correctly.
+     *
      * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)

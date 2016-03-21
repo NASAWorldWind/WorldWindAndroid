@@ -557,11 +557,92 @@ public class Matrix4Test {
         assertSame("fluent api result", m2, m1);
     }
 
-    @Ignore("not implemented")
     @Test
     public void testMultiplyByRotation() throws Exception {
+        // Rotate a unit vectors
+        Vec3 r = new Vec3(0, 0, 1);
+        Matrix4 m = new Matrix4();
 
-        fail("The test case is a stub.");
+        m.multiplyByRotation(1, 0, 0, 30); // rotate ccw around x
+        m.multiplyByRotation(0, 1, 0, 90); // rotate ccw around y
+        m.multiplyByRotation(0, 0, 1, -60); // rotate cw around z
+
+        r.multiplyByMatrix(m);
+        assertEquals("u.x", 1.0, r.x, TOLERANCE);
+        assertEquals("u.y", 0.0, r.y, TOLERANCE);
+        assertEquals("u.z", 0.0, r.z, TOLERANCE);
+
+        final double theta = 30d;   // rotation angle degrees
+        final double c = Math.cos(Math.toRadians(theta));
+        final double s = Math.sin(Math.toRadians(theta));
+        Matrix4 m1 = new Matrix4().multiplyByRotation(1, 0, 0, theta);
+        Matrix4 m2 = new Matrix4().multiplyByRotation(0, 1, 0, theta);
+        Matrix4 m3 = new Matrix4().multiplyByRotation(0, 0, 1, theta);
+        // X
+        // [  1       0       0     0]
+        // [  0     cos(a) -sin(a)  0]
+        // [  0     sin(a)  cos(a)  0]
+        // [  0       0     0       1]
+        assertEquals("m11", 1d, m1.m[0], TOLERANCE);
+        assertEquals("m12", 0d, m1.m[1], TOLERANCE);
+        assertEquals("m13", 0d, m1.m[2], TOLERANCE);
+        assertEquals("m14", 0d, m1.m[3], TOLERANCE);
+        assertEquals("m21", 0d, m1.m[4], TOLERANCE);
+        assertEquals("m22", c, m1.m[5], TOLERANCE);
+        assertEquals("m23", -s, m1.m[6], TOLERANCE);
+        assertEquals("m24", 0d, m1.m[7], TOLERANCE);
+        assertEquals("m31", 0d, m1.m[8], TOLERANCE);
+        assertEquals("m32", s, m1.m[9], TOLERANCE);
+        assertEquals("m33", c, m1.m[10], TOLERANCE);
+        assertEquals("m44", 0d, m1.m[11], TOLERANCE);
+        assertEquals("m41", 0d, m1.m[12], TOLERANCE);
+        assertEquals("m42", 0d, m1.m[13], TOLERANCE);
+        assertEquals("m43", 0d, m1.m[14], TOLERANCE);
+        assertEquals("m44", 1d, m1.m[15], TOLERANCE);
+
+        // Y
+        // [ cos(a)   0   sin(a) 0]
+        // [  0       1     0    0]
+        // [-sin(a)   0  cos(a)  0]
+        // [  0       0     0    1]
+        assertEquals("m11", c, m2.m[0], TOLERANCE);
+        assertEquals("m12", 0d, m2.m[1], TOLERANCE);
+        assertEquals("m13", s, m2.m[2], TOLERANCE);
+        assertEquals("m14", 0d, m2.m[3], TOLERANCE);
+        assertEquals("m21", 0d, m2.m[4], TOLERANCE);
+        assertEquals("m22", 1d, m2.m[5], TOLERANCE);
+        assertEquals("m23", 0d, m2.m[6], TOLERANCE);
+        assertEquals("m24", 0d, m2.m[7], TOLERANCE);
+        assertEquals("m31", -s, m2.m[8], TOLERANCE);
+        assertEquals("m32", 0d, m2.m[9], TOLERANCE);
+        assertEquals("m33", c, m2.m[10], TOLERANCE);
+        assertEquals("m44", 0d, m2.m[11], TOLERANCE);
+        assertEquals("m41", 0d, m2.m[12], TOLERANCE);
+        assertEquals("m42", 0d, m2.m[13], TOLERANCE);
+        assertEquals("m43", 0d, m2.m[14], TOLERANCE);
+        assertEquals("m44", 1d, m2.m[15], TOLERANCE);
+        
+        // Z
+        // [cos(a) -sin(a)  0    0]
+        // [sin(a)  cos(a)  0    0]
+        // [  0       0     1    0]
+        // [  0       0     0    1]
+        assertEquals("m11", c, m3.m[0], TOLERANCE);
+        assertEquals("m12", -s, m3.m[1], TOLERANCE);
+        assertEquals("m13", 0d, m3.m[2], TOLERANCE);
+        assertEquals("m14", 0d, m3.m[3], TOLERANCE);
+        assertEquals("m21", s, m3.m[4], TOLERANCE);
+        assertEquals("m22", c, m3.m[5], TOLERANCE);
+        assertEquals("m23", 0d, m3.m[6], TOLERANCE);
+        assertEquals("m24", 0d, m3.m[7], TOLERANCE);
+        assertEquals("m31", 0d, m3.m[8], TOLERANCE);
+        assertEquals("m32", 0d, m3.m[9], TOLERANCE);
+        assertEquals("m33", 1d, m3.m[10], TOLERANCE);
+        assertEquals("m44", 0d, m3.m[11], TOLERANCE);
+        assertEquals("m41", 0d, m3.m[12], TOLERANCE);
+        assertEquals("m42", 0d, m3.m[13], TOLERANCE);
+        assertEquals("m43", 0d, m3.m[14], TOLERANCE);
+        assertEquals("m44", 1d, m3.m[15], TOLERANCE);
 
     }
 
@@ -880,6 +961,23 @@ public class Matrix4Test {
         // Compare arrays of the matrix under test with our computed matrix
         assertArrayEquals("", mOrthonormalInverse.m, m1.m, TOLERANCE);
         assertSame("fluent api result", m3, m1);
+    }
+
+    @Test
+    public void testTransposeToArray() throws Exception {
+        Matrix4 m1 = new Matrix4(   // matrix under test
+            M_11, M_12, M_13, M_14,
+            M_21, M_22, M_23, M_24,
+            M_31, M_32, M_33, M_34,
+            M_41, M_42, M_43, M_44);
+
+        float[] result = m1.transposeToArray(new float[16], 0);
+
+        double[] expected = m1.transpose().m;
+        for (int i = 0; i < 16; i++) {
+            assertEquals(Integer.toString(i), expected[i], result[i], 0d);
+        }
+
     }
 
 
