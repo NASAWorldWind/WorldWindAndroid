@@ -19,7 +19,7 @@ public class GpuTexture implements GpuObject {
 
     protected int textureSize;
 
-    public GpuTexture(Bitmap bitmap) {
+    public GpuTexture(Bitmap bitmap) { // TODO refactor to accept DrawContext argument
         if (bitmap == null || bitmap.isRecycled()) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "GpuTexture", "constructor", "invalidBitmap"));
@@ -68,12 +68,12 @@ public class GpuTexture implements GpuObject {
         }
     }
 
-    public Matrix3 applyTexCoordTransform(Matrix3 result) {
+    public void applyTexCoordTransform(Matrix3 result) {
         if (result == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "GpuTexture", "applyTexCoordTransform", "missingResult"));
         }
 
-        return result.multiplyByVerticalFlip();
+        result.multiplyByVerticalFlip();
     }
 }

@@ -19,9 +19,9 @@ public interface Terrain {
 
     Sector getTileSector(int index);
 
-    Vec3 getTileOrigin(int index);
+    Vec3 getTileVertexOrigin(int index);
 
-    Matrix3 applyTexCoordTransform(int index, Sector sector, Matrix3 result);
+    void applyTexCoordTransform(int index, Sector dst, Matrix3 result);
 
     void useVertexPointAttrib(DrawContext dc, int index, int attribLocation);
 

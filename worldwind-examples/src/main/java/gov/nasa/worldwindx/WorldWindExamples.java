@@ -4,10 +4,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.layer.ShowTessellationLayer;
-import gov.nasa.worldwindx.layer.GroundLayer;
-import gov.nasa.worldwindx.layer.ImageLayer;
+import gov.nasa.worldwind.layer.BMNGOneImageLayer;
+import gov.nasa.worldwindx.layer.AtmosphereLayer;
 
 public class WorldWindExamples extends AppCompatActivity {
 
@@ -22,9 +20,8 @@ public class WorldWindExamples extends AppCompatActivity {
         this.setContentView(this.wwd);
 
         // Setup the World Window's layers.
-        this.wwd.getLayers().addLayer(new ShowTessellationLayer());
-        this.wwd.getLayers().addLayer(new ImageLayer(new Sector().setFullSphere(), R.drawable.world_topo_bathy_200405_3));
-        this.wwd.getLayers().addLayer(new GroundLayer());
+        this.wwd.getLayers().addLayer(new BMNGOneImageLayer());
+        this.wwd.getLayers().addLayer(new AtmosphereLayer());
 
         // Configure a custom navigation controller to spin the globe automatically.
         this.wwd.setNavigatorController(new ExampleController());

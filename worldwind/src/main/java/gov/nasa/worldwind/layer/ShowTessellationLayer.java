@@ -36,20 +36,22 @@ public class ShowTessellationLayer extends AbstractLayer {
 
         // Get the draw context's tessellated terrain and modelview projection matrix.
         Terrain terrain = dc.getTerrain();
-        Matrix4 dcmvp = dc.getModelviewProjection();
 
-        for (int tileIdx = 0; tileIdx < terrain.getTileCount(); tileIdx++) {
+        for (int idx = 0, len = terrain.getTileCount(); idx < len; idx++) {
 
-            // Use the draw context's modelview projection matrix, offset by the tile's origin.
-            Vec3 origin = terrain.getTileOrigin(tileIdx);
-            this.mvpMatrix.set(dcmvp).multiplyByTranslation(origin.x, origin.y, origin.z);
+            // Use the draw context's modelview projection matrix, transformed to the terrain tile's local coordinates.
+            Vec3 terrainOrigin = terrain.getTileVertexOrigin(idx);
+            this.mvpMatrix.set(dc.getProjection());
+            this.mvpMatrix.offsetProjectionDepth(-1.0e-6);
+            this.mvpMatrix.multiplyByMatrix(dc.getModelview());
+            this.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
             program.loadModelviewProjection(this.mvpMatrix);
 
-            // Use the tile's vertex point attribute.
-            terrain.useVertexPointAttrib(dc, tileIdx, 0);
+            // Use the terrain tile's vertex point attribute.
+            terrain.useVertexPointAttrib(dc, idx, 0);
 
-            // Draw the tile vertices as lines.
-            terrain.drawTileLines(dc, tileIdx);
+            // Draw the terrain tile vertices as lines.
+            terrain.drawTileLines(dc, idx);
         }
     }
 }

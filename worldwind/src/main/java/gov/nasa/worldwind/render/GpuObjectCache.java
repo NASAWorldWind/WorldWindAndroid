@@ -14,6 +14,7 @@ import gov.nasa.worldwind.cache.LruMemoryCache;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
 
+// TODO consider rewriting to use SparseArray, generate int cache keys
 public class GpuObjectCache extends LruMemoryCache<Object, GpuObject> {
 
     public GpuObjectCache(int capacity, int lowWater) {
@@ -87,6 +88,7 @@ public class GpuObjectCache extends LruMemoryCache<Object, GpuObject> {
 
     @Override
     protected GpuObject entryRemoved(Entry<Object, GpuObject> entry) {
+        // TODO dispose resources explicitly at end of frame
         entry.value.dispose(); // need to explicitly free Gpu resources associated with this cache entry
         return super.entryRemoved(entry);
     }

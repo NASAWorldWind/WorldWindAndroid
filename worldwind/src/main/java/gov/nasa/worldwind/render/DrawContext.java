@@ -23,6 +23,7 @@ import gov.nasa.worldwind.util.Logger;
 
 public class DrawContext {
 
+    // TODO refactor these as public properties
     protected Context context;
 
     protected Globe globe;
@@ -62,6 +63,8 @@ public class DrawContext {
     protected boolean renderRequested;
 
     protected GpuObjectCache gpuObjectCache;
+
+    protected SurfaceTileRenderer surfaceTileRenderer;
 
     protected int currentProgramId;
 
@@ -225,6 +228,14 @@ public class DrawContext {
         this.gpuObjectCache = gpuObjectCache;
     }
 
+    public SurfaceTileRenderer getSurfaceTileRenderer() {
+        return surfaceTileRenderer;
+    }
+
+    public void setSurfaceTileRenderer(SurfaceTileRenderer surfaceTileRenderer) {
+        this.surfaceTileRenderer = surfaceTileRenderer;
+    }
+
     public Object getUserProperty(Object key) {
         return this.userProperties.get(key);
     }
@@ -274,6 +285,7 @@ public class DrawContext {
         }
     }
 
+    // TODO overloaded version that accepts an objectId argument
     public void useProgram(GpuProgram program) {
         int objectId = (program != null) ? program.getObjectId() : 0;
 
@@ -283,17 +295,18 @@ public class DrawContext {
         }
     }
 
-    public void bindTexture(int unit, GpuTexture texture) {
-        int unitIndex = unit - GLES20.GL_TEXTURE0;
+    // TODO overloaded version that accepts an objectId argument
+    public void bindTexture(int texUnit, GpuTexture texture) {
+        int texUnitIndex = texUnit - GLES20.GL_TEXTURE0;
         int objectId = (texture != null) ? texture.getObjectId() : 0;
 
-        if (this.currentTexUnit != unit) {
-            this.currentTexUnit = unit;
-            GLES20.glActiveTexture(unit);
+        if (this.currentTexUnit != texUnit) {
+            this.currentTexUnit = texUnit;
+            GLES20.glActiveTexture(texUnit);
         }
 
-        if (this.currentTexId[unitIndex] != objectId) {
-            this.currentTexId[unitIndex] = objectId;
+        if (this.currentTexId[texUnitIndex] != objectId) {
+            this.currentTexId[texUnitIndex] = objectId;
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, objectId);
         }
     }

@@ -41,7 +41,7 @@ public class GpuProgram implements GpuObject {
      * @param fragmentShaderSource
      * @param attributeBindings
      */
-    public GpuProgram(String vertexShaderSource, String fragmentShaderSource, String[] attributeBindings) {
+    public GpuProgram(String vertexShaderSource, String fragmentShaderSource, String[] attributeBindings) { // TODO refactor to accept DrawContext argument
         if (vertexShaderSource == null || fragmentShaderSource == null) {
             throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "GpuProgram", "constructor",
                 "The shader source is null"));

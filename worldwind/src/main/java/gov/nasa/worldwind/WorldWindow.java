@@ -21,10 +21,12 @@ import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.GlobeWgs84;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.render.BasicFrameController;
+import gov.nasa.worldwind.render.BasicSurfaceTileRenderer;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.FrameController;
 import gov.nasa.worldwind.render.FrameStatistics;
 import gov.nasa.worldwind.render.GpuObjectCache;
+import gov.nasa.worldwind.render.SurfaceTileRenderer;
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -51,6 +53,8 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     protected Rect viewport = new Rect();
 
     protected GpuObjectCache gpuObjectCache;
+
+    protected SurfaceTileRenderer surfaceTileRenderer = new BasicSurfaceTileRenderer();
 
     protected DrawContext dc;
 
@@ -242,5 +246,6 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.dc.setVerticalExaggeration(this.verticalExaggeration);
         this.dc.setViewport(this.viewport);
         this.dc.setGpuObjectCache(this.gpuObjectCache);
+        this.dc.setSurfaceTileRenderer(this.surfaceTileRenderer);
     }
 }
