@@ -22,9 +22,6 @@ public class WorldWindExamples extends AppCompatActivity {
         // Setup the World Window's layers.
         this.wwd.getLayers().addLayer(new BMNGOneImageLayer());
         this.wwd.getLayers().addLayer(new AtmosphereLayer());
-
-        // Configure a custom navigation controller to spin the globe automatically.
-        this.wwd.setNavigatorController(new ExampleController());
     }
 
     @Override
