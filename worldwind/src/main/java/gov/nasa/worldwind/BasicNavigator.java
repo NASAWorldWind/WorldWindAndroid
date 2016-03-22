@@ -144,8 +144,10 @@ public class BasicNavigator implements Navigator {
     protected Matrix4 computeProjection(DrawContext dc, Matrix4 result) {
 
         // TODO compute clip plane distances appropriate for the current frame
+        double near = 1e3;
+        double far = dc.getGlobe().getEquatorialRadius() + this.position.altitude;
         Rect viewport = dc.getViewport();
-        result.setToPerspectiveProjection(viewport.width(), viewport.height(), this.fieldOfView, 1e3, 3.7e7);
+        result.setToPerspectiveProjection(viewport.width(), viewport.height(), this.fieldOfView, near, far);
 
         return result;
     }
