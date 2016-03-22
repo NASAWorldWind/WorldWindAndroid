@@ -11,6 +11,19 @@ package gov.nasa.worldwind.util;
 public class WWMath {
 
     /**
+     * Restricts an angle to the range [-180, +180] degrees, clamping angles outside the range. Angles less than -180
+     * are returned as -180, and angles greater than +180 are returned as +180. Angles within the range are returned
+     * unmodified.
+     *
+     * @param degrees the angle to clamp in degrees
+     *
+     * @return the specified angle clamped to the range [-180, +180] degrees
+     */
+    public static double clampAngle(double degrees) {
+        return degrees > 180 ? 180 : (degrees < -180 ? -180 : degrees);
+    }
+
+    /**
      * Restricts an angle to the range [0, 360] degrees, clamping angles outside the range. Angles less than 0 are
      * returned as 0, and angles greater than 360 are returned as 360. Angles within the range are returned unmodified.
      *
@@ -18,8 +31,22 @@ public class WWMath {
      *
      * @return the specified angle clamped to the range [0, 360] degrees
      */
-    public static double clampDegrees(double degrees) {
+    public static double clampDegrees(double degrees) { // TODO rename as clampHeading or clampAzimuth
         return degrees > 360 ? 360 : (degrees < 0 ? 0 : degrees);
+    }
+
+    /**
+     * Restricts an angle to the range [-180, +180] degrees, wrapping angles outside the range. Wrapping takes place as
+     * though traversing the edge of a unit circle; angles less than -180 wrap back to +180, while angles greater than
+     * +180 wrap back to -180.
+     *
+     * @param degrees the angle to wrap in degrees
+     *
+     * @return the specified angle wrapped to [-180, +180] degrees
+     */
+    public static double normalizeAngle(double degrees) {
+        double angle = degrees % 360;
+        return angle > 180 ? angle - 360 : (angle < -180 ? 360 + angle : angle);
     }
 
     /**
@@ -31,7 +58,7 @@ public class WWMath {
      *
      * @return the specified angle wrapped to [0, 360] degrees
      */
-    public static double normalizeDegrees(double degrees) {
+    public static double normalizeDegrees(double degrees) { // TODO rename as normalizeHeading or normalizeAzimuth
         double angle = degrees % 360;
         return angle >= 0 ? angle : (angle < 0 ? 360 + angle : 360 - angle);
     }
