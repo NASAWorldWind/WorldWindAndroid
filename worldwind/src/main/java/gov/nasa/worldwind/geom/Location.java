@@ -5,14 +5,49 @@
 
 package gov.nasa.worldwind.geom;
 
+import android.util.SparseIntArray;
+
+import java.util.TimeZone;
+
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.util.Logger;
 
 // TODO test performance of making all geom methods final
+
 /**
  * Geographic location with a latitude and longitude in degrees.
  */
 public class Location {
+
+    protected static SparseIntArray timeZoneLatitudes = new SparseIntArray();
+
+    static {
+        timeZoneLatitudes.put(-12, -45);// GMT-12
+        timeZoneLatitudes.put(-11, -30);// GMT-11
+        timeZoneLatitudes.put(-10, 20); // GMT-10
+        timeZoneLatitudes.put(-9, 45);  // GMT-9
+        timeZoneLatitudes.put(-8, 40);  // GMT-8
+        timeZoneLatitudes.put(-7, 35);  // GMT-7
+        timeZoneLatitudes.put(-6, 30);  // GMT-6
+        timeZoneLatitudes.put(-5, 25);  // GMT-5
+        timeZoneLatitudes.put(-4, -15); // GMT-4
+        timeZoneLatitudes.put(-3, 0);   // GMT-3
+        timeZoneLatitudes.put(-2, 45);  // GMT-2
+        timeZoneLatitudes.put(-1, 30);   // GMT-1
+        timeZoneLatitudes.put(0, 30);   // GMT+0
+        timeZoneLatitudes.put(1, 20);   // GMT+1
+        timeZoneLatitudes.put(2, 20);   // GMT+2
+        timeZoneLatitudes.put(3, 25);   // GMT+3
+        timeZoneLatitudes.put(4, 30);   // GMT+4
+        timeZoneLatitudes.put(5, 35);   // GMT+5
+        timeZoneLatitudes.put(6, 30);   // GMT+6
+        timeZoneLatitudes.put(7, 25);   // GMT+7
+        timeZoneLatitudes.put(8, -30);  // GMT+8
+        timeZoneLatitudes.put(9, -30);  // GMT+9
+        timeZoneLatitudes.put(10, -30); // GMT+10
+        timeZoneLatitudes.put(11, -45); // GMT+11
+        timeZoneLatitudes.put(12, -45); // GMT+12
+    }
 
     /**
      * The location's latitude in degrees.
@@ -80,6 +115,29 @@ public class Location {
      */
     public static Location fromRadians(double latitudeRadians, double longitudeRadians) {
         return new Location(Math.toDegrees(latitudeRadians), Math.toDegrees(longitudeRadians));
+    }
+
+    /**
+     * Constructs an approximate location for a specified time zone. Used when selecting an initial navigator position
+     * based on the device's current time zone.
+     *
+     * @param timeZone the time zone in question
+     *
+     * @return the new location
+     */
+    public static Location fromTimeZone(TimeZone timeZone) {
+        if (timeZone == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Location", "fromTimeZone", "The time zone is null"));
+        }
+
+        double millisPerHour = 3.6e6;
+        int offsetMillis = timeZone.getRawOffset();
+        int offsetHours = (int) (offsetMillis / millisPerHour);
+
+        double lat = timeZoneLatitudes.get(offsetHours, 0); // use a pre-determined latitude or 0 if none is available
+        double lon = 180 * offsetHours / 12; // center on the time zone's average longitude
+        return new Location(lat, lon);
     }
 
     /**
