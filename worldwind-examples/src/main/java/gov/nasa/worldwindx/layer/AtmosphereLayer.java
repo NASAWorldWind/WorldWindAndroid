@@ -39,6 +39,8 @@ public class AtmosphereLayer extends AbstractLayer {
 
     protected ShortBuffer skyTriStrip;
 
+    protected Vec3 lightDirection = new Vec3();
+
     protected Matrix4 mvpMatrix = new Matrix4();
 
     protected Matrix3 texCoordMatrix = new Matrix3();
@@ -51,6 +53,12 @@ public class AtmosphereLayer extends AbstractLayer {
 
     @Override
     protected void doRender(DrawContext dc) {
+        // TODO light/sun direction should be a property of the WorldWindow attached to the DrawContext each frame
+        if (!dc.hasUserProperty("lightDirection")) {
+            this.lightDirection.set(dc.getEyePoint()).normalize();
+            dc.putUserProperty("lightDirection", this.lightDirection);
+        }
+
         this.drawGround(dc);
         this.drawSky(dc);
     }
