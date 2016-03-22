@@ -11,11 +11,18 @@ import android.graphics.Rect;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
+
+import java.util.List;
+import java.util.TimeZone;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.gesture.GestureGroup;
+import gov.nasa.worldwind.gesture.GestureRecognizer;
 import gov.nasa.worldwind.globe.GeographicProjection;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.GlobeWgs84;
@@ -49,6 +56,8 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     protected NavigatorController navigatorController = new BasicNavigatorController();
 
     protected FrameController frameController = new BasicFrameController();
+
+    protected GestureGroup gestureGroup = new GestureGroup();
 
     protected Rect viewport = new Rect();
 
@@ -86,7 +95,9 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
      */
     protected void init() {
         // Initialize the world window's navigator and controller.
-        this.navigator.setPosition(Position.fromDegrees(0, 0, 3e7)); // TODO adaptive initial position
+        Location location = Location.fromTimeZone(TimeZone.getDefault());
+        double altitude = this.altitudeToFitGlobe() * 1.1; // add 10%
+        this.navigator.setPosition(new Position(location.latitude, location.longitude, altitude));
         this.navigatorController.setWorldWindow(this);
 
         // Initialize the World Window's global caches. // TODO can we use ActivityManager.getLargeMemoryClass?
@@ -200,6 +211,53 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         return this.frameController.getFrameStatistics();
     }
 
+    public void addGestureRecognizer(GestureRecognizer recognizer) {
+        if (recognizer == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "addGestureRecognizer", "missingRecognizer"));
+        }
+
+        this.gestureGroup.addRecognizer(recognizer);
+    }
+
+    public void removeGestureRecognizer(GestureRecognizer recognizer) {
+        if (recognizer == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "removeGestureRecognizer", "missingRecognizer"));
+        }
+
+        this.gestureGroup.removeRecognizer(recognizer);
+    }
+
+    public List<GestureRecognizer> getGestureRecognizers() {
+        return this.gestureGroup.getRecognizers();
+    }
+
+    /**
+     * Returns the height of a pixel at a given distance from the eye point. This method assumes the model of a screen
+     * composed of rectangular pixels, where pixel coordinates denote infinitely thin space between pixels. The units of
+     * the returned size are in meters per pixel.
+     * <p/>
+     * The result of this method is undefined if the distance is negative..
+     *
+     * @param distance the distance from the eye point in meters
+     *
+     * @return the pixel height in meters
+     */
+    public double pixelSizeAtDistance(double distance) {
+        double fovyDegrees = this.navigator.getFieldOfView();
+        double tanfovy_2 = Math.tan(Math.toRadians(fovyDegrees * 0.5));
+        double frustumHeight = 2 * distance * tanfovy_2;
+        return frustumHeight / this.getHeight();
+    }
+
+    protected double altitudeToFitGlobe() {
+        double fovyDegrees = this.navigator.getFieldOfView();
+        double sinfovy_2 = Math.sin(Math.toRadians(fovyDegrees * 0.5));
+        double radius = this.globe.getEquatorialRadius();
+        return radius / sinfovy_2 - radius;
+    }
+
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
         // Specify the default World Wind OpenGL state.
@@ -223,20 +281,21 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
     @Override
     public void onDrawFrame(GL10 unused) {
-        // Setup the draw context according to the World Window's current state.
+        // Setup the draw context according to the World Window's current state and draw the WorldWindow.
         this.prepareToDrawFrame();
         this.navigator.applyState(this.dc);
-
-        // Draw the WorldWindow's current state.
-        this.navigatorController.windowWillDraw(this.dc);
         this.frameController.drawFrame(this.dc);
-        this.navigatorController.windowDidDraw(this.dc);
 
         // Propagate render requests submitted during rendering to the WorldWindow. The draw context provides a layer of
         // indirection that insulates rendering code from establishing a dependency on a specific WorldWindow.
         if (this.dc.isRenderRequested()) {
             this.requestRender();
         }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return this.gestureGroup.onTouchEvent(event) || super.onTouchEvent(event);
     }
 
     protected void prepareToDrawFrame() {

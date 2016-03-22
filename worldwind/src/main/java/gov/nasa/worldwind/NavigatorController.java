@@ -5,19 +5,9 @@
 
 package gov.nasa.worldwind;
 
-import android.view.MotionEvent;
-
-import gov.nasa.worldwind.render.DrawContext;
-
 public interface NavigatorController {
 
     WorldWindow getWorldWindow();
 
     void setWorldWindow(WorldWindow wwd);
-
-    void windowWillDraw(DrawContext dc);
-
-    void windowDidDraw(DrawContext dc);
-
-    void onTouch(MotionEvent event);
 }
