@@ -170,25 +170,20 @@ public class Tile {
 
         double firstRowLat = -90 + firstRow * tileDelta;
         double firstRowLon = -180 + firstCol * tileDelta;
-
-        double minLat = firstRowLat;
-        double minLon;
-        double maxLat;
-        double maxLon;
+        double lat = firstRowLat;
+        double lon;
 
         for (int row = firstRow; row <= lastRow; row++) {
-            maxLat = minLat + tileDelta;
-            minLon = firstRowLon;
+            lon = firstRowLon;
 
             for (int col = firstCol; col <= lastCol; col++) {
-                Sector tileSector = new Sector(minLat, minLon, tileDelta, tileDelta);
+                Sector tileSector = new Sector(lat, lon, tileDelta, tileDelta);
                 result.add(tileFactory.createTile(tileSector, level, row, col));
 
-                maxLon = minLon + tileDelta;
-                minLon = maxLon;
+                lon += tileDelta;
             }
 
-            minLat = maxLat;
+            lat += tileDelta;
         }
 
         return result;

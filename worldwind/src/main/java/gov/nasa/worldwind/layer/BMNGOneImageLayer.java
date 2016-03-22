@@ -21,7 +21,7 @@ public class BMNGOneImageLayer extends RenderableLayer {
         super("Blue Marble Image");
 
         // Delegate display to the SurfaceImage shape.
-        this.addRenderable(new SurfaceImage(new Sector(-90, 90, -180, 180), R.drawable.gov_nasa_worldwind_worldtopobathy2004053));
+        this.addRenderable(new SurfaceImage(new Sector().setFullSphere(), R.drawable.gov_nasa_worldwind_worldtopobathy2004053));
 
         // Disable picking for the layer because it covers the full sphere and will override a terrain pick.
         this.setPickEnabled(false);
