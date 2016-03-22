@@ -42,10 +42,12 @@ public class Logger {
         messageTable.put("missingLayer", "The layer is null");
         messageTable.put("missingLevel", "The level is null");
         messageTable.put("missingList", "The list is null or empty");
+        messageTable.put("missingListener", "The listener is null");
         messageTable.put("missingLocation", "The location is null");
         messageTable.put("missingMatrix", "The matrix is null");
         messageTable.put("missingPosition", "The position is null");
         messageTable.put("missingProjection", "The projection is null");
+        messageTable.put("missingRecognizer", "The recognizer is null");
         messageTable.put("missingRenderable", "The renderable is null");
         messageTable.put("missingResult", "The result argument is null");
         messageTable.put("missingSector", "The sector is null");
