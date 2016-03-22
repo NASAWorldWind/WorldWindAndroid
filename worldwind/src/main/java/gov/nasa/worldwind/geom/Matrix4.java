@@ -493,21 +493,21 @@ public class Matrix4 {
 
         // Compute the dimensions of the near rectangle given the specified parameters.
         double aspect = viewportWidth / viewportHeight;
-        double tan_fovy = Math.tan(Math.toRadians(fovyDegrees * 0.5));
-        double height = nearDistance * tan_fovy;
-        double width = height * aspect;
+        double tanfovy_2 = Math.tan(Math.toRadians(fovyDegrees * 0.5));
+        double nearHeight = 2 * nearDistance * tanfovy_2;
+        double nearWidth = nearHeight * aspect;
         double near = nearDistance;
         double far = farDistance;
 
         // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, equation 4.52.
 
-        this.m[0] = (2 * near) / width;
+        this.m[0] = (2 * near) / nearWidth;
         this.m[1] = 0;
         this.m[2] = 0;
         this.m[3] = 0;
 
         this.m[4] = 0;
-        this.m[5] = (2 * near) / height;
+        this.m[5] = (2 * near) / nearHeight;
         this.m[6] = 0;
         this.m[7] = 0;
 
