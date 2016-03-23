@@ -21,7 +21,6 @@ import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.layer.AbstractLayer;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.GpuTexture;
-import gov.nasa.worldwindx.ExampleUtil;
 import gov.nasa.worldwindx.R;
 import gov.nasa.worldwindx.render.AtmosphereProgram;
 import gov.nasa.worldwindx.render.GroundProgram;
@@ -174,9 +173,44 @@ public class AtmosphereLayer extends AbstractLayer {
 
     protected void drawSkyTriangles(DrawContext dc) {
         if (this.skyTriStrip == null) {
-            this.skyTriStrip = ExampleUtil.assembleTriStripIndices(this.skyWidth, this.skyHeight);
+            this.skyTriStrip = assembleTriStripIndices(this.skyWidth, this.skyHeight);
         }
 
         GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, this.skyTriStrip.remaining(), GLES20.GL_UNSIGNED_SHORT, this.skyTriStrip);
+    }
+
+    // TODO move this into a basic tessellator implementation in World Wind
+    // TODO tessellator and atmosphere needs the TriStripIndices - could we add these to BasicGlobe (needs to be on a static context)
+    // TODO may need to switch the tessellation method anyway - geographic grid may produce artifacts at the poles
+    protected static ShortBuffer assembleTriStripIndices(int numLat, int numLon) {
+
+        // Allocate a buffer to hold the indices.
+        int count = ((numLat - 1) * numLon + (numLat - 2)) * 2;
+        ShortBuffer result = ByteBuffer.allocateDirect(count * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
+        short[] index = new short[2];
+        int vertex = 0;
+
+        for (int latIndex = 0; latIndex < numLat - 1; latIndex++) {
+            // Create a triangle strip joining each adjacent column of vertices, starting in the bottom left corner and
+            // proceeding to the right. The first vertex starts with the left row of vertices and moves right to create
+            // a counterclockwise winding order.
+            for (int lonIndex = 0; lonIndex < numLon; lonIndex++) {
+                vertex = lonIndex + latIndex * numLon;
+                index[0] = (short) (vertex + numLon);
+                index[1] = (short) vertex;
+                result.put(index);
+            }
+
+            // Insert indices to create 2 degenerate triangles:
+            // - one for the end of the current row, and
+            // - one for the beginning of the next row
+            if (latIndex < numLat - 2) {
+                index[0] = (short) vertex;
+                index[1] = (short) ((latIndex + 2) * numLon);
+                result.put(index);
+            }
+        }
+
+        return (ShortBuffer) result.rewind();
     }
 }
