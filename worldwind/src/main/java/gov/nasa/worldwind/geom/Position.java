@@ -25,7 +25,7 @@ public class Position extends Location {
     }
 
     /**
-     * Constructs a position from a specified latitude and longitude in degrees and altitude in meters.
+     * Constructs a position with a specified latitude and longitude in degrees and altitude in meters.
      *
      * @param latitude  the latitude in degrees
      * @param longitude the longitude in degrees
@@ -55,7 +55,7 @@ public class Position extends Location {
     }
 
     /**
-     * Constructs a position from a specified latitude and longitude in degrees and altitude in meters.
+     * Constructs a position with a specified latitude and longitude in degrees and altitude in meters.
      *
      * @param latitudeDegrees  the latitude in degrees
      * @param longitudeDegrees the longitude in degrees
@@ -68,7 +68,7 @@ public class Position extends Location {
     }
 
     /**
-     * Constructs a position from a specified latitude and longitude in radians and altitude in meters.
+     * Constructs a position with a specified latitude and longitude in radians and altitude in meters.
      *
      * @param latitudeRadians  the latitude in radians
      * @param longitudeRadians the longitude in radians

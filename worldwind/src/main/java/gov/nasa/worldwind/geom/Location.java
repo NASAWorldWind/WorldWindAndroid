@@ -94,7 +94,7 @@ public class Location {
     }
 
     /**
-     * Constructs a location from a specified latitude and longitude in degrees.
+     * Constructs a location with a specified latitude and longitude in degrees.
      *
      * @param latitudeDegrees  the latitude in degrees
      * @param longitudeDegrees the longitude in degrees
@@ -106,7 +106,7 @@ public class Location {
     }
 
     /**
-     * Constructs a location from a specified latitude and longitude in radians.
+     * Constructs a location with a specified latitude and longitude in radians.
      *
      * @param latitudeRadians  the latitude in radians
      * @param longitudeRadians the longitude in radians
