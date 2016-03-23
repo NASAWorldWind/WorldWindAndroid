@@ -7,6 +7,7 @@ package gov.nasa.worldwind;
 
 import android.view.MotionEvent;
 
+import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.gesture.GestureListener;
 import gov.nasa.worldwind.gesture.GestureRecognizer;
@@ -27,6 +28,8 @@ public class BasicNavigatorController implements NavigatorController {
     protected double beginAltitude;
 
     protected double beginHeading;
+
+    protected double minAltitude = 10;
 
     protected PanRecognizer panRecognizer = new PanRecognizer();
 
@@ -103,13 +106,25 @@ public class BasicNavigatorController implements NavigatorController {
             double sideDegrees = Math.toDegrees(sideMeters / globeRadius);
 
             // Apply the change in latitude and longitude to this navigator, relative to the current heading.
-            double rad = Math.toRadians(navigator.getHeading());
-            double sinHeading = Math.sin(rad);
-            double cosHeading = Math.cos(rad);
+            double headingDegrees = navigator.getHeading();
+            double headingRadians = Math.toRadians(headingDegrees);
+            double sinHeading = Math.sin(headingRadians);
+            double cosHeading = Math.cos(headingRadians);
+            double latDegrees = pos.latitude + forwardDegrees * cosHeading - sideDegrees * sinHeading;
+            double lonDegrees = pos.longitude + forwardDegrees * sinHeading + sideDegrees * cosHeading;
 
-            pos.latitude += forwardDegrees * cosHeading - sideDegrees * sinHeading;
-            pos.longitude += forwardDegrees * sinHeading + sideDegrees * cosHeading;
-            navigator.setPosition(pos);
+            // If the navigator has panned over either pole, compensate by adjusting the longitude and heading to move
+            // the navigator to the appropriate spot on the other side of the pole.
+            if (latDegrees < -90 || latDegrees > 90) {
+                latDegrees = Location.normalizeLatitude(latDegrees);
+                lonDegrees = Location.normalizeLongitude(lonDegrees + 180);
+                headingDegrees = WWMath.normalizeAngle(headingDegrees + 180);
+            } else if (lonDegrees < -180 || lonDegrees > 180) {
+                lonDegrees = Location.normalizeLongitude(lonDegrees);
+            }
+
+            navigator.getPosition().set(latDegrees, lonDegrees);
+            navigator.setHeading(headingDegrees);
             this.wwd.requestRender();
 
             this.lastX = dx;
@@ -128,9 +143,11 @@ public class BasicNavigatorController implements NavigatorController {
             if (scale != 0) {
                 // Apply the change in pinch scale to this navigator's altitude, relative to the altitude when the
                 // gesture began.
-                Position pos = navigator.getPosition();
-                pos.altitude = this.beginAltitude / scale;
-                navigator.setPosition(pos);
+                double altitude = this.beginAltitude / scale;
+                double minAltitude = this.minAltitude;
+                double maxAltitude = this.wwd.distanceToViewGlobeExtents() * 2;
+                altitude = WWMath.clamp(altitude, minAltitude, maxAltitude);
+                navigator.getPosition().altitude = altitude;
                 this.wwd.requestRender();
             }
         }

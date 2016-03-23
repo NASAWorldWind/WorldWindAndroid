@@ -11,6 +11,23 @@ package gov.nasa.worldwind.util;
 public class WWMath {
 
     /**
+     * Restricts a value to the range [min, max] degrees, clamping values outside the range. Values less than min are
+     * returned as min, and values greater than max are returned as max. Values within the range are returned
+     * unmodified.
+     * <p/>
+     * The result of this method is undefined if min is greater than max.
+     *
+     * @param value the values to clamp
+     * @param min   the minimum value
+     * @param max   the maximum value
+     *
+     * @return the specified values clamped to the range [min, max] degrees
+     */
+    public static double clamp(double value, double min, double max) {
+        return value > max ? max : (value < min ? min : value);
+    }
+
+    /**
      * Restricts an angle to the range [-180, +180] degrees, clamping angles outside the range. Angles less than -180
      * are returned as -180, and angles greater than +180 are returned as +180. Angles within the range are returned
      * unmodified.

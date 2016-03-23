@@ -42,6 +42,8 @@ import gov.nasa.worldwind.util.Logger;
  */
 public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer {
 
+    protected static final int DEFAULT_MEMORY_CLASS = 16;
+
     /**
      * Indicates the planet or celestial object displayed by this World Window.
      */
@@ -96,15 +98,15 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     protected void init() {
         // Initialize the world window's navigator and controller.
         Location location = Location.fromTimeZone(TimeZone.getDefault());
-        double altitude = this.altitudeToFitGlobe() * 1.1; // add 10%
+        double altitude = this.distanceToViewGlobeExtents() * 1.1; // add to the minimum distance 10%
         this.navigator.setPosition(new Position(location.latitude, location.longitude, altitude));
         this.navigatorController.setWorldWindow(this);
 
-        // Initialize the World Window's global caches. // TODO can we use ActivityManager.getLargeMemoryClass?
+        // Initialize the World Window's global caches. Use 50% of the approximate per-application memory class.
         ActivityManager am = (ActivityManager) this.getContext().getSystemService(Context.ACTIVITY_SERVICE);
-        int totalBytes = (am != null) ? (am.getMemoryClass() * 1024 * 1024) : (64 * 1024 * 1024);
-        int gpuBytes = totalBytes / 2;
-        this.gpuObjectCache = new GpuObjectCache(gpuBytes, (int) (gpuBytes * 0.75));
+        int memoryClass = (am != null) ? am.getMemoryClass() : DEFAULT_MEMORY_CLASS; // default to 16 MB class
+        int gpuCacheSize = (memoryClass / 2) * 1024 * 1024;
+        this.gpuObjectCache = new GpuObjectCache(gpuCacheSize, (int) (gpuCacheSize * 0.75));
 
         // Set up to render on demand to an OpenGL ES 2.x context
         this.dc = new DrawContext(this.getContext());
@@ -238,7 +240,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
      * composed of rectangular pixels, where pixel coordinates denote infinitely thin space between pixels. The units of
      * the returned size are in meters per pixel.
      * <p/>
-     * The result of this method is undefined if the distance is negative..
+     * The result of this method is undefined if the distance is negative.
      *
      * @param distance the distance from the eye point in meters
      *
@@ -251,7 +253,13 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         return frustumHeight / this.getHeight();
     }
 
-    protected double altitudeToFitGlobe() {
+    /**
+     * Returns the minimum distance from the globe's surface necessary to make the globe's extents visible in this World
+     * Window.
+     *
+     * @return the distance in meters needed to view the entire globe
+     */
+    public double distanceToViewGlobeExtents() {
         double fovyDegrees = this.navigator.getFieldOfView();
         double sinfovy_2 = Math.sin(Math.toRadians(fovyDegrees * 0.5));
         double radius = this.globe.getEquatorialRadius();
