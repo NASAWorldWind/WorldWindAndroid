@@ -55,9 +55,9 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
     protected Navigator navigator = new BasicNavigator();
 
-    protected NavigatorController navigatorController = new BasicNavigatorController();
-
     protected FrameController frameController = new BasicFrameController();
+
+    protected WorldWindowController worldWindowController = new BasicWorldWindowController();
 
     protected GestureGroup gestureGroup = new GestureGroup();
 
@@ -75,7 +75,16 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
      */
     public WorldWindow(Context context) {
         super(context);
-        this.init();
+        this.init(null);
+    }
+
+    /**
+     * Constructs a WorldWindow associated with the specified application context and EGL configuration chooser. This is
+     * the constructor to use when creating a WorldWindow from code.
+     */
+    public WorldWindow(Context context, EGLConfigChooser configChooser) {
+        super(context);
+        this.init(configChooser);
     }
 
     /**
@@ -89,18 +98,20 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
      */
     public WorldWindow(Context context, AttributeSet attrs) {
         super(context, attrs);
-        this.init();
+        this.init(null);
     }
 
     /**
      * Prepares this WorldWindow for drawing and event handling.
+     *
+     * @param configChooser optional argument for choosing an EGL configuration; may be null
      */
-    protected void init() {
+    protected void init(EGLConfigChooser configChooser) {
         // Initialize the world window's navigator and controller.
         Location location = Location.fromTimeZone(TimeZone.getDefault());
         double altitude = this.distanceToViewGlobeExtents() * 1.1; // add to the minimum distance 10%
         this.navigator.setPosition(new Position(location.latitude, location.longitude, altitude));
-        this.navigatorController.setWorldWindow(this);
+        this.worldWindowController.setWorldWindow(this);
 
         // Initialize the World Window's global caches. Use 50% of the approximate per-application memory class.
         ActivityManager am = (ActivityManager) this.getContext().getSystemService(Context.ACTIVITY_SERVICE);
@@ -110,6 +121,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
         // Set up to render on demand to an OpenGL ES 2.x context
         this.dc = new DrawContext(this.getContext());
+        this.setEGLConfigChooser(configChooser);
         this.setEGLContextClientVersion(2); // must be called before setRenderer
         this.setRenderer(this);
         this.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY); // must be called after setRenderer
@@ -181,21 +193,6 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.navigator = navigator;
     }
 
-    public NavigatorController getNavigatorController() {
-        return navigatorController;
-    }
-
-    public void setNavigatorController(NavigatorController navigatorController) {
-        if (navigatorController == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WorldWindow", "setNavigatorController", "missingController"));
-        }
-
-        this.navigatorController.setWorldWindow(null); // detach the old controller
-        this.navigatorController = navigatorController; // switch to the new controller
-        this.navigatorController.setWorldWindow(this); // attach the new controller
-    }
-
     public FrameController getFrameController() {
         return frameController;
     }
@@ -211,6 +208,21 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
     public FrameStatistics getFrameStatistics() {
         return this.frameController.getFrameStatistics();
+    }
+
+    public WorldWindowController getWorldWindowController() {
+        return worldWindowController;
+    }
+
+    public void setWorldWindowController(WorldWindowController worldWindowController) {
+        if (worldWindowController == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "setWorldWindowController", "missingController"));
+        }
+
+        this.worldWindowController.setWorldWindow(null); // detach the old controller
+        this.worldWindowController = worldWindowController; // switch to the new controller
+        this.worldWindowController.setWorldWindow(this); // attach the new controller
     }
 
     public void addGestureRecognizer(GestureRecognizer recognizer) {

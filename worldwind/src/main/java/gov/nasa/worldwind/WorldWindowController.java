@@ -5,7 +5,7 @@
 
 package gov.nasa.worldwind;
 
-public interface NavigatorController {
+public interface WorldWindowController {
 
     WorldWindow getWorldWindow();
 

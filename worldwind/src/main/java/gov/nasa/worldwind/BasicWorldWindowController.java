@@ -17,7 +17,7 @@ import gov.nasa.worldwind.gesture.RotationRecognizer;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.util.WWMath;
 
-public class BasicNavigatorController implements NavigatorController {
+public class BasicWorldWindowController implements WorldWindowController {
 
     protected WorldWindow wwd;
 
@@ -37,7 +37,7 @@ public class BasicNavigatorController implements NavigatorController {
 
     protected GestureRecognizer rotationRecognizer = new RotationRecognizer();
 
-    public BasicNavigatorController() {
+    public BasicWorldWindowController() {
 
         this.panRecognizer.setMaxNumberOfPointers(2);
         this.panRecognizer.addListener(new GestureListener() {
