@@ -12,6 +12,7 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import gov.nasa.worldwind.cache.LruMemoryCache;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Level;
@@ -23,9 +24,13 @@ public class BasicTessellator implements Tessellator, TileFactory {
 
     protected LevelSet levels = new LevelSet(new Sector().setFullSphere(), 90, 20, 32, 32);
 
+    protected LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(300, 240); // cache for 300 tiles
+
     protected List<Tile> topLevelTiles = new ArrayList<>();
 
     protected BasicTerrain terrain = new BasicTerrain();
+
+    protected double detailControl = 40;
 
     public BasicTessellator() {
     }
@@ -51,17 +56,25 @@ public class BasicTessellator implements Tessellator, TileFactory {
         }
 
         for (Tile tile : this.topLevelTiles) {
-            TerrainTile tt = (TerrainTile) tile;
+            this.addTileOrDescendants(dc, (TerrainTile) tile);
+        }
+    }
 
-            // TODO test visibility against draw context frustum
-            // TODO addTileOrDescendants
-            // TODO subdivide into lru cache with capacity for 300 tiles, ignoring estimates on actual size
+    protected void addTileOrDescendants(DrawContext dc, TerrainTile tile) {
+        if (!tile.intersectsFrustum(dc, dc.getFrustum())) {
+            return; // ignore the tile and its descendants if it's not visible
+        }
 
-            if (tt.mustAssembleTileVertices(dc)) {
-                tt.assembleTileVertices(dc);
+        if (tile.level.isLastLevel() || !tile.mustSubdivide(dc, this.detailControl)) {
+            if (tile.mustAssembleTileVertices(dc)) {
+                tile.assembleTileVertices(dc); // build the tile's geometry when necessary
             }
+            this.terrain.addTile(tile);
+            return; // use the tile if it does not need to be subdivided
+        }
 
-            this.terrain.addTile((TerrainTile) tile);
+        for (Tile child : tile.subdivideToCache(this, this.tileCache, 4)) { // each tile has a cached size of 1
+            this.addTileOrDescendants(dc, (TerrainTile) child); // recursively process the tile's children
         }
     }
 

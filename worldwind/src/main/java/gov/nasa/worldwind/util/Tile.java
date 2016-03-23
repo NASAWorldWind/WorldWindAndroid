@@ -7,7 +7,11 @@ package gov.nasa.worldwind.util;
 
 import java.util.Collection;
 
+import gov.nasa.worldwind.cache.LruMemoryCache;
+import gov.nasa.worldwind.geom.BoundingBox;
+import gov.nasa.worldwind.geom.Frustum;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.render.DrawContext;
 
 /**
  * Geographically rectangular tile within a {@link LevelSet}, typically representing terrain or imagery. Provides a base
@@ -37,6 +41,16 @@ public class Tile {
     public final int column;
 
     /**
+     * A key that uniquely identifies this tile within a level set. Tile keys are not unique to a specific level set.
+     */
+    public final String tileKey;
+
+    /**
+     * The tile's Cartesian bounding box.
+     */
+    protected BoundingBox extent;
+
+    /**
      * Constructs a tile with a specified sector, level, row and column.
      *
      * @param sector the sector spanned by the tile
@@ -59,6 +73,7 @@ public class Tile {
         this.level = level;
         this.row = row;
         this.column = column;
+        this.tileKey = level.levelNumber + "." + row + "." + column;
     }
 
     /**
@@ -152,7 +167,7 @@ public class Tile {
 
         if (tileFactory == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Tile", "assembleTilesForLevel", "The tile factory is null"));
+                Logger.logMessage(Logger.ERROR, "Tile", "assembleTilesForLevel", "missingTileFactory"));
         }
 
         if (result == null) {
@@ -187,5 +202,146 @@ public class Tile {
         }
 
         return result;
+    }
+
+    /**
+     * Indicates whether this tile intersects a specified frustum.
+     *
+     * @param dc      the current draw context
+     * @param frustum the frustum of interest
+     *
+     * @return true if the specified frustum intersects this bounding box, otherwise false
+     *
+     * @throws IllegalArgumentException If the frustum is null
+     */
+    public boolean intersectsFrustum(DrawContext dc, Frustum frustum) {
+        if (frustum == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Tile", "intersectsFrustum", "missingFrustum"));
+        }
+
+        //return this.getExtent(dc).intersectsFrustum(frustum);
+        return true; // TODO restore after BoundingBox implementation is compelted
+    }
+
+    /**
+     * Indicates whether this tile should be subdivided based on the current navigation state and a specified detail
+     * factor.
+     *
+     * @param dc           the current draw context
+     * @param detailFactor the detail factor to consider
+     *
+     * @return true if the tile should be subdivided, otherwise false
+     */
+    public boolean mustSubdivide(DrawContext dc, double detailFactor) {
+        //double distance = this.getExtent(dc).distanceTo(dc.getEyePoint());
+        //double texelSize = this.level.texelHeight * dc.getGlobe().getEquatorialRadius();
+        //double pixelSize = dc.pixelSizeAtDistance(distance);
+        //
+        //return texelSize > pixelSize * detailFactor;
+        return false; // TODO restore after BoundingBox implementation is compelted
+    }
+
+    /**
+     * Returns the four children formed by subdividing this tile. This tile's sector is subdivided into four quadrants
+     * as follows: Southwest; Southeast; Northwest; Northeast. A new tile is then constructed for each quadrant and
+     * configured with the next level within this tile's LevelSet and its corresponding row and column within that
+     * level. This returns null if this tile's level is the last level within its {@link LevelSet}.
+     *
+     * @param tileFactory the tile factory to use to create the children
+     *
+     * @return an array containing the four child tiles, or null if this tile's level is the last level
+     *
+     * @throws IllegalArgumentException If the tile factory is null
+     */
+    public Tile[] subdivide(TileFactory tileFactory) {
+        if (tileFactory == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Tile", "subdivide", "missingTileFactory"));
+        }
+
+        Level childLevel = this.level.nextLevel();
+        if (childLevel == null) {
+            return null;
+        }
+
+        Tile[] children = new Tile[4];
+        double latMin = this.sector.minLatitude();
+        double lonMin = this.sector.minLongitude();
+        double latMid = this.sector.centroidLatitude();
+        double lonMid = this.sector.centroidLongitude();
+        double delta = this.level.tileDelta * 0.5;
+
+        int subRow = 2 * this.row;
+        int subCol = 2 * this.column;
+        Sector childSector = new Sector(latMin, lonMin, delta, delta);
+        children[0] = tileFactory.createTile(childSector, level, subRow, subCol); // Southwest
+
+        subRow = 2 * this.row;
+        subCol = 2 * this.column + 1;
+        childSector = new Sector(latMin, lonMid, delta, delta);
+        children[1] = tileFactory.createTile(childSector, level, subRow, subCol); // Southeast
+
+        subRow = 2 * this.row + 1;
+        subCol = 2 * this.column;
+        childSector = new Sector(latMid, lonMin, delta, delta);
+        children[2] = tileFactory.createTile(childSector, level, subRow, subCol); // Northwest
+
+        subRow = 2 * this.row + 1;
+        subCol = 2 * this.column + 1;
+        childSector = new Sector(latMid, lonMin, delta, delta);
+        children[3] = tileFactory.createTile(childSector, level, subRow, subCol); // Northeast
+
+        return children;
+    }
+
+    /**
+     * Returns the four children formed by subdividing this tile, drawing those children from a specified cache. The
+     * cache is checked for a child collection prior to subdividing. If one exists in the cache it is returned rather
+     * than creating a new collection of children. If a new collection is created in the same manner as {@link
+     * #subdivide(TileFactory)} and added to the cache.
+     *
+     * @param tileFactory the tile factory to use to create the children
+     * @param cache       a memory cache that may contain pre-existing child tiles.
+     * @param cacheSize   the cached size of the four child tiles
+     *
+     * @return an array containing the four child tiles, or null if this tile's level is the last level
+     *
+     * @throws IllegalArgumentException If any argument is null
+     */
+    public Tile[] subdivideToCache(TileFactory tileFactory, LruMemoryCache<String, Tile[]> cache, int cacheSize) {
+        if (tileFactory == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Tile", "subdivideToCache", "missingTileFactory"));
+        }
+
+        if (cache == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Tile", "subdivideToCache", "missingCache"));
+        }
+
+        if (cacheSize < 1) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Tile", "subdivideToCache", "invalidSize"));
+        }
+
+        Tile[] children = cache.get(this.tileKey);
+        if (children == null) {
+            children = this.subdivide(tileFactory);
+            if (children != null) {
+                cache.put(this.tileKey, children, cacheSize);
+            }
+        }
+
+        return children;
+    }
+
+    protected BoundingBox getExtent(DrawContext dc) {
+        if (this.extent == null) {
+            this.extent = new BoundingBox();
+            this.extent.setToSector(this.sector, dc.getGlobe(), 0, 0);
+        }
+
+        return this.extent;
     }
 }
