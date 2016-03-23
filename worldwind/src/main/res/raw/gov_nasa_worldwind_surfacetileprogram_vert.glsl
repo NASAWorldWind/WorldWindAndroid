@@ -5,7 +5,6 @@
 
 precision mediump float;
 
-uniform bool enableTexMask;
 uniform mat4 mvpMatrix;
 uniform mat3 texCoordMatrix[2];
 
@@ -18,12 +17,8 @@ void main() {
     /* Transform the vertex position by the modelview-projection matrix. */
     gl_Position = mvpMatrix * vertexPoint;
 
-    /* Transform the vertex tex coord by the first tex coord matrix. */
+    /* Transform the vertex tex coord by the tex coord matrices. */
     vec3 texCoord3 = vec3(vertexTexCoord, 1.0);
     texCoord[0] = (texCoordMatrix[0] * texCoord3).st;
-
-    /* Transform the vertex tex coord by the second tex coord matrix. */
-    if (enableTexMask) {
-        texCoord[1] = (texCoordMatrix[1] * texCoord3).st;
-    }
+    texCoord[1] = (texCoordMatrix[1] * texCoord3).st;
 }

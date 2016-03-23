@@ -69,20 +69,13 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
             this.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
             program.loadModelviewProjection(this.mvpMatrix);
 
-            // Transform the terrain tile's tex coords to position the surface tile correctly.
+            // Use tex coord matrices that register the surface tile correctly and mask terrain tile fragments that
+            // fall outside the surface tile's sector.
             this.texCoordMatrix[0].setToIdentity();
+            this.texCoordMatrix[1].setToIdentity();
             texture.applyTexCoordTransform(dc, this.texCoordMatrix[0]);
             terrain.applyTexCoordTransform(idx, textureSector, this.texCoordMatrix[0]);
-
-            // Mask terrain tile fragments that fall outside the surface tile.
-            boolean enableTexMask = !textureSector.contains(terrainSector);
-            if (enableTexMask) {
-                this.texCoordMatrix[1].setToIdentity();
-                terrain.applyTexCoordTransform(idx, textureSector, this.texCoordMatrix[1]);
-            }
-
-            // Use this the tex coord state appropriate for this terrain tile and surface tile combination.
-            program.enableTexMask(enableTexMask);
+            terrain.applyTexCoordTransform(idx, textureSector, this.texCoordMatrix[1]);
             program.loadTexCoordMatrix(this.texCoordMatrix);
 
             // Use the terrain tile's vertex point attribute.
@@ -152,20 +145,13 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
                 // Get the surface tile's sector.
                 Sector textureSector = texture.getSector();
 
-                // Transform the terrain tile's tex coords to position the surface tile correctly.
+                // Use tex coord matrices that register the surface tile correctly and mask terrain tile fragments that
+                // fall outside the surface tile's sector.
                 this.texCoordMatrix[0].setToIdentity();
+                this.texCoordMatrix[1].setToIdentity();
                 texture.applyTexCoordTransform(dc, this.texCoordMatrix[0]);
                 terrain.applyTexCoordTransform(idx, textureSector, this.texCoordMatrix[0]);
-
-                // Mask terrain tile fragments that fall outside the surface tile.
-                boolean enableTexMask = !textureSector.contains(terrainSector);
-                if (enableTexMask) {
-                    this.texCoordMatrix[1].setToIdentity();
-                    terrain.applyTexCoordTransform(idx, textureSector, this.texCoordMatrix[1]);
-                }
-
-                // Use this the tex coord state appropriate for this terrain tile and surface tile combination.
-                program.enableTexMask(enableTexMask);
+                terrain.applyTexCoordTransform(idx, textureSector, this.texCoordMatrix[1]);
                 program.loadTexCoordMatrix(this.texCoordMatrix);
 
                 // Draw the terrain tile vertices as triangles.
