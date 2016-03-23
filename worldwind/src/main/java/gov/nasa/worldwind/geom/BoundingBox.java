@@ -13,6 +13,9 @@ import java.util.Arrays;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.util.Logger;
 
+/**
+ * Represents a bounding box in Cartesian coordinates. Typically used as a bounding volume.
+ */
 public class BoundingBox {
 
     /**
@@ -160,6 +163,94 @@ public class BoundingBox {
 
         return this;
     }
+
+    /**
+     * Indicates whether this bounding box intersects a specified frustum.
+     *
+     * @param frustum The frustum of interest.
+     *
+     * @throws IllegalArgumentException If the specified frustum is null or undefined.
+     * @returns true if the specified frustum intersects this bounding box, otherwise false.
+     */
+    public boolean intersectsFrustum(final Frustum frustum) {
+        if (frustum == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BoundingBox", "intersectsFrustum", "missingFrustum"));
+        }
+
+        Vec3 tmp1 = new Vec3(this.bottomCenter);
+        Vec3 tmp2 = new Vec3(this.topCenter);
+
+        if (this.intersectionPoint(frustum.near, tmp1, tmp2) < 0) {
+            return false;
+        }
+        if (this.intersectionPoint(frustum.far, tmp1, tmp2) < 0) {
+            return false;
+        }
+        if (this.intersectionPoint(frustum.left, tmp1, tmp2) < 0) {
+            return false;
+        }
+        if (this.intersectionPoint(frustum.right, tmp1, tmp2) < 0) {
+            return false;
+        }
+        if (this.intersectionPoint(frustum.top, tmp1, tmp2) < 0) {
+            return false;
+        }
+        if (this.intersectionPoint(frustum.bottom, tmp1, tmp2) < 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    // Internal. Intentionally not documented.
+    private double intersectionPoint(final Plane plane, Vec3 endPoint1, Vec3 endPoint2) {
+        Vec3 n = plane.normal;
+        double effectiveRadius = 0.5 * (Math.abs(this.s.dot(n)) + Math.abs(this.t.dot(n)));
+
+        return intersectsAt(plane, effectiveRadius, endPoint1, endPoint2);
+    }
+
+
+    // Internal. Intentionally not documented.
+    private static double intersectsAt(final Plane plane, final double effRadius, Vec3 endPoint1, Vec3 endPoint2) {
+        // Test the distance from the first end-point.
+        double dq1 = plane.dot(endPoint1);
+        boolean bq1 = dq1 <= -effRadius;
+
+        // Test the distance from the second end-point.
+        double dq2 = plane.dot(endPoint2);
+        boolean bq2 = dq2 <= -effRadius;
+
+        if (bq1 && bq2) { // endpoints more distant from plane than effective radius; box is on neg. side of plane
+            return -1;
+        }
+
+        if (bq1 == bq2) { // endpoints less distant from plane than effective radius; can't draw any conclusions
+            return 0;
+        }
+
+        // Compute and return the endpoints of the box on the positive side of the plane
+        Vec3 tmpPoint = new Vec3(endPoint1);
+        tmpPoint.subtract(endPoint2);
+        double t = (effRadius + dq1) / plane.normal.dot(tmpPoint);
+
+        tmpPoint.set(endPoint2);
+        tmpPoint.subtract(endPoint1);
+        tmpPoint.multiply(t);
+        tmpPoint.add(endPoint1);
+
+        // Truncate the line to only that in the positive halfspace, e.g., inside the frustum.
+        if (bq1) {
+            endPoint1.set(tmpPoint);
+        } else {
+            endPoint2.set(tmpPoint);
+        }
+
+        return t;
+    }
+
+    ;
 
 
     // Internal. Intentionally not documented.
