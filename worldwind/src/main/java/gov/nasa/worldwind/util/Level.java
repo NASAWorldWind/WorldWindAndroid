@@ -65,4 +65,42 @@ public class Level {
         this.tileHeight = parent.tileHeight;
         this.texelHeight = Math.toRadians(tileDelta) / parent.tileHeight;
     }
+
+    /**
+     * Indicates whether this level is the lowest resolution level (level 0) within the parent level set.
+     *
+     * @return true if this level is the lowest resolution in the parent level set, otherwise false
+     */
+    public boolean isFirstLevel() {
+        return this.levelNumber == 0;
+    }
+
+    /**
+     * Indicates whether this level is the highest resolution level within the parent level set.
+     *
+     * @return true if this level is the highest resolution in the parent level set, otherwise false
+     */
+    public boolean isLastLevel() {
+        return this.levelNumber == this.parent.numLevels() - 1;
+    }
+
+    /**
+     * Returns the level whose ordinal occurs immediately before this level's ordinal in the parent level set, or null
+     * if this is the fist level.
+     *
+     * @return the previous level, or null if this is the first level
+     */
+    public Level previousLevel() {
+        return this.parent.level(this.levelNumber - 1);
+    }
+
+    /**
+     * Returns the level whose ordinal occurs immediately after this level's ordinal in the parent level set, or null if
+     * this is the last level.
+     *
+     * @return the next level, or null if this is the last level
+     */
+    public Level nextLevel() {
+        return this.parent.level(this.levelNumber + 1);
+    }
 }
