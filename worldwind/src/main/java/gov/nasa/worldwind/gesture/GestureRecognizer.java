@@ -133,7 +133,7 @@ public class GestureRecognizer {
         this.centroidShiftY = 0;
     }
 
-    protected void transitionToState(MotionEvent event, int newState) {
+    protected void transitionToState(MotionEvent event, @WorldWind.GestureState int newState) {
         switch (newState) {
             case WorldWind.FAILED:
                 this.state = newState;
