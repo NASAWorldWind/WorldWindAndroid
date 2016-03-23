@@ -15,61 +15,91 @@ public class Line {
     /**
      * This line's origin.
      */
-    Vec3 origin;
+    protected final Vec3 origin = new Vec3();
 
     /**
      * This line's direction.
      */
-    Vec3 direction;
+    protected final Vec3 direction = new Vec3();
 
     /**
-     * Constructs a line from a specified origin and direction.
+     * Constructs a line with origin and direction both zero.
+     */
+    public Line() {
+    }
+
+    /**
+     * Constructs a line with a specified origin and direction.
      *
-     * @param origin    The line's origin.
-     * @param direction The line's direction.
+     * @param origin    the line's origin
+     * @param direction the line's direction
      *
-     * @throws IllegalArgumentException If either the origin or the direction are null or undefined.
+     * @throws IllegalArgumentException If either the origin or the direction are null
      */
     public Line(Vec3 origin, Vec3 direction) {
         if (origin == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Line", "constructor",
-                    "Origin is null or undefined."));
+                Logger.logMessage(Logger.ERROR, "Line", "constructor", "The origin is null"));
         }
 
         if (direction == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Line", "constructor",
-                    "Direction is null or undefined."));
+                Logger.logMessage(Logger.ERROR, "Line", "constructor", "The direction is null"));
         }
 
-        this.origin = origin;
-        this.direction = direction;
+        this.origin.set(origin);
+        this.direction.set(direction);
     }
-
 
     /**
-     * Creates a line given two specified endpoints.
+     * Sets this line to a specified origin and direction.
      *
-     * @param pointA The first endpoint.
-     * @param pointB The second endpoint.
+     * @param origin    the line's new origin
+     * @param direction the line's new direction
      *
-     * @return The new line.
+     * @return this line, set to the new origin and direction
      *
-     * @throws IllegalArgumentException If either endpoint is null or undefined.
+     * @throws IllegalArgumentException If either the origin or the direction are null
      */
-    public static Line fromSegment(Vec3 pointA, Vec3 pointB) {
-        if (pointA == null || pointB == null) {
+    public Line set(Vec3 origin, Vec3 direction) {
+        if (origin == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Line", "fromSegment", "missingPoint"));
+                Logger.logMessage(Logger.ERROR, "Line", "set", "The origin is null"));
         }
 
-        Vec3 origin = new Vec3(pointA);
-        Vec3 direction = new Vec3(pointB.x - pointA.x, pointB.y - pointA.y, pointB.z - pointA.z);
+        if (direction == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Line", "set", "The direction is null"));
+        }
 
-        return new Line(origin, direction);
+        this.origin.set(origin);
+        this.direction.set(direction);
+
+        return this;
     }
 
+    /**
+     * Sets this line to the specified segment. This line has its origin at the first endpoint and its direction
+     * extending from the first endpoint to the second.
+     *
+     * @param pointA the segment's first endpoint
+     * @param pointB the segment's second endpoint
+     *
+     * @return this line, set to the specified segment
+     *
+     * @throws IllegalArgumentException If either endpoint is null
+     */
+    public Line setToSegment(Vec3 pointA, Vec3 pointB) {
+        if (pointA == null || pointB == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Line", "setToSegment", "missingVector"));
+        }
+
+        this.origin.set(pointA);
+        this.direction.set(pointB.x - pointA.x, pointB.y - pointA.y, pointB.z - pointA.z);
+
+        return this;
+    }
 
     /**
      * Computes a Cartesian point a specified distance along this line.
@@ -84,7 +114,7 @@ public class Line {
     public Vec3 pointAt(double distance, Vec3 result) {
         if (result == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Line", "pointAt", "missingResult."));
+                Logger.logMessage(Logger.ERROR, "Line", "pointAt", "missingResult"));
         }
 
         result.x = this.origin.x + this.direction.x * distance;
@@ -93,6 +123,4 @@ public class Line {
 
         return result;
     }
-
-
 }

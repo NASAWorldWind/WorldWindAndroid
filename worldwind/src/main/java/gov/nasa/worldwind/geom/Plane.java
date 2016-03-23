@@ -240,7 +240,7 @@ public class Plane {
         }
 
         // Get the projection of the segment onto the plane.
-        Line line = Line.fromSegment(pointA, pointB);
+        Line line = new Line().setToSegment(pointA, pointB);
         double lDotV = this.normal.dot(line.direction);
 
         // Are the line and plane parallel?
