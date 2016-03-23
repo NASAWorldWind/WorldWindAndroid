@@ -25,6 +25,7 @@ public class Logger {
     static {
         messageTable = new HashMap<>();
         messageTable.put("invalidBitmap", "The bitmap is null or recycled");
+        messageTable.put("invalidCache", "The cache is null");
         messageTable.put("invalidClass", "The class is null or cannot be found");
         messageTable.put("invalidClipDistance", "The clip distance is invalid");
         messageTable.put("invalidFieldOfView", "The field of view is invalid");
@@ -45,6 +46,7 @@ public class Logger {
         messageTable.put("missingListener", "The listener is null");
         messageTable.put("missingLocation", "The location is null");
         messageTable.put("missingMatrix", "The matrix is null");
+        messageTable.put("missingPlane", "The plane is null");
         messageTable.put("missingPosition", "The position is null");
         messageTable.put("missingProjection", "The projection is null");
         messageTable.put("missingRecognizer", "The recognizer is null");
@@ -53,6 +55,7 @@ public class Logger {
         messageTable.put("missingSector", "The sector is null");
         messageTable.put("missingSource", "The source is null");
         messageTable.put("missingTile", "The tile is null");
+        messageTable.put("missingTileFactory", "The tile factory is null");
         messageTable.put("missingTessellator", "The tessellator is null");
         messageTable.put("missingValue", "The value is null");
         messageTable.put("missingVector", "The vector is null");
