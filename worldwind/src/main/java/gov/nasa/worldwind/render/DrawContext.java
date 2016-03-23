@@ -12,6 +12,7 @@ import android.opengl.GLES20;
 import java.util.HashMap;
 import java.util.Map;
 
+import gov.nasa.worldwind.geom.Frustum;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec3;
@@ -50,13 +51,23 @@ public class DrawContext {
 
     protected Matrix4 modelview = new Matrix4();
 
+    protected Matrix4 modelviewTranspose = new Matrix4();
+
     protected Matrix4 projection = new Matrix4();
+
+    protected Matrix4 projectionInv = new Matrix4();
 
     protected Matrix4 modelviewProjection = new Matrix4();
 
     protected Matrix4 modelviewProjectionInv = new Matrix4();
 
     protected Vec3 eyePoint = new Vec3();
+
+    protected Frustum frustum = new Frustum();
+
+    protected double pixelSizeScale;
+
+    protected double pixelSizeOffset;
 
     protected boolean pickingMode;
 
@@ -191,6 +202,10 @@ public class DrawContext {
         return eyePoint;
     }
 
+    public Frustum getFrustum() {
+        return this.frustum;
+    }
+
     public void setModelviewProjection(Matrix4 modelview, Matrix4 projection) {
         if (modelview == null || projection == null) {
             throw new IllegalArgumentException(
@@ -198,10 +213,18 @@ public class DrawContext {
         }
 
         this.modelview.set(modelview);
+        this.modelviewTranspose.transposeMatrix(modelview);
         this.projection.set(projection);
+        this.projectionInv.invertMatrix(projection);
         this.modelviewProjection.setToMultiply(projection, modelview);
         this.modelviewProjectionInv.invertMatrix(this.modelviewProjection);
         this.modelview.extractEyePoint(this.eyePoint);
+
+        this.frustum.setToProjectionMatrix(this.projection);
+        this.frustum.transformByMatrix(this.modelviewTranspose);
+        this.frustum.normalize();
+
+        this.computePixelSizeParams();
     }
 
     public boolean isPickingMode() {
@@ -265,10 +288,15 @@ public class DrawContext {
         this.fieldOfView = 0;
         this.viewport.setEmpty();
         this.modelview.setToIdentity();
+        this.modelviewTranspose.setToIdentity();
         this.projection.setToIdentity();
+        this.projectionInv.setToIdentity();
         this.modelviewProjection.setToIdentity();
         this.modelviewProjectionInv.setToIdentity();
         this.eyePoint.set(0, 0, 0);
+        this.frustum.setToUnitFrustum();
+        this.pixelSizeOffset = 0;
+        this.pixelSizeScale = 0;
         this.pickingMode = false;
         this.renderRequested = false;
         this.gpuObjectCache = null;
@@ -309,5 +337,61 @@ public class DrawContext {
             this.currentTexId[texUnitIndex] = objectId;
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, objectId);
         }
+    }
+
+    /**
+     * Returns the height of a pixel at a given distance from the eye point. This method assumes the model of a screen
+     * composed of rectangular pixels, where pixel coordinates denote infinitely thin space between pixels. The units of
+     * the returned size are in meters per pixel.
+     * <p/>
+     * The result of this method is undefined if the distance is negative.
+     *
+     * @param distance the distance from the eye point in meters
+     *
+     * @return the pixel height in meters
+     */
+    public double pixelSizeAtDistance(double distance) {
+        // Compute the pixel size from the width of a rectangle carved out of the frustum in model coordinates at
+        // the specified distance along the -Z axis and the viewport width in screen coordinates. The pixel size is
+        // expressed in model coordinates per screen coordinate (e.g. meters per pixel).
+        //
+        // The frustum width is determined by noticing that the frustum size is a linear function of distance from
+        // the eye point. The linear equation constants are determined during initialization, then solved for
+        // distance here.
+        //
+        // This considers only the frustum width by assuming that the frustum and viewport share the same aspect
+        // ratio, so that using either the frustum width or height results in the same pixel size.
+
+        return this.pixelSizeScale * distance + this.pixelSizeOffset;
+    }
+
+    protected void computePixelSizeParams() {
+        // Compute the eye coordinate rectangles carved out of the frustum by the near and far clipping planes, and
+        // the distance between those planes and the eye point along the -Z axis. The rectangles are determined by
+        // transforming the bottom-left and top-right points of the frustum from clip coordinates to eye
+        // coordinates.
+        Vec3 nbl = new Vec3(-1, -1, -1);
+        Vec3 ntr = new Vec3(+1, +1, -1);
+        Vec3 fbl = new Vec3(-1, -1, +1);
+        Vec3 ftr = new Vec3(+1, +1, +1);
+        // Convert each frustum corner from clip coordinates to eye coordinates by multiplying by the inverse
+        // projection matrix.
+        nbl.multiplyByMatrix(this.projectionInv);
+        ntr.multiplyByMatrix(this.projectionInv);
+        fbl.multiplyByMatrix(this.projectionInv);
+        ftr.multiplyByMatrix(this.projectionInv);
+
+        double nrRectWidth = Math.abs(ntr.x - nbl.x);
+        double frRectWidth = Math.abs(ftr.x - fbl.x);
+        double nrDistance = -nbl.z;
+        double frDistance = -fbl.z;
+
+        // Compute the scale and offset used to determine the width of a pixel on a rectangle carved out of the
+        // frustum at a distance along the -Z axis in eye coordinates. These values are found by computing the scale
+        // and offset of a frustum rectangle at a given distance, then dividing each by the viewport width.
+        double frustumWidthScale = (frRectWidth - nrRectWidth) / (frDistance - nrDistance);
+        double frustumWidthOffset = nrRectWidth - frustumWidthScale * nrDistance;
+        this.pixelSizeScale = frustumWidthScale / this.viewport.width();
+        this.pixelSizeOffset = frustumWidthOffset / this.viewport.height();
     }
 }
