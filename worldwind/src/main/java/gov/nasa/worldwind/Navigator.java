@@ -5,14 +5,24 @@
 
 package gov.nasa.worldwind;
 
-import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Camera;
+import gov.nasa.worldwind.geom.LookAt;
+import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.render.DrawContext;
 
 public interface Navigator {
 
-    Position getPosition();
+    double getLatitude();
 
-    void setPosition(Position position);
+    void setLatitude(double latitude);
+
+    double getLongitude();
+
+    void setLongitude(double longitude);
+
+    double getAltitude();
+
+    void setAltitude(double altitude);
 
     double getHeading();
 
@@ -29,6 +39,14 @@ public interface Navigator {
     double getFieldOfView();
 
     void setFieldOfView(double fovyDegrees);
+
+    Camera getAsCamera(WorldWindow wwd, Camera result);
+
+    void setAsCamera(WorldWindow wwd, Camera camera);
+
+    LookAt getAsLookAt(WorldWindow wwd, LookAt result);
+
+    void setAsLookAt(WorldWindow wwd, LookAt lookAt);
 
     void applyState(DrawContext dc);
 }

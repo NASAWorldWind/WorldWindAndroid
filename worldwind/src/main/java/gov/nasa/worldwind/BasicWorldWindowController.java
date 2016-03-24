@@ -94,39 +94,44 @@ public class BasicWorldWindowController implements WorldWindowController {
             this.lastX = 0;
             this.lastY = 0;
         } else if (state == WorldWind.CHANGED) {
-            // Convert the translation from screen coordinates to degrees. Use this navigator's altitude as a metric for
+            // Get the navigator's current position.
+            double lat = navigator.getLatitude();
+            double lon = navigator.getLongitude();
+            double alt = navigator.getAltitude();
+
+            // Convert the translation from screen coordinates to degrees. Use the navigator's altitude as a metric for
             // converting screen pixels to meters, and use the globe's radius for converting from meters to arc degrees.
-            Position pos = navigator.getPosition();
-            Globe globe = this.wwd.getGlobe();
-            double globeRadius = globe.getRadiusAt(pos.latitude, pos.longitude);
-            double metersPerPixel = this.wwd.pixelSizeAtDistance(pos.altitude);
+            double metersPerPixel = this.wwd.pixelSizeAtDistance(alt);
             double forwardMeters = (dy - this.lastY) * metersPerPixel;
             double sideMeters = -(dx - this.lastX) * metersPerPixel;
+
+            double globeRadius = this.wwd.getGlobe().getRadiusAt(lat, lon);
             double forwardDegrees = Math.toDegrees(forwardMeters / globeRadius);
             double sideDegrees = Math.toDegrees(sideMeters / globeRadius);
 
             // Apply the change in latitude and longitude to this navigator, relative to the current heading.
-            double headingDegrees = navigator.getHeading();
-            double headingRadians = Math.toRadians(headingDegrees);
+            double heading = navigator.getHeading();
+            double headingRadians = Math.toRadians(heading);
             double sinHeading = Math.sin(headingRadians);
             double cosHeading = Math.cos(headingRadians);
-            double latDegrees = pos.latitude + forwardDegrees * cosHeading - sideDegrees * sinHeading;
-            double lonDegrees = pos.longitude + forwardDegrees * sinHeading + sideDegrees * cosHeading;
+            lat += forwardDegrees * cosHeading - sideDegrees * sinHeading;
+            lon += forwardDegrees * sinHeading + sideDegrees * cosHeading;
 
             // If the navigator has panned over either pole, compensate by adjusting the longitude and heading to move
             // the navigator to the appropriate spot on the other side of the pole.
-            if (latDegrees < -90 || latDegrees > 90) {
-                latDegrees = Location.normalizeLatitude(latDegrees);
-                lonDegrees = Location.normalizeLongitude(lonDegrees + 180);
-                headingDegrees = WWMath.normalizeAngle(headingDegrees + 180);
-            } else if (lonDegrees < -180 || lonDegrees > 180) {
-                lonDegrees = Location.normalizeLongitude(lonDegrees);
+            if (lat < -90 || lat > 90) {
+                navigator.setLatitude(Location.normalizeLatitude(lat));
+                navigator.setLongitude(Location.normalizeLongitude(lon + 180));
+                navigator.setHeading(WWMath.normalizeAngle(heading + 180));
+            } else if (lon < -180 || lon > 180) {
+                navigator.setLatitude(lat);
+                navigator.setLongitude(Location.normalizeLongitude(lon));
+            } else {
+                navigator.setLatitude(lat);
+                navigator.setLongitude(lon);
             }
 
-            navigator.getPosition().set(latDegrees, lonDegrees);
-            navigator.setHeading(headingDegrees);
             this.wwd.requestRender();
-
             this.lastX = dx;
             this.lastY = dy;
         }
@@ -138,7 +143,7 @@ public class BasicWorldWindowController implements WorldWindowController {
         Navigator navigator = this.wwd.getNavigator();
 
         if (state == WorldWind.BEGAN) {
-            this.beginAltitude = navigator.getPosition().altitude;
+            this.beginAltitude = navigator.getAltitude();
         } else if (state == WorldWind.CHANGED) {
             if (scale != 0) {
                 // Apply the change in pinch scale to this navigator's altitude, relative to the altitude when the
@@ -146,8 +151,7 @@ public class BasicWorldWindowController implements WorldWindowController {
                 double altitude = this.beginAltitude / scale;
                 double minAltitude = this.minAltitude;
                 double maxAltitude = this.wwd.distanceToViewGlobeExtents() * 2;
-                altitude = WWMath.clamp(altitude, minAltitude, maxAltitude);
-                navigator.getPosition().altitude = altitude;
+                navigator.setAltitude(WWMath.clamp(altitude, minAltitude, maxAltitude));
                 this.wwd.requestRender();
             }
         }

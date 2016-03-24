@@ -108,9 +108,11 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
      */
     protected void init(EGLConfigChooser configChooser) {
         // Initialize the world window's navigator and controller.
-        Location location = Location.fromTimeZone(TimeZone.getDefault());
-        double altitude = this.distanceToViewGlobeExtents() * 1.1; // add to the minimum distance 10%
-        this.navigator.setPosition(new Position(location.latitude, location.longitude, altitude));
+        Location initLocation = Location.fromTimeZone(TimeZone.getDefault());
+        double initAltitude = this.distanceToViewGlobeExtents() * 1.1; // add to the minimum distance 10%
+        this.navigator.setLatitude(initLocation.latitude);
+        this.navigator.setLongitude(initLocation.longitude);
+        this.navigator.setAltitude(initAltitude);
         this.worldWindowController.setWorldWindow(this);
 
         // Initialize the World Window's global caches. Use 50% of the approximate per-application memory class.

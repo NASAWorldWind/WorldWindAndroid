@@ -66,6 +66,7 @@ public class Logger {
         messageTable.put("missingTessellator", "The tessellator is null");
         messageTable.put("missingValue", "The value is null");
         messageTable.put("missingVector", "The vector is null");
+        messageTable.put("missingWorldWindow", "The world window is null");
         messageTable.put("singularMatrix", "The matrix cannot be inverted");
     }
 
