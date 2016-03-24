@@ -17,22 +17,55 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.LevelSet;
+import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Tile;
 import gov.nasa.worldwind.util.TileFactory;
 
 public class BasicTessellator implements Tessellator, TileFactory {
 
-    protected LevelSet levels = new LevelSet(new Sector().setFullSphere(), 90, 20, 32, 32);
+    protected static final int DEFAULT_TOP_LEVEL_DELTA = 90; // 90 degrees
 
-    protected LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(300, 240); // cache for 300 tiles
+    protected static final int DEFAULT_NUM_LEVELS = 20; // ~0.6 meter resolution with default tile delta and tile width
+
+    protected static final int DEFAULT_TILE_WIDTH = 32; // 32 x 32 vertices per tile
+
+    protected static final int DEFAULT_DETAIL_CONTROL = 80;
+
+    protected static final int DEFAULT_TILE_CACHE_CAPACITY = 300; // capacity for 300 tiles
+
+    protected LevelSet levels;
+
+    protected double detailControl = DEFAULT_DETAIL_CONTROL;
+
+    protected LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(DEFAULT_TILE_CACHE_CAPACITY);
 
     protected List<Tile> topLevelTiles = new ArrayList<>();
 
-    protected BasicTerrain terrain = new BasicTerrain();
-
-    protected double detailControl = 80;
+    protected BasicTerrain currentTerrain = new BasicTerrain();
 
     public BasicTessellator() {
+        //noinspection SuspiciousNameCombination
+        this.levels = new LevelSet(new Sector().setFullSphere(), DEFAULT_TOP_LEVEL_DELTA, DEFAULT_NUM_LEVELS,
+            DEFAULT_TILE_WIDTH, DEFAULT_TILE_WIDTH);
+    }
+
+    public BasicTessellator(double topLevelDelta, int numLevels, int tileWidth, int tileHeight) {
+        if (topLevelDelta <= 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicTessellator", "constructor", "invalidTileDelta"));
+        }
+
+        if (numLevels < 1) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicTessellator", "constructor", "invalidNumLevels"));
+        }
+
+        if (tileWidth < 1 || tileHeight < 1) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicTessellator", "constructor", "invalidWidthOrHeight"));
+        }
+
+        this.levels = new LevelSet(new Sector().setFullSphere(), topLevelDelta, numLevels, tileWidth, tileHeight);
     }
 
     @Override
@@ -40,7 +73,7 @@ public class BasicTessellator implements Tessellator, TileFactory {
         this.assembleTiles(dc);
         this.assembleSharedBuffers();
 
-        return this.terrain;
+        return this.currentTerrain;
     }
 
     @Override
@@ -49,15 +82,19 @@ public class BasicTessellator implements Tessellator, TileFactory {
     }
 
     protected void assembleTiles(DrawContext dc) {
-        this.terrain.clearTiles();
+        this.currentTerrain.clearTiles();
 
         if (this.topLevelTiles.isEmpty()) {
-            Tile.assembleTilesForLevel(this.levels.firstLevel(), this, this.topLevelTiles);
+            this.createTopLevelTiles();
         }
 
         for (Tile tile : this.topLevelTiles) {
             this.addTileOrDescendants(dc, (TerrainTile) tile);
         }
+    }
+
+    protected void createTopLevelTiles() {
+        Tile.assembleTilesForLevel(this.levels.firstLevel(), this, this.topLevelTiles);
     }
 
     protected void addTileOrDescendants(DrawContext dc, TerrainTile tile) {
@@ -80,27 +117,27 @@ public class BasicTessellator implements Tessellator, TileFactory {
             tile.assembleTileVertices(dc); // build the tile's geometry when necessary
         }
 
-        this.terrain.addTile(tile);
+        this.currentTerrain.addTile(tile);
     }
 
     protected void assembleSharedBuffers() {
         int numLat = this.levels.tileHeight;
         int numLon = this.levels.tileWidth;
 
-        if (this.terrain.getTileTexCoords() == null) {
+        if (this.currentTerrain.getTileTexCoords() == null) {
             FloatBuffer buffer = ByteBuffer.allocateDirect(numLat * numLon * 8).order(ByteOrder.nativeOrder()).asFloatBuffer();
             this.assembleTexCoords(numLat, numLon, buffer, 2).rewind();
-            this.terrain.setTileTexCoords(buffer);
+            this.currentTerrain.setTileTexCoords(buffer);
         }
 
-        if (this.terrain.getTileTriStripIndices() == null) {
+        if (this.currentTerrain.getTileTriStripIndices() == null) {
             ShortBuffer buffer = this.assembleTriStripIndices(numLat, numLon);
-            this.terrain.setTileTriStripIndices(buffer);
+            this.currentTerrain.setTileTriStripIndices(buffer);
         }
 
-        if (this.terrain.getTileLineIndices() == null) {
+        if (this.currentTerrain.getTileLineIndices() == null) {
             ShortBuffer buffer = this.assembleLineIndices(numLat, numLon);
-            this.terrain.setTileLineIndices(buffer);
+            this.currentTerrain.setTileLineIndices(buffer);
         }
     }
 

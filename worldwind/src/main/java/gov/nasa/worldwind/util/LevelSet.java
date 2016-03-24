@@ -64,17 +64,17 @@ public class LevelSet {
 
         if (topLevelDelta <= 0) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "The top level delta is zero"));
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidTileDelta"));
         }
 
         if (numLevels < 1) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "The number of levels is zero"));
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidNumLevels"));
         }
 
         if (tileWidth < 1 || tileHeight < 1) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "The tile width or tile height is zero"));
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidWidthOrHeight"));
         }
 
         this.sector = sector;
@@ -82,7 +82,6 @@ public class LevelSet {
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
         this.levels = new Level[numLevels];
-
 
         for (int levelNumber = 0; levelNumber < numLevels; levelNumber++) {
             double n = Math.pow(2, levelNumber);
