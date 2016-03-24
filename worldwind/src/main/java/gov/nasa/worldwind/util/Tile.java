@@ -220,8 +220,7 @@ public class Tile {
                 Logger.logMessage(Logger.ERROR, "Tile", "intersectsFrustum", "missingFrustum"));
         }
 
-        //return this.getExtent(dc).intersectsFrustum(frustum);
-        return true; // TODO restore after BoundingBox implementation is compelted
+        return this.getExtent(dc).intersectsFrustum(frustum);
     }
 
     /**
@@ -234,12 +233,11 @@ public class Tile {
      * @return true if the tile should be subdivided, otherwise false
      */
     public boolean mustSubdivide(DrawContext dc, double detailFactor) {
-        //double distance = this.getExtent(dc).distanceTo(dc.getEyePoint());
-        //double texelSize = this.level.texelHeight * dc.getGlobe().getEquatorialRadius();
-        //double pixelSize = dc.pixelSizeAtDistance(distance);
-        //
-        //return texelSize > pixelSize * detailFactor;
-        return false; // TODO restore after BoundingBox implementation is compelted
+        double distance = this.getExtent(dc).distanceTo(dc.getEyePoint());
+        double texelSize = this.level.texelHeight * dc.getGlobe().getEquatorialRadius();
+        double pixelSize = dc.pixelSizeAtDistance(distance);
+
+        return texelSize > pixelSize * detailFactor;
     }
 
     /**
@@ -270,27 +268,27 @@ public class Tile {
         double lonMin = this.sector.minLongitude();
         double latMid = this.sector.centroidLatitude();
         double lonMid = this.sector.centroidLongitude();
-        double delta = this.level.tileDelta * 0.5;
+        double childDelta = this.level.tileDelta * 0.5;
 
-        int subRow = 2 * this.row;
-        int subCol = 2 * this.column;
-        Sector childSector = new Sector(latMin, lonMin, delta, delta);
-        children[0] = tileFactory.createTile(childSector, level, subRow, subCol); // Southwest
+        int childRow = 2 * this.row;
+        int childCol = 2 * this.column;
+        Sector childSector = new Sector(latMin, lonMin, childDelta, childDelta);
+        children[0] = tileFactory.createTile(childSector, childLevel, childRow, childCol); // Southwest
 
-        subRow = 2 * this.row;
-        subCol = 2 * this.column + 1;
-        childSector = new Sector(latMin, lonMid, delta, delta);
-        children[1] = tileFactory.createTile(childSector, level, subRow, subCol); // Southeast
+        childRow = 2 * this.row;
+        childCol = 2 * this.column + 1;
+        childSector = new Sector(latMin, lonMid, childDelta, childDelta);
+        children[1] = tileFactory.createTile(childSector, childLevel, childRow, childCol); // Southeast
 
-        subRow = 2 * this.row + 1;
-        subCol = 2 * this.column;
-        childSector = new Sector(latMid, lonMin, delta, delta);
-        children[2] = tileFactory.createTile(childSector, level, subRow, subCol); // Northwest
+        childRow = 2 * this.row + 1;
+        childCol = 2 * this.column;
+        childSector = new Sector(latMid, lonMin, childDelta, childDelta);
+        children[2] = tileFactory.createTile(childSector, childLevel, childRow, childCol); // Northwest
 
-        subRow = 2 * this.row + 1;
-        subCol = 2 * this.column + 1;
-        childSector = new Sector(latMid, lonMin, delta, delta);
-        children[3] = tileFactory.createTile(childSector, level, subRow, subCol); // Northeast
+        childRow = 2 * this.row + 1;
+        childCol = 2 * this.column + 1;
+        childSector = new Sector(latMid, lonMid, childDelta, childDelta);
+        children[3] = tileFactory.createTile(childSector, childLevel, childRow, childCol); // Northeast
 
         return children;
     }

@@ -30,7 +30,7 @@ public class BasicTessellator implements Tessellator, TileFactory {
 
     protected BasicTerrain terrain = new BasicTerrain();
 
-    protected double detailControl = 40;
+    protected double detailControl = 80;
 
     public BasicTessellator() {
     }
@@ -66,16 +66,21 @@ public class BasicTessellator implements Tessellator, TileFactory {
         }
 
         if (tile.level.isLastLevel() || !tile.mustSubdivide(dc, this.detailControl)) {
-            if (tile.mustAssembleTileVertices(dc)) {
-                tile.assembleTileVertices(dc); // build the tile's geometry when necessary
-            }
-            this.terrain.addTile(tile);
+            this.addTile(dc, tile);
             return; // use the tile if it does not need to be subdivided
         }
 
         for (Tile child : tile.subdivideToCache(this, this.tileCache, 4)) { // each tile has a cached size of 1
             this.addTileOrDescendants(dc, (TerrainTile) child); // recursively process the tile's children
         }
+    }
+
+    protected void addTile(DrawContext dc, TerrainTile tile) {
+        if (tile.mustAssembleTileVertices(dc)) {
+            tile.assembleTileVertices(dc); // build the tile's geometry when necessary
+        }
+
+        this.terrain.addTile(tile);
     }
 
     protected void assembleSharedBuffers() {
