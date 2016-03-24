@@ -117,7 +117,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         ActivityManager am = (ActivityManager) this.getContext().getSystemService(Context.ACTIVITY_SERVICE);
         int memoryClass = (am != null) ? am.getMemoryClass() : DEFAULT_MEMORY_CLASS; // default to 16 MB class
         int gpuCacheSize = (memoryClass / 2) * 1024 * 1024;
-        this.gpuObjectCache = new GpuObjectCache(gpuCacheSize, (int) (gpuCacheSize * 0.75));
+        this.gpuObjectCache = new GpuObjectCache(gpuCacheSize);
 
         // Set up to render on demand to an OpenGL ES 2.x context
         this.dc = new DrawContext(this.getContext());

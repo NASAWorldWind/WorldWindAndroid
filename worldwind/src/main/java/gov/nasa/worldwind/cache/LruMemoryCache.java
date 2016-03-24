@@ -34,6 +34,16 @@ public class LruMemoryCache<K, V> {
 
     protected long lastUsedSequence; // overflows after thousands of years, given 1.0+E6 cache accesses per frame at 60Hz
 
+    public LruMemoryCache(int capacity) {
+        if (capacity < 1) {
+            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "LruMemoryCache", "constructor",
+                "The specified capacity is less than 1"));
+        }
+
+        this.capacity = capacity;
+        this.lowWater = (int) (capacity * 0.75);
+    }
+
     public LruMemoryCache(int capacity, int lowWater) {
         if (capacity < 1) {
             throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "LruMemoryCache", "constructor",
