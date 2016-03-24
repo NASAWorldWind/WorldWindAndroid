@@ -5,8 +5,6 @@
 
 package gov.nasa.worldwind.render;
 
-import android.support.annotation.DrawableRes;
-
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.util.Level;
@@ -14,13 +12,20 @@ import gov.nasa.worldwind.util.Tile;
 
 public class ImageTile extends Tile implements SurfaceTile {
 
-    protected int imageId;
+    protected Object imageSource; // TODO imageSource
 
     protected ImageTile fallbackTile;
 
-    public ImageTile(Sector sector, Level level, int row, int column, @DrawableRes int imageId) {
+    public ImageTile(Sector sector, Level level, int row, int column) {
         super(sector, level, row, column);
-        this.imageId = imageId;
+    }
+
+    public Object getImageSource() {
+        return imageSource;
+    }
+
+    public void setImageSource(Object imageSource) {
+        this.imageSource = imageSource;
     }
 
     public ImageTile getFallbackTile() {
@@ -38,7 +43,11 @@ public class ImageTile extends Tile implements SurfaceTile {
 
     @Override
     public boolean bind(DrawContext dc, int texUnit) {
-        GpuTexture texture = dc.getGpuObjectCache().retrieveTexture(dc, this.imageId);
+        if (this.imageSource == null) {
+            return false;
+        }
+
+        GpuTexture texture = null; //dc.getGpuObjectCache().retrieveTexture(dc, this.imageSource); // TODO
         if (texture != null) {
             dc.bindTexture(texUnit, texture);
             return true;
@@ -51,7 +60,11 @@ public class ImageTile extends Tile implements SurfaceTile {
 
     @Override
     public void applyTexCoordTransform(DrawContext dc, Matrix3 result) {
-        GpuTexture texture = (GpuTexture) dc.getGpuObjectCache().get(this.imageId);
+        if (this.imageSource == null) {
+            return;
+        }
+
+        GpuTexture texture = (GpuTexture) dc.getGpuObjectCache().get(this.imageSource);
         if (texture != null) {
             // Apply this surface tile's tex coord transform.
             texture.applyTexCoordTransform(result);
