@@ -98,6 +98,7 @@ public class BoundingBox {
 
         FloatBuffer points = ByteBuffer.allocateDirect(count * stride * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         globe.geographicToCartesianGrid(sector, numLat, numLon, elevations, null, points, stride);
+        points.rewind();
 
         // Compute the local coordinate axes. Since we know this box is bounding a geographic sector, we use the
         // local coordinate axes at its centroid as the box axes. Using these axes results in a box that has +-10%
@@ -107,20 +108,19 @@ public class BoundingBox {
         Matrix4 matrix = globe.geographicToCartesianTransform(centroidLat, centroidLon, 0, new Matrix4());
         double m[] = matrix.m;
 
-        this.r.set(m[0], m[1], m[2]);
-        this.s.set(m[4], m[5], m[6]);
-        this.t.set(m[8], m[9], m[10]);
+        this.r.set(m[0], m[4], m[8]);
+        this.s.set(m[1], m[5], m[9]);
+        this.t.set(m[2], m[6], m[10]);
 
         // Find the extremes along each axis.
         double rExtremes[] = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
         double sExtremes[] = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
         double tExtremes[] = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
         Vec3 u = new Vec3();
-        float[] pt = new float[stride];
-        points.rewind();
+        float[] coords = new float[stride];
         for (int i = 0; i < count; i++) {
-            points.get(pt, 0, stride);
-            u.set(pt[0], pt[1], pt[2]);
+            points.get(coords, 0, stride);
+            u.set(coords[0], coords[1], coords[2]);
             adjustExtremes(this.r, rExtremes, this.s, sExtremes, this.t, tExtremes, u);
         }
 
@@ -162,6 +162,10 @@ public class BoundingBox {
         this.radius = 0.5 * Math.sqrt(rLen * rLen + sLen * sLen + tLen * tLen);
 
         return this;
+    }
+
+    public double distanceTo(Vec3 point) {
+        return this.center.distanceTo(point); // TODO shortest distance to center and corner points
     }
 
     /**
@@ -211,7 +215,6 @@ public class BoundingBox {
         return intersectsAt(plane, effectiveRadius, endPoint1, endPoint2);
     }
 
-
     // Internal. Intentionally not documented.
     private static double intersectsAt(final Plane plane, final double effRadius, Vec3 endPoint1, Vec3 endPoint2) {
         // Test the distance from the first end-point.
@@ -249,9 +252,6 @@ public class BoundingBox {
 
         return t;
     }
-
-    ;
-
 
     // Internal. Intentionally not documented.
     private static void adjustExtremes(Vec3 r, double[] rExtremes, Vec3 s, double[] sExtremes, Vec3 t, double[] tExtremes, Vec3 p) {
@@ -292,6 +292,4 @@ public class BoundingBox {
         aExtremes[1] = bExtremes[1];
         bExtremes[1] = tmp;
     }
-
-
 }
