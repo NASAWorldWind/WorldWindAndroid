@@ -42,11 +42,16 @@ public class Logger {
         messageTable.put("missingArray", "The array is null or insufficient length");
         messageTable.put("missingBuffer", "The buffer is null or insufficient length");
         messageTable.put("missingCamera", "The camera is null");
+        messageTable.put("missingConfig", "The configuration is null");
+        messageTable.put("missingCoordinateSystem", "The coordinate system is null");
+        messageTable.put("missingFormat", "The format is null");
         messageTable.put("missingGlobe", "The globe is null");
         messageTable.put("missingImageFormat", "The image format is null");
         messageTable.put("missingKey", "The key is null");
         messageTable.put("missingLayer", "The layer is null");
+        messageTable.put("missingLayerNames", "The layer names are null");
         messageTable.put("missingLevel", "The level is null");
+        messageTable.put("missingLevelSet", "The level set is null");
         messageTable.put("missingList", "The list is null or empty");
         messageTable.put("missingListener", "The listener is null");
         messageTable.put("missingLocation", "The location is null");
@@ -59,6 +64,7 @@ public class Logger {
         messageTable.put("missingRenderable", "The renderable is null");
         messageTable.put("missingResult", "The result argument is null");
         messageTable.put("missingSector", "The sector is null");
+        messageTable.put("missingServiceAddress", "The service address is null");
         messageTable.put("missingSource", "The source is null");
         messageTable.put("missingTile", "The tile is null");
         messageTable.put("missingTileFactory", "The tile factory is null");
@@ -66,6 +72,7 @@ public class Logger {
         messageTable.put("missingTessellator", "The tessellator is null");
         messageTable.put("missingValue", "The value is null");
         messageTable.put("missingVector", "The vector is null");
+        messageTable.put("missingVersion", "The version is null");
         messageTable.put("missingWorldWindow", "The world window is null");
         messageTable.put("singularMatrix", "The matrix cannot be inverted");
     }
