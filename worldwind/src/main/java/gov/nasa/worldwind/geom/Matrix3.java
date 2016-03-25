@@ -107,9 +107,9 @@ public class Matrix3 {
 
     @Override
     public String toString() {
-        return this.m[0] + ", " + this.m[1] + ", " + this.m[2] + ", " +
-            this.m[3] + ", " + this.m[4] + ", " + this.m[5] + ", " +
-            this.m[6] + ", " + this.m[7] + ", " + this.m[8];
+        return "[" + this.m[0] + ", " + this.m[1] + ", " + this.m[2] + "], " +
+            '[' + this.m[3] + ", " + this.m[4] + ", " + this.m[5] + "], " +
+            '[' + this.m[6] + ", " + this.m[7] + ", " + this.m[8] + ']';
     }
 
     /**

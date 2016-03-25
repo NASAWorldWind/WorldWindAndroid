@@ -24,6 +24,7 @@ public class Plane {
      */
     protected double distance;
 
+
     /**
      * Constructs a plane with specified normal vector components and distance from the origin. This constructor does
      * not normalize the components, it assumes that a unit normal vector is provided.
@@ -39,8 +40,22 @@ public class Plane {
     }
 
     /**
-     * Constructs a plane with the normal vector and distance from a specified plane. This constructor does not
+     * Constructs a plane with specified the normal vector and distance from the origin. This constructor does not
      * normalize the components, it assumes that a unit normal vector is provided.
+     *
+     * @param normal   the plane's unit normal vector
+     * @param distance the plane's distance from the origin
+     */
+    public Plane(Vec3 normal, double distance) {
+        if (normal == null) {
+            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Plane", "constructor", "missingVector"));
+        }
+        this.normal.set(normal);
+        this.distance = distance;
+    }
+
+    /**
+     * Constructs a plane with the normal vector and distance from a specified plane.
      *
      * @param plane the plane specifying the normal vector and distance
      *
@@ -53,6 +68,33 @@ public class Plane {
 
         this.normal.set(plane.normal);
         this.distance = plane.distance;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Plane plane = (Plane) o;
+
+        if (Double.compare(plane.distance, distance) != 0) return false;
+        return normal.equals(plane.normal);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        result = normal.hashCode();
+        temp = Double.doubleToLongBits(distance);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "normal=[" + normal + "], distance=" + distance;
     }
 
     /**
@@ -79,6 +121,23 @@ public class Plane {
      */
     public Plane set(double x, double y, double z, double distance) {
         this.normal.set(x, y, z);
+        this.distance = distance;
+
+        return this;
+    }
+
+    /**
+     * Sets this plane's specified normal vector and distance to specified values. This does not normalize the
+     * components, it assumes that a unit normal vector is provided.
+     *
+     * @param normal   the plane's unit normal vector
+     * @param distance the plane's distance from the origin
+     */
+    public Plane set(Vec3 normal, double distance) {
+        if (normal == null) {
+            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Plane", "set", "missingVector"));
+        }
+        this.normal.set(normal);
         this.distance = distance;
 
         return this;

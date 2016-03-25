@@ -56,6 +56,16 @@ public class BoundingBox {
     public BoundingBox() {
     }
 
+    @Override
+    public String toString() {
+        return "center=[" + center +
+            "], bottomCenter=[" + bottomCenter +
+            "], topCenter=[" + topCenter +
+            "], r=[" + r +
+            "], s=[" + s +
+            "], t=[" + t +
+            "], radius=" + radius;
+    }
 
     /**
      * Sets this bounding box such that it contains a specified sector on a specified globe with min and max elevation.

@@ -16,7 +16,7 @@ public class Frustum {
 
     protected final Plane right = new Plane(-1, 0, 0, 1);
 
-    protected final Plane bottom = new Plane(0, 1, 1, 1);
+    protected final Plane bottom = new Plane(0, 1, 0, 1);
 
     protected final Plane top = new Plane(0, -1, 0, 1);
 
@@ -59,6 +59,16 @@ public class Frustum {
         this.far.set(far);
     }
 
+    @Override
+    public String toString() {
+        return "left={" + left +
+            "}, right={" + right +
+            "}, bottom={" + bottom +
+            "}, top={" + top +
+            "}, near={" + near +
+            "}, far={" + far+ '}';
+    }
+
     /**
      * Sets this frustum to a unit frustum with each of its planes 1 meter from the center
      *
@@ -67,7 +77,7 @@ public class Frustum {
     public Frustum setToUnitFrustum() {
         this.left.set(1, 0, 0, 1);
         this.right.set(-1, 0, 0, 1);
-        this.bottom.set(0, 1, 1, 1);
+        this.bottom.set(0, 1, 0, 1);
         this.top.set(0, -1, 0, 1);
         this.near.set(0, 0, -1, 1);
         this.far.set(0, 0, 1, 1);
