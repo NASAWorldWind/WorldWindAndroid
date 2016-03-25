@@ -8,7 +8,7 @@ import gov.nasa.worldwind.layer.BlueMarbleBackgroundLayer;
 import gov.nasa.worldwind.layer.BlueMarbleLayer;
 import gov.nasa.worldwindx.layer.AtmosphereLayer;
 
-public class WorldWindExamples extends AppCompatActivity {
+public class BasicWorldWindActivity extends AppCompatActivity {
 
     protected WorldWindow wwd;
 
