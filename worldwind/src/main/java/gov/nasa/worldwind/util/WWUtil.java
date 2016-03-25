@@ -18,7 +18,7 @@ import java.io.InputStreamReader;
 
 public class WWUtil {
 
-    public static Bitmap readResourceAsBitmap(Context context, @DrawableRes int id) {
+    public static Bitmap readResourceAsBitmap(Context context, @DrawableRes int id) { // TODO remove
         if (context == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "WWUtil", "readResourceAsBitmap", "missingContext"));

@@ -14,6 +14,9 @@ import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.util.WWUtil;
 
+// TODO Try accumulating surface tile state (texCoordMatrix, texSampler), loading uniforms once, then loading a uniform
+// TODO index to select the state for a surface tile. This reduces the uniform calls when many surface tiles intersect
+// TODO one terrain tile.
 public class SurfaceTileProgram extends GpuProgram {
 
     protected int mvpMatrixId;

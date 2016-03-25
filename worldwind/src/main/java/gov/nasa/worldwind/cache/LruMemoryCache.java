@@ -13,7 +13,7 @@ import java.util.Map;
 
 import gov.nasa.worldwind.util.Logger;
 
-public class LruMemoryCache<K, V> {
+public class LruMemoryCache<K, V> { // TODO move to util
 
     protected static long keyPool; // overflows after generating quintillions of cache keys
 
@@ -64,7 +64,7 @@ public class LruMemoryCache<K, V> {
      *
      * @return a unique runtime cache key.
      */
-    public String generateCacheKey() {
+    public String generateCacheKey() { // TODO make static class-level function
         return "LruMemoryCache " + (++keyPool);
     }
 

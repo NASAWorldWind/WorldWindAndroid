@@ -13,6 +13,7 @@ import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.util.Logger;
 
+// TODO consolidate with LayerList - superclass that maagest a list of stuff - use for elevationmodels too
 public class RenderableLayer extends AbstractLayer implements Iterable<Renderable> {
 
     protected List<Renderable> renderables = new ArrayList<>();
