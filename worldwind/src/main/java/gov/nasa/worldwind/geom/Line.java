@@ -52,6 +52,47 @@ public class Line {
     }
 
     /**
+     * Constructs a line with the origin and direction from a specified line.
+     *
+     * @param line the line specifying origin and direction
+     *
+     * @throws IllegalArgumentException If the line is null
+     */
+    public Line(Line line) {
+        if (line == null) {
+            throw new IllegalArgumentException(Logger.logMessage(
+                Logger.ERROR, "Line", "constructor", "missingLine"));
+        }
+
+        this.origin.set(line.origin);
+        this.direction.set(line.direction);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Line line = (Line) o;
+
+        if (!origin.equals(line.origin)) return false;
+        return direction.equals(line.direction);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = origin.hashCode();
+        result = 31 * result + direction.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "origin=[" + origin + "], direction=[" + direction + ']';
+    }
+
+    /**
      * Sets this line to a specified origin and direction.
      *
      * @param origin    the line's new origin
