@@ -16,12 +16,12 @@ public class LevelSet {
     /**
      * The sector spanned by this level set.
      */
-    public final Sector sector;
+    public final Sector sector = new Sector();
 
     /**
-     * The geographic width and height in degrees of the lowest resolution (level 0) tiles in this level set.
+     * The geographic width and height in degrees of tiles in the first level (lowest resolution) of this level set.
      */
-    public final double topLevelDelta;
+    public final double firstLevelDelta;
 
     /**
      * The width in pixels of images associated with tiles in this level set, or the number of sample points in the
@@ -41,28 +41,39 @@ public class LevelSet {
     protected final Level[] levels;
 
     /**
+     * Constructs an empty level set with no levels. The methods <code>level</code>, <code>firstLevel</code> and
+     * <code>lastLevel</code> always return null.
+     */
+    public LevelSet() {
+        this.firstLevelDelta = 0;
+        this.tileWidth = 0;
+        this.tileHeight = 0;
+        this.levels = new Level[0];
+    }
+
+    /**
      * Constructs a level set with specified parameters.
      *
-     * @param sector        the sector spanned by this level set
-     * @param topLevelDelta the geographic width and height in degrees of tiles in the lowest resolution level of this
-     *                      level set
-     * @param numLevels     the number of levels in the level set
-     * @param tileWidth     the height in pixels of images associated with tiles in this level set, or the number of
-     *                      sample points in the longitudinal direction of elevation tiles associate with this level
-     *                      set.
-     * @param tileHeight    the height in pixels of images associated with tiles in this level set, or the number of
-     *                      sample points in the latitudinal direction of elevation tiles associate with this level
-     *                      set.
+     * @param sector          the sector spanned by this level set
+     * @param firstLevelDelta the geographic width and height in degrees of tiles in the first level (lowest resolution)
+     *                        of the level set
+     * @param numLevels       the number of levels in the level set
+     * @param tileWidth       the height in pixels of images associated with tiles in this level set, or the number of
+     *                        sample points in the longitudinal direction of elevation tiles associate with this level
+     *                        set
+     * @param tileHeight      the height in pixels of images associated with tiles in this level set, or the number of
+     *                        sample points in the latitudinal direction of elevation tiles associate with this level
+     *                        set
      *
      * @throws IllegalArgumentException If any argument is null, or if any dimension is zero
      */
-    public LevelSet(Sector sector, double topLevelDelta, int numLevels, int tileWidth, int tileHeight) {
+    public LevelSet(Sector sector, double firstLevelDelta, int numLevels, int tileWidth, int tileHeight) {
         if (sector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingSector"));
         }
 
-        if (topLevelDelta <= 0) {
+        if (firstLevelDelta <= 0) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidTileDelta"));
         }
@@ -77,16 +88,62 @@ public class LevelSet {
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidWidthOrHeight"));
         }
 
-        this.sector = sector;
-        this.topLevelDelta = topLevelDelta;
+        this.sector.set(sector);
+        this.firstLevelDelta = firstLevelDelta;
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
         this.levels = new Level[numLevels];
+        this.assembleLevels();
+    }
 
-        for (int levelNumber = 0; levelNumber < numLevels; levelNumber++) {
-            double n = Math.pow(2, levelNumber);
-            double delta = topLevelDelta / n;
-            this.levels[levelNumber] = new Level(this, levelNumber, delta);
+    /**
+     * Constructs a level set with parameters from a specified configuration. The configuration's sector must be
+     * non-null, its first level delta must be positive, its number of levels must be 1 or more, and its tile width
+     * and tile height must be 1 or greater.
+     *
+     * @param config the configuration for this level set
+     *
+     * @throws IllegalArgumentException If the configuration is null, or if any configuration parameter is invalid
+     */
+    public LevelSet(LevelSetConfig config) {
+        if (config == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingConfig"));
+        }
+
+        if (config.sector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingSector"));
+        }
+
+        if (config.firstLevelDelta <= 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidTileDelta"));
+        }
+
+        if (config.numLevels < 1) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidNumLevels"));
+        }
+
+        if (config.tileWidth < 1 || config.tileHeight < 1) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidWidthOrHeight"));
+        }
+
+        this.sector.set(config.sector);
+        this.firstLevelDelta = config.firstLevelDelta;
+        this.tileWidth = config.tileWidth;
+        this.tileHeight = config.tileHeight;
+        this.levels = new Level[config.numLevels];
+        this.assembleLevels();
+    }
+
+    protected void assembleLevels() {
+        for (int i = 0, len = this.levels.length; i < len; i++) {
+            double n = Math.pow(2, i);
+            double delta = firstLevelDelta / n;
+            this.levels[i] = new Level(this, i, delta);
         }
     }
 
@@ -104,7 +161,7 @@ public class LevelSet {
      *
      * @param levelNumber the number of the desired level
      *
-     * @return the requested level, or null if the level does not exist.
+     * @return the requested level, or null if the level does not exist
      */
     public Level level(int levelNumber) {
         if (levelNumber < 0 || levelNumber >= this.levels.length) {
@@ -115,20 +172,20 @@ public class LevelSet {
     }
 
     /**
-     * Returns the first (lowest resolution) level of this level set.
+     * Returns the first level (lowest resolution) of this level set.
      *
-     * @return the level of lowest resolution
+     * @return the level of lowest resolution, or null if this level set is empty
      */
     public Level firstLevel() {
-        return this.levels[0];
+        return this.levels.length > 0 ? this.levels[0] : null;
     }
 
     /**
-     * Returns the last (highest resolution) level of this level set.
+     * Returns the last level (highest resolution) of this level set.
      *
-     * @return the level of highest resolution
+     * @return the level of highest resolution, or null if this level set is empty
      */
     public Level lastLevel() {
-        return this.levels[this.levels.length - 1];
+        return this.levels.length > 0 ? this.levels[this.levels.length - 1] : null;
     }
 }
