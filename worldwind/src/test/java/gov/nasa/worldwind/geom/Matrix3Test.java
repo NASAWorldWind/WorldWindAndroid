@@ -603,6 +603,7 @@ public class Matrix3Test {
         assertSame("fluent api result", m3, m1);
     }
 
+    @Ignore("invert is not implemented at time of test")
     @Test
     public void testInvert() throws Exception {
         Matrix3 m1 = new Matrix3(   // matrix to be tested/inverted
@@ -618,6 +619,7 @@ public class Matrix3Test {
         assertSame("fluent api result", m2, m1);
     }
 
+    @Ignore("invertMatrix was not implemented at time of test")
     @Test
     public void testInvertMatrix() throws Exception {
         Matrix3 m1 = new Matrix3();

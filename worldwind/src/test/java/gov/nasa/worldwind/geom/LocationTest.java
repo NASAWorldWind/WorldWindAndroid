@@ -563,8 +563,8 @@ public class LocationTest {
      */
     @Test
     public void testInterpolateAlongPath_Coincident() throws Exception {
-        Location start = Location.fromRadians(0.592539, -2.066470);
-        Location end = Location.fromDegrees(34.2, -119.2);
+        Location start = Location.fromDegrees(34.2, -119.2);
+        Location end = new Location(start);
         double amount = 0.25; // percent
 
         Location result = start.interpolateAlongPath(end, WorldWind.LINEAR, amount, new Location());
