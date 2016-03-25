@@ -19,7 +19,7 @@ public class LevelSetConfig {
     public final Sector sector = new Sector().setFullSphere();
 
     /**
-     * The geographic width and height in degrees of tiles in the first level (lowest resolution) of the level set
+     * The geographic width and height in degrees of tiles in the first level (lowest resolution) of the level set.
      */
     public double firstLevelDelta = 90;
 
@@ -72,5 +72,26 @@ public class LevelSetConfig {
         this.numLevels = numLevels;
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
+    }
+
+    /**
+     * Returns the number of levels necessary to achieve the specified resolution. The result is correct for this
+     * configuration's current firstLevelDelta, tileWidth and tileHeight, and is invalid if any of these values change.
+     *
+     * @param resolution the desired resolution in pixels per degree
+     *
+     * @return the number of levels
+     *
+     * @throws IllegalArgumentException If the resolution is not positive
+     */
+    public int numLevelsForResolution(double resolution) {
+        if (resolution <= 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LevelSetConfig", "setNumLevelsForResolution", "invalidResolution"));
+        }
+
+        int w = Math.min(this.tileWidth, this.tileHeight);
+        double level = Math.log(resolution * this.firstLevelDelta / w) / Math.log(2);
+        return (int) Math.ceil(level) + 1;
     }
 }

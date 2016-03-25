@@ -41,8 +41,8 @@ public class LevelSet {
     protected final Level[] levels;
 
     /**
-     * Constructs an empty level set with no levels. The methods <code>level</code>, <code>firstLevel</code> and
-     * <code>lastLevel</code> always return null.
+     * Constructs an empty level set with no levels. The methods <code>level</code>, <code>levelForResolution</code>,
+     * <code>firstLevel</code> and <code>lastLevel</code> always return null.
      */
     public LevelSet() {
         this.firstLevelDelta = 0;
@@ -98,12 +98,12 @@ public class LevelSet {
 
     /**
      * Constructs a level set with parameters from a specified configuration. The configuration's sector must be
-     * non-null, its first level delta must be positive, its number of levels must be 1 or more, and its tile width
-     * and tile height must be 1 or greater.
+     * non-null, its first level delta must be positive, its number of levels must be 1 or more, and its tile width and
+     * tile height must be 1 or greater.
      *
      * @param config the configuration for this level set
      *
-     * @throws IllegalArgumentException If the configuration is null, or if any configuration parameter is invalid
+     * @throws IllegalArgumentException If the configuration is null, or if any configuration value is invalid
      */
     public LevelSet(LevelSetConfig config) {
         if (config == null) {
@@ -168,6 +168,36 @@ public class LevelSet {
             return null;
         } else {
             return this.levels[levelNumber];
+        }
+    }
+
+    /**
+     * Returns the level that most closely approximates the specified resolution.
+     *
+     * @param resolution the desired resolution in pixels per degree
+     *
+     * @return the level for the specified resolution, or null if this level set is empty
+     *
+     * @throws IllegalArgumentException If the resolution is not positive
+     */
+    public Level levelForResolution(double resolution) {
+        if (resolution <= 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LevelSetConfig", "levelForResolution", "invalidResolution"));
+        }
+
+        if (this.levels.length == 0) {
+            return null; // this level set is empty
+        }
+
+        int w = Math.min(this.tileWidth, this.tileHeight); // minimum dimension
+        double level = Math.log(resolution * this.firstLevelDelta / w) / Math.log(2); // fractional level number
+        int levelNumber = (int) Math.round(level); // nearest neighbor level
+
+        if (levelNumber < this.levels.length) {
+            return this.levels[levelNumber]; // return the nearest neighbor level
+        } else {
+            return this.levels[this.levels.length - 1]; // return the last level; unable to match the resolution
         }
     }
 

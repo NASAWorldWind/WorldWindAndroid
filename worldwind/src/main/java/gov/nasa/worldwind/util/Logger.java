@@ -33,6 +33,7 @@ public class Logger {
         messageTable.put("invalidIndex", "The index is invalid");
         messageTable.put("invalidNumLevels", "The number of levels is invalid");
         messageTable.put("invalidRadius", "The radius is invalid");
+        messageTable.put("invalidResolution", "The resolution is invalid");
         messageTable.put("invalidResource", "The resource is invalid");
         messageTable.put("invalidSize", "The size is invalid");
         messageTable.put("invalidStride", "The stride is invalid");
