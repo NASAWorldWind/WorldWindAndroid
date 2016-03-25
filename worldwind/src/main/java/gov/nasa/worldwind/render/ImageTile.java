@@ -12,7 +12,7 @@ import gov.nasa.worldwind.util.Tile;
 
 public class ImageTile extends Tile implements SurfaceTile {
 
-    protected Object imageSource; // TODO imageSource
+    protected String imagePath;
 
     protected ImageTile fallbackTile;
 
@@ -20,12 +20,12 @@ public class ImageTile extends Tile implements SurfaceTile {
         super(sector, level, row, column);
     }
 
-    public Object getImageSource() {
-        return imageSource;
+    public String getImagePath() {
+        return imagePath;
     }
 
-    public void setImageSource(Object imageSource) {
-        this.imageSource = imageSource;
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 
     public ImageTile getFallbackTile() {
@@ -43,36 +43,30 @@ public class ImageTile extends Tile implements SurfaceTile {
 
     @Override
     public boolean bind(DrawContext dc, int texUnit) {
-        if (this.imageSource == null) {
-            return false;
+        if (this.imagePath != null) {
+            //GpuTexture texture = dc.getGpuObjectCache().retrieveTexture(dc, this.imagePath);
+            //if (texture != null) {
+            //    dc.bindTexture(texUnit, texture);
+            //    return true;
+            //}
         }
 
-        GpuTexture texture = null; //dc.getGpuObjectCache().retrieveTexture(dc, this.imageSource); // TODO
-        if (texture != null) {
-            dc.bindTexture(texUnit, texture);
-            return true;
-        } else if (this.fallbackTile != null) {
-            return this.fallbackTile.bind(dc, texUnit);
-        }
-
-        return false;
+        return (this.fallbackTile != null) && this.fallbackTile.bind(dc, texUnit);
     }
 
     @Override
     public void applyTexCoordTransform(DrawContext dc, Matrix3 result) {
-        if (this.imageSource == null) {
-            return;
+        if (this.imagePath != null) {
+            //GpuTexture texture = (GpuTexture) dc.getGpuObjectCache().get(this.imagePath);
+            //if (texture != null) {
+            //    texture.applyTexCoordTransform(result); // apply this surface tile's tex coord transform
+            //    return;
+            //}
         }
 
-        GpuTexture texture = (GpuTexture) dc.getGpuObjectCache().get(this.imageSource);
-        if (texture != null) {
-            // Apply this surface tile's tex coord transform.
-            texture.applyTexCoordTransform(result);
-        } else if (this.fallbackTile != null) {
-            // Apply the fallback tile's tex coord transform.
-            this.fallbackTile.applyTexCoordTransform(dc, result);
-            // Transform from this tile's coordinates to the fallback tile's coordinates.
-            result.multiplyByTileTransform(this.sector, this.fallbackTile.sector);
+        if (this.fallbackTile != null) {
+            this.fallbackTile.applyTexCoordTransform(dc, result); // apply the fallback tile's tex coord transform
+            result.multiplyByTileTransform(this.sector, this.fallbackTile.sector); // transform to fallback tile coords
         }
     }
 }
