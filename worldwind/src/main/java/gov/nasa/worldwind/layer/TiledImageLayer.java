@@ -21,65 +21,55 @@ import gov.nasa.worldwind.util.TileUrlFactory;
 
 public class TiledImageLayer extends AbstractLayer implements TileFactory {
 
-    protected static final int DEFAULT_DETAIL_CONTROL = 80;
-
-    protected static final int DEFAULT_TILE_CACHE_CAPACITY = 600; // capacity for 600 tiles
-
-    protected LevelSet levels;
+    protected LevelSet levelSet = new LevelSet(); // empty level set
 
     protected TileUrlFactory tileUrlFactory;
 
     protected String imageFormat;
 
-    protected double detailControl = DEFAULT_DETAIL_CONTROL;
-
-    protected LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(DEFAULT_TILE_CACHE_CAPACITY);
+    protected double detailControl = 4;
 
     protected List<Tile> topLevelTiles = new ArrayList<>();
 
     protected List<ImageTile> currentTiles = new ArrayList<>();
 
-    public TiledImageLayer(Sector sector, double topLevelDelta, int numLevels, int tileWidth, int tileHeight) {
-        super("Tiled Image Layer");
+    protected LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(600); // capacity for 600 tiles
 
-        if (sector == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "TiledImageLayer", "constructor", "missingSector"));
-        }
-
-        if (topLevelDelta <= 0) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "TiledImageLayer", "constructor", "invalidTileDelta"));
-        }
-
-        if (numLevels < 1) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "TiledImageLayer", "constructor", "invalidNumLevels"));
-        }
-
-        if (tileWidth < 1 || tileHeight < 1) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "TiledImageLayer", "constructor", "invalidWidthOrHeight"));
-        }
-
-        this.levels = new LevelSet(sector, topLevelDelta, numLevels, tileWidth, tileHeight);
+    public TiledImageLayer(String displayName) {
+        super(displayName);
         this.setPickEnabled(false);
     }
 
-    public TileUrlFactory getTileUrlFactory() {
+    public LevelSet getLevelSet() {
+        return this.levelSet;
+    }
+
+    public void setLevelSet(LevelSet levelSet) {
+        if (levelSet == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "TiledImageLayer", "setLevelSet", "missingLevelSet"));
+        }
+
+        this.levelSet = levelSet;
+        this.invalidateTiles();
+    }
+
+    protected TileUrlFactory getTileUrlFactory() {
         return tileUrlFactory;
     }
 
-    public void setTileUrlFactory(TileUrlFactory tileUrlFactory) {
+    protected void setTileUrlFactory(TileUrlFactory tileUrlFactory) {
         this.tileUrlFactory = tileUrlFactory;
+        this.invalidateTiles();
     }
 
-    public String getImageFormat() {
+    protected String getImageFormat() {
         return imageFormat;
     }
 
-    public void setImageFormat(String imageFormat) {
+    protected void setImageFormat(String imageFormat) {
         this.imageFormat = imageFormat;
+        this.invalidateTiles();
     }
 
     public double getDetailControl() {
@@ -92,14 +82,14 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
 
     @Override
     protected void doRender(DrawContext dc) {
-        if (dc.getTerrain().getTileCount() > 0) {
-            return;
+        if (dc.getTerrain().getTileCount() == 0) {
+            return; // no terrain surface to render on
         }
 
         this.assembleTiles(dc);
 
         if (this.currentTiles.size() == 0) {
-            return;
+            return; // no tiles to render
         }
 
         dc.getSurfaceTileRenderer().renderTiles(dc, this.currentTiles);
@@ -109,15 +99,15 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
     public Tile createTile(Sector sector, Level level, int row, int column) {
         ImageTile tile = new ImageTile(sector, level, row, column);
 
-        if (this.tileUrlFactory != null) {
-            tile.setImageSource(this.tileUrlFactory.urlForTile(tile, this.imageFormat));
+        if (this.tileUrlFactory != null && this.imageFormat != null) {
+            tile.setImagePath(this.tileUrlFactory.urlForTile(tile, this.imageFormat));
         }
 
         return tile;
     }
 
     protected void assembleTiles(DrawContext dc) {
-        this.topLevelTiles.clear();
+        this.currentTiles.clear();
 
         if (this.topLevelTiles.isEmpty()) {
             this.createTopLevelTiles();
@@ -129,7 +119,10 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
     }
 
     protected void createTopLevelTiles() {
-        Tile.assembleTilesForLevel(this.levels.firstLevel(), this, this.topLevelTiles);
+        Level firstLevel = this.levelSet.firstLevel();
+        if (firstLevel != null) {
+            Tile.assembleTilesForLevel(firstLevel, this, this.topLevelTiles);
+        }
     }
 
     protected void addTileOrDescendants(DrawContext dc, ImageTile tile) {
@@ -149,5 +142,11 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
 
     protected void addTile(DrawContext dc, ImageTile tile) {
         this.currentTiles.add(tile);
+    }
+
+    protected void invalidateTiles() {
+        this.topLevelTiles.clear();
+        this.currentTiles.clear();
+        this.tileCache.clear();
     }
 }
