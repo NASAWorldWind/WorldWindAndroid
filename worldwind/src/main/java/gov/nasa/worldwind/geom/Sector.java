@@ -116,6 +116,11 @@ public class Sector {
         return result;
     }
 
+    @Override
+    public String toString() {
+        return "minLatitude=" + minLatitude + ", maxLatitude=" + maxLatitude + ", minLongitude=" + minLongitude + ", maxLongitude=" + maxLongitude;
+    }
+
     /**
      * Indicates whether this sector has non-zero width and height.
      *
