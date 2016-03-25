@@ -32,24 +32,88 @@ public class BoundingBoxTest {
 
     @Test
     public void testConstructor() throws Exception {
-
         BoundingBox bb = new BoundingBox();
 
         assertNotNull(bb);
-
     }
 
     @Test
     public void testSetToSector() throws Exception {
-        Sector sector = Sector.fromDegrees(-0.5, -0.5, 1d, 1d);
+        BoundingBox boundingBox = new BoundingBox();
+        double centerLat = 0;
+        double centerLon = 0;
         Globe globe = new GlobeWgs84();
+        // Create a very, very small sector.
+        Sector smallSector = sectorFromCentroid(centerLat, centerLon, 0.0001, 0.0001);
+        // Create a large sector.
+        Sector largeSector = sectorFromCentroid(centerLat, centerLon, 1d, 1d);
+        // Create a point coincident with the sectors' centroids
+        Vec3 point = globe.geographicToCartesian(centerLat, centerLon, 0, new Vec3());
+
+        // Set the bounding box to the small sector with no elevation.
+        // We expect the center of the bounding box to be very close to our point and the
+        // z value should be half of the min/max elevation delta.
+        double minElevation = 0;
+        double maxElevation = 100;
+        boundingBox.setToSector(smallSector, globe, minElevation, maxElevation);
+
+        assertEquals("small center x", point.x, boundingBox.center.x, 1e-1);
+        assertEquals("small center y", point.y, boundingBox.center.y, 1e-1);
+        assertEquals("small center z", point.z + maxElevation / 2, boundingBox.center.z, 1e-1);
+
+        // Set the bounding box to the large sector with no elevation.
+        // We expect the center x,y of the bounding box to be close to the point
+        // whereas the z value will be less due to the curvature of the sector's surface.
+        minElevation = 0;
+        maxElevation = 0;
+        boundingBox.setToSector(largeSector, globe, minElevation, maxElevation);
+
+        assertEquals("large center x", point.x, boundingBox.center.x, 1e-1);
+        assertEquals("large center y", point.y, boundingBox.center.y, 1e-1);
+        assertEquals("large center z", point.z, boundingBox.center.z, 300);
+    }
+
+    @Test
+    public void testIntersectsFrustum() throws Exception {
+        BoundingBox boundingBox = new BoundingBox();
+        Globe globe = new GlobeWgs84();
+        double radius = globe.getEquatorialRadius();
         double minElevation = 0;
         double maxElevation = 1000;
-        BoundingBox bb = new BoundingBox();
+        Sector sector = Sector.fromDegrees(-0.5, -0.5, 1d, 1d);
+        boundingBox.setToSector(sector, globe, minElevation, maxElevation);
 
-        bb.setToSector(sector, globe, minElevation, maxElevation);
-
+        // TODO: create and transform a frustum compatible with modelView
         fail("The test case is a stub.");
+    }
 
+    @Test
+    public void testDistanceTo() throws Exception {
+        BoundingBox boundingBox = new BoundingBox();
+        Globe globe = new GlobeWgs84();
+        double radius = globe.getEquatorialRadius();
+        double minElevation = 0;
+        double maxElevation = 1000;
+        Sector sector = Sector.fromDegrees(-0.5, -0.5, 1d, 1d);
+        boundingBox.setToSector(sector, globe, minElevation, maxElevation);
+        Vec3 point = globe.geographicToCartesian(0, 0, 0, new Vec3());
+
+        double result = boundingBox.distanceTo(point);
+
+        assertEquals(boundingBox.center.z - radius, result, 1e-3);
+    }
+
+    /**
+     * Creates Sector with a centroid set to the specified latitude and longitude.
+     *
+     * @param centroidLat
+     * @param centroidLon
+     * @param deltaLat
+     * @param deltaLon
+     *
+     * @return
+     */
+    private static Sector sectorFromCentroid(double centroidLat, double centroidLon, double deltaLat, double deltaLon) {
+        return Sector.fromDegrees(centroidLat - deltaLat / 2, centroidLon - deltaLon / 2, deltaLat, deltaLon);
     }
 }

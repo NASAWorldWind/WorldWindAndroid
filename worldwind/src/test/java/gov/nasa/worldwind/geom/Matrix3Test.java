@@ -95,7 +95,7 @@ public class Matrix3Test {
     public void testToString() throws Exception {
         String string = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d).toString();
 
-        assertTrue("all elements in proper order", string.contains("11.0, 12.0, 13.0, 21.0, 22.0, 23.0, 31.0, 32.0, 33.0"));
+        assertTrue("all elements in proper order", string.contains("[11.0, 12.0, 13.0], [21.0, 22.0, 23.0], [31.0, 32.0, 33.0]"));
     }
 
 
