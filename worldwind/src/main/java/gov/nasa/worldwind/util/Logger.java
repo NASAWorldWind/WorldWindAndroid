@@ -52,6 +52,7 @@ public class Logger {
         messageTable.put("missingLocation", "The location is null");
         messageTable.put("missingLookAt", "The look-at is null");
         messageTable.put("missingMatrix", "The matrix is null");
+        messageTable.put("missingPoint", "The point is null");
         messageTable.put("missingPlane", "The plane is null");
         messageTable.put("missingPosition", "The position is null");
         messageTable.put("missingProjection", "The projection is null");
