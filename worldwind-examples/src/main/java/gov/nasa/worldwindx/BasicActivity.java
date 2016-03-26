@@ -5,10 +5,11 @@ import android.support.v7.app.AppCompatActivity;
 
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.layer.BlueMarbleBackgroundLayer;
+import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
 import gov.nasa.worldwind.layer.BlueMarbleLayer;
 import gov.nasa.worldwindx.layer.AtmosphereLayer;
 
-public class BasicWorldWindActivity extends AppCompatActivity {
+public class BasicActivity extends AppCompatActivity {
 
     protected WorldWindow wwd;
 
@@ -21,9 +22,13 @@ public class BasicWorldWindActivity extends AppCompatActivity {
         this.setContentView(this.wwd);
 
         // Setup the World Window's layers.
-        this.wwd.getLayers().addLayer(new BlueMarbleBackgroundLayer());
+        this.wwd.getLayers().addLayer(new BlueMarbleBackgroundLayer(this));
         this.wwd.getLayers().addLayer(new BlueMarbleLayer());
+        this.wwd.getLayers().addLayer(new BlueMarbleLandsatLayer());
         this.wwd.getLayers().addLayer(new AtmosphereLayer());
+
+        // Configure the Blue Marble & Landsat layer to appear after zooming in.
+        this.wwd.getLayers().getLayer(2).setMaxActiveAltitude(1.0e6);
     }
 
     @Override
