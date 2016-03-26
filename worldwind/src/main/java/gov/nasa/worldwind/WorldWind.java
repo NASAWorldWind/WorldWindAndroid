@@ -46,17 +46,6 @@ public class WorldWind {
     public static final int CLAMP_TO_GROUND = 1;
 
     /**
-     * Altitude mode constant indicating an altitude relative to the terrain. The altitude indicates height above the
-     * terrain directly beneath the position's latitude and longitude.
-     */
-    public static final int RELATIVE_TO_GROUND = 2;
-
-    /**
-     * Notification constant requesting that World Window instances render a frame.
-     */
-    public static final String REQUEST_RENDER = "gov.nasa.worldwind.RequestRender";
-
-    /**
      * The ENDED gesture recognizer state. Continuous gesture recognizers transition to this state from either the BEGAN
      * state or the CHANGED state when the current input no longer represents the gesture.
      */
@@ -89,6 +78,17 @@ public class WorldWind {
      * state when the gesture is recognized.
      */
     public static final int RECOGNIZED = 2;
+
+    /**
+     * Altitude mode constant indicating an altitude relative to the terrain. The altitude indicates height above the
+     * terrain directly beneath the position's latitude and longitude.
+     */
+    public static final int RELATIVE_TO_GROUND = 2;
+
+    /**
+     * Notification constant requesting that World Window instances render a frame.
+     */
+    public static final String REQUEST_RENDER = "gov.nasa.worldwind.RequestRender";
 
     /**
      * Path type constant indicating a line of constant bearing between two locations.
