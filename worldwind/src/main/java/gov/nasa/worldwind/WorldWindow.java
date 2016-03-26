@@ -14,6 +14,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -34,12 +35,13 @@ import gov.nasa.worldwind.render.FrameStatistics;
 import gov.nasa.worldwind.render.GpuObjectCache;
 import gov.nasa.worldwind.render.SurfaceTileRenderer;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.MessageListener;
 
 /**
  * Provides a World Wind window that implements a virtual globe inside of the Android view hierarchy. By default, World
  * Window is configured to display an ellipsoidal globe using the WGS 84 reference values.
  */
-public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer {
+public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer, MessageListener {
 
     protected static final int DEFAULT_MEMORY_CLASS = 16;
 
@@ -126,6 +128,9 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.setEGLContextClientVersion(2); // must be called before setRenderer
         this.setRenderer(this);
         this.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY); // must be called after setRenderer
+
+        // Set up to receive broadcast messages from World Wind's message center.
+        WorldWind.messageService().addListener(this);
     }
 
     /**
@@ -310,7 +315,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         // Propagate render requests submitted during rendering to the WorldWindow. The draw context provides a layer of
         // indirection that insulates rendering code from establishing a dependency on a specific WorldWindow.
         if (this.dc.isRenderRequested()) {
-            this.requestRender();
+            this.requestRender(); // inherited from GLSurfaceView
         }
     }
 
@@ -327,5 +332,12 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.dc.setViewport(this.viewport);
         this.dc.setGpuObjectCache(this.gpuObjectCache);
         this.dc.setSurfaceTileRenderer(this.surfaceTileRenderer);
+    }
+
+    @Override
+    public void onMessage(String name, Object sender, Map<Object, Object> userProperties) {
+        if (name.equals(WorldWind.REQUEST_RENDER)) {
+            this.requestRender(); // inherited from GLSurfaceView; may be called on any thread
+        }
     }
 }
