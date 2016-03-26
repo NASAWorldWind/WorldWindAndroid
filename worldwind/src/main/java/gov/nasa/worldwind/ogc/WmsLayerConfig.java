@@ -18,7 +18,7 @@ public class WmsLayerConfig {
     /**
      * The WMS protocol version.
      */
-    public String wmsVersion;
+    public String wmsVersion = "1.3.0";
 
     /**
      * The comma-separated list of WMS layer names.
@@ -33,12 +33,12 @@ public class WmsLayerConfig {
     /**
      * The coordinate reference system to use when requesting layers.
      */
-    public String coordinateSystem;
+    public String coordinateSystem = "EPSG:4326";
 
     /**
      * Indicates whether Get Map requests should include transparency.
      */
-    public boolean transparent;
+    public boolean transparent = true;
 
     /**
      * The time parameter to include in Get Map requests.
