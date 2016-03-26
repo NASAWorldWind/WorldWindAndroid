@@ -13,22 +13,19 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
 
-import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.layer.AbstractLayer;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.render.GpuTexture;
-import gov.nasa.worldwindx.R;
 import gov.nasa.worldwindx.render.AtmosphereProgram;
 import gov.nasa.worldwindx.render.GroundProgram;
 import gov.nasa.worldwindx.render.SkyProgram;
 
 public class AtmosphereLayer extends AbstractLayer {
 
-    protected int nightImageId = R.drawable.dnb_land_ocean_ice_2012;
+    //protected int nightImageId = R.drawable.dnb_land_ocean_ice_2012;
 
     protected int skyWidth = 128;
 
@@ -42,7 +39,7 @@ public class AtmosphereLayer extends AbstractLayer {
 
     protected Matrix4 mvpMatrix = new Matrix4();
 
-    protected Matrix3 texCoordMatrix = new Matrix3();
+    //protected Matrix3 texCoordMatrix = new Matrix3();
 
     protected Sector fullSphereSector = new Sector().setFullSphere();
 
@@ -77,12 +74,13 @@ public class AtmosphereLayer extends AbstractLayer {
         program.loadUniforms(dc);
 
         // Attempt to use this layer's texture.
-        GpuTexture texture = dc.getGpuObjectCache().retrieveTexture(dc, this.nightImageId);
-        if (texture != null) {
-            // Bind the texture.
-            program.loadTextureSampler(0); // GL_TEXTURE0
-            dc.bindTexture(GLES20.GL_TEXTURE0, texture);
-        }
+        // TODO handle missing texture correctly
+        //GpuTexture texture = dc.getGpuObjectCache().retrieveTexture(dc, this.nightImageId);
+        //if (texture != null) {
+        //    // Bind the texture.
+        //    program.loadTextureSampler(0); // GL_TEXTURE0
+        //    dc.bindTexture(GLES20.GL_TEXTURE0, texture);
+        //}
 
         // Get the draw context's tessellated terrain and modelview projection matrix.
         Terrain terrain = dc.getTerrain();
@@ -101,12 +99,13 @@ public class AtmosphereLayer extends AbstractLayer {
             program.loadVertexOrigin(terrainOrigin);
 
             // Use the texture's transform matrix.
-            if (texture != null) {
-                this.texCoordMatrix.setToIdentity();
-                texture.applyTexCoordTransform(this.texCoordMatrix);
-                terrain.applyTexCoordTransform(idx, this.fullSphereSector, this.texCoordMatrix);
-                program.loadTexCoordMatrix(this.texCoordMatrix);
-            }
+            // TODO handle missing texture correctly
+            //if (texture != null) {
+            //    this.texCoordMatrix.setToIdentity();
+            //    texture.applyTexCoordTransform(this.texCoordMatrix);
+            //    terrain.applyTexCoordTransform(idx, this.fullSphereSector, this.texCoordMatrix);
+            //    program.loadTexCoordMatrix(this.texCoordMatrix);
+            //}
 
             // Use the tile's vertex point attribute.
             terrain.useVertexPointAttrib(dc, idx, 0);
@@ -117,7 +116,7 @@ public class AtmosphereLayer extends AbstractLayer {
             terrain.drawTileTriangles(dc, idx);
 
             // Draw the tile, adding the current fragment color to the program's primary color.
-            program.loadFragColor(GroundProgram.FRAGCOLOR_PRIMARY_TEX_BLEND);
+            program.loadFragColor(GroundProgram.FRAGCOLOR_PRIMARY); // TODO handle missing texture correctly
             GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE);
             terrain.drawTileTriangles(dc, idx);
         }

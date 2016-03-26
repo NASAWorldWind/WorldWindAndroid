@@ -15,6 +15,7 @@ import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.GpuProgram;
 import gov.nasa.worldwind.util.Logger;
 
+// TODO Correctly compute the atmosphere color for eye positions beneath the atmosphere
 // TODO Merge GroundProgram and SkyProgram into AtmosphereProgram, including the GLSL sources
 // TODO Test the effect of working in local coordinates (reference point) on the GLSL atmosphere programs
 public class AtmosphereProgram extends GpuProgram {
