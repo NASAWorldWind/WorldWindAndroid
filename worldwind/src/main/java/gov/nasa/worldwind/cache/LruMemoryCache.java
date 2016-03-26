@@ -109,8 +109,18 @@ public class LruMemoryCache<K, V> { // TODO move to util
 
         Entry<K, V> newEntry = new Entry<>(key, value, size, ++this.lastUsedSequence);
         Entry<K, V> oldEntry = this.entries.put(key, newEntry);
-        this.entryAdded(newEntry);
-        return (oldEntry != null) ? this.entryRemoved(oldEntry) : null;
+        this.usedCapacity += newEntry.size;
+
+        if (oldEntry != null) {
+            this.usedCapacity -= oldEntry.size;
+
+            if (newEntry.value != oldEntry.value) {
+                this.entryRemoved(oldEntry.key, oldEntry.value);
+                return oldEntry.value;
+            }
+        }
+
+        return null;
     }
 
     public V remove(K key) {
@@ -120,7 +130,13 @@ public class LruMemoryCache<K, V> { // TODO move to util
         }
 
         Entry<K, V> entry = this.entries.remove(key);
-        return (entry != null) ? this.entryRemoved(entry) : null;
+        if (entry != null) {
+            this.usedCapacity -= entry.size;
+            this.entryRemoved(entry.key, entry.value);
+            return entry.value;
+        } else {
+            return null;
+        }
     }
 
     public boolean containsKey(K key) {
@@ -147,20 +163,15 @@ public class LruMemoryCache<K, V> { // TODO move to util
         for (Entry<K, V> entry : sortedEntries) {
             if (this.usedCapacity > this.lowWater || (this.capacity - this.usedCapacity) < spaceRequired) {
                 this.entries.remove(entry.key);
-                this.entryRemoved(entry);
+                this.usedCapacity -= entry.size;
+                this.entryRemoved(entry.key, entry.value);
             } else {
                 break;
             }
         }
     }
 
-    protected void entryAdded(Entry<K, V> entry) {
-        this.usedCapacity += entry.size;
-    }
-
-    protected V entryRemoved(Entry<K, V> entry) {
-        this.usedCapacity -= entry.size;
-        return entry.value;
+    protected void entryRemoved(K key, V value) {
     }
 
     protected static class Entry<K, V> {
