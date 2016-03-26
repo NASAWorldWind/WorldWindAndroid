@@ -12,12 +12,12 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import gov.nasa.worldwind.cache.LruMemoryCache;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.LruMemoryCache;
 import gov.nasa.worldwind.util.Tile;
 import gov.nasa.worldwind.util.TileFactory;
 

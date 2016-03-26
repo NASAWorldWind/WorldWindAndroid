@@ -7,7 +7,6 @@ package gov.nasa.worldwind.util;
 
 import java.util.Collection;
 
-import gov.nasa.worldwind.cache.LruMemoryCache;
 import gov.nasa.worldwind.geom.BoundingBox;
 import gov.nasa.worldwind.geom.Frustum;
 import gov.nasa.worldwind.geom.Sector;

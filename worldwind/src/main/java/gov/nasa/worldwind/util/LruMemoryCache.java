@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-package gov.nasa.worldwind.cache;
+package gov.nasa.worldwind.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,9 +11,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
-import gov.nasa.worldwind.util.Logger;
-
-public class LruMemoryCache<K, V> { // TODO move to util
+public class LruMemoryCache<K, V> {
 
     protected static long keyPool; // overflows after generating quintillions of cache keys
 

@@ -7,8 +7,8 @@ package gov.nasa.worldwind.render;
 
 import java.lang.reflect.Constructor;
 
-import gov.nasa.worldwind.cache.LruMemoryCache;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.LruMemoryCache;
 
 public class GpuObjectCache extends LruMemoryCache<Object, GpuObject> {
 
