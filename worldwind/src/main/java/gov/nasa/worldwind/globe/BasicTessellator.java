@@ -130,6 +130,7 @@ public class BasicTessellator implements Tessellator, TileFactory {
             this.currentTerrain.setTileTexCoords(buffer);
         }
 
+        // TODO put terrain tri-strip and line indices in a single buffer, use a Range (add it if needed) to identify the parts
         if (this.currentTerrain.getTileTriStripIndices() == null) {
             ShortBuffer buffer = this.assembleTriStripIndices(numLat, numLon);
             this.currentTerrain.setTileTriStripIndices(buffer);
