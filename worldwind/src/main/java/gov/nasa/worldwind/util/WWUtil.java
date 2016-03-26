@@ -6,29 +6,55 @@
 package gov.nasa.worldwind.util;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.support.annotation.DrawableRes;
 import android.support.annotation.RawRes;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class WWUtil {
 
-    public static Bitmap readResourceAsBitmap(Context context, @DrawableRes int id) { // TODO remove
-        if (context == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WWUtil", "readResourceAsBitmap", "missingContext"));
-
+    /**
+     * Closes a specified Closeable, suppressing any checked exceptions. This has no effect if the closeable is null.
+     *
+     * @param closeable the object to close, may be null in which case this does nothing
+     */
+    public static void closeSilently(Closeable closeable) {
+        if (closeable == null) {
+            return; // silently ignore null
         }
 
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false; // load the bitmap in its native dimensions
+        try {
+            closeable.close();
+        } catch (RuntimeException rethrown) {
+            throw rethrown;
+        } catch (Exception ignored) {
+            // silently ignore checked exceptions
+        }
+    }
 
-        return BitmapFactory.decodeResource(context.getResources(), id, options);
+    /**
+     * Determines whether or not the specified string represents a URL. This returns false if the string is null.
+     *
+     * @param string the string in question
+     *
+     * @return true if the string represents a URL, otherwise false
+     */
+    public static boolean isUrlString(String string) {
+        if (string == null) {
+            return false;
+        }
+
+        try {
+            new URL(string);
+            return true; // no exception; the string is probably a valid URL
+        } catch (MalformedURLException ignored) {
+            return false; // silently ignore the exception
+        }
     }
 
     public static String readResourceAsText(Context context, @RawRes int id) throws IOException {
