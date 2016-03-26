@@ -33,6 +33,8 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
 
     protected List<ImageTile> currentTiles = new ArrayList<>();
 
+    protected ImageTile currentFallbackTile = null;
+
     protected LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(600); // capacity for 600 tiles
 
     public TiledImageLayer(String displayName) {
@@ -93,6 +95,9 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
         }
 
         dc.getSurfaceTileRenderer().renderTiles(dc, this.currentTiles);
+
+        this.currentTiles.clear(); // clear the tile list should there be no more calls to render
+        this.currentFallbackTile = null;
     }
 
     @Override
@@ -100,7 +105,7 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
         ImageTile tile = new ImageTile(sector, level, row, column);
 
         if (this.tileUrlFactory != null && this.imageFormat != null) {
-            tile.setImagePath(this.tileUrlFactory.urlForTile(tile, this.imageFormat));
+            tile.setImageUrl(this.tileUrlFactory.urlForTile(tile, this.imageFormat));
         }
 
         return tile;
@@ -108,6 +113,7 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
 
     protected void assembleTiles(DrawContext dc) {
         this.currentTiles.clear();
+        this.currentFallbackTile = null;
 
         if (this.topLevelTiles.isEmpty()) {
             this.createTopLevelTiles();
@@ -135,12 +141,23 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
             return; // use the tile if it does not need to be subdivided
         }
 
+        ImageTile fallbackTile = null;
+        if (tile.hasTexture(dc)) { // use it as a fallback tile for descendants
+            fallbackTile = this.currentFallbackTile;
+            this.currentFallbackTile = tile;
+        }
+
         for (Tile child : tile.subdivideToCache(this, this.tileCache, 4)) { // each tile has a cached size of 1
             this.addTileOrDescendants(dc, (ImageTile) child); // recursively process the tile's children
+        }
+
+        if (fallbackTile != null) { // restore the last fallback tile
+            this.currentFallbackTile = fallbackTile;
         }
     }
 
     protected void addTile(DrawContext dc, ImageTile tile) {
+        tile.setFallbackTile(tile.hasTexture(dc) ? null : this.currentFallbackTile);
         this.currentTiles.add(tile);
     }
 

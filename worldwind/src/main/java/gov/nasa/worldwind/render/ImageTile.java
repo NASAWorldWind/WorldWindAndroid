@@ -12,20 +12,20 @@ import gov.nasa.worldwind.util.Tile;
 
 public class ImageTile extends Tile implements SurfaceTile {
 
-    protected String imagePath;
+    protected String imageUrl;
 
-    protected ImageTile fallbackTile;
+    protected ImageTile fallbackTile; // TODO this appears to leak memory by keeping references to cached tiles
 
     public ImageTile(Sector sector, Level level, int row, int column) {
         super(sector, level, row, column);
     }
 
-    public String getImagePath() {
-        return imagePath;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public ImageTile getFallbackTile() {
@@ -41,32 +41,44 @@ public class ImageTile extends Tile implements SurfaceTile {
         return this.sector;
     }
 
+    public boolean hasTexture(DrawContext dc) {
+        if (this.imageUrl != null) {
+            GpuTexture texture = (GpuTexture) dc.getGpuObjectCache().get(this.imageUrl);
+            return (texture != null) && texture.hasTexture();
+        }
+
+        return false;
+    }
+
     @Override
     public boolean bind(DrawContext dc, int texUnit) {
-        if (this.imagePath != null) {
-            //GpuTexture texture = dc.getGpuObjectCache().retrieveTexture(dc, this.imagePath);
-            //if (texture != null) {
-            //    dc.bindTexture(texUnit, texture);
-            //    return true;
-            //}
+        if (this.imageUrl != null) {
+            GpuTexture texture = (GpuTexture) dc.getGpuObjectCache().get(this.imageUrl);
+            if (texture == null) {
+                texture = new GpuTexture(dc, this.imageUrl); // adds itself to the GPU object cache
+            }
+            if (texture.bindTexture(dc, texUnit)) {
+                return true;
+            }
         }
 
         return (this.fallbackTile != null) && this.fallbackTile.bind(dc, texUnit);
     }
 
     @Override
-    public void applyTexCoordTransform(DrawContext dc, Matrix3 result) {
-        if (this.imagePath != null) {
-            //GpuTexture texture = (GpuTexture) dc.getGpuObjectCache().get(this.imagePath);
-            //if (texture != null) {
-            //    texture.applyTexCoordTransform(result); // apply this surface tile's tex coord transform
-            //    return;
-            //}
+    public boolean applyTexCoordTransform(DrawContext dc, Matrix3 result) {
+        if (this.imageUrl != null) {
+            GpuTexture texture = (GpuTexture) dc.getGpuObjectCache().get(this.imageUrl);
+            if (texture != null && texture.applyTexCoordTransform(result)) {
+                return true; // use this surface tile's tex coord transform
+            }
         }
 
-        if (this.fallbackTile != null) {
-            this.fallbackTile.applyTexCoordTransform(dc, result); // apply the fallback tile's tex coord transform
-            result.multiplyByTileTransform(this.sector, this.fallbackTile.sector); // transform to fallback tile coords
+        // Use the fallback tile's tex coord transform, adjusted to the fallback image into this tile's sector.
+        if (this.fallbackTile != null && this.fallbackTile.applyTexCoordTransform(dc, result)) {
+            result.multiplyByTileTransform(this.sector, this.fallbackTile.sector);
         }
+
+        return false;
     }
 }

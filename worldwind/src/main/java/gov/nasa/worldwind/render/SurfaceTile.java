@@ -12,7 +12,7 @@ public interface SurfaceTile {
 
     Sector getSector();
 
-    boolean bind(DrawContext dc, int texUnit);
+    boolean bind(DrawContext dc, int texUnit); // TODO rename as bindTexture
 
-    void applyTexCoordTransform(DrawContext dc, Matrix3 result);
+    boolean applyTexCoordTransform(DrawContext dc, Matrix3 result);
 }

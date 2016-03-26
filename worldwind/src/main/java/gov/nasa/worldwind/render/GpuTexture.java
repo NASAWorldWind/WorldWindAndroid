@@ -5,26 +5,216 @@
 
 package gov.nasa.worldwind.render;
 
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.SocketTimeoutException;
+import java.net.URL;
+import java.net.URLConnection;
+
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.Resource;
 import gov.nasa.worldwind.util.WWMath;
+import gov.nasa.worldwind.util.WWUtil;
 
-public class GpuTexture implements GpuObject {
+public class GpuTexture implements GpuObject, Runnable {
+
+    protected final Object imageSource;
 
     protected int textureId;
 
     protected int textureSize;
 
-    public GpuTexture(Bitmap bitmap) { // TODO refactor to accept DrawContext argument
-        if (bitmap == null || bitmap.isRecycled()) {
+    protected volatile boolean disposed;
+
+    protected volatile boolean requested;
+
+    protected volatile Bitmap imageBitmap;
+
+    public GpuTexture(DrawContext dc, Object imageSource) {
+        if (imageSource == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "GpuTexture", "constructor", "invalidBitmap"));
+                Logger.logMessage(Logger.ERROR, "GpuTexture", "constructor", "missingSource"));
         }
 
+        this.imageSource = imageSource;
+        dc.getGpuObjectCache().put(imageSource, this, 1); // cache entry is replaced upon texture load
+    }
+
+    @Override
+    public String toString() {
+        return "GpuTexture{" +
+            "imageSource=" + imageSource +
+            ", textureId=" + textureId +
+            ", textureSize=" + textureSize +
+            ", disposed=" + disposed +
+            ", requested=" + requested +
+            ", imageBitmap=" + imageBitmap +
+            '}';
+    }
+
+    public Object getImageSource() {
+        return imageSource;
+    }
+
+    @Override
+    public int getObjectId() {
+        return textureId;
+    }
+
+    @Override
+    public int getObjectSize() {
+        return textureSize;
+    }
+
+    @Override
+    public void dispose() {
+        synchronized (this) {
+            if (this.textureId != 0) {
+                GLES20.glDeleteTextures(1, new int[]{this.textureId}, 0);
+                this.textureId = 0;
+                this.textureSize = 0;
+            }
+
+            this.imageBitmap = null;
+            this.disposed = true;
+        }
+    }
+
+    public boolean isDisposed() {
+        return this.disposed;
+    }
+
+    public boolean hasTexture() {
+        return (this.textureId != 0) || (this.imageBitmap != null);
+    }
+
+    public boolean bindTexture(DrawContext dc, int texUnit) {
+        if (this.imageBitmap != null) {
+            this.loadImage(this.imageBitmap);
+            this.imageBitmap = null;
+            dc.getGpuObjectCache().put(this.imageSource, this, this.textureSize); // update the GPU cache entry size
+        } else if (!this.requested) {
+            this.requestImage();
+        }
+
+        if (this.textureId != 0) {
+            dc.bindTexture(texUnit, this.textureId);
+        }
+
+        return this.textureId != 0;
+    }
+
+    public boolean applyTexCoordTransform(Matrix3 result) {
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "GpuTexture", "applyTexCoordTransform", "missingResult"));
+        }
+
+        if (this.textureId != 0) {
+            result.multiplyByVerticalFlip();
+        }
+
+        return this.textureId != 0;
+    }
+
+    @Override
+    public void run() {
+        if (this.disposed) { // texture disposed between request initiated and now
+            return;
+        }
+
+        Bitmap bitmap = this.guardedDecodeImage(this.imageSource);
+        if (bitmap == null) {
+            // TODO retry absent resources, they are currently handled but suppressed entirely after the first failure
+            return; // image retrieval failed; the reason is logged in guardedDecodeImage
+        }
+
+        synchronized (this) { // synchronize texture disposal and loading
+            if (!this.disposed) { // texture disposed during guardedDecodeImage
+                this.imageBitmap = bitmap;
+                WorldWind.requestRender();
+            }
+        }
+    }
+
+    protected void requestImage() {
+        this.requested = WorldWind.taskService().offer(this); // suppress duplicate requests if the task was accepted
+    }
+
+    protected Bitmap guardedDecodeImage(Object imageSource) {
+        try {
+
+            Bitmap bitmap = this.decodeImage(imageSource);
+
+            if (bitmap != null) {
+                Logger.log(Logger.INFO, "Image retrieval succeeded \'" + this.imageSource + "\'");
+            } else {
+                Logger.log(Logger.WARN, "Image retrieval failed \'" + this.imageSource + "\'");
+            }
+
+            return bitmap;
+
+        } catch (SocketTimeoutException ignored) { // log socket timeout exceptions while suppressing the stack trace
+            Logger.log(Logger.WARN, "Socket timeout retrieving image \'" + this.imageSource + "\' bytesTransferred=" + ignored.bytesTransferred);
+        } catch (Exception logged) { // log checked exceptions with the entire stack trace
+            Logger.log(Logger.WARN, "Image retrieval failed \'" + this.imageSource + "\' with exception", logged);
+        }
+
+        return null;
+    }
+
+    protected Bitmap decodeImage(Object imageSource) throws IOException {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inScaled = false; // suppress default image scaling; load the image in its native dimensions
+
+        if (imageSource instanceof Resource) {
+            Resource r = (Resource) imageSource;
+            return this.decodeResource(r.context, r.id, options);
+        } else if (imageSource instanceof String && WWUtil.isUrlString((String) imageSource)) {
+            String urlString = (String) imageSource;
+            return this.decodeUrl(urlString, options);
+        } else if (imageSource instanceof String) {
+            String pathName = (String) imageSource;
+            return this.decodeFile(pathName, options);
+        } else {
+            Logger.log(Logger.WARN, "Invalid image source \'" + imageSource + "\'");
+            return null;
+        }
+    }
+
+    protected Bitmap decodeResource(Context context, int id, BitmapFactory.Options options) {
+        return BitmapFactory.decodeResource(context.getResources(), id, options);
+    }
+
+    protected Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
+        return BitmapFactory.decodeFile(pathName, options);
+    }
+
+    protected Bitmap decodeUrl(String urlString, BitmapFactory.Options options) throws IOException {
+        InputStream stream = null;
+        try {
+            // TODO configurable connect and read timeouts
+            URLConnection conn = new URL(urlString).openConnection();
+            conn.setConnectTimeout(3000);
+            conn.setReadTimeout(30000);
+
+            stream = new BufferedInputStream(conn.getInputStream());
+            return BitmapFactory.decodeStream(stream, null, options);
+        } finally {
+            WWUtil.closeSilently(stream);
+        }
+    }
+
+    protected void loadImage(Bitmap bitmap) {
         int[] newTexture = new int[1];
         int[] prevTexture = new int[1];
         boolean isPowerOfTwo = WWMath.isPowerOfTwo(bitmap.getWidth()) && WWMath.isPowerOfTwo(bitmap.getHeight());
@@ -47,33 +237,5 @@ public class GpuTexture implements GpuObject {
 
         this.textureId = newTexture[0];
         this.textureSize = bitmap.getByteCount();
-    }
-
-    @Override
-    public int getObjectId() {
-        return textureId;
-    }
-
-    @Override
-    public int getObjectSize() {
-        return textureSize;
-    }
-
-    @Override
-    public void dispose() {
-        if (this.textureId != 0) {
-            int[] texture = {this.textureId};
-            GLES20.glDeleteTextures(1, texture, 0);
-            this.textureId = 0;
-        }
-    }
-
-    public void applyTexCoordTransform(Matrix3 result) {
-        if (result == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "GpuTexture", "applyTexCoordTransform", "missingResult"));
-        }
-
-        result.multiplyByVerticalFlip();
     }
 }

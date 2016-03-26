@@ -313,7 +313,7 @@ public class DrawContext {
         }
     }
 
-    // TODO overloaded version that accepts an objectId argument
+    // TODO refactor to accept a programId argument
     public void useProgram(GpuProgram program) {
         int objectId = (program != null) ? program.getObjectId() : 0;
 
@@ -323,19 +323,16 @@ public class DrawContext {
         }
     }
 
-    // TODO overloaded version that accepts an objectId argument
-    public void bindTexture(int texUnit, GpuTexture texture) {
-        int texUnitIndex = texUnit - GLES20.GL_TEXTURE0;
-        int objectId = (texture != null) ? texture.getObjectId() : 0;
-
+    public void bindTexture(int texUnit, int textureId) {
         if (this.currentTexUnit != texUnit) {
             this.currentTexUnit = texUnit;
             GLES20.glActiveTexture(texUnit);
         }
 
-        if (this.currentTexId[texUnitIndex] != objectId) {
-            this.currentTexId[texUnitIndex] = objectId;
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, objectId);
+        int texUnitIndex = texUnit - GLES20.GL_TEXTURE0;
+        if (this.currentTexId[texUnitIndex] != textureId) {
+            this.currentTexId[texUnitIndex] = textureId;
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
         }
     }
 
