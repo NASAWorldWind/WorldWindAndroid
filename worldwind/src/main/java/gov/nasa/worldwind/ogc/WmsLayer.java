@@ -24,12 +24,18 @@ import gov.nasa.worldwind.util.Logger;
 public class WmsLayer extends TiledImageLayer {
 
     /**
+     * WMSLayer's default image format: image/png.
+     */
+    protected static final String DEFAULT_IMAGE_FORMAT = "image/png";
+
+    // TODO resolution should be something else, like radians/texel
+
+    /**
      * Constructs an empty Web Map Service (WMS) layer that displays nothing.
      */
     public WmsLayer() {
         super("WMS Layer");
-
-        this.setImageFormat("image/png");
+        this.setImageFormat(DEFAULT_IMAGE_FORMAT); // establish a default image format
     }
 
     /**
@@ -64,6 +70,7 @@ public class WmsLayer extends TiledImageLayer {
         }
 
         this.setConfiguration(sector, resolution, config);
+        this.setImageFormat(DEFAULT_IMAGE_FORMAT); // establish a default image format
     }
 
     /**

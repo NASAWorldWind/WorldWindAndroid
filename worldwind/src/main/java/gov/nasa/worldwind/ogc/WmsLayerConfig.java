@@ -71,4 +71,15 @@ public class WmsLayerConfig {
         this.transparent = transparent;
         this.timeString = timeString;
     }
+
+    /**
+     * Constructs a WMS layer configuration with the minimal values.
+     *
+     * @param serviceAddress the WMS service address
+     * @param layerNames     comma-separated list of WMS layer names
+     */
+    public WmsLayerConfig(String serviceAddress, String layerNames) {
+        this.serviceAddress = serviceAddress;
+        this.layerNames = layerNames;
+    }
 }

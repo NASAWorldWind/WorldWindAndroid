@@ -13,6 +13,10 @@ public class BasicActivity extends AppCompatActivity {
 
     protected WorldWindow wwd;
 
+    public WorldWindow getWorldWindow() {
+        return wwd;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
