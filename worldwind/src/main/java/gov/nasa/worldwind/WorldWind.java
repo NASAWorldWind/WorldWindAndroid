@@ -10,6 +10,9 @@ import android.support.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+import gov.nasa.worldwind.util.MessageService;
+import gov.nasa.worldwind.util.TaskService;
+
 public class WorldWind {
 
     /**
@@ -49,6 +52,11 @@ public class WorldWind {
     public static final int RELATIVE_TO_GROUND = 2;
 
     /**
+     * Notification constant requesting that World Window instances render a frame.
+     */
+    public static final String REQUEST_RENDER = "gov.nasa.worldwind.RequestRender";
+
+    /**
      * The ENDED gesture recognizer state. Continuous gesture recognizers transition to this state from either the BEGAN
      * state or the CHANGED state when the current input no longer represents the gesture.
      */
@@ -86,6 +94,45 @@ public class WorldWind {
      * Path type constant indicating a line of constant bearing between two locations.
      */
     public static final int RHUMB_LINE = 2;
+
+    /**
+     * Provides a global mechanism for broadcasting notifications within the World Wind library and Wordl Wind
+     * applications.
+     */
+    protected static MessageService messageService = new MessageService();
+
+    /**
+     * Provides a global service for exeuting asynchronous tasks within the World Wind library and Wordl Wind
+     * applications.
+     */
+    protected static TaskService taskService = new TaskService();
+
+    /**
+     * Returns a MessageService that provides a mechanism for broadcasting notifications within a World Wind
+     * application.
+     *
+     * @return the default message center
+     */
+    public static MessageService messageService() {
+        return messageService;
+    }
+
+    /**
+     * Returns an Executor that runs tasks on a non-UI/non-GL thread.
+     *
+     * @return an Executor for running asynchronous tasks
+     */
+    public static TaskService taskService() {
+        return taskService;
+    }
+
+    /**
+     * Requests that all World Window instances render a frame. Internally, this dispaches a REQUEST_RENDER message to
+     * the World Wind message center.
+     */
+    public static void requestRender() {
+        messageService.postMessage(REQUEST_RENDER, null, null); // specify null for no sender, no user properties
+    }
 
     /**
      * Altitude mode indicates how World Wind interprets a position's altitude component. Accepted values are {@link
