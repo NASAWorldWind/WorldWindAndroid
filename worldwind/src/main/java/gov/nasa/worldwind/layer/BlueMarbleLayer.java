@@ -11,8 +11,8 @@ import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwind.util.Logger;
 
 /**
- * Displays NASA's Blue Marble next generation imagery at 240 pixels/degree resolution from an OGC Web Map Service
- * (WMS). By default, BlueMarbleLayer is configured to retrieve Blue Marble imagery for May 2004 from the WMS at <a
+ * Displays NASA's Blue Marble next generation imagery at 500m resolution from an OGC Web Map Service (WMS). By default,
+ * BlueMarbleLayer is configured to retrieve imagery for May 2004 from the WMS at <a
  * href="http://worldwind25.arc.nasa.gov/wms?SERVICE=WMS&REQUEST=GetCapabilities">http://worldwind25.arc.nasa.gov/wms</a>.
  * <p/>
  * Information on NASA's Blue Marble next generation imagery can be found at http://earthobservatory.nasa.gov/Features/BlueMarble/
@@ -44,6 +44,9 @@ public class BlueMarbleLayer extends WmsLayer {
         config.wmsVersion = "1.3.0";
         config.layerNames = "BlueMarble-200405";
         config.coordinateSystem = "EPSG:4326";
-        this.setConfiguration(new Sector().setFullSphere(), 240, config);
+        config.transparent = false; // the BlueMarble layer is opaque
+
+        this.setDisplayName("Blue Marble");
+        this.setConfiguration(new Sector().setFullSphere(), 240, config); // 240 pixels/degree
     }
 }
