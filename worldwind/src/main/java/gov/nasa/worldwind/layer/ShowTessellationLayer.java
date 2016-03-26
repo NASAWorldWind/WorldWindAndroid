@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.layer;
 
+import android.opengl.GLES20;
+
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.Terrain;
@@ -34,6 +36,9 @@ public class ShowTessellationLayer extends AbstractLayer {
         program.enableTexture(false);
         program.loadColor(1, 1, 1, 1);
 
+        // Suppress writes to the OpenGL depth buffer.
+        GLES20.glDepthMask(false);
+
         // Get the draw context's tessellated terrain and modelview projection matrix.
         Terrain terrain = dc.getTerrain();
 
@@ -53,5 +58,8 @@ public class ShowTessellationLayer extends AbstractLayer {
             // Draw the terrain tile vertices as lines.
             terrain.drawTileLines(dc, idx);
         }
+
+        // Restore default World Wind OpenGL state.
+        GLES20.glDepthMask(true);
     }
 }
