@@ -13,10 +13,9 @@ uniform sampler2D texSampler;
 varying vec2 texCoord[2];
 
 void main() {
-    /* Return the surface tile's 2D texture color. */
-    gl_FragColor = texture2D(texSampler, texCoord[0]);
-
     /* Modulate the fragment color by a mask that's 1.0 when the fragment is inside the surface tile, and 0.0 otherwise. */
     float texMask = float(all(greaterThanEqual(texCoord[1], zero)) && all(lessThanEqual(texCoord[1], one)));
-    gl_FragColor *= texMask;
+
+    /* Return the surface tile's 2D texture color. */
+    gl_FragColor = texture2D(texSampler, texCoord[0]) * texMask;
 }
