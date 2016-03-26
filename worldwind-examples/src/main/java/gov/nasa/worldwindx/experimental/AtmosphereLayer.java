@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-package gov.nasa.worldwindx.layer;
+package gov.nasa.worldwindx.experimental;
 
 import android.opengl.GLES20;
 
@@ -19,9 +19,6 @@ import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.layer.AbstractLayer;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwindx.render.AtmosphereProgram;
-import gov.nasa.worldwindx.render.GroundProgram;
-import gov.nasa.worldwindx.render.SkyProgram;
 
 public class AtmosphereLayer extends AbstractLayer {
 

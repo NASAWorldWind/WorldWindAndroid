@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-package gov.nasa.worldwindx.render;
+package gov.nasa.worldwindx.experimental;
 
 import android.opengl.GLES20;
 

@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-package gov.nasa.worldwindx.render;
+package gov.nasa.worldwindx.experimental;
 
 import android.opengl.GLES20;
 import android.support.annotation.IntDef;
@@ -21,18 +21,10 @@ import gov.nasa.worldwindx.R;
 public class GroundProgram extends AtmosphereProgram {
 
     public static final int FRAGCOLOR_PRIMARY = 1;
+
     public static final int FRAGCOLOR_SECONDARY = 2;
+
     public static final int FRAGCOLOR_PRIMARY_TEX_BLEND = 3;
-
-    /**
-     * Frag color indicates the atmospheric scattering color components written to the fragment color. Accepted values are {@link
-     * #FRAGCOLOR_PRIMARY}, {@link #FRAGCOLOR_SECONDARY} and {@link #FRAGCOLOR_PRIMARY_TEX_BLEND}.
-     */
-    @IntDef({FRAGCOLOR_PRIMARY, FRAGCOLOR_SECONDARY, FRAGCOLOR_PRIMARY_TEX_BLEND})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface FragColor {
-
-    }
 
     protected int texCoordMatrixId;
 
@@ -83,5 +75,15 @@ public class GroundProgram extends AtmosphereProgram {
 
     public void loadFragColor(@FragColor int fragColor) {
         GLES20.glUniform1i(this.fragColorId, fragColor);
+    }
+
+    /**
+     * Frag color indicates the atmospheric scattering color components written to the fragment color. Accepted values
+     * are {@link #FRAGCOLOR_PRIMARY}, {@link #FRAGCOLOR_SECONDARY} and {@link #FRAGCOLOR_PRIMARY_TEX_BLEND}.
+     */
+    @IntDef({FRAGCOLOR_PRIMARY, FRAGCOLOR_SECONDARY, FRAGCOLOR_PRIMARY_TEX_BLEND})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FragColor {
+
     }
 }

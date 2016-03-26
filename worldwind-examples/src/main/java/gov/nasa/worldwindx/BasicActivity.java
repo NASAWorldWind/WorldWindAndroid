@@ -7,7 +7,7 @@ import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.layer.BlueMarbleBackgroundLayer;
 import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
 import gov.nasa.worldwind.layer.BlueMarbleLayer;
-import gov.nasa.worldwindx.layer.AtmosphereLayer;
+import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 
 public class BasicActivity extends AppCompatActivity {
 
