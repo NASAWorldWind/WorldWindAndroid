@@ -18,6 +18,9 @@ public abstract class AbstractRenderable implements Renderable {
 
     protected Map<Object, Object> userProperties;
 
+    public AbstractRenderable() {
+    }
+
     public AbstractRenderable(String displayName) {
         this.displayName = displayName;
     }

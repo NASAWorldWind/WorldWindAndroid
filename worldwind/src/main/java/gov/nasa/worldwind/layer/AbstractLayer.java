@@ -26,6 +26,9 @@ public abstract class AbstractLayer implements Layer {
 
     protected Map<Object, Object> userProperties;
 
+    public AbstractLayer() {
+    }
+
     public AbstractLayer(String displayName) {
         this.displayName = displayName;
     }

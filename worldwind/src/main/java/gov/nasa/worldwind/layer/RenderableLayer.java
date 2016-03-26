@@ -18,13 +18,14 @@ public class RenderableLayer extends AbstractLayer implements Iterable<Renderabl
 
     protected List<Renderable> renderables = new ArrayList<>();
 
+    public RenderableLayer() {
+    }
+
     public RenderableLayer(String displayName) {
         super(displayName);
     }
 
-    public RenderableLayer(String displayName, Iterable<? extends Renderable> renderables) {
-        super(displayName);
-
+    public RenderableLayer(Iterable<? extends Renderable> renderables) {
         if (renderables == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "RenderableLayer", "constructor", "missingList"));
