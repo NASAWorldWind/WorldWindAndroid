@@ -8,13 +8,14 @@ package gov.nasa.worldwind.render;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.util.Level;
+import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Tile;
 
 public class ImageTile extends Tile implements SurfaceTile {
 
     protected String imageUrl;
 
-    protected ImageTile fallbackTile; // TODO this appears to leak memory by keeping references to cached tiles
+    protected ImageTile fallbackTile;
 
     public ImageTile(Sector sector, Level level, int row, int column) {
         super(sector, level, row, column);
