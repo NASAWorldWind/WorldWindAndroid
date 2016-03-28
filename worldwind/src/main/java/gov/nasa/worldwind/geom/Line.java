@@ -15,12 +15,12 @@ public class Line {
     /**
      * This line's origin.
      */
-    protected final Vec3 origin = new Vec3();
+    public final Vec3 origin = new Vec3();
 
     /**
      * This line's direction.
      */
-    protected final Vec3 direction = new Vec3();
+    public final Vec3 direction = new Vec3();
 
     /**
      * Constructs a line with origin and direction both zero.
@@ -70,13 +70,16 @@ public class Line {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
 
-        Line line = (Line) o;
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
 
-        if (!origin.equals(line.origin)) return false;
-        return direction.equals(line.direction);
+        Line that = (Line) o;
+        return this.origin.equals(that.origin) && this.direction.equals(that.direction);
 
     }
 
