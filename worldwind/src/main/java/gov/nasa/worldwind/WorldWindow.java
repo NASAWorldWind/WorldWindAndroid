@@ -323,7 +323,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return this.gestureGroup.onTouchEvent(event) || super.onTouchEvent(event);
+        return super.onTouchEvent(event) || this.gestureGroup.onTouchEvent(event);
     }
 
     protected void prepareToDrawFrame() {
