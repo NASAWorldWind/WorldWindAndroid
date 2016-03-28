@@ -7,6 +7,7 @@ package gov.nasa.worldwind.globe;
 
 import java.nio.FloatBuffer;
 
+import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
@@ -22,6 +23,8 @@ import gov.nasa.worldwind.util.Logger;
  * completes a right-handed coordinate system, is in the equatorial plane and 90 degrees East of the Z axis.
  */
 public class ProjectionWgs84 implements GeographicProjection {
+
+    private Position scratchPos = new Position();
 
     /**
      * Constructs a WGS 84 geographic projection.
@@ -369,5 +372,131 @@ public class ProjectionWgs84 implements GeographicProjection {
         result.altitude = h;
 
         return result;
+    }
+
+    @Override
+    public Matrix4 cartesianToLocalTransform(Globe globe, double x, double y, double z, Vec3 offset, Matrix4 result) {
+        if (globe == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "cartesianToLocalTransform", "missingGlobe"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "cartesianToLocalTransform", "missingResult"));
+        }
+
+        Position pos = this.cartesianToGeographic(globe, x, y, z, offset, this.scratchPos);
+        double radLat = Math.toRadians(pos.latitude);
+        double radLon = Math.toRadians(pos.longitude);
+        double cosLat = Math.cos(radLat);
+        double sinLat = Math.sin(radLat);
+        double cosLon = Math.cos(radLon);
+        double sinLon = Math.sin(radLon);
+
+        double eqr2 = globe.getEquatorialRadius() * globe.getEquatorialRadius();
+        double pol2 = globe.getPolarRadius() * globe.getPolarRadius();
+
+        // Compute the surface normal at the geographic position. This is equivalent to calling
+        // geographicToCartesianNormal but is much more efficient as an inline computation.
+        double ux = cosLat * sinLon / eqr2;
+        double uy = (1 - globe.getEccentricitySquared()) * sinLat / pol2;
+        double uz = cosLat * cosLon / eqr2;
+        double len = Math.sqrt(ux * ux + uy * uy + uz * uz);
+        ux /= len;
+        uy /= len;
+        uz /= len;
+
+        // Compute the north pointing tangent at the geographic position. This computation could be encoded in its own
+        // method, but is much more efficient as an inline computation. The north-pointing tangent is derived by
+        // rotating the vector (0, 1, 0) about the Y-axis by longitude degrees, then rotating it about the X-axis by
+        // -latitude degrees. The latitude angle must be inverted because latitude is a clockwise rotation about the
+        // X-axis, and standard rotation matrices assume counter-clockwise rotation. The combined rotation can be
+        // represented by a combining two rotation matrices Rlat, and Rlon, then transforming the vector (0, 1, 0) by
+        // the combined transform: NorthTangent = (Rlon * Rlat) * (0, 1, 0)
+        //
+        // Additionally, this computation can be simplified by making two observations:
+        // - The vector's X and Z coordinates are always 0, and its Y coordinate is always 1.
+        // - Inverting the latitude rotation angle is equivalent to inverting sinLat. We know this by the
+        //   trigonometric identities cos(-x) = cos(x), and sin(-x) = -sin(x).
+        double nx = -sinLat * sinLon;
+        double ny = cosLat;
+        double nz = -sinLat * cosLon;
+        len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+        nx /= len;
+        ny /= len;
+        nz /= len;
+
+        // Compute the east pointing tangent as the cross product of the north and up axes. This is much more efficient
+        // as an inline computation.
+        double ex = ny * uz - nz * uy;
+        double ey = nz * ux - nx * uz;
+        double ez = nx * uy - ny * ux;
+
+        // Ensure the normal, north and east vectors represent an orthonormal basis by ensuring that the north vector is
+        // perpendicular to normal and east vectors. This should already be the case, but rounding errors can be
+        // introduced when working with Earth sized coordinates.
+        nx = uy * ez - uz * ey;
+        ny = uz * ex - ux * ez;
+        nz = ux * ey - uy * ex;
+
+        // Set the result to an orthonormal basis with the East, North, and Up vectors forming the X, Y and Z axes,
+        // respectively, and the Cartesian point indicating the coordinate system's origin.
+        result.set(
+            ex, nx, ux, x,
+            ey, ny, uy, y,
+            ez, nz, uz, z,
+            0, 0, 0, 1);
+
+        return result;
+    }
+
+    @Override
+    public boolean intersect(Globe globe, Line line, Vec3 offset, Vec3 result) {
+        if (globe == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "cartesianToGeographic", "missingGlobe"));
+        }
+
+        if (line == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "intersect", "missingLine"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "intersect", "missingResult"));
+        }
+
+        // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition", Section 5.2.3.
+        //
+        // Note that the parameter n from in equations 5.70 and 5.71 is omitted here. For an ellipsoidal globe this
+        // parameter is always 1, so its square and its product with any other value simplifies to the identity.
+
+        double vx = line.direction.x;
+        double vy = line.direction.y;
+        double vz = line.direction.z;
+        double sx = line.origin.x;
+        double sy = line.origin.y;
+        double sz = line.origin.z;
+
+        double eqr = globe.getEquatorialRadius();
+        double eqr2 = eqr * eqr; // nominal radius squared
+        double m = eqr / globe.getPolarRadius(); // ratio of the x semi-axis length to the y semi-axis length
+        double m2 = m * m;
+        double a = vx * vx + m2 * vy * vy + vz * vz;
+        double b = 2 * (sx * vx + m2 * sy * vy + sz * vz);
+        double c = sx * sx + m2 * sy * sy + sz * sz - eqr2;
+        double d = b * b - 4 * a * c; // discriminant
+
+        if (d < 0) {
+            return false;
+        } else {
+            double t = (-b - Math.sqrt(d)) / (2 * a);
+            result.x = sx + vx * t;
+            result.y = sy + vy * t;
+            result.z = sz + vz * t;
+            return true;
+        }
     }
 }

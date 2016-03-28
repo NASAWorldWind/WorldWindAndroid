@@ -7,6 +7,9 @@ package gov.nasa.worldwind.globe;
 
 import java.nio.FloatBuffer;
 
+import gov.nasa.worldwind.geom.Camera;
+import gov.nasa.worldwind.geom.Line;
+import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
@@ -45,6 +48,16 @@ public class BasicGlobe implements Globe {
      *
      */
     protected Tessellator tessellator;
+
+    private Matrix4 modelview = new Matrix4();
+
+    private Matrix4 origin = new Matrix4();
+
+    private Vec3 originPoint = new Vec3();
+
+    private Position originPos = new Position();
+
+    private Line forwardRay = new Line();
 
     /**
      * Constructs a generic Globe implementation with specified ellipsoid parameters.
@@ -206,5 +219,169 @@ public class BasicGlobe implements Globe {
         }
 
         return this.projection.cartesianToGeographic(this, x, y, z, null, result);
+    }
+
+    @Override
+    public Matrix4 cartesianToLocalTransform(double x, double y, double z, Matrix4 result) {
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicGlobe", "cartesianToLocalTransform", "missingResult"));
+        }
+
+        return this.projection.cartesianToLocalTransform(this, x, y, z, null, result);
+    }
+
+    @Override
+    public Matrix4 cameraToCartesianTransform(Camera camera, Matrix4 result) {
+        if (camera == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicGlobe", "cameraToCartesianTransform", "missingCamera"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicGlobe", "cameraToCartesianTransform", "missingResult"));
+        }
+
+        // TODO interpret altitude mode other than absolute
+        // Transform by the local cartesian transform at the camera's position.
+        this.geographicToCartesianTransform(camera.latitude, camera.longitude, camera.altitude, result);
+
+        // Transform by the heading, tilt and roll.
+        result.multiplyByRotation(0, 0, 1, -camera.heading); // rotate clockwise about the Z axis
+        result.multiplyByRotation(1, 0, 0, camera.tilt); // rotate counter-clockwise about the X axis
+        result.multiplyByRotation(0, 0, 1, camera.roll); // rotate counter-clockwise about the Z axis (again)
+
+        return result;
+    }
+
+    @Override
+    public LookAt cameraToLookAt(Camera camera, LookAt result) {
+        if (camera == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicGlobe", "cameraToLookAt", "missingCamera"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicGlobe", "cameraToLookAt", "missingResult"));
+        }
+
+        this.cameraToCartesianTransform(camera, this.modelview).invertOrthonormal();
+        this.modelview.extractEyePoint(this.forwardRay.origin);
+        this.modelview.extractForwardVector(this.forwardRay.direction);
+
+        if (!this.intersect(this.forwardRay, this.originPoint)) {
+            double horizon = this.horizonDistance(camera.latitude, camera.longitude, camera.altitude);
+            this.forwardRay.pointAt(horizon, this.originPoint);
+        }
+
+        this.cartesianToGeographic(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.originPos);
+        this.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
+        this.modelview.multiplyByMatrix(this.origin);
+
+        result.latitude = this.originPos.latitude;
+        result.longitude = this.originPos.longitude;
+        result.altitude = this.originPos.altitude;
+        result.range = -this.modelview.m[11];
+        result.heading = this.computeViewHeading(this.modelview, camera.roll); // disambiguate heading and roll
+        result.tilt = this.computeViewTilt(this.modelview);
+        result.roll = camera.roll; // roll passes straight through
+
+        return result;
+    }
+
+    @Override
+    public Matrix4 lookAtToCartesianTransform(LookAt lookAt, Matrix4 result) {
+        if (lookAt == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicGlobe", "lookAtToCartesianTransform", "missingLookAt"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicGlobe", "lookAtToCartesianTransform", "missingResult"));
+        }
+
+        // TODO interpret altitude mode other than absolute
+        // Transform by the local cartesian transform at the look-at's position.
+        this.geographicToCartesianTransform(lookAt.latitude, lookAt.longitude, lookAt.altitude, result);
+
+        // Transform by the heading and tilt.
+        result.multiplyByRotation(0, 0, 1, -lookAt.heading); // rotate clockwise about the Z axis
+        result.multiplyByRotation(1, 0, 0, lookAt.tilt); // rotate counter-clockwise about the X axis
+        result.multiplyByRotation(0, 0, 1, lookAt.roll); // rotate counter-clockwise about the Z axis (again)
+
+        // Transform by the range.
+        result.multiplyByTranslation(0, 0, lookAt.range);
+
+        return result;
+    }
+
+    @Override
+    public Camera lookAtToCamera(LookAt lookAt, Camera result) {
+        if (lookAt == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicGlobe", "lookAtToCamera", "missingLookAt"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicGlobe", "lookAtToCamera", "missingResult"));
+        }
+
+        this.lookAtToCartesianTransform(lookAt, this.modelview).invertOrthonormal();
+        this.modelview.extractEyePoint(this.originPoint);
+
+        this.cartesianToGeographic(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.originPos);
+        this.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
+        this.modelview.multiplyByMatrix(this.origin);
+
+        result.latitude = this.originPos.latitude;
+        result.longitude = this.originPos.longitude;
+        result.altitude = this.originPos.altitude;
+        result.heading = this.computeViewHeading(this.modelview, lookAt.roll); // disambiguate heading and roll
+        result.tilt = this.computeViewTilt(this.modelview);
+        result.roll = lookAt.roll; // roll passes straight through
+
+        return result;
+    }
+
+    protected double computeViewHeading(Matrix4 matrix, double roll) {
+        double rad = Math.toRadians(roll);
+        double cr = Math.cos(rad);
+        double sr = Math.sin(rad);
+
+        double[] m = matrix.m;
+        double ch = cr * m[0] - sr * m[4];
+        double sh = sr * m[5] - cr * m[1];
+        return Math.toDegrees(Math.atan2(sh, ch));
+    }
+
+    protected double computeViewTilt(Matrix4 matrix) {
+        double[] m = matrix.m;
+        double ct = m[10];
+        double st = Math.sqrt(m[2] * m[2] + m[6] * m[6]);
+        return Math.toDegrees(Math.atan2(st, ct));
+    }
+
+    @Override
+    public double horizonDistance(double latitude, double longitude, double altitude) {
+        return (altitude < 0) ? 0 : Math.sqrt(altitude * (2 * this.equatorialRadius + altitude));
+    }
+
+    @Override
+    public boolean intersect(Line line, Vec3 result) {
+        if (line == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicGlobe", "intersect", "missingLine"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicGlobe", "intersect", "missingResult"));
+        }
+
+        return this.projection.intersect(this, line, null, result);
     }
 }

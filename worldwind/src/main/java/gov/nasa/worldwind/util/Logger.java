@@ -53,6 +53,7 @@ public class Logger {
         messageTable.put("missingLayerNames", "The layer names are null");
         messageTable.put("missingLevel", "The level is null");
         messageTable.put("missingLevelSet", "The level set is null");
+        messageTable.put("missingLine", "The line is null");
         messageTable.put("missingList", "The list is null or empty");
         messageTable.put("missingListener", "The listener is null");
         messageTable.put("missingLocation", "The location is null");
@@ -67,6 +68,7 @@ public class Logger {
         messageTable.put("missingRenderable", "The renderable is null");
         messageTable.put("missingResources", "The resources argument is null");
         messageTable.put("missingResult", "The result argument is null");
+        messageTable.put("missingRunnable", "The runnable is null");
         messageTable.put("missingSector", "The sector is null");
         messageTable.put("missingServiceAddress", "The service address is null");
         messageTable.put("missingSource", "The source is null");

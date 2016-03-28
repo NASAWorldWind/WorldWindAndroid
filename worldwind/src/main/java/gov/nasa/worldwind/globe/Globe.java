@@ -7,6 +7,9 @@ package gov.nasa.worldwind.globe;
 
 import java.nio.FloatBuffer;
 
+import gov.nasa.worldwind.geom.Camera;
+import gov.nasa.worldwind.geom.Line;
+import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
@@ -77,7 +80,6 @@ public interface Globe {
     Tessellator getTessellator();
 
     /**
-     *
      * @param tessellator
      */
     void setTessellator(Tessellator tessellator);
@@ -149,4 +151,38 @@ public interface Globe {
      * @throws IllegalArgumentException if the result is null
      */
     Position cartesianToGeographic(double x, double y, double z, Position result);
+
+    Matrix4 cartesianToLocalTransform(double x, double y, double z, Matrix4 result);
+
+    Matrix4 cameraToCartesianTransform(Camera camera, Matrix4 result);
+
+    LookAt cameraToLookAt(Camera camera, LookAt result);
+
+    Matrix4 lookAtToCartesianTransform(LookAt lookAt, Matrix4 result);
+
+    Camera lookAtToCamera(LookAt lookAt, Camera result);
+
+    /**
+     * Indicates the horizon distance in meters at a specified position.
+     *
+     * @param latitude  the location's latitude in degrees
+     * @param longitude the location's longitude in degrees
+     * @param altitude  the position's altitude in meters
+     *
+     * @return the horizon distance in meters
+     */
+    double horizonDistance(double latitude, double longitude, double altitude);
+
+    /**
+     * Computes the first intersection of this globe with a specified line. The line is interpreted as a ray;
+     * intersection points behind the line's origin are ignored.
+     *
+     * @param line   the line to intersect with this globe
+     * @param result a pre-allocated {@link Vec3} in which to return the computed point
+     *
+     * @return true if the ray intersects the globe, otherwise false
+     *
+     * @throws IllegalArgumentException If either argument is null
+     */
+    boolean intersect(Line line, Vec3 result);
 }
