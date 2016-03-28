@@ -8,16 +8,15 @@ package gov.nasa.worldwind;
 import android.view.MotionEvent;
 
 import gov.nasa.worldwind.geom.Location;
-import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.gesture.GestureListener;
 import gov.nasa.worldwind.gesture.GestureRecognizer;
 import gov.nasa.worldwind.gesture.PanRecognizer;
 import gov.nasa.worldwind.gesture.PinchRecognizer;
 import gov.nasa.worldwind.gesture.RotationRecognizer;
-import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.util.WWMath;
 
-public class BasicWorldWindowController implements WorldWindowController {
+public class BasicWorldWindowController implements WorldWindowController, GestureListener {
 
     protected WorldWindow wwd;
 
@@ -25,11 +24,15 @@ public class BasicWorldWindowController implements WorldWindowController {
 
     protected float lastY;
 
-    protected double beginAltitude;
+    protected float lastRotation;
 
-    protected double beginHeading;
+    protected LookAt lookAt = new LookAt();
 
-    protected double minAltitude = 10;
+    protected LookAt beginLookAt = new LookAt();
+
+    protected int activeGestures;
+
+    protected double minRange = 10;
 
     protected PanRecognizer panRecognizer = new PanRecognizer();
 
@@ -37,29 +40,15 @@ public class BasicWorldWindowController implements WorldWindowController {
 
     protected GestureRecognizer rotationRecognizer = new RotationRecognizer();
 
+    protected PanRecognizer tiltRecognizer = new PanRecognizer();
+
     public BasicWorldWindowController() {
-
         this.panRecognizer.setMaxNumberOfPointers(2);
-        this.panRecognizer.addListener(new GestureListener() {
-            @Override
-            public void gestureStateChanged(MotionEvent event, GestureRecognizer recognizer) {
-                handlePan(recognizer);
-            }
-        });
-
-        this.pinchRecognizer.addListener(new GestureListener() {
-            @Override
-            public void gestureStateChanged(MotionEvent event, GestureRecognizer recognizer) {
-                handlePinch(recognizer);
-            }
-        });
-
-        this.rotationRecognizer.addListener(new GestureListener() {
-            @Override
-            public void gestureStateChanged(MotionEvent event, GestureRecognizer recognizer) {
-                handleRotate(recognizer);
-            }
-        });
+        this.panRecognizer.addListener(this);
+        this.pinchRecognizer.addListener(this);
+        this.rotationRecognizer.addListener(this);
+        this.tiltRecognizer.setMinNumberOfPointers(3);
+        this.tiltRecognizer.addListener(this);
     }
 
     @Override
@@ -73,6 +62,7 @@ public class BasicWorldWindowController implements WorldWindowController {
             this.wwd.removeGestureRecognizer(this.panRecognizer);
             this.wwd.removeGestureRecognizer(this.pinchRecognizer);
             this.wwd.removeGestureRecognizer(this.rotationRecognizer);
+            this.wwd.removeGestureRecognizer(this.tiltRecognizer);
         }
 
         this.wwd = wwd;
@@ -81,6 +71,20 @@ public class BasicWorldWindowController implements WorldWindowController {
             this.wwd.addGestureRecognizer(this.panRecognizer);
             this.wwd.addGestureRecognizer(this.pinchRecognizer);
             this.wwd.addGestureRecognizer(this.rotationRecognizer);
+            this.wwd.addGestureRecognizer(this.tiltRecognizer);
+        }
+    }
+
+    @Override
+    public void gestureStateChanged(MotionEvent event, GestureRecognizer recognizer) {
+        if (recognizer == this.panRecognizer) {
+            this.handlePan(recognizer);
+        } else if (recognizer == this.pinchRecognizer) {
+            this.handlePinch(recognizer);
+        } else if (recognizer == this.rotationRecognizer) {
+            this.handleRotate(recognizer);
+        } else if (recognizer == this.tiltRecognizer) {
+            this.handleTilt(recognizer);
         }
     }
 
@@ -88,29 +92,31 @@ public class BasicWorldWindowController implements WorldWindowController {
         int state = recognizer.getState();
         float dx = recognizer.getTranslationX();
         float dy = recognizer.getTranslationY();
-        Navigator navigator = this.wwd.getNavigator();
 
         if (state == WorldWind.BEGAN) {
+            this.gestureDidBegin();
             this.lastX = 0;
             this.lastY = 0;
         } else if (state == WorldWind.CHANGED) {
             // Get the navigator's current position.
-            double lat = navigator.getLatitude();
-            double lon = navigator.getLongitude();
-            double alt = navigator.getAltitude();
+            double lat = this.lookAt.latitude;
+            double lon = this.lookAt.longitude;
+            double rng = this.lookAt.range;
 
-            // Convert the translation from screen coordinates to degrees. Use the navigator's altitude as a metric for
+            // Convert the translation from screen coordinates to degrees. Use the navigator's range as a metric for
             // converting screen pixels to meters, and use the globe's radius for converting from meters to arc degrees.
-            double metersPerPixel = this.wwd.pixelSizeAtDistance(alt);
+            double metersPerPixel = this.wwd.pixelSizeAtDistance(rng);
             double forwardMeters = (dy - this.lastY) * metersPerPixel;
             double sideMeters = -(dx - this.lastX) * metersPerPixel;
+            this.lastX = dx;
+            this.lastY = dy;
 
             double globeRadius = this.wwd.getGlobe().getRadiusAt(lat, lon);
             double forwardDegrees = Math.toDegrees(forwardMeters / globeRadius);
             double sideDegrees = Math.toDegrees(sideMeters / globeRadius);
 
-            // Apply the change in latitude and longitude to this navigator, relative to the current heading.
-            double heading = navigator.getHeading();
+            // Adjust the change in latitude and longitude based on the navigator's heading.
+            double heading = this.lookAt.heading;
             double headingRadians = Math.toRadians(heading);
             double sinHeading = Math.sin(headingRadians);
             double cosHeading = Math.cos(headingRadians);
@@ -120,56 +126,95 @@ public class BasicWorldWindowController implements WorldWindowController {
             // If the navigator has panned over either pole, compensate by adjusting the longitude and heading to move
             // the navigator to the appropriate spot on the other side of the pole.
             if (lat < -90 || lat > 90) {
-                navigator.setLatitude(Location.normalizeLatitude(lat));
-                navigator.setLongitude(Location.normalizeLongitude(lon + 180));
-                navigator.setHeading(WWMath.normalizeAngle(heading + 180));
+                this.lookAt.latitude = Location.normalizeLatitude(lat);
+                this.lookAt.longitude = Location.normalizeLongitude(lon + 180);
+                this.lookAt.heading = WWMath.normalizeAngle(heading + 180);
             } else if (lon < -180 || lon > 180) {
-                navigator.setLatitude(lat);
-                navigator.setLongitude(Location.normalizeLongitude(lon));
+                this.lookAt.latitude = lat;
+                this.lookAt.longitude = Location.normalizeLongitude(lon);
             } else {
-                navigator.setLatitude(lat);
-                navigator.setLongitude(lon);
+                this.lookAt.latitude = lat;
+                this.lookAt.longitude = lon;
             }
 
+            this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
             this.wwd.requestRender();
-            this.lastX = dx;
-            this.lastY = dy;
+        } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
+            this.gestureDidEnd();
         }
     }
 
     protected void handlePinch(GestureRecognizer recognizer) {
         int state = recognizer.getState();
         float scale = ((PinchRecognizer) recognizer).getScale();
-        Navigator navigator = this.wwd.getNavigator();
 
         if (state == WorldWind.BEGAN) {
-            this.beginAltitude = navigator.getAltitude();
+            this.gestureDidBegin();
         } else if (state == WorldWind.CHANGED) {
             if (scale != 0) {
-                // Apply the change in pinch scale to this navigator's altitude, relative to the altitude when the
-                // gesture began.
-                double altitude = this.beginAltitude / scale;
-                double minAltitude = this.minAltitude;
-                double maxAltitude = this.wwd.distanceToViewGlobeExtents() * 2;
-                navigator.setAltitude(WWMath.clamp(altitude, minAltitude, maxAltitude));
+                // Apply the change in scale to the navigator, relative to when the gesture began.
+                double range = this.beginLookAt.range / scale;
+                double minRange = this.minRange;
+                double maxRange = this.wwd.distanceToViewGlobeExtents() * 2;
+                this.lookAt.range = WWMath.clamp(range, minRange, maxRange);
+
+                this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
                 this.wwd.requestRender();
             }
+        } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
+            this.gestureDidEnd();
         }
     }
 
     protected void handleRotate(GestureRecognizer recognizer) {
         int state = recognizer.getState();
         float rotation = ((RotationRecognizer) recognizer).getRotation();
-        Navigator navigator = this.wwd.getNavigator();
 
         if (state == WorldWind.BEGAN) {
-            this.beginHeading = navigator.getHeading();
+            this.gestureDidBegin();
         } else if (state == WorldWind.CHANGED) {
-            // Apply the change in gesture rotation to this navigator's current heading, relative to the heading when
-            // the gesture began.
-            double newHeading = WWMath.normalizeDegrees(this.beginHeading - rotation);
-            navigator.setHeading(newHeading);
+            // Apply the change in rotation to the navigator, relative to the navigator's current values.
+            double headingDegrees = this.lastRotation - rotation;
+            this.lookAt.heading = WWMath.normalizeDegrees(this.lookAt.heading + headingDegrees);
+            this.lastRotation = rotation;
+
+            this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
             this.wwd.requestRender();
+        } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
+            this.gestureDidEnd();
         }
+    }
+
+    protected void handleTilt(GestureRecognizer recognizer) {
+        int state = recognizer.getState();
+        float dx = recognizer.getTranslationX();
+        float dy = recognizer.getTranslationY();
+
+        if (state == WorldWind.BEGAN) {
+            this.gestureDidBegin();
+            this.lastRotation = 0;
+        } else if (state == WorldWind.CHANGED) {
+            // Apply the change in tilt to the navigator, relative to when the gesture began.
+            double headingDegrees = 180 * dx / this.wwd.getWidth();
+            double tiltDegrees = -180 * dy / this.wwd.getHeight();
+            this.lookAt.heading = WWMath.normalizeDegrees(this.beginLookAt.heading + headingDegrees);
+            this.lookAt.tilt = WWMath.clamp(this.beginLookAt.tilt + tiltDegrees, 0, 90);
+
+            this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
+            this.wwd.requestRender();
+        } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
+            this.gestureDidEnd();
+        }
+    }
+
+    protected void gestureDidBegin() {
+        if (this.activeGestures++ == 0) {
+            this.wwd.getNavigator().getAsLookAt(this.wwd.getGlobe(), this.beginLookAt);
+            this.lookAt.set(this.beginLookAt);
+        }
+    }
+
+    protected void gestureDidEnd() {
+        this.activeGestures--;
     }
 }
