@@ -38,6 +38,21 @@ public class Camera {
         this.roll = roll;
     }
 
+    public Camera(Camera camera) {
+        if (camera == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Camera", "constructor", "missingCamera"));
+        }
+
+        this.latitude = camera.latitude;
+        this.longitude = camera.longitude;
+        this.altitude = camera.altitude;
+        this.altitudeMode = camera.altitudeMode;
+        this.heading = camera.heading;
+        this.tilt = camera.tilt;
+        this.roll = camera.roll;
+    }
+
     public Camera set(double latitude, double longitude, double altitude, @WorldWind.AltitudeMode int altitudeMode,
                       double heading, double tilt, double roll) {
         this.latitude = latitude;
@@ -53,7 +68,8 @@ public class Camera {
 
     public Camera set(Camera camera) {
         if (camera == null) {
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Camera", "set", "missingCamera"));
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Camera", "set", "missingCamera"));
         }
 
         this.latitude = camera.latitude;
@@ -65,5 +81,18 @@ public class Camera {
         this.roll = camera.roll;
 
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "Camera{" +
+            "latitude=" + latitude +
+            ", longitude=" + longitude +
+            ", altitude=" + altitude +
+            ", altitudeMode=" + altitudeMode +
+            ", heading=" + heading +
+            ", tilt=" + tilt +
+            ", roll=" + roll +
+            '}';
     }
 }
