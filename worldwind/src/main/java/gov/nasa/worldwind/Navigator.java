@@ -7,45 +7,46 @@ package gov.nasa.worldwind;
 
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.LookAt;
+import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.render.DrawContext;
 
 public interface Navigator {
 
     double getLatitude();
 
-    void setLatitude(double latitude);
+    Navigator setLatitude(double latitude);
 
     double getLongitude();
 
-    void setLongitude(double longitude);
+    Navigator setLongitude(double longitude);
 
     double getAltitude();
 
-    void setAltitude(double altitude);
+    Navigator setAltitude(double altitude);
 
     double getHeading();
 
-    void setHeading(double headingDegrees);
+    Navigator setHeading(double headingDegrees);
 
     double getTilt();
 
-    void setTilt(double tiltDegrees);
+    Navigator setTilt(double tiltDegrees);
 
     double getRoll();
 
-    void setRoll(double rollDegrees);
+    Navigator setRoll(double rollDegrees);
 
     double getFieldOfView();
 
-    void setFieldOfView(double fovyDegrees);
+    Navigator setFieldOfView(double fovyDegrees);
 
-    Camera getAsCamera(WorldWindow wwd, Camera result);
+    Camera getAsCamera(Globe globe, Camera result);
 
-    void setAsCamera(WorldWindow wwd, Camera camera);
+    Navigator setAsCamera(Globe globe, Camera camera);
 
-    LookAt getAsLookAt(WorldWindow wwd, LookAt result);
+    LookAt getAsLookAt(Globe globe, LookAt result);
 
-    void setAsLookAt(WorldWindow wwd, LookAt lookAt);
+    Navigator setAsLookAt(Globe globe, LookAt lookAt);
 
     void applyState(DrawContext dc);
 }

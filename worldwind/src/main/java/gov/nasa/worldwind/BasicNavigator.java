@@ -17,17 +17,7 @@ import gov.nasa.worldwind.util.Logger;
 
 public class BasicNavigator implements Navigator {
 
-    protected double latitude;
-
-    protected double longitude;
-
-    protected double altitude;
-
-    protected double heading;
-
-    protected double tilt;
-
-    protected double roll;
+    protected Camera camera = new Camera();
 
     protected double fieldOfView = 45;
 
@@ -35,113 +25,113 @@ public class BasicNavigator implements Navigator {
 
     protected Matrix4 projection = new Matrix4();
 
-    protected Matrix4 localCartesian = new Matrix4();
-
     public BasicNavigator() {
     }
 
     @Override
-    public double getLatitude() {
-        return this.latitude;
+    public synchronized double getLatitude() {
+        return this.camera.latitude;
     }
 
     @Override
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
+    public synchronized Navigator setLatitude(double latitude) {
+        this.camera.latitude = latitude;
+        return this;
     }
 
     @Override
-    public double getLongitude() {
-        return this.longitude;
+    public synchronized double getLongitude() {
+        return this.camera.longitude;
     }
 
     @Override
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
+    public synchronized Navigator setLongitude(double longitude) {
+        this.camera.longitude = longitude;
+        return this;
     }
 
     @Override
-    public double getAltitude() {
-        return this.altitude;
+    public synchronized double getAltitude() {
+        return this.camera.altitude;
     }
 
     @Override
-    public void setAltitude(double altitude) {
-        this.altitude = altitude;
+    public synchronized Navigator setAltitude(double altitude) {
+        this.camera.altitude = altitude;
+        return this;
     }
 
     @Override
-    public double getHeading() {
-        return heading;
+    public synchronized double getHeading() {
+        return this.camera.heading;
     }
 
     @Override
-    public void setHeading(double headingDegrees) {
-        this.heading = headingDegrees;
+    public synchronized Navigator setHeading(double headingDegrees) {
+        this.camera.heading = headingDegrees;
+        return this;
     }
 
     @Override
-    public double getTilt() {
-        return tilt;
+    public synchronized double getTilt() {
+        return this.camera.tilt;
     }
 
     @Override
-    public void setTilt(double tiltDegrees) {
-        this.tilt = tiltDegrees;
+    public synchronized Navigator setTilt(double tiltDegrees) {
+        this.camera.tilt = tiltDegrees;
+        return this;
     }
 
     @Override
-    public double getRoll() {
-        return roll;
+    public synchronized double getRoll() {
+        return this.camera.roll;
     }
 
     @Override
-    public void setRoll(double rollDegrees) {
-        this.roll = rollDegrees;
+    public synchronized Navigator setRoll(double rollDegrees) {
+        this.camera.roll = rollDegrees;
+        return this;
     }
 
     @Override
-    public double getFieldOfView() {
+    public synchronized double getFieldOfView() {
         return fieldOfView;
     }
 
     @Override
-    public void setFieldOfView(double fovyDegrees) {
+    public synchronized Navigator setFieldOfView(double fovyDegrees) {
         if (fovyDegrees <= 0 || fovyDegrees >= 180) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "setPosition", "invalidFieldOfView"));
         }
 
         this.fieldOfView = fovyDegrees;
+        return this;
     }
 
     @Override
-    public Camera getAsCamera(WorldWindow wwd, Camera result) {
-        if (wwd == null) {
+    public synchronized Camera getAsCamera(Globe globe, Camera result) {
+        if (globe == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicNavigator", "getAsCamera", "missingWorldWindow"));
+                Logger.logMessage(Logger.ERROR, "BasicNavigator", "getAsCamera", "missingGlobe"));
         }
 
         if (result == null) {
-            result = new Camera();
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicNavigator", "getAsCamera", "missingResult"));
         }
 
-        result.latitude = this.latitude;
-        result.longitude = this.longitude;
-        result.altitude = this.altitude;
-        result.altitudeMode = WorldWind.ABSOLUTE;
-        result.heading = this.heading;
-        result.tilt = this.tilt;
-        result.roll = this.roll;
+        result.set(this.camera);
 
         return result;
     }
 
     @Override
-    public void setAsCamera(WorldWindow wwd, Camera camera) {
-        if (wwd == null) {
+    public synchronized Navigator setAsCamera(Globe globe, Camera camera) {
+        if (globe == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicNavigator", "setAsCamera", "missingWorldWindow"));
+                Logger.logMessage(Logger.ERROR, "BasicNavigator", "setAsCamera", "missingGlobe"));
         }
 
         if (camera == null) {
@@ -149,35 +139,33 @@ public class BasicNavigator implements Navigator {
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "setAsCamera", "missingCamera"));
         }
 
-        this.latitude = camera.latitude;
-        this.longitude = camera.longitude;
-        this.altitude = camera.altitude; // TODO interpret based on altitude mode
-        this.heading = camera.heading;
-        this.tilt = camera.tilt;
-        this.roll = camera.roll;
+        this.camera.set(camera); // TODO interpret altitude modes other than absolute
+
+        return this;
     }
 
     @Override
-    public LookAt getAsLookAt(WorldWindow wwd, LookAt result) {
-        if (wwd == null) {
+    public synchronized LookAt getAsLookAt(Globe globe, LookAt result) {
+        if (globe == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicNavigator", "getAsLookAt", "missingWorldWindow"));
+                Logger.logMessage(Logger.ERROR, "BasicNavigator", "getAsLookAt", "missingGlobe"));
         }
 
         if (result == null) {
-            result = new LookAt();
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BasicNavigator", "getAsLookAt", "missingResult"));
         }
 
-        // TODO
+        globe.cameraToLookAt(this.camera, result);
 
         return result;
     }
 
     @Override
-    public void setAsLookAt(WorldWindow wwd, LookAt lookAt) {
-        if (wwd == null) {
+    public synchronized Navigator setAsLookAt(Globe globe, LookAt lookAt) {
+        if (globe == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicNavigator", "setAsLookAt", "missingWorldWindow"));
+                Logger.logMessage(Logger.ERROR, "BasicNavigator", "setAsLookAt", "missingGlobe"));
         }
 
         if (lookAt == null) {
@@ -185,30 +173,17 @@ public class BasicNavigator implements Navigator {
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "setAsLookAt", "missingLookAt"));
         }
 
-        // TODO
+        globe.lookAtToCamera(lookAt, this.camera); // TODO convert altitudeMode to absolute if necessary
+
+        return this;
     }
 
-    public void applyState(DrawContext dc) {
-        // TODO consider merging Navigator with WorldWindow
-        //
-        // TODO what happens if the responsibility of applying "camera" state is moved to the WorldWindow, or the
-        // TODO FrameController? what other component needs access to computations done here? (see NavigatorState in
-        // TODO WebWW)
-        // TODO - seems that only rayFromScreenPoint is needed in WebWW, but possibly other similar utilities
-        // TODO - so what happens if we put this in WorldWindow? can the NavigationController get what it needs?
-        // TODO - what about the application?
-        // TODO - what about applications desiring to override this behavior. framecontroller seems like the best place
-        // TODO   for that
-        //
-        // TODO if framecontroller takes this responsibility, what's involved with computing a ray from a screen point
-        // TODO in a controller, or in an application?
-        // TODO - what about intersecting that ray with the terrain?
-        // TODO - what about getting the pixel size at a distance?
+    public synchronized void applyState(DrawContext dc) {
 
-        dc.setEyePosition(new Position(this.latitude, this.longitude, this.altitude)); // TODO eliminate allocation
-        dc.setHeading(this.heading);
-        dc.setTilt(this.tilt);
-        dc.setRoll(this.roll);
+        dc.setEyePosition(new Position(this.camera.latitude, this.camera.longitude, this.camera.altitude));
+        dc.setHeading(this.camera.heading);
+        dc.setTilt(this.camera.tilt);
+        dc.setRoll(this.camera.roll);
         dc.setFieldOfView(this.fieldOfView);
 
         this.computeModelview(dc.getGlobe(), this.modelview);
@@ -217,19 +192,7 @@ public class BasicNavigator implements Navigator {
     }
 
     protected Matrix4 computeModelview(Globe globe, Matrix4 result) {
-
-        // Initialize to the identity matrix.
-        result.setToIdentity();
-
-        // Transform by heading, tilt and roll, inverting the rotation angles.
-        result.multiplyByRotation(0, 0, 1, -this.roll); // rotate clockwise about the Z axis
-        result.multiplyByRotation(1, 0, 0, -this.tilt); // rotate clockwise about the X axis
-        result.multiplyByRotation(0, 0, 1, this.heading); // rotate counter-clockwise about the Z axis (again)
-
-        // Transform by the inverse of the local cartesian transform at the navigator's position.
-        globe.geographicToCartesianTransform(this.latitude, this.longitude, this.altitude, this.localCartesian);
-        this.localCartesian.invertOrthonormal();
-        result.multiplyByMatrix(this.localCartesian);
+        globe.cameraToCartesianTransform(this.camera, result).invertOrthonormal();
 
         return result;
     }
@@ -238,7 +201,7 @@ public class BasicNavigator implements Navigator {
 
         // TODO compute clip plane distances appropriate for the current frame
         double near = 1e3;
-        double far = dc.getGlobe().getEquatorialRadius() + this.altitude;
+        double far = dc.getGlobe().getEquatorialRadius() + this.camera.altitude;
         Rect viewport = dc.getViewport();
         result.setToPerspectiveProjection(viewport.width(), viewport.height(), this.fieldOfView, near, far);
 
