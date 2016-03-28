@@ -26,7 +26,7 @@ public class BasicActivity extends AppCompatActivity {
         this.setContentView(this.wwd);
 
         // Setup the World Window's layers.
-        this.wwd.getLayers().addLayer(new BlueMarbleBackgroundLayer(this));
+        this.wwd.getLayers().addLayer(new BlueMarbleBackgroundLayer());
         this.wwd.getLayers().addLayer(new BlueMarbleLayer());
         this.wwd.getLayers().addLayer(new BlueMarbleLandsatLayer());
         this.wwd.getLayers().addLayer(new AtmosphereLayer());

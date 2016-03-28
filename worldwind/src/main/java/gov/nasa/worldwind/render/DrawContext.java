@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.render;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.opengl.GLES20;
 
@@ -25,8 +26,6 @@ import gov.nasa.worldwind.util.Logger;
 public class DrawContext {
 
     // TODO refactor these as public properties
-    protected Context context;
-
     protected Globe globe;
 
     protected Terrain terrain;
@@ -73,6 +72,8 @@ public class DrawContext {
 
     protected boolean renderRequested;
 
+    protected Resources resources;
+
     protected GpuObjectCache gpuObjectCache;
 
     protected SurfaceTileRenderer surfaceTileRenderer;
@@ -85,12 +86,7 @@ public class DrawContext {
 
     protected Map<Object, Object> userProperties = new HashMap<>();
 
-    public DrawContext(Context context) {
-        this.context = context;
-    }
-
-    public Context getContext() {
-        return context;
+    public DrawContext() {
     }
 
     public Globe getGlobe() {
@@ -243,6 +239,14 @@ public class DrawContext {
         this.renderRequested = true;
     }
 
+    public Resources getResources() {
+        return resources;
+    }
+
+    public void setResources(Resources resources) {
+        this.resources = resources;
+    }
+
     public GpuObjectCache getGpuObjectCache() {
         return gpuObjectCache;
     }
@@ -299,6 +303,7 @@ public class DrawContext {
         this.pixelSizeScale = 0;
         this.pickingMode = false;
         this.renderRequested = false;
+        this.resources = null;
         this.gpuObjectCache = null;
         this.userProperties.clear();
     }

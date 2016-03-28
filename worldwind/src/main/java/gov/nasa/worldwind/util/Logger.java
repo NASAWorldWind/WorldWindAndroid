@@ -44,7 +44,6 @@ public class Logger {
         messageTable.put("missingBuffer", "The buffer is null or insufficient length");
         messageTable.put("missingCamera", "The camera is null");
         messageTable.put("missingConfig", "The configuration is null");
-        messageTable.put("missingContext", "The context is null");
         messageTable.put("missingCoordinateSystem", "The coordinate system is null");
         messageTable.put("missingFormat", "The format is null");
         messageTable.put("missingGlobe", "The globe is null");
@@ -66,6 +65,7 @@ public class Logger {
         messageTable.put("missingProjection", "The projection is null");
         messageTable.put("missingRecognizer", "The recognizer is null");
         messageTable.put("missingRenderable", "The renderable is null");
+        messageTable.put("missingResources", "The resources argument is null");
         messageTable.put("missingResult", "The result argument is null");
         messageTable.put("missingSector", "The sector is null");
         messageTable.put("missingServiceAddress", "The service address is null");

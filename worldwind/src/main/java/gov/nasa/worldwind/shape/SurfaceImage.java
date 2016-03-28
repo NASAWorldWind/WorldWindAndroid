@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwind.shape;
 
-import android.content.Context;
 import android.support.annotation.DrawableRes;
 
 import gov.nasa.worldwind.geom.Matrix3;
@@ -15,7 +14,6 @@ import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.GpuTexture;
 import gov.nasa.worldwind.render.SurfaceTile;
 import gov.nasa.worldwind.util.Logger;
-import gov.nasa.worldwind.util.Resource;
 
 public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
 
@@ -37,7 +35,7 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
         this.imageSource = imageSource;
     }
 
-    public SurfaceImage(Sector sector, Context resourceContext, @DrawableRes int resourceId) {
+    public SurfaceImage(Sector sector, @DrawableRes int resourceId) {
         super("Surface Image");
 
         if (sector == null) {
@@ -45,13 +43,8 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
                 Logger.logMessage(Logger.ERROR, "SurfaceImage", "constructor", "missingSector"));
         }
 
-        if (resourceContext == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "SurfaceImage", "constructor", "missingContext"));
-        }
-
         this.sector.set(sector);
-        this.imageSource = new Resource(resourceContext, resourceId);
+        this.imageSource = resourceId;
     }
 
     public SurfaceImage(Sector sector, String urlString) {
@@ -93,13 +86,8 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
         this.imageSource = imageSource;
     }
 
-    public void setImageResource(Context resourceContext, @DrawableRes int resourceId) {
-        if (resourceContext == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "SurfaceImage", "setImageResource", "missingContext"));
-        }
-
-        this.imageSource = new Resource(resourceContext, resourceId);
+    public void setImageResource(@DrawableRes int resourceId) {
+        this.imageSource = resourceId;
     }
 
     public void setImageUrl(String urlString) {

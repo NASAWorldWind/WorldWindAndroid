@@ -123,7 +123,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.gpuObjectCache = new GpuObjectCache(gpuCacheSize);
 
         // Set up to render on demand to an OpenGL ES 2.x context
-        this.dc = new DrawContext(this.getContext());
+        this.dc = new DrawContext();
         this.setEGLConfigChooser(configChooser);
         this.setEGLContextClientVersion(2); // must be called before setRenderer
         this.setRenderer(this);
@@ -317,6 +317,8 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         if (this.dc.isRenderRequested()) {
             this.requestRender(); // inherited from GLSurfaceView
         }
+
+        this.dc.reset();
     }
 
     @Override
@@ -325,11 +327,11 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     }
 
     protected void prepareToDrawFrame() {
-        this.dc.reset();
         this.dc.setGlobe(this.globe);
         this.dc.setLayers(this.layers);
         this.dc.setVerticalExaggeration(this.verticalExaggeration);
         this.dc.setViewport(this.viewport);
+        this.dc.setResources(this.getContext().getResources());
         this.dc.setGpuObjectCache(this.gpuObjectCache);
         this.dc.setSurfaceTileRenderer(this.surfaceTileRenderer);
     }

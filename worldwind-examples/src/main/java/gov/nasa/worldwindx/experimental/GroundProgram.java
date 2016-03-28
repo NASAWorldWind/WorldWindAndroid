@@ -33,8 +33,8 @@ public class GroundProgram extends AtmosphereProgram {
     protected int fragColorId;
 
     public GroundProgram(DrawContext dc) throws IOException {
-        super(WWUtil.readResourceAsText(dc.getContext(), R.raw.gov_nasa_worldwind_groundprogram_vert),
-            WWUtil.readResourceAsText(dc.getContext(), R.raw.gov_nasa_worldwind_groundprogram_frag),
+        super(WWUtil.readResourceAsText(dc.getResources(), R.raw.gov_nasa_worldwind_groundprogram_vert),
+            WWUtil.readResourceAsText(dc.getResources(), R.raw.gov_nasa_worldwind_groundprogram_frag),
             new String[]{"vertexPoint", "vertexTexCoord"});
     }
 

@@ -5,7 +5,7 @@
 
 package gov.nasa.worldwind.util;
 
-import android.content.Context;
+import android.content.res.Resources;
 import android.support.annotation.RawRes;
 
 import java.io.BufferedReader;
@@ -57,16 +57,16 @@ public class WWUtil {
         }
     }
 
-    public static String readResourceAsText(Context context, @RawRes int id) throws IOException {
-        if (context == null) {
+    public static String readResourceAsText(Resources resources, @RawRes int id) throws IOException {
+        if (resources == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WWUtil", "readResourceAsText", "missingContext"));
+                Logger.logMessage(Logger.ERROR, "WWUtil", "readResourceAsText", "missingResources"));
 
         }
 
         BufferedReader reader = null;
         try {
-            InputStream in = context.getResources().openRawResource(id);
+            InputStream in = resources.openRawResource(id);
             reader = new BufferedReader(new InputStreamReader(in));
 
             StringBuilder sb = new StringBuilder();
