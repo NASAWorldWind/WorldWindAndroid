@@ -78,20 +78,23 @@ public class LevelSetConfig {
      * Returns the number of levels necessary to achieve the specified resolution. The result is correct for this
      * configuration's current firstLevelDelta, tileWidth and tileHeight, and is invalid if any of these values change.
      *
-     * @param resolution the desired resolution in pixels per degree
+     * @param radiansPerPixel the desired resolution in radians per pixel
      *
      * @return the number of levels
      *
      * @throws IllegalArgumentException If the resolution is not positive
      */
-    public int numLevelsForResolution(double resolution) {
-        if (resolution <= 0) {
+    public int numLevelsForResolution(double radiansPerPixel) {
+        if (radiansPerPixel <= 0) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LevelSetConfig", "setNumLevelsForResolution", "invalidResolution"));
         }
 
-        int w = Math.min(this.tileWidth, this.tileHeight);
-        double level = Math.log(resolution * this.firstLevelDelta / w) / Math.log(2);
-        return (int) Math.ceil(level) + 1;
+        double degreesPerPixel = Math.toDegrees(radiansPerPixel);
+        double firstLevelDegreesPerPixel = this.firstLevelDelta / Math.min(this.tileWidth, this.tileHeight);
+        double level = Math.log(firstLevelDegreesPerPixel / degreesPerPixel) / Math.log(2); // fractional level address
+        int levelNumber = (int) Math.ceil(level); // ceiling captures the resolution
+
+        return levelNumber + 1; // convert level number to level count
     }
 }

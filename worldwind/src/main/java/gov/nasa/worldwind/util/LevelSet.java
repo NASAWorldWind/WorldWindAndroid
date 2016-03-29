@@ -174,14 +174,14 @@ public class LevelSet {
     /**
      * Returns the level that most closely approximates the specified resolution.
      *
-     * @param resolution the desired resolution in pixels per degree
+     * @param radiansPerPixel the desired resolution in radians per pixel
      *
      * @return the level for the specified resolution, or null if this level set is empty
      *
      * @throws IllegalArgumentException If the resolution is not positive
      */
-    public Level levelForResolution(double resolution) {
-        if (resolution <= 0) {
+    public Level levelForResolution(double radiansPerPixel) {
+        if (radiansPerPixel <= 0) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LevelSetConfig", "levelForResolution", "invalidResolution"));
         }
@@ -190,14 +190,15 @@ public class LevelSet {
             return null; // this level set is empty
         }
 
-        int w = Math.min(this.tileWidth, this.tileHeight); // minimum dimension
-        double level = Math.log(resolution * this.firstLevelDelta / w) / Math.log(2); // fractional level number
+        double degreesPerPixel = Math.toDegrees(radiansPerPixel);
+        double firstLevelDegreesPerPixel = this.firstLevelDelta / Math.min(this.tileWidth, this.tileHeight);
+        double level = Math.log(firstLevelDegreesPerPixel / degreesPerPixel) / Math.log(2); // fractional level address
         int levelNumber = (int) Math.round(level); // nearest neighbor level
 
         if (levelNumber < this.levels.length) {
-            return this.levels[levelNumber]; // return the nearest neighbor level
+            return this.levels[levelNumber]; // nearest neighbor level is in this level set
         } else {
-            return this.levels[this.levels.length - 1]; // return the last level; unable to match the resolution
+            return this.levels[this.levels.length - 1]; // unable to match the resolution; return the last level
         }
     }
 
