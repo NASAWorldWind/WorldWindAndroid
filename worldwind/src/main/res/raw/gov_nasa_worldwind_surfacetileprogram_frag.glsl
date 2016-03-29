@@ -11,7 +11,7 @@ varying vec2 texCoord[2];
 
 void main() {
     /* Using the second texture coordinate, compute a mask that's 1.0 when the fragment is inside the surface tile, and
-       0.0 otherwise */
+       0.0 otherwise. */
     float sMask = step(0.0, texCoord[1].s) * (1.0 - step(1.0, texCoord[1].s));
     float tMask = step(0.0, texCoord[1].t) * (1.0 - step(1.0, texCoord[1].t));
     float tileMask = sMask * tMask;
