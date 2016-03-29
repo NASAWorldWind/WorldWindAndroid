@@ -11,7 +11,7 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.shape.SurfaceImage;
 
-public class SurfaceImageActivity extends BasicActivity {
+public class SurfaceImageActivity extends BasicGlobeActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

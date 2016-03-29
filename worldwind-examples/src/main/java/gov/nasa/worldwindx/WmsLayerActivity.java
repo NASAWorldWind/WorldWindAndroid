@@ -11,7 +11,8 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.ogc.WmsLayer;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
 
-public class WmsLayerActivity extends BasicActivity {
+public class WmsLayerActivity extends BasicGlobeActivity {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

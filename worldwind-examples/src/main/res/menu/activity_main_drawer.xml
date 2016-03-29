@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2016 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration. All Rights Reserved.
+  -->
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <!--TODO: define better icons for the navigation menu items-->
+        <item
+            android:id="@+id/nav_basic_globe_activity"
+            android:icon="@drawable/nasa_logo"
+            android:title="@string/title_basic_globe"/>
+        <item
+            android:id="@+id/nav_wms_layer_activity"
+            android:icon="@drawable/nasa_logo"
+            android:title="@string/title_wms_layer"/>
+        <item
+            android:id="@+id/nav_surface_image_activity"
+            android:icon="@drawable/nasa_logo"
+            android:title="@string/title_surface_image"/>
+    </group>
+
+</menu>
