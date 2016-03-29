@@ -6,23 +6,45 @@
 package gov.nasa.worldwindx.experimental;
 
 import android.opengl.GLES20;
+import android.support.annotation.IntDef;
 
+import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 
+import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.GpuProgram;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.WWUtil;
+import gov.nasa.worldwindx.R;
 
 // TODO Correctly compute the atmosphere color for eye positions beneath the atmosphere
 // TODO Merge GroundProgram and SkyProgram into AtmosphereProgram, including the GLSL sources
 // TODO Test the effect of working in local coordinates (reference point) on the GLSL atmosphere programs
 public class AtmosphereProgram extends GpuProgram {
 
+    public static final int FRAGMODE_SKY = 1;
+
+    public static final int FRAGMODE_GROUND_PRIMARY = 2;
+
+    public static final int FRAGMODE_GROUND_SECONDARY = 3;
+
+    public static final int FRAGMODE_GROUND_PRIMARY_TEX_BLEND = 4;
+
     protected double altitude;
 
+    protected int fragModeId;
+
     protected int mvpMatrixId;
+
+    protected int texCoordMatrixId;
+
+    protected int texSamplerId;
 
     protected int vertexOriginId;
 
@@ -41,8 +63,6 @@ public class AtmosphereProgram extends GpuProgram {
     protected int atmosphereRadius2Id;
 
     protected int globeRadiusId;
-
-    protected int globeRadius2Id;
 
     protected int KrESunId;
 
@@ -66,8 +86,10 @@ public class AtmosphereProgram extends GpuProgram {
 
     protected float[] array = new float[16];
 
-    public AtmosphereProgram(String vertexShaderSource, String fragmentShaderSource, String[] attributeBindings) {
-        super(vertexShaderSource, fragmentShaderSource, attributeBindings);
+    public AtmosphereProgram(DrawContext dc) throws IOException {
+        super(WWUtil.readResourceAsText(dc.getResources(), R.raw.gov_nasa_worldwind_skyprogram_vert),
+            WWUtil.readResourceAsText(dc.getResources(), R.raw.gov_nasa_worldwind_skyprogram_frag),
+            new String[]{"vertexPoint", "vertexTexCoord"});
         this.init();
     }
 
@@ -88,27 +110,50 @@ public class AtmosphereProgram extends GpuProgram {
         double g = -0.990;        // The Mie phase asymmetry factor
         double exposure = 2;
 
-        this.eyePointId = GLES20.glGetUniformLocation(this.getObjectId(), "eyePoint");
-        this.eyeMagnitudeId = GLES20.glGetUniformLocation(this.getObjectId(), "eyeMagnitude");
-        this.eyeMagnitude2Id = GLES20.glGetUniformLocation(this.getObjectId(), "eyeMagnitude2");
-        this.lightDirectionId = GLES20.glGetUniformLocation(this.getObjectId(), "lightDirection");
-        this.atmosphereRadiusId = GLES20.glGetUniformLocation(this.getObjectId(), "atmosphereRadius");
-        this.atmosphereRadius2Id = GLES20.glGetUniformLocation(this.getObjectId(), "atmosphereRadius2");
-        this.globeRadiusId = GLES20.glGetUniformLocation(this.getObjectId(), "globeRadius");
-        this.globeRadius2Id = GLES20.glGetUniformLocation(this.getObjectId(), "globeRadius2");
+        this.fragModeId = GLES20.glGetUniformLocation(this.programId, "fragMode");
+        GLES20.glUniform1i(this.fragModeId, FRAGMODE_SKY);
 
         this.mvpMatrixId = GLES20.glGetUniformLocation(this.programId, "mvpMatrix");
         new Matrix4().transposeToArray(this.array, 0); // 4 x 4 identity matrix
         GLES20.glUniformMatrix4fv(this.mvpMatrixId, 1, false, this.array, 0);
 
-        this.vertexOriginId = GLES20.glGetUniformLocation(this.programId, "vertexOrigin");
+        this.texCoordMatrixId = GLES20.glGetUniformLocation(this.programId, "texCoordMatrix");
+        new Matrix3().transposeToArray(this.array, 0); // 3 x 3 identity matrix
+        GLES20.glUniformMatrix3fv(this.texCoordMatrixId, 1, false, this.array, 0);
+
+        this.texSamplerId = GLES20.glGetUniformLocation(this.programId, "texSampler");
+        GLES20.glUniform1i(this.texSamplerId, 0); // GL_TEXTURE0
+
+        this.vertexOriginId = GLES20.glGetUniformLocation(this.getObjectId(), "vertexOrigin");
         Arrays.fill(this.array, 0);
         GLES20.glUniform3fv(this.vertexOriginId, 1, this.array, 0);
 
-        // Configure the program's constant uniform variables.
+        this.eyePointId = GLES20.glGetUniformLocation(this.getObjectId(), "eyePoint");
+        Arrays.fill(this.array, 0);
+        GLES20.glUniform3fv(this.eyePointId, 1, this.array, 0);
+
+        this.eyeMagnitudeId = GLES20.glGetUniformLocation(this.getObjectId(), "eyeMagnitude");
+        GLES20.glUniform1f(this.eyeMagnitudeId, 0);
+
+        this.eyeMagnitude2Id = GLES20.glGetUniformLocation(this.getObjectId(), "eyeMagnitude2");
+        GLES20.glUniform1f(this.eyeMagnitude2Id, 0);
+
+        this.lightDirectionId = GLES20.glGetUniformLocation(this.getObjectId(), "lightDirection");
+        Arrays.fill(this.array, 0);
+        GLES20.glUniform3fv(this.lightDirectionId, 1, this.array, 0);
+
         this.invWavelengthId = GLES20.glGetUniformLocation(this.getObjectId(), "invWavelength");
         invWavelength.toArray(this.array, 0);
         GLES20.glUniform3fv(this.invWavelengthId, 1, this.array, 0);
+
+        this.atmosphereRadiusId = GLES20.glGetUniformLocation(this.getObjectId(), "atmosphereRadius");
+        GLES20.glUniform1f(this.atmosphereRadiusId, 0);
+
+        this.atmosphereRadius2Id = GLES20.glGetUniformLocation(this.getObjectId(), "atmosphereRadius2");
+        GLES20.glUniform1f(this.atmosphereRadius2Id, 0);
+
+        this.globeRadiusId = GLES20.glGetUniformLocation(this.getObjectId(), "globeRadius");
+        GLES20.glUniform1f(this.globeRadiusId, 0);
 
         this.KrESunId = GLES20.glGetUniformLocation(this.getObjectId(), "KrESun");
         GLES20.glUniform1f(this.KrESunId, (float) (Kr * ESun));
@@ -147,6 +192,10 @@ public class AtmosphereProgram extends GpuProgram {
         return altitude;
     }
 
+    public void loadFragMode(@FragMode int fragMode) {
+        GLES20.glUniform1i(this.fragModeId, fragMode);
+    }
+
     public void loadModelviewProjection(Matrix4 matrix) {
         if (matrix == null) {
             throw new IllegalArgumentException(
@@ -157,35 +206,69 @@ public class AtmosphereProgram extends GpuProgram {
         GLES20.glUniformMatrix4fv(this.mvpMatrixId, 1, false, this.array, 0);
     }
 
-    public void loadVertexOrigin(Vec3 vector) {
-        if (vector == null) {
+    public void loadTexCoordMatrix(Matrix3 matrix) {
+        if (matrix == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "GroundProgram", "loadVertexOrigin", "missingVector"));
+                Logger.logMessage(Logger.ERROR, "AtmosphereProgram", "loadTexCoordMatrix", "missingMatrix"));
         }
 
-        vector.toArray(this.array, 0);
+        matrix.transposeToArray(this.array, 0);
+        GLES20.glUniformMatrix3fv(this.texCoordMatrixId, 1, false, this.array, 0);
+    }
+
+    public void loadVertexOrigin(Vec3 origin) {
+        if (origin == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "AtmosphereProgram", "loadVertexOrigin", "missingVector"));
+        }
+
+        origin.toArray(this.array, 0);
         GLES20.glUniform3fv(this.vertexOriginId, 1, this.array, 0);
     }
 
-    public void loadUniforms(DrawContext dc) {
-        // Use the draw context's eye point.
-        dc.getEyePoint().toArray(this.array, 0);
-        GLES20.glUniform3fv(this.eyePointId, 1, this.array, 0);
-        GLES20.glUniform1f(this.eyeMagnitudeId, (float) dc.getEyePoint().magnitude());
-        GLES20.glUniform1f(this.eyeMagnitude2Id, (float) dc.getEyePoint().magnitudeSquared());
+    public void loadLightDirection(Vec3 direction) {
+        if (direction == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "AtmosphereProgram", "loadLightDirection", "missingVector"));
+        }
 
-        // Use the draw context's light direction.
-        ((Vec3) dc.getUserProperty("lightDirection")).toArray(this.array, 0);
+        direction.toArray(this.array, 0);
         GLES20.glUniform3fv(this.lightDirectionId, 1, this.array, 0);
+    }
 
-        // Use this program's atmosphere altitude.
-        double r = dc.getGlobe().getEquatorialRadius() + this.altitude;
-        GLES20.glUniform1f(this.atmosphereRadiusId, (float) r);
-        GLES20.glUniform1f(this.atmosphereRadius2Id, (float) (r * r));
+    public void loadEyePoint(Vec3 eyePoint) {
+        if (eyePoint == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "AtmosphereProgram", "loadEyePoint", "missingVector"));
+        }
 
-        // Use the draw context's globe radius.
-        r = dc.getGlobe().getEquatorialRadius();
-        GLES20.glUniform1f(this.globeRadiusId, (float) r);
-        GLES20.glUniform1f(this.globeRadius2Id, (float) (r * r));
+        eyePoint.toArray(this.array, 0);
+        GLES20.glUniform3fv(this.eyePointId, 1, this.array, 0);
+        GLES20.glUniform1f(this.eyeMagnitudeId, (float) eyePoint.magnitude());
+        GLES20.glUniform1f(this.eyeMagnitude2Id, (float) eyePoint.magnitudeSquared());
+    }
+
+    public void loadGlobe(Globe globe) {
+        if (globe == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "AtmosphereProgram", "loadGlobe", "missingGlobe"));
+        }
+
+        double gr = globe.getEquatorialRadius();
+        double ar = gr + this.altitude;
+        GLES20.glUniform1f(this.globeRadiusId, (float) gr);
+        GLES20.glUniform1f(this.atmosphereRadiusId, (float) ar);
+        GLES20.glUniform1f(this.atmosphereRadius2Id, (float) (ar * ar));
+    }
+
+    /**
+     * Frag color indicates the atmospheric scattering color components written to the fragment color. Accepted values
+     * are {@link #FRAGMODE_SKY}, {@link #FRAGMODE_GROUND_PRIMARY}, {@link #FRAGMODE_GROUND_SECONDARY} and {@link
+     * #FRAGMODE_GROUND_PRIMARY_TEX_BLEND}.
+     */
+    @IntDef({FRAGMODE_SKY, FRAGMODE_GROUND_PRIMARY, FRAGMODE_GROUND_SECONDARY, FRAGMODE_GROUND_PRIMARY_TEX_BLEND})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FragMode {
+
     }
 }

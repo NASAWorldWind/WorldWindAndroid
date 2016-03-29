@@ -13,16 +13,31 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
 
+import gov.nasa.worldwind.geom.Location;
+import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Matrix4;
+import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.layer.AbstractLayer;
 import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.GpuTexture;
+import gov.nasa.worldwindx.R;
 
 public class AtmosphereLayer extends AbstractLayer {
 
-    //protected int nightImageId = R.drawable.dnb_land_ocean_ice_2012;
+    protected Object nightImageSource;
+
+    protected Location lightLocation = new Location();
+
+    protected Matrix4 mvpMatrix = new Matrix4();
+
+    protected Matrix3 texCoordMatrix = new Matrix3();
+
+    protected Vec3 vector = new Vec3();
+
+    protected Sector fullSphereSector = new Sector().setFullSphere();
 
     protected int skyWidth = 128;
 
@@ -32,34 +47,29 @@ public class AtmosphereLayer extends AbstractLayer {
 
     protected ShortBuffer skyTriStrip;
 
-    protected Vec3 lightDirection = new Vec3();
-
-    protected Matrix4 mvpMatrix = new Matrix4();
-
-    //protected Matrix3 texCoordMatrix = new Matrix3();
-
-    protected Sector fullSphereSector = new Sector().setFullSphere();
-
     public AtmosphereLayer() {
         super("Atmosphere");
+        this.nightImageSource = R.drawable.dnb_land_ocean_ice_2012;
+    }
+
+    public AtmosphereLayer(Object nightImageSource) {
+        super("Atmosphere");
+        this.nightImageSource = nightImageSource;
+    }
+
+    public Object getNightImageSource() {
+        return nightImageSource;
+    }
+
+    public void setNightImageSource(Object nightImageSource) {
+        this.nightImageSource = nightImageSource;
     }
 
     @Override
     protected void doRender(DrawContext dc) {
-        // TODO light/sun direction should be a property of the WorldWindow attached to the DrawContext each frame
-        if (!dc.hasUserProperty("lightDirection")) {
-            this.lightDirection.set(dc.getEyePoint()).normalize();
-            dc.putUserProperty("lightDirection", this.lightDirection);
-        }
 
-        this.drawGround(dc);
-        this.drawSky(dc);
-    }
-
-    protected void drawGround(DrawContext dc) {
-
-        GroundProgram program = (GroundProgram) dc.getGpuObjectCache().retrieveProgram(dc,
-            GroundProgram.class);
+        AtmosphereProgram program = (AtmosphereProgram) dc.getGpuObjectCache().retrieveProgram(dc,
+            AtmosphereProgram.class);
         if (program == null) {
             return; // program is not in the GPU object cache yet
         }
@@ -67,78 +77,36 @@ public class AtmosphereLayer extends AbstractLayer {
         // Use this layer's ground GLSL program.
         dc.useProgram(program);
 
-        // Apply the draw context's properties to the program.
-        program.loadUniforms(dc);
+        // Use this layer's light direction.
+        // TODO Make light/sun direction an optional property of the WorldWindow and attach it to the DrawContext each frame
+        // TODO DrawContext property defaults to the eye lat/lon like we have below
+        this.lightLocation.set(dc.getEyePosition());
+        dc.getGlobe().geographicToCartesianNormal(this.lightLocation.latitude, this.lightLocation.longitude, this.vector);
+        program.loadLightDirection(this.vector);
 
-        // Attempt to use this layer's texture.
-        // TODO handle missing texture correctly
-        //GpuTexture texture = dc.getGpuObjectCache().retrieveTexture(dc, this.nightImageId);
-        //if (texture != null) {
-        //    // Bind the texture.
-        //    program.loadTextureSampler(0); // GL_TEXTURE0
-        //    dc.bindTexture(GLES20.GL_TEXTURE0, texture);
-        //}
+        // Use the draw context's globe.
+        program.loadGlobe(dc.getGlobe());
 
-        // Get the draw context's tessellated terrain and modelview projection matrix.
-        Terrain terrain = dc.getTerrain();
+        // Use the draw context's eye point.
+        program.loadEyePoint(dc.getEyePoint());
 
-        // Set up to use the shared tile tex coord attributes.
-        GLES20.glEnableVertexAttribArray(1);
-        terrain.useVertexTexCoordAttrib(dc, 1);
+        // Draw the sky portion of the atmosphere.
+        this.drawSky(dc, program);
 
-        for (int idx = 0, len = terrain.getTileCount(); idx < len; idx++) {
-
-            // Use the draw context's modelview projection matrix, transformed to the tile's local coordinates.
-            Vec3 terrainOrigin = terrain.getTileVertexOrigin(idx);
-            this.mvpMatrix.set(dc.getModelviewProjection());
-            this.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
-            program.loadModelviewProjection(this.mvpMatrix);
-            program.loadVertexOrigin(terrainOrigin);
-
-            // Use the texture's transform matrix.
-            // TODO handle missing texture correctly
-            //if (texture != null) {
-            //    this.texCoordMatrix.setToIdentity();
-            //    texture.applyTexCoordTransform(this.texCoordMatrix);
-            //    terrain.applyTexCoordTransform(idx, this.fullSphereSector, this.texCoordMatrix);
-            //    program.loadTexCoordMatrix(this.texCoordMatrix);
-            //}
-
-            // Use the tile's vertex point attribute.
-            terrain.useVertexPointAttrib(dc, idx, 0);
-
-            // Draw the tile, multiplying the current fragment color by the program's secondary color.
-            program.loadFragColor(GroundProgram.FRAGCOLOR_SECONDARY);
-            GLES20.glBlendFunc(GLES20.GL_DST_COLOR, GLES20.GL_ZERO);
-            terrain.drawTileTriangles(dc, idx);
-
-            // Draw the tile, adding the current fragment color to the program's primary color.
-            program.loadFragColor(GroundProgram.FRAGCOLOR_PRIMARY); // TODO handle missing texture correctly
-            GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE);
-            terrain.drawTileTriangles(dc, idx);
-        }
-
-        // Restore the default World Wind OpenGL state.
-        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        GLES20.glDisableVertexAttribArray(1);
+        // Draw the ground portion of the atmosphere.
+        this.drawGround(dc, program);
     }
 
-    protected void drawSky(DrawContext dc) {
+    protected void drawSky(DrawContext dc, AtmosphereProgram program) {
 
-        AtmosphereProgram program = (AtmosphereProgram) dc.getGpuObjectCache().retrieveProgram(dc,
-            SkyProgram.class);
-        if (program == null) {
-            return; // program is not in the GPU object cache yet
-        }
-
-        // Use this layer's sky GLSL program.
-        dc.useProgram(program);
+        // Use the vertex origin for the sky ellipsoid.
+        program.loadVertexOrigin(this.vector.set(0, 0, 0));
 
         // Use the draw context's modelview projection matrix.
         program.loadModelviewProjection(dc.getModelviewProjection());
 
-        // Apply the draw context's properties to the program.
-        program.loadUniforms(dc);
+        // Use the sky fragment mode, which assumes the standard premultiplied alpha blending mode.
+        program.loadFragMode(AtmosphereProgram.FRAGMODE_SKY);
 
         // Use the sky's vertex point attribute.
         this.useSkyVertexPointAttrib(dc, program.getAltitude(), 0);
@@ -151,6 +119,71 @@ public class AtmosphereLayer extends AbstractLayer {
         // Restore the default World Wind OpenGL state.
         GLES20.glDepthMask(true);
         GLES20.glFrontFace(GLES20.GL_CCW);
+    }
+
+    protected void drawGround(DrawContext dc, AtmosphereProgram program) {
+
+        GpuTexture texture = null;
+        boolean textureBound = false;
+
+        // Use this layer's night image when the light location is different than the eye location.
+        Position eyePos = dc.getEyePosition();
+        if (this.nightImageSource != null
+            && (this.lightLocation.latitude != eyePos.latitude || this.lightLocation.longitude != eyePos.longitude)) {
+
+            texture = (GpuTexture) dc.getGpuObjectCache().get(this.nightImageSource);
+            if (texture == null) {
+                texture = new GpuTexture(dc, this.nightImageSource);
+            }
+
+            textureBound = texture.bindTexture(dc, GLES20.GL_TEXTURE0);
+        }
+
+        // Get the draw context's tessellated terrain and modelview projection matrix.
+        Terrain terrain = dc.getTerrain();
+        Matrix4 modelviewProjection = dc.getModelviewProjection();
+
+        // Set up to use the shared tile tex coord attributes.
+        GLES20.glEnableVertexAttribArray(1);
+        terrain.useVertexTexCoordAttrib(dc, 1);
+
+        for (int idx = 0, len = terrain.getTileCount(); idx < len; idx++) {
+
+            // Use the vertex origin for the terrain tile.
+            Vec3 terrainOrigin = terrain.getTileVertexOrigin(idx);
+            program.loadVertexOrigin(terrainOrigin);
+
+            // Use the draw context's modelview projection matrix, transformed to the tile's local coordinates.
+            this.mvpMatrix.set(modelviewProjection);
+            this.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
+            program.loadModelviewProjection(this.mvpMatrix);
+
+            // Use the texture's transform matrix.
+            if (textureBound) {
+                this.texCoordMatrix.setToIdentity();
+                texture.applyTexCoordTransform(this.texCoordMatrix);
+                terrain.applyTexCoordTransform(idx, this.fullSphereSector, this.texCoordMatrix);
+                program.loadTexCoordMatrix(this.texCoordMatrix);
+            }
+
+            // Use the tile's vertex point attribute.
+            terrain.useVertexPointAttrib(dc, idx, 0);
+
+            // Draw the tile, multiplying the current fragment color by the program's secondary color.
+            program.loadFragMode(AtmosphereProgram.FRAGMODE_GROUND_SECONDARY);
+            GLES20.glBlendFunc(GLES20.GL_DST_COLOR, GLES20.GL_ZERO);
+            terrain.drawTileTriangles(dc, idx);
+
+            // Draw the tile, adding the current fragment color to the program's primary color.
+            program.loadFragMode(textureBound ?
+                AtmosphereProgram.FRAGMODE_GROUND_PRIMARY_TEX_BLEND : AtmosphereProgram.FRAGMODE_GROUND_PRIMARY);
+            GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE);
+            terrain.drawTileTriangles(dc, idx);
+        }
+
+        // Restore the default World Wind OpenGL state.
+        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES20.glDisableVertexAttribArray(1);
     }
 
     protected void useSkyVertexPointAttrib(DrawContext dc, double altitude, int attribLocation) {
