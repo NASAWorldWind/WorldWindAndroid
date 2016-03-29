@@ -96,6 +96,16 @@ public class WorldWind {
     public static final int RHUMB_LINE = 2;
 
     /**
+     * WGS 84 reference value for the Earth ellipsoid's semi-major axis: 6378137.0.
+     */
+    public static final double WGS84_SEMI_MAJOR_AXIS = 6378137.0;
+
+    /**
+     * WGS 84 reference value for the Earth ellipsoid's inverse flattening (1/f): 298.257223563.
+     */
+    public static final double WGS84_INVERSE_FLATTENING = 298.257223563;
+
+    /**
      * Provides a global mechanism for broadcasting notifications within the World Wind library and Wordl Wind
      * applications.
      */

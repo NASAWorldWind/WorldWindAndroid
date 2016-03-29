@@ -23,8 +23,8 @@ public class WmsLayerActivity extends BasicGlobeActivity {
         WmsLayerConfig config = new WmsLayerConfig();
         config.serviceAddress = "http://neowms.sci.gsfc.nasa.gov/wms/wms";
         config.wmsVersion = "1.1.1"; // NEO server works best with WMS 1.1.1
-        config.layerNames = "MOD14A1_M_FIRE"; // Active Fires (1 month)
-        WmsLayer layer = new WmsLayer(new Sector().setFullSphere(), 10, config); // 10 pixels/degree
+        config.layerNames = "MYD28M"; // Sea surface temperature (MODIS)
+        WmsLayer layer = new WmsLayer(new Sector().setFullSphere(), 1e3, config); // 1km resolution
 
         // Add the WMS layer to the World Window before the Atmosphere layer.
         int index = this.getWorldWindow().getLayers().indexOfLayerNamed("Atmosphere");

@@ -37,8 +37,17 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
 
     protected LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(600); // capacity for 600 tiles
 
+    public TiledImageLayer() {
+        this.setDisplayName("Tiled Image Layer");
+        this.init();
+    }
+
     public TiledImageLayer(String displayName) {
         super(displayName);
+        this.init();
+    }
+
+    protected void init() {
         this.setPickEnabled(false);
     }
 

@@ -47,6 +47,6 @@ public class BlueMarbleLayer extends WmsLayer {
         config.transparent = false; // the BlueMarble layer is opaque
 
         this.setDisplayName("Blue Marble");
-        this.setConfiguration(new Sector().setFullSphere(), 240, config); // 240 pixels/degree
+        this.setConfiguration(new Sector().setFullSphere(), 500, config); // 500m resolution on Earth
     }
 }

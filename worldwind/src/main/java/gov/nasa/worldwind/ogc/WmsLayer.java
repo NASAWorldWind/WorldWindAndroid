@@ -5,7 +5,9 @@
 
 package gov.nasa.worldwind.ogc;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.layer.TiledImageLayer;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.LevelSetConfig;
@@ -24,18 +26,10 @@ import gov.nasa.worldwind.util.Logger;
 public class WmsLayer extends TiledImageLayer {
 
     /**
-     * WMSLayer's default image format: image/png.
-     */
-    protected static final String DEFAULT_IMAGE_FORMAT = "image/png";
-
-    // TODO resolution should be something else, like radians/texel
-
-    /**
      * Constructs an empty Web Map Service (WMS) layer that displays nothing.
      */
     public WmsLayer() {
-        super("WMS Layer");
-        this.setImageFormat(DEFAULT_IMAGE_FORMAT); // establish a default image format
+        this.init();
     }
 
     /**
@@ -44,14 +38,14 @@ public class WmsLayer extends TiledImageLayer {
      * sector and resolution. All other WMS configuration values may be unspecified, in which case a default value is
      * used.
      *
-     * @param sector     the geographic region in which to display the WMS layer
-     * @param resolution the desired resolution in pixels per degree
-     * @param config     the WMS layer configuration values
+     * @param sector         the geographic region in which to display the WMS layer
+     * @param metersPerPixel the desired resolution in meters on Earth
+     * @param config         the WMS layer configuration values
      *
      * @throws IllegalArgumentException If any argument is null, if the resolution is not positive, or if any
      *                                  configuration value is invalid
      */
-    public WmsLayer(Sector sector, double resolution, WmsLayerConfig config) {
+    public WmsLayer(Sector sector, double metersPerPixel, WmsLayerConfig config) {
         super("WMS Layer");
 
         if (sector == null) {
@@ -59,7 +53,7 @@ public class WmsLayer extends TiledImageLayer {
                 Logger.logMessage(Logger.ERROR, "WmsLayer", "constructor", "missingSector"));
         }
 
-        if (resolution <= 0) {
+        if (metersPerPixel <= 0) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "WmsLayer", "constructor", "invalidResolution"));
         }
@@ -69,8 +63,51 @@ public class WmsLayer extends TiledImageLayer {
                 Logger.logMessage(Logger.ERROR, "WmsLayer", "constructor", "missingConfig"));
         }
 
-        this.setConfiguration(sector, resolution, config);
-        this.setImageFormat(DEFAULT_IMAGE_FORMAT); // establish a default image format
+        this.init();
+        this.setConfiguration(sector, metersPerPixel, config);
+    }
+
+    /**
+     * Constructs a Web Map Service (WMS) layer with specified WMS layer configuration values. The configuration must
+     * specify the following values: service address, WMS protocol version, layer names, coordinate reference system,
+     * sector and resolution. All other WMS configuration values may be unspecified, in which case a default value is
+     * used.
+     *
+     * @param sector         the geographic region in which to display the WMS layer
+     * @param metersPerPixel the desired resolution in meters on the specified globe
+     * @param config         the WMS layer configuration values
+     *
+     * @throws IllegalArgumentException If any argument is null, if the resolution is not positive, or if any
+     *                                  configuration value is invalid
+     */
+    public WmsLayer(Sector sector, Globe globe, double metersPerPixel, WmsLayerConfig config) {
+        if (sector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmsLayer", "constructor", "missingSector"));
+        }
+
+        if (globe == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmsLayer", "constructor", "missingGlobe"));
+        }
+
+        if (metersPerPixel <= 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmsLayer", "constructor", "invalidResolution"));
+        }
+
+        if (config == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmsLayer", "constructor", "missingConfig"));
+        }
+
+        this.init();
+        this.setConfiguration(sector, metersPerPixel, config);
+    }
+
+    protected void init() {
+        this.setDisplayName("WMS Layer");
+        this.setImageFormat("image/png"); // default to the PNG image format
     }
 
     /**
@@ -78,17 +115,17 @@ public class WmsLayer extends TiledImageLayer {
      * service address, WMS protocol version, layer names, coordinate reference system, sector and resolution. All other
      * WMS configuration values may be unspecified, in which case a default value is used.
      *
-     * @param sector     the geographic region in which to display the WMS layer
-     * @param resolution the desired resolution in pixels per degree
-     * @param config     the WMS layer configuration values
+     * @param sector         the geographic region in which to display the WMS layer
+     * @param metersPerPixel the desired resolution in meters on Earth
+     * @param config         the WMS layer configuration values
      */
-    public void setConfiguration(Sector sector, double resolution, WmsLayerConfig config) {
+    public void setConfiguration(Sector sector, double metersPerPixel, WmsLayerConfig config) {
         if (sector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "WmsLayer", "setConfiguration", "missingSector"));
         }
 
-        if (resolution <= 0) {
+        if (metersPerPixel <= 0) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "WmsLayer", "setConfiguration", "invalidResolution"));
         }
@@ -98,9 +135,51 @@ public class WmsLayer extends TiledImageLayer {
                 Logger.logMessage(Logger.ERROR, "WmsLayer", "setConfiguration", "missingConfig"));
         }
 
+        double radiansPerPixel = metersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS;
+
         LevelSetConfig levelsConfig = new LevelSetConfig();
         levelsConfig.sector.set(sector);
-        levelsConfig.numLevels = levelsConfig.numLevelsForResolution(resolution);
+        levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel);
+
+        this.setLevelSet(new LevelSet(levelsConfig));
+        this.setTileUrlFactory(new WmsGetMapUrlFactory(config));
+    }
+
+    /**
+     * Specifies this Web Map Service (WMS) layer's configuration. The configuration must specify the following values:
+     * service address, WMS protocol version, layer names, coordinate reference system, sector and resolution. All other
+     * WMS configuration values may be unspecified, in which case a default value is used.
+     *
+     * @param sector         the geographic region in which to display the WMS layer
+     * @param metersPerPixel the desired resolution in meters on the specified globe
+     * @param config         the WMS layer configuration values
+     */
+    public void setConfiguration(Sector sector, Globe globe, double metersPerPixel, WmsLayerConfig config) {
+        if (sector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmsLayer", "setConfiguration", "missingSector"));
+        }
+
+        if (globe == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmsLayer", "setConfiguration", "missingGlobe"));
+        }
+
+        if (metersPerPixel <= 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmsLayer", "setConfiguration", "invalidResolution"));
+        }
+
+        if (config == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmsLayer", "setConfiguration", "missingConfig"));
+        }
+
+        double radiansPerPixel = metersPerPixel / globe.getEquatorialRadius();
+
+        LevelSetConfig levelsConfig = new LevelSetConfig();
+        levelsConfig.sector.set(sector);
+        levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel);
 
         this.setLevelSet(new LevelSet(levelsConfig));
         this.setTileUrlFactory(new WmsGetMapUrlFactory(config));

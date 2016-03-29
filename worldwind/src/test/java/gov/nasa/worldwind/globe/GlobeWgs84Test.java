@@ -7,6 +7,8 @@ package gov.nasa.worldwind.globe;
 
 import org.junit.Test;
 
+import gov.nasa.worldwind.WorldWind;
+
 import static org.junit.Assert.*;
 
 /**
@@ -41,14 +43,14 @@ public class GlobeWgs84Test {
     @Test
     public void testWgs84SemiMajorAxis() throws Exception {
 
-        assertEquals("semi-major axis", OFFICIAL_SEMI_MAJOR_AXIS, GlobeWgs84.WGS84_SEMI_MAJOR_AXIS, 0);
+        assertEquals("semi-major axis", OFFICIAL_SEMI_MAJOR_AXIS, WorldWind.WGS84_SEMI_MAJOR_AXIS, 0);
 
     }
 
     @Test
     public void testWgs84InverseFlattening() throws Exception {
 
-        assertEquals("inverse flattening", OFFICIAL_INVERSE_FLATTENING, GlobeWgs84.WGS84_INVERSE_FLATTENING, 0);
+        assertEquals("inverse flattening", OFFICIAL_INVERSE_FLATTENING, WorldWind.WGS84_INVERSE_FLATTENING, 0);
 
     }
 }
