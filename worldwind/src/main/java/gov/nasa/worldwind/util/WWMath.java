@@ -14,7 +14,7 @@ public class WWMath {
      * Restricts a value to the range [min, max] degrees, clamping values outside the range. Values less than min are
      * returned as min, and values greater than max are returned as max. Values within the range are returned
      * unmodified.
-     * <p/>
+     * <p>
      * The result of this method is undefined if min is greater than max.
      *
      * @param value the values to clamp
@@ -36,7 +36,7 @@ public class WWMath {
      *
      * @return the specified angle clamped to the range [-180, +180] degrees
      */
-    public static double clampAngle(double degrees) {
+    public static double clampAngle180(double degrees) {
         return degrees > 180 ? 180 : (degrees < -180 ? -180 : degrees);
     }
 
@@ -48,7 +48,7 @@ public class WWMath {
      *
      * @return the specified angle clamped to the range [0, 360] degrees
      */
-    public static double clampDegrees(double degrees) { // TODO rename as clampHeading or clampAzimuth
+    public static double clampAngle360(double degrees) {
         return degrees > 360 ? 360 : (degrees < 0 ? 0 : degrees);
     }
 
@@ -61,7 +61,7 @@ public class WWMath {
      *
      * @return the specified angle wrapped to [-180, +180] degrees
      */
-    public static double normalizeAngle(double degrees) {
+    public static double normalizeAngle180(double degrees) {
         double angle = degrees % 360;
         return angle > 180 ? angle - 360 : (angle < -180 ? 360 + angle : angle);
     }
@@ -75,7 +75,7 @@ public class WWMath {
      *
      * @return the specified angle wrapped to [0, 360] degrees
      */
-    public static double normalizeDegrees(double degrees) { // TODO rename as normalizeHeading or normalizeAzimuth
+    public static double normalizeAngle360(double degrees) {
         double angle = degrees % 360;
         return angle >= 0 ? angle : (angle < 0 ? 360 + angle : 360 - angle);
     }

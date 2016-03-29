@@ -126,7 +126,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             if (lat < -90 || lat > 90) {
                 this.lookAt.latitude = Location.normalizeLatitude(lat);
                 this.lookAt.longitude = Location.normalizeLongitude(lon + 180);
-                this.lookAt.heading = WWMath.normalizeAngle(heading + 180);
+                this.lookAt.heading = WWMath.normalizeAngle360(heading + 180);
             } else if (lon < -180 || lon > 180) {
                 this.lookAt.latitude = lat;
                 this.lookAt.longitude = Location.normalizeLongitude(lon);
@@ -172,7 +172,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
         } else if (state == WorldWind.CHANGED) {
             // Apply the change in rotation to the navigator, relative to the navigator's current values.
             double headingDegrees = this.lastRotation - rotation;
-            this.lookAt.heading = WWMath.normalizeDegrees(this.lookAt.heading + headingDegrees);
+            this.lookAt.heading = WWMath.normalizeAngle360(this.lookAt.heading + headingDegrees);
             this.lastRotation = rotation;
 
             this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
@@ -194,7 +194,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             // Apply the change in tilt to the navigator, relative to when the gesture began.
             double headingDegrees = 180 * dx / this.wwd.getWidth();
             double tiltDegrees = -180 * dy / this.wwd.getHeight();
-            this.lookAt.heading = WWMath.normalizeDegrees(this.beginLookAt.heading + headingDegrees);
+            this.lookAt.heading = WWMath.normalizeAngle360(this.beginLookAt.heading + headingDegrees);
             this.lookAt.tilt = this.beginLookAt.tilt + tiltDegrees;
             this.applyLimits(this.lookAt);
 

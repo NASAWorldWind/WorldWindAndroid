@@ -32,7 +32,7 @@ public class RotationRecognizer extends GestureRecognizer {
     }
 
     public float getRotation() {
-        return (float) WWMath.normalizeAngle(this.rotation + this.rotationOffset);
+        return (float) WWMath.normalizeAngle180(this.rotation + this.rotationOffset);
     }
 
     protected void reset() {
@@ -66,7 +66,7 @@ public class RotationRecognizer extends GestureRecognizer {
                 }
             } else if (state == WorldWind.BEGAN || state == WorldWind.CHANGED) {
                 float angle = this.currentTouchAngle(event);
-                float newRotation = (float) WWMath.normalizeAngle(angle - this.referenceAngle);
+                float newRotation = (float) WWMath.normalizeAngle180(angle - this.referenceAngle);
                 this.rotation = this.lowPassFilter(this.rotation, newRotation);
                 this.transitionToState(event, WorldWind.CHANGED);
             }
@@ -94,7 +94,7 @@ public class RotationRecognizer extends GestureRecognizer {
         }
 
         float angle = this.currentTouchAngle(event);
-        float rotation = (float) WWMath.normalizeAngle(angle - this.referenceAngle);
+        float rotation = (float) WWMath.normalizeAngle180(angle - this.referenceAngle);
 
         return Math.abs(rotation) > this.interpretAngle;
     }
