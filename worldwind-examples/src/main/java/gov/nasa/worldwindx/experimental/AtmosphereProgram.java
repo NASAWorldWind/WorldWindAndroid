@@ -87,8 +87,8 @@ public class AtmosphereProgram extends GpuProgram {
     protected float[] array = new float[16];
 
     public AtmosphereProgram(DrawContext dc) throws IOException {
-        super(WWUtil.readResourceAsText(dc.getResources(), R.raw.gov_nasa_worldwind_skyprogram_vert),
-            WWUtil.readResourceAsText(dc.getResources(), R.raw.gov_nasa_worldwind_skyprogram_frag),
+        super(WWUtil.readResourceAsText(dc.getResources(), R.raw.gov_nasa_worldwind_atmosphereprogram_vert),
+            WWUtil.readResourceAsText(dc.getResources(), R.raw.gov_nasa_worldwind_atmosphereprogram_frag),
             new String[]{"vertexPoint", "vertexTexCoord"});
         this.init();
     }

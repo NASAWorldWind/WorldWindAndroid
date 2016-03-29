@@ -41,7 +41,7 @@ public class AtmosphereLayer extends AbstractLayer {
 
     protected int skyWidth = 128;
 
-    protected int skyHeight = 64;
+    protected int skyHeight = 128;
 
     protected FloatBuffer skyPoints;
 
