@@ -1,3 +1,12 @@
 <resources>
-    <string name="app_name">World Wind Activity</string>
+    <string name="app_name">World Wind Examples</string>
+    <string name="title_basic_globe">Basic Globe</string>
+    <string name="title_wms_layer">WMS Layer</string>
+    <string name="title_surface_image">Surface Image</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_about">About</string>
+    <string name="action_settings">Settings</string>
 </resources>
