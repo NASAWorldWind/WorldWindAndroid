@@ -5,17 +5,18 @@
 
 precision mediump float;
 
-const vec2 zero = vec2(0.0, 0.0);
-const vec2 one = vec2(1.0, 1.0);
-
 uniform sampler2D texSampler;
 
 varying vec2 texCoord[2];
 
 void main() {
-    /* Modulate the fragment color by a mask that's 1.0 when the fragment is inside the surface tile, and 0.0 otherwise. */
-    float texMask = float(all(greaterThanEqual(texCoord[1], zero)) && all(lessThanEqual(texCoord[1], one)));
+    /* Using the second texture coordinate, compute a mask that's 1.0 when the fragment is inside the surface tile, and
+       0.0 otherwise */
+    float sMask = step(0.0, texCoord[1].s) * (1.0 - step(1.0, texCoord[1].s));
+    float tMask = step(0.0, texCoord[1].t) * (1.0 - step(1.0, texCoord[1].t));
+    float tileMask = sMask * tMask;
 
-    /* Return the surface tile's 2D texture color. */
-    gl_FragColor = texture2D(texSampler, texCoord[0]) * texMask;
+    /* Return the surface tile's 2D texture color using the first texture coordinate. Modulate by the mask to suppress
+       fragments outside the surface tile. */
+    gl_FragColor = texture2D(texSampler, texCoord[0]) * tileMask;
 }
