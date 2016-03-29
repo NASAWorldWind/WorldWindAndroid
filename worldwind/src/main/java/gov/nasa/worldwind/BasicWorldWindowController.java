@@ -32,8 +32,6 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
 
     protected int activeGestures;
 
-    protected double minRange = 10;
-
     protected PanRecognizer panRecognizer = new PanRecognizer();
 
     protected GestureRecognizer pinchRecognizer = new PinchRecognizer();
@@ -153,10 +151,8 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
         } else if (state == WorldWind.CHANGED) {
             if (scale != 0) {
                 // Apply the change in scale to the navigator, relative to when the gesture began.
-                double range = this.beginLookAt.range / scale;
-                double minRange = this.minRange;
-                double maxRange = this.wwd.distanceToViewGlobeExtents() * 2;
-                this.lookAt.range = WWMath.clamp(range, minRange, maxRange);
+                this.lookAt.range = this.beginLookAt.range / scale;
+                this.applyLimits(this.lookAt);
 
                 this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
                 this.wwd.requestRender();
@@ -172,6 +168,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
 
         if (state == WorldWind.BEGAN) {
             this.gestureDidBegin();
+            this.lastRotation = 0;
         } else if (state == WorldWind.CHANGED) {
             // Apply the change in rotation to the navigator, relative to the navigator's current values.
             double headingDegrees = this.lastRotation - rotation;
@@ -198,13 +195,28 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             double headingDegrees = 180 * dx / this.wwd.getWidth();
             double tiltDegrees = -180 * dy / this.wwd.getHeight();
             this.lookAt.heading = WWMath.normalizeDegrees(this.beginLookAt.heading + headingDegrees);
-            this.lookAt.tilt = WWMath.clamp(this.beginLookAt.tilt + tiltDegrees, 0, 90);
+            this.lookAt.tilt = this.beginLookAt.tilt + tiltDegrees;
+            this.applyLimits(this.lookAt);
 
             this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
             this.wwd.requestRender();
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             this.gestureDidEnd();
         }
+    }
+
+    protected void applyLimits(LookAt lookAt) {
+        double distanceToExtents = this.wwd.distanceToViewGlobeExtents();
+
+        double minRange = 10;
+        double maxRange = distanceToExtents * 2;
+        lookAt.range = WWMath.clamp(lookAt.range, minRange, maxRange);
+
+        double minTiltRange = distanceToExtents * 0.1;
+        double maxTiltRange = distanceToExtents * 0.9;
+        double tiltAmount = WWMath.clamp((lookAt.range - minTiltRange) / (maxTiltRange - minTiltRange), 0, 1);
+        double maxTilt = 80;
+        lookAt.tilt = WWMath.clamp(lookAt.tilt, 0, maxTilt * (1 - tiltAmount));
     }
 
     protected void gestureDidBegin() {
