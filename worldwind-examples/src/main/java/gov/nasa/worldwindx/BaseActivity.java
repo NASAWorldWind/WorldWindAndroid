@@ -73,6 +73,7 @@ public class BaseActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.action_about) {
+            // TODO: Added about dialog and text for each example
             Toast.makeText(getApplicationContext(), "TODO: Show About Example dialog", Toast.LENGTH_LONG).show();
             return true;
         }
@@ -89,6 +90,7 @@ public class BaseActivity extends AppCompatActivity
             super.onBackPressed();
         }
     }
+
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
@@ -117,6 +119,9 @@ public class BaseActivity extends AppCompatActivity
                 break;
             case R.id.nav_surface_image_activity:
                 startActivity(new Intent(getApplicationContext(), SurfaceImageActivity.class));
+                break;
+            case R.id.nav_camera_control_activity:
+                startActivity(new Intent(getApplicationContext(), CameraControlActivity.class));
                 break;
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

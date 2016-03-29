@@ -4,11 +4,11 @@
   ~ National Aeronautics and Space Administration. All Rights Reserved.
   -->
 
-<RelativeLayout
+<FrameLayout
+    android:id="@+id/content_globe"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/content_globe"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="1px"
@@ -17,8 +17,27 @@
     android:paddingTop="1px"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".BasicGlobeActivity"
-    tools:showIn="@layout/app_bar_main">
+    >
 
-    <!--TODO: Resolve hack. Added a visible border to this layout to prevent it from displaying on top of navigation drawer-->
+    <!--TODO: Resolve hack. Added a 1px visible border to this layout to prevent it from displaying on top of navigation drawer-->
 
-</RelativeLayout>
+    <RelativeLayout
+        android:id="@+id/content_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="false">
+
+        <ViewStub
+            android:id="@+id/stub_camera_controls"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inflatedId="@+id/stub_camera_controls"
+            android:layout="@layout/camera_controls"
+            android:layout_alignParentTop="false"
+            android:layout_alignParentLeft="false"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="false"/>
+
+    </RelativeLayout>
+</FrameLayout>

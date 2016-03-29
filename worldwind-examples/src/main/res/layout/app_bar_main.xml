@@ -12,7 +12,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".BasicGlobeActivity">
+    tools:context=".BasicGlobeActivity"
+    tools:showIn="@layout/activity_globe">
 
     <include layout="@layout/content_globe"/>
 
