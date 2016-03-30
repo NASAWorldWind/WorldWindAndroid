@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwindx;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
@@ -14,7 +16,7 @@ import gov.nasa.worldwind.layer.BackgroundLayer;
 import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
 import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 
-public class BasicGlobeActivity extends BaseActivity {
+public class BasicGlobeActivity extends AbstractNavDrawerActivity {
 
     /**
      * Allow derived classes to override the resource used in setContentView
@@ -66,6 +68,27 @@ public class BasicGlobeActivity extends BaseActivity {
         super.onResume();
         this.wwd.onResume(); // resumes a paused rendering thread
     }
+
+    @Override
+    protected void showAboutBox() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle(this.aboutBoxTitle);
+        alertDialogBuilder
+            .setMessage(this.aboutBoxText)
+            .setCancelable(true)
+            .setNegativeButton("Close", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    // if this button is clicked, just close
+                    // the dialog box and do nothing
+                    dialog.cancel();
+                }
+            });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
 }
 
 
