@@ -11,7 +11,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import gov.nasa.worldwind.util.MessageService;
-import gov.nasa.worldwind.util.TaskService;
+import gov.nasa.worldwind.util.RetrievalService;
 
 public class WorldWind {
 
@@ -115,25 +115,26 @@ public class WorldWind {
      * Provides a global service for exeuting asynchronous tasks within the World Wind library and Wordl Wind
      * applications.
      */
-    protected static TaskService taskService = new TaskService();
+    protected static RetrievalService retrievalService = new RetrievalService();
 
     /**
-     * Returns a MessageService that provides a mechanism for broadcasting notifications within a World Wind
-     * application.
+     * Returns a singleton MessageService instance that provides a mechanism for broadcasting notifications within a
+     * World Wind application.
      *
-     * @return the default message center
+     * @return the singleton message center
      */
     public static MessageService messageService() {
         return messageService;
     }
 
     /**
-     * Returns an Executor that runs tasks on a non-UI/non-GL thread.
+     * Returns a singleton RetrievalService instance provides a mechanism for executing asynchronous resource retrieval
+     * tasks.
      *
-     * @return an Executor for running asynchronous tasks
+     * @return an singleton retrieval service
      */
-    public static TaskService taskService() {
-        return taskService;
+    public static RetrievalService retrievalService() {
+        return retrievalService;
     }
 
     /**

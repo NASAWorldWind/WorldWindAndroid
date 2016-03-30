@@ -143,7 +143,7 @@ public class GpuTexture implements GpuObject, Runnable {
 
     protected void requestImage(DrawContext dc) {
         this.resources = dc.getResources(); // temporarily reference used to load Android resources asynchronously
-        this.requested = WorldWind.taskService().offer(this); // suppress duplicate requests if the task was accepted
+        this.requested = WorldWind.retrievalService().offer(this); // suppress duplicate requests if the task was accepted
     }
 
     protected Bitmap guardedDecodeImage(Object imageSource) {
