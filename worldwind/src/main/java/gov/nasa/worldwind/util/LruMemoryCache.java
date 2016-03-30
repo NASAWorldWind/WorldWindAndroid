@@ -13,8 +13,6 @@ import java.util.Map;
 
 public class LruMemoryCache<K, V> {
 
-    protected static long keyPool; // overflows after generating quintillions of cache keys
-
     protected final Map<K, Entry<K, V>> entries = new HashMap<>();
 
     protected final Comparator<Entry<K, V>> lruComparator = new Comparator<Entry<K, V>>() {
@@ -55,15 +53,6 @@ public class LruMemoryCache<K, V> {
 
         this.capacity = capacity;
         this.lowWater = lowWater;
-    }
-
-    /**
-     * Generates cache keys that are unique to all instances of LruMemoryCache within the current Java runtime.
-     *
-     * @return a unique runtime cache key.
-     */
-    public String generateCacheKey() { // TODO make static class-level function
-        return "LruMemoryCache " + (++keyPool);
     }
 
     public int count() {

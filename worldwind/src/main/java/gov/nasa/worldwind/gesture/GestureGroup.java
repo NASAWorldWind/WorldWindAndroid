@@ -47,6 +47,6 @@ public class GestureGroup {
             recognizer.onTouchEvent(event);
         }
 
-        return true; // TODO
+        return true;
     }
 }
