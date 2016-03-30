@@ -19,19 +19,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 public class BaseActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
 
     static private int selectedItemId = R.id.nav_basic_globe_activity;
 
+    protected String aboutBoxTitle = "Title goes here";
+
+    protected String aboutBoxText = "Description goes here;";
+
     private ActionBarDrawerToggle drawerToggle;
 
     private NavigationView navigationView;
-
-    protected String aboutBoxTitle = "Title goes here";
-    protected String aboutBoxText = "Description goes here;";
 
     @Override
     public void setContentView(@LayoutRes int layoutResID) {
@@ -158,6 +158,9 @@ public class BaseActivity extends AppCompatActivity
                 break;
             case R.id.nav_camera_control_activity:
                 startActivity(new Intent(getApplicationContext(), CameraControlActivity.class));
+                break;
+            case R.id.nav_day_night_cycle_activity:
+                startActivity(new Intent(getApplicationContext(), DayNightCycleActivity.class));
                 break;
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

@@ -12,4 +12,5 @@
     <string name="title_camera_controls">Camera Controls</string>
     <string name="title_look_at">Look At</string>
     <string name="title_show_tessellation">Show Tessellation Layer</string>
+    <string name="title_day_night_cycle">Day and Night Cycle</string>
 </resources>

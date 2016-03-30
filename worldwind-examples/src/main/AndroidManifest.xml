@@ -52,6 +52,12 @@
             android:launchMode="singleInstance"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
+        <activity
+            android:name=".DayNightCycleActivity"
+            android:label="@string/title_day_night_cycle"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>
