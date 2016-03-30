@@ -7,19 +7,35 @@
     <NumberPicker
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/headingPicker"
-        android:layout_gravity="bottom"
-        style="@android:style/TextAppearance.Holo.Widget.EditText"/>
-
-    <NumberPicker
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/tiltPicker"
+        android:id="@+id/latitude_picker"
         android:layout_gravity="bottom"/>
 
     <NumberPicker
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/rollPicker"
+        android:id="@+id/longitude_picker"
+        android:layout_gravity="bottom"/>
+
+    <NumberPicker
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/altitude_picker"
+        android:layout_gravity="bottom"/>
+    <NumberPicker
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/heading_picker"
+        android:layout_gravity="bottom"/>
+
+    <NumberPicker
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tilt_picker"
+        android:layout_gravity="bottom"/>
+
+    <NumberPicker
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/roll_picker"
         android:layout_gravity="bottom"/>
 </LinearLayout>
