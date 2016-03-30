@@ -125,6 +125,7 @@ public class GpuTexture implements GpuObject, Runnable {
 
         Bitmap bitmap = this.guardedDecodeImage(this.imageSource);
         if (bitmap == null) {
+            // TODO establish a file caching service for remote resources
             // TODO retry absent resources, they are currently handled but suppressed entirely after the first failure
             return; // image retrieval failed; the reason is logged in guardedDecodeImage
         }

@@ -133,6 +133,7 @@ public class BasicTerrain implements Terrain {
                 Logger.logMessage(Logger.ERROR, "BasicTerrain", "useTileVertexPointAttrib", "invalidIndex"));
         }
 
+        // TODO use GL vertex buffer objects here and throughout the GL commands specifying vertex attribs and elements
         Buffer buffer = this.tiles.get(index).tileVertices;
         if (buffer != null) {
             GLES20.glVertexAttribPointer(attribLocation, 3, GLES20.GL_FLOAT, false, 0, buffer);

@@ -45,7 +45,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
         this.panRecognizer.addListener(this);
         this.pinchRecognizer.addListener(this);
         this.rotationRecognizer.addListener(this);
-        this.tiltRecognizer.setMinNumberOfPointers(3);
+        this.tiltRecognizer.setMinNumberOfPointers(3); // TODO support for two-finger tilt gestures
         this.tiltRecognizer.addListener(this);
     }
 
