@@ -55,18 +55,23 @@ void sampleGround() {
     float far = length(ray);
     ray /= far;
 
-    /* Calculate the closest intersection of the ray with the outer atmosphere (which is the near point of the ray
-    passing through the atmosphere) */
-    float B = 2.0 * dot(eyePoint, ray);
-    float C = eyeMagnitude2 - atmosphereRadius2;
-    float det = max(0.0, B*B - 4.0 * C);
-    float near = 0.5 * (-B - sqrt(det));
+    vec3 start;
+    if (eyeMagnitude < atmosphereRadius) {
+        start = eyePoint;
+    } else {
+        /* Calculate the closest intersection of the ray with the outer atmosphere (which is the near point of the ray
+        passing through the atmosphere) */
+        float B = 2.0 * dot(eyePoint, ray);
+        float C = eyeMagnitude2 - atmosphereRadius2;
+        float det = max(0.0, B*B - 4.0 * C);
+        float near = 0.5 * (-B - sqrt(det));
 
-    /* Calculate the ray's starting point, then calculate its scattering offset */
-    vec3 start = eyePoint + ray * near;
-    far -= near;
+        /* Calculate the ray's starting point, then calculate its scattering offset */
+        start = eyePoint + ray * near;
+        far -= near;
+    }
+
     float depth = exp((globeRadius - atmosphereRadius) / scaleDepth);
-
     float eyeAngle = dot(-ray, point) / length(point);
     float lightAngle = dot(lightDirection, point) / length(point);
     float eyeScale = scaleFunc(eyeAngle);
@@ -93,7 +98,7 @@ void sampleGround() {
         samplePoint += sampleRay;
     }
 
-    primaryColor = frontColor * (invWavelength * KrESun + KmESun), 1.0;
+    primaryColor = frontColor * (invWavelength * KrESun + KmESun);
     secondaryColor = attenuate; /* Calculate the attenuation factor for the ground */
 }
 
