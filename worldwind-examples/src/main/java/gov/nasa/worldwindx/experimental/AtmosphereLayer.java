@@ -16,7 +16,6 @@ import java.util.Arrays;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Matrix4;
-import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.Terrain;
@@ -29,7 +28,7 @@ public class AtmosphereLayer extends AbstractLayer {
 
     protected Object nightImageSource;
 
-    protected Location lightLocation = new Location();
+    protected Location lightLocation = null;
 
     protected Matrix4 mvpMatrix = new Matrix4();
 
@@ -65,39 +64,39 @@ public class AtmosphereLayer extends AbstractLayer {
         this.nightImageSource = nightImageSource;
     }
 
+    public Location getLightLocation() {
+        return lightLocation;
+    }
+
+    public void setLightLocation(Location location) {
+        this.lightLocation = location;
+    }
+
     @Override
     protected void doRender(DrawContext dc) {
 
-        AtmosphereProgram program = (AtmosphereProgram) dc.getGpuObjectCache().retrieveProgram(dc,
-            AtmosphereProgram.class);
+        // Draw the sky portion of the atmosphere.
+        this.drawSky(dc);
+
+        // Draw the ground portion of the atmosphere.
+        this.drawGround(dc);
+    }
+
+    protected void drawSky(DrawContext dc) {
+
+        AtmosphereProgram program = (AtmosphereProgram) dc.getGpuObjectCache().retrieveProgram(dc, SkyProgram.class);
         if (program == null) {
             return; // program is not in the GPU object cache yet
         }
 
-        // Use this layer's ground GLSL program.
+        // Use this layer's GLSL program.
         dc.useProgram(program);
-
-        // Use this layer's light direction.
-        // TODO Make light/sun direction an optional property of the WorldWindow and attach it to the DrawContext each frame
-        // TODO DrawContext property defaults to the eye lat/lon like we have below
-        this.lightLocation.set(dc.getEyePosition());
-        dc.getGlobe().geographicToCartesianNormal(this.lightLocation.latitude, this.lightLocation.longitude, this.vector);
-        program.loadLightDirection(this.vector);
 
         // Use the draw context's globe.
         program.loadGlobe(dc.getGlobe());
 
         // Use the draw context's eye point.
         program.loadEyePoint(dc.getEyePoint());
-
-        // Draw the sky portion of the atmosphere.
-        this.drawSky(dc, program);
-
-        // Draw the ground portion of the atmosphere.
-        this.drawGround(dc, program);
-    }
-
-    protected void drawSky(DrawContext dc, AtmosphereProgram program) {
 
         // Use the vertex origin for the sky ellipsoid.
         program.loadVertexOrigin(this.vector.set(0, 0, 0));
@@ -107,6 +106,13 @@ public class AtmosphereLayer extends AbstractLayer {
 
         // Use the sky fragment mode, which assumes the standard premultiplied alpha blending mode.
         program.loadFragMode(AtmosphereProgram.FRAGMODE_SKY);
+
+        // Use this layer's light direction.
+        // TODO Make light/sun direction an optional property of the WorldWindow and attach it to the DrawContext each frame
+        // TODO DrawContext property defaults to the eye lat/lon like we have below
+        Location loc = (this.lightLocation != null) ? this.lightLocation : dc.getEyePosition();
+        dc.getGlobe().geographicToCartesianNormal(loc.latitude, loc.longitude, this.vector);
+        program.loadLightDirection(this.vector);
 
         // Use the sky's vertex point attribute.
         this.useSkyVertexPointAttrib(dc, program.getAltitude(), 0);
@@ -121,15 +127,34 @@ public class AtmosphereLayer extends AbstractLayer {
         GLES20.glFrontFace(GLES20.GL_CCW);
     }
 
-    protected void drawGround(DrawContext dc, AtmosphereProgram program) {
+    protected void drawGround(DrawContext dc) {
+
+        AtmosphereProgram program = (AtmosphereProgram) dc.getGpuObjectCache().retrieveProgram(dc, GroundProgram.class);
+        if (program == null) {
+            return; // program is not in the GPU object cache yet
+        }
+
+        // Use this layer's GLSL program.
+        dc.useProgram(program);
+
+        // Use the draw context's globe.
+        program.loadGlobe(dc.getGlobe());
+
+        // Use the draw context's eye point.
+        program.loadEyePoint(dc.getEyePoint());
+
+        // Use this layer's light direction.
+        // TODO Make light/sun direction an optional property of the WorldWindow and attach it to the DrawContext each frame
+        // TODO DrawContext property defaults to the eye lat/lon like we have below
+        Location loc = (this.lightLocation != null) ? this.lightLocation : dc.getEyePosition();
+        dc.getGlobe().geographicToCartesianNormal(loc.latitude, loc.longitude, this.vector);
+        program.loadLightDirection(this.vector);
 
         GpuTexture texture = null;
         boolean textureBound = false;
 
         // Use this layer's night image when the light location is different than the eye location.
-        Position eyePos = dc.getEyePosition();
-        if (this.nightImageSource != null
-            && (this.lightLocation.latitude != eyePos.latitude || this.lightLocation.longitude != eyePos.longitude)) {
+        if (this.nightImageSource != null && this.lightLocation != null) {
 
             texture = (GpuTexture) dc.getGpuObjectCache().get(this.nightImageSource);
             if (texture == null) {
