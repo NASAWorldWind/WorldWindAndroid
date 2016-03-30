@@ -123,6 +123,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.gpuObjectCache = new GpuObjectCache(gpuCacheSize);
 
         // Set up to render on demand to an OpenGL ES 2.x context
+        // TODO Investigate and use the EGL chooser submitted by jgiovino
         this.dc = new DrawContext();
         this.setEGLConfigChooser(configChooser);
         this.setEGLContextClientVersion(2); // must be called before setRenderer
