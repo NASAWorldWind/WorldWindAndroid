@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2016 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration. All Rights Reserved.
+  -->
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_basic_globe_activity"
+            android:icon="@drawable/ic_menu_home"
+            android:title="@string/title_basic_globe"/>
+        <item
+            android:id="@+id/nav_wms_layer_activity"
+            android:icon="@android:drawable/ic_menu_mapmode"
+            android:title="@string/title_wms_layer"/>
+        <item
+            android:id="@+id/nav_surface_image_activity"
+            android:icon="@android:drawable/ic_menu_mapmode"
+            android:title="@string/title_surface_image"/>
+        <item
+            android:id="@+id/nav_camera_view_activity"
+            android:icon="@android:drawable/ic_menu_compass"
+            android:title="@string/title_camera_view"/>
+        <item
+            android:id="@+id/nav_look_at_view_activity"
+            android:icon="@android:drawable/ic_menu_compass"
+            android:title="@string/title_look_at_view"/>
+        <item
+            android:id="@+id/nav_camera_control_activity"
+            android:icon="@android:drawable/ic_menu_camera"
+            android:title="@string/title_camera_controls"/>
+        <item
+            android:id="@+id/nav_show_tessellation_activity"
+            android:icon="@android:drawable/ic_menu_manage"
+            android:title="@string/title_show_tessellation"/>
+        <item
+            android:id="@+id/nav_day_night_cycle_activity"
+            android:icon="@android:drawable/ic_menu_recent_history"
+            android:title="@string/title_day_night_cycle"/>
+    </group>
+
+</menu>
