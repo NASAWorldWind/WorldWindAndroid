@@ -13,7 +13,6 @@ import gov.nasa.worldwind.ogc.WmsLayerConfig;
 
 public class WmsLayerActivity extends BasicGlobeActivity {
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
