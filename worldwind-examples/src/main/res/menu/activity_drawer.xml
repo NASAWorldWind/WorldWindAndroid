@@ -21,6 +21,10 @@
             android:icon="@drawable/nasa_logo"
             android:title="@string/title_surface_image"/>
         <item
+            android:id="@+id/nav_show_tessellation_activity"
+            android:icon="@drawable/nasa_logo"
+            android:title="@string/title_show_tessellation"/>
+        <item
             android:id="@+id/nav_look_at_activity"
             android:icon="@drawable/nasa_logo"
             android:title="@string/title_look_at"/>

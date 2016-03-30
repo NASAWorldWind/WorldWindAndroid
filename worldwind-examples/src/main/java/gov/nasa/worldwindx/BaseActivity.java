@@ -120,6 +120,9 @@ public class BaseActivity extends AppCompatActivity
             case R.id.nav_surface_image_activity:
                 startActivity(new Intent(getApplicationContext(), SurfaceImageActivity.class));
                 break;
+            case R.id.nav_show_tessellation_activity:
+                startActivity(new Intent(getApplicationContext(), ShowTessellationActivity.class));
+                break;
             case R.id.nav_look_at_activity:
                 startActivity(new Intent(getApplicationContext(), LookAtActivity.class));
                 break;
