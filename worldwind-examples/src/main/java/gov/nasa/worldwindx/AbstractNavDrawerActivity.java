@@ -20,7 +20,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class BaseActivity extends AppCompatActivity
+/**
+ * This abstract activity class implements a Navigation Drawer menu shared by all the World Wind Example activities.
+ */
+public abstract class AbstractNavDrawerActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
 
     static private int selectedItemId = R.id.nav_basic_globe_activity;
@@ -57,24 +60,6 @@ public class BaseActivity extends AppCompatActivity
         this.navigationView.setCheckedItem(selectedItemId);
     }
 
-    protected void showAboutBox() {
-
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setTitle(this.aboutBoxTitle);
-        alertDialogBuilder
-            .setMessage(this.aboutBoxText)
-            .setCancelable(true)
-            .setNegativeButton("Close", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    // if this button is clicked, just close
-                    // the dialog box and do nothing
-                    dialog.cancel();
-                }
-            });
-
-        AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.show();
-    }
 
     @Override
     protected void onResume() {
@@ -103,6 +88,11 @@ public class BaseActivity extends AppCompatActivity
 
         return super.onOptionsItemSelected(item);
     }
+
+    /**
+     * This method is invoked when the About button is selected in the Options menu.
+     */
+    abstract protected void showAboutBox();
 
     @Override
     public void onBackPressed() {
