@@ -272,7 +272,7 @@ public class BasicGlobe implements Globe {
         this.modelview.extractForwardVector(this.forwardRay.direction);
 
         if (!this.intersect(this.forwardRay, this.originPoint)) {
-            double horizon = this.horizonDistance(camera.latitude, camera.longitude, camera.altitude);
+            double horizon = this.horizonDistance(camera.altitude);
             this.forwardRay.pointAt(horizon, this.originPoint);
         }
 
@@ -366,8 +366,22 @@ public class BasicGlobe implements Globe {
     }
 
     @Override
-    public double horizonDistance(double latitude, double longitude, double altitude) {
-        return (altitude < 0) ? 0 : Math.sqrt(altitude * (2 * this.equatorialRadius + altitude));
+    public double horizonDistance(double eyeAltitude) {
+        double eye = eyeAltitude;
+        double eqr = this.equatorialRadius;
+
+        return Math.sqrt(eye * (2 * eqr + eye));
+    }
+
+    @Override
+    public double horizonDistance(double eyeAltitude, double objectAltitude) {
+        double eye = eyeAltitude;
+        double obj = objectAltitude;
+        double eqr = this.equatorialRadius;
+        double eyeDistance = Math.sqrt(eye * (2 * eqr + eye)); // distance from eye altitude to globe MSL horizon
+        double horDistance = Math.sqrt(obj * (2 * eqr + obj)); // distance from object altitude to globe MSL horizon
+
+        return eyeDistance + horDistance; // desired distance is the sum of the two horizon distances
     }
 
     @Override

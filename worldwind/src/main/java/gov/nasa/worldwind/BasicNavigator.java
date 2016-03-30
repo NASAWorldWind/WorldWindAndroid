@@ -180,12 +180,14 @@ public class BasicNavigator implements Navigator {
 
     public synchronized void applyState(DrawContext dc) {
 
+        // TODO move this responsibility into FrameController
         dc.setEyePosition(new Position(this.camera.latitude, this.camera.longitude, this.camera.altitude));
         dc.setHeading(this.camera.heading);
         dc.setTilt(this.camera.tilt);
         dc.setRoll(this.camera.roll);
         dc.setFieldOfView(this.fieldOfView);
 
+        // TODO move this responsibility into FrameController
         this.computeModelview(dc.getGlobe(), this.modelview);
         this.computeProjection(dc, this.projection);
         dc.setModelviewProjection(this.modelview, this.projection);
@@ -198,10 +200,11 @@ public class BasicNavigator implements Navigator {
     }
 
     protected Matrix4 computeProjection(DrawContext dc, Matrix4 result) {
-
-        // TODO compute clip plane distances appropriate for the current frame
-        double near = 1e3;
-        double far = dc.getGlobe().getEquatorialRadius() + this.camera.altitude;
+        // TODO adjust the clip plane distances based on the navigator's orientation - shorter distances when the
+        // TODO horizon is not in view
+        // TODO parameterize the object altitude for horizon distance
+        double near = this.camera.altitude * 0.75;
+        double far = dc.getGlobe().horizonDistance(this.camera.altitude, 160000);
         Rect viewport = dc.getViewport();
         result.setToPerspectiveProjection(viewport.width(), viewport.height(), this.fieldOfView, near, far);
 

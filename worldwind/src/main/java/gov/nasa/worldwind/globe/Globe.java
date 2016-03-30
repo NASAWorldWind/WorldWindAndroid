@@ -163,15 +163,27 @@ public interface Globe {
     Camera lookAtToCamera(LookAt lookAt, Camera result);
 
     /**
-     * Indicates the horizon distance in meters at a specified position.
+     * Indicates the distance to the globe's horizon from a specified eye altitude. The result of this method is
+     * undefined if the eye altitude is negative.
      *
-     * @param latitude  the location's latitude in degrees
-     * @param longitude the location's longitude in degrees
-     * @param altitude  the position's altitude in meters
+     * @param eyeAltitude the eye altitude in meters
      *
-     * @return the horizon distance in meters
+     * @return the distance in meters
      */
-    double horizonDistance(double latitude, double longitude, double altitude);
+    double horizonDistance(double eyeAltitude);
+
+    /**
+     * Indicates the distance to an object passing over the globe's horizon from a specified eye altitude. This computes
+     * the distance at which a point at objectAltitude is on the threshold of passing beyond the globe's horizon, and
+     * would thereafter be occluded by the globe. The result of this method is undefined if either altitude is
+     * negative.
+     *
+     * @param eyeAltitude    the eye altitude in meters
+     * @param objectAltitude the object altitude in meters
+     *
+     * @return the distance in meters
+     */
+    double horizonDistance(double eyeAltitude, double objectAltitude);
 
     /**
      * Computes the first intersection of this globe with a specified line. The line is interpreted as a ray;
