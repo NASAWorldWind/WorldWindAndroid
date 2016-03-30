@@ -17,7 +17,7 @@ public class WmsLayerActivity extends BasicGlobeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Configure an OGC Web Map Service (WMS) layer to display the Active Fires layer from
+        // Configure an OGC Web Map Service (WMS) layer to display the sea surface temperature layer from
         // NASA's Near Earth Observations WMS.
         WmsLayerConfig config = new WmsLayerConfig();
         config.serviceAddress = "http://neowms.sci.gsfc.nasa.gov/wms/wms";
