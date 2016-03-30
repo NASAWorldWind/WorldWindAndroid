@@ -10,27 +10,27 @@
         <!--TODO: define better icons for the navigation menu items-->
         <item
             android:id="@+id/nav_basic_globe_activity"
-            android:icon="@drawable/nasa_logo"
+            android:icon="@drawable/ic_menu_home"
             android:title="@string/title_basic_globe"/>
         <item
             android:id="@+id/nav_wms_layer_activity"
-            android:icon="@drawable/nasa_logo"
+            android:icon="@android:drawable/ic_menu_gallery"
             android:title="@string/title_wms_layer"/>
         <item
             android:id="@+id/nav_surface_image_activity"
-            android:icon="@drawable/nasa_logo"
+            android:icon="@android:drawable/ic_menu_mapmode"
             android:title="@string/title_surface_image"/>
         <item
             android:id="@+id/nav_show_tessellation_activity"
-            android:icon="@drawable/nasa_logo"
+            android:icon="@android:drawable/ic_menu_manage"
             android:title="@string/title_show_tessellation"/>
         <item
             android:id="@+id/nav_look_at_activity"
-            android:icon="@drawable/nasa_logo"
+            android:icon="@android:drawable/ic_menu_compass"
             android:title="@string/title_look_at"/>
         <item
             android:id="@+id/nav_camera_control_activity"
-            android:icon="@drawable/nasa_logo"
+            android:icon="@android:drawable/ic_menu_camera"
             android:title="@string/title_camera_controls"/>
     </group>
 
