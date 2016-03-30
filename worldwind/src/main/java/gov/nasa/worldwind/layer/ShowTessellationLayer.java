@@ -47,7 +47,7 @@ public class ShowTessellationLayer extends AbstractLayer {
             // Use the draw context's modelview projection matrix, transformed to the terrain tile's local coordinates.
             Vec3 terrainOrigin = terrain.getTileVertexOrigin(idx);
             this.mvpMatrix.set(dc.getProjection());
-            this.mvpMatrix.offsetProjectionDepth(-1.0e-6);
+            this.mvpMatrix.offsetProjectionDepth(-1.0e-3); // offset this layer's depth values toward the eye
             this.mvpMatrix.multiplyByMatrix(dc.getModelview());
             this.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
             program.loadModelviewProjection(this.mvpMatrix);
