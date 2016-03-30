@@ -7,7 +7,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:checkableBehavior="single">
-        <!--TODO: define better icons for the navigation menu items-->
         <item
             android:id="@+id/nav_basic_globe_activity"
             android:icon="@drawable/ic_menu_home"
