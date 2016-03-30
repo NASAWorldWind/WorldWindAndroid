@@ -5,8 +5,6 @@
 
 package gov.nasa.worldwindx;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
@@ -68,7 +66,6 @@ public class BasicGlobeActivity extends BaseActivity {
         super.onResume();
         this.wwd.onResume(); // resumes a paused rendering thread
     }
-
 }
 
 
