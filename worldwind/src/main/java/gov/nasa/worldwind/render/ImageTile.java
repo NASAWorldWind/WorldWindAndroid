@@ -8,7 +8,6 @@ package gov.nasa.worldwind.render;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.util.Level;
-import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Tile;
 
 public class ImageTile extends Tile implements SurfaceTile {
@@ -52,7 +51,7 @@ public class ImageTile extends Tile implements SurfaceTile {
     }
 
     @Override
-    public boolean bind(DrawContext dc, int texUnit) {
+    public boolean bindTexture(DrawContext dc, int texUnit) {
         if (this.imageUrl != null) {
             GpuTexture texture = (GpuTexture) dc.getGpuObjectCache().get(this.imageUrl);
             if (texture == null) {
@@ -63,7 +62,7 @@ public class ImageTile extends Tile implements SurfaceTile {
             }
         }
 
-        return (this.fallbackTile != null) && this.fallbackTile.bind(dc, texUnit);
+        return (this.fallbackTile != null) && this.fallbackTile.bindTexture(dc, texUnit);
     }
 
     @Override

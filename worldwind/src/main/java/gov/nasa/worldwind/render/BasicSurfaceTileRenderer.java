@@ -35,7 +35,7 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
                 Logger.logMessage(Logger.ERROR, "BasicSurfaceTileRenderer", "renderTile", "missingTile"));
         }
 
-        if (!texture.bind(dc, GLES20.GL_TEXTURE0)) {
+        if (!texture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
             return; // surface tile's texture is not in the GPU object cache yet
         }
 
@@ -138,7 +138,7 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
 
             for (SurfaceTile texture : this.intersectingSurfaceTiles) {
 
-                if (!texture.bind(dc, GLES20.GL_TEXTURE0)) {
+                if (!texture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
                     continue; // surface tile's texture is not in the GPU object cache yet
                 }
 

@@ -113,7 +113,7 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
     }
 
     @Override
-    public boolean bind(DrawContext dc, int texUnit) {
+    public boolean bindTexture(DrawContext dc, int texUnit) {
         GpuTexture texture = (GpuTexture) dc.getGpuObjectCache().get(this.imageSource);
         if (texture == null) {
             texture = new GpuTexture(dc, this.imageSource); // adds itself to the GPU object cache
