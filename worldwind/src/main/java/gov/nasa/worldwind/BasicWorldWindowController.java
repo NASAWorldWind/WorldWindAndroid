@@ -212,11 +212,11 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
         double maxRange = distanceToExtents * 2;
         lookAt.range = WWMath.clamp(lookAt.range, minRange, maxRange);
 
-        double minTiltRange = distanceToExtents * 0.1;
-        double maxTiltRange = distanceToExtents * 0.9;
-        double tiltAmount = WWMath.clamp((lookAt.range - minTiltRange) / (maxTiltRange - minTiltRange), 0, 1);
+        //double minTiltRange = distanceToExtents * 0.1;
+        //double maxTiltRange = distanceToExtents * 0.9;
+        //double tiltAmount = WWMath.clamp((lookAt.range - minTiltRange) / (maxTiltRange - minTiltRange), 0, 1);
         double maxTilt = 80;
-        lookAt.tilt = WWMath.clamp(lookAt.tilt, 0, maxTilt * (1 - tiltAmount));
+        lookAt.tilt = WWMath.clamp(lookAt.tilt, 0, maxTilt);
     }
 
     protected void gestureDidBegin() {
