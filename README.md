@@ -25,7 +25,7 @@ virtual camera.
 
 - [World Wind Examples 0.1.0](http://worldwindserver.net/android/0.1.0/worldwind-examples-release.apk) - Example App for 0.1.0; runs on Android 4.4 and newer
 - [World Wind Library 0.1.0](http://worldwindserver.net/android/0.1.0/worldwind-release.aar) - Android Archive (AAR) for 0.1.0
-- [API Docs 0.1.0](http://worldwindserver.net/android/0.1.0/worldwind-release.aar) - Developer documentation for 0.1.0
+- [API Docs 0.1.0](http://worldwindserver.net/android/0.1.0/doc) - Developer documentation for 0.1.0
 - [JIRA 0.1.0](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA/fixforversion/10911) - Detailed release notes for 0.1.0
 
 #### Release Notes
