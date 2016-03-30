@@ -6,14 +6,9 @@
 package gov.nasa.worldwindx;
 
 import android.os.Bundle;
-import android.view.View;
-import android.view.ViewStub;
-import android.widget.NumberPicker;
 
 import gov.nasa.worldwind.BasicWorldWindowController;
 import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.WorldWindowController;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.gesture.GestureRecognizer;
@@ -28,9 +23,18 @@ public class CameraControlActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.aboutBoxTitle = "About the " + getResources().getText(R.string.title_camera_controls);
+        this.aboutBoxText = "Demonstrates how to override the WorldWindowController gesture controller.\n" +
+            "This example uses the Navigator's setAsCamera interface " +
+            "instead of setAsLookAt.\n" +
+            " - one-finger pan moves the geographic location of the camera,\n" +
+            " - two-finger pinch-zoom adjusts the camera altitude, \n" +
+            " - two-finger rotate rotates the camera about its own axis,\n" +
+            " - three-finger tilt tilts the camera about its own axis.";
+
 
         // Override the default "look at" gesture behavior with a camera centric gesture controller
-        getWorldWindow().setWorldWindowController(new WorldWindowCameraController());
+        getWorldWindow().setWorldWindowController(new CameraController());
 
         // Create a camera position above KOXR airport, Oxnard, CA
         Camera camera = new Camera();
@@ -47,9 +51,10 @@ public class CameraControlActivity extends BasicGlobeActivity {
 
 
     /**
-     * A custom WorldWindController that uses gestures to control the camera.
+     * A custom WorldWindController that uses gestures to control the camera directly via the setAsCamera interface
+     * instead of the default setAsLookAt interface.
      */
-    private class WorldWindowCameraController extends BasicWorldWindowController {
+    private class CameraController extends BasicWorldWindowController {
 
         protected Camera camera = new Camera();
 
