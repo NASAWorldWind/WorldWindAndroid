@@ -312,6 +312,11 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.navigator.applyState(this.dc);
         this.frameController.drawFrame(this.dc);
 
+        // Dispose OpenGL resources evicted during the previous frame. Performing this step here, rather than at
+        // eviction time, avoids unexpected side effects like GPU programs being evicted while in use, which can occur
+        // when this cache is too small and thrashes during a frame.
+        this.gpuObjectCache.disposeEvictedObjects(this.dc);
+
         // Propagate render requests submitted during rendering to the WorldWindow. The draw context provides a layer of
         // indirection that insulates rendering code from establishing a dependency on a specific WorldWindow.
         if (this.dc.isRenderRequested()) {

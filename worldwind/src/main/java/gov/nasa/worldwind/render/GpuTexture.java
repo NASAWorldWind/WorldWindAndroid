@@ -69,12 +69,7 @@ public class GpuTexture implements GpuObject, Runnable {
     }
 
     @Override
-    public int getObjectSize() {
-        return textureSize;
-    }
-
-    @Override
-    public void dispose() {
+    public void dispose(DrawContext dc) {
         synchronized (this) { // synchronize texture disposal and loading
             if (this.textureId != 0) {
                 GLES20.glDeleteTextures(1, new int[]{this.textureId}, 0);

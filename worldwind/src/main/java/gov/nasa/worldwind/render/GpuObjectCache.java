@@ -6,11 +6,15 @@
 package gov.nasa.worldwind.render;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
 
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.LruMemoryCache;
 
 public class GpuObjectCache extends LruMemoryCache<Object, GpuObject> {
+
+    protected List<GpuObject> disposalQueue = new ArrayList<>();
 
     public GpuObjectCache(int capacity) {
         super(capacity);
@@ -47,12 +51,25 @@ public class GpuObjectCache extends LruMemoryCache<Object, GpuObject> {
         }
     }
 
+    public void disposeEvictedObjects(DrawContext dc) {
+
+        for (GpuObject object : this.disposalQueue) {
+            try {
+                object.dispose(dc);
+                Logger.log(Logger.INFO, "Disposed GPU object \'" + object + "\'");
+            } catch (Exception e) {
+                Logger.log(Logger.ERROR, "Exception disposing GPU object \'" + object + "\'", e);
+            }
+        }
+
+        this.disposalQueue.clear();
+    }
+
     @Override
     protected void entryRemoved(Object key, GpuObject value) {
-        // TODO programs can be evicted during rendering when the cache is thrashing
-        // TODO this is almost certainly unexpected, could we dispose Gpu objects at the end of a frame?
-        value.dispose(); // need to explicitly free Gpu resources associated with this cache entry
-        Logger.log(Logger.INFO, "GpuObject removed from cache {key=" + key + ", value=" + value + "}" +
-            " capacity=" + this.capacity + ", usedCapacity=" + this.usedCapacity);
+        // Explicitly free GPU objects associatd with the cache entry. We collect evicted GPU objects here and dispose
+        // them at the end of a frame in disposeEvictedObjects. This avoids unexpected side effects like GPU programs
+        // being evicted while in use, which can occur when this cache is too small and thrashes during a frame.
+        this.disposalQueue.add(value);
     }
 }

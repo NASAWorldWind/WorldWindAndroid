@@ -108,12 +108,7 @@ public class GpuProgram implements GpuObject {
     }
 
     @Override
-    public int getObjectSize() {
-        return programSize;
-    }
-
-    @Override
-    public void dispose() {
+    public void dispose(DrawContext dc) {
         if (this.programId != 0) {
             GLES20.glDeleteProgram(this.programId);
             GLES20.glDeleteShader(this.vertexShaderId);
