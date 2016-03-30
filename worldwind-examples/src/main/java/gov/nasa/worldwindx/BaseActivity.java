@@ -25,13 +25,13 @@ public class BaseActivity extends AppCompatActivity
 
     static private int selectedItemId = R.id.nav_basic_globe_activity;
 
-    protected String aboutBoxTitle = "Title goes here";
-
-    protected String aboutBoxText = "Description goes here;";
-
     private ActionBarDrawerToggle drawerToggle;
 
     private NavigationView navigationView;
+
+    protected String aboutBoxTitle = "Title goes here";
+
+    protected String aboutBoxText = "Description goes here;";
 
     @Override
     public void setContentView(@LayoutRes int layoutResID) {
@@ -60,11 +60,7 @@ public class BaseActivity extends AppCompatActivity
     protected void showAboutBox() {
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
-        // set title
         alertDialogBuilder.setTitle(this.aboutBoxTitle);
-
-        // set dialog message
         alertDialogBuilder
             .setMessage(this.aboutBoxText)
             .setCancelable(true)
@@ -76,10 +72,7 @@ public class BaseActivity extends AppCompatActivity
                 }
             });
 
-        // create alert dialog
         AlertDialog alertDialog = alertDialogBuilder.create();
-
-        // show it
         alertDialog.show();
     }
 
@@ -144,20 +137,23 @@ public class BaseActivity extends AppCompatActivity
             case R.id.nav_basic_globe_activity:
                 startActivity(new Intent(getApplicationContext(), BasicGlobeActivity.class));
                 break;
-            case R.id.nav_wms_layer_activity:
-                startActivity(new Intent(getApplicationContext(), WmsLayerActivity.class));
+            case R.id.nav_camera_view_activity:
+                startActivity(new Intent(getApplicationContext(), CameraViewActivity.class));
                 break;
-            case R.id.nav_surface_image_activity:
-                startActivity(new Intent(getApplicationContext(), SurfaceImageActivity.class));
+            case R.id.nav_camera_control_activity:
+                startActivity(new Intent(getApplicationContext(), CameraControlActivity.class));
+                break;
+            case R.id.nav_look_at_view_activity:
+                startActivity(new Intent(getApplicationContext(), LookAtViewActivity.class));
                 break;
             case R.id.nav_show_tessellation_activity:
                 startActivity(new Intent(getApplicationContext(), ShowTessellationActivity.class));
                 break;
-            case R.id.nav_look_at_activity:
-                startActivity(new Intent(getApplicationContext(), LookAtActivity.class));
+            case R.id.nav_surface_image_activity:
+                startActivity(new Intent(getApplicationContext(), SurfaceImageActivity.class));
                 break;
-            case R.id.nav_camera_control_activity:
-                startActivity(new Intent(getApplicationContext(), CameraControlActivity.class));
+            case R.id.nav_wms_layer_activity:
+                startActivity(new Intent(getApplicationContext(), WmsLayerActivity.class));
                 break;
             case R.id.nav_day_night_cycle_activity:
                 startActivity(new Intent(getApplicationContext(), DayNightCycleActivity.class));

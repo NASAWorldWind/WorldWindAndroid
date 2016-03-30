@@ -12,18 +12,18 @@ import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.globe.Globe;
 
-public class LookAtActivity extends BasicGlobeActivity {
+public class LookAtViewActivity extends BasicGlobeActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.aboutBoxTitle= "About the " + getResources().getText(R.string.title_look_at);
-        this.aboutBoxText="Demonstrates how to use LookAt to \"look at\" a position.\n" +
-            "This example simulates a view from an aircraft above Oxnard, CA looking at the LAX airport.";
+        this.aboutBoxTitle = "About the " + getResources().getText(R.string.title_look_at_view);
+        this.aboutBoxText = "Demonstrates how to use LookAt to view a position.\n" +
+            "This example simulates a view from an aircraft above Santa Monica, CA looking at the LAX airport.";
 
-        // Position the camera so the view is as seen from an aircraft above Oxnard airport enroute to LAX airport.
-        Position aircraft = new Position(34.2, -119.2, 5000);   // OXR airport, Oxnard CA, at altitude of 5000m
-        Position airport = new Position(33.94, -118.4, 34.7);   // LAX airport, Los Angeles CA, altitude MSL
+        // Create a view of LAX airport as seen from an aircraft above Santa Monica, CA.
+        Position aircraft = new Position(34.0158333, -118.4513056, 2500);   // Aircraft above Santa Monica airport, altitude in meters
+        Position airport = new Position(33.9424368, -118.4081222, 38.7);    // LAX airport, Los Angeles CA, altitude MSL
 
         // Compute heading and distance from aircraft to airport
         Globe globe = this.getWorldWindow().getGlobe();
