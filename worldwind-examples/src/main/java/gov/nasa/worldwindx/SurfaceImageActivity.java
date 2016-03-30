@@ -16,6 +16,11 @@ public class SurfaceImageActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.aboutBoxTitle= "About the " + getResources().getText(R.string.title_surface_image);
+        this.aboutBoxText="Demonstrates how to add SurfaceImages to a RenderableLayer.\n" +
+            "This example adds two surface images to the basic globe:\n" +
+            "1. A remote image showing Mount Etna erupting on July 13th, 2001.\n" +
+            "2. The NASA 'Meatball' logo.";
 
         // Configure a Surface Image to display an Android resource showing the NASA logo.
         Sector sector = new Sector(37.46, 15.5, 0.5, 0.6);

@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwindx;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
@@ -31,6 +33,13 @@ public class BasicGlobeActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(layoutResourceId);
+        this.aboutBoxTitle = "About the " + getResources().getText(R.string.title_basic_globe);
+        this.aboutBoxText = "Demonstrates how to construct a WorldWindow with a few layers.\n" +
+            "The globe uses the default navigation gestures: \n" +
+            " - one-finger pan moves the camera,\n" +
+            " - two-finger pinch-zoom adjusts the range to the look at position, \n" +
+            " - two-finger rotate arcs the camera horizontally around the look at position,\n" +
+            " - three-finger tilt arcs the camera vertically around the look at position.";
 
         // Create the World Window
         this.wwd = new WorldWindow(this);
@@ -61,4 +70,5 @@ public class BasicGlobeActivity extends BaseActivity {
     }
 
 }
+
 

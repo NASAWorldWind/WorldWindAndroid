@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwindx;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -27,6 +29,9 @@ public class BaseActivity extends AppCompatActivity
     private ActionBarDrawerToggle drawerToggle;
 
     private NavigationView navigationView;
+
+    protected String aboutBoxTitle = "Title goes here";
+    protected String aboutBoxText = "Description goes here;";
 
     @Override
     public void setContentView(@LayoutRes int layoutResID) {
@@ -52,6 +57,32 @@ public class BaseActivity extends AppCompatActivity
         this.navigationView.setCheckedItem(selectedItemId);
     }
 
+    protected void showAboutBox() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        // set title
+        alertDialogBuilder.setTitle(this.aboutBoxTitle);
+
+        // set dialog message
+        alertDialogBuilder
+            .setMessage(this.aboutBoxText)
+            .setCancelable(true)
+            .setNegativeButton("Close", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    // if this button is clicked, just close
+                    // the dialog box and do nothing
+                    dialog.cancel();
+                }
+            });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -73,8 +104,7 @@ public class BaseActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.action_about) {
-            // TODO: Added about dialog and text for each example
-            Toast.makeText(getApplicationContext(), "TODO: Show About Example dialog", Toast.LENGTH_LONG).show();
+            showAboutBox();
             return true;
         }
 
