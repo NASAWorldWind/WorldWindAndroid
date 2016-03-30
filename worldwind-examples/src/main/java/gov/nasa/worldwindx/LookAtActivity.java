@@ -26,16 +26,17 @@ public class LookAtActivity extends BasicGlobeActivity {
         Globe globe = this.getWorldWindow().getGlobe();
         double heading = aircraft.greatCircleAzimuth(airport);
         double distanceRadians = aircraft.greatCircleDistance(airport);
-        double distanceMeters = distanceRadians * globe.getRadiusAt(aircraft.latitude, aircraft.longitude);
-        double altitudeMeters = aircraft.altitude - airport.altitude;
+        double distance = distanceRadians * globe.getRadiusAt(aircraft.latitude, aircraft.longitude);
 
         // Compute camera settings
-        double range = Math.sqrt(altitudeMeters * altitudeMeters + distanceMeters * distanceMeters);
-        double tilt = Math.toDegrees(Math.atan(distanceMeters / aircraft.altitude));
+        double altitude = aircraft.altitude - airport.altitude;
+        double range = Math.sqrt(altitude * altitude + distance * distance);
+        double tilt = Math.toDegrees(Math.atan(distance / aircraft.altitude));
 
         // Apply the new view
         LookAt lookAt = new LookAt();
         lookAt.set(airport.latitude, airport.longitude, airport.altitude, WorldWind.ABSOLUTE, range, heading, tilt, 0 /*roll*/);
         this.getWorldWindow().getNavigator().setAsLookAt(globe, lookAt);
     }
+
 }
