@@ -18,7 +18,7 @@ public class LruMemoryCache<K, V> {
     protected final Comparator<Entry<K, V>> lruComparator = new Comparator<Entry<K, V>>() {
         @Override
         public int compare(Entry<K, V> lhs, Entry<K, V> rhs) {
-            return (int) (lhs.lastUsed - rhs.lastUsed);
+            return (int) (lhs.lastUsed - rhs.lastUsed); // sorts entries from least recently used to most recently used
         }
     };
 
@@ -27,8 +27,6 @@ public class LruMemoryCache<K, V> {
     protected int lowWater;
 
     protected int usedCapacity;
-
-    protected long lastUsedSequence; // overflows after thousands of years, given 1.0+E6 cache accesses per frame at 60Hz
 
     public LruMemoryCache(int capacity) {
         if (capacity < 1) {
@@ -67,7 +65,7 @@ public class LruMemoryCache<K, V> {
 
         Entry<K, V> entry = this.entries.get(key);
         if (entry != null) {
-            entry.lastUsed = ++this.lastUsedSequence;
+            entry.lastUsed = System.currentTimeMillis();
             return entry.value;
         } else {
             return null;
@@ -94,7 +92,7 @@ public class LruMemoryCache<K, V> {
             this.makeSpace(size);
         }
 
-        Entry<K, V> newEntry = new Entry<>(key, value, size, ++this.lastUsedSequence);
+        Entry<K, V> newEntry = new Entry<>(key, value, size, System.currentTimeMillis());
         Entry<K, V> oldEntry = this.entries.put(key, newEntry);
         this.usedCapacity += newEntry.size;
 

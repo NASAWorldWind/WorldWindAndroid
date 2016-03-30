@@ -11,7 +11,6 @@ import java.util.List;
 
 import gov.nasa.worldwind.util.Logger;
 
-// TODO consolidate with LayerList - superclass that maagest a list of stuff - use for elevationmodels too
 public class LayerList implements Iterable<Layer> {
 
     protected List<Layer> layers = new ArrayList<>();
