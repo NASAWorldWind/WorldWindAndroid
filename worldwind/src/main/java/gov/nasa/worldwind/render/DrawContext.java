@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwind.render;
 
-import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.opengl.GLES20;
@@ -25,210 +24,67 @@ import gov.nasa.worldwind.util.Logger;
 
 public class DrawContext {
 
-    // TODO refactor these as public properties
-    protected Globe globe;
+    public boolean pickingMode;
 
-    protected Terrain terrain;
+    public Globe globe;
 
-    protected LayerList layers = new LayerList();
+    public Terrain terrain;
 
-    protected Layer currentLayer;
+    public LayerList layers = new LayerList();
 
-    protected double verticalExaggeration = 1;
+    public Layer currentLayer;
 
-    protected Position eyePosition = new Position();
+    public double verticalExaggeration = 1;
 
-    protected double heading;
+    public Position eyePosition = new Position();
 
-    protected double tilt;
+    public double heading;
 
-    protected double roll;
+    public double tilt;
 
-    protected double fieldOfView;
+    public double roll;
 
-    protected Rect viewport = new Rect();
+    public double fieldOfView;
 
-    protected Matrix4 modelview = new Matrix4();
+    public Rect viewport = new Rect();
 
-    protected Matrix4 modelviewTranspose = new Matrix4();
+    public Matrix4 modelview = new Matrix4();
 
-    protected Matrix4 projection = new Matrix4();
+    public Matrix4 modelviewTranspose = new Matrix4();
 
-    protected Matrix4 projectionInv = new Matrix4();
+    public Matrix4 projection = new Matrix4();
 
-    protected Matrix4 modelviewProjection = new Matrix4();
+    public Matrix4 projectionInv = new Matrix4();
 
-    protected Matrix4 modelviewProjectionInv = new Matrix4();
+    public Matrix4 modelviewProjection = new Matrix4();
 
-    protected Vec3 eyePoint = new Vec3();
+    public Matrix4 modelviewProjectionInv = new Matrix4();
 
-    protected Frustum frustum = new Frustum();
+    public Vec3 eyePoint = new Vec3();
+
+    public Frustum frustum = new Frustum();
+
+    public GpuObjectCache gpuObjectCache;
+
+    public SurfaceTileRenderer surfaceTileRenderer;
+
+    public Resources resources;
+
+    protected boolean renderRequested;
+
+    protected Map<Object, Object> userProperties = new HashMap<>();
 
     protected double pixelSizeScale;
 
     protected double pixelSizeOffset;
 
-    protected boolean pickingMode;
+    protected int glProgramId;
 
-    protected boolean renderRequested;
+    protected int glTexUnit = GLES20.GL_TEXTURE0;
 
-    protected Resources resources;
-
-    protected GpuObjectCache gpuObjectCache;
-
-    protected SurfaceTileRenderer surfaceTileRenderer;
-
-    protected int currentProgramId;
-
-    protected int currentTexUnit = GLES20.GL_TEXTURE0;
-
-    protected int[] currentTexId = new int[32];
-
-    protected Map<Object, Object> userProperties = new HashMap<>();
+    protected int[] glTexId = new int[32];
 
     public DrawContext() {
-    }
-
-    public Globe getGlobe() {
-        return globe;
-    }
-
-    public void setGlobe(Globe globe) {
-        this.globe = globe;
-    }
-
-    public Terrain getTerrain() {
-        return terrain;
-    }
-
-    public void setTerrain(Terrain terrain) {
-        this.terrain = terrain;
-    }
-
-    public LayerList getLayers() {
-        return layers;
-    }
-
-    public void setLayers(LayerList layers) {
-        this.layers.clearLayers();
-        this.layers.addAllLayers(layers);
-    }
-
-    public Layer getCurrentLayer() {
-        return currentLayer;
-    }
-
-    public void setCurrentLayer(Layer layer) {
-        this.currentLayer = layer;
-    }
-
-    public double getVerticalExaggeration() {
-        return verticalExaggeration;
-    }
-
-    public void setVerticalExaggeration(double verticalExaggeration) {
-        this.verticalExaggeration = verticalExaggeration;
-    }
-
-    public Position getEyePosition() {
-        return eyePosition;
-    }
-
-    public void setEyePosition(Position position) {
-        this.eyePosition.set(position);
-    }
-
-    public double getHeading() {
-        return heading;
-    }
-
-    public void setHeading(double headingDegrees) {
-        this.heading = headingDegrees;
-    }
-
-    public double getTilt() {
-        return tilt;
-    }
-
-    public void setTilt(double tiltDegrees) {
-        this.tilt = tiltDegrees;
-    }
-
-    public double getRoll() {
-        return roll;
-    }
-
-    public void setRoll(double rollDegrees) {
-        this.roll = rollDegrees;
-    }
-
-    public double getFieldOfView() {
-        return fieldOfView;
-    }
-
-    public void setFieldOfView(double fovyDegrees) {
-        this.fieldOfView = fovyDegrees;
-    }
-
-    public Rect getViewport() {
-        return viewport;
-    }
-
-    public void setViewport(Rect rect) {
-        this.viewport.set(rect);
-    }
-
-    public Matrix4 getModelview() {
-        return modelview;
-    }
-
-    public Matrix4 getProjection() {
-        return projection;
-    }
-
-    public Matrix4 getModelviewProjection() {
-        return modelviewProjection;
-    }
-
-    public Matrix4 getModelviewProjectionInverse() {
-        return modelviewProjectionInv;
-    }
-
-    public Vec3 getEyePoint() {
-        return eyePoint;
-    }
-
-    public Frustum getFrustum() {
-        return this.frustum;
-    }
-
-    public void setModelviewProjection(Matrix4 modelview, Matrix4 projection) {
-        if (modelview == null || projection == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "DrawContext", "setModelview", "missingMatrix"));
-        }
-
-        this.modelview.set(modelview);
-        this.modelviewTranspose.transposeMatrix(modelview);
-        this.projection.set(projection);
-        this.projectionInv.invertMatrix(projection);
-        this.modelviewProjection.setToMultiply(projection, modelview);
-        this.modelviewProjectionInv.invertMatrix(this.modelviewProjection);
-        this.modelview.extractEyePoint(this.eyePoint);
-
-        this.frustum.setToProjectionMatrix(this.projection);
-        this.frustum.transformByMatrix(this.modelviewTranspose);
-        this.frustum.normalize();
-
-        this.computePixelSizeParams();
-    }
-
-    public boolean isPickingMode() {
-        return pickingMode;
-    }
-
-    public void setPickingMode(boolean pickingMode) {
-        this.pickingMode = pickingMode;
     }
 
     public boolean isRenderRequested() {
@@ -237,30 +93,6 @@ public class DrawContext {
 
     public void requestRender() {
         this.renderRequested = true;
-    }
-
-    public Resources getResources() {
-        return resources;
-    }
-
-    public void setResources(Resources resources) {
-        this.resources = resources;
-    }
-
-    public GpuObjectCache getGpuObjectCache() {
-        return gpuObjectCache;
-    }
-
-    public void setGpuObjectCache(GpuObjectCache gpuObjectCache) {
-        this.gpuObjectCache = gpuObjectCache;
-    }
-
-    public SurfaceTileRenderer getSurfaceTileRenderer() {
-        return surfaceTileRenderer;
-    }
-
-    public void setSurfaceTileRenderer(SurfaceTileRenderer surfaceTileRenderer) {
-        this.surfaceTileRenderer = surfaceTileRenderer;
     }
 
     public Object getUserProperty(Object key) {
@@ -280,6 +112,7 @@ public class DrawContext {
     }
 
     public void reset() {
+        this.pickingMode = false;
         this.globe = null;
         this.terrain = null;
         this.layers.clearLayers();
@@ -299,46 +132,69 @@ public class DrawContext {
         this.modelviewProjectionInv.setToIdentity();
         this.eyePoint.set(0, 0, 0);
         this.frustum.setToUnitFrustum();
+        this.gpuObjectCache = null;
+        this.resources = null;
+        this.renderRequested = false;
+        this.userProperties.clear();
         this.pixelSizeOffset = 0;
         this.pixelSizeScale = 0;
-        this.pickingMode = false;
-        this.renderRequested = false;
-        this.resources = null;
-        this.gpuObjectCache = null;
-        this.userProperties.clear();
     }
 
     public void contextLost() {
         // Reset properties tracking the current OpenGL state, which are now invalid.
-        this.currentProgramId = 0;
-        this.currentTexUnit = GLES20.GL_TEXTURE0;
+        this.glProgramId = 0;
+        this.glTexUnit = GLES20.GL_TEXTURE0;
 
-        for (int i = 0; i < this.currentTexId.length; i++) {
-            this.currentTexId[i] = 0;
+        for (int i = 0; i < this.glTexId.length; i++) {
+            this.glTexId[i] = 0;
         }
     }
 
-    // TODO refactor to accept a programId argument
-    public void useProgram(GpuProgram program) {
-        int objectId = (program != null) ? program.getObjectId() : 0;
-
-        if (this.currentProgramId != objectId) {
-            this.currentProgramId = objectId;
-            GLES20.glUseProgram(objectId);
-        }
-    }
-
-    public void bindTexture(int texUnit, int textureId) {
-        if (this.currentTexUnit != texUnit) {
-            this.currentTexUnit = texUnit;
-            GLES20.glActiveTexture(texUnit);
+    public void setModelviewProjection(Matrix4 modelview, Matrix4 projection) {
+        if (modelview == null || projection == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "DrawContext", "setModelviewProjection", "missingMatrix"));
         }
 
-        int texUnitIndex = texUnit - GLES20.GL_TEXTURE0;
-        if (this.currentTexId[texUnitIndex] != textureId) {
-            this.currentTexId[texUnitIndex] = textureId;
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
-        }
+        this.modelview.set(modelview);
+        this.modelviewTranspose.transposeMatrix(modelview);
+        this.projection.set(projection);
+        this.projectionInv.invertMatrix(projection);
+        this.modelviewProjection.setToMultiply(projection, modelview);
+        this.modelviewProjectionInv.invertMatrix(this.modelviewProjection);
+        this.modelview.extractEyePoint(this.eyePoint);
+
+        this.frustum.setToProjectionMatrix(this.projection);
+        this.frustum.transformByMatrix(this.modelviewTranspose);
+        this.frustum.normalize();
+
+        // Compute the eye coordinate rectangles carved out of the frustum by the near and far clipping planes, and
+        // the distance between those planes and the eye point along the -Z axis. The rectangles are determined by
+        // transforming the bottom-left and top-right points of the frustum from clip coordinates to eye
+        // coordinates.
+        Vec3 nbl = new Vec3(-1, -1, -1);
+        Vec3 ntr = new Vec3(+1, +1, -1);
+        Vec3 fbl = new Vec3(-1, -1, +1);
+        Vec3 ftr = new Vec3(+1, +1, +1);
+        // Convert each frustum corner from clip coordinates to eye coordinates by multiplying by the inverse
+        // projection matrix.
+        nbl.multiplyByMatrix(this.projectionInv);
+        ntr.multiplyByMatrix(this.projectionInv);
+        fbl.multiplyByMatrix(this.projectionInv);
+        ftr.multiplyByMatrix(this.projectionInv);
+
+        double nrRectWidth = Math.abs(ntr.x - nbl.x);
+        double frRectWidth = Math.abs(ftr.x - fbl.x);
+        double nrDistance = -nbl.z;
+        double frDistance = -fbl.z;
+
+        // Compute the scale and offset used to determine the width of a pixel on a rectangle carved out of the
+        // frustum at a distance along the -Z axis in eye coordinates. These values are found by computing the scale
+        // and offset of a frustum rectangle at a given distance, then dividing each by the viewport width.
+        double frustumWidthScale = (frRectWidth - nrRectWidth) / (frDistance - nrDistance);
+        double frustumWidthOffset = nrRectWidth - frustumWidthScale * nrDistance;
+        this.pixelSizeScale = frustumWidthScale / this.viewport.width();
+        this.pixelSizeOffset = frustumWidthOffset / this.viewport.height();
     }
 
     /**
@@ -367,33 +223,26 @@ public class DrawContext {
         return this.pixelSizeScale * distance + this.pixelSizeOffset;
     }
 
-    protected void computePixelSizeParams() {
-        // Compute the eye coordinate rectangles carved out of the frustum by the near and far clipping planes, and
-        // the distance between those planes and the eye point along the -Z axis. The rectangles are determined by
-        // transforming the bottom-left and top-right points of the frustum from clip coordinates to eye
-        // coordinates.
-        Vec3 nbl = new Vec3(-1, -1, -1);
-        Vec3 ntr = new Vec3(+1, +1, -1);
-        Vec3 fbl = new Vec3(-1, -1, +1);
-        Vec3 ftr = new Vec3(+1, +1, +1);
-        // Convert each frustum corner from clip coordinates to eye coordinates by multiplying by the inverse
-        // projection matrix.
-        nbl.multiplyByMatrix(this.projectionInv);
-        ntr.multiplyByMatrix(this.projectionInv);
-        fbl.multiplyByMatrix(this.projectionInv);
-        ftr.multiplyByMatrix(this.projectionInv);
+    // TODO refactor to accept a programId argument
+    public void useProgram(GpuProgram program) {
+        int objectId = (program != null) ? program.getObjectId() : 0;
 
-        double nrRectWidth = Math.abs(ntr.x - nbl.x);
-        double frRectWidth = Math.abs(ftr.x - fbl.x);
-        double nrDistance = -nbl.z;
-        double frDistance = -fbl.z;
+        if (this.glProgramId != objectId) {
+            this.glProgramId = objectId;
+            GLES20.glUseProgram(objectId);
+        }
+    }
 
-        // Compute the scale and offset used to determine the width of a pixel on a rectangle carved out of the
-        // frustum at a distance along the -Z axis in eye coordinates. These values are found by computing the scale
-        // and offset of a frustum rectangle at a given distance, then dividing each by the viewport width.
-        double frustumWidthScale = (frRectWidth - nrRectWidth) / (frDistance - nrDistance);
-        double frustumWidthOffset = nrRectWidth - frustumWidthScale * nrDistance;
-        this.pixelSizeScale = frustumWidthScale / this.viewport.width();
-        this.pixelSizeOffset = frustumWidthOffset / this.viewport.height();
+    public void bindTexture(int texUnit, int textureId) {
+        if (this.glTexUnit != texUnit) {
+            this.glTexUnit = texUnit;
+            GLES20.glActiveTexture(texUnit);
+        }
+
+        int texUnitIndex = texUnit - GLES20.GL_TEXTURE0;
+        if (this.glTexId[texUnitIndex] != textureId) {
+            this.glTexId[texUnitIndex] = textureId;
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
+        }
     }
 }

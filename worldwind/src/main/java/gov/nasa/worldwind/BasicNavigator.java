@@ -181,14 +181,14 @@ public class BasicNavigator implements Navigator {
     public synchronized void applyState(DrawContext dc) {
 
         // TODO move this responsibility into FrameController
-        dc.setEyePosition(new Position(this.camera.latitude, this.camera.longitude, this.camera.altitude));
-        dc.setHeading(this.camera.heading);
-        dc.setTilt(this.camera.tilt);
-        dc.setRoll(this.camera.roll);
-        dc.setFieldOfView(this.fieldOfView);
+        dc.eyePosition.set(this.camera.latitude, this.camera.longitude, this.camera.altitude);
+        dc.heading = this.camera.heading;
+        dc.tilt = this.camera.tilt;
+        dc.roll = this.camera.roll;
+        dc.fieldOfView = this.fieldOfView;
 
         // TODO move this responsibility into FrameController
-        this.computeModelview(dc.getGlobe(), this.modelview);
+        this.computeModelview(dc.globe, this.modelview);
         this.computeProjection(dc, this.projection);
         dc.setModelviewProjection(this.modelview, this.projection);
     }
@@ -204,9 +204,8 @@ public class BasicNavigator implements Navigator {
         // TODO horizon is not in view
         // TODO parameterize the object altitude for horizon distance
         double near = this.camera.altitude * 0.75;
-        double far = dc.getGlobe().horizonDistance(this.camera.altitude, 160000);
-        Rect viewport = dc.getViewport();
-        result.setToPerspectiveProjection(viewport.width(), viewport.height(), this.fieldOfView, near, far);
+        double far = dc.globe.horizonDistance(this.camera.altitude, 160000);
+        result.setToPerspectiveProjection(dc.viewport.width(), dc.viewport.height(), this.fieldOfView, near, far);
 
         return result;
     }

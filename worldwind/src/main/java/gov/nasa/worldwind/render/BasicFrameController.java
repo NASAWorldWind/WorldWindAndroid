@@ -44,15 +44,15 @@ public class BasicFrameController implements FrameController {
     }
 
     protected void createTerrain(DrawContext dc) {
-        Tessellator tess = dc.getGlobe().getTessellator();
-        dc.setTerrain(tess.tessellate(dc));
+        Tessellator tess = dc.globe.getTessellator();
+        dc.terrain = tess.tessellate(dc);
     }
 
     protected void drawLayers(DrawContext dc) {
 
-        for (Layer layer : dc.getLayers()) {
+        for (Layer layer : dc.layers) {
             if (layer != null) {
-                dc.setCurrentLayer(layer);
+                dc.currentLayer = layer;
                 try {
                     layer.render(dc);
                 } catch (Exception e) {
@@ -63,6 +63,6 @@ public class BasicFrameController implements FrameController {
             }
         }
 
-        dc.setCurrentLayer(null);
+        dc.currentLayer = null;
     }
 }

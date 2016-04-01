@@ -29,8 +29,8 @@ public class SurfaceTileProgram extends GpuProgram {
     protected float[] array = new float[18];
 
     public SurfaceTileProgram(DrawContext dc) throws IOException {
-        super(WWUtil.readResourceAsText(dc.getResources(), R.raw.gov_nasa_worldwind_surfacetileprogram_vert),
-            WWUtil.readResourceAsText(dc.getResources(), R.raw.gov_nasa_worldwind_surfacetileprogram_frag),
+        super(WWUtil.readResourceAsText(dc.resources, R.raw.gov_nasa_worldwind_surfacetileprogram_vert),
+            WWUtil.readResourceAsText(dc.resources, R.raw.gov_nasa_worldwind_surfacetileprogram_frag),
             new String[]{"vertexPoint", "vertexTexCoord"});
         this.init();
     }

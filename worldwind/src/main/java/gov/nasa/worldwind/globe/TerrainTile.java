@@ -53,7 +53,7 @@ public class TerrainTile extends Tile {
             this.tileVertices = ByteBuffer.allocateDirect(numLat * numLon * 12).order(ByteOrder.nativeOrder()).asFloatBuffer();
         }
 
-        Globe globe = dc.getGlobe();
+        Globe globe = dc.globe;
         globe.geographicToCartesian(this.sector.centroidLatitude(), this.sector.centroidLongitude(), 0, this.tileOrigin);
         globe.geographicToCartesianGrid(this.sector, numLat, numLon, null, this.tileOrigin, this.tileVertices, 3).rewind();
     }

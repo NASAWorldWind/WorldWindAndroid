@@ -333,13 +333,13 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     }
 
     protected void prepareToDrawFrame() {
-        this.dc.setGlobe(this.globe);
-        this.dc.setLayers(this.layers);
-        this.dc.setVerticalExaggeration(this.verticalExaggeration);
-        this.dc.setViewport(this.viewport);
-        this.dc.setResources(this.getContext().getResources());
-        this.dc.setGpuObjectCache(this.gpuObjectCache);
-        this.dc.setSurfaceTileRenderer(this.surfaceTileRenderer);
+        this.dc.globe = this.globe;
+        this.dc.layers.addAllLayers(this.layers);
+        this.dc.verticalExaggeration = this.verticalExaggeration;
+        this.dc.viewport.set(this.viewport);
+        this.dc.gpuObjectCache = this.gpuObjectCache;
+        this.dc.surfaceTileRenderer = this.surfaceTileRenderer;
+        this.dc.resources = this.getContext().getResources();
     }
 
     @Override
