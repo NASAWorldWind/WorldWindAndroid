@@ -9,11 +9,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import gov.nasa.worldwind.util.Logger;
+
 public class OrderedRenderableQueue {
 
     protected ArrayList<Entry> renderables = new ArrayList<>();
 
-    protected long lastSortSize = 0;
+    protected boolean mustSortRenderables;
 
     /**
      * Sorts ordered renderables by depth from front to back and then by insertion time. The peek and poll methods
@@ -36,6 +38,7 @@ public class OrderedRenderableQueue {
     public void offerRenderable(OrderedRenderable renderable, double depth) {
         if (renderable != null) { // ignore null arguments
             this.renderables.add(new Entry(renderable, depth, this.renderables.size()));
+            this.mustSortRenderables = true;
         }
     }
 
@@ -53,13 +56,13 @@ public class OrderedRenderableQueue {
 
     public void clearRenderables() {
         this.renderables.clear();
-        this.lastSortSize = 0;
+        this.mustSortRenderables = false;
     }
 
     protected void sortIfNeeded() {
-        if (this.lastSortSize != this.renderables.size()) {
+        if (this.mustSortRenderables) {
             Collections.sort(this.renderables, this.frontToBackComparator);
-            this.lastSortSize = this.renderables.size();
+            this.mustSortRenderables = false;
         }
     }
 
