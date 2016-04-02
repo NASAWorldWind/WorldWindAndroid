@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import gov.nasa.worldwind.util.Logger;
-
 public class OrderedRenderableQueue {
 
     protected ArrayList<Entry> renderables = new ArrayList<>();
