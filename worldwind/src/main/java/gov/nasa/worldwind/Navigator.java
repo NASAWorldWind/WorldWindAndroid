@@ -47,6 +47,4 @@ public interface Navigator {
     LookAt getAsLookAt(Globe globe, LookAt result);
 
     Navigator setAsLookAt(Globe globe, LookAt lookAt);
-
-    void applyState(DrawContext dc);
 }

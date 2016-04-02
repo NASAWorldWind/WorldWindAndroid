@@ -5,14 +5,10 @@
 
 package gov.nasa.worldwind;
 
-import android.graphics.Rect;
-
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Matrix4;
-import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.globe.Globe;
-import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Logger;
 
 public class BasicNavigator implements Navigator {
@@ -176,37 +172,5 @@ public class BasicNavigator implements Navigator {
         globe.lookAtToCamera(lookAt, this.camera); // TODO convert altitudeMode to absolute if necessary
 
         return this;
-    }
-
-    public synchronized void applyState(DrawContext dc) {
-
-        // TODO move this responsibility into FrameController
-        dc.eyePosition.set(this.camera.latitude, this.camera.longitude, this.camera.altitude);
-        dc.heading = this.camera.heading;
-        dc.tilt = this.camera.tilt;
-        dc.roll = this.camera.roll;
-        dc.fieldOfView = this.fieldOfView;
-
-        // TODO move this responsibility into FrameController
-        this.computeModelview(dc.globe, this.modelview);
-        this.computeProjection(dc, this.projection);
-        dc.setModelviewProjection(this.modelview, this.projection);
-    }
-
-    protected Matrix4 computeModelview(Globe globe, Matrix4 result) {
-        globe.cameraToCartesianTransform(this.camera, result).invertOrthonormal();
-
-        return result;
-    }
-
-    protected Matrix4 computeProjection(DrawContext dc, Matrix4 result) {
-        // TODO adjust the clip plane distances based on the navigator's orientation - shorter distances when the
-        // TODO horizon is not in view
-        // TODO parameterize the object altitude for horizon distance
-        double near = this.camera.altitude * 0.75;
-        double far = dc.globe.horizonDistance(this.camera.altitude, 160000);
-        result.setToPerspectiveProjection(dc.viewport.width(), dc.viewport.height(), this.fieldOfView, near, far);
-
-        return result;
     }
 }

@@ -263,7 +263,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
      *
      * @param distance the distance from the eye point in meters
      *
-     * @return the pixel height in meters
+     * @return the pixel height in meters per pixel
      */
     public double pixelSizeAtDistance(double distance) {
         double fovyDegrees = this.navigator.getFieldOfView();
@@ -310,7 +310,6 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     public void onDrawFrame(GL10 unused) {
         // Setup the draw context according to the World Window's current state and draw the WorldWindow.
         this.prepareToDrawFrame();
-        this.navigator.applyState(this.dc);
         this.frameController.drawFrame(this.dc);
 
         // Dispose OpenGL resources evicted during the previous frame. Performing this step here, rather than at
@@ -324,7 +323,8 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
             this.requestRender(); // inherited from GLSurfaceView
         }
 
-        this.dc.reset();
+        // Reset the draw context's state in preparation for the next frame.
+        this.dc.resetFrameProperties();
     }
 
     @Override
@@ -336,6 +336,11 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.dc.globe = this.globe;
         this.dc.layers.addAllLayers(this.layers);
         this.dc.verticalExaggeration = this.verticalExaggeration;
+        this.dc.eyePosition.set(this.navigator.getLatitude(), this.navigator.getLongitude(), this.navigator.getAltitude());
+        this.dc.heading = this.navigator.getHeading();
+        this.dc.tilt = this.navigator.getTilt();
+        this.dc.roll = this.navigator.getRoll();
+        this.dc.fieldOfView = this.navigator.getFieldOfView();
         this.dc.viewport.set(this.viewport);
         this.dc.gpuObjectCache = this.gpuObjectCache;
         this.dc.surfaceTileRenderer = this.surfaceTileRenderer;

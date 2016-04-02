@@ -20,7 +20,6 @@ import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.layer.LayerList;
-import gov.nasa.worldwind.util.Logger;
 
 public class DrawContext {
 
@@ -50,15 +49,9 @@ public class DrawContext {
 
     public Matrix4 modelview = new Matrix4();
 
-    public Matrix4 modelviewTranspose = new Matrix4();
-
     public Matrix4 projection = new Matrix4();
 
-    public Matrix4 projectionInv = new Matrix4();
-
     public Matrix4 modelviewProjection = new Matrix4();
-
-    public Matrix4 modelviewProjectionInv = new Matrix4();
 
     public Vec3 eyePoint = new Vec3();
 
@@ -72,11 +65,9 @@ public class DrawContext {
 
     protected boolean renderRequested;
 
+    protected double pixelSizeFactor;
+
     protected Map<Object, Object> userProperties = new HashMap<>();
-
-    protected double pixelSizeScale;
-
-    protected double pixelSizeOffset;
 
     protected int glProgramId;
 
@@ -95,6 +86,27 @@ public class DrawContext {
         this.renderRequested = true;
     }
 
+    /**
+     * Returns the height of a pixel at a given distance from the eye point. This method assumes the model of a screen
+     * composed of rectangular pixels, where pixel coordinates denote infinitely thin space between pixels. The units of
+     * the returned size are in meters per pixel.
+     * <p/>
+     * The result of this method is undefined if the distance is negative.
+     *
+     * @param distance the distance from the eye point in meters
+     *
+     * @return the pixel height in meters per pixel
+     */
+    public double pixelSizeAtDistance(double distance) {
+        if (this.pixelSizeFactor == 0) { // cache the scaling factor used to convert distances to pixel sizes
+            double fovyDegrees = this.fieldOfView;
+            double tanfovy_2 = Math.tan(Math.toRadians(fovyDegrees * 0.5));
+            this.pixelSizeFactor = 2 * tanfovy_2 / this.viewport.height();
+        }
+
+        return distance * this.pixelSizeFactor;
+    }
+
     public Object getUserProperty(Object key) {
         return this.userProperties.get(key);
     }
@@ -111,7 +123,7 @@ public class DrawContext {
         return this.userProperties.containsKey(key);
     }
 
-    public void reset() {
+    public void resetFrameProperties() {
         this.pickingMode = false;
         this.globe = null;
         this.terrain = null;
@@ -125,19 +137,15 @@ public class DrawContext {
         this.fieldOfView = 0;
         this.viewport.setEmpty();
         this.modelview.setToIdentity();
-        this.modelviewTranspose.setToIdentity();
         this.projection.setToIdentity();
-        this.projectionInv.setToIdentity();
         this.modelviewProjection.setToIdentity();
-        this.modelviewProjectionInv.setToIdentity();
         this.eyePoint.set(0, 0, 0);
         this.frustum.setToUnitFrustum();
         this.gpuObjectCache = null;
         this.resources = null;
         this.renderRequested = false;
+        this.pixelSizeFactor = 0;
         this.userProperties.clear();
-        this.pixelSizeOffset = 0;
-        this.pixelSizeScale = 0;
     }
 
     public void contextLost() {
@@ -148,79 +156,6 @@ public class DrawContext {
         for (int i = 0; i < this.glTexId.length; i++) {
             this.glTexId[i] = 0;
         }
-    }
-
-    public void setModelviewProjection(Matrix4 modelview, Matrix4 projection) {
-        if (modelview == null || projection == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "DrawContext", "setModelviewProjection", "missingMatrix"));
-        }
-
-        this.modelview.set(modelview);
-        this.modelviewTranspose.transposeMatrix(modelview);
-        this.projection.set(projection);
-        this.projectionInv.invertMatrix(projection);
-        this.modelviewProjection.setToMultiply(projection, modelview);
-        this.modelviewProjectionInv.invertMatrix(this.modelviewProjection);
-        this.modelview.extractEyePoint(this.eyePoint);
-
-        this.frustum.setToProjectionMatrix(this.projection);
-        this.frustum.transformByMatrix(this.modelviewTranspose);
-        this.frustum.normalize();
-
-        // Compute the eye coordinate rectangles carved out of the frustum by the near and far clipping planes, and
-        // the distance between those planes and the eye point along the -Z axis. The rectangles are determined by
-        // transforming the bottom-left and top-right points of the frustum from clip coordinates to eye
-        // coordinates.
-        Vec3 nbl = new Vec3(-1, -1, -1);
-        Vec3 ntr = new Vec3(+1, +1, -1);
-        Vec3 fbl = new Vec3(-1, -1, +1);
-        Vec3 ftr = new Vec3(+1, +1, +1);
-        // Convert each frustum corner from clip coordinates to eye coordinates by multiplying by the inverse
-        // projection matrix.
-        nbl.multiplyByMatrix(this.projectionInv);
-        ntr.multiplyByMatrix(this.projectionInv);
-        fbl.multiplyByMatrix(this.projectionInv);
-        ftr.multiplyByMatrix(this.projectionInv);
-
-        double nrRectWidth = Math.abs(ntr.x - nbl.x);
-        double frRectWidth = Math.abs(ftr.x - fbl.x);
-        double nrDistance = -nbl.z;
-        double frDistance = -fbl.z;
-
-        // Compute the scale and offset used to determine the width of a pixel on a rectangle carved out of the
-        // frustum at a distance along the -Z axis in eye coordinates. These values are found by computing the scale
-        // and offset of a frustum rectangle at a given distance, then dividing each by the viewport width.
-        double frustumWidthScale = (frRectWidth - nrRectWidth) / (frDistance - nrDistance);
-        double frustumWidthOffset = nrRectWidth - frustumWidthScale * nrDistance;
-        this.pixelSizeScale = frustumWidthScale / this.viewport.width();
-        this.pixelSizeOffset = frustumWidthOffset / this.viewport.height();
-    }
-
-    /**
-     * Returns the height of a pixel at a given distance from the eye point. This method assumes the model of a screen
-     * composed of rectangular pixels, where pixel coordinates denote infinitely thin space between pixels. The units of
-     * the returned size are in meters per pixel.
-     * <p/>
-     * The result of this method is undefined if the distance is negative.
-     *
-     * @param distance the distance from the eye point in meters
-     *
-     * @return the pixel height in meters
-     */
-    public double pixelSizeAtDistance(double distance) {
-        // Compute the pixel size from the width of a rectangle carved out of the frustum in model coordinates at
-        // the specified distance along the -Z axis and the viewport width in screen coordinates. The pixel size is
-        // expressed in model coordinates per screen coordinate (e.g. meters per pixel).
-        //
-        // The frustum width is determined by noticing that the frustum size is a linear function of distance from
-        // the eye point. The linear equation constants are determined during initialization, then solved for
-        // distance here.
-        //
-        // This considers only the frustum width by assuming that the frustum and viewport share the same aspect
-        // ratio, so that using either the frustum width or height results in the same pixel size.
-
-        return this.pixelSizeScale * distance + this.pixelSizeOffset;
     }
 
     // TODO refactor to accept a programId argument
