@@ -17,10 +17,6 @@ public class BasicNavigator implements Navigator {
 
     protected double fieldOfView = 45;
 
-    protected Matrix4 modelview = new Matrix4();
-
-    protected Matrix4 projection = new Matrix4();
-
     public BasicNavigator() {
     }
 
