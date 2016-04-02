@@ -45,6 +45,7 @@ public class BasicFrameController implements FrameController {
         this.createViewingState(dc);
         this.createTerrain(dc);
         this.drawLayers(dc);
+        this.drawOrderedRenderables(dc);
     }
 
     protected void clearFrame(DrawContext dc) {
@@ -101,5 +102,19 @@ public class BasicFrameController implements FrameController {
         }
 
         dc.currentLayer = null;
+    }
+
+    protected void drawOrderedRenderables(DrawContext dc) {
+
+        OrderedRenderable or;
+        while ((or = dc.pollOrderedRenderable()) != null) {
+            try {
+                or.renderOrdered(dc);
+            } catch (Exception e) {
+                Logger.logMessage(Logger.ERROR, "BasicFrameController", "drawOrderedRenderables",
+                    "Exception while rendering ordered renderable \'" + or + "\'", e);
+                // Keep going. Draw the remaining ordered renderables.
+            }
+        }
     }
 }

@@ -67,6 +67,8 @@ public class DrawContext {
 
     protected double pixelSizeFactor;
 
+    protected OrderedRenderableQueue orderedRenderables = new OrderedRenderableQueue();
+
     protected Map<Object, Object> userProperties = new HashMap<>();
 
     protected int glProgramId;
@@ -107,6 +109,18 @@ public class DrawContext {
         return distance * this.pixelSizeFactor;
     }
 
+    public void offerOrderedRenderable(OrderedRenderable renderable, double eyeDistance) {
+        this.orderedRenderables.offerRenderable(renderable, eyeDistance);
+    }
+
+    public OrderedRenderable peekOrderedRenderble() {
+        return this.orderedRenderables.peekRenderable();
+    }
+
+    public OrderedRenderable pollOrderedRenderable() {
+        return this.orderedRenderables.pollRenderable();
+    }
+
     public Object getUserProperty(Object key) {
         return this.userProperties.get(key);
     }
@@ -145,6 +159,7 @@ public class DrawContext {
         this.resources = null;
         this.renderRequested = false;
         this.pixelSizeFactor = 0;
+        this.orderedRenderables.clearRenderables();
         this.userProperties.clear();
     }
 
