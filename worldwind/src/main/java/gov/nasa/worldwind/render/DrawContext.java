@@ -5,11 +5,13 @@
 
 package gov.nasa.worldwind.render;
 
-import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.opengl.GLES20;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -85,6 +87,31 @@ public class DrawContext {
     protected int[] currentTexId = new int[32];
 
     protected Map<Object, Object> userProperties = new HashMap<>();
+
+    protected static class OrderedRenderableEntry {
+
+        protected OrderedRenderable orderedRenderable;
+
+        protected double eyeDistance;
+
+        protected long insertionOrder;
+
+        public OrderedRenderableEntry(OrderedRenderable orderedRenderable, double eyeDistance, int insertionOrder) {
+            this.orderedRenderable = orderedRenderable;
+            this.eyeDistance = eyeDistance;
+            this.insertionOrder = insertionOrder;
+        }
+    }
+
+    /**
+     * Use a simple ArrayList for storing large number of OrderRenderables before reallocation
+     */
+    protected ArrayList<OrderedRenderableEntry> orderedRenderables = new ArrayList<>(1000);
+
+    /**
+     * Index used for iterating over the ordered renderables
+     */
+    private int orderedRenderablesIndex = 0;
 
     public DrawContext() {
     }
@@ -306,6 +333,8 @@ public class DrawContext {
         this.resources = null;
         this.gpuObjectCache = null;
         this.userProperties.clear();
+        this.orderedRenderables.clear();
+        this.orderedRenderablesIndex = 0;
     }
 
     public void contextLost() {
@@ -396,4 +425,60 @@ public class DrawContext {
         this.pixelSizeScale = frustumWidthScale / this.viewport.width();
         this.pixelSizeOffset = frustumWidthOffset / this.viewport.height();
     }
+
+    /**
+     * Adds an ordered renderable to this draw context's ordered renderable list.
+     *
+     * @param orderedRenderable The ordered renderable to add.
+     * @param eyeDistance       The ordered renderable's eye distance.
+     */
+    public void addOrderedRenderable(OrderedRenderable orderedRenderable, double eyeDistance) {
+        this.orderedRenderables.add(new OrderedRenderableEntry(
+            orderedRenderable,
+            eyeDistance,
+            this.orderedRenderables.size() // use current size for the insertionOrder
+        ));
+    }
+
+    /**
+     * Sorts the ordered renderable list from the farthest to the eye point to the nearest from the eye point; the
+     * nearest renderable is the last item in the list.
+     */
+    public void sortOrderedRenderables() {
+        // Sort the ordered renderables by eye distance from front to back and then by insertion time.
+        Collections.sort(this.orderedRenderables, new Comparator<OrderedRenderableEntry>() {
+            @Override
+            public int compare(OrderedRenderableEntry lhs, OrderedRenderableEntry rhs) {
+                if (lhs.eyeDistance > rhs.eyeDistance) { // lhs is farther away; it is less than rhs
+                    return -1;
+                } else if (lhs.eyeDistance > rhs.eyeDistance) { // lhs is nearer; it is greater than rhs
+                    return 1;
+                } else { // lhs and rhs are the same distance from the eye; sort them based on insertion order
+                    if (lhs.insertionOrder > rhs.insertionOrder) { // lhs is later; it is greater than rhs
+                        return 1;
+                    } else if (lhs.insertionOrder < rhs.insertionOrder) { // lhs is earlier; it is less than rhs
+                        return -1;
+                    } else {
+                        return 0;
+                    }
+                }
+            }
+        });
+    }
+
+
+    /**
+     * Traverses the ordered renderable list from the furthest to the nearest eye distance; the nearest item is the last
+     * renderable popped from the list.
+     *
+     * @return The furthest ordered renderable, or null if at the end of the list.
+     */
+    public OrderedRenderable popOrderedRenderable() {
+        if (this.orderedRenderablesIndex >= this.orderedRenderables.size()) {
+            return null;
+        }
+        // Return the next furthest item from the sorted list
+        return this.orderedRenderables.get(this.orderedRenderablesIndex++).orderedRenderable;
+    }
+
 }
