@@ -75,22 +75,22 @@ public class Color {
     /**
      * This color's red component, a number between 0 and 1.
      */
-    private float red;
+    float red;
 
     /**
      * This color's green component, a number between 0 and 1.
      */
-    private float green;
+    float green;
 
     /**
      * This color's blue component, a number between 0 and 1.
      */
-    private float blue;
+    float blue;
 
     /**
      * This color's alpha component, a number between 0 and 1.
      */
-    private float alpha;
+    float alpha;
 
     /**
      * Constructs a color from red, green, blue and alpha values.
@@ -186,6 +186,22 @@ public class Color {
             '}';
     }
 
+    public float getRed() {
+        return red;
+    }
+
+    public float getGreen() {
+        return green;
+    }
+
+    public float getBlue() {
+        return blue;
+    }
+
+    public float getAlpha() {
+        return alpha;
+    }
+
     /**
      * Returns a string representation of this color, indicating the byte values corresponding to this color's
      * floating-point component values.
@@ -210,9 +226,9 @@ public class Color {
      */
     public float[] premultipliedComponents(float[] array) {
         array[0] = this.red * this.alpha;
-        array[1] =  this.green * this.alpha;
-        array[2] =  this.blue * this.alpha;
-        array[3] =  this.alpha;
+        array[1] = this.green * this.alpha;
+        array[2] = this.blue * this.alpha;
+        array[3] = this.alpha;
 
         return array;
     }
@@ -265,9 +281,9 @@ public class Color {
      * @return This color, set to the next possible color.
      */
     public Color nextColor() {
-        int rb =  Math.round(this.red * 255);
-        int gb =  Math.round(this.green * 255);
-        int bb =  Math.round(this.blue * 255);
+        int rb = Math.round(this.red * 255);
+        int gb = Math.round(this.green * 255);
+        int bb = Math.round(this.blue * 255);
 
         if (rb < 255) {
             this.red = (rb + 1) / 255;
