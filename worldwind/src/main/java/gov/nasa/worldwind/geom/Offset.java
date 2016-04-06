@@ -115,7 +115,7 @@ public class Offset {
      *
      * @return The computed offset relative to the rectangle's origin.
      */
-    public Vec2 offsetForSize(int width, int height) {
+    public Vec2 offsetForSize(double width, double height) {
         double x, y;
 
         if (this.xUnits == WorldWind.OFFSET_FRACTION) {
