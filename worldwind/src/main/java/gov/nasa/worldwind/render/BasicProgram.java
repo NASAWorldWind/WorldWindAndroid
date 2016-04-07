@@ -85,6 +85,10 @@ public class BasicProgram extends GpuProgram {
         GLES20.glUniformMatrix3fv(this.texCoordMatrixId, 1, false, this.array, 0);
     }
 
+    public void loadColor(Color color) {
+        loadColor(color.red, color.green, color.blue, color.alpha);
+    }
+
     public void loadColor(float r, float g, float b, float a) {
         GLES20.glUniform4f(this.colorId, r * a, g * a, b * a, a);
     }
