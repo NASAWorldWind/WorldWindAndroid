@@ -37,6 +37,7 @@ public class BasicFrameController implements FrameController {
         this.clearFrame(dc);
         this.createTerrain(dc);
         this.drawLayers(dc);
+        this.drawOrderedRenderables(dc);
     }
 
     protected void clearFrame(DrawContext dc) {
@@ -64,5 +65,17 @@ public class BasicFrameController implements FrameController {
         }
 
         dc.setCurrentLayer(null);
+    }
+
+    /**
+     * @param dc
+     */
+    protected void drawOrderedRenderables(DrawContext dc) {
+        dc.sortOrderedRenderables();
+        OrderedRenderable or = dc.popOrderedRenderable();
+        while (or != null) {
+            or.renderOrdered(dc);
+            or = dc.popOrderedRenderable();
+        }
     }
 }
