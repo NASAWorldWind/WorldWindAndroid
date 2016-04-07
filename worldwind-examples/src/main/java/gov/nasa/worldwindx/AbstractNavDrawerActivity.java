@@ -5,8 +5,6 @@
 
 package gov.nasa.worldwindx;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -135,6 +133,9 @@ public abstract class AbstractNavDrawerActivity extends AppCompatActivity
                 break;
             case R.id.nav_look_at_view_activity:
                 startActivity(new Intent(getApplicationContext(), LookAtViewActivity.class));
+                break;
+            case R.id.nav_placemarks_activity:
+                startActivity(new Intent(getApplicationContext(), PlacemarksActivity.class));
                 break;
             case R.id.nav_show_tessellation_activity:
                 startActivity(new Intent(getApplicationContext(), ShowTessellationActivity.class));
