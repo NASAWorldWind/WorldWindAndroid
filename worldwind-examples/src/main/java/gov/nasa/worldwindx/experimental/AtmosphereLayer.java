@@ -84,7 +84,7 @@ public class AtmosphereLayer extends AbstractLayer {
 
     protected void drawSky(DrawContext dc) {
 
-        AtmosphereProgram program = (AtmosphereProgram) dc.getGpuObjectCache().retrieveProgram(dc, SkyProgram.class);
+        AtmosphereProgram program = (AtmosphereProgram) dc.gpuObjectCache.retrieveProgram(dc, SkyProgram.class);
         if (program == null) {
             return; // program is not in the GPU object cache yet
         }
@@ -93,16 +93,16 @@ public class AtmosphereLayer extends AbstractLayer {
         dc.useProgram(program);
 
         // Use the draw context's globe.
-        program.loadGlobe(dc.getGlobe());
+        program.loadGlobe(dc.globe);
 
         // Use the draw context's eye point.
-        program.loadEyePoint(dc.getEyePoint());
+        program.loadEyePoint(dc.eyePoint);
 
         // Use the vertex origin for the sky ellipsoid.
         program.loadVertexOrigin(this.vector.set(0, 0, 0));
 
         // Use the draw context's modelview projection matrix.
-        program.loadModelviewProjection(dc.getModelviewProjection());
+        program.loadModelviewProjection(dc.modelviewProjection);
 
         // Use the sky fragment mode, which assumes the standard premultiplied alpha blending mode.
         program.loadFragMode(AtmosphereProgram.FRAGMODE_SKY);
@@ -110,8 +110,8 @@ public class AtmosphereLayer extends AbstractLayer {
         // Use this layer's light direction.
         // TODO Make light/sun direction an optional property of the WorldWindow and attach it to the DrawContext each frame
         // TODO DrawContext property defaults to the eye lat/lon like we have below
-        Location loc = (this.lightLocation != null) ? this.lightLocation : dc.getEyePosition();
-        dc.getGlobe().geographicToCartesianNormal(loc.latitude, loc.longitude, this.vector);
+        Location loc = (this.lightLocation != null) ? this.lightLocation : dc.eyePosition;
+        dc.globe.geographicToCartesianNormal(loc.latitude, loc.longitude, this.vector);
         program.loadLightDirection(this.vector);
 
         // Use the sky's vertex point attribute.
@@ -129,7 +129,12 @@ public class AtmosphereLayer extends AbstractLayer {
 
     protected void drawGround(DrawContext dc) {
 
-        AtmosphereProgram program = (AtmosphereProgram) dc.getGpuObjectCache().retrieveProgram(dc, GroundProgram.class);
+        Terrain terrain = dc.terrain;
+        if (terrain.getTileCount() == 0) {
+            return; // no terrain surface to render on
+        }
+
+        AtmosphereProgram program = (AtmosphereProgram) dc.gpuObjectCache.retrieveProgram(dc, GroundProgram.class);
         if (program == null) {
             return; // program is not in the GPU object cache yet
         }
@@ -138,16 +143,16 @@ public class AtmosphereLayer extends AbstractLayer {
         dc.useProgram(program);
 
         // Use the draw context's globe.
-        program.loadGlobe(dc.getGlobe());
+        program.loadGlobe(dc.globe);
 
         // Use the draw context's eye point.
-        program.loadEyePoint(dc.getEyePoint());
+        program.loadEyePoint(dc.eyePoint);
 
         // Use this layer's light direction.
         // TODO Make light/sun direction an optional property of the WorldWindow and attach it to the DrawContext each frame
         // TODO DrawContext property defaults to the eye lat/lon like we have below
-        Location loc = (this.lightLocation != null) ? this.lightLocation : dc.getEyePosition();
-        dc.getGlobe().geographicToCartesianNormal(loc.latitude, loc.longitude, this.vector);
+        Location loc = (this.lightLocation != null) ? this.lightLocation : dc.eyePosition;
+        dc.globe.geographicToCartesianNormal(loc.latitude, loc.longitude, this.vector);
         program.loadLightDirection(this.vector);
 
         GpuTexture texture = null;
@@ -156,7 +161,7 @@ public class AtmosphereLayer extends AbstractLayer {
         // Use this layer's night image when the light location is different than the eye location.
         if (this.nightImageSource != null && this.lightLocation != null) {
 
-            texture = (GpuTexture) dc.getGpuObjectCache().get(this.nightImageSource);
+            texture = (GpuTexture) dc.gpuObjectCache.get(this.nightImageSource);
             if (texture == null) {
                 texture = new GpuTexture(dc, this.nightImageSource);
             }
@@ -164,9 +169,8 @@ public class AtmosphereLayer extends AbstractLayer {
             textureBound = texture.bindTexture(dc, GLES20.GL_TEXTURE0);
         }
 
-        // Get the draw context's tessellated terrain and modelview projection matrix.
-        Terrain terrain = dc.getTerrain();
-        Matrix4 modelviewProjection = dc.getModelviewProjection();
+        // Get the draw context's modelview projection matrix.
+        Matrix4 modelviewProjection = dc.modelviewProjection;
 
         // Set up to use the shared tile tex coord attributes.
         GLES20.glEnableVertexAttribArray(1);
@@ -218,7 +222,7 @@ public class AtmosphereLayer extends AbstractLayer {
             Arrays.fill(array, altitude);
 
             this.skyPoints = ByteBuffer.allocateDirect(count * 12).order(ByteOrder.nativeOrder()).asFloatBuffer();
-            dc.getGlobe().geographicToCartesianGrid(this.fullSphereSector, this.skyWidth, this.skyHeight, array, null,
+            dc.globe.geographicToCartesianGrid(this.fullSphereSector, this.skyWidth, this.skyHeight, array, null,
                 this.skyPoints, 3).rewind();
         }
 

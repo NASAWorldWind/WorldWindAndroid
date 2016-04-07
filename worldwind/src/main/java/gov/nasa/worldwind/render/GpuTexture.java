@@ -47,7 +47,7 @@ public class GpuTexture implements GpuObject, Runnable {
         }
 
         this.imageSource = imageSource;
-        dc.getGpuObjectCache().put(imageSource, this, 1); // cache entry is replaced upon texture load
+        dc.gpuObjectCache.put(imageSource, this, 1); // cache entry is replaced upon texture load
     }
 
     @Override
@@ -90,7 +90,7 @@ public class GpuTexture implements GpuObject, Runnable {
     public boolean bindTexture(DrawContext dc, int texUnit) {
         if (this.mustLoadImage()) {
             this.loadImage();
-            dc.getGpuObjectCache().put(this.imageSource, this, this.textureSize); // update the GPU cache entry size
+            dc.gpuObjectCache.put(this.imageSource, this, this.textureSize); // update the GPU cache entry size
         } else if (this.mustRequestImage()) {
             this.requestImage(dc);
         }
@@ -143,7 +143,7 @@ public class GpuTexture implements GpuObject, Runnable {
     }
 
     protected void requestImage(DrawContext dc) {
-        this.resources = dc.getResources(); // temporarily reference used to load Android resources asynchronously
+        this.resources = dc.resources; // temporarily reference used to load Android resources asynchronously
         this.requested = WorldWind.retrievalService().offer(this); // suppress duplicate requests if the task was accepted
     }
 

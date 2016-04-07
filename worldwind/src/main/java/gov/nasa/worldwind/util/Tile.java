@@ -232,8 +232,8 @@ public class Tile {
      * @return true if the tile should be subdivided, otherwise false
      */
     public boolean mustSubdivide(DrawContext dc, double detailFactor) {
-        double distance = this.getExtent(dc).distanceTo(dc.getEyePoint());
-        double texelSize = this.level.texelHeight * dc.getGlobe().getEquatorialRadius();
+        double distance = this.getExtent(dc).distanceTo(dc.eyePoint);
+        double texelSize = this.level.texelHeight * dc.globe.getEquatorialRadius();
         double pixelSize = dc.pixelSizeAtDistance(distance);
 
         return texelSize > pixelSize * detailFactor;
@@ -336,7 +336,7 @@ public class Tile {
     protected BoundingBox getExtent(DrawContext dc) {
         if (this.extent == null) {
             this.extent = new BoundingBox();
-            this.extent.setToSector(this.sector, dc.getGlobe(), 0, 0);
+            this.extent.setToSector(this.sector, dc.globe, 0, 0);
         }
 
         return this.extent;

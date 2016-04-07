@@ -93,14 +93,14 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
 
     @Override
     protected void doRender(DrawContext dc) {
-        if (dc.getTerrain().getTileCount() == 0) {
+        if (dc.terrain.getTileCount() == 0) {
             return; // no terrain surface to render on
         }
 
         this.assembleTiles(dc);
 
         if (this.currentTiles.size() > 0) { // draw the tiles on the terrain
-            dc.getSurfaceTileRenderer().renderTiles(dc, this.currentTiles);
+            dc.surfaceTileRenderer.renderTiles(dc, this.currentTiles);
         }
 
         this.clearTiles(); // clear references to cached tiles; there may be no more calls to render
@@ -137,7 +137,7 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
     }
 
     protected void addTileOrDescendants(DrawContext dc, ImageTile tile) {
-        if (!tile.intersectsFrustum(dc, dc.getFrustum())) {
+        if (!tile.intersectsFrustum(dc, dc.frustum)) {
             return; // ignore the tile and its descendants if it's not visible
         }
 

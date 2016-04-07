@@ -30,8 +30,8 @@ public class BasicProgram extends GpuProgram {
     protected float[] array = new float[16];
 
     public BasicProgram(DrawContext dc) throws IOException {
-        super(WWUtil.readResourceAsText(dc.getResources(), R.raw.gov_nasa_worldwind_basicprogram_vert),
-            WWUtil.readResourceAsText(dc.getResources(), R.raw.gov_nasa_worldwind_basicprogram_frag),
+        super(WWUtil.readResourceAsText(dc.resources, R.raw.gov_nasa_worldwind_basicprogram_vert),
+            WWUtil.readResourceAsText(dc.resources, R.raw.gov_nasa_worldwind_basicprogram_frag),
             new String[]{"vertexPoint", "vertexTexCoord"});
         this.init();
     }

@@ -14,7 +14,7 @@ import gov.nasa.worldwindx.R;
 public class GroundProgram extends AtmosphereProgram {
 
     public GroundProgram(DrawContext dc) throws IOException {
-        super(dc, WWUtil.readResourceAsText(dc.getResources(), R.raw.gov_nasa_worldwind_groundprogram_vert),
-            WWUtil.readResourceAsText(dc.getResources(), R.raw.gov_nasa_worldwind_atmosphereprogram_frag));
+        super(dc, WWUtil.readResourceAsText(dc.resources, R.raw.gov_nasa_worldwind_groundprogram_vert),
+            WWUtil.readResourceAsText(dc.resources, R.raw.gov_nasa_worldwind_atmosphereprogram_frag));
     }
 }

@@ -92,7 +92,7 @@ public class BasicTessellator implements Tessellator, TileFactory {
     }
 
     protected void addTileOrDescendants(DrawContext dc, TerrainTile tile) {
-        if (!tile.intersectsFrustum(dc, dc.getFrustum())) {
+        if (!tile.intersectsFrustum(dc, dc.frustum)) {
             return; // ignore the tile and its descendants if it's not visible
         }
 

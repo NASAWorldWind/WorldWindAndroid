@@ -123,7 +123,7 @@ public abstract class AbstractLayer implements Layer {
             return;
         }
 
-        if (dc.isPickingMode() && !this.pickEnabled) {
+        if (dc.pickingMode && !this.pickEnabled) {
             return;
         }
 
@@ -136,7 +136,7 @@ public abstract class AbstractLayer implements Layer {
 
     @Override
     public boolean isWithinActiveAltitudes(DrawContext dc) {
-        double eyeAltitude = dc.getEyePosition().altitude;
+        double eyeAltitude = dc.eyePosition.altitude;
         return eyeAltitude >= this.minActiveAltitude && eyeAltitude <= this.maxActiveAltitude;
     }
 

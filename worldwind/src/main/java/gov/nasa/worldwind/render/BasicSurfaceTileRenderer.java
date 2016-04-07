@@ -39,7 +39,7 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
             return; // surface tile's texture is not in the GPU object cache yet
         }
 
-        SurfaceTileProgram program = (SurfaceTileProgram) dc.getGpuObjectCache().retrieveProgram(dc, SurfaceTileProgram.class);
+        SurfaceTileProgram program = (SurfaceTileProgram) dc.gpuObjectCache.retrieveProgram(dc, SurfaceTileProgram.class);
         if (program == null) {
             return; // program is not in the GPU object cache yet
         }
@@ -48,7 +48,7 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
         dc.useProgram(program);
 
         // Get the draw context's tessellated terrain and the surface tile's sector.
-        Terrain terrain = dc.getTerrain();
+        Terrain terrain = dc.terrain;
         Sector textureSector = texture.getSector();
 
         // Set up to use the shared terrain tex coord attributes.
@@ -65,7 +65,7 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
 
             // Use the draw context's modelview projection matrix, transformed to the terrain tile's local coordinates.
             Vec3 terrainOrigin = terrain.getTileVertexOrigin(idx);
-            this.mvpMatrix.set(dc.getModelviewProjection());
+            this.mvpMatrix.set(dc.modelviewProjection);
             this.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
             program.loadModelviewProjection(this.mvpMatrix);
 
@@ -96,7 +96,7 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
                 Logger.logMessage(Logger.ERROR, "BasicSurfaceTileRenderer", "renderTiles", "missingList"));
         }
 
-        SurfaceTileProgram program = (SurfaceTileProgram) dc.getGpuObjectCache().retrieveProgram(dc, SurfaceTileProgram.class);
+        SurfaceTileProgram program = (SurfaceTileProgram) dc.gpuObjectCache.retrieveProgram(dc, SurfaceTileProgram.class);
         if (program == null) {
             return; // program is not in the GPU object cache yet
         }
@@ -105,7 +105,7 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
         dc.useProgram(program);
 
         // Get the draw context's tessellated terrain.
-        Terrain terrain = dc.getTerrain();
+        Terrain terrain = dc.terrain;
 
         // Set up to use the shared terrain tex coord attributes.
         GLES20.glEnableVertexAttribArray(1);
@@ -129,7 +129,7 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
 
             // Use the draw context's modelview projection matrix, transformed to the terrain tile's local coordinates.
             Vec3 terrainOrigin = terrain.getTileVertexOrigin(idx);
-            this.mvpMatrix.set(dc.getModelviewProjection());
+            this.mvpMatrix.set(dc.modelviewProjection);
             this.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
             program.loadModelviewProjection(this.mvpMatrix);
 

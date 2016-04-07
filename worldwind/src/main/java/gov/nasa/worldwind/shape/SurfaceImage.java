@@ -105,16 +105,16 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
             return; // nothing to render
         }
 
-        if (!dc.getTerrain().getSector().intersects(this.sector)) {
+        if (!dc.terrain.getSector().intersects(this.sector)) {
             return; // nothing to render on
         }
 
-        dc.getSurfaceTileRenderer().renderTile(dc, this);
+        dc.surfaceTileRenderer.renderTile(dc, this);
     }
 
     @Override
     public boolean bindTexture(DrawContext dc, int texUnit) {
-        GpuTexture texture = (GpuTexture) dc.getGpuObjectCache().get(this.imageSource);
+        GpuTexture texture = (GpuTexture) dc.gpuObjectCache.get(this.imageSource);
         if (texture == null) {
             texture = new GpuTexture(dc, this.imageSource); // adds itself to the GPU object cache
         }
@@ -124,7 +124,7 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
 
     @Override
     public boolean applyTexCoordTransform(DrawContext dc, Matrix3 result) {
-        GpuTexture texture = (GpuTexture) dc.getGpuObjectCache().get(this.imageSource);
+        GpuTexture texture = (GpuTexture) dc.gpuObjectCache.get(this.imageSource);
         return (texture != null) && texture.applyTexCoordTransform(result);
     }
 }

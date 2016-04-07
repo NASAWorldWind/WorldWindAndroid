@@ -15,6 +15,8 @@ import gov.nasa.worldwind.render.DrawContext;
 
 public class ShowTessellationLayer extends AbstractLayer {
 
+    protected Matrix4 offsetMvpMatrix = new Matrix4();
+
     protected Matrix4 mvpMatrix = new Matrix4();
 
     public ShowTessellationLayer() {
@@ -24,7 +26,12 @@ public class ShowTessellationLayer extends AbstractLayer {
     @Override
     protected void doRender(DrawContext dc) {
 
-        BasicProgram program = (BasicProgram) dc.getGpuObjectCache().retrieveProgram(dc, BasicProgram.class);
+        Terrain terrain = dc.terrain;
+        if (terrain.getTileCount() == 0) {
+            return; // no terrain to render
+        }
+
+        BasicProgram program = (BasicProgram) dc.gpuObjectCache.retrieveProgram(dc, BasicProgram.class);
         if (program == null) {
             return; // program is not in the GPU object cache yet
         }
@@ -39,16 +46,16 @@ public class ShowTessellationLayer extends AbstractLayer {
         // Suppress writes to the OpenGL depth buffer.
         GLES20.glDepthMask(false);
 
-        // Get the draw context's tessellated terrain and modelview projection matrix.
-        Terrain terrain = dc.getTerrain();
+        // Compute the portion of the modelview projection matrix that remains constant for each tile.
+        this.offsetMvpMatrix.set(dc.projection);
+        this.offsetMvpMatrix.offsetProjectionDepth(-1.0e-3); // offset this layer's depth values toward the eye
+        this.offsetMvpMatrix.multiplyByMatrix(dc.modelview);
 
         for (int idx = 0, len = terrain.getTileCount(); idx < len; idx++) {
 
             // Use the draw context's modelview projection matrix, transformed to the terrain tile's local coordinates.
             Vec3 terrainOrigin = terrain.getTileVertexOrigin(idx);
-            this.mvpMatrix.set(dc.getProjection());
-            this.mvpMatrix.offsetProjectionDepth(-1.0e-3); // offset this layer's depth values toward the eye
-            this.mvpMatrix.multiplyByMatrix(dc.getModelview());
+            this.mvpMatrix.set(this.offsetMvpMatrix);
             this.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
             program.loadModelviewProjection(this.mvpMatrix);
 
