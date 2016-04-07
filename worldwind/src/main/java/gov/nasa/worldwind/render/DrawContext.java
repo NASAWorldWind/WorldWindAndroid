@@ -24,6 +24,7 @@ import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.WWMath;
 
 public class DrawContext {
 
@@ -61,6 +62,8 @@ public class DrawContext {
     protected Matrix4 modelviewProjection = new Matrix4();
 
     protected Matrix4 modelviewProjectionInv = new Matrix4();
+
+    protected Matrix4 screenProjection = new Matrix4();
 
     protected Vec3 eyePoint = new Vec3();
 
@@ -203,6 +206,7 @@ public class DrawContext {
 
     public void setViewport(Rect rect) {
         this.viewport.set(rect);
+        this.screenProjection.setToScreenProjection(this.viewport.width(), this.viewport.height());
     }
 
     public Matrix4 getModelview() {
@@ -219,6 +223,10 @@ public class DrawContext {
 
     public Matrix4 getModelviewProjectionInverse() {
         return modelviewProjectionInv;
+    }
+
+    public Matrix4 getScreenProjection() {
+        return screenProjection;
     }
 
     public Vec3 getEyePoint() {
@@ -324,6 +332,7 @@ public class DrawContext {
         this.projectionInv.setToIdentity();
         this.modelviewProjection.setToIdentity();
         this.modelviewProjectionInv.setToIdentity();
+        this.screenProjection.setToIdentity();
         this.eyePoint.set(0, 0, 0);
         this.frustum.setToUnitFrustum();
         this.pixelSizeOffset = 0;
@@ -436,7 +445,7 @@ public class DrawContext {
         this.orderedRenderables.add(new OrderedRenderableEntry(
             orderedRenderable,
             eyeDistance,
-            this.orderedRenderables.size() // use current size for the insertionOrder
+            this.orderedRenderables.size() // use the current size for the insertionOrder
         ));
     }
 
@@ -481,4 +490,108 @@ public class DrawContext {
         return this.orderedRenderables.get(this.orderedRenderablesIndex++).orderedRenderable;
     }
 
+    /**
+     * Transforms the specified model point from model coordinates to screen coordinates, applying an offset to the
+     * modelPoint's projected depth value.
+     * <p/>
+     * The resultant screen point is in WebGL screen coordinates, with the origin in the bottom-left corner and axes
+     * that extend up and to the right from the origin.
+     * <p/>
+     * This function stores the transformed point in the result argument, and returns true or false to indicate whether
+     * or not the transformation is successful. It returns false if this navigator state's modelview or projection
+     * matrices are malformed, or if the modelPoint is clipped by the near clipping plane or the far clipping plane,
+     * ignoring the depth offset.
+     * <p/>
+     * The depth offset may be any real number and is typically used to move the screenPoint slightly closer to the
+     * user's eye in order to give it visual priority over nearby objects or terrain. An offset of zero has no effect.
+     * An offset less than zero brings the screenPoint closer to the eye, while an offset greater than zero pushes the
+     * projected screen point away from the eye.
+     * <p/>
+     * Applying a non-zero depth offset has no effect on whether the model point is clipped by this method or by WebGL.
+     * Clipping is performed on the original model point, ignoring the depth offset. The final depth value after
+     * applying the offset is clamped to the range [0,1].
+     *
+     * @param modelPoint  The model coordinate point to project.
+     * @param depthOffset The amount of offset to apply.
+     * @param result      A pre-allocated vector in which to return the projected point.
+     *
+     * @return true if the transformation is successful, otherwise false.
+     *
+     * @throws IllegalArgumentException If either the specified point or result argument is null or undefined.
+     */
+    public boolean projectWithDepth(Vec3 modelPoint, double depthOffset, Vec3 result) {
+        if (modelPoint == null) {
+            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR,
+                "DrawContext", "projectWithDepth", "missingPoint"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR,
+                "DrawContext", "projectWithDepth", "missingResult"));
+        }
+
+        // Transform the model point from model coordinates to eye coordinates. The eye coordinate and the clip
+        // coordinate are transformed separately in order to reuse the eye coordinate below.
+        double mx = modelPoint.x;
+        double my = modelPoint.y;
+        double mz = modelPoint.z;
+        double[] m = this.modelview.m;
+        double ex = m[0] * mx + m[1] * my + m[2] * mz + m[3];
+        double ey = m[4] * mx + m[5] * my + m[6] * mz + m[7];
+        double ez = m[8] * mx + m[9] * my + m[10] * mz + m[11];
+        double ew = m[12] * mx + m[13] * my + m[14] * mz + m[15];
+
+        // Transform the point from eye coordinates to clip coordinates.
+        double[] p = this.projection.m;
+        double x = p[0] * ex + p[1] * ey + p[2] * ez + p[3] * ew;
+        double y = p[4] * ex + p[5] * ey + p[6] * ez + p[7] * ew;
+        double z = p[8] * ex + p[9] * ey + p[10] * ez + p[11] * ew;
+        double w = p[12] * ex + p[13] * ey + p[14] * ez + p[15] * ew;
+
+        if (w == 0) {
+            return false;
+        }
+
+        // Complete the conversion from model coordinates to clip coordinates by dividing by W. The resultant X, Y
+        // and Z coordinates are in the range [-1,1].
+        x /= w;
+        y /= w;
+        z /= w;
+
+        // Clip the point against the near and far clip planes.
+        if (z < -1 || z > 1) {
+            return false;
+        }
+
+        // Transform the Z eye coordinate to clip coordinates again, this time applying a depth offset. The depth
+        // offset is applied only to the matrix element affecting the projected Z coordinate, so we inline the
+        // computation here instead of re-computing X, Y, Z and W in order to improve performance. See
+        // Matrix.offsetProjectionDepth for more information on the effect of this offset.
+        z = p[8] * ex + p[9] * ey + p[10] * ez * (1 + depthOffset) + p[11] * ew;
+        z /= w;
+
+        // Clamp the point to the near and far clip planes. We know the point's original Z value is contained within
+        // the clip planes, so we limit its offset z value to the range [-1, 1] in order to ensure it is not clipped
+        // by WebGL. In clip coordinates the near and far clip planes are perpendicular to the Z axis and are
+        // located at -1 and 1, respectively.
+        z = WWMath.clamp(z, -1, 1);
+
+        // Convert the point from clip coordinates to the range [0, 1]. This enables the XY coordinates to be
+        // converted to screen coordinates, and the Z coordinate to represent a depth value in the range [0, 1].
+        x = x * 0.5 + 0.5;
+        y = y * 0.5 + 0.5;
+        z = z * 0.5 + 0.5;
+
+        // Convert the X and Y coordinates from the range [0,1] to screen coordinates.
+        x = x * this.viewport.width() + this.viewport.left;
+        y = y * this.viewport.height() + this.viewport.top;
+
+        result.x = x;
+        result.y = y;
+        result.z = z;
+
+        return true;
+    }
+
+    ;
 }
