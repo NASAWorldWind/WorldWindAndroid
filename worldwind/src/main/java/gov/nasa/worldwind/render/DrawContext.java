@@ -55,6 +55,8 @@ public class DrawContext {
 
     public Matrix4 modelviewProjection = new Matrix4();
 
+    public Matrix4 screenProjection = new Matrix4();
+
     public Vec3 eyePoint = new Vec3();
 
     public Frustum frustum = new Frustum();
@@ -324,6 +326,7 @@ public class DrawContext {
         this.modelview.setToIdentity();
         this.projection.setToIdentity();
         this.modelviewProjection.setToIdentity();
+        this.screenProjection.setToIdentity();
         this.eyePoint.set(0, 0, 0);
         this.frustum.setToUnitFrustum();
         this.gpuObjectCache = null;
