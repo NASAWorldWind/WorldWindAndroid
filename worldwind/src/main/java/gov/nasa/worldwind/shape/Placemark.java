@@ -75,7 +75,7 @@ public class Placemark extends AbstractRenderable {
      * Placemark#eyeDistanceScaling} is true, this placemark's image, label and leader line sizes are reduced as the eye
      * distance increases beyond this threshold.
      *
-     * @default 1e6 (meters)
+     * default 1e6 (meters)
      */
     protected double eyeDistanceScalingThreshold = 1e6;
 
@@ -140,7 +140,7 @@ public class Placemark extends AbstractRenderable {
      * Text#targetVisibility}. This current visibility and target visibility are used to control the fading in and out
      * of this shape.
      *
-     * @readonly
+     * readonly
      */
     double currentVisibility = 1;
 
@@ -256,7 +256,7 @@ public class Placemark extends AbstractRenderable {
 
         // Rendering is deferred for ordered renderables; simply add the placemark to the collection of ordered renderables
         // for rendering later via OrderedPlacemark.renderOrdered().
-        dc.addOrderedRenderable(orderedPlacemark, orderedPlacemark.eyeDistance);
+        dc.offerOrderedRenderable(orderedPlacemark, orderedPlacemark.eyeDistance);
     }
 
 
@@ -284,12 +284,12 @@ public class Placemark extends AbstractRenderable {
         // position. This can occur at the window edges.
 //        dc.surfacePointForMode(this.position.latitude, this.position.longitude, this.position.altitude,
 //            this.altitudeMode, this.placePoint);
-        dc.getGlobe().geographicToCartesian(
+        dc.globe.geographicToCartesian(
             this.position.latitude, this.position.longitude, this.position.altitude,
             this.op.placePoint);
 
         // Compute the eye distance to the place point, the value which is used for sorting/ordering.
-        this.op.eyeDistance = this.alwaysOnTop ? 0 : dc.getEyePoint().distanceTo(this.op.placePoint);
+        this.op.eyeDistance = this.alwaysOnTop ? 0 : dc.eyePoint.distanceTo(this.op.placePoint);
 
 //        if (this.mustDrawLeaderLine(dc)) {
 //            dc.surfacePointForMode(this.position.latitude, this.position.longitude, 0,
@@ -439,7 +439,7 @@ public class Placemark extends AbstractRenderable {
          * @param dc
          */
         protected void doDrawOrderedPlacemark(final DrawContext dc) {
-            BasicProgram program = (BasicProgram) dc.getGpuObjectCache().retrieveProgram(dc, BasicProgram.class);
+            BasicProgram program = (BasicProgram) dc.gpuObjectCache.retrieveProgram(dc, BasicProgram.class);
             if (program == null) {
                 return; // program is not in the GPU object cache yet
             }
@@ -552,18 +552,18 @@ public class Placemark extends AbstractRenderable {
             GLES20.glEnableVertexAttribArray(0);
 
             // Compute and specify the MVP matrix.
-            this.mvpMatrix.set(dc.getScreenProjection());
+            this.mvpMatrix.set(dc.screenProjection);
             this.mvpMatrix.multiplyByMatrix(this.imageTransform);
 
             double actualRotation = this.placemark.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
-                dc.getHeading() - this.placemark.imageRotation : -this.placemark.imageRotation;
+                dc.heading - this.placemark.imageRotation : -this.placemark.imageRotation;
             this.mvpMatrix.multiplyByTranslation(0.5, 0.5, 0);
             this.mvpMatrix.multiplyByRotation(0, 0, 1, actualRotation);
             this.mvpMatrix.multiplyByTranslation(-0.5, -0.5, 0);
             // Perform the tilt before applying the rotation so that the image tilts back from its base into
             // the view volume.
             double actualTilt = this.placemark.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
-                dc.getTilt() + this.placemark.imageTilt : this.placemark.imageTilt;
+                dc.tilt + this.placemark.imageTilt : this.placemark.imageTilt;
             this.mvpMatrix.multiplyByRotation(-1, 0, 0, actualTilt);
 
             program.loadModelviewProjection(this.mvpMatrix);
