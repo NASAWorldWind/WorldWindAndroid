@@ -73,6 +73,7 @@ public class BasicFrameController implements FrameController {
         dc.modelview.extractEyePoint(dc.eyePoint);
         dc.projection.setToPerspectiveProjection(dc.viewport.width(), dc.viewport.height(), dc.fieldOfView, near, far);
         dc.modelviewProjection.setToMultiply(dc.projection, dc.modelview);
+        dc.screenProjection.setToScreenProjection(dc.viewport.width(), dc.viewport.height());
 
         // Compute the projection's Cartesian frustum, which must be transformed from eye coordinates to world Cartesian
         // coordinates.
@@ -118,15 +119,4 @@ public class BasicFrameController implements FrameController {
         }
     }
 
-    /**
-     * @param dc
-     */
-    protected void drawOrderedRenderables(DrawContext dc) {
-        dc.sortOrderedRenderables();
-        OrderedRenderable or = dc.popOrderedRenderable();
-        while (or != null) {
-            or.renderOrdered(dc);
-            or = dc.popOrderedRenderable();
-        }
-    }
 }
