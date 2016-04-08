@@ -173,7 +173,7 @@ public class DrawContext {
 
         // Convert the X and Y coordinates from the range [0,1] to screen coordinates.
         x = x * this.viewport.width() + viewport.left;
-        y = y * this.viewport.height() + viewport.bottom;
+        y = y * this.viewport.height() + viewport.top;
 
         result.x = x;
         result.y = y;
@@ -273,7 +273,7 @@ public class DrawContext {
 
         // Convert the X and Y coordinates from the range [0,1] to screen coordinates.
         x = x * viewport.width() + viewport.left;
-        y = y * viewport.height() + viewport.bottom;
+        y = y * viewport.height() + viewport.top;
 
         result.x = x;
         result.y = y;
