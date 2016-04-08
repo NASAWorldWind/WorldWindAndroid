@@ -11,9 +11,11 @@ import java.util.Comparator;
 
 public class OrderedRenderableQueue {
 
-    protected ArrayList<Entry> renderables = new ArrayList<>();
+    protected ArrayList<Entry> renderables;
 
     protected boolean mustSortRenderables;
+
+    private int last = -1;
 
     /**
      * Sorts ordered renderables by depth from front to back and then by insertion time. The peek and poll methods
@@ -33,32 +35,60 @@ public class OrderedRenderableQueue {
         }
     };
 
+    /**
+     * Constructs a OrderedRenderableQueue with the default capacity of the underlying container.
+     */
+    public OrderedRenderableQueue() {
+        this.renderables = new ArrayList<>();
+    }
+
+    /**
+     * Constructs a OrderedRenderableQueue with the specified initial for the queue. Larger values prevent reallocations
+     * as renderables are added to the queue.
+     *
+     * @param initialCapacity The initial capacity of the queue.
+     */
+    public OrderedRenderableQueue(int initialCapacity) {
+        this.renderables = new ArrayList<>(initialCapacity);
+    }
+
     public void offerRenderable(OrderedRenderable renderable, double depth) {
         if (renderable != null) { // ignore null arguments
-            this.renderables.add(new Entry(renderable, depth, this.renderables.size()));
+            this.renderables.add(new Entry(renderable, depth, ++this.last));
             this.mustSortRenderables = true;
         }
     }
 
     public OrderedRenderable peekRenderable() {
         this.sortIfNeeded();
-        int last = this.renderables.size() - 1;
-        return (last < 0) ? null : this.renderables.get(last).or;
+        return (this.last < 0) ? null : this.renderables.get(this.last).or;
     }
 
     public OrderedRenderable pollRenderable() {
         this.sortIfNeeded();
-        int last = this.renderables.size() - 1;
-        return (last < 0) ? null : this.renderables.remove(last).or;
+
+        if (this.last < 0) {
+            return null;
+        }
+
+        OrderedRenderable or = this.renderables.get(this.last).or;
+        this.renderables.set(this.last--, null); // prevent memory leak
+        return or;
     }
 
     public void clearRenderables() {
         this.renderables.clear();
         this.mustSortRenderables = false;
+        this.last = -1;
     }
 
     protected void sortIfNeeded() {
         if (this.mustSortRenderables) {
+            // We may need to trim the array to remove null references if we were polled since the last sort.
+            // After polling, the "last" index is before last array element.
+            while (this.renderables.size() - 1 > this.last) {
+                this.renderables.remove(this.last + 1); // remove our null entries
+            }
             Collections.sort(this.renderables, this.frontToBackComparator);
             this.mustSortRenderables = false;
         }
