@@ -303,6 +303,10 @@ public class Color {
         return this;
     }
 
+    public static Color random() {
+        return new Color((float) Math.random(), (float) Math.random(), (float) Math.random(), 1);
+    }
+
     /**
      * Indicates whether this color is equal to another color expressed as an array of bytes.
      *
