@@ -11,18 +11,17 @@ import android.os.Handler;
 import java.util.Random;
 
 import gov.nasa.worldwind.Navigator;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.layer.ShowTessellationLayer;
-import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
 
-import static java.lang.Math.acos;
 import static java.lang.Math.asin;
-import static java.lang.Math.random;
 import static java.lang.Math.toDegrees;
 
 public class PlacemarksActivity extends BasicGlobeActivity implements Runnable {
@@ -33,36 +32,57 @@ public class PlacemarksActivity extends BasicGlobeActivity implements Runnable {
 
     static final int DELAY_TIME = 100;
 
+    static final int NUM_PLACEMARKS = 1000;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.aboutBoxTitle = "About the " + getResources().getText(R.string.title_placemarks);
         this.aboutBoxText = "Demonstrates how to add Placemarks to a RenderableLayer.";
 
-//        // Turn off all layers while debugging
+        // Turn off all layers while debugging
 //        for (Layer l : this.getWorldWindow().getLayers()) {
 //            l.setEnabled(false);
 //        }
-//        this.getWorldWindow().getLayers().addLayer(new ShowTessellationLayer());
+        this.getWorldWindow().getLayers().addLayer(new ShowTessellationLayer());
+
+        // Add a Renderable layer for the placemarks before the Atmosphere layer
         LayerList layers = this.getWorldWindow().getLayers();
         int index = layers.indexOfLayerNamed("Atmosphere");
-
         RenderableLayer placemarksLayer = new RenderableLayer("Placemarks");
         this.getWorldWindow().getLayers().addLayer(index, placemarksLayer);
 
+        // Create some placemarks at a known locations
+        Placemark origin = new Placemark(Position.fromDegrees(0, 0, 0));
+        Placemark northPole = new Placemark(Position.fromDegrees(90, 0, 0));
+        Placemark southPole = new Placemark(Position.fromDegrees(-90, 0, 0));
+        Placemark antiMeridian = new Placemark(Position.fromDegrees(0, 180, 0));
+        origin.getAttributes().setImageSource(R.drawable.pushpin_plain_yellow).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN);
+        northPole.getAttributes().setImageSource(R.drawable.pushpin_plain_white).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN);
+        southPole.getAttributes().setImageSource(R.drawable.pushpin_plain_black).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN);
+        antiMeridian.getAttributes().setImageSource(R.drawable.pushpin_plain_green).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN);
+        placemarksLayer.addRenderable(origin);
+        placemarksLayer.addRenderable(northPole);
+        placemarksLayer.addRenderable(southPole);
+        placemarksLayer.addRenderable(antiMeridian);
 
-//        // Create a placemark
-//        Placemark placemark = new Placemark(Position.fromDegrees(34.2, -119.2, 0));
-//        placemarksLayer.addRenderable(placemark);
 
+        ////////////////////
+        // Stress Test
+        ////////////////////
+        Placemark.defaultEyeDistanceScalingThreshold = 1e7;
+
+        int resourceId = R.drawable.pushpin_plain_red;
         PlacemarkAttributes attributes = new PlacemarkAttributes();
-        attributes.setImageScale(10);
+        attributes.setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN);
+        attributes.setImageSource(resourceId);
+        attributes.setImageScale(1);
 
         // Create a random number generator with an arbitrary seed
         // that will generate the same numbers between runs.
         Random random = new Random(123);
-        for (int i = 0; i < 10000; i++) {
-            attributes.setImageColor(Color.random());
+        for (int i = 0; i < NUM_PLACEMARKS; i++) {
+            //attributes.setImageColor(Color.random());
 
             // Use a random sin to generate the latitude to prevent clustering at the poles
             double lat = toDegrees(asin(random.nextDouble())) * (random.nextBoolean() ? 1 : -1);
@@ -71,13 +91,9 @@ public class PlacemarksActivity extends BasicGlobeActivity implements Runnable {
             Position pos = Position.fromDegrees(lat, lon, 0);
 
             Placemark placemark = new Placemark(pos, new PlacemarkAttributes(attributes));
+            placemark.setEyeDistanceScaling(true);
             placemarksLayer.addRenderable(placemark);
         }
-
-        // Position the viewer so that the Placemarks are visible when the activity is created.
-//        this.getWorldWindow().getNavigator().setLatitude(34.2);
-//        this.getWorldWindow().getNavigator().setLongitude(-119.2);
-//        this.getWorldWindow().getNavigator().setAltitude(5000000);
 
         // Set up an Android Handler to change the view
         this.rotationHandler.postDelayed(this, DELAY_TIME);
