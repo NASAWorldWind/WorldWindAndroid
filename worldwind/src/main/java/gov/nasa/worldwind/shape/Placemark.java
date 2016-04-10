@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.shape;
 
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.opengl.GLES20;
 
 import java.nio.ByteBuffer;
@@ -21,6 +22,7 @@ import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.BasicProgram;
 import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.GpuTexture;
 import gov.nasa.worldwind.render.OrderedRenderable;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWMath;
@@ -42,169 +44,169 @@ import gov.nasa.worldwind.util.WWMath;
  */
 public class Placemark extends AbstractRenderable {
 
+    /**
+     * The default eye distance above which to reduce the size of this placemark, in meters. If
+     * [eyeDistanceScaling]{@link Placemark#setEyeDistanceScaling(boolean)} is true, this placemark's image, label and
+     * leader line sizes are reduced as the eye distance increases beyond this threshold.
+     */
+    public static double defaultEyeDistanceScalingThreshold = 1e6;
+
+    /**
+     * The placemark's geographic position.
+     */
     protected Position position;
 
-    protected Vec3 placePoint;
+    // The cartesian coordinates of the geographic position
+    private Vec3 placePoint;
 
-    protected Vec3 groundPoint;
+    // The cartesian point on the surface of terrain under the geographic position
+    private Vec3 groundPoint;
 
     /**
-     * This placemark's textual label. If null, no label is drawn.
+     * The placemark's altitude mode. See {@link gov.nasa.worldwind.WorldWind.AltitudeMode}
      */
-    protected String label = null;
+    protected
+    @WorldWind.AltitudeMode
+    int altitudeMode;
 
     /**
-     * The placemark's attributes. If null and this placemark is not highlighted, this placemark is not drawn.
+     * The placemark's normal attributes.
      */
     protected PlacemarkAttributes attributes = null;
 
     /**
-     * The attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is true,
-     * this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
+     * The attributes to use when the placemark is highlighted.
      */
     protected PlacemarkAttributes highlightAttributes = null;
 
     /**
-     * Indicates whether this placemark uses its highlight attributes rather than its normal attributes.
+     * Determines whether the normal or highlighted attibutes should be used.
      */
     protected boolean highlighted = false;
 
+    /**
+     * Indicates whether this placemark's size is reduced at higher eye distances.
+     */
+    protected boolean eyeDistanceScaling;
 
     /**
-     * Indicates whether this placemark's size is reduced at higher eye distances. If true, this placemark's size is
-     * scaled inversely proportional to the eye distance if the eye distance is greater than the value of the
-     * [eyeDistanceScalingThreshold]{@link Placemark#eyeDistanceScalingThreshold} property. When the eye distance is
-     * below the threshold, this placemark is scaled only according to the [imageScale]{@link
-     * PlacemarkAttributes#imageScale}.
+     * The eye distance above which to reduce the size of this placemark, in meters.
      */
-    protected boolean eyeDistanceScaling = false;
-
-    /**
-     * The eye distance above which to reduce the size of this placemark, in meters. If [eyeDistanceScaling]{@link
-     * Placemark#eyeDistanceScaling} is true, this placemark's image, label and leader line sizes are reduced as the eye
-     * distance increases beyond this threshold.
-     * <p/>
-     * default 1e6 (meters)
-     */
-    protected double eyeDistanceScalingThreshold = 1e6;
+    protected double eyeDistanceScalingThreshold;
 
     /**
      * The eye altitude above which this placemark's label is not displayed.
      */
-    protected double eyeDistanceScalingLabelThreshold = 1.5 * this.eyeDistanceScalingThreshold;
-
-
-    protected int altitudeMode = WorldWind.ABSOLUTE;
+    protected double eyeDistanceScalingLabelThreshold;
 
     /**
      * Indicates whether this placemark has visual priority over other shapes in the scene.
      */
-    boolean alwaysOnTop = false;
+    protected boolean alwaysOnTop;
 
     /**
      * Indicates whether this placemark's leader line, if any, is pickable.
      */
-    boolean enableLeaderLinePicking = false;
+    protected boolean enableLeaderLinePicking;
+
+    /**
+     * The amount of rotation to apply to the image, measured in degrees clockwise and relative to this placemark's
+     * {@link Placemark#getImageRotationReference}.
+     */
+    protected double imageRotation;
+
+    /**
+     * Indicates whether to apply this placemark's image rotation relative to the screen orderedRenderable the globe.
+     * See {@link gov.nasa.worldwind.WorldWind.OrientationMode}
+     */
+    protected
+    @WorldWind.OrientationMode
+    int imageRotationReference;
+
+    /**
+     * The amount of tilt to apply to the image, measured in degrees away from the eye point and relative to this
+     * placemark's {@link Placemark#getImageTiltReference()}.
+     */
+    protected double imageTilt;
+
+    /**
+     * Indicates whether to apply this placemark's image tilt relative to the screen orderedRenderable the globe. See
+     * {@link gov.nasa.worldwind.WorldWind.OrientationMode}
+     */
+    protected
+    @WorldWind.OrientationMode
+    int imageTiltReference;
 
     /**
      * Indicates whether this placemark's image should be re-retrieved even if it has already been retrieved. Set this
      * property to true when the image has changed but has the same image path. The property is set to false when the
      * image is re-retrieved.
      */
-    boolean updateImage = true;
+    protected boolean updateImage = true;
 
     /**
      * Indicates the group ID of the declutter group to include this Text shape. If non-zero, this shape is decluttered
      * relative to all other shapes within its group.
      */
-    int declutterGroup = 2;
+    protected int declutterGroup = 2;
 
     /**
-     * The amount of rotation to apply to the image, measured in degrees clockwise and relative to this placemark's
-     * [imageRotationReference]{@link Placemark#imageRotationReference}.
+     * The depth offset is used to the placemark to appear above nearby terrain. When a placemark is displayed near the
+     * terrain portions of its geometry are often behind the terrain, yet as a screen element the placemark is expected
+     * to be visible.
      */
-    double imageRotation;
-
-    /**
-     * The amount of tilt to apply to the image, measured in degrees away from the eye point and relative to this
-     * placemark's [imageTiltReference]{@link Placemark#imageTiltReference}. While any positive orderedRenderable
-     * negative number may be specified, values outside the range [0. 90] cause some orderedRenderable all of the image
-     * to be clipped.
-     */
-    double imageTilt;
-
-    /**
-     * Indicates whether to apply this placemark's image rotation relative to the screen orderedRenderable the globe. If
-     * WorldWind.RELATIVE_TO_SCREEN, this placemark's image is rotated in the plane of the screen and its orientation
-     * relative to the globe changes as the view changes. If WorldWind.RELATIVE_TO_GLOBE, this placemark's image is
-     * rotated in a plane tangent to the globe at this placemark's position and retains its orientation relative to the
-     * globe.
-     */
-    @WorldWind.OrientationMode
-    int imageRotationReference;
-
-    /**
-     * Indicates whether to apply this placemark's image tilt relative to the screen orderedRenderable the globe. If
-     * WorldWind.RELATIVE_TO_SCREEN, this placemark's image is tilted inwards (for positive tilts) relative to the plane
-     * of the screen, and its orientation relative to the globe changes as the view changes. If
-     * WorldWind.RELATIVE_TO_GLOBE, this placemark's image is tilted towards the globe's surface, and retains its
-     * orientation relative to the surface.
-     */
-    @WorldWind.OrientationMode
-    int imageTiltReference;
-
-    // Internal use only. Intentionally not documented.
-    private double depthOffset = -0.003;
+    private static double depthOffset = -0.003;
 
     /**
      * The OrderedRenderable implementation for this placemark.
      */
     protected OrderedPlacemark orderedPlacemark = null;
 
-
     public Placemark(Position position) {
         this(position, new PlacemarkAttributes());
     }
 
     public Placemark(Position position, PlacemarkAttributes attributes) {
-        this(position, attributes, false);
+        this(position, attributes, null, false);
     }
 
     /**
      * Constructs a placemark.
      *
      * @param position           The placemark's geographic position.
-     * @param attributes         The attributes to associate with this placemark.
+     * @param attributes         The attributes to associate with this placemark. May be null, but if null the placemark
+     *                           will not be drawn.
+     * @param label              The label associated with this placemark. May be null. If specified, the label will be
+     *                           drawn with the active {@link PlacemarkAttributes#labelAttributes}. If these attributes
+     *                           are null, the label will not be drawn.
      * @param eyeDistanceScaling Indicates whether the size of this placemark scales with eye distance. See
      *                           [eyeDistanceScalingThreshold]{@link Placemark#eyeDistanceScalingThreshold} and
      *                           [eyeDistanceScalingLabelThreshold]{@link Placemark#eyeDistanceScalingLabelThreshold}.
      *
      * @throws IllegalArgumentException If the specified position is null orderedRenderable undefined.
      */
-    public Placemark(Position position, PlacemarkAttributes attributes, boolean eyeDistanceScaling) {
+    public Placemark(Position position, PlacemarkAttributes attributes, String label, boolean eyeDistanceScaling) {
         if (position == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Placemark", "constructor", "missingPosition"));
         }
         setPosition(position);
         setAltitudeMode(WorldWind.ABSOLUTE);
+        setDisplayName(label);  // TODO: perhaps label and displayName should be distinct
+        // TODO: e.g., labels could be coordinates while display name is unique identifier
 
         this.attributes = attributes != null ? attributes : new PlacemarkAttributes();
         this.highlightAttributes = null;
         this.highlighted = false;
         this.eyeDistanceScaling = eyeDistanceScaling;
-        this.eyeDistanceScalingThreshold = 1e6;
+        this.eyeDistanceScalingThreshold = defaultEyeDistanceScalingThreshold;
         this.eyeDistanceScalingLabelThreshold = 1.5 * this.eyeDistanceScalingThreshold;
-        this.label = null;
-        this.alwaysOnTop = false;
         this.enableLeaderLinePicking = false;
         //this.updateImage = true;
         //this.declutterGroup = 2;
-        //this.targetVisibility = 1;
-        //this.currentVisibility = 1;
         this.imageRotation = 0;
         this.imageTilt = 0;
-        this.imageRotationReference = WorldWind.RELATIVE_TO_GLOBE;
+        this.imageRotationReference = WorldWind.RELATIVE_TO_SCREEN;
         this.imageTiltReference = WorldWind.RELATIVE_TO_SCREEN;
     }
 
@@ -251,11 +253,189 @@ public class Placemark extends AbstractRenderable {
     }
 
     /**
+     * The placemark's attributes. If null and this placemark is not highlighted, this placemark is not drawn.
+     */
+    public PlacemarkAttributes getAttributes() {
+        return attributes;
+    }
+
+    /**
+     * The placemark's attributes. If null and this placemark is not highlighted, this placemark is not drawn.
+     */
+    public void setAttributes(PlacemarkAttributes attributes) {
+        this.attributes = attributes;
+    }
+
+    /**
+     * The attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is true,
+     * this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
+     */
+    public PlacemarkAttributes getHighlightAttributes() {
+        return highlightAttributes;
+    }
+
+    /**
+     * The attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is true,
+     * this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
+     */
+    public void setHighlightAttributes(PlacemarkAttributes highlightAttributes) {
+        this.highlightAttributes = highlightAttributes;
+    }
+
+    /**
+     * Indicates whether this placemark uses its highlight attributes rather than its normal attributes.
+     */
+    public boolean isHighlighted() {
+        return highlighted;
+    }
+
+    /**
+     * Indicates whether this placemark uses its highlight attributes rather than its normal attributes.
+     */
+    public void setHighlighted(boolean highlighted) {
+        this.highlighted = highlighted;
+    }
+
+    /**
+     * Indicates whether this placemark's size is reduced at higher eye distances. If true, this placemark's size is
+     * scaled inversely proportional to the eye distance if the eye distance is greater than the value of the
+     * [eyeDistanceScalingThreshold]{@link Placemark#eyeDistanceScalingThreshold} property. When the eye distance is
+     * below the threshold, this placemark is scaled only according to the [imageScale]{@link
+     * PlacemarkAttributes#imageScale}.
+     */
+    public boolean isEyeDistanceScaling() {
+        return eyeDistanceScaling;
+    }
+
+    /**
+     * Indicates whether this placemark's size is reduced at higher eye distances. If true, this placemark's size is
+     * scaled inversely proportional to the eye distance if the eye distance is greater than the value of the
+     * [eyeDistanceScalingThreshold]{@link Placemark#eyeDistanceScalingThreshold} property. When the eye distance is
+     * below the threshold, this placemark is scaled only according to the [imageScale]{@link
+     * PlacemarkAttributes#imageScale}.
+     */
+    public void setEyeDistanceScaling(boolean eyeDistanceScaling) {
+        this.eyeDistanceScaling = eyeDistanceScaling;
+    }
+
+    /**
+     * The eye distance above which to reduce the size of this placemark, in meters. If [eyeDistanceScaling]{@link
+     * Placemark#eyeDistanceScaling} is true, this placemark's image, label and leader line sizes are reduced as the eye
+     * distance increases beyond this threshold.
+     */
+    public double getEyeDistanceScalingThreshold() {
+        return eyeDistanceScalingThreshold;
+    }
+
+    /**
+     * The eye distance above which to reduce the size of this placemark, in meters. If [eyeDistanceScaling]{@link
+     * Placemark#eyeDistanceScaling} is true, this placemark's image, label and leader line sizes are reduced as the eye
+     * distance increases beyond this threshold.
+     */
+    public void setEyeDistanceScalingThreshold(double eyeDistanceScalingThreshold) {
+        this.eyeDistanceScalingThreshold = eyeDistanceScalingThreshold;
+    }
+
+    /**
+     * The eye altitude above which this placemark's label is not displayed.
+     */
+    public double getEyeDistanceScalingLabelThreshold() {
+        return eyeDistanceScalingLabelThreshold;
+    }
+
+    /**
+     * The eye altitude above which this placemark's label is not displayed.
+     */
+    public void setEyeDistanceScalingLabelThreshold(double eyeDistanceScalingLabelThreshold) {
+        this.eyeDistanceScalingLabelThreshold = eyeDistanceScalingLabelThreshold;
+    }
+
+    /**
+     * The amount of rotation to apply to the image, measured in degrees clockwise and relative to this placemark's
+     * [imageRotationReference]{@link Placemark#imageRotationReference}.
+     */
+    public double getImageRotation() {
+        return imageRotation;
+    }
+
+    /**
+     * The amount of rotation to apply to the image, measured in degrees clockwise and relative to this placemark's
+     * [imageRotationReference]{@link Placemark#imageRotationReference}.
+     */
+    public void setImageRotation(double imageRotation) {
+        this.imageRotation = imageRotation;
+    }
+
+    /**
+     * Indicates whether to apply this placemark's image rotation relative to the screen orderedRenderable the globe. If
+     * WorldWind.RELATIVE_TO_SCREEN, this placemark's image is rotated in the plane of the screen and its orientation
+     * relative to the globe changes as the view changes. If WorldWind.RELATIVE_TO_GLOBE, this placemark's image is
+     * rotated in a plane tangent to the globe at this placemark's position and retains its orientation relative to the
+     * globe. See {@link gov.nasa.worldwind.WorldWind.OrientationMode}
+     */
+    public int getImageRotationReference() {
+        return imageRotationReference;
+    }
+
+    /**
+     * Indicates whether to apply this placemark's image rotation relative to the screen orderedRenderable the globe. If
+     * WorldWind.RELATIVE_TO_SCREEN, this placemark's image is rotated in the plane of the screen and its orientation
+     * relative to the globe changes as the view changes. If WorldWind.RELATIVE_TO_GLOBE, this placemark's image is
+     * rotated in a plane tangent to the globe at this placemark's position and retains its orientation relative to the
+     * globe. See {@link gov.nasa.worldwind.WorldWind.OrientationMode}
+     */
+    public void setImageRotationReference(int imageRotationReference) {
+        this.imageRotationReference = imageRotationReference;
+    }
+
+    /**
+     * The amount of tilt to apply to the image, measured in degrees away from the eye point and relative to this
+     * placemark's [imageTiltReference]{@link Placemark#imageTiltReference}. While any positive orderedRenderable
+     * negative number may be specified, values outside the range [0. 90] cause some orderedRenderable all of the image
+     * to be clipped.
+     */
+    public double getImageTilt() {
+        return imageTilt;
+    }
+
+    /**
+     * The amount of tilt to apply to the image, measured in degrees away from the eye point and relative to this
+     * placemark's [imageTiltReference]{@link Placemark#imageTiltReference}. While any positive orderedRenderable
+     * negative number may be specified, values outside the range [0. 90] cause some orderedRenderable all of the image
+     * to be clipped.
+     */
+    public void setImageTilt(double imageTilt) {
+        this.imageTilt = imageTilt;
+    }
+
+    /**
+     * Indicates whether to apply this placemark's image tilt relative to the screen orderedRenderable the globe. If
+     * WorldWind.RELATIVE_TO_SCREEN, this placemark's image is tilted inwards (for positive tilts) relative to the plane
+     * of the screen, and its orientation relative to the globe changes as the view changes. If
+     * WorldWind.RELATIVE_TO_GLOBE, this placemark's image is tilted towards the globe's surface, and retains its
+     * orientation relative to the surface. See {@link gov.nasa.worldwind.WorldWind.OrientationMode}
+     */
+    public int getImageTiltReference() {
+        return imageTiltReference;
+    }
+
+    /**
+     * Indicates whether to apply this placemark's image tilt relative to the screen orderedRenderable the globe. If
+     * WorldWind.RELATIVE_TO_SCREEN, this placemark's image is tilted inwards (for positive tilts) relative to the plane
+     * of the screen, and its orientation relative to the globe changes as the view changes. If
+     * WorldWind.RELATIVE_TO_GLOBE, this placemark's image is tilted towards the globe's surface, and retains its
+     * orientation relative to the surface. See {@link gov.nasa.worldwind.WorldWind.OrientationMode}
+     */
+    public void setImageTiltReference(int imageTiltReference) {
+        this.imageTiltReference = imageTiltReference;
+    }
+
+    /**
      * Returns the placemark attributes that should be used in the next rendering pass.
      *
      * @param dc The current DrawContext.
      */
-    public PlacemarkAttributes determineActiveAttributes(final DrawContext dc) {
+    protected PlacemarkAttributes determineActiveAttributes(final DrawContext dc) {
         return this.attributes;
     }
 
@@ -286,30 +466,33 @@ public class Placemark extends AbstractRenderable {
      * @param dc The current DrawContext.
      */
     protected OrderedPlacemark makeOrderedPlacemark(final DrawContext dc) {
+        PlacemarkAttributes activeAttributes = this.determineActiveAttributes(dc);
+        if (activeAttributes == null) {
+            return null;
+        }
+
         // Create a new instance if necessary, otherwise reuse the existing instance
         OrderedPlacemark op = (this.orderedPlacemark == null ? new OrderedPlacemark() : this.orderedPlacemark);
-
-        if (!op.prepareForRendering(dc)) {
+        if (!op.prepareForRendering(dc, activeAttributes)) {
             return null;
         }
         return op;
     }
 
+    ///////////////////////////////////////
+    // Ordered Placemark Inner Class
+    ///////////////////////////////////////
+
     /**
-     * OrderedPlacemark is an inner class that acts as a delegate responsible for rendering a Placemark shape with eye
-     * distance ordering.
+     * OrderedPlacemark is a delegate responsible for rendering a Placemark with eye distance ordering.
      */
     protected class OrderedPlacemark implements OrderedRenderable {
 
-        public double eyeDistance = 0;
-
         public PlacemarkAttributes attributes = null;
 
+        public double eyeDistance = 0;
+
         private Vec3 screenPoint = new Vec3(0, 0, 0);
-
-        private Object activeTexture = null;
-
-        private Object labelTexture = null;
 
         private Matrix4 imageTransform = new Matrix4();
 
@@ -318,6 +501,10 @@ public class Placemark extends AbstractRenderable {
         private Matrix3 texCoordMatrix = new Matrix3();
 
         private Matrix4 mvpMatrix = new Matrix4();
+
+        private GpuTexture activeTexture = null;
+
+        private GpuTexture labelTexture = null;
 
         private Rect imageBounds = null;
 
@@ -345,10 +532,10 @@ public class Placemark extends AbstractRenderable {
          *
          * @return True if this ordered renderable is in a state ready for rendering.
          */
-        public boolean prepareForRendering(final DrawContext dc) {
+        public boolean prepareForRendering(final DrawContext dc, PlacemarkAttributes attributes) {
 
             // Update the attributes used for this rendering pass
-            this.attributes = Placemark.this.determineActiveAttributes(dc);
+            this.attributes = attributes;
             if (this.attributes == null) {
                 return false;
             }
@@ -384,6 +571,10 @@ public class Placemark extends AbstractRenderable {
                 return false;
             }
 
+            ////////////////////////
+            // Prepare the image
+            ////////////////////////
+
             double visibilityScale = Placemark.this.eyeDistanceScaling ?
                 Math.max(0.0, Math.min(1, Placemark.this.eyeDistanceScalingThreshold / this.eyeDistance)) : 1;
 
@@ -391,18 +582,26 @@ public class Placemark extends AbstractRenderable {
             // image offset and image scale. The image offset is defined with its origin at the image's bottom-left corner and
             // axes that extend up and to the right from the origin point. When the placemark has no active texture the image
             // scale defines the image size and no other scaling is applied.
-            if (this.activeTexture != null) {
-//            w = this.activeTexture.originalImageWidth;
-//            h = this.activeTexture.originalImageHeight;
-//            s = this.attributes.imageScale * visibilityScale;
-//            offset = this.attributes.imageOffset.offsetForSize(w, h);
-//
-//            this.imageTransform.setTranslation(
-//                Placemark.screenPoint[0] - offset[0] * s,
-//                Placemark.screenPoint[1] - offset[1] * s,
-//                Placemark.screenPoint[2]);
-//
-//            this.imageTransform.setScale(w * s, h * s, 1);
+            if (this.attributes.imageSource != null) {
+                this.activeTexture = (GpuTexture) dc.gpuObjectCache.get(this.attributes.imageSource);
+
+                if (this.activeTexture == null) {
+                    this.activeTexture = new GpuTexture(dc, this.attributes.imageSource);
+                }
+                if (this.activeTexture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
+
+                    int w = this.activeTexture.getOriginalImageWidth();
+                    int h = this.activeTexture.getOriginalImageHeight();
+                    double s = this.attributes.imageScale * visibilityScale;
+                    Vec2 offset = this.attributes.imageOffset.offsetForSize(w, h);
+
+                    this.imageTransform.setTranslation(
+                        this.screenPoint.x - offset.x * s,
+                        this.screenPoint.y - offset.y * s,
+                        this.screenPoint.z);
+
+                    this.imageTransform.setScale(w * s, h * s, 1);
+                }
             } else {
                 double size = this.attributes.imageScale * visibilityScale;
                 Vec2 offset = this.attributes.imageOffset.offsetForSize(size, size);
@@ -418,21 +617,27 @@ public class Placemark extends AbstractRenderable {
             // Compute the image bounding box in screen coordinates for visibility testing
             this.imageBounds = WWMath.boundingRectForUnitQuad(this.imageTransform);
 
+            /////////////////////////
+            // Prepare the label
+            /////////////////////////
 
             // If there's a label, perform these same operations for the label texture, creating that texture if it
             // doesn't already exist.
             if (this.mustDrawLabel()) {
-//            var labelFont = this.attributes.labelAttributes.font,
-//                labelKey = this.label + labelFont.toString();
-//
-//            this.labelTexture = dc.gpuResourceCache.resourceForKey(labelKey);
-//            if (!this.labelTexture) {
-//                this.labelTexture = dc.textSupport.createTexture(dc, this.label, labelFont, true);
-//                dc.gpuResourceCache.putResource(labelKey, this.labelTexture, this.labelTexture.size);
-//            }
-                if (this.labelTransform == null) {
-                    this.labelTransform = new Matrix4();
+                Typeface labelFont = this.attributes.labelAttributes.font;
+                String labelKey = Placemark.this.displayName + labelFont.toString();
+
+                this.labelTexture = (GpuTexture) dc.gpuObjectCache.get(labelKey);
+                if (this.labelTexture == null) {
+                    // Create the bitmap
+
+                    this.labelTexture = dc.createFontTexture(Placemark.this.displayName, labelFont, false);
                 }
+                if (this.labelTexture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
+
+                    if (this.labelTransform == null) {
+                        this.labelTransform = new Matrix4();
+                    }
 //            w = this.labelTexture.imageWidth;
 //            h = this.labelTexture.imageHeight;
 //            s = this.attributes.labelAttributes.scale * visibilityScale;
@@ -445,9 +650,9 @@ public class Placemark extends AbstractRenderable {
 //
 //            this.labelTransform.setScale(w * s, h * s, 1);
 //
-                this.labelBounds = WWMath.boundingRectForUnitQuad(this.labelTransform);
+                    this.labelBounds = WWMath.boundingRectForUnitQuad(this.labelTransform);
+                }
             }
-
             return true;
         }
 
@@ -457,6 +662,10 @@ public class Placemark extends AbstractRenderable {
         @Override
         public void renderOrdered(DrawContext dc) {
             this.doDrawOrderedPlacemark(dc);
+        }
+
+
+        protected void endDrawing(final DrawContext dc) {
         }
 
         /**
@@ -469,6 +678,18 @@ public class Placemark extends AbstractRenderable {
             }
             // Use World Wind's basic GLSL program.
             dc.useProgram(program);
+
+            // Set up to use the shared tex attribute.
+            float[] texPoints = new float[]{
+                0, 1,   // upper left corner
+                0, 0,   // lower left corner
+                1, 1,   // upper right corner
+                1, 0};  // lower right corner
+            FloatBuffer texBuffer = ByteBuffer.allocateDirect(texPoints.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            texBuffer.put(texPoints).rewind();
+            GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, texBuffer);
+            //GLES20.glEnableVertexAttribArray(0);    // vertexPoint
+            GLES20.glEnableVertexAttribArray(1);    // vertexTexCoord
 
             if (Placemark.this.eyeDistanceScaling && (this.eyeDistance > Placemark.this.eyeDistanceScalingLabelThreshold)) {
                 // Target visibility is set to 0 to cause the label to be faded in or out. Nothing else
@@ -552,35 +773,27 @@ public class Placemark extends AbstractRenderable {
             // Draw the image
             ///////////////////////////////////
 
-            program.loadColor(this.attributes.imageColor);
-
-            this.texCoordMatrix.setToIdentity();
-            if (this.activeTexture != null) {
-//            this.texCoordMatrix.multiplyByTextureTransform(this.activeTexture);
-            }
-            program.loadTexCoordMatrix(this.texCoordMatrix);
-
             // Allocate a unit-quad buffer for the image coordinates
             float[] points = new float[]{
                 0, 1, 0,    // upper left corner
                 0, 0, 0,    // lower left corner
                 1, 1, 0,    // upper right corner
                 1, 0, 0};   // lower right corner
-            FloatBuffer buffer = ByteBuffer.allocateDirect(points.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-            buffer.put(points).rewind();
-            GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, buffer);
+            FloatBuffer ptBuffer = ByteBuffer.allocateDirect(points.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            ptBuffer.put(points).rewind();
+            GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, ptBuffer);
             GLES20.glEnableVertexAttribArray(0);
 
-            // Compute and specify the MVP matrix.
+            // Compute and specify the MVP matrix...
             this.mvpMatrix.set(dc.screenProjection);
             this.mvpMatrix.multiplyByMatrix(this.imageTransform);
-
+            // ... perform image rotation
             double actualRotation = Placemark.this.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
                 dc.heading - Placemark.this.imageRotation : -Placemark.this.imageRotation;
             this.mvpMatrix.multiplyByTranslation(0.5, 0.5, 0);
             this.mvpMatrix.multiplyByRotation(0, 0, 1, actualRotation);
             this.mvpMatrix.multiplyByTranslation(-0.5, -0.5, 0);
-            // Perform the tilt before applying the rotation so that the image tilts back from its base into the view volume.
+            // ... and perform the tilt so that the image tilts back from its base into the view volume.
             double actualTilt = Placemark.this.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
                 dc.tilt + Placemark.this.imageTilt : Placemark.this.imageTilt;
             this.mvpMatrix.multiplyByRotation(-1, 0, 0, actualTilt);
@@ -591,22 +804,22 @@ public class Placemark extends AbstractRenderable {
             // beginDrawing() above) then the texture's alpha component is still needed in order to modulate the
             // pick color to mask off transparent pixels.
             program.enableTexture(true);
-//
+
             if (dc.pickingMode) {
-//            program.loadColor(gl, this.pickColor);
+//              program.loadColor(gl, this.pickColor);
             } else {
                 program.loadColor(this.attributes.imageColor);
             }
 
             this.texCoordMatrix.setToIdentity();
             if (this.activeTexture != null) {
-//            this.texCoordMatrix.multiplyByTextureTransform(this.activeTexture);
+                this.activeTexture.applyTexCoordTransform(this.texCoordMatrix);
             }
             program.loadTexCoordMatrix(this.texCoordMatrix);
 
             if (this.activeTexture != null) {
-//            textureBound = this.activeTexture.bind(dc); // returns false if active texture is null or cannot be bound
-//            program.loadTextureEnabled(gl, textureBound);
+                boolean bound = this.activeTexture.bindTexture(dc, GLES20.GL_TEXTURE0);
+                program.enableTexture(bound);
             } else {
                 program.enableTexture(false);
             }
@@ -656,6 +869,10 @@ public class Placemark extends AbstractRenderable {
                 GLES20.glDepthMask(true);
             }
 
+            // Restore the default World Wind OpenGL state.
+            //GLES20.glDisableVertexAttribArray(0);
+            GLES20.glDisableVertexAttribArray(1);
+
         }
 
         /**
@@ -684,7 +901,7 @@ public class Placemark extends AbstractRenderable {
          * @return True if there is a valid label and label attributes.
          */
         boolean mustDrawLabel() {
-            return Placemark.this.label != null && !Placemark.this.label.isEmpty() && this.attributes.labelAttributes != null;
+            return Placemark.this.displayName != null && !Placemark.this.displayName.isEmpty() && this.attributes.labelAttributes != null;
         }
 
         /**
