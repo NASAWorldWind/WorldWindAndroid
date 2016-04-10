@@ -31,6 +31,8 @@ public class GpuTexture implements GpuObject, Runnable {
     protected int textureId;
 
     protected int textureSize;
+    protected int originalImageWidth;
+    protected int originalImageHeight;
 
     protected boolean disposed;
 
@@ -61,6 +63,14 @@ public class GpuTexture implements GpuObject, Runnable {
 
     public Object getImageSource() {
         return imageSource;
+    }
+
+    public int getOriginalImageWidth() {
+        return originalImageWidth;
+    }
+
+    public int getOriginalImageHeight() {
+        return originalImageHeight;
     }
 
     @Override
@@ -219,7 +229,9 @@ public class GpuTexture implements GpuObject, Runnable {
     protected void loadImage() {
         int[] newTexture = new int[1];
         int[] prevTexture = new int[1];
-        boolean isPowerOfTwo = WWMath.isPowerOfTwo(this.imageBitmap.getWidth()) && WWMath.isPowerOfTwo(this.imageBitmap.getHeight());
+        this.originalImageWidth = this.imageBitmap.getWidth();
+        this.originalImageHeight = this.imageBitmap.getHeight();
+        boolean isPowerOfTwo = WWMath.isPowerOfTwo(this.originalImageWidth) && WWMath.isPowerOfTwo(this.originalImageHeight);
 
         GLES20.glGenTextures(1, newTexture, 0);
         GLES20.glGetIntegerv(GLES20.GL_TEXTURE_BINDING_2D, prevTexture, 0);
