@@ -5,6 +5,10 @@
 
 package gov.nasa.worldwind.util;
 
+import android.graphics.Rect;
+
+import gov.nasa.worldwind.geom.Matrix4;
+
 /**
  * Collection of static methods for performing common World Wind computations.
  */
@@ -14,7 +18,7 @@ public class WWMath {
      * Restricts a value to the range [min, max] degrees, clamping values outside the range. Values less than min are
      * returned as min, and values greater than max are returned as max. Values within the range are returned
      * unmodified.
-     * <p>
+     * <p/>
      * The result of this method is undefined if min is greater than max.
      *
      * @param value the values to clamp
@@ -78,6 +82,42 @@ public class WWMath {
     public static double normalizeAngle360(double degrees) {
         double angle = degrees % 360;
         return angle >= 0 ? angle : (angle < 0 ? 360 + angle : 360 - angle);
+    }
+
+    /**
+     * Computes the bounding rectangle for a unit quadrilateral after applying a transformation matrix to that
+     * quadrilateral.
+     *
+     * @param transformMatrix The matrix to apply to the unit quadrilateral.
+     *
+     * @return The computed bounding rectangle.
+     */
+    public static Rect boundingRectForUnitQuad(Matrix4 transformMatrix) {
+        if (transformMatrix == null) {
+            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "WWMath", "boundingRectForUnitQuad",
+                "missingMatrix"));
+        }
+
+        double[] m = transformMatrix.m;
+        // transform of (0, 0)
+        double x1 = m[3];
+        double y1 = m[7];
+        // transform of (1, 0)
+        double x2 = m[0] + m[3];
+        double y2 = m[4] + m[7];
+        // transform of (0, 1)
+        double x3 = m[1] + m[3];
+        double y3 = m[5] + m[7];
+        // transform of (1, 1)
+        double x4 = m[0] + m[1] + m[3];
+        double y4 = m[4] + m[5] + m[7];
+
+        int minX = (int) Math.floor(Math.min(Math.min(x1, x2), Math.min(x3, x4)));
+        int maxX = (int) Math.ceil(Math.max(Math.max(x1, x2), Math.max(x3, x4)));
+        int minY = (int) Math.floor(Math.min(Math.min(y1, y2), Math.min(y3, y4)));
+        int maxY = (int) Math.ceil(Math.max(Math.max(y1, y2), Math.max(y3, y4)));
+
+        return new Rect(minX, minY, maxX - minX, maxY - minY);
     }
 
     /**
