@@ -15,6 +15,31 @@ import gov.nasa.worldwind.util.Logger;
  */
 public class PlacemarkAttributes {
 
+    /**
+     * An offset for centering a placemark image on its geographic position.
+     */
+    public static final Offset OFFSET_CENTER = new Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.5);
+
+    /**
+     * An offset for anchoring a placemark image to the bottom, left of its geographic position.
+     */
+    public static final Offset OFFSET_ANCHOR_BOTTOM_LEFT = new Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 0.0);
+
+    /**
+     * An offset for anchoring a placemark image at the center width and bottom.
+     */
+    public static final Offset OFFSET_ANCHOR_BOTTOM_CENTER = new Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.0);
+
+    /**
+     * An offset for anchoring a placemark image to the bottom, left of its geographic position.
+     */
+    public static final Offset OFFSET_ANCHOR_BOTTOM_RIGHT = new Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 0.0);
+
+    /**
+     * An offset for anchoring a 64x64 pushpin image's "point" on the geographic position.
+     */
+    public static final Offset OFFSET_PUSHPIN = new Offset(WorldWind.OFFSET_FRACTION, 19d / 64d, WorldWind.OFFSET_FRACTION, 4d / 64d);
+
     protected Color imageColor;
 
     protected Offset imageOffset;
@@ -25,7 +50,7 @@ public class PlacemarkAttributes {
 
     protected boolean depthTest;
 
-    protected Object labelAttributes;
+    protected TextAttributes labelAttributes;
 
     protected boolean drawLeaderLine;
 
@@ -36,14 +61,14 @@ public class PlacemarkAttributes {
      * centered on the placemark's geographic position.
      */
     public PlacemarkAttributes() {
-        this.imageColor = Color.YELLOW;  // TODO: Set imageColor to WHITE
-        this.imageOffset = new Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.5);
-        this.imageScale = 100;   // TODO: Restore imageScale to 1
+        this.imageColor = new Color(1, 1, 1, 1);
+        this.imageOffset = new Offset(OFFSET_CENTER);
+        this.imageScale = 1;
         this.imageSource = null;
-        this.depthTest = false; // TODO: Set depthTest to true
         this.labelAttributes = null;
-        this.drawLeaderLine = false;
         this.leaderLineAttributes = null;
+        this.drawLeaderLine = false;
+        this.depthTest = true;
     }
 
 
@@ -224,8 +249,7 @@ public class PlacemarkAttributes {
      *
      * @param labelAttributes The new label attributes for the placemark. May be null.
      */
-    // TODO: Change to {TextAttributes}
-    public PlacemarkAttributes setLabelAttributes(Object labelAttributes) {
+    public PlacemarkAttributes setLabelAttributes(TextAttributes labelAttributes) {
         this.labelAttributes = labelAttributes;
         return this;
     }
