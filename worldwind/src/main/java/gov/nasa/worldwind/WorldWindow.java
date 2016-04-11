@@ -341,6 +341,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.dc.tilt = this.navigator.getTilt();
         this.dc.roll = this.navigator.getRoll();
         this.dc.fieldOfView = this.navigator.getFieldOfView();
+        this.dc.horizonDistance = this.globe.horizonDistance(dc.eyePosition.altitude);
         this.dc.viewport.set(this.viewport);
         this.dc.gpuObjectCache = this.gpuObjectCache;
         this.dc.surfaceTileRenderer = this.surfaceTileRenderer;
