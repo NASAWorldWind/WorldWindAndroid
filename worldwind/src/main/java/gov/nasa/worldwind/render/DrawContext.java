@@ -47,6 +47,8 @@ public class DrawContext {
 
     public double fieldOfView;
 
+    public double horizonDistance;
+
     public Rect viewport = new Rect();
 
     public Matrix4 modelview = new Matrix4();
@@ -71,7 +73,7 @@ public class DrawContext {
 
     protected double pixelSizeFactor;
 
-    protected OrderedRenderableQueue orderedRenderables = new OrderedRenderableQueue();
+    protected OrderedRenderableQueue orderedRenderables = new OrderedRenderableQueue(1000);
 
     protected Map<Object, Object> userProperties = new HashMap<>();
 
@@ -322,6 +324,7 @@ public class DrawContext {
         this.tilt = 0;
         this.roll = 0;
         this.fieldOfView = 0;
+        this.horizonDistance = 0;
         this.viewport.setEmpty();
         this.modelview.setToIdentity();
         this.projection.setToIdentity();
