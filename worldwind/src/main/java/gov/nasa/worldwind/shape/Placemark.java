@@ -155,7 +155,7 @@ public class Placemark extends AbstractRenderable {
      * terrain portions of its geometry are often behind the terrain, yet as a screen element the placemark is expected
      * to be visible.
      */
-    private static double depthOffset = -0.003;
+    private static double defaultDepthOffset = -0.003;
 
     /**
      * The OrderedRenderable implementation for this placemark.
@@ -202,12 +202,12 @@ public class Placemark extends AbstractRenderable {
         this.eyeDistanceScalingThreshold = defaultEyeDistanceScalingThreshold;
         this.eyeDistanceScalingLabelThreshold = 1.5 * this.eyeDistanceScalingThreshold;
         this.enableLeaderLinePicking = false;
-        //this.updateImage = true;
-        //this.declutterGroup = 2;
         this.imageRotation = 0;
         this.imageTilt = 0;
         this.imageRotationReference = WorldWind.RELATIVE_TO_SCREEN;
         this.imageTiltReference = WorldWind.RELATIVE_TO_SCREEN;
+        this.declutterGroup = 2;
+        this.updateImage = false;
     }
 
     /**
@@ -464,8 +464,12 @@ public class Placemark extends AbstractRenderable {
      * Returns an ordered renderable for this placemark. The renderable may be a new instance or an existing instance.
      *
      * @param dc The current DrawContext.
+     *
+     * @return The OrderedPlacemark to use for rendering; will be null if the placemark cannot or should not be
+     * rendered.
      */
     protected OrderedPlacemark makeOrderedPlacemark(final DrawContext dc) {
+        // Get the attributes to use for this rendering pass.
         PlacemarkAttributes activeAttributes = this.determineActiveAttributes(dc);
         if (activeAttributes == null) {
             return null;
@@ -480,7 +484,9 @@ public class Placemark extends AbstractRenderable {
     }
 
     ///////////////////////////////////////
+    //
     // Ordered Placemark Inner Class
+    //
     ///////////////////////////////////////
 
     /**
@@ -562,18 +568,37 @@ public class Placemark extends AbstractRenderable {
                 }
             }
 
+            ////////////////////////
+            // Prepare the image
+            ////////////////////////
+
+            if (this.attributes.imageSource != null) {
+                this.activeTexture = (GpuTexture) dc.gpuObjectCache.get(this.attributes.imageSource);
+                if (this.activeTexture == null) {
+                    this.activeTexture = new GpuTexture(dc, this.attributes.imageSource);
+                }
+            } else {
+                this.activeTexture = null;
+            }
+
             // Compute the placemark's screen point in the OpenGL coordinate system of the WorldWindow by projecting its model
             // coordinate point onto the viewport. Apply a depth offset in order to cause the placemark to appear above nearby
             // terrain. When a placemark is displayed near the terrain portions of its geometry are often behind the terrain,
             // yet as a screen element the placemark is expected to be visible. We adjust its depth values rather than moving
             // the placemark itself to avoid obscuring its actual position.
-            if (!dc.projectWithDepth(Placemark.this.placePoint, Placemark.this.depthOffset, this.screenPoint)) {
+            double depthOffset = Placemark.defaultDepthOffset;
+            if (this.eyeDistance < dc.horizonDistance) {
+                // Offset the image towards the eye such that whatever the orientation of the image with respect to the
+                // globe, the entire image is guaranteed to be in front of the terrain.
+                double longestSide = this.activeTexture == null ?
+                    Math.max(this.activeTexture.getOriginalImageWidth(), this.activeTexture.getOriginalImageHeight()) : 1;
+                double metersPerPixel = dc.pixelSizeAtDistance(this.eyeDistance);
+                depthOffset = longestSide * this.attributes.getImageScale() * metersPerPixel * -1;
+            }
+            if (!dc.projectWithDepth(Placemark.this.placePoint, depthOffset, this.screenPoint)) {
+                // Probably outside the clipping planes
                 return false;
             }
-
-            ////////////////////////
-            // Prepare the image
-            ////////////////////////
 
             double visibilityScale = Placemark.this.eyeDistanceScaling ?
                 Math.max(0.0, Math.min(1, Placemark.this.eyeDistanceScalingThreshold / this.eyeDistance)) : 1;
@@ -582,26 +607,19 @@ public class Placemark extends AbstractRenderable {
             // image offset and image scale. The image offset is defined with its origin at the image's bottom-left corner and
             // axes that extend up and to the right from the origin point. When the placemark has no active texture the image
             // scale defines the image size and no other scaling is applied.
-            if (this.attributes.imageSource != null) {
-                this.activeTexture = (GpuTexture) dc.gpuObjectCache.get(this.attributes.imageSource);
+            if (this.activeTexture != null && this.activeTexture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
+                int w = this.activeTexture.getOriginalImageWidth();
+                int h = this.activeTexture.getOriginalImageHeight();
+                double s = this.attributes.imageScale * visibilityScale;
+                Vec2 offset = this.attributes.imageOffset.offsetForSize(w, h);
 
-                if (this.activeTexture == null) {
-                    this.activeTexture = new GpuTexture(dc, this.attributes.imageSource);
-                }
-                if (this.activeTexture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
+                this.imageTransform.setTranslation(
+                    this.screenPoint.x - offset.x * s,
+                    this.screenPoint.y - offset.y * s,
+                    this.screenPoint.z);
 
-                    int w = this.activeTexture.getOriginalImageWidth();
-                    int h = this.activeTexture.getOriginalImageHeight();
-                    double s = this.attributes.imageScale * visibilityScale;
-                    Vec2 offset = this.attributes.imageOffset.offsetForSize(w, h);
+                this.imageTransform.setScale(w * s, h * s, 1);
 
-                    this.imageTransform.setTranslation(
-                        this.screenPoint.x - offset.x * s,
-                        this.screenPoint.y - offset.y * s,
-                        this.screenPoint.z);
-
-                    this.imageTransform.setScale(w * s, h * s, 1);
-                }
             } else {
                 double size = this.attributes.imageScale * visibilityScale;
                 Vec2 offset = this.attributes.imageOffset.offsetForSize(size, size);
@@ -624,20 +642,20 @@ public class Placemark extends AbstractRenderable {
             // If there's a label, perform these same operations for the label texture, creating that texture if it
             // doesn't already exist.
             if (this.mustDrawLabel()) {
-                Typeface labelFont = this.attributes.labelAttributes.font;
-                String labelKey = Placemark.this.displayName + labelFont.toString();
-
-                this.labelTexture = (GpuTexture) dc.gpuObjectCache.get(labelKey);
-                if (this.labelTexture == null) {
-                    // Create the bitmap
-
-                    this.labelTexture = dc.createFontTexture(Placemark.this.displayName, labelFont, false);
-                }
-                if (this.labelTexture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
-
-                    if (this.labelTransform == null) {
-                        this.labelTransform = new Matrix4();
-                    }
+//                Typeface labelFont = this.attributes.labelAttributes.font;
+//                String labelKey = Placemark.this.displayName + labelFont.toString();
+//
+//                this.labelTexture = (GpuTexture) dc.gpuObjectCache.get(labelKey);
+//                if (this.labelTexture == null) {
+//                    // Create the bitmap
+//
+//                    this.labelTexture = dc.createFontTexture(Placemark.this.displayName, labelFont, false);
+//                }
+//                if (this.labelTexture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
+//
+//                    if (this.labelTransform == null) {
+//                        this.labelTransform = new Matrix4();
+//                    }
 //            w = this.labelTexture.imageWidth;
 //            h = this.labelTexture.imageHeight;
 //            s = this.attributes.labelAttributes.scale * visibilityScale;
@@ -650,8 +668,8 @@ public class Placemark extends AbstractRenderable {
 //
 //            this.labelTransform.setScale(w * s, h * s, 1);
 //
-                    this.labelBounds = WWMath.boundingRectForUnitQuad(this.labelTransform);
-                }
+//                    this.labelBounds = WWMath.boundingRectForUnitQuad(this.labelTransform);
+//                }
             }
             return true;
         }
@@ -680,6 +698,7 @@ public class Placemark extends AbstractRenderable {
             dc.useProgram(program);
 
             // Set up to use the shared tex attribute.
+            // TODO: Store the texBuffer in the gpuObjectCache
             float[] texPoints = new float[]{
                 0, 1,   // upper left corner
                 0, 0,   // lower left corner
@@ -774,6 +793,7 @@ public class Placemark extends AbstractRenderable {
             ///////////////////////////////////
 
             // Allocate a unit-quad buffer for the image coordinates
+            // TODO: Store the ptBuffer in the gpuObjectCache
             float[] points = new float[]{
                 0, 1, 0,    // upper left corner
                 0, 0, 0,    // lower left corner
