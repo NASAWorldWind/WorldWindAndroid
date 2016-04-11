@@ -8,6 +8,7 @@ package gov.nasa.worldwind.shape;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.opengl.GLES20;
+import android.opengl.GLSurfaceView;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -54,72 +55,77 @@ public class Placemark extends AbstractRenderable {
     /**
      * The placemark's geographic position.
      */
-    protected Position position;
+    Position position;
 
     // The cartesian coordinates of the geographic position
-    private Vec3 placePoint;
+    Vec3 placePoint;
 
     // The cartesian point on the surface of terrain under the geographic position
-    private Vec3 groundPoint;
+    Vec3 groundPoint;
 
     /**
      * The placemark's altitude mode. See {@link gov.nasa.worldwind.WorldWind.AltitudeMode}
      */
-    protected
+
     @WorldWind.AltitudeMode
     int altitudeMode;
 
     /**
      * The placemark's normal attributes.
      */
-    protected PlacemarkAttributes attributes = null;
+    PlacemarkAttributes attributes = null;
 
     /**
      * The attributes to use when the placemark is highlighted.
      */
-    protected PlacemarkAttributes highlightAttributes = null;
+    PlacemarkAttributes highlightAttributes = null;
+
+    /**
+     * The label text to draw near the placemark.
+     */
+    String label = null;
 
     /**
      * Determines whether the normal or highlighted attibutes should be used.
      */
-    protected boolean highlighted = false;
+    boolean highlighted = false;
 
     /**
      * Indicates whether this placemark's size is reduced at higher eye distances.
      */
-    protected boolean eyeDistanceScaling;
+    boolean eyeDistanceScaling;
 
     /**
      * The eye distance above which to reduce the size of this placemark, in meters.
      */
-    protected double eyeDistanceScalingThreshold;
+    double eyeDistanceScalingThreshold;
 
     /**
      * The eye altitude above which this placemark's label is not displayed.
      */
-    protected double eyeDistanceScalingLabelThreshold;
+    double eyeDistanceScalingLabelThreshold;
 
     /**
      * Indicates whether this placemark has visual priority over other shapes in the scene.
      */
-    protected boolean alwaysOnTop;
+    boolean alwaysOnTop;
 
     /**
      * Indicates whether this placemark's leader line, if any, is pickable.
      */
-    protected boolean enableLeaderLinePicking;
+    boolean enableLeaderLinePicking;
 
     /**
      * The amount of rotation to apply to the image, measured in degrees clockwise and relative to this placemark's
      * {@link Placemark#getImageRotationReference}.
      */
-    protected double imageRotation;
+    double imageRotation;
 
     /**
      * Indicates whether to apply this placemark's image rotation relative to the screen orderedRenderable the globe.
      * See {@link gov.nasa.worldwind.WorldWind.OrientationMode}
      */
-    protected
+
     @WorldWind.OrientationMode
     int imageRotationReference;
 
@@ -127,13 +133,13 @@ public class Placemark extends AbstractRenderable {
      * The amount of tilt to apply to the image, measured in degrees away from the eye point and relative to this
      * placemark's {@link Placemark#getImageTiltReference()}.
      */
-    protected double imageTilt;
+    double imageTilt;
 
     /**
      * Indicates whether to apply this placemark's image tilt relative to the screen orderedRenderable the globe. See
      * {@link gov.nasa.worldwind.WorldWind.OrientationMode}
      */
-    protected
+
     @WorldWind.OrientationMode
     int imageTiltReference;
 
@@ -142,32 +148,32 @@ public class Placemark extends AbstractRenderable {
      * property to true when the image has changed but has the same image path. The property is set to false when the
      * image is re-retrieved.
      */
-    protected boolean updateImage = true;
+    boolean updateImage = true;
 
     /**
      * Indicates the group ID of the declutter group to include this Text shape. If non-zero, this shape is decluttered
      * relative to all other shapes within its group.
      */
-    protected int declutterGroup = 2;
+    int declutterGroup = 2;
 
     /**
      * The depth offset is used to the placemark to appear above nearby terrain. When a placemark is displayed near the
      * terrain portions of its geometry are often behind the terrain, yet as a screen element the placemark is expected
      * to be visible.
      */
-    private static double defaultDepthOffset = -0.003;
+    static double defaultDepthOffset = -0.003;
 
     /**
      * The OrderedRenderable implementation for this placemark.
      */
-    protected OrderedPlacemark orderedPlacemark = null;
+    OrderedPlacemark orderedPlacemark = null;
 
     public Placemark(Position position) {
         this(position, new PlacemarkAttributes());
     }
 
     public Placemark(Position position, PlacemarkAttributes attributes) {
-        this(position, attributes, null, false);
+        this(position, attributes, null, null, false);
     }
 
     /**
@@ -176,6 +182,8 @@ public class Placemark extends AbstractRenderable {
      * @param position           The placemark's geographic position.
      * @param attributes         The attributes to associate with this placemark. May be null, but if null the placemark
      *                           will not be drawn.
+     * @param displayName        The display name associated with this placemark. May be null. If a name is specified,
+     *                           but a label is not, then the name will be used for the label.
      * @param label              The label associated with this placemark. May be null. If specified, the label will be
      *                           drawn with the active {@link PlacemarkAttributes#labelAttributes}. If these attributes
      *                           are null, the label will not be drawn.
@@ -185,14 +193,14 @@ public class Placemark extends AbstractRenderable {
      *
      * @throws IllegalArgumentException If the specified position is null orderedRenderable undefined.
      */
-    public Placemark(Position position, PlacemarkAttributes attributes, String label, boolean eyeDistanceScaling) {
+    public Placemark(Position position, PlacemarkAttributes attributes, String displayName, String label, boolean eyeDistanceScaling) {
         if (position == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Placemark", "constructor", "missingPosition"));
         }
         setPosition(position);
         setAltitudeMode(WorldWind.ABSOLUTE);
-        setDisplayName(label);  // TODO: perhaps label and displayName should be distinct
+        setDisplayName(displayName);  // TODO: perhaps label and displayName should be distinct
         // TODO: e.g., labels could be coordinates while display name is unique identifier
 
         this.attributes = attributes != null ? attributes : new PlacemarkAttributes();
@@ -280,6 +288,17 @@ public class Placemark extends AbstractRenderable {
      */
     public void setHighlightAttributes(PlacemarkAttributes highlightAttributes) {
         this.highlightAttributes = highlightAttributes;
+    }
+
+    public String getLabel() {
+        if (this.label == null) {
+            return this.getDisplayName();
+        }
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     /**
@@ -572,25 +591,28 @@ public class Placemark extends AbstractRenderable {
             // Prepare the image
             ////////////////////////
 
+            // Get the active texture, if applicable, creating it if necessary from the imageSource object.
             if (this.attributes.imageSource != null) {
                 this.activeTexture = (GpuTexture) dc.gpuObjectCache.get(this.attributes.imageSource);
                 if (this.activeTexture == null) {
                     this.activeTexture = new GpuTexture(dc, this.attributes.imageSource);
                 }
             } else {
+                // When there is no imageSource we draw a simple colored square
                 this.activeTexture = null;
             }
 
-            // Compute the placemark's screen point in the OpenGL coordinate system of the WorldWindow by projecting its model
-            // coordinate point onto the viewport. Apply a depth offset in order to cause the placemark to appear above nearby
-            // terrain. When a placemark is displayed near the terrain portions of its geometry are often behind the terrain,
-            // yet as a screen element the placemark is expected to be visible. We adjust its depth values rather than moving
-            // the placemark itself to avoid obscuring its actual position.
+            // Compute the placemark's screen point in the OpenGL coordinate system of the WorldWindow by projecting its
+            // model coordinate point onto the viewport. Apply a depth offset in order to cause the entire placemark
+            // image to appear above the globe/terrain. When a placemark is displayed near the terrain or the horizon,
+            // portions of its geometry are often behind the terrain, yet as a screen element the placemark is expected
+            // to be visible. We adjust its depth values rather than moving the placemark itself to avoid obscuring its
+            // actual position.
             double depthOffset = Placemark.defaultDepthOffset;
             if (this.eyeDistance < dc.horizonDistance) {
-                // Offset the image towards the eye such that whatever the orientation of the image with respect to the
-                // globe, the entire image is guaranteed to be in front of the terrain.
-                double longestSide = this.activeTexture == null ?
+                // Offset the image towards the eye such that whatever the orientation of the image, with respect to the
+                // globe, the entire image is guaranteed to be in front of the globe/terrain.
+                double longestSide = this.activeTexture != null ?
                     Math.max(this.activeTexture.getOriginalImageWidth(), this.activeTexture.getOriginalImageHeight()) : 1;
                 double metersPerPixel = dc.pixelSizeAtDistance(this.eyeDistance);
                 depthOffset = longestSide * this.attributes.getImageScale() * metersPerPixel * -1;
@@ -642,34 +664,35 @@ public class Placemark extends AbstractRenderable {
             // If there's a label, perform these same operations for the label texture, creating that texture if it
             // doesn't already exist.
             if (this.mustDrawLabel()) {
-//                Typeface labelFont = this.attributes.labelAttributes.font;
-//                String labelKey = Placemark.this.displayName + labelFont.toString();
-//
-//                this.labelTexture = (GpuTexture) dc.gpuObjectCache.get(labelKey);
-//                if (this.labelTexture == null) {
-//                    // Create the bitmap
-//
-//                    this.labelTexture = dc.createFontTexture(Placemark.this.displayName, labelFont, false);
-//                }
-//                if (this.labelTexture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
-//
-//                    if (this.labelTransform == null) {
-//                        this.labelTransform = new Matrix4();
-//                    }
-//            w = this.labelTexture.imageWidth;
-//            h = this.labelTexture.imageHeight;
-//            s = this.attributes.labelAttributes.scale * visibilityScale;
-//            offset = this.attributes.labelAttributes.offset.offsetForSize(w, h);
-//
-//            this.labelTransform.setTranslation(
-//                Placemark.screenPoint[0] - offset[0] * s,
-//                Placemark.screenPoint[1] - offset[1] * s,
-//                Placemark.screenPoint[2]);
-//
-//            this.labelTransform.setScale(w * s, h * s, 1);
-//
-//                    this.labelBounds = WWMath.boundingRectForUnitQuad(this.labelTransform);
-//                }
+
+                String label = Placemark.this.getLabel();
+                Typeface labelFont = this.attributes.labelAttributes.font;
+                String labelKey = label + labelFont.toString();
+
+                this.labelTexture = (GpuTexture) dc.gpuObjectCache.get(labelKey);
+                if (this.labelTexture == null) {
+                    // Create the bitmap
+                    //this.labelTexture = dc.createFontTexture(Placemark.this.displayName, labelFont, false);
+                }
+                if (this.labelTexture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
+
+                    if (this.labelTransform == null) {
+                        this.labelTransform = new Matrix4();
+                    }
+                    int w = this.labelTexture.getOriginalImageWidth();
+                    int h = this.labelTexture.getOriginalImageHeight();
+                    double s = this.attributes.labelAttributes.scale * visibilityScale;
+                    Vec2 offset = this.attributes.labelAttributes.offset.offsetForSize(w, h);
+
+                    this.labelTransform.setTranslation(
+                        this.screenPoint.x - offset.x * s,
+                        this.screenPoint.y - offset.y * s,
+                        this.screenPoint.z);
+
+                    this.labelTransform.setScale(w * s, h * s, 1);
+
+                    this.labelBounds = WWMath.boundingRectForUnitQuad(this.labelTransform);
+                }
             }
             return true;
         }
@@ -679,22 +702,18 @@ public class Placemark extends AbstractRenderable {
          */
         @Override
         public void renderOrdered(DrawContext dc) {
-            this.doDrawOrderedPlacemark(dc);
-        }
-
-
-        protected void endDrawing(final DrawContext dc) {
+            this.drawOrderedPlacemark(dc);
         }
 
         /**
          * Performs the actual rendering of the Placemark.
          */
-        void doDrawOrderedPlacemark(final DrawContext dc) {
+        protected void drawOrderedPlacemark(final DrawContext dc) {
+            // Use World Wind's basic GLSL program.
             BasicProgram program = (BasicProgram) dc.gpuObjectCache.retrieveProgram(dc, BasicProgram.class);
             if (program == null) {
                 return; // program is not in the GPU object cache yet
             }
-            // Use World Wind's basic GLSL program.
             dc.useProgram(program);
 
             // Set up to use the shared tex attribute.
@@ -920,8 +939,9 @@ public class Placemark extends AbstractRenderable {
          *
          * @return True if there is a valid label and label attributes.
          */
-        boolean mustDrawLabel() {
-            return Placemark.this.displayName != null && !Placemark.this.displayName.isEmpty() && this.attributes.labelAttributes != null;
+        public boolean mustDrawLabel() {
+            String label = Placemark.this.getLabel();
+            return label != null && !label.isEmpty() && this.attributes.labelAttributes != null;
         }
 
         /**
@@ -929,7 +949,7 @@ public class Placemark extends AbstractRenderable {
          *
          * @return True if leader-line directive is enabled and there are valid leader-line attributes.
          */
-        boolean mustDrawLeaderLine(DrawContext dc) {
+        public boolean mustDrawLeaderLine(DrawContext dc) {
             return this.attributes.drawLeaderLine && this.attributes.leaderLineAttributes != null
                 && (!dc.pickingMode || Placemark.this.enableLeaderLinePicking);
         }
