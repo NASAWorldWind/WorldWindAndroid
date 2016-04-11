@@ -10,6 +10,8 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/worldwind" />
+            <option value="$PROJECT_DIR$/worldwind-examples" />
           </set>
         </option>
       </GradleProjectSettings>
