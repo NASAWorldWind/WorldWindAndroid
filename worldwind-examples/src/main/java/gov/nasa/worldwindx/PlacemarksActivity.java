@@ -8,26 +8,17 @@ package gov.nasa.worldwindx;
 import android.os.Bundle;
 import android.os.Handler;
 
-import java.util.Iterator;
-import java.util.Random;
-
-import gov.nasa.worldwind.Navigator;
 import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.geom.Location;
+import gov.nasa.worldwind.geom.LookAt;
+import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.layer.RenderableLayer;
-import gov.nasa.worldwind.layer.ShowTessellationLayer;
 import gov.nasa.worldwind.render.Color;
-import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
-import gov.nasa.worldwind.util.WWMath;
 
-import static java.lang.Math.asin;
-import static java.lang.Math.toDegrees;
-
-public class PlacemarksActivity extends BasicGlobeActivity implements Runnable {
+public class PlacemarksActivity extends BasicGlobeActivity {
 
     protected Handler animationHandler = new Handler();
 
@@ -43,166 +34,49 @@ public class PlacemarksActivity extends BasicGlobeActivity implements Runnable {
         this.aboutBoxTitle = "About the " + getResources().getText(R.string.title_placemarks);
         this.aboutBoxText = "Demonstrates how to add Placemarks to a RenderableLayer.";
 
-//        // Turn off all layers while debugging
-//        for (Layer l : this.getWorldWindow().getLayers()) {
-//            l.setEnabled(false);
-//        }
-        this.getWorldWindow().getLayers().addLayer(new ShowTessellationLayer());
+        ///////////////////////////////////////////////////////////////////////////
+        // First, setup the WorldWind globe to support the rendering of placemarks
+        ///////////////////////////////////////////////////////////////////////////
 
-        // Add a Renderable layer for the placemarks before the Atmosphere layer
+        // Create a RenderableLayer for the placemarks
+        RenderableLayer placemarksLayer = new RenderableLayer("Placemarks");
+        // Add the new layer to the globe's layer list; for this demo, place it just in front of the Atmosphere layer
         LayerList layers = this.getWorldWindow().getLayers();
         int index = layers.indexOfLayerNamed("Atmosphere");
-        RenderableLayer placemarksLayer = new RenderableLayer("Placemarks");
-        this.getWorldWindow().getLayers().addLayer(index, placemarksLayer);
+        layers.addLayer(index, placemarksLayer);
 
-        // Create some placemarks at a known locations
-        Placemark origin = new Placemark(Position.fromDegrees(0, 0, 0));
-        Placemark northPole = new Placemark(Position.fromDegrees(90, 0, 0));
-        Placemark southPole = new Placemark(Position.fromDegrees(-90, 0, 0));
-        Placemark antiMeridian = new Placemark(Position.fromDegrees(0, 180, 0));
-        origin.getAttributes().setImageSource(R.drawable.pushpin_plain_yellow).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN);
-        northPole.getAttributes().setImageSource(R.drawable.pushpin_plain_white).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN);
-        southPole.getAttributes().setImageSource(R.drawable.pushpin_plain_black).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN);
-        antiMeridian.getAttributes().setImageSource(R.drawable.pushpin_plain_green).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN);
-        placemarksLayer.addRenderable(origin);
-        placemarksLayer.addRenderable(northPole);
-        placemarksLayer.addRenderable(southPole);
-        placemarksLayer.addRenderable(antiMeridian);
+        ///////////////////////////////////
+        // Second, create some placemarks
+        ///////////////////////////////////
 
+        // Create an image-based placemark at Oxnard Airport, CA. The image is scaled to 2x its original size,
+        // with the bottom center of the image anchored at the geographic position.
+        Placemark airport = new Placemark(
+            Position.fromDegrees(34.200, -119.208, 0),
+            PlacemarkAttributes.withImageAndLabel(R.drawable.airport).setImageOffset(Offset.BOTTOM_CENTER).setImageScale(2),
+            "Oxnard Airport",  // the display name (optional), it would be used as the label if label were null
+            "KOXR", // the label text (optional) that is displayed near the placemark
+            false); // defines if the placemark's size is scaled based on the distance to the viewer
 
-        ////////////////////
-        // Stress Tests
-        ////////////////////
+        // Create another placemark at nearby downtown Ventura, CA. The placemark is a simple 20x20 cyan square
+        // centered on the geographic position.
+        Placemark ventura = new Placemark(
+            Position.fromDegrees(34.281, -119.293, 0),
+            PlacemarkAttributes.defaults().setImageColor(Color.CYAN).setImageScale(20));
 
-        Placemark.defaultEyeDistanceScalingThreshold = 1e7;
-        // Create a random number generator with an arbitrary seed
-        // that will generate the same numbers between runs.
-        Random random = new Random(123);
+        /////////////////////////////////////////////////////
+        // Third, add the placemarks to the renderable layer
+        /////////////////////////////////////////////////////
 
-
-//        // Create "sprinkles" -- random colored squares
-//        PlacemarkAttributes attributes = new PlacemarkAttributes();
-//        attributes.setImageScale(10);
-//        for (int i = 0; i < NUM_PLACEMARKS; i++) {
-//            // Generate a random color for this placemark
-//            attributes.setImageColor(Color.random());
-//            // Create an even distribution of latitude and longitudes
-//            // Use a random sin value to generate latitudes without clustering at the poles
-//            double lat = toDegrees(asin(random.nextDouble())) * (random.nextBoolean() ? 1 : -1);
-//            double lon = 180d - (random.nextDouble() * 360);
-//            Position pos = Position.fromDegrees(lat, lon, 0);
-//
-//            Placemark placemark = new Placemark(pos, new PlacemarkAttributes(attributes));
-//            placemark.setEyeDistanceScaling(false);
-//            placemarksLayer.addRenderable(placemark);
-//        }
+        placemarksLayer.addRenderable(airport);
+        placemarksLayer.addRenderable(ventura);
 
 
-
-        // Create pushpins anchored at the "pinpoints" with eye distance scaling
-        int pushpin = R.drawable.pushpin_plain_red;
-        PlacemarkAttributes attributes = new PlacemarkAttributes();
-        attributes.setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN);
-        attributes.setImageSource(pushpin);
-        attributes.setImageScale(1);
-        for (int i = 0; i < NUM_PLACEMARKS; i++) {
-            // Create an even distribution of latitude and longitudes across the globe.
-            // Use a random sin value to generate latitudes without clustering at the poles.
-            double lat = toDegrees(asin(random.nextDouble())) * (random.nextBoolean() ? 1 : -1);
-            double lon = 180d - (random.nextDouble() * 360);
-            Position pos = Position.fromDegrees(lat, lon, 0);
-
-            Placemark placemark = new Placemark(pos, new PlacemarkAttributes(attributes));
-            placemark.setEyeDistanceScaling(true);
-            placemarksLayer.addRenderable(placemark);
-        }
-
-
-//        // Create animated aircraft
-//        int aircraft = R.drawable.airplane;
-//        PlacemarkAttributes attributes = new PlacemarkAttributes();
-//        attributes.setImageOffset(PlacemarkAttributes.OFFSET_CENTER);
-//        attributes.setImageSource(aircraft);
-//        attributes.setImageScale(1);
-//
-//        for (int i = 0; i < NUM_PLACEMARKS; i++) {
-//
-//            // Use a random sin to generate the latitude to prevent clustering at the poles
-//            double lat = toDegrees(asin(random.nextDouble())) * (random.nextBoolean() ? 1 : -1);
-//            // Generate
-//            double lon = 180d - (random.nextDouble() * 360);
-//            Position pos = Position.fromDegrees(lat, lon, 0);
-//
-//            Double aircraftHeading = 90d; //new Double(WWMath.normalizeAngle180(random.nextDouble() * 360d));
-//            Placemark placemark = new Placemark(pos, new PlacemarkAttributes(attributes));
-//            placemark.setImageRotation(aircraftHeading);
-//            placemark.setImageRotationReference(WorldWind.RELATIVE_TO_GLOBE);
-//            //placemark.setImageTilt(90d);
-//            //placemark.setImageTiltReference(WorldWind.RELATIVE_TO_GLOBE);
-//            placemark.putUserProperty("aircraftHeading", aircraftHeading);
-//            placemarksLayer.addRenderable(placemark);
-//        }
-//
-//        // Set up an Android Handler to change the view
-//        this.animationHandler.postDelayed(this, DELAY_TIME);
-
-    }
-
-
-    @Override
-    public void run() {
-        // Move the navigator to simulate the Earth's rotation about its axis.
-        Navigator navigator = getWorldWindow().getNavigator();
-        navigator.setLongitude(navigator.getLongitude() - 0.03);
-
-        // Redraw the World Window to display the above changes.
-        getWorldWindow().requestRender();
-
-        if (!this.pauseHandler) { // stop running when this activity is paused; the Handler is resumed in onResume
-            this.animationHandler.postDelayed(this, 30);
-        }
-
-//        // Aircraft animation
-//        this.getWorldWindow().queueEvent(new Runnable() {
-//            @Override
-//            public void run() {
-//                LayerList layers = getWorldWindow().getLayers();
-//                int index = layers.indexOfLayerNamed("Placemarks");
-//                RenderableLayer layer = (RenderableLayer) layers.getLayer(index);
-//                Iterator<Renderable> i = layer.iterator();
-//                while (i.hasNext()) {
-//                    Renderable r = i.next();
-//                    if (r instanceof Placemark) {
-//                        Placemark placemark = (Placemark) r;
-//                        Double currentHeading = (Double) placemark.getUserProperty("aircraftHeading");
-//                        if (currentHeading != null) {
-//                            Position pos = placemark.getPosition();
-//                            Location endPoint = pos.rhumbLocation(currentHeading, 0.001, new Location());
-//                            Location midPoint = pos.interpolateAlongPath(endPoint, WorldWind.RHUMB_LINE, 0.5, new Location());
-//                            //double newHeading = midPoint.greatCircleAzimuth(endPoint);
-//                            placemark.setPosition(pos.set(midPoint.latitude, midPoint.longitude, pos.altitude));
-//                            //placemark.putUserProperty("aircraftHeading", new Double(newHeading));
-//                        }
-//                    }
-//                }
-//
-//            }
-//        });
-
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        // Stop running the Handler when this activity is paused.
-        this.pauseHandler = true;
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Resume the Handler that changes earth's rotation.
-        this.pauseHandler = false;
-        this.animationHandler.postDelayed(this, DELAY_TIME);
+        // And finally, for this demo, position the viewer to look at the airport placemark
+        // from a tilted perspective when this Android activity is created.
+        Position pos = airport.getPosition();
+        LookAt lookAt = new LookAt().set(pos.latitude, pos.longitude, pos.altitude, WorldWind.ABSOLUTE,
+            1e5 /*range*/, 0 /*heading*/, 80 /*tilt*/, 0 /*roll*/);
+        this.getWorldWindow().getNavigator().setAsLookAt(this.getWorldWindow().getGlobe(), lookAt);
     }
 }
