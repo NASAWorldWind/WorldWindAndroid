@@ -8,7 +8,6 @@ package gov.nasa.worldwind.shape;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.opengl.GLES20;
-import android.opengl.GLSurfaceView;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -613,7 +612,7 @@ public class Placemark extends AbstractRenderable {
                 // Offset the image towards the eye such that whatever the orientation of the image, with respect to the
                 // globe, the entire image is guaranteed to be in front of the globe/terrain.
                 double longestSide = this.activeTexture != null ?
-                    Math.max(this.activeTexture.getOriginalImageWidth(), this.activeTexture.getOriginalImageHeight()) : 1;
+                    Math.max(this.activeTexture.getImageWidth(), this.activeTexture.getImageHeight()) : 1;
                 double metersPerPixel = dc.pixelSizeAtDistance(this.eyeDistance);
                 depthOffset = longestSide * this.attributes.getImageScale() * metersPerPixel * -1;
             }
@@ -630,8 +629,8 @@ public class Placemark extends AbstractRenderable {
             // axes that extend up and to the right from the origin point. When the placemark has no active texture the image
             // scale defines the image size and no other scaling is applied.
             if (this.activeTexture != null && this.activeTexture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
-                int w = this.activeTexture.getOriginalImageWidth();
-                int h = this.activeTexture.getOriginalImageHeight();
+                int w = this.activeTexture.getImageWidth();
+                int h = this.activeTexture.getImageHeight();
                 double s = this.attributes.imageScale * visibilityScale;
                 Vec2 offset = this.attributes.imageOffset.offsetForSize(w, h);
 
@@ -679,8 +678,8 @@ public class Placemark extends AbstractRenderable {
                     if (this.labelTransform == null) {
                         this.labelTransform = new Matrix4();
                     }
-                    int w = this.labelTexture.getOriginalImageWidth();
-                    int h = this.labelTexture.getOriginalImageHeight();
+                    int w = this.labelTexture.getImageWidth();
+                    int h = this.labelTexture.getImageHeight();
                     double s = this.attributes.labelAttributes.scale * visibilityScale;
                     Vec2 offset = this.attributes.labelAttributes.offset.offsetForSize(w, h);
 
