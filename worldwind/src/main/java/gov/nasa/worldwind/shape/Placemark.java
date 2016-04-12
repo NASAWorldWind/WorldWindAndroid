@@ -674,7 +674,7 @@ public class Placemark extends AbstractRenderable {
                     // Create the bitmap
                     //this.labelTexture = dc.createFontTexture(Placemark.this.displayName, labelFont, false);
                 }
-                if (this.labelTexture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
+                if (this.labelTexture != null && this.labelTexture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
 
                     if (this.labelTransform == null) {
                         this.labelTransform = new Matrix4();
