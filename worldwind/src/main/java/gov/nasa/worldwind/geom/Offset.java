@@ -11,6 +11,25 @@ import gov.nasa.worldwind.WorldWind;
  * Specifies an offset relative to a rectangle. Used by renderable shapes.
  */
 public class Offset {
+    /**
+     * An offset for centering a placemark image on its geographic position.
+     */
+    public static final Offset CENTER = new Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.5);
+
+    /**
+     * An offset for anchoring a placemark image to the bottom, left of its geographic position.
+     */
+    public static final Offset BOTTOM_LEFT = new Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 0.0);
+
+    /**
+     * An offset for anchoring a placemark image at the center width and bottom.
+     */
+    public static final Offset BOTTOM_CENTER = new Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.0);
+
+    /**
+     * An offset for anchoring a placemark image to the bottom, left of its geographic position.
+     */
+    public static final Offset BOTTOM_RIGHT = new Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 0.0);
 
     /**
      * The offset in the X dimension, interpreted according to this instance's xUnits argument.
