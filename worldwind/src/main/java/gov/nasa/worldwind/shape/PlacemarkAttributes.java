@@ -16,27 +16,7 @@ import gov.nasa.worldwind.util.Logger;
 public class PlacemarkAttributes {
 
     /**
-     * An offset for centering a placemark image on its geographic position.
-     */
-    public static final Offset OFFSET_CENTER = new Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.5);
-
-    /**
-     * An offset for anchoring a placemark image to the bottom, left of its geographic position.
-     */
-    public static final Offset OFFSET_ANCHOR_BOTTOM_LEFT = new Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 0.0);
-
-    /**
-     * An offset for anchoring a placemark image at the center width and bottom.
-     */
-    public static final Offset OFFSET_ANCHOR_BOTTOM_CENTER = new Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.0);
-
-    /**
-     * An offset for anchoring a placemark image to the bottom, left of its geographic position.
-     */
-    public static final Offset OFFSET_ANCHOR_BOTTOM_RIGHT = new Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 0.0);
-
-    /**
-     * An offset for anchoring a 64x64 pushpin image's "point" on the geographic position.
+     * An offset for anchoring a 64x64 classic pushpin image's "point" on the geographic position.
      */
     public static final Offset OFFSET_PUSHPIN = new Offset(WorldWind.OFFSET_FRACTION, 19d / 64d, WorldWind.OFFSET_FRACTION, 4d / 64d);
 
@@ -62,7 +42,7 @@ public class PlacemarkAttributes {
      */
     public PlacemarkAttributes() {
         this.imageColor = new Color(1, 1, 1, 1);
-        this.imageOffset = new Offset(OFFSET_CENTER);
+        this.imageOffset = new Offset(Offset.CENTER);
         this.imageScale = 1;
         this.imageSource = null;
         this.labelAttributes = null;
@@ -73,7 +53,8 @@ public class PlacemarkAttributes {
 
 
     /**
-     * Constructs a placemark attribute bundle from the specified attributes.
+     * Constructs a placemark attribute bundle from the specified attributes. Performs a deep copy of the color, offset,
+     * label attributes and leader-line attributes.
      *
      * @param attributes The attributes to be copied.
      *
@@ -85,15 +66,48 @@ public class PlacemarkAttributes {
                 Logger.logMessage(Logger.ERROR, "PlacemarkAttributes", "constructor", "missingAttributes"));
         }
 
-        this.imageColor = attributes.imageColor;
-        this.imageOffset = attributes.imageOffset;
+        this.imageColor = new Color(attributes.imageColor);
+        this.imageOffset = new Offset(attributes.imageOffset);
         this.imageScale = attributes.imageScale;
-        this.imageSource = attributes.imageSource;
+        this.imageSource = attributes.imageSource;  // TODO: resolve shallow or deep copy of imageSource
         this.depthTest = attributes.depthTest;
-        this.labelAttributes = attributes.labelAttributes;
+        this.labelAttributes = attributes.labelAttributes != null ? new TextAttributes(attributes.labelAttributes) : null;
         this.drawLeaderLine = attributes.drawLeaderLine;
-        this.leaderLineAttributes = attributes.leaderLineAttributes;
+        this.leaderLineAttributes = attributes.leaderLineAttributes;    // TODO: deep copy of leaderLineAttributes
     }
+
+    public static PlacemarkAttributes defaults() {
+        return new PlacemarkAttributes();
+    }
+
+    public static PlacemarkAttributes defaultsAndLabel() {
+        return new PlacemarkAttributes().setLabelAttributes(new TextAttributes());
+    }
+
+    public static PlacemarkAttributes defaultsAndLeaderLine() {
+        return new PlacemarkAttributes().setLeaderLineAttributes(null); // TODO: implement
+    }
+
+    public static PlacemarkAttributes defaultsAndLabelLeaderLine() {
+        return new PlacemarkAttributes().setLabelAttributes(new TextAttributes()).setLeaderLineAttributes(null).setDrawLeaderLine(true); // TODO: implement
+    }
+
+    public static PlacemarkAttributes withImage(Object imageSource) {
+        return new PlacemarkAttributes().setImageSource(imageSource);
+    }
+
+    public static PlacemarkAttributes withImageAndLabel(Object imageSource) {
+        return new PlacemarkAttributes().setImageSource(imageSource).setLabelAttributes(new TextAttributes());
+    }
+
+    public static PlacemarkAttributes withImageAndLeaderLine(Object imageSource) {
+        return new PlacemarkAttributes().setImageSource(imageSource).setLeaderLineAttributes(null); // TODO: implement
+    }
+
+    public static PlacemarkAttributes withImageAndLabelLeaderLine() {
+        return new PlacemarkAttributes().setLabelAttributes(new TextAttributes()).setLeaderLineAttributes(null).setDrawLeaderLine(true); // TODO: implement
+    }
+
 
     @Override
     public boolean equals(Object o) {
