@@ -37,11 +37,6 @@ import gov.nasa.worldwind.util.WWMath;
  * attributes indicate a valid image, the placemark's image is drawn as a rectangle in the image's original dimensions,
  * scaled by the image scale attribute. Otherwise, the placemark is drawn as a square with width and height equal to the
  * value of the image scale attribute, in pixels, and color equal to the image color attribute.
- * <p/>
- * By default, placemarks participate in decluttering with a [declutterGroupID]{@link Placemark#declutterGroup} of 2.
- * Only placemark labels are decluttered relative to other placemark labels. The placemarks themselves are optionally
- * scaled with eye distance to achieve decluttering of the placemark as a whole. See {@link
- * Placemark#setEyeDistanceScaling(boolean)}.
  */
 public class Placemark extends AbstractRenderable {
 
@@ -56,12 +51,6 @@ public class Placemark extends AbstractRenderable {
      * The placemark's geographic position.
      */
     protected Position position;
-
-    // The cartesian coordinates of the geographic position
-    Vec3 placePoint;
-
-    // The cartesian point on the surface of terrain under the geographic position
-    Vec3 groundPoint;
 
     /**
      * The placemark's altitude mode. See {@link gov.nasa.worldwind.WorldWind.AltitudeMode}
@@ -150,9 +139,11 @@ public class Placemark extends AbstractRenderable {
 
     /**
      * Factory method
+     *
      * @param position
      * @param color
      * @param pixelSize
+     *
      * @return
      */
     public static Placemark simple(Position position, Color color, int pixelSize) {
@@ -161,8 +152,10 @@ public class Placemark extends AbstractRenderable {
 
     /**
      * Factory method
+     *
      * @param position
      * @param imageSource
+     *
      * @return
      */
     public static Placemark simpleImage(Position position, Object imageSource) {
@@ -171,9 +164,11 @@ public class Placemark extends AbstractRenderable {
 
     /**
      * Factory method
+     *
      * @param position
      * @param imageSource
      * @param label
+     *
      * @return
      */
     public static Placemark simpleImageAndLabel(Position position, Object imageSource, String label) {
@@ -243,8 +238,6 @@ public class Placemark extends AbstractRenderable {
      */
     public void setPosition(Position position) {
         this.position = position;
-        this.placePoint = null; // must recompute after change in position
-        this.groundPoint = null; // must recompute after change in position
     }
 
     /**
@@ -266,8 +259,6 @@ public class Placemark extends AbstractRenderable {
      */
     public void setAltitudeMode(@WorldWind.AltitudeMode int altitudeMode) {
         this.altitudeMode = altitudeMode;
-        this.placePoint = null; // must recompute after change in mode
-        this.groundPoint = null; // must recompute after change in position
     }
 
     /**
@@ -472,7 +463,7 @@ public class Placemark extends AbstractRenderable {
      *
      * @param dc The current DrawContext.
      */
-    protected PlacemarkAttributes determineActiveAttributes(final DrawContext dc) {
+    public PlacemarkAttributes getActiveAttributes(final DrawContext dc) {
         return this.attributes;
     }
 
@@ -506,15 +497,10 @@ public class Placemark extends AbstractRenderable {
      * rendered.
      */
     protected OrderedPlacemark makeOrderedPlacemark(final DrawContext dc) {
-        // Get the attributes to use for this rendering pass.
-        PlacemarkAttributes activeAttributes = this.determineActiveAttributes(dc);
-        if (activeAttributes == null) {
-            return null;
-        }
 
         // Create a new instance if necessary, otherwise reuse the existing instance
         OrderedPlacemark op = (this.orderedPlacemark == null ? new OrderedPlacemark() : this.orderedPlacemark);
-        if (!op.prepareForRendering(dc, activeAttributes)) {
+        if (!op.prepareForRendering(dc, this)) {
             return null;
         }
         return op;
@@ -522,75 +508,109 @@ public class Placemark extends AbstractRenderable {
 
     ///////////////////////////////////////
     //
-    // Ordered Placemark Inner Class
+    // Ordered Placemark Inner Static Class
     //
     ///////////////////////////////////////
 
     /**
      * OrderedPlacemark is a delegate responsible for rendering a Placemark with eye distance ordering.
      */
-    protected class OrderedPlacemark implements OrderedRenderable {
+    static protected class OrderedPlacemark implements OrderedRenderable {
 
-        public PlacemarkAttributes attributes = null;
+        protected Position position = new Position();
 
-        public double eyeDistance = 0;
+        protected PlacemarkAttributes attributes = new PlacemarkAttributes();
 
-        private Vec3 screenPoint = new Vec3(0, 0, 0);
+        protected String label = null;
 
-        private Matrix4 imageTransform = new Matrix4();
+        protected Vec3 placePoint = new Vec3(0, 0, 0);
 
-        private Matrix4 labelTransform = null;
+        protected Vec3 groundPoint = new Vec3(0, 0, 0);
 
-        private Matrix3 texCoordMatrix = new Matrix3();
+        protected Vec3 screenPoint = new Vec3(0, 0, 0);
 
-        private Matrix4 mvpMatrix = new Matrix4();
+        protected double actualRotation = 0;
 
-        private GpuTexture activeTexture = null;
+        protected double actualTilt = 0;
 
-        private GpuTexture labelTexture = null;
+        protected double eyeDistance = 0;
 
-        private Rect imageBounds = null;
+        protected Matrix4 imageTransform = new Matrix4();
 
-        private Rect labelBounds = null;
+        protected Matrix4 labelTransform = null;
 
-        private float[] leaderLinePoints = null;
+        protected Matrix3 texCoordMatrix = new Matrix3();
 
-        private boolean drawLabel = false;
+        protected Matrix4 mvpMatrix = new Matrix4();
 
-        private boolean drawLeader = false;
+        protected GpuTexture activeTexture = null;
+
+        protected GpuTexture labelTexture = null;
+
+        protected Rect imageBounds = null;
+
+        protected Rect labelBounds = null;
+
+        protected float[] leaderLinePoints = null;
+
+        protected boolean drawLabel = false;
+
+        protected boolean drawLeader = false;
+
+        protected boolean enableLeaderLinePicking = false;
 
         /**
          * Prepares this OrderedPlacemark for visibility tests and subsequent rendering.
          *
          * @return True if this ordered renderable is in a state ready for rendering.
          */
-        public boolean prepareForRendering(final DrawContext dc, PlacemarkAttributes attributes) {
+        public boolean prepareForRendering(final DrawContext dc, final Placemark placemark) {
 
-            // Update the attributes used for this rendering pass
-            this.attributes = attributes;
-            if (this.attributes == null) {
+            // Get a copy of the attributes used for this rendering pass
+            PlacemarkAttributes activeAttributes = placemark.getActiveAttributes(dc);
+            if (activeAttributes == null) {
                 return false;
             }
+            this.attributes.set(activeAttributes);
+
+            // Get a copy of the (optional) label. May be null.
+            this.label = placemark.getLabel();
+
+            // Precompute the image rotation. Leveraging protected access to Placemark fields.
+            this.actualRotation = placemark.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
+                dc.heading - placemark.imageRotation : -placemark.imageRotation;
+
+            // Preompute the image tilt. Leveraging protected access to Placemark fields.
+            this.actualTilt = placemark.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
+                dc.tilt + placemark.imageTilt : placemark.imageTilt;
 
             // Compute the placemark's model point and corresponding distance to the eye point. If the placemark's
             // position is terrain-dependent but off the terrain, then compute it ABSOLUTE so that we have a point for
             // the placemark and are thus able to draw it. Otherwise its image and label portion that are potentially
             // over the terrain won't get drawn, and would disappear as soon as there is no terrain at the placemark's
             // position. This can occur at the window edges.
-            if (Placemark.this.placePoint == null) {
-                Placemark.this.placePoint = dc.globe.geographicToCartesian(
-                    Placemark.this.position.latitude, Placemark.this.position.longitude, Placemark.this.position.altitude, new Vec3());
+            Position currentPosition = placemark.getPosition();
+            if (!this.position.equals(currentPosition)) {
+                this.position.set(currentPosition);
+                this.placePoint = null;
+                this.groundPoint = null;
+            }
+            if (this.placePoint == null) {
+                this.placePoint = dc.globe.geographicToCartesian(
+                    this.position.latitude, this.position.longitude, this.position.altitude, new Vec3());
 //            dc.surfacePointForMode(this.position.latitude, this.position.longitude, this.position.altitude, this.altitudeMode, this.placePoint);
             }
 
             // Compute the eye distance to the place point, the value which is used for sorting/ordering.
-            this.eyeDistance = dc.eyePoint.distanceTo(Placemark.this.placePoint);
+            this.eyeDistance = dc.eyePoint.distanceTo(this.placePoint);
 
+
+            this.enableLeaderLinePicking = placemark.isEnableLeaderLinePicking();
             this.drawLeader = this.mustDrawLeaderLine(dc);
             if (this.drawLeader) {
-                if (Placemark.this.groundPoint == null) {
-                    Placemark.this.groundPoint = dc.globe.geographicToCartesian(
-                        Placemark.this.position.latitude, Placemark.this.position.longitude, 0, new Vec3());
+                if (this.groundPoint == null) {
+                    this.groundPoint = dc.globe.geographicToCartesian(
+                        this.position.latitude, this.position.longitude, 0, new Vec3());
 //                    dc.surfacePointForMode(this.position.latitude, this.position.longitude, 0, this.altitudeMode, this.groundPoint);
                 }
             }
@@ -623,15 +643,15 @@ public class Placemark extends AbstractRenderable {
                 double longestSide = this.activeTexture != null ?
                     Math.max(this.activeTexture.getImageWidth(), this.activeTexture.getImageHeight()) : 1;
                 double metersPerPixel = dc.pixelSizeAtDistance(this.eyeDistance);
-                depthOffset = longestSide * this.attributes.getImageScale() * metersPerPixel * -1;
+                depthOffset = longestSide * this.attributes.imageScale * metersPerPixel * -1;
             }
-            if (!dc.projectWithDepth(Placemark.this.placePoint, depthOffset, this.screenPoint)) {
+            if (!dc.projectWithDepth(this.placePoint, depthOffset, this.screenPoint)) {
                 // Probably outside the clipping planes
                 return false;
             }
 
-            double visibilityScale = Placemark.this.eyeDistanceScaling ?
-                Math.max(0.0, Math.min(1, Placemark.this.eyeDistanceScalingThreshold / this.eyeDistance)) : 1;
+            double visibilityScale = placemark.isEyeDistanceScaling() ?
+                Math.max(0.0, Math.min(1, placemark.getEyeDistanceScalingThreshold() / this.eyeDistance)) : 1;
 
             // Compute the placemark's transform matrix and texture coordinate matrix according to its screen point, image size,
             // image offset and image scale. The image offset is defined with its origin at the image's bottom-left corner and
@@ -674,9 +694,8 @@ public class Placemark extends AbstractRenderable {
             this.drawLabel = this.mustDrawLabel();
             if (this.drawLabel) {
 
-                String label = Placemark.this.getLabel();
                 Typeface labelFont = this.attributes.labelAttributes.font;
-                String labelKey = label + labelFont.toString();
+                String labelKey = this.label + labelFont.toString();
 
                 this.labelTexture = (GpuTexture) dc.gpuObjectCache.get(labelKey);
                 if (this.labelTexture == null) {
@@ -752,12 +771,12 @@ public class Placemark extends AbstractRenderable {
                     this.leaderLinePoints = new float[6];
                 }
                 // TODO: Store leader line  in gpuObjectCache
-                this.leaderLinePoints[0] = (float) Placemark.this.groundPoint.x; // computed during prepareForRendering
-                this.leaderLinePoints[1] = (float) Placemark.this.groundPoint.y;
-                this.leaderLinePoints[2] = (float) Placemark.this.groundPoint.z;
-                this.leaderLinePoints[3] = (float) Placemark.this.placePoint.x; // computed during prepareForRendering
-                this.leaderLinePoints[4] = (float) Placemark.this.placePoint.y;
-                this.leaderLinePoints[5] = (float) Placemark.this.placePoint.z;
+                this.leaderLinePoints[0] = (float) this.groundPoint.x; // computed during prepareForRendering
+                this.leaderLinePoints[1] = (float) this.groundPoint.y;
+                this.leaderLinePoints[2] = (float) this.groundPoint.z;
+                this.leaderLinePoints[3] = (float) this.placePoint.x; // computed during prepareForRendering
+                this.leaderLinePoints[4] = (float) this.placePoint.y;
+                this.leaderLinePoints[5] = (float) this.placePoint.z;
 
                 FloatBuffer leaderBuffer = ByteBuffer.allocateDirect(texPoints.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
                 leaderBuffer.put(this.leaderLinePoints).rewind();
@@ -817,15 +836,11 @@ public class Placemark extends AbstractRenderable {
             this.mvpMatrix.set(dc.screenProjection);
             this.mvpMatrix.multiplyByMatrix(this.imageTransform);
             // ... perform image rotation
-            double actualRotation = Placemark.this.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
-                dc.heading - Placemark.this.imageRotation : -Placemark.this.imageRotation;
             this.mvpMatrix.multiplyByTranslation(0.5, 0.5, 0);
-            this.mvpMatrix.multiplyByRotation(0, 0, 1, actualRotation);
+            this.mvpMatrix.multiplyByRotation(0, 0, 1, this.actualRotation);
             this.mvpMatrix.multiplyByTranslation(-0.5, -0.5, 0);
             // ... and perform the tilt so that the image tilts back from its base into the view volume.
-            double actualTilt = Placemark.this.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
-                dc.tilt + Placemark.this.imageTilt : Placemark.this.imageTilt;
-            this.mvpMatrix.multiplyByRotation(-1, 0, 0, actualTilt);
+            this.mvpMatrix.multiplyByRotation(-1, 0, 0, this.actualTilt);
 
             program.loadModelviewProjection(this.mvpMatrix);
 
@@ -919,7 +934,7 @@ public class Placemark extends AbstractRenderable {
                 return this.imageBounds.intersect(dc.viewport)
                     || (this.mustDrawLabel() && this.labelBounds.intersect(dc.viewport))
                     || (this.mustDrawLeaderLine(dc)
-                    && dc.frustum.intersectsSegment(Placemark.this.groundPoint, Placemark.this.placePoint));
+                    && dc.frustum.intersectsSegment(this.groundPoint, this.placePoint));
             }
         }
 
@@ -929,7 +944,6 @@ public class Placemark extends AbstractRenderable {
          * @return True if there is a valid label and label attributes.
          */
         public boolean mustDrawLabel() {
-            String label = Placemark.this.getLabel();
             return label != null && !label.isEmpty() && this.attributes.labelAttributes != null;
         }
 
@@ -940,7 +954,7 @@ public class Placemark extends AbstractRenderable {
          */
         public boolean mustDrawLeaderLine(DrawContext dc) {
             return this.attributes.drawLeaderLine && this.attributes.leaderLineAttributes != null
-                && (!dc.pickingMode || Placemark.this.enableLeaderLinePicking);
+                && (!dc.pickingMode || this.enableLeaderLinePicking);
         }
 
     }
