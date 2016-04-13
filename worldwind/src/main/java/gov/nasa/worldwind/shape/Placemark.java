@@ -21,6 +21,7 @@ import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.BasicProgram;
+import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.GpuTexture;
 import gov.nasa.worldwind.render.OrderedRenderable;
@@ -30,17 +31,17 @@ import gov.nasa.worldwind.util.WWMath;
 /**
  * Represents a Placemark shape. A placemark displays an image, a label and a leader line connecting the placemark's
  * geographic position to the ground. All three of these items are optional. By default, the leader line is not
- * pickable. See [enableLeaderLinePicking]{@link Placemark#enableLeaderLinePicking}.
+ * pickable. See {@link Placemark#setEnableLeaderLinePicking(boolean)}.
  * <p/>
- * Placemarks may be drawn with either an image orderedRenderable as single-color square with a specified size. When the
- * placemark attributes indicate a valid image, the placemark's image is drawn as a rectangle in the image's original
- * dimensions, scaled by the image scale attribute. Otherwise, the placemark is drawn as a square with width and height
- * equal to the value of the image scale attribute, in pixels, and color equal to the image color attribute.
+ * Placemarks may be drawn with either an image or as single-color square with a specified size. When the placemark
+ * attributes indicate a valid image, the placemark's image is drawn as a rectangle in the image's original dimensions,
+ * scaled by the image scale attribute. Otherwise, the placemark is drawn as a square with width and height equal to the
+ * value of the image scale attribute, in pixels, and color equal to the image color attribute.
  * <p/>
  * By default, placemarks participate in decluttering with a [declutterGroupID]{@link Placemark#declutterGroup} of 2.
  * Only placemark labels are decluttered relative to other placemark labels. The placemarks themselves are optionally
- * scaled with eye distance to achieve decluttering of the placemark as a whole. See [eyeDistanceScaling]{@link
- * Placemark#eyeDistanceScaling}.
+ * scaled with eye distance to achieve decluttering of the placemark as a whole. See {@link
+ * Placemark#setEyeDistanceScaling(boolean)}.
  */
 public class Placemark extends AbstractRenderable {
 
@@ -54,7 +55,7 @@ public class Placemark extends AbstractRenderable {
     /**
      * The placemark's geographic position.
      */
-    Position position;
+    protected Position position;
 
     // The cartesian coordinates of the geographic position
     Vec3 placePoint;
@@ -65,95 +66,75 @@ public class Placemark extends AbstractRenderable {
     /**
      * The placemark's altitude mode. See {@link gov.nasa.worldwind.WorldWind.AltitudeMode}
      */
-
     @WorldWind.AltitudeMode
-    int altitudeMode;
+    protected int altitudeMode;
 
     /**
      * The placemark's normal attributes.
      */
-    PlacemarkAttributes attributes = null;
+    protected PlacemarkAttributes attributes = null;
 
     /**
      * The attributes to use when the placemark is highlighted.
      */
-    PlacemarkAttributes highlightAttributes = null;
+    protected PlacemarkAttributes highlightAttributes = null;
 
     /**
      * The label text to draw near the placemark.
      */
-    String label = null;
+    protected String label = null;
 
     /**
      * Determines whether the normal or highlighted attibutes should be used.
      */
-    boolean highlighted = false;
+    protected boolean highlighted = false;
 
     /**
      * Indicates whether this placemark's size is reduced at higher eye distances.
      */
-    boolean eyeDistanceScaling;
+    protected boolean eyeDistanceScaling;
 
     /**
      * The eye distance above which to reduce the size of this placemark, in meters.
      */
-    double eyeDistanceScalingThreshold;
+    protected double eyeDistanceScalingThreshold;
 
     /**
      * The eye altitude above which this placemark's label is not displayed.
      */
-    double eyeDistanceScalingLabelThreshold;
-
-    /**
-     * Indicates whether this placemark has visual priority over other shapes in the scene.
-     */
-    boolean alwaysOnTop;
+    protected double eyeDistanceScalingLabelThreshold;
 
     /**
      * Indicates whether this placemark's leader line, if any, is pickable.
      */
-    boolean enableLeaderLinePicking;
+    protected boolean enableLeaderLinePicking;
 
     /**
      * The amount of rotation to apply to the image, measured in degrees clockwise and relative to this placemark's
      * {@link Placemark#getImageRotationReference}.
      */
-    double imageRotation;
+    protected double imageRotation;
 
     /**
      * Indicates whether to apply this placemark's image rotation relative to the screen orderedRenderable the globe.
      * See {@link gov.nasa.worldwind.WorldWind.OrientationMode}
      */
-
     @WorldWind.OrientationMode
-    int imageRotationReference;
+    protected int imageRotationReference;
 
     /**
      * The amount of tilt to apply to the image, measured in degrees away from the eye point and relative to this
      * placemark's {@link Placemark#getImageTiltReference()}.
      */
-    double imageTilt;
+    protected double imageTilt;
 
     /**
      * Indicates whether to apply this placemark's image tilt relative to the screen orderedRenderable the globe. See
      * {@link gov.nasa.worldwind.WorldWind.OrientationMode}
      */
-
     @WorldWind.OrientationMode
-    int imageTiltReference;
+    protected int imageTiltReference;
 
-    /**
-     * Indicates whether this placemark's image should be re-retrieved even if it has already been retrieved. Set this
-     * property to true when the image has changed but has the same image path. The property is set to false when the
-     * image is re-retrieved.
-     */
-    boolean updateImage = true;
-
-    /**
-     * Indicates the group ID of the declutter group to include this Text shape. If non-zero, this shape is decluttered
-     * relative to all other shapes within its group.
-     */
-    int declutterGroup = 2;
 
     /**
      * The depth offset is used to the placemark to appear above nearby terrain. When a placemark is displayed near the
@@ -167,12 +148,45 @@ public class Placemark extends AbstractRenderable {
      */
     OrderedPlacemark orderedPlacemark = null;
 
-    public Placemark(Position position) {
-        this(position, new PlacemarkAttributes());
+    /**
+     * Factory method
+     * @param position
+     * @param color
+     * @param pixelSize
+     * @return
+     */
+    public static Placemark simple(Position position, Color color, int pixelSize) {
+        return new Placemark(position, PlacemarkAttributes.defaults().setImageColor(color).setImageScale(pixelSize));
     }
+
+    /**
+     * Factory method
+     * @param position
+     * @param imageSource
+     * @return
+     */
+    public static Placemark simpleImage(Position position, Object imageSource) {
+        return new Placemark(position, PlacemarkAttributes.withImage(imageSource));
+    }
+
+    /**
+     * Factory method
+     * @param position
+     * @param imageSource
+     * @param label
+     * @return
+     */
+    public static Placemark simpleImageAndLabel(Position position, Object imageSource, String label) {
+        return new Placemark(position, PlacemarkAttributes.withImageAndLabel(imageSource), label);
+    }
+
 
     public Placemark(Position position, PlacemarkAttributes attributes) {
         this(position, attributes, null, null, false);
+    }
+
+    public Placemark(Position position, PlacemarkAttributes attributes, String label) {
+        this(position, attributes, label, null, false);
     }
 
     /**
@@ -213,8 +227,6 @@ public class Placemark extends AbstractRenderable {
         this.imageTilt = 0;
         this.imageRotationReference = WorldWind.RELATIVE_TO_SCREEN;
         this.imageTiltReference = WorldWind.RELATIVE_TO_SCREEN;
-        this.declutterGroup = 2;
-        this.updateImage = false;
     }
 
     /**
@@ -238,9 +250,8 @@ public class Placemark extends AbstractRenderable {
     /**
      * Returns the placemark's altitude mode.
      */
-    public
     @WorldWind.AltitudeMode
-    int getAltitudeMode() {
+    public int getAltitudeMode() {
         return altitudeMode;
     }
 
@@ -448,6 +459,14 @@ public class Placemark extends AbstractRenderable {
         this.imageTiltReference = imageTiltReference;
     }
 
+    public boolean isEnableLeaderLinePicking() {
+        return enableLeaderLinePicking;
+    }
+
+    public void setEnableLeaderLinePicking(boolean enableLeaderLinePicking) {
+        this.enableLeaderLinePicking = enableLeaderLinePicking;
+    }
+
     /**
      * Returns the placemark attributes that should be used in the next rendering pass.
      *
@@ -534,22 +553,11 @@ public class Placemark extends AbstractRenderable {
 
         private Rect labelBounds = null;
 
-        /**
-         * This shape's target visibility, a value between 0 and 1. During ordered rendering this shape modifies its
-         * [current visibility]{@link Text#currentVisibility} towards its target visibility at the rate specified by the
-         * draw context's [fade time]{@link DrawContext#fadeTime} property. The target visibility and current visibility
-         * are used to control the fading in and out of this shape.
-         */
-        private double targetVisibility = 1d;
+        private float[] leaderLinePoints = null;
 
-        /**
-         * This shape's current visibility, a value between 0 and 1. This property scales the shape's effective opacity.
-         * It is incremented orderedRenderable decremented each frame according to the draw context's [fade time]{@link
-         * DrawContext#fadeTime} property in order to achieve this shape's current [target visibility]{@link
-         * Text#targetVisibility}. This current visibility and target visibility are used to control the fading in and
-         * out of this shape.
-         */
-        private double currentVisibility = 1d;
+        private boolean drawLabel = false;
+
+        private boolean drawLeader = false;
 
         /**
          * Prepares this OrderedPlacemark for visibility tests and subsequent rendering.
@@ -576,9 +584,10 @@ public class Placemark extends AbstractRenderable {
             }
 
             // Compute the eye distance to the place point, the value which is used for sorting/ordering.
-            this.eyeDistance = Placemark.this.alwaysOnTop ? 0 : dc.eyePoint.distanceTo(Placemark.this.placePoint);
+            this.eyeDistance = dc.eyePoint.distanceTo(Placemark.this.placePoint);
 
-            if (this.mustDrawLeaderLine(dc)) {
+            this.drawLeader = this.mustDrawLeaderLine(dc);
+            if (this.drawLeader) {
                 if (Placemark.this.groundPoint == null) {
                     Placemark.this.groundPoint = dc.globe.geographicToCartesian(
                         Placemark.this.position.latitude, Placemark.this.position.longitude, 0, new Vec3());
@@ -662,7 +671,8 @@ public class Placemark extends AbstractRenderable {
 
             // If there's a label, perform these same operations for the label texture, creating that texture if it
             // doesn't already exist.
-            if (this.mustDrawLabel()) {
+            this.drawLabel = this.mustDrawLabel();
+            if (this.drawLabel) {
 
                 String label = Placemark.this.getLabel();
                 Typeface labelFont = this.attributes.labelAttributes.font;
@@ -670,7 +680,7 @@ public class Placemark extends AbstractRenderable {
 
                 this.labelTexture = (GpuTexture) dc.gpuObjectCache.get(labelKey);
                 if (this.labelTexture == null) {
-                    // Create the bitmap
+                    // TODO: Create the label bitmap and texture
                     //this.labelTexture = dc.createFontTexture(Placemark.this.displayName, labelFont, false);
                 }
                 if (this.labelTexture != null && this.labelTexture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
@@ -697,7 +707,7 @@ public class Placemark extends AbstractRenderable {
         }
 
         /**
-         * Renders the placemark.
+         * Renders the ordered placemark.
          */
         @Override
         public void renderOrdered(DrawContext dc) {
@@ -715,6 +725,8 @@ public class Placemark extends AbstractRenderable {
             }
             dc.useProgram(program);
 
+            boolean depthTest = true;
+
             // Set up to use the shared tex attribute.
             // TODO: Store the texBuffer in the gpuObjectCache
             float[] texPoints = new float[]{
@@ -725,82 +737,61 @@ public class Placemark extends AbstractRenderable {
             FloatBuffer texBuffer = ByteBuffer.allocateDirect(texPoints.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
             texBuffer.put(texPoints).rewind();
             GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, texBuffer);
-            //GLES20.glEnableVertexAttribArray(0);    // vertexPoint
             GLES20.glEnableVertexAttribArray(1);    // vertexTexCoord
 
-            if (Placemark.this.eyeDistanceScaling && (this.eyeDistance > Placemark.this.eyeDistanceScalingLabelThreshold)) {
-                // Target visibility is set to 0 to cause the label to be faded in or out. Nothing else
-                // here uses target visibility.
-                this.targetVisibility = 0;
-            }
-
-            // Compute the effective visibility. Use the current value if picking.
-            if (!dc.pickingMode && this.mustDrawLabel()) {
-                if (this.currentVisibility != this.targetVisibility) {
-//                var visibilityDelta = (dc.timestamp - dc.previousRedrawTimestamp) / dc.fadeTime;
-//                if (this.currentVisibility < this.targetVisibility) {
-//                    this.currentVisibility = Math.min(1, this.currentVisibility + visibilityDelta);
-//                } else {
-//                    this.currentVisibility = Math.max(0, this.currentVisibility - visibilityDelta);
-//                }
-//                dc.redrawRequested = true;
-                }
-            }
 
             ///////////////////////////////////
             // Draw the optional leader-line
             ///////////////////////////////////
 
-//        program.loadOpacity(gl, dc.pickingMode ? 1 : this.layer.opacity);
+//        program.loadOpacity(gl, dc.pickingMode ? 1 : this.layer.opacity); // TODO: opacity
 
             // Draw the leader line first so that the image and label have visual priority.
-            if (this.mustDrawLeaderLine(dc)) {
-//            if (!this.leaderLinePoints) {
-//                this.leaderLinePoints = new Float32Array(6);
-//            }
-//
-//            this.leaderLinePoints[0] = this.groundPoint[0]; // computed during makeOrderedRenderable
-//            this.leaderLinePoints[1] = this.groundPoint[1];
-//            this.leaderLinePoints[2] = this.groundPoint[2];
-//            this.leaderLinePoints[3] = this.placePoint[0]; // computed during makeOrderedRenderable
-//            this.leaderLinePoints[4] = this.placePoint[1];
-//            this.leaderLinePoints[5] = this.placePoint[2];
-//
-//            if (!this.leaderLineCacheKey) {
-//                this.leaderLineCacheKey = dc.gpuResourceCache.generateCacheKey();
-//            }
-//
-//            var leaderLineVboId = dc.gpuResourceCache.resourceForKey(this.leaderLineCacheKey);
-//            if (!leaderLineVboId) {
-//                leaderLineVboId = gl.createBuffer();
-//                dc.gpuResourceCache.putResource(this.leaderLineCacheKey, leaderLineVboId,
-//                    this.leaderLinePoints.length * 4);
-//            }
-//
-//            program.loadTextureEnabled(gl, false);
-//            program.loadColor(gl, dc.pickingMode ? this.pickColor :
-//                this.attributes.leaderLineAttributes.outlineColor);
-//
-//            Placemark.matrix.copy(dc.navigatorState.modelviewProjection);
-//            program.loadModelviewProjection(gl, Placemark.matrix);
-//
-//            if (!this.attributes.leaderLineAttributes.depthTest) {
-//                gl.disable(gl.DEPTH_TEST);
-//            }
-//
-//            gl.lineWidth(this.attributes.leaderLineAttributes.outlineWidth);
-//
-//            gl.bindBuffer(gl.ARRAY_BUFFER, leaderLineVboId);
-//            gl.bufferData(gl.ARRAY_BUFFER, this.leaderLinePoints, gl.STATIC_DRAW);
-//            dc.frameStatistics.incrementVboLoadCount(1);
-//            gl.vertexAttribPointer(program.vertexPointLocation, 3, gl.FLOAT, false, 0, 0);
-//            gl.drawArrays(gl.LINES, 0, 2);
+            if (this.drawLeader) {
+                if (this.leaderLinePoints == null) {
+                    this.leaderLinePoints = new float[6];
+                }
+                // TODO: Store leader line  in gpuObjectCache
+                this.leaderLinePoints[0] = (float) Placemark.this.groundPoint.x; // computed during prepareForRendering
+                this.leaderLinePoints[1] = (float) Placemark.this.groundPoint.y;
+                this.leaderLinePoints[2] = (float) Placemark.this.groundPoint.z;
+                this.leaderLinePoints[3] = (float) Placemark.this.placePoint.x; // computed during prepareForRendering
+                this.leaderLinePoints[4] = (float) Placemark.this.placePoint.y;
+                this.leaderLinePoints[5] = (float) Placemark.this.placePoint.z;
+
+                FloatBuffer leaderBuffer = ByteBuffer.allocateDirect(texPoints.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+                leaderBuffer.put(this.leaderLinePoints).rewind();
+                GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, leaderBuffer);
+                GLES20.glEnableVertexAttribArray(0);
+
+//                if (!this.leaderLineCacheKey) {
+//                    this.leaderLineCacheKey = dc.gpuObjectCache.generateCacheKey();
+//                }
+//                var leaderLineVboId = dc.gpuResourceCache.resourceForKey(this.leaderLineCacheKey);
+//                if (!leaderLineVboId) {
+//                    leaderLineVboId = gl.createBuffer();
+//                    dc.gpuResourceCache.putResource(this.leaderLineCacheKey, leaderLineVboId,
+//                        this.leaderLinePoints.length * 4);
+//                }
+
+                program.enableTexture(false);
+                program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.attributes.leaderLineAttributes.outlineColor); // TODO: pickColor
+
+                this.mvpMatrix.set(dc.modelviewProjection);
+                program.loadModelviewProjection(this.mvpMatrix);
+
+                if (!this.attributes.leaderLineAttributes.depthTest && depthTest) {
+                    depthTest = false;
+                    GLES20.glDepthMask(false);
+                }
+                GLES20.glLineWidth(this.attributes.leaderLineAttributes.outlineWidth);
+                GLES20.glEnableVertexAttribArray(0);    // vertexPoint
+                GLES20.glDrawArrays(GLES20.GL_LINES, 0, 2);
             }
 
             // Turn off depth testing for the placemark image if requested. The placemark label and leader line have
             // their own depth-test controls.
-            boolean depthTest = true;
-            if (!this.attributes.depthTest) {
+            if (!this.attributes.depthTest && depthTest) {
                 depthTest = false;
                 // Suppress writes to the OpenGL depth buffer.
                 GLES20.glDepthMask(false);
@@ -844,7 +835,7 @@ public class Placemark extends AbstractRenderable {
             program.enableTexture(true);
 
             if (dc.pickingMode) {
-//              program.loadColor(gl, this.pickColor);
+//              program.loadColor(gl, this.pickColor); // TODO: pickColor
             } else {
                 program.loadColor(this.attributes.imageColor);
             }
@@ -869,7 +860,7 @@ public class Placemark extends AbstractRenderable {
             // Draw the label
             ///////////////////////////////////
 
-            if (this.mustDrawLabel() && this.currentVisibility > 0) {
+            if (this.drawLabel) { // TODO: drawLabel
 //            program.loadOpacity(gl, dc.pickingMode ? 1 : this.layer.opacity * this.currentVisibility);
 //
 //            Placemark.matrix.copy(dc.screenProjection);
@@ -890,11 +881,9 @@ public class Placemark extends AbstractRenderable {
 //                program.loadColor(gl, this.pickColor);
 //            }
 //
-//            if (this.attributes.labelAttributes.depthTest) {
-//                if (!depthTest) {
+//            if (this.attributes.labelAttributes.depthTest && depthTest) {
 //                    depthTest = true;
 //                    gl.enable(gl.DEPTH_TEST);
-//                }
 //            } else {
 //                depthTest = false;
 //                gl.disable(gl.DEPTH_TEST);
@@ -903,6 +892,7 @@ public class Placemark extends AbstractRenderable {
 //            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
             }
 
+            // Restore depth testing state
             if (!depthTest) {
                 GLES20.glDepthMask(true);
             }
@@ -920,7 +910,7 @@ public class Placemark extends AbstractRenderable {
          */
         public boolean isVisible(DrawContext dc) {
             if (dc.pickingMode) {
-                return this.imageBounds.intersect(dc.viewport);
+                return this.imageBounds.intersect(dc.viewport); // TODO: pickRectangle
 //                return dc.pickRectangle && (this.imageBounds.intersects(dc.pickRectangle)
 //                    || (this.mustDrawLabel() && this.labelBounds.intersects(dc.pickRectangle))
 //                    || (this.mustDrawLeaderLine(dc)
