@@ -40,12 +40,21 @@ public class TextAttributes {
      * @param {TextAttributes} attributes Attributes to initialize this attributes instance to. May be null, in which
      *                         case the new instance contains default attributes.
      */
-    public TextAttributes(TextAttributes copy) {
-        this.color = copy.color;
+    public TextAttributes(final TextAttributes copy) {
+        this.color = new Color(copy.color);
         this.font = copy.font;
-        this.offset = copy.offset;
+        this.offset = new Offset(copy.offset);
         this.scale = copy.scale;
         this.depthTest = copy.depthTest;
+    }
+
+    public TextAttributes set(final TextAttributes attributes) {
+        this.color.set(attributes.color);
+        this.font = attributes.font;
+        this.offset.set(attributes.offset);
+        this.scale = attributes.scale;
+        this.depthTest = attributes.depthTest;
+        return this;
     }
 
     @Override
