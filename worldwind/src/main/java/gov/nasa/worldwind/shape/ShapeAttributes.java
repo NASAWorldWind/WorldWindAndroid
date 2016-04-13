@@ -9,23 +9,23 @@ import gov.nasa.worldwind.render.Color;
 
 public class ShapeAttributes {
 
+    protected Object imageSource;
+
+    protected Color interiorColor;
+
+    protected Color outlineColor;
+
     protected boolean drawInterior;
 
     protected boolean drawOutline;
 
     protected boolean enableLighting;
 
-    protected Color interiorColor;
-
-    protected Color outlineColor;
-
     protected float outlineWidth;
 
     protected int outlineStippleFactor;
 
     protected short outlineStipplePattern;
-
-    protected Object imageSource;
 
     protected boolean depthTest;
 
@@ -34,33 +34,49 @@ public class ShapeAttributes {
     protected boolean applyLighting;
 
     public ShapeAttributes() {
+        this.imageSource = null;
+        this.interiorColor = new Color(Color.WHITE);
+        this.outlineColor = new Color(Color.RED);
         this.drawInterior = true;
         this.drawOutline = true;
         this.enableLighting = false;
-        this.interiorColor = Color.WHITE;
-        this.outlineColor = Color.RED;
         this.outlineWidth = 1.0f;
         this.outlineStippleFactor = 0;
         this.outlineStipplePattern = (short) 0xF0F0;
-        this.imageSource = null;
         this.depthTest = true;
         this.drawVerticals = false;
         this.applyLighting = false;
     }
 
     public ShapeAttributes(final ShapeAttributes copy) {
+        this.imageSource = copy.imageSource;
+        this.interiorColor = new Color(copy.interiorColor);
+        this.outlineColor = new Color(copy.outlineColor);
         this.drawInterior = copy.drawInterior;
         this.drawOutline = copy.drawOutline;
         this.enableLighting = copy.enableLighting;
-        this.interiorColor = new Color(interiorColor);
-        this.outlineColor = new Color(outlineColor);
         this.outlineWidth = copy.outlineWidth;
         this.outlineStippleFactor = copy.outlineStippleFactor;
         this.outlineStipplePattern = copy.outlineStipplePattern;
-        this.imageSource = copy.imageSource;
         this.depthTest = copy.depthTest;
         this.drawVerticals = copy.drawVerticals;
         this.applyLighting = copy.applyLighting;
+    }
+
+    public ShapeAttributes set(final ShapeAttributes attributes) {
+        this.imageSource = attributes.imageSource;
+        this.interiorColor.set(attributes.interiorColor);
+        this.outlineColor.set(attributes.outlineColor);
+        this.drawInterior = attributes.drawInterior;
+        this.drawOutline = attributes.drawOutline;
+        this.enableLighting = attributes.enableLighting;
+        this.outlineWidth = attributes.outlineWidth;
+        this.outlineStippleFactor = attributes.outlineStippleFactor;
+        this.outlineStipplePattern = attributes.outlineStipplePattern;
+        this.depthTest = attributes.depthTest;
+        this.drawVerticals = attributes.drawVerticals;
+        this.applyLighting = attributes.applyLighting;
+        return this;
     }
 
     @Override
@@ -228,8 +244,6 @@ public class ShapeAttributes {
      * <p/>
      * To disable outline stippling, either specify a stipple factor of 0 or specify a stipple pattern of all 1 bits,
      * i.e., 0xFFFF.
-     *
-     * @default 0xF0F0
      */
     public short getOutlineStipplePattern() {
         return outlineStipplePattern;
@@ -244,8 +258,6 @@ public class ShapeAttributes {
      * <p/>
      * To disable outline stippling, either specify a stipple factor of 0 or specify a stipple pattern of all 1 bits,
      * i.e., 0xFFFF.
-     *
-     * @default 0xF0F0
      */
     public ShapeAttributes setOutlineStipplePattern(short outlineStipplePattern) {
         this.outlineStipplePattern = outlineStipplePattern;
