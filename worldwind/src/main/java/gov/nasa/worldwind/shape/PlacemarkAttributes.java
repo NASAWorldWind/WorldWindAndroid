@@ -34,7 +34,7 @@ public class PlacemarkAttributes {
 
     protected boolean drawLeaderLine;
 
-    protected Object leaderLineAttributes;
+    protected ShapeAttributes leaderLineAttributes;
 
     /**
      * Constructs a placemark attributes bundle. The defaults indicate a placemark displayed as a white 1x1 pixel square
@@ -56,24 +56,24 @@ public class PlacemarkAttributes {
      * Constructs a placemark attribute bundle from the specified attributes. Performs a deep copy of the color, offset,
      * label attributes and leader-line attributes.
      *
-     * @param attributes The attributes to be copied.
+     * @param copy The attributes to be copied.
      *
      * @throws IllegalArgumentException If the location is null
      */
-    public PlacemarkAttributes(PlacemarkAttributes attributes) {
-        if (attributes == null) {
+    public PlacemarkAttributes(PlacemarkAttributes copy) {
+        if (copy == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "PlacemarkAttributes", "constructor", "missingAttributes"));
         }
 
-        this.imageColor = new Color(attributes.imageColor);
-        this.imageOffset = new Offset(attributes.imageOffset);
-        this.imageScale = attributes.imageScale;
-        this.imageSource = attributes.imageSource;  // TODO: resolve shallow or deep copy of imageSource
-        this.depthTest = attributes.depthTest;
-        this.labelAttributes = attributes.labelAttributes != null ? new TextAttributes(attributes.labelAttributes) : null;
-        this.drawLeaderLine = attributes.drawLeaderLine;
-        this.leaderLineAttributes = attributes.leaderLineAttributes;    // TODO: deep copy of leaderLineAttributes
+        this.imageColor = new Color(copy.imageColor);
+        this.imageOffset = new Offset(copy.imageOffset);
+        this.imageScale = copy.imageScale;
+        this.imageSource = copy.imageSource;  // TODO: resolve shallow or deep copy of imageSource
+        this.depthTest = copy.depthTest;
+        this.labelAttributes = copy.labelAttributes != null ? new TextAttributes(copy.labelAttributes) : null;
+        this.drawLeaderLine = copy.drawLeaderLine;
+        this.leaderLineAttributes = copy.leaderLineAttributes != null ? new ShapeAttributes(copy.leaderLineAttributes) : null;
     }
 
     public static PlacemarkAttributes defaults() {
@@ -85,11 +85,11 @@ public class PlacemarkAttributes {
     }
 
     public static PlacemarkAttributes defaultsAndLeaderLine() {
-        return new PlacemarkAttributes().setLeaderLineAttributes(null); // TODO: implement
+        return new PlacemarkAttributes().setLeaderLineAttributes(new ShapeAttributes()).setDrawLeaderLine(true);
     }
 
     public static PlacemarkAttributes defaultsAndLabelLeaderLine() {
-        return new PlacemarkAttributes().setLabelAttributes(new TextAttributes()).setLeaderLineAttributes(null).setDrawLeaderLine(true); // TODO: implement
+        return new PlacemarkAttributes().setLabelAttributes(new TextAttributes()).setLeaderLineAttributes(new ShapeAttributes()).setDrawLeaderLine(true);
     }
 
     public static PlacemarkAttributes withImage(Object imageSource) {
@@ -101,11 +101,11 @@ public class PlacemarkAttributes {
     }
 
     public static PlacemarkAttributes withImageAndLeaderLine(Object imageSource) {
-        return new PlacemarkAttributes().setImageSource(imageSource).setLeaderLineAttributes(null); // TODO: implement
+        return new PlacemarkAttributes().setImageSource(imageSource).setLeaderLineAttributes(new ShapeAttributes()).setDrawLeaderLine(true);
     }
 
     public static PlacemarkAttributes withImageAndLabelLeaderLine() {
-        return new PlacemarkAttributes().setLabelAttributes(new TextAttributes()).setLeaderLineAttributes(null).setDrawLeaderLine(true); // TODO: implement
+        return new PlacemarkAttributes().setLabelAttributes(new TextAttributes()).setLeaderLineAttributes(new ShapeAttributes()).setDrawLeaderLine(true);
     }
 
 
@@ -289,8 +289,7 @@ public class PlacemarkAttributes {
      * Returns the attributes to apply to the leader line if it's drawn. If null, the placemark's leader line is not
      * drawn.
      */
-    // TODO: Change to {ShapeAttributes}
-    public Object getLeaderLineAttributes() {
+    public ShapeAttributes getLeaderLineAttributes() {
         return leaderLineAttributes;
     }
 
@@ -300,8 +299,7 @@ public class PlacemarkAttributes {
      *
      * @param leaderLineAttributes The new leader-line attributes. May be null.
      */
-    // TODO: Change to {ShapeAttributes}
-    public PlacemarkAttributes setLeaderLineAttributes(Object leaderLineAttributes) {
+    public PlacemarkAttributes setLeaderLineAttributes(ShapeAttributes leaderLineAttributes) {
         this.leaderLineAttributes = leaderLineAttributes;
         return this;
     }
