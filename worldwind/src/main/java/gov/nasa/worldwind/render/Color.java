@@ -147,6 +147,15 @@ public class Color {
         return this;
     }
 
+    public Color set(Color color) {
+        this.red = color.red;
+        this.green = color.green;
+        this.blue = color.blue;
+        this.alpha = color.alpha;
+
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
