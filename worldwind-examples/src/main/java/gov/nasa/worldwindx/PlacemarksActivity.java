@@ -45,31 +45,37 @@ public class PlacemarksActivity extends BasicGlobeActivity {
         int index = layers.indexOfLayerNamed("Atmosphere");
         layers.addLayer(index, placemarksLayer);
 
-        ///////////////////////////////////
-        // Second, create some placemarks
-        ///////////////////////////////////
+        //////////////////////////////////////
+        // Second, create some placemarks...
+        /////////////////////////////////////
 
-        // Create an image-based placemark at Oxnard Airport, CA. The image is scaled to 2x its original size,
-        // with the bottom center of the image anchored at the geographic position.
+        // Create a simple placemark at downtown Ventura, CA. This placemark is a 20x20 cyan square centered on the
+        // geographic position. This placemark demonstrates the creation with a convenient factory method.
+        Placemark ventura = Placemark.simple(Position.fromDegrees(34.281, -119.293, 0), Color.CYAN, 20);
+
+        // Create an image-based placemark of an aircraft above the ground with a leader-line to the surface.
+        // This placemark demonstrates creation via a constructor and a convenient PlacemarkAttributes factory method.
+        // The image is scaled to 1.5 times its original size.
+        Placemark airplane = new Placemark(
+            Position.fromDegrees(34.260, -119.2, 5000),
+            PlacemarkAttributes.withImageAndLeaderLine(R.drawable.air_fixwing).setImageScale(1.5));
+
+        // Create an image-based placemark with a label at Oxnard Airport, CA. This placemark demonstrates creation
+        // with a constructor and a convenient PlacemarkAttributes factory method. The image is scaled to 2x
+        // its original size, with the bottom center of the image anchored at the geographic position.
         Placemark airport = new Placemark(
             Position.fromDegrees(34.200, -119.208, 0),
-            PlacemarkAttributes.withImageAndLabel(R.drawable.airport).setImageOffset(Offset.BOTTOM_CENTER).setImageScale(2),
-            "Oxnard Airport",  // the display name (optional), it would be used as the label if label were null
-            "KOXR", // the label text (optional) that is displayed near the placemark
-            false); // defines if the placemark's size is scaled based on the distance to the viewer
+            PlacemarkAttributes.withImageAndLabel(R.drawable.airport_terminal).setImageOffset(Offset.BOTTOM_CENTER).setImageScale(2),
+            "Oxnard Airport");
 
-        // Create another placemark at nearby downtown Ventura, CA. The placemark is a simple 20x20 cyan square
-        // centered on the geographic position.
-        Placemark ventura = new Placemark(
-            Position.fromDegrees(34.281, -119.293, 0),
-            PlacemarkAttributes.defaults().setImageColor(Color.CYAN).setImageScale(20));
 
         /////////////////////////////////////////////////////
         // Third, add the placemarks to the renderable layer
         /////////////////////////////////////////////////////
 
-        placemarksLayer.addRenderable(airport);
         placemarksLayer.addRenderable(ventura);
+        placemarksLayer.addRenderable(airport);
+        placemarksLayer.addRenderable(airplane);
 
 
         // And finally, for this demo, position the viewer to look at the airport placemark
