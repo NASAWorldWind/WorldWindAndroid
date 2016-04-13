@@ -87,6 +87,17 @@ public class Offset {
         this.yUnits = copy.yUnits;
     }
 
+    /**
+     * Sets this offset to identical property values of the specified offset.
+     */
+    public Offset set(Offset offset) {
+        this.x = offset.x;
+        this.y = offset.y;
+        this.xUnits = offset.xUnits;
+        this.yUnits = offset.yUnits;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
