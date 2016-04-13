@@ -76,6 +76,39 @@ public class PlacemarkAttributes {
         this.leaderLineAttributes = copy.leaderLineAttributes != null ? new ShapeAttributes(copy.leaderLineAttributes) : null;
     }
 
+    public PlacemarkAttributes set(PlacemarkAttributes attributes) {
+        if (attributes == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "PlacemarkAttributes", "set", "missingAttributes"));
+        }
+
+        this.imageColor.set(attributes.imageColor);
+        this.imageOffset.set(attributes.imageOffset);
+        this.imageScale = attributes.imageScale;
+        this.imageSource = attributes.imageSource;  // TODO: resolve shallow or deep copy of imageSource
+        this.depthTest = attributes.depthTest;
+        if (attributes.labelAttributes != null) {
+            if (this.labelAttributes == null) {
+                this.labelAttributes = new TextAttributes(attributes.labelAttributes);
+            } else {
+                this.labelAttributes.set(attributes.labelAttributes);
+            }
+        } else {
+            this.labelAttributes = null;
+        }
+        this.drawLeaderLine = attributes.drawLeaderLine;
+        if (attributes.leaderLineAttributes != null) {
+            if (this.leaderLineAttributes == null) {
+                this.leaderLineAttributes = new ShapeAttributes(attributes.leaderLineAttributes);
+            } else {
+                this.leaderLineAttributes.set(attributes.leaderLineAttributes);
+            }
+        } else {
+            this.leaderLineAttributes = null;
+        }
+        return this;
+    }
+
     public static PlacemarkAttributes defaults() {
         return new PlacemarkAttributes();
     }
