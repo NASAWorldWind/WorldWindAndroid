@@ -236,8 +236,9 @@ public class Placemark extends AbstractRenderable {
      *
      * @param position The new position for the placemark.
      */
-    public void setPosition(Position position) {
+    public Placemark setPosition(Position position) {
         this.position = position;
+        return this;
     }
 
     /**
@@ -257,8 +258,9 @@ public class Placemark extends AbstractRenderable {
      *  </ul>
      * </pre>default WorldWind.ABSOLUTE
      */
-    public void setAltitudeMode(@WorldWind.AltitudeMode int altitudeMode) {
+    public Placemark setAltitudeMode(@WorldWind.AltitudeMode int altitudeMode) {
         this.altitudeMode = altitudeMode;
+        return this;
     }
 
     /**
@@ -271,8 +273,9 @@ public class Placemark extends AbstractRenderable {
     /**
      * The placemark's attributes. If null and this placemark is not highlighted, this placemark is not drawn.
      */
-    public void setAttributes(PlacemarkAttributes attributes) {
+    public Placemark setAttributes(PlacemarkAttributes attributes) {
         this.attributes = attributes;
+        return this;
     }
 
     /**
@@ -287,8 +290,9 @@ public class Placemark extends AbstractRenderable {
      * The attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is true,
      * this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
      */
-    public void setHighlightAttributes(PlacemarkAttributes highlightAttributes) {
+    public Placemark setHighlightAttributes(PlacemarkAttributes highlightAttributes) {
         this.highlightAttributes = highlightAttributes;
+        return this;
     }
 
     public String getLabel() {
@@ -298,8 +302,9 @@ public class Placemark extends AbstractRenderable {
         return label;
     }
 
-    public void setLabel(String label) {
+    public Placemark setLabel(String label) {
         this.label = label;
+        return this;
     }
 
     /**
@@ -312,8 +317,9 @@ public class Placemark extends AbstractRenderable {
     /**
      * Indicates whether this placemark uses its highlight attributes rather than its normal attributes.
      */
-    public void setHighlighted(boolean highlighted) {
+    public Placemark setHighlighted(boolean highlighted) {
         this.highlighted = highlighted;
+        return this;
     }
 
     /**
@@ -334,8 +340,9 @@ public class Placemark extends AbstractRenderable {
      * below the threshold, this placemark is scaled only according to the [imageScale]{@link
      * PlacemarkAttributes#imageScale}.
      */
-    public void setEyeDistanceScaling(boolean eyeDistanceScaling) {
+    public Placemark setEyeDistanceScaling(boolean eyeDistanceScaling) {
         this.eyeDistanceScaling = eyeDistanceScaling;
+        return this;
     }
 
     /**
@@ -352,8 +359,9 @@ public class Placemark extends AbstractRenderable {
      * Placemark#eyeDistanceScaling} is true, this placemark's image, label and leader line sizes are reduced as the eye
      * distance increases beyond this threshold.
      */
-    public void setEyeDistanceScalingThreshold(double eyeDistanceScalingThreshold) {
+    public Placemark setEyeDistanceScalingThreshold(double eyeDistanceScalingThreshold) {
         this.eyeDistanceScalingThreshold = eyeDistanceScalingThreshold;
+        return this;
     }
 
     /**
@@ -366,8 +374,9 @@ public class Placemark extends AbstractRenderable {
     /**
      * The eye altitude above which this placemark's label is not displayed.
      */
-    public void setEyeDistanceScalingLabelThreshold(double eyeDistanceScalingLabelThreshold) {
+    public Placemark setEyeDistanceScalingLabelThreshold(double eyeDistanceScalingLabelThreshold) {
         this.eyeDistanceScalingLabelThreshold = eyeDistanceScalingLabelThreshold;
+        return this;
     }
 
     /**
@@ -382,8 +391,9 @@ public class Placemark extends AbstractRenderable {
      * The amount of rotation to apply to the image, measured in degrees clockwise and relative to this placemark's
      * [imageRotationReference]{@link Placemark#imageRotationReference}.
      */
-    public void setImageRotation(double imageRotation) {
+    public Placemark setImageRotation(double imageRotation) {
         this.imageRotation = imageRotation;
+        return this;
     }
 
     /**
@@ -393,6 +403,7 @@ public class Placemark extends AbstractRenderable {
      * rotated in a plane tangent to the globe at this placemark's position and retains its orientation relative to the
      * globe. See {@link gov.nasa.worldwind.WorldWind.OrientationMode}
      */
+    @WorldWind.OrientationMode
     public int getImageRotationReference() {
         return imageRotationReference;
     }
@@ -404,8 +415,9 @@ public class Placemark extends AbstractRenderable {
      * rotated in a plane tangent to the globe at this placemark's position and retains its orientation relative to the
      * globe. See {@link gov.nasa.worldwind.WorldWind.OrientationMode}
      */
-    public void setImageRotationReference(int imageRotationReference) {
+    public Placemark setImageRotationReference(@WorldWind.OrientationMode int imageRotationReference) {
         this.imageRotationReference = imageRotationReference;
+        return this;
     }
 
     /**
@@ -424,8 +436,9 @@ public class Placemark extends AbstractRenderable {
      * negative number may be specified, values outside the range [0. 90] cause some orderedRenderable all of the image
      * to be clipped.
      */
-    public void setImageTilt(double imageTilt) {
+    public Placemark setImageTilt(double imageTilt) {
         this.imageTilt = imageTilt;
+        return this;
     }
 
     /**
@@ -435,6 +448,7 @@ public class Placemark extends AbstractRenderable {
      * WorldWind.RELATIVE_TO_GLOBE, this placemark's image is tilted towards the globe's surface, and retains its
      * orientation relative to the surface. See {@link gov.nasa.worldwind.WorldWind.OrientationMode}
      */
+    @WorldWind.OrientationMode
     public int getImageTiltReference() {
         return imageTiltReference;
     }
@@ -446,16 +460,18 @@ public class Placemark extends AbstractRenderable {
      * WorldWind.RELATIVE_TO_GLOBE, this placemark's image is tilted towards the globe's surface, and retains its
      * orientation relative to the surface. See {@link gov.nasa.worldwind.WorldWind.OrientationMode}
      */
-    public void setImageTiltReference(int imageTiltReference) {
+    public Placemark setImageTiltReference(@WorldWind.OrientationMode int imageTiltReference) {
         this.imageTiltReference = imageTiltReference;
+        return this;
     }
 
     public boolean isEnableLeaderLinePicking() {
         return enableLeaderLinePicking;
     }
 
-    public void setEnableLeaderLinePicking(boolean enableLeaderLinePicking) {
+    public Placemark setEnableLeaderLinePicking(boolean enableLeaderLinePicking) {
         this.enableLeaderLinePicking = enableLeaderLinePicking;
+        return this;
     }
 
     /**
@@ -480,6 +496,8 @@ public class Placemark extends AbstractRenderable {
         if (op == null || !op.isVisible(dc)) {
             return;
         }
+
+        // Cache this object to prevent future reallocations
         this.orderedPlacemark = op;
 
         // Rendering is deferred for ordered renderables; simply add the placemark to the collection of ordered renderables
@@ -517,7 +535,7 @@ public class Placemark extends AbstractRenderable {
      */
     static protected class OrderedPlacemark implements OrderedRenderable {
 
-        protected Position position = new Position();
+        protected Position position = new Position(Double.NaN, Double.NaN, Double.NaN);
 
         protected PlacemarkAttributes attributes = new PlacemarkAttributes();
 
@@ -558,6 +576,23 @@ public class Placemark extends AbstractRenderable {
         protected boolean drawLeader = false;
 
         protected boolean enableLeaderLinePicking = false;
+
+        static protected int cacheKeyPool = 0;
+
+
+        static private FloatBuffer unitQuadBuffer2 = null;
+
+        static private FloatBuffer unitQuadBuffer3 = null;
+
+        static private FloatBuffer leaderBuffer = null;
+
+        /**
+         * Renders the ordered placemark.
+         */
+        @Override
+        public void renderOrdered(DrawContext dc) {
+            this.drawOrderedPlacemark(dc);
+        }
 
         /**
          * Prepares this OrderedPlacemark for visibility tests and subsequent rendering.
@@ -725,13 +760,6 @@ public class Placemark extends AbstractRenderable {
             return true;
         }
 
-        /**
-         * Renders the ordered placemark.
-         */
-        @Override
-        public void renderOrdered(DrawContext dc) {
-            this.drawOrderedPlacemark(dc);
-        }
 
         /**
          * Performs the actual rendering of the Placemark.
@@ -747,15 +775,7 @@ public class Placemark extends AbstractRenderable {
             boolean depthTest = true;
 
             // Set up to use the shared tex attribute.
-            // TODO: Store the texBuffer in the gpuObjectCache
-            float[] texPoints = new float[]{
-                0, 1,   // upper left corner
-                0, 0,   // lower left corner
-                1, 1,   // upper right corner
-                1, 0};  // lower right corner
-            FloatBuffer texBuffer = ByteBuffer.allocateDirect(texPoints.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-            texBuffer.put(texPoints).rewind();
-            GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, texBuffer);
+            GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, getUnitQuadBuffer2D());
             GLES20.glEnableVertexAttribArray(1);    // vertexTexCoord
 
 
@@ -778,20 +798,12 @@ public class Placemark extends AbstractRenderable {
                 this.leaderLinePoints[4] = (float) this.placePoint.y;
                 this.leaderLinePoints[5] = (float) this.placePoint.z;
 
-                FloatBuffer leaderBuffer = ByteBuffer.allocateDirect(texPoints.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+                if (leaderBuffer == null) {
+                    leaderBuffer = ByteBuffer.allocateDirect(this.leaderLinePoints.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+                }
                 leaderBuffer.put(this.leaderLinePoints).rewind();
                 GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, leaderBuffer);
                 GLES20.glEnableVertexAttribArray(0);
-
-//                if (!this.leaderLineCacheKey) {
-//                    this.leaderLineCacheKey = dc.gpuObjectCache.generateCacheKey();
-//                }
-//                var leaderLineVboId = dc.gpuResourceCache.resourceForKey(this.leaderLineCacheKey);
-//                if (!leaderLineVboId) {
-//                    leaderLineVboId = gl.createBuffer();
-//                    dc.gpuResourceCache.putResource(this.leaderLineCacheKey, leaderLineVboId,
-//                        this.leaderLinePoints.length * 4);
-//                }
 
                 program.enableTexture(false);
                 program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.attributes.leaderLineAttributes.outlineColor); // TODO: pickColor
@@ -821,15 +833,7 @@ public class Placemark extends AbstractRenderable {
             ///////////////////////////////////
 
             // Allocate a unit-quad buffer for the image coordinates
-            // TODO: Store the ptBuffer in the gpuObjectCache
-            float[] points = new float[]{
-                0, 1, 0,    // upper left corner
-                0, 0, 0,    // lower left corner
-                1, 1, 0,    // upper right corner
-                1, 0, 0};   // lower right corner
-            FloatBuffer ptBuffer = ByteBuffer.allocateDirect(points.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-            ptBuffer.put(points).rewind();
-            GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, ptBuffer);
+            GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getUnitQuadBuffer3D());
             GLES20.glEnableVertexAttribArray(0);
 
             // Compute and specify the MVP matrix...
@@ -925,16 +929,15 @@ public class Placemark extends AbstractRenderable {
          */
         public boolean isVisible(DrawContext dc) {
             if (dc.pickingMode) {
-                return this.imageBounds.intersect(dc.viewport); // TODO: pickRectangle
+                return this.imageBounds != null && this.imageBounds.intersect(dc.viewport); // TODO: pickRectangle
 //                return dc.pickRectangle && (this.imageBounds.intersects(dc.pickRectangle)
 //                    || (this.mustDrawLabel() && this.labelBounds.intersects(dc.pickRectangle))
 //                    || (this.mustDrawLeaderLine(dc)
 //                    && dc.pickFrustum.intersectsSegment(this.groundPoint, this.placePoint)));
             } else {
-                return this.imageBounds.intersect(dc.viewport)
-                    || (this.mustDrawLabel() && this.labelBounds.intersect(dc.viewport))
-                    || (this.mustDrawLeaderLine(dc)
-                    && dc.frustum.intersectsSegment(this.groundPoint, this.placePoint));
+                return (this.imageBounds != null && this.imageBounds.intersect(dc.viewport))
+                    || (this.mustDrawLabel() && this.labelBounds != null && this.labelBounds.intersect(dc.viewport))
+                    || (this.mustDrawLeaderLine(dc) && dc.frustum.intersectsSegment(this.groundPoint, this.placePoint));
             }
         }
 
@@ -956,6 +959,56 @@ public class Placemark extends AbstractRenderable {
             return this.attributes.drawLeaderLine && this.attributes.leaderLineAttributes != null
                 && (!dc.pickingMode || this.enableLeaderLinePicking);
         }
+
+        /**
+         * Returns a buffer containing a unit quadrilateral expressed as four 2D vertices at (0, 1), (0, 0), (1, 1) and
+         * (1, 0). The four vertices are in the order required by a triangle strip. The buffer is created on first use
+         * and cached. Subsequent calls to this method return the cached buffer.
+         */
+        static public FloatBuffer getUnitQuadBuffer2D() {
+            if (unitQuadBuffer2 == null) {
+                float[] points = new float[]{
+                    0, 1,   // upper left corner
+                    0, 0,   // lower left corner
+                    1, 1,   // upper right corner
+                    1, 0};  // lower right corner
+                int size = points.length * 4;
+                unitQuadBuffer2 = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
+                unitQuadBuffer2.put(points).rewind();
+            }
+            return unitQuadBuffer2;
+        }
+
+        /**
+         * Returns a buffer containing a unit quadrilateral expressed as four 3D vertices at (0, 1, 0), (0, 0, 0), (1,
+         * 1, 0) and (1, 0, 0). The four vertices are in the order required by a triangle strip. The buffer is created
+         * on first use and cached. Subsequent calls to this method return the cached buffer.
+         *
+         * @return
+         */
+        static public FloatBuffer getUnitQuadBuffer3D() {
+            if (unitQuadBuffer3 == null) {
+                float[] points = new float[]{
+                    0, 1, 0,    // upper left corner
+                    0, 0, 0,    // lower left corner
+                    1, 1, 0,    // upper right corner
+                    1, 0, 0};   // lower right corner
+                int size = points.length * 4;
+                unitQuadBuffer3 = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
+                unitQuadBuffer3.put(points).rewind();
+            }
+            return unitQuadBuffer3;
+        }
+
+        /**
+         * Creates a cache key unique to this cache, typically for a resource about to be added to this cache.
+         *
+         * @returns The generated cache key.
+         */
+        static public String generateCacheKey() {
+            return "OrderedPlacemark " + ++cacheKeyPool;
+        }
+
 
     }
 }
