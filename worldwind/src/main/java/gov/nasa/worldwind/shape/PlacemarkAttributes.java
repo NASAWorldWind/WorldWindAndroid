@@ -20,13 +20,15 @@ public class PlacemarkAttributes {
      */
     public static final Offset OFFSET_PUSHPIN = new Offset(WorldWind.OFFSET_FRACTION, 19d / 64d, WorldWind.OFFSET_FRACTION, 4d / 64d);
 
+    protected Object imageSource;
+
     protected Color imageColor;
 
     protected Offset imageOffset;
 
     protected double imageScale;
 
-    protected Object imageSource;
+    protected double minimumImageScale;
 
     protected boolean depthTest;
 
@@ -41,10 +43,11 @@ public class PlacemarkAttributes {
      * centered on the placemark's geographic position.
      */
     public PlacemarkAttributes() {
+        this.imageSource = null;
         this.imageColor = new Color(1, 1, 1, 1);
         this.imageOffset = new Offset(Offset.CENTER);
         this.imageScale = 1;
-        this.imageSource = null;
+        this.minimumImageScale = 0;
         this.labelAttributes = null;
         this.leaderLineAttributes = null;
         this.drawLeaderLine = false;
@@ -66,10 +69,11 @@ public class PlacemarkAttributes {
                 Logger.logMessage(Logger.ERROR, "PlacemarkAttributes", "constructor", "missingAttributes"));
         }
 
+        this.imageSource = copy.imageSource;
         this.imageColor = new Color(copy.imageColor);
         this.imageOffset = new Offset(copy.imageOffset);
         this.imageScale = copy.imageScale;
-        this.imageSource = copy.imageSource;  // TODO: resolve shallow or deep copy of imageSource
+        this.minimumImageScale = copy.minimumImageScale;
         this.depthTest = copy.depthTest;
         this.labelAttributes = copy.labelAttributes != null ? new TextAttributes(copy.labelAttributes) : null;
         this.drawLeaderLine = copy.drawLeaderLine;
@@ -82,10 +86,11 @@ public class PlacemarkAttributes {
                 Logger.logMessage(Logger.ERROR, "PlacemarkAttributes", "set", "missingAttributes"));
         }
 
+        this.imageSource = attributes.imageSource;  // TODO: resolve shallow or deep copy of imageSource
         this.imageColor.set(attributes.imageColor);
         this.imageOffset.set(attributes.imageOffset);
         this.imageScale = attributes.imageScale;
-        this.imageSource = attributes.imageSource;  // TODO: resolve shallow or deep copy of imageSource
+        this.minimumImageScale = attributes.minimumImageScale;
         this.depthTest = attributes.depthTest;
         if (attributes.labelAttributes != null) {
             if (this.labelAttributes == null) {
@@ -243,6 +248,25 @@ public class PlacemarkAttributes {
      */
     public PlacemarkAttributes setImageScale(double imageScale) {
         this.imageScale = imageScale;
+        return this;
+    }
+
+    /**
+     * Returns the minimum amount to scale the placemark's image. When a {@link Placemark#isEyeDistanceScaling} is true,
+     * this value controls the minimum size of the rendered placemark. A value of 0 allows the placemark to disappear.
+     */
+    public double getMinimumImageScale() {
+        return minimumImageScale;
+    }
+
+    /**
+     * Sets the minimum amount to scale the placemark's image when {@link Placemark#isEyeDistanceScaling} is true. This
+     * value controls the minimum size of the rendered placemark. A value of 0 allows the placemark to disappear.
+     *
+     * @param minimumImageScale The new image scale value.
+     */
+    public PlacemarkAttributes setMinimumImageScale(double minimumImageScale) {
+        this.minimumImageScale = minimumImageScale;
         return this;
     }
 
