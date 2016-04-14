@@ -13,6 +13,7 @@
     <string name="title_day_night_cycle">Day and Night Cycle</string>
     <string name="title_look_at_view">Look At View</string>
     <string name="title_placemarks">Placemarks</string>
+    <string name="title_placemarks_stress_test">Placemarks Stress Test</string>
     <string name="title_show_tessellation">Show Tessellation</string>
     <string name="title_surface_image">Surface Image</string>
     <string name="title_wms_layer">WMS Layer</string>

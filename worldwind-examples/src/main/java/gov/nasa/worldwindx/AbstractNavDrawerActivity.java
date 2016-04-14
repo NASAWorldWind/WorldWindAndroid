@@ -137,6 +137,9 @@ public abstract class AbstractNavDrawerActivity extends AppCompatActivity
             case R.id.nav_placemarks_activity:
                 startActivity(new Intent(getApplicationContext(), PlacemarksActivity.class));
                 break;
+            case R.id.nav_placemarks_stress_activity:
+                startActivity(new Intent(getApplicationContext(), PlacemarksStressTestActivity.class));
+                break;
             case R.id.nav_show_tessellation_activity:
                 startActivity(new Intent(getApplicationContext(), ShowTessellationActivity.class));
                 break;
