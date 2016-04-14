@@ -32,7 +32,7 @@ import gov.nasa.worldwind.util.WWMath;
  * Represents a Placemark shape. A placemark displays an image, a label and a leader line connecting the placemark's
  * geographic position to the ground. All three of these items are optional. By default, the leader line is not
  * pickable. See {@link Placemark#setEnableLeaderLinePicking(boolean)}.
- * <p/>
+ * <p>
  * Placemarks may be drawn with either an image or as single-color square with a specified size. When the placemark
  * attributes indicate a valid image, the placemark's image is drawn as a rectangle in the image's original dimensions,
  * scaled by the image scale attribute. Otherwise, the placemark is drawn as a square with width and height equal to the
@@ -41,11 +41,11 @@ import gov.nasa.worldwind.util.WWMath;
 public class Placemark extends AbstractRenderable {
 
     /**
-     * The default eye distance above which to reduce the size of this placemark, in meters. If
-     * [eyeDistanceScaling]{@link Placemark#setEyeDistanceScaling(boolean)} is true, this placemark's image, label and
-     * leader line sizes are reduced as the eye distance increases beyond this threshold.
+     * The default eye distance above which to reduce the size of this placemark, in meters. If {@link
+     * Placemark#setEyeDistanceScaling(boolean)} is true, this placemark's image, label and leader line sizes are
+     * reduced as the eye distance increases beyond this threshold.
      */
-    public static double defaultEyeDistanceScalingThreshold = 1e6;
+    protected static final double DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD = 1e6;
 
     /**
      * The placemark's geographic position.
@@ -126,16 +126,9 @@ public class Placemark extends AbstractRenderable {
 
 
     /**
-     * The depth offset is used to the placemark to appear above nearby terrain. When a placemark is displayed near the
-     * terrain portions of its geometry are often behind the terrain, yet as a screen element the placemark is expected
-     * to be visible.
-     */
-    static double defaultDepthOffset = -0.003;
-
-    /**
      * The OrderedRenderable implementation for this placemark.
      */
-    OrderedPlacemark orderedPlacemark = null;
+    protected OrderedPlacemark orderedPlacemark = null;
 
     /**
      * Factory method
@@ -208,14 +201,13 @@ public class Placemark extends AbstractRenderable {
         }
         setPosition(position);
         setAltitudeMode(WorldWind.ABSOLUTE);
-        setDisplayName(displayName);  // TODO: perhaps label and displayName should be distinct
-        // TODO: e.g., labels could be coordinates while display name is unique identifier
-
+        setDisplayName(displayName);
+        setLabel(label);
         this.attributes = attributes != null ? attributes : new PlacemarkAttributes();
         this.highlightAttributes = null;
         this.highlighted = false;
         this.eyeDistanceScaling = eyeDistanceScaling;
-        this.eyeDistanceScalingThreshold = defaultEyeDistanceScalingThreshold;
+        this.eyeDistanceScalingThreshold = DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD;
         this.eyeDistanceScalingLabelThreshold = 1.5 * this.eyeDistanceScalingThreshold;
         this.enableLeaderLinePicking = false;
         this.imageRotation = 0;
@@ -479,7 +471,7 @@ public class Placemark extends AbstractRenderable {
      *
      * @param dc The current DrawContext.
      */
-    public PlacemarkAttributes getActiveAttributes(final DrawContext dc) {
+    public PlacemarkAttributes getActiveAttributes(DrawContext dc) {
         return this.attributes;
     }
 
@@ -514,7 +506,7 @@ public class Placemark extends AbstractRenderable {
      * @return The OrderedPlacemark to use for rendering; will be null if the placemark cannot or should not be
      * rendered.
      */
-    protected OrderedPlacemark makeOrderedPlacemark(final DrawContext dc) {
+    protected OrderedPlacemark makeOrderedPlacemark(DrawContext dc) {
 
         // Create a new instance if necessary, otherwise reuse the existing instance
         OrderedPlacemark op = (this.orderedPlacemark == null ? new OrderedPlacemark() : this.orderedPlacemark);
@@ -577,14 +569,15 @@ public class Placemark extends AbstractRenderable {
 
         protected boolean enableLeaderLinePicking = false;
 
-        static protected int cacheKeyPool = 0;
+        protected static int cacheKeyPool = 0;
 
+        private static FloatBuffer unitQuadBuffer2 = null;
 
-        static private FloatBuffer unitQuadBuffer2 = null;
+        private static FloatBuffer unitQuadBuffer3 = null;
 
-        static private FloatBuffer unitQuadBuffer3 = null;
+        private static FloatBuffer leaderBuffer = null;
 
-        static private FloatBuffer leaderBuffer = null;
+        private static final double DEFAULT_DEPTH_OFFSET = -0.003;
 
         /**
          * Renders the ordered placemark.
@@ -599,7 +592,7 @@ public class Placemark extends AbstractRenderable {
          *
          * @return True if this ordered renderable is in a state ready for rendering.
          */
-        public boolean prepareForRendering(final DrawContext dc, final Placemark placemark) {
+        public boolean prepareForRendering(DrawContext dc, Placemark placemark) {
 
             // Get a copy of the attributes used for this rendering pass
             PlacemarkAttributes activeAttributes = placemark.getActiveAttributes(dc);
@@ -615,7 +608,7 @@ public class Placemark extends AbstractRenderable {
             this.actualRotation = placemark.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
                 dc.heading - placemark.imageRotation : -placemark.imageRotation;
 
-            // Preompute the image tilt. Leveraging protected access to Placemark fields.
+            // Precompute the image tilt. Leveraging protected access to Placemark fields.
             this.actualTilt = placemark.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
                 dc.tilt + placemark.imageTilt : placemark.imageTilt;
 
@@ -633,7 +626,7 @@ public class Placemark extends AbstractRenderable {
             if (this.placePoint == null) {
                 this.placePoint = dc.globe.geographicToCartesian(
                     this.position.latitude, this.position.longitude, this.position.altitude, new Vec3());
-//            dc.surfacePointForMode(this.position.latitude, this.position.longitude, this.position.altitude, this.altitudeMode, this.placePoint);
+// TODO: dc.surfacePointForMode(this.position.latitude, this.position.longitude, this.position.altitude, this.altitudeMode, this.placePoint);
             }
 
             // Compute the eye distance to the place point, the value which is used for sorting/ordering.
@@ -646,7 +639,7 @@ public class Placemark extends AbstractRenderable {
                 if (this.groundPoint == null) {
                     this.groundPoint = dc.globe.geographicToCartesian(
                         this.position.latitude, this.position.longitude, 0, new Vec3());
-//                    dc.surfacePointForMode(this.position.latitude, this.position.longitude, 0, this.altitudeMode, this.groundPoint);
+// TODO: dc.surfacePointForMode(this.position.latitude, this.position.longitude, 0, this.altitudeMode, this.groundPoint);
                 }
             }
 
@@ -671,7 +664,7 @@ public class Placemark extends AbstractRenderable {
             // portions of its geometry are often behind the terrain, yet as a screen element the placemark is expected
             // to be visible. We adjust its depth values rather than moving the placemark itself to avoid obscuring its
             // actual position.
-            double depthOffset = Placemark.defaultDepthOffset;
+            double depthOffset = OrderedPlacemark.DEFAULT_DEPTH_OFFSET;
             if (this.eyeDistance < dc.horizonDistance) {
                 // Offset the image towards the eye such that whatever the orientation of the image, with respect to the
                 // globe, the entire image is guaranteed to be in front of the globe/terrain.
@@ -686,7 +679,7 @@ public class Placemark extends AbstractRenderable {
             }
 
             double visibilityScale = placemark.isEyeDistanceScaling() ?
-                Math.max(0.0, Math.min(1, placemark.getEyeDistanceScalingThreshold() / this.eyeDistance)) : 1;
+                Math.max(this.attributes.minimumImageScale, Math.min(1, placemark.getEyeDistanceScalingThreshold() / this.eyeDistance)) : 1;
 
             // Compute the placemark's transform matrix and texture coordinate matrix according to its screen point, image size,
             // image offset and image scale. The image offset is defined with its origin at the image's bottom-left corner and
@@ -764,7 +757,7 @@ public class Placemark extends AbstractRenderable {
         /**
          * Performs the actual rendering of the Placemark.
          */
-        protected void drawOrderedPlacemark(final DrawContext dc) {
+        protected void drawOrderedPlacemark(DrawContext dc) {
             // Use World Wind's basic GLSL program.
             BasicProgram program = (BasicProgram) dc.gpuObjectCache.retrieveProgram(dc, BasicProgram.class);
             if (program == null) {
@@ -777,7 +770,6 @@ public class Placemark extends AbstractRenderable {
             // Set up to use the shared tex attribute.
             GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, getUnitQuadBuffer2D());
             GLES20.glEnableVertexAttribArray(1);    // vertexTexCoord
-
 
             ///////////////////////////////////
             // Draw the optional leader-line
