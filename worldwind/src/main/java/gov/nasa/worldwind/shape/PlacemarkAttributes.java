@@ -121,7 +121,7 @@ public class PlacemarkAttributes {
         return new PlacemarkAttributes().setLeaderLineAttributes(new ShapeAttributes()).setDrawLeaderLine(true);
     }
 
-    public static PlacemarkAttributes defaultsAndLabelLeaderLine() {
+    public static PlacemarkAttributes defaultsAndLabelAndLeaderLine() {
         return new PlacemarkAttributes().setLabelAttributes(new TextAttributes()).setLeaderLineAttributes(new ShapeAttributes()).setDrawLeaderLine(true);
     }
 
@@ -137,8 +137,8 @@ public class PlacemarkAttributes {
         return new PlacemarkAttributes().setImageSource(imageSource).setLeaderLineAttributes(new ShapeAttributes()).setDrawLeaderLine(true);
     }
 
-    public static PlacemarkAttributes withImageAndLabelLeaderLine() {
-        return new PlacemarkAttributes().setLabelAttributes(new TextAttributes()).setLeaderLineAttributes(new ShapeAttributes()).setDrawLeaderLine(true);
+    public static PlacemarkAttributes withImageAndLabelAndLeaderLine(Object imageSource) {
+        return new PlacemarkAttributes().setImageSource(imageSource).setLabelAttributes(new TextAttributes()).setLeaderLineAttributes(new ShapeAttributes()).setDrawLeaderLine(true);
     }
 
 
