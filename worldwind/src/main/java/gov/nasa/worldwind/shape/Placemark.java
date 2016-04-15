@@ -32,7 +32,7 @@ import gov.nasa.worldwind.util.WWMath;
  * Represents a Placemark shape. A placemark displays an image, a label and a leader line connecting the placemark's
  * geographic position to the ground. All three of these items are optional. By default, the leader line is not
  * pickable. See {@link Placemark#setEnableLeaderLinePicking(boolean)}.
- * <p>
+ * <p/>
  * Placemarks may be drawn with either an image or as single-color square with a specified size. When the placemark
  * attributes indicate a valid image, the placemark's image is drawn as a rectangle in the image's original dimensions,
  * scaled by the image scale attribute. Otherwise, the placemark is drawn as a square with width and height equal to the
@@ -484,14 +484,10 @@ public class Placemark extends AbstractRenderable {
     protected void doRender(DrawContext dc) {
         // Get an OrderedRenderable delegate for this placemark. The delegates will be sorted
         // by eye distance and rendered after the layers are rendered.
-        OrderedPlacemark op = this.makeOrderedPlacemark(dc);
-        if (op == null || !op.isVisible(dc)) {
+        OrderedPlacemark op = this.makeOrderedPlacemark();
+        if (!op.prepareForRendering(dc, this) || !op.isVisible(dc)) {
             return;
         }
-
-        // Cache this object to prevent future reallocations
-        this.orderedPlacemark = op;
-
         // Rendering is deferred for ordered renderables; simply add the placemark to the collection of ordered renderables
         // for rendering later via OrderedPlacemark.renderOrdered().
         dc.offerOrderedRenderable(op, op.eyeDistance);
@@ -501,19 +497,15 @@ public class Placemark extends AbstractRenderable {
     /**
      * Returns an ordered renderable for this placemark. The renderable may be a new instance or an existing instance.
      *
-     * @param dc The current DrawContext.
-     *
      * @return The OrderedPlacemark to use for rendering; will be null if the placemark cannot or should not be
      * rendered.
      */
-    protected OrderedPlacemark makeOrderedPlacemark(DrawContext dc) {
-
+    protected OrderedPlacemark makeOrderedPlacemark() {
         // Create a new instance if necessary, otherwise reuse the existing instance
-        OrderedPlacemark op = (this.orderedPlacemark == null ? new OrderedPlacemark() : this.orderedPlacemark);
-        if (!op.prepareForRendering(dc, this)) {
-            return null;
+        if (this.orderedPlacemark == null) {
+            this.orderedPlacemark = new OrderedPlacemark();
         }
-        return op;
+        return this.orderedPlacemark;
     }
 
     ///////////////////////////////////////
@@ -527,15 +519,13 @@ public class Placemark extends AbstractRenderable {
      */
     static protected class OrderedPlacemark implements OrderedRenderable {
 
-        protected Position position = new Position(Double.NaN, Double.NaN, Double.NaN);
-
         protected PlacemarkAttributes attributes = new PlacemarkAttributes();
 
         protected String label = null;
 
         protected Vec3 placePoint = new Vec3(0, 0, 0);
 
-        protected Vec3 groundPoint = new Vec3(0, 0, 0);
+        protected Vec3 groundPoint = null;  // will be created if a leader line must be drawn
 
         protected Vec3 screenPoint = new Vec3(0, 0, 0);
 
@@ -547,21 +537,19 @@ public class Placemark extends AbstractRenderable {
 
         protected Matrix4 imageTransform = new Matrix4();
 
-        protected Matrix4 labelTransform = null;
+        protected Matrix4 labelTransform = null;    // will be lazily created if a label must be drawn
 
         protected Matrix3 texCoordMatrix = new Matrix3();
 
         protected Matrix4 mvpMatrix = new Matrix4();
 
-        protected GpuTexture activeTexture = null;
+        protected GpuTexture activeTexture = null;  // will be lazily created if an image texture will be used
 
-        protected GpuTexture labelTexture = null;
+        protected GpuTexture labelTexture = null;   // will be lazily created if an label texture will be used
 
-        protected Rect imageBounds = null;
+        protected Rect imageBounds = null;  // will be lazily created if an image will be drawn
 
-        protected Rect labelBounds = null;
-
-        protected float[] leaderLinePoints = null;
+        protected Rect labelBounds = null;  // will be lazily created if an label will be drawn
 
         protected boolean drawLabel = false;
 
@@ -576,6 +564,8 @@ public class Placemark extends AbstractRenderable {
         private static FloatBuffer unitQuadBuffer3 = null;
 
         private static FloatBuffer leaderBuffer = null;
+
+        private static float[] leaderPoints = null;  // will be lazily created if a leader will be drawn
 
         private static final double DEFAULT_DEPTH_OFFSET = -0.003;
 
@@ -617,30 +607,22 @@ public class Placemark extends AbstractRenderable {
             // the placemark and are thus able to draw it. Otherwise its image and label portion that are potentially
             // over the terrain won't get drawn, and would disappear as soon as there is no terrain at the placemark's
             // position. This can occur at the window edges.
-            Position currentPosition = placemark.getPosition();
-            if (!this.position.equals(currentPosition)) {
-                this.position.set(currentPosition);
-                this.placePoint = null;
-                this.groundPoint = null;
-            }
-            if (this.placePoint == null) {
-                this.placePoint = dc.globe.geographicToCartesian(
-                    this.position.latitude, this.position.longitude, this.position.altitude, new Vec3());
+            this.placePoint = dc.globe.geographicToCartesian(
+                placemark.position.latitude, placemark.position.longitude, placemark.position.altitude, this.placePoint);
 // TODO: dc.surfacePointForMode(this.position.latitude, this.position.longitude, this.position.altitude, this.altitudeMode, this.placePoint);
-            }
 
             // Compute the eye distance to the place point, the value which is used for sorting/ordering.
             this.eyeDistance = dc.eyePoint.distanceTo(this.placePoint);
-
 
             this.enableLeaderLinePicking = placemark.isEnableLeaderLinePicking();
             this.drawLeader = this.mustDrawLeaderLine(dc);
             if (this.drawLeader) {
                 if (this.groundPoint == null) {
-                    this.groundPoint = dc.globe.geographicToCartesian(
-                        this.position.latitude, this.position.longitude, 0, new Vec3());
-// TODO: dc.surfacePointForMode(this.position.latitude, this.position.longitude, 0, this.altitudeMode, this.groundPoint);
+                    this.groundPoint = new Vec3();
                 }
+                this.groundPoint = dc.globe.geographicToCartesian(
+                    placemark.position.latitude, placemark.position.longitude, 0, this.groundPoint);
+// TODO: dc.surfacePointForMode(this.position.latitude, this.position.longitude, 0, this.altitudeMode, this.groundPoint);
             }
 
             ////////////////////////
@@ -779,22 +761,7 @@ public class Placemark extends AbstractRenderable {
 
             // Draw the leader line first so that the image and label have visual priority.
             if (this.drawLeader) {
-                if (this.leaderLinePoints == null) {
-                    this.leaderLinePoints = new float[6];
-                }
-                // TODO: Store leader line  in gpuObjectCache
-                this.leaderLinePoints[0] = (float) this.groundPoint.x; // computed during prepareForRendering
-                this.leaderLinePoints[1] = (float) this.groundPoint.y;
-                this.leaderLinePoints[2] = (float) this.groundPoint.z;
-                this.leaderLinePoints[3] = (float) this.placePoint.x; // computed during prepareForRendering
-                this.leaderLinePoints[4] = (float) this.placePoint.y;
-                this.leaderLinePoints[5] = (float) this.placePoint.z;
-
-                if (leaderBuffer == null) {
-                    leaderBuffer = ByteBuffer.allocateDirect(this.leaderLinePoints.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-                }
-                leaderBuffer.put(this.leaderLinePoints).rewind();
-                GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, leaderBuffer);
+                GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getLeaderBuffer(this.groundPoint, this.placePoint));
                 GLES20.glEnableVertexAttribArray(0);
 
                 program.enableTexture(false);
@@ -990,6 +957,24 @@ public class Placemark extends AbstractRenderable {
                 unitQuadBuffer3.put(points).rewind();
             }
             return unitQuadBuffer3;
+        }
+
+        static public FloatBuffer getLeaderBuffer(Vec3 groundPoint, Vec3 placePoint) {
+            if (leaderBuffer == null) {
+                leaderPoints = new float[6];
+                int size = leaderPoints.length * 4;
+                leaderBuffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            }
+            // TODO: consider whether these assignments should be inlined.
+            leaderPoints[0] = (float) groundPoint.x;
+            leaderPoints[1] = (float) groundPoint.y;
+            leaderPoints[2] = (float) groundPoint.z;
+            leaderPoints[3] = (float) placePoint.x;
+            leaderPoints[4] = (float) placePoint.y;
+            leaderPoints[5] = (float) placePoint.z;
+            leaderBuffer.put(leaderPoints).rewind();
+
+            return leaderBuffer;
         }
 
         /**
