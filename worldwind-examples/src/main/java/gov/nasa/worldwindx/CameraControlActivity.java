@@ -23,14 +23,14 @@ public class CameraControlActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.aboutBoxTitle = "About the " + getResources().getText(R.string.title_camera_controls);
-        this.aboutBoxText = "Demonstrates how to override the WorldWindowController gesture controller.\n" +
+        setAboutBoxTitle("About the " + getResources().getText(R.string.title_camera_controls));
+        setAboutBoxText("Demonstrates how to override the WorldWindowController gesture controller.\n" +
             "This example uses the Navigator's setAsCamera interface " +
             "instead of setAsLookAt.\n" +
             " - one-finger pan moves the geographic location of the camera,\n" +
             " - two-finger pinch-zoom adjusts the camera altitude, \n" +
             " - two-finger rotate rotates the camera about its own axis,\n" +
-            " - three-finger tilt tilts the camera about its own axis.";
+            " - three-finger tilt tilts the camera about its own axis.");
 
 
         // Override the default "look at" gesture behavior with a camera centric gesture controller

@@ -26,9 +26,9 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Runnabl
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.aboutBoxTitle = "About the " + getResources().getText(R.string.title_day_night_cycle);
-        this.aboutBoxText = "Demonstrates how to display a continuous day-night cycle on the World Wind globe.\n" +
-            "This gradually changes both the Navigator's location and the AtmosphereLayer's light location.";
+        setAboutBoxTitle("About the " + getResources().getText(R.string.title_day_night_cycle));
+        setAboutBoxText("Demonstrates how to display a continuous day-night cycle on the World Wind globe.\n" +
+            "This gradually changes both the Navigator's location and the AtmosphereLayer's light location.");
 
         // Initialize the Atmosphere layer's light location to our custom location. By default the light location is
         // always behind the viewer.

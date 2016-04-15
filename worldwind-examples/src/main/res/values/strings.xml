@@ -17,4 +17,10 @@
     <string name="title_show_tessellation">Show Tessellation</string>
     <string name="title_surface_image">Surface Image</string>
     <string name="title_wms_layer">WMS Layer</string>
+
+    <string name="latitude">Latitude:</string>
+    <string name="longitude">Longitude:</string>
+    <string name="offglobe">Off globe</string>
+    <string name="spacer"></string>
+
 </resources>

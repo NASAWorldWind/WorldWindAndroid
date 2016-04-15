@@ -5,9 +5,13 @@
 
 package gov.nasa.worldwindx;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.LayoutRes;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -17,11 +21,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
+
+import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.geom.LookAt;
 
 /**
- * This abstract activity class implements a Navigation Drawer menu shared by all the World Wind Example activities.
+ * This abstract Activity class implements a Navigation Drawer menu shared by all the World Wind Example activities.
  */
-public abstract class AbstractNavDrawerActivity extends AppCompatActivity
+public abstract class AbstractMainActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
 
     static private int selectedItemId = R.id.nav_basic_globe_activity;
@@ -30,18 +38,36 @@ public abstract class AbstractNavDrawerActivity extends AppCompatActivity
 
     private NavigationView navigationView;
 
-    protected String aboutBoxTitle = "Title goes here";
+    private String aboutBoxTitle = "Title goes here";
 
-    protected String aboutBoxText = "Description goes here;";
+    private String aboutBoxText = "Description goes here;";
 
+    private StatusTask statusTask;
+
+
+    /**
+     * Returns a referenced to the WorldWindow.
+     * <p/>
+     * Derived classes must implement this method.
+     *
+     * @return The WorldWindow object.
+     */
+    abstract public WorldWindow getWorldWindow();
+
+
+    /**
+     * This method should be called by derived classes in their onCreate method.
+     *
+     * @param layoutResID
+     */
     @Override
     public void setContentView(@LayoutRes int layoutResID) {
         super.setContentView(layoutResID);
         onCreateDrawer();
+        onCreateStatusBar();
     }
 
     protected void onCreateDrawer() {
-
         // Add support for a Toolbar and set to act as the ActionBar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -59,10 +85,21 @@ public abstract class AbstractNavDrawerActivity extends AppCompatActivity
     }
 
 
+    protected void onCreateStatusBar() {
+        // Create a task used for polling the globe.
+        // TODO: replace the polling implementation with an event driven implementation.
+        this.statusTask = new StatusTask(this); // the task is invoked in onResume()
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+
+        // Update the menu by highlighting the last selected menu item
         this.navigationView.setCheckedItem(selectedItemId);
+
+        // Start our status information handler
+        this.statusTask.run();
     }
 
     @Override
@@ -87,10 +124,35 @@ public abstract class AbstractNavDrawerActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    protected void setAboutBoxTitle(String title) {
+        this.aboutBoxText = title;
+    }
+
+    protected void setAboutBoxText(String text) {
+        this.aboutBoxText = text;
+    }
+
     /**
      * This method is invoked when the About button is selected in the Options menu.
      */
-    abstract protected void showAboutBox();
+    protected void showAboutBox() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle(this.aboutBoxTitle);
+        alertDialogBuilder
+            .setMessage(this.aboutBoxText)
+            .setCancelable(true)
+            .setNegativeButton("Close", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    // if this button is clicked, just close
+                    // the dialog box and do nothing
+                    dialog.cancel();
+                }
+            });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
 
     @Override
     public void onBackPressed() {
@@ -156,6 +218,78 @@ public abstract class AbstractNavDrawerActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    /**
+     * The StatusTask class polls the WorldWindow's globe periodically for information and posts it into the status bar.
+     */
+    public static final class StatusTask implements Runnable {
+
+        private static final int POLLING_INTERVAL = 100; //ms
+
+        private static final int LOOK_AT_MSG_ID = 1;
+
+        private final AbstractMainActivity activity;
+
+        private final TextView latView;
+
+        private final TextView lonView;
+
+        private WorldWindow wwd;
+
+        /**
+         * The Handler object that's attached to the current (UI) thread.
+         */
+        private final Handler handler = new Handler(new Handler.Callback() {
+            @Override
+            public boolean handleMessage(Message msg) {
+                if (msg.obj instanceof LookAt) {
+                    updateStatusBar((LookAt) msg.obj);
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        /**
+         * Constructs the StatusTask for the activity.
+         *
+         * @param activity The activity associated with this StatusTask.
+         */
+        public StatusTask(AbstractMainActivity activity) {
+            this.activity = activity;
+            this.latView = (TextView) activity.findViewById(R.id.latvalue);
+            this.lonView = (TextView) activity.findViewById(R.id.lonvalue);
+        }
+
+        /**
+         * Updates the status views with the contents of the specified LookAt.
+         *
+         * @param lookAt The "look at" data used in the status components.
+         */
+        public void updateStatusBar(LookAt lookAt) {
+            this.latView.setText(String.format("%.3f%n", lookAt.latitude));
+            this.lonView.setText(String.format("%.3f%n", lookAt.longitude));
+        }
+
+        @Override
+        public void run() {
+            this.wwd = this.activity.getWorldWindow();
+            if (this.wwd != null) {
+                // Query the globe for debug info on the WorldWindow's GLThread
+                this.wwd.queueEvent(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Get a copy of the current "look at" position...
+                        LookAt lookAt = wwd.getNavigator().getAsLookAt(wwd.getGlobe(), new LookAt());
+                        // ... and post the results on the UI Thread.
+                        handler.obtainMessage(LOOK_AT_MSG_ID, lookAt).sendToTarget();
+                    }
+                });
+            }
+            // Rerun this task after the prescribed interval
+            this.handler.postDelayed(this, POLLING_INTERVAL);
+        }
     }
 }
 

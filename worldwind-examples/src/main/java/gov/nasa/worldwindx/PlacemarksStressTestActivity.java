@@ -35,8 +35,8 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.aboutBoxTitle = "About the " + getResources().getText(R.string.title_placemarks);
-        this.aboutBoxText = "Demonstrates how to add Placemarks to a RenderableLayer.";
+        setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks_stress_test));
+        setAboutBoxText("Demonstrates a LOT of Placemarks.");
 
         // Turn off all layers while debugging/profiling memory allocations
         for (Layer l : this.getWorldWindow().getLayers()) {
@@ -74,7 +74,8 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
         // Stress Tests
         ////////////////////
 
-        Placemark.defaultEyeDistanceScalingThreshold = 1e7;
+        //Placemark.DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD = 1e7;
+
         // Create a random number generator with an arbitrary seed
         // that will generate the same numbers between runs.
         Random random = new Random(123);
@@ -106,9 +107,10 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
             // Use a random sin value to generate latitudes without clustering at the poles.
             double lat = toDegrees(asin(random.nextDouble())) * (random.nextBoolean() ? 1 : -1);
             double lon = 180d - (random.nextDouble() * 360);
-            Position pos = Position.fromDegrees(lat, lon, 5000);
+            Position pos = Position.fromDegrees(lat, lon, 0);
 
-            Placemark placemark = new Placemark(pos, new PlacemarkAttributes(attributes)).setEyeDistanceScaling(true);
+            Placemark placemark = new Placemark(pos,
+                new PlacemarkAttributes(attributes).setMinimumImageScale(0.5)).setEyeDistanceScaling(true);
             placemark.setDisplayName(placemark.getPosition().toString());
 
             placemarksLayer.addRenderable(placemark);

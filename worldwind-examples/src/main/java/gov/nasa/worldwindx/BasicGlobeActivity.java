@@ -5,56 +5,53 @@
 
 package gov.nasa.worldwindx;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.layer.BackgroundLayer;
 import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
 import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 
-public class BasicGlobeActivity extends AbstractNavDrawerActivity {
+
+/**
+ * Creates a simple view of a globe with touch navigation and a few layers.
+ */
+public class BasicGlobeActivity extends AbstractMainActivity {
 
     /**
-     * Allow derived classes to override the resource used in setContentView
+     * This protected member allows derived classes to define the resource used in setContentView.
      */
     protected int layoutResourceId = R.layout.activity_globe;
 
     protected WorldWindow wwd;
 
-    public WorldWindow getWorldWindow() {
-        return wwd;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(layoutResourceId);
-        this.aboutBoxTitle = "About the " + getResources().getText(R.string.title_basic_globe);
-        this.aboutBoxText = "Demonstrates how to construct a WorldWindow with a few layers.\n" +
+        // Establish the activity content
+        setContentView(this.layoutResourceId);
+        setAboutBoxTitle("About the " + getResources().getText(R.string.title_basic_globe));
+        setAboutBoxText("Demonstrates how to construct a WorldWindow with a few layers.\n" +
             "The globe uses the default navigation gestures: \n" +
             " - one-finger pan moves the camera,\n" +
             " - two-finger pinch-zoom adjusts the range to the look at position, \n" +
             " - two-finger rotate arcs the camera horizontally around the look at position,\n" +
-            " - three-finger tilt arcs the camera vertically around the look at position.";
+            " - three-finger tilt arcs the camera vertically around the look at position.");
 
-        // Create the World Window
+        // Create the World Window (a GLSurfaceView) which displays the globe.
         this.wwd = new WorldWindow(this);
 
-        // Add the WorldWindow to the layout
+        // Add the WorldWindow view object to the layout that was reserved for the globe.
         FrameLayout globeLayout = (FrameLayout) findViewById(R.id.content_globe);
         globeLayout.addView(this.wwd);
-
-        RelativeLayout overlayLayout = (RelativeLayout) findViewById(R.id.content_overlay);
-        overlayLayout.bringToFront();
 
         // Setup the World Window's layers.
         this.wwd.getLayers().addLayer(new BackgroundLayer());
         this.wwd.getLayers().addLayer(new BlueMarbleLandsatLayer());
         this.wwd.getLayers().addLayer(new AtmosphereLayer());
+
     }
 
     @Override
@@ -70,25 +67,9 @@ public class BasicGlobeActivity extends AbstractNavDrawerActivity {
     }
 
     @Override
-    protected void showAboutBox() {
-
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setTitle(this.aboutBoxTitle);
-        alertDialogBuilder
-            .setMessage(this.aboutBoxText)
-            .setCancelable(true)
-            .setNegativeButton("Close", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    // if this button is clicked, just close
-                    // the dialog box and do nothing
-                    dialog.cancel();
-                }
-            });
-
-        AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.show();
+    public WorldWindow getWorldWindow() {
+        return this.wwd;
     }
-
 }
 
 

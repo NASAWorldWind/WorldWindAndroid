@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2016 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration. All Rights Reserved.
+  -->
+
+<!--<FrameLayout-->
+<!--android:id="@+id/globe_content"-->
+<!--xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--xmlns:tools="http://schemas.android.com/tools"-->
+<!--android:layout_width="match_parent"-->
+<!--android:layout_height="match_parent"-->
+<!--android:paddingBottom="1px"-->
+<!--android:paddingLeft="1px"-->
+<!--android:paddingRight="1px"-->
+<!--android:paddingTop="1px"-->
+<!--app:layout_behavior="@string/appbar_scrolling_view_behavior"-->
+<!--tools:context=".BasicGlobeActivity"-->
+<!-->-->
+
+<!--&lt;!&ndash;TODO: Resolve hack. Added a 1px visible border to this layout to prevent it from displaying on top of navigation drawer&ndash;&gt;-->
+
+<!--</FrameLayout>-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:gravity="center"
+              android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="3"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:id="@+id/content_globe"
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="1px"
+            android:paddingLeft="1px"
+            android:paddingRight="1px"
+            android:paddingTop="1px"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            tools:context=".BasicGlobeActivity">
+
+            <!--TODO: Resolve hack. Added a 1px visible border to this layout to prevent it from displaying on top of navigation drawer-->
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/statusdisplay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@color/transparent_background"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:visibility="visible">
+
+        <TextView
+            android:id="@+id/latlabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/latitude"/>
+
+        <TextView
+            android:id="@+id/latvalue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/offglobe"/>
+
+        <TextView
+            android:id="@+id/spacer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            android:text="@string/spacer"/>
+
+        <TextView
+            android:id="@+id/lonlabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/longitude"/>
+
+        <TextView
+            android:id="@+id/lonvalue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/offglobe"/>
+    </LinearLayout>
+</LinearLayout>

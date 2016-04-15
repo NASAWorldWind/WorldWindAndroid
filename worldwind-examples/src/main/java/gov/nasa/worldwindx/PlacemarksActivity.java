@@ -31,8 +31,8 @@ public class PlacemarksActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.aboutBoxTitle = "About the " + getResources().getText(R.string.title_placemarks);
-        this.aboutBoxText = "Demonstrates how to add Placemarks to a RenderableLayer.";
+        setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks));
+        setAboutBoxText("Demonstrates how to add Placemarks to a RenderableLayer.");
 
         ///////////////////////////////////////////////////////////////////////////
         // First, setup the WorldWind globe to support the rendering of placemarks

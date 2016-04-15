@@ -17,9 +17,9 @@ public class CameraViewActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.aboutBoxTitle = "About the " + getResources().getText(R.string.title_camera_view);
-        this.aboutBoxText = "Demonstrates how to use a Camera to view a position.\n" +
-            "This example simulates a view from an aircraft above Oxnard, CA looking at the Point Mugu Naval Air Station.";
+        setAboutBoxTitle("About the " + getResources().getText(R.string.title_camera_view));
+        setAboutBoxText("Demonstrates how to use a Camera to view a position.\n" +
+            "This example simulates a view from an aircraft above Oxnard, CA looking at the Point Mugu Naval Air Station.");
 
         // Create a view of Point Mugu airport as seen from an aircraft above Oxnard, CA.
         Position aircraft = new Position(34.2, -119.2, 3000);           // Above Oxnard CA, altitude in meters

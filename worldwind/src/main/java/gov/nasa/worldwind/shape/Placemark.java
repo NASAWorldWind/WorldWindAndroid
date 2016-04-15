@@ -748,7 +748,7 @@ public class Placemark extends AbstractRenderable {
             dc.useProgram(program);
 
             boolean depthTest = true;
-
+// TODO: move to 792
             // Set up to use the shared tex attribute.
             GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, getUnitQuadBuffer2D());
             GLES20.glEnableVertexAttribArray(1);    // vertexTexCoord
@@ -762,7 +762,7 @@ public class Placemark extends AbstractRenderable {
             // Draw the leader line first so that the image and label have visual priority.
             if (this.drawLeader) {
                 GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getLeaderBuffer(this.groundPoint, this.placePoint));
-                GLES20.glEnableVertexAttribArray(0);
+                GLES20.glEnableVertexAttribArray(0); // TODO: redundant
 
                 program.enableTexture(false);
                 program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.attributes.leaderLineAttributes.outlineColor); // TODO: pickColor
@@ -779,21 +779,13 @@ public class Placemark extends AbstractRenderable {
                 GLES20.glDrawArrays(GLES20.GL_LINES, 0, 2);
             }
 
-            // Turn off depth testing for the placemark image if requested. The placemark label and leader line have
-            // their own depth-test controls.
-            if (!this.attributes.depthTest && depthTest) {
-                depthTest = false;
-                // Suppress writes to the OpenGL depth buffer.
-                GLES20.glDepthMask(false);
-            }
-
             ///////////////////////////////////
             // Draw the image
             ///////////////////////////////////
 
             // Allocate a unit-quad buffer for the image coordinates
             GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getUnitQuadBuffer3D());
-            GLES20.glEnableVertexAttribArray(0);
+            GLES20.glEnableVertexAttribArray(0); // TODO: redundant
 
             // Compute and specify the MVP matrix...
             this.mvpMatrix.set(dc.screenProjection);
@@ -810,7 +802,7 @@ public class Placemark extends AbstractRenderable {
             // Enable texture for both normal display and for picking. If picking is enabled in the shader (set in
             // beginDrawing() above) then the texture's alpha component is still needed in order to modulate the
             // pick color to mask off transparent pixels.
-            program.enableTexture(true);
+            program.enableTexture(true); // TODO: redundant
 
             if (dc.pickingMode) {
 //              program.loadColor(gl, this.pickColor); // TODO: pickColor
@@ -829,6 +821,14 @@ public class Placemark extends AbstractRenderable {
                 program.enableTexture(bound);
             } else {
                 program.enableTexture(false);
+            }
+
+            // Turn off depth testing for the placemark image if requested. The placemark label and leader line have
+            // their own depth-test controls.
+            if (!this.attributes.depthTest && depthTest) {
+                depthTest = false;
+                // Suppress writes to the OpenGL depth buffer.
+                GLES20.glDepthMask(false);  // TODO: depth test or mask gldisable(depthtest)
             }
 
             // Draw the placemark's image quad.
@@ -876,7 +876,6 @@ public class Placemark extends AbstractRenderable {
             }
 
             // Restore the default World Wind OpenGL state.
-            //GLES20.glDisableVertexAttribArray(0);
             GLES20.glDisableVertexAttribArray(1);
 
         }
@@ -985,7 +984,6 @@ public class Placemark extends AbstractRenderable {
         static public String generateCacheKey() {
             return "OrderedPlacemark " + ++cacheKeyPool;
         }
-
 
     }
 }
