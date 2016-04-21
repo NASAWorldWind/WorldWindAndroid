@@ -335,11 +335,6 @@ public class Tile {
                 Logger.logMessage(Logger.ERROR, "Tile", "subdivideToCache", "missingCache"));
         }
 
-        if (cacheSize < 1) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Tile", "subdivideToCache", "invalidSize"));
-        }
-
         Tile[] children = cache.get(this.tileKey);
         if (children == null) {
             children = this.subdivide(tileFactory);

@@ -9,11 +9,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Map;
 
 public class LruMemoryCache<K, V> {
 
-    protected final Map<K, Entry<K, V>> entries = new HashMap<>();
+    protected final HashMap<K, Entry<K, V>> entries = new HashMap<>();
 
     protected final Comparator<Entry<K, V>> lruComparator = new Comparator<Entry<K, V>>() {
         @Override
@@ -58,11 +57,6 @@ public class LruMemoryCache<K, V> {
     }
 
     public V get(K key) {
-        if (key == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LruMemoryCache", "get", "missingKey"));
-        }
-
         Entry<K, V> entry = this.entries.get(key);
         if (entry != null) {
             entry.lastUsed = System.currentTimeMillis();
@@ -73,21 +67,6 @@ public class LruMemoryCache<K, V> {
     }
 
     public V put(K key, V value, int size) {
-        if (key == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LruMemoryCache", "put", "missingKey"));
-        }
-
-        if (value == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LruMemoryCache", "put", "missingValue"));
-        }
-
-        if (size < 1) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LruMemoryCache", "put", "invalidSize"));
-        }
-
         if (this.usedCapacity + size > this.capacity) {
             this.makeSpace(size);
         }
@@ -109,11 +88,6 @@ public class LruMemoryCache<K, V> {
     }
 
     public V remove(K key) {
-        if (key == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LruMemoryCache", "put", "missingKey"));
-        }
-
         Entry<K, V> entry = this.entries.remove(key);
         if (entry != null) {
             this.usedCapacity -= entry.size;
@@ -125,10 +99,14 @@ public class LruMemoryCache<K, V> {
     }
 
     public boolean containsKey(K key) {
-        return key != null && this.entries.containsKey(key);
+        return this.entries.containsKey(key);
     }
 
     public void clear() {
+        for (Entry<K, V> entry : this.entries.values()) {
+            this.entryRemoved(entry.key, entry.value);
+        }
+
         this.entries.clear();
         this.usedCapacity = 0;
     }

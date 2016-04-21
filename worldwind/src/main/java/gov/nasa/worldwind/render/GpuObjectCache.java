@@ -51,6 +51,12 @@ public class GpuObjectCache extends LruMemoryCache<Object, GpuObject> {
         }
     }
 
+    public void contextLost(DrawContext dc) {
+        this.entries.clear(); // the cache entries are invalid; clear but don't call entryRemoved
+        this.disposalQueue.clear(); // the disposal queue no longer needs to be processed
+        this.usedCapacity = 0;
+    }
+
     public void disposeEvictedObjects(DrawContext dc) {
 
         for (GpuObject object : this.disposalQueue) {

@@ -297,7 +297,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
         // Clear any cached OpenGL resources and state, which are now invalid.
         this.dc.contextLost();
-        this.gpuObjectCache.clear();
+        this.gpuObjectCache.contextLost(this.dc);
     }
 
     @Override

@@ -37,7 +37,6 @@ public class Logger {
         messageTable.put("invalidRadius", "The radius is invalid");
         messageTable.put("invalidResolution", "The resolution is invalid");
         messageTable.put("invalidResource", "The resource is invalid");
-        messageTable.put("invalidSize", "The size is invalid");
         messageTable.put("invalidStride", "The stride is invalid");
         messageTable.put("invalidTileDelta", "The tile delta is invalid");
         messageTable.put("invalidWidth", "The width is invalid");
@@ -50,7 +49,6 @@ public class Logger {
         messageTable.put("missingFormat", "The format is null");
         messageTable.put("missingGlobe", "The globe is null");
         messageTable.put("missingImageFormat", "The image format is null");
-        messageTable.put("missingKey", "The key is null");
         messageTable.put("missingLayer", "The layer is null");
         messageTable.put("missingLayerNames", "The layer names are null");
         messageTable.put("missingLevel", "The level is null");
@@ -79,7 +77,6 @@ public class Logger {
         messageTable.put("missingTileUrlFactory", "The tile url factory is null");
         messageTable.put("missingTessellator", "The tessellator is null");
         messageTable.put("missingUrl", "The url is null");
-        messageTable.put("missingValue", "The value is null");
         messageTable.put("missingVector", "The vector is null");
         messageTable.put("missingVersion", "The version is null");
         messageTable.put("missingWorldWindow", "The world window is null");
