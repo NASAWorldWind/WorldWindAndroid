@@ -78,9 +78,7 @@ public class WWUtil {
 
             return sb.toString();
         } finally {
-            if (reader != null) {
-                reader.close();
-            }
+            closeSilently(reader);
         }
     }
 }
