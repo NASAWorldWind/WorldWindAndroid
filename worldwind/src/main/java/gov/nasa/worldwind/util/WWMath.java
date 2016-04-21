@@ -57,6 +57,88 @@ public class WWMath {
     }
 
     /**
+     * Computes the linear interpolation of two values according to a specified fractional amount. The fractional amount
+     * is interpreted as a relative proportion of the two values, where 0.0 indicates the first value, 0.5 indicates a
+     * 50/50 mix of the two values, and 1.0 indicates the second value.
+     * <p/>
+     * The result of this method is undefined if the amount is outside the range [0, 1].
+     *
+     * @param amount the fractional proportion of the two values in the range [0, 1]
+     * @param value1 the first value
+     * @param value2 the second value
+     *
+     * @return the interpolated value
+     */
+    public static double interpolate(double amount, double value1, double value2) {
+        return (1 - amount) * value1 + amount * value2;
+    }
+
+    /**
+     * Computes the linear interpolation of two angles in the range [-180, +180] degrees according to a specified
+     * fractional amount. The fractional amount is interpreted as a relative proportion of the two angles, where 0.0
+     * indicates the first angle, 0.5 indicates an angle half way between the two angles, and 1.0 indicates the second
+     * angle.
+     * <p/>
+     * The result of this method is undefined if the amount is outside the range [0, 1].
+     *
+     * @param amount   the fractional proportion of the two angles in the range [0, 1]
+     * @param degrees1 the first angle in degrees
+     * @param degrees2 the second angle in degrees
+     *
+     * @return the interpolated angle in the range [-180, +180] degrees
+     */
+    public static double interpolateAngle180(double amount, double degrees1, double degrees2) {
+        // Normalize the two angles to the range [-180, +180].
+        double angle1 = normalizeAngle180(degrees1);
+        double angle2 = normalizeAngle180(degrees2);
+
+        // If the shortest arc between the two angles crosses the -180/+180 degree boundary, add 360 degrees to the
+        // smaller of the two angles then interpolate.
+        if (angle1 - angle2 > 180) {
+            angle2 += 360;
+        } else if (angle1 - angle2 < -180) {
+            angle1 += 360;
+        }
+
+        // Linearly interpolate between the two angles then normalize the interpolated result. Normalizing the result is
+        // necessary when we have added 360 degrees to either angle in order to interpolate along the shortest arc.
+        double angle = (1 - amount) * angle1 + amount * angle2;
+        return normalizeAngle180(angle);
+    }
+
+    /**
+     * Computes the linear interpolation of two angles in the range [0, 360] degrees according to a specified fractional
+     * amount. The fractional amount is interpreted as a relative proportion of the two angles, where 0.0 indicates the
+     * first angle, 0.5 indicates an angle half way between the two angles, and 1.0 indicates the second angle.
+     * <p/>
+     * The result of this method is undefined if the amount is outside the range [0, 1].
+     *
+     * @param amount   the fractional proportion of the two angles in the range [0, 1]
+     * @param degrees1 the first angle in degrees
+     * @param degrees2 the second angle in degrees
+     *
+     * @return the interpolated angle in the range [0, 360] degrees
+     */
+    public static double interpolateAngle360(double amount, double degrees1, double degrees2) {
+        // Normalize the two angles to the range [-180, +180].
+        double angle1 = normalizeAngle180(degrees1);
+        double angle2 = normalizeAngle180(degrees2);
+
+        // If the shortest arc between the two angles crosses the -180/+180 degree boundary, add 360 degrees to the
+        // smaller of the two angles then interpolate.
+        if (angle1 - angle2 > 180) {
+            angle2 += 360;
+        } else if (angle1 - angle2 < -180) {
+            angle1 += 360;
+        }
+
+        // Linearly interpolate between the two angles then normalize the interpolated result. Normalizing the result is
+        // necessary when we have added 360 degrees to either angle in order to interpolate along the shortest arc.
+        double angle = (1 - amount) * angle1 + amount * angle2;
+        return normalizeAngle360(angle);
+    }
+
+    /**
      * Restricts an angle to the range [-180, +180] degrees, wrapping angles outside the range. Wrapping takes place as
      * though traversing the edge of a unit circle; angles less than -180 wrap back to +180, while angles greater than
      * +180 wrap back to -180.
