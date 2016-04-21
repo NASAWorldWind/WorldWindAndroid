@@ -35,6 +35,8 @@ import gov.nasa.worldwind.util.WWUtil;
 
 public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
 
+    protected static final int FRAME_INTERVAL = 67; // 67 millis; 15 frames per second
+
     protected static Executor commandExecutor = Executors.newSingleThreadExecutor();
 
     protected static Handler activityHandler = new Handler(Looper.getMainLooper());
@@ -83,38 +85,38 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
         exec.execute(new SleepCommand(1000));
         exec.execute(new ClearFrameStatisticsCommand(wwd));
 
-        // After a 1/2 second delay, fly to NASA Ames Research Center over 200 frames.
+        // After a 1/2 second delay, fly to NASA Ames Research Center over 100 frames.
         Camera cam = new Camera(arc.latitude, arc.longitude, 10e3, WorldWind.ABSOLUTE, 0, 0, 0);
-        exec.execute(new AnimateCameraCommand(wwd, cam, 200));
+        exec.execute(new AnimateCameraCommand(wwd, cam, 100));
 
-        // After a 1/2 second delay, rotate the camera to look at NASA Goddard Space Flight Center over 100 frames.
+        // After a 1/2 second delay, rotate the camera to look at NASA Goddard Space Flight Center over 50 frames.
         double azimuth = arc.greatCircleAzimuth(gsfc);
         cam = new Camera(arc.latitude, arc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 70, 0);
         exec.execute(new SleepCommand(500));
-        exec.execute(new AnimateCameraCommand(wwd, cam, 100));
+        exec.execute(new AnimateCameraCommand(wwd, cam, 50));
 
-        // After a 1/2 second delay, fly the camera to NASA Goddard Space Flight Center using 200 frames.
+        // After a 1/2 second delay, fly the camera to NASA Goddard Space Flight Center over 200 frames.
         Location midLoc = arc.interpolateAlongPath(gsfc, WorldWind.GREAT_CIRCLE, 0.5, new Location());
         azimuth = midLoc.greatCircleAzimuth(gsfc);
         exec.execute(new SleepCommand(500));
         cam = new Camera(midLoc.latitude, midLoc.longitude, 1000e3, WorldWind.ABSOLUTE, azimuth, 0, 0);
-        exec.execute(new AnimateCameraCommand(wwd, cam, 200));
+        exec.execute(new AnimateCameraCommand(wwd, cam, 100));
         cam = new Camera(gsfc.latitude, gsfc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 70, 0);
-        exec.execute(new AnimateCameraCommand(wwd, cam, 200));
+        exec.execute(new AnimateCameraCommand(wwd, cam, 100));
 
-        // After a 1/2 second delay, rotate the camera to look at ESA Centre for Earth Observation over 100 frames.
+        // After a 1/2 second delay, rotate the camera to look at ESA Centre for Earth Observation over 50 frames.
         azimuth = gsfc.greatCircleAzimuth(esrin);
         cam = new Camera(gsfc.latitude, gsfc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 90, 0);
         exec.execute(new SleepCommand(500));
-        exec.execute(new AnimateCameraCommand(wwd, cam, 100));
+        exec.execute(new AnimateCameraCommand(wwd, cam, 50));
 
         // After a 1/2 second delay, fly the camera to ESA Centre for Earth Observation over 200 frames.
         midLoc = gsfc.interpolateAlongPath(esrin, WorldWind.GREAT_CIRCLE, 0.5, new Location());
         exec.execute(new SleepCommand(500));
         cam = new Camera(midLoc.latitude, midLoc.longitude, 1000e3, WorldWind.ABSOLUTE, azimuth, 60, 0);
-        exec.execute(new AnimateCameraCommand(wwd, cam, 200));
+        exec.execute(new AnimateCameraCommand(wwd, cam, 100));
         cam = new Camera(esrin.latitude, esrin.longitude, 100e3, WorldWind.ABSOLUTE, azimuth, 30, 0);
-        exec.execute(new AnimateCameraCommand(wwd, cam, 200));
+        exec.execute(new AnimateCameraCommand(wwd, cam, 100));
 
         // After a 1/2 second delay, back the camera out to look at ESA Centre for Earth Observation over 100 frames.
         cam = new Camera(esrin.latitude, esrin.longitude, 2000e3, WorldWind.ABSOLUTE, 0, 0, 0);
@@ -213,7 +215,7 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
 
                 Runnable setCommand = SetCameraCommand.obtain(this.wwd, this.curCamera);
                 runOnActivityThread(setCommand);
-                sleepQuietly(30);
+                sleepQuietly(FRAME_INTERVAL);
             }
         }
     }
