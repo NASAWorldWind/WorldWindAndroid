@@ -25,13 +25,13 @@ public class FrameStatistics {
     }
 
     public double getFrameTimeAverage() {
-        return Math.round(this.frameTimeSum / (double) this.frameCount);
+        return this.frameTimeSum / (double) this.frameCount;
     }
 
     public double getFrameTimeStdDev() {
         double avg = (double) this.frameTimeSum / (double) this.frameCount;
         double var = ((double) this.frameTimeSumOfSquares / (double) this.frameCount) - (avg * avg);
-        return Math.round(Math.sqrt(var));
+        return Math.sqrt(var);
     }
 
     public long getFrameTimeTotal() {
