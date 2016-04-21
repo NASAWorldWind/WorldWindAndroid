@@ -8,7 +8,6 @@ package gov.nasa.worldwind;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.globe.Globe;
-import gov.nasa.worldwind.render.DrawContext;
 
 public interface Navigator {
 

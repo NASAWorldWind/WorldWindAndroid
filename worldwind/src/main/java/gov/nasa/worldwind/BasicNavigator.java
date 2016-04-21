@@ -7,82 +7,94 @@ package gov.nasa.worldwind;
 
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.LookAt;
-import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.util.Logger;
 
 public class BasicNavigator implements Navigator {
 
-    protected Camera camera = new Camera();
+    protected double latitude;
+
+    protected double longitude;
+
+    protected double altitude;
+
+    protected double heading;
+
+    protected double tilt;
+
+    protected double roll;
 
     protected double fieldOfView = 45;
+
+    protected Camera scratchCamera = new Camera();
 
     public BasicNavigator() {
     }
 
+    // TODO remove method level synchronization
     @Override
     public synchronized double getLatitude() {
-        return this.camera.latitude;
+        return this.latitude;
     }
 
     @Override
     public synchronized Navigator setLatitude(double latitude) {
-        this.camera.latitude = latitude;
+        this.latitude = latitude;
         return this;
     }
 
     @Override
     public synchronized double getLongitude() {
-        return this.camera.longitude;
+        return this.longitude;
     }
 
     @Override
     public synchronized Navigator setLongitude(double longitude) {
-        this.camera.longitude = longitude;
+        this.longitude = longitude;
         return this;
     }
 
     @Override
     public synchronized double getAltitude() {
-        return this.camera.altitude;
+        return this.altitude;
     }
 
     @Override
     public synchronized Navigator setAltitude(double altitude) {
-        this.camera.altitude = altitude;
+        this.altitude = altitude;
         return this;
     }
 
     @Override
     public synchronized double getHeading() {
-        return this.camera.heading;
+        return this.heading;
     }
 
     @Override
     public synchronized Navigator setHeading(double headingDegrees) {
-        this.camera.heading = headingDegrees;
+        this.heading = headingDegrees;
         return this;
     }
 
     @Override
     public synchronized double getTilt() {
-        return this.camera.tilt;
+        return this.tilt;
     }
 
     @Override
     public synchronized Navigator setTilt(double tiltDegrees) {
-        this.camera.tilt = tiltDegrees;
+        this.tilt = tiltDegrees;
         return this;
     }
 
     @Override
     public synchronized double getRoll() {
-        return this.camera.roll;
+        return this.roll;
     }
 
     @Override
     public synchronized Navigator setRoll(double rollDegrees) {
-        this.camera.roll = rollDegrees;
+        this.roll = rollDegrees;
         return this;
     }
 
@@ -114,7 +126,13 @@ public class BasicNavigator implements Navigator {
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "getAsCamera", "missingResult"));
         }
 
-        result.set(this.camera);
+        result.latitude = this.latitude;
+        result.longitude = this.longitude;
+        result.altitude = this.altitude;
+        result.altitudeMode = WorldWind.ABSOLUTE;
+        result.heading = this.heading;
+        result.tilt = this.tilt;
+        result.roll = this.roll;
 
         return result;
     }
@@ -131,7 +149,12 @@ public class BasicNavigator implements Navigator {
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "setAsCamera", "missingCamera"));
         }
 
-        this.camera.set(camera); // TODO interpret altitude modes other than absolute
+        this.latitude = camera.latitude;
+        this.longitude = camera.longitude;
+        this.altitude = camera.altitude; // TODO interpret altitude modes other than absolute
+        this.heading = camera.heading;
+        this.tilt = camera.tilt;
+        this.roll = camera.roll;
 
         return this;
     }
@@ -148,7 +171,8 @@ public class BasicNavigator implements Navigator {
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "getAsLookAt", "missingResult"));
         }
 
-        globe.cameraToLookAt(this.camera, result);
+        this.getAsCamera(globe, this.scratchCamera); // get this navigator's properties as a Camera
+        globe.cameraToLookAt(this.scratchCamera, result); // convert the Camera to a LookAt
 
         return result;
     }
@@ -165,7 +189,8 @@ public class BasicNavigator implements Navigator {
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "setAsLookAt", "missingLookAt"));
         }
 
-        globe.lookAtToCamera(lookAt, this.camera); // TODO convert altitudeMode to absolute if necessary
+        globe.lookAtToCamera(lookAt, this.scratchCamera); // convert the LookAt to a Camera
+        this.setAsCamera(globe, this.scratchCamera); // set this navigator's properties as a Camera
 
         return this;
     }
