@@ -19,7 +19,7 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Runnabl
 
     protected AtmosphereLayer atmosphereLayer;
 
-    protected Handler dayNightHandler = new Handler();
+    protected Handler animationHandler = new Handler();
 
     protected boolean pauseHandler;
 
@@ -41,8 +41,8 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Runnabl
         navigator.setLatitude(20);
         navigator.setLongitude(this.sunLocation.longitude);
 
-        // Set up an Android Handler to change the day-night cycle.
-        this.dayNightHandler.postDelayed(this, 500);
+        // Set up an Android Handler to animate the day-night cycle.
+        this.animationHandler.postDelayed(this, 500);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Runnabl
         getWorldWindow().requestRender();
 
         if (!this.pauseHandler) { // stop running when this activity is paused; the Handler is resumed in onResume
-            this.dayNightHandler.postDelayed(this, 30);
+            this.animationHandler.postDelayed(this, 30);
         }
     }
 
@@ -73,8 +73,8 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Runnabl
     @Override
     protected void onResume() {
         super.onResume();
-        // Resume the Handler that changes the day-night cycle.
+        // Resume the Handler that animates the day-night cycle.
         this.pauseHandler = false;
-        this.dayNightHandler.postDelayed(this, 500);
+        this.animationHandler.postDelayed(this, 500);
     }
 }
