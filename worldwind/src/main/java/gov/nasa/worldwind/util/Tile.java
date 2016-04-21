@@ -204,12 +204,12 @@ public class Tile {
     }
 
     /**
-     * Indicates whether this tile intersects a specified frustum.
+     * Indicates whether this tile's Cartesian extent intersects a specified frustum.
      *
      * @param dc      the current draw context
      * @param frustum the frustum of interest
      *
-     * @return true if the specified frustum intersects this bounding box, otherwise false
+     * @return true if the specified frustum intersects this tile's extent, otherwise false
      *
      * @throws IllegalArgumentException If the frustum is null
      */
@@ -220,6 +220,24 @@ public class Tile {
         }
 
         return this.getExtent(dc).intersectsFrustum(frustum);
+    }
+
+    /**
+     * Indicates whether this tile intersects a specified sector.
+     *
+     * @param sector the sector of interest
+     *
+     * @return true if the specified sector intersects this tile's sector, otherwise false
+     *
+     * @throws IllegalArgumentException If the sector is null
+     */
+    public boolean intersectsSector(Sector sector) {
+        if (sector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Tile", "intersectsSector", "missingSector"));
+        }
+
+        return this.sector.intersects(sector);
     }
 
     /**

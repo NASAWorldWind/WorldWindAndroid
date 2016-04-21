@@ -137,8 +137,8 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
     }
 
     protected void addTileOrDescendants(DrawContext dc, ImageTile tile) {
-        if (!tile.intersectsFrustum(dc, dc.frustum)) {
-            return; // ignore the tile and its descendants if it's not visible
+        if (!tile.intersectsSector(this.levelSet.sector) || !tile.intersectsFrustum(dc, dc.frustum)) {
+            return; // ignore the tile and its descendants if it's not needed or not visible
         }
 
         if (tile.level.isLastLevel() || !tile.mustSubdivide(dc, this.detailControl)) {
@@ -159,7 +159,10 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
     }
 
     protected void addTile(DrawContext dc, ImageTile tile) {
-        tile.setFallbackTile(tile.hasTexture(dc) ? null : this.currentFallbackTile);
+        if (!tile.hasTexture(dc)) {
+            tile.setFallbackTile(this.currentFallbackTile);
+        }
+
         this.currentTiles.add(tile);
     }
 

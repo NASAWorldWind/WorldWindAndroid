@@ -92,8 +92,8 @@ public class BasicTessellator implements Tessellator, TileFactory {
     }
 
     protected void addTileOrDescendants(DrawContext dc, TerrainTile tile) {
-        if (!tile.intersectsFrustum(dc, dc.frustum)) {
-            return; // ignore the tile and its descendants if it's not visible
+        if (!tile.intersectsSector(this.levelSet.sector) || !tile.intersectsFrustum(dc, dc.frustum)) {
+            return; // ignore the tile and its descendants if it's not needed or not visible
         }
 
         if (tile.level.isLastLevel() || !tile.mustSubdivide(dc, this.detailControl)) {
