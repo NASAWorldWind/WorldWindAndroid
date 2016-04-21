@@ -7,6 +7,8 @@ package gov.nasa.worldwind.render;
 
 public class FrameStatistics {
 
+    private final Object lock = new Object(); // TODO remove lock and associated synchronization
+
     protected long frameTime;
 
     protected long frameTimeSum;
@@ -21,55 +23,73 @@ public class FrameStatistics {
     }
 
     public long getFrameTime() {
-        return this.frameTime;
+        synchronized (this.lock) {
+            return this.frameTime;
+        }
     }
 
     public double getFrameTimeAverage() {
-        return this.frameTimeSum / (double) this.frameCount;
+        synchronized (this.lock) {
+            return this.frameTimeSum / (double) this.frameCount;
+        }
     }
 
     public double getFrameTimeStdDev() {
-        double avg = (double) this.frameTimeSum / (double) this.frameCount;
-        double var = ((double) this.frameTimeSumOfSquares / (double) this.frameCount) - (avg * avg);
-        return Math.sqrt(var);
+        synchronized (this.lock) {
+            double avg = (double) this.frameTimeSum / (double) this.frameCount;
+            double var = ((double) this.frameTimeSumOfSquares / (double) this.frameCount) - (avg * avg);
+            return Math.sqrt(var);
+        }
     }
 
     public long getFrameTimeTotal() {
-        return this.frameTimeSum;
+        synchronized (this.lock) {
+            return this.frameTimeSum;
+        }
     }
 
     public long getFrameCount() {
-        return this.frameCount;
+        synchronized (this.lock) {
+            return this.frameCount;
+        }
     }
 
     @Override
     public String toString() {
-        return String.format(
-            "FrameStatistics{frameTime=%d, frameTimeAverage=%.1f, frameTimeStdDev=%.1f, frameTimeTotal=%d, frameCount=%d",
-            this.frameTime,
-            this.getFrameTimeAverage(),
-            this.getFrameTimeStdDev(),
-            this.frameTimeSum,
-            this.frameCount);
+        synchronized (this.lock) {
+            return String.format(
+                "FrameStatistics{frameTime=%d, frameTimeAverage=%.1f, frameTimeStdDev=%.1f, frameTimeTotal=%d, frameCount=%d",
+                this.frameTime,
+                this.getFrameTimeAverage(),
+                this.getFrameTimeStdDev(),
+                this.frameTimeSum,
+                this.frameCount);
+        }
     }
 
     public void beginFrame() {
-        this.frameBegin = System.currentTimeMillis();
+        synchronized (this.lock) {
+            this.frameBegin = System.currentTimeMillis();
+        }
     }
 
     public void endFrame() {
-        long now = System.currentTimeMillis();
-        this.frameTime = now - this.frameBegin;
-        this.frameTimeSum += this.frameTime;
-        this.frameTimeSumOfSquares += (this.frameTime * this.frameTime);
-        this.frameCount++;
+        synchronized (this.lock) {
+            long now = System.currentTimeMillis();
+            this.frameTime = now - this.frameBegin;
+            this.frameTimeSum += this.frameTime;
+            this.frameTimeSumOfSquares += (this.frameTime * this.frameTime);
+            this.frameCount++;
+        }
     }
 
     public void reset() {
-        this.frameTime = 0;
-        this.frameTimeSum = 0;
-        this.frameTimeSumOfSquares = 0;
-        this.frameCount = 0;
-        this.frameBegin = 0;
+        synchronized (this.lock) {
+            this.frameTime = 0;
+            this.frameTimeSum = 0;
+            this.frameTimeSumOfSquares = 0;
+            this.frameCount = 0;
+            this.frameBegin = 0;
+        }
     }
 }
