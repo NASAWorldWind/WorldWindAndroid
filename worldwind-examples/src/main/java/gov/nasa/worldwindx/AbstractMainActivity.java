@@ -87,7 +87,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity
     protected void onCreateStatusBar() {
         // Create a task used for polling the globe.
         // TODO: replace the polling implementation with an event driven implementation.
-        this.statusTask = new StatusTask(this); // the task is invoked in onResume()
+        //this.statusTask = new StatusTask(this); // the task is invoked in onResume()
     }
 
     @Override
@@ -98,7 +98,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         this.navigationView.setCheckedItem(selectedItemId);
 
         // Start our status information handler
-        this.statusTask.run();
+        //this.statusTask.run();
     }
 
     @Override
