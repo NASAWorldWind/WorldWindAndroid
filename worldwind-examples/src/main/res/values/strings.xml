@@ -8,6 +8,8 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="title_basic_globe">Basic Globe</string>
+    <string name="title_basic_performance_benchmark">Basic Performance Benchmark</string>
+    <string name="title_basic_stress_test">Basic Stress Test</string>
     <string name="title_camera_controls">Camera Controls</string>
     <string name="title_camera_view">Camera View</string>
     <string name="title_day_night_cycle">Day and Night Cycle</string>

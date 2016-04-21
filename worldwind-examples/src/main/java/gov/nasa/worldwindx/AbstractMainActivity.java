@@ -84,7 +84,6 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         this.navigationView.setCheckedItem(selectedItemId);
     }
 
-
     protected void onCreateStatusBar() {
         // Create a task used for polling the globe.
         // TODO: replace the polling implementation with an event driven implementation.
@@ -186,6 +185,12 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
             case R.id.nav_basic_globe_activity:
                 startActivity(new Intent(getApplicationContext(), BasicGlobeActivity.class));
+                break;
+            case R.id.nav_basic_performance_benchmark_activity:
+                startActivity(new Intent(getApplicationContext(), BasicPerformanceBenchmarkActivity.class));
+                break;
+            case R.id.nav_basic_stress_test_activity:
+                startActivity(new Intent(getApplicationContext(), BasicStressTestActivity.class));
                 break;
             case R.id.nav_camera_view_activity:
                 startActivity(new Intent(getApplicationContext(), CameraViewActivity.class));

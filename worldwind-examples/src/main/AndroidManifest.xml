@@ -23,6 +23,18 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".BasicPerformanceBenchmarkActivity"
+            android:label="@string/title_basic_performance_benchmark"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
+            android:name=".BasicStressTestActivity"
+            android:label="@string/title_basic_stress_test"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
             android:name=".CameraControlActivity"
             android:label="@string/title_camera_controls"
             android:launchMode="singleInstance"
