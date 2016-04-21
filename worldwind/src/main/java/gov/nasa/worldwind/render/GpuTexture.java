@@ -165,17 +165,19 @@ public class GpuTexture implements GpuObject, Runnable {
             Bitmap bitmap = this.decodeImage(imageSource);
 
             if (bitmap != null) {
-                Logger.log(Logger.INFO, "Image retrieval succeeded \'" + this.imageSource + "\'");
+                if (Logger.isLoggable(Logger.DEBUG)) {
+                    Logger.log(Logger.DEBUG, "Image retrieval succeeded \'" + this.imageSource + "\'");
+                }
             } else {
-                Logger.log(Logger.WARN, "Image retrieval failed \'" + this.imageSource + "\'");
+                Logger.log(Logger.ERROR, "Image retrieval failed \'" + this.imageSource + "\'");
             }
 
             return bitmap;
 
         } catch (SocketTimeoutException ignored) { // log socket timeout exceptions while suppressing the stack trace
-            Logger.log(Logger.WARN, "Socket timeout retrieving image \'" + this.imageSource + "\' bytesTransferred=" + ignored.bytesTransferred);
+            Logger.log(Logger.ERROR, "Socket timeout retrieving image \'" + this.imageSource);
         } catch (Exception logged) { // log checked exceptions with the entire stack trace
-            Logger.log(Logger.WARN, "Image retrieval failed \'" + this.imageSource + "\' with exception", logged);
+            Logger.log(Logger.ERROR, "Image retrieval failed with exception \'" + this.imageSource, logged);
         }
 
         return null;

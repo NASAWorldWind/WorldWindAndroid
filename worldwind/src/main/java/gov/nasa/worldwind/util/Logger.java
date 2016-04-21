@@ -18,6 +18,8 @@ public class Logger {
 
     public static final int INFO = Log.INFO;
 
+    public static final int DEBUG = Log.DEBUG;
+
     protected static String TAG = "gov.nasa.worldwind";
 
     protected static Map<String, String> messageTable;
@@ -82,6 +84,10 @@ public class Logger {
         messageTable.put("missingVersion", "The version is null");
         messageTable.put("missingWorldWindow", "The world window is null");
         messageTable.put("singularMatrix", "The matrix cannot be inverted");
+    }
+
+    public static boolean isLoggable(int priority) {
+        return Log.isLoggable(TAG, priority);
     }
 
     public static void log(int priority, String message) {

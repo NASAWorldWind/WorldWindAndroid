@@ -9,13 +9,14 @@ import android.support.annotation.NonNull;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class RetrievalService implements ThreadFactory, Thread.UncaughtExceptionHandler {
+public class RetrievalService implements ThreadFactory, Thread.UncaughtExceptionHandler, RejectedExecutionHandler {
 
     protected final AtomicInteger threadNumber = new AtomicInteger(1);
 
@@ -34,7 +35,9 @@ public class RetrievalService implements ThreadFactory, Thread.UncaughtException
             this.executor().execute(runnable);
             return true;
         } catch (RejectedExecutionException ignored) { // log a message but suppress the stack trace
-            Logger.log(Logger.INFO, "World Wind retrieval service rejected task \'" + runnable.toString() + "\'");
+            if (Logger.isLoggable(Logger.DEBUG)) {
+                Logger.log(Logger.DEBUG, "World Wind retrieval service rejected task \'" + runnable.toString() + "\'");
+            }
             return false;
         }
     }
@@ -52,13 +55,19 @@ public class RetrievalService implements ThreadFactory, Thread.UncaughtException
         Logger.log(Logger.WARN, "Uncaught exception during retrieval task execution \'" + thread.getName() + "\'", e);
     }
 
+    @Override
+    public void rejectedExecution(Runnable runnable, ThreadPoolExecutor executor) {
+        throw new RejectedExecutionException(); // throw an exception but suppress the message to avoid string allocation
+    }
+
     protected Executor executor() {
         if (this.executor == null) {
             this.executor = new ThreadPoolExecutor(
                 0, 8, // use between 0 and 8 threads
                 60, TimeUnit.SECONDS, // kept idle threads alive for at most 60 seconds
-                new SynchronousQueue<Runnable>(), // queue rejects tasks when the thread pool is full
-                this); // use this as the ThreadFactory
+                new SynchronousQueue<Runnable>()); // queue rejects tasks when the thread pool is full
+            ((ThreadPoolExecutor) this.executor).setThreadFactory(this);
+            ((ThreadPoolExecutor) this.executor).setRejectedExecutionHandler(this);
         }
 
         return this.executor;

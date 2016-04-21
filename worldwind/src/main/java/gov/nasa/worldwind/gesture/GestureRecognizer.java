@@ -196,8 +196,10 @@ public class GestureRecognizer {
                     this.handleActionUp(event);
                     break;
                 default:
-                    Logger.logMessage(
-                        Logger.INFO, "GestureRecognizer", "onTouchEvent", "Unrecognized event action \'" + action + "\'");
+                    if (Logger.isLoggable(Logger.DEBUG)) {
+                        Logger.logMessage(Logger.DEBUG, "GestureRecognizer", "onTouchEvent",
+                            "Unrecognized event action \'" + action + "\'");
+                    }
                     break;
             }
 

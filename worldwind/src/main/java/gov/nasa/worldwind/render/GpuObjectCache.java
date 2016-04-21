@@ -56,7 +56,9 @@ public class GpuObjectCache extends LruMemoryCache<Object, GpuObject> {
         for (GpuObject object : this.disposalQueue) {
             try {
                 object.dispose(dc);
-                Logger.log(Logger.INFO, "Disposed GPU object \'" + object + "\'");
+                if (Logger.isLoggable(Logger.DEBUG)) {
+                    Logger.log(Logger.DEBUG, "Disposed GPU object \'" + object + "\'");
+                }
             } catch (Exception e) {
                 Logger.log(Logger.ERROR, "Exception disposing GPU object \'" + object + "\'", e);
             }
