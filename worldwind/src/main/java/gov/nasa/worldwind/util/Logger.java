@@ -26,6 +26,7 @@ public class Logger {
 
     static {
         messageTable = new HashMap<>();
+        messageTable.put("errorReadingProgramSource", "Error reading program sources");
         messageTable.put("invalidBitmap", "The bitmap is null or recycled");
         messageTable.put("invalidCache", "The cache is null");
         messageTable.put("invalidClass", "The class is null or cannot be found");

@@ -31,13 +31,15 @@ public class ShowTessellationLayer extends AbstractLayer {
             return; // no terrain to render
         }
 
-        BasicProgram program = (BasicProgram) dc.gpuObjectCache.retrieveProgram(dc, BasicProgram.class);
+        // Use World Wind's basic GLSL program.
+        BasicProgram program = (BasicProgram) dc.getProgram(BasicProgram.KEY);
         if (program == null) {
-            return; // program is not in the GPU object cache yet
+            program = (BasicProgram) dc.putProgram(BasicProgram.KEY, new BasicProgram(dc.resources));
         }
 
-        // Use World Wind's basic GLSL program.
-        dc.useProgram(program);
+        if (!program.useProgram(dc)) {
+            return; // program failed to build
+        }
 
         // Configure the program to draw opaque white fragments.
         program.enableTexture(false);

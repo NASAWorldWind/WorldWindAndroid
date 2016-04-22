@@ -76,11 +76,6 @@ public class GpuTexture implements GpuObject, Runnable {
     }
 
     @Override
-    public int getObjectId() {
-        return textureId;
-    }
-
-    @Override
     public void dispose(DrawContext dc) {
         synchronized (this) { // synchronize texture disposal and loading
             if (this.textureId != 0) {

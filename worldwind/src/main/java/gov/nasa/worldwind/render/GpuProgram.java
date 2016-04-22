@@ -16,53 +16,114 @@ import gov.nasa.worldwind.util.Logger;
  */
 public class GpuProgram implements GpuObject {
 
+    protected static final int VERTEX_SHADER = 0;
+
+    protected static final int FRAGMENT_SHADER = 1;
+
+    protected String[] programSources;
+
+    protected String[] attribBindings;
+
+    /**
+     * Indicates the approximate size of the OpenGL resources referenced by this GPU program.
+     */
+    protected int programLength;
+
     /**
      * Indicates the OpenGL program object associated with this GPU program.
      */
     protected int programId;
 
-    /**
-     * Indicates the approximate size of the OpenGL resources referenced by this GPU program.
-     */
-    protected int programSize;
+    protected int[] shaderId = new int[2];
 
-    /**
-     * Indicates the OpenGL vertex shader object associated with this GPU program.
-     */
-    protected int vertexShaderId;
+    protected boolean mustBuildProgram = true;
 
-    /**
-     * Indicates the OpenGL vertex shader object associated with this GPU program.
-     */
-    protected int fragmentShaderId;
+    public GpuProgram() {
+    }
 
-    /**
-     * @param vertexShaderSource
-     * @param fragmentShaderSource
-     * @param attributeBindings
-     */
-    public GpuProgram(String vertexShaderSource, String fragmentShaderSource, String[] attributeBindings) { // TODO refactor to accept DrawContext argument
-        if (vertexShaderSource == null || fragmentShaderSource == null) {
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "GpuProgram", "constructor",
-                "The shader source is null"));
+    public String[] getProgramSources() {
+        return programSources;
+    }
+
+    public void setProgramSources(String... programSources) {
+        this.programSources = programSources;
+        this.programLength = 0;
+        this.mustBuildProgram = true;
+
+        if (programSources != null) {
+            for (String str : programSources) {
+                this.programLength += (str != null) ? str.length() : 0;
+            }
+        }
+    }
+
+    public String[] getAttribBindings() {
+        return attribBindings;
+    }
+
+    public void setAttribBindings(String... attribBindings) {
+        this.attribBindings = attribBindings;
+        this.mustBuildProgram = true;
+    }
+
+    public int getProgramLength() {
+        return this.programLength;
+    }
+
+    @Override
+    public void dispose(DrawContext dc) {
+        this.deleteProgram(dc);
+    }
+
+    public boolean useProgram(DrawContext dc) {
+        if (this.mustBuildProgram) {
+            // Clear the program's build dirty bit.
+            this.mustBuildProgram = false;
+
+            // Remove any existing GLSL program.
+            if (this.programId != 0) {
+                this.deleteProgram(dc);
+            }
+
+            // Compile and link the GLSL program sources.
+            if (this.programSources != null) {
+                this.buildProgram(dc, this.programSources, this.attribBindings);
+            }
+
+            // Give subclasses an opportunity to initialize default GLSL uniform values.
+            if (this.programId != 0) {
+                int prevProgram = dc.activeProgram();
+                dc.useProgram(this.programId);
+                this.initProgram(dc);
+                dc.useProgram(prevProgram);
+            }
         }
 
+        if (this.programId != 0) {
+            dc.useProgram(this.programId);
+        }
+
+        return this.programId != 0;
+    }
+
+    protected void buildProgram(DrawContext dc, String[] programSource, String[] attribBindings) {
         int[] status = new int[1];
 
         int vs = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
-        GLES20.glShaderSource(vs, vertexShaderSource);
+        GLES20.glShaderSource(vs, programSource[VERTEX_SHADER]);
         GLES20.glCompileShader(vs);
         GLES20.glGetShaderiv(vs, GLES20.GL_COMPILE_STATUS, status, 0);
 
         if (status[0] != GLES20.GL_TRUE) {
             String msg = GLES20.glGetShaderInfoLog(vs);
             GLES20.glDeleteShader(vs);
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "GpuProgram", "constructor",
-                "Error compiling GL vertex shader \n" + msg));
+            Logger.logMessage(Logger.ERROR, this.getClass().getSimpleName(), "buildProgram",
+                "Error compiling GL vertex shader \n" + msg);
+            return;
         }
 
         int fs = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
-        GLES20.glShaderSource(fs, fragmentShaderSource);
+        GLES20.glShaderSource(fs, programSource[FRAGMENT_SHADER]);
         GLES20.glCompileShader(fs);
         GLES20.glGetShaderiv(vs, GLES20.GL_COMPILE_STATUS, status, 0);
 
@@ -70,17 +131,18 @@ public class GpuProgram implements GpuObject {
             String msg = GLES20.glGetShaderInfoLog(fs);
             GLES20.glDeleteShader(vs);
             GLES20.glDeleteShader(fs);
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "GpuProgram", "constructor",
-                "Error compiling GL fragment shader \n" + msg));
+            Logger.logMessage(Logger.ERROR, this.getClass().getSimpleName(), "buildProgram",
+                "Error compiling GL fragment shader \n" + msg);
+            return;
         }
 
         int program = GLES20.glCreateProgram();
         GLES20.glAttachShader(program, vs);
         GLES20.glAttachShader(program, fs);
 
-        if (attributeBindings != null) {
-            for (int i = 0; i < attributeBindings.length; i++) {
-                GLES20.glBindAttribLocation(program, i, attributeBindings[i]);
+        if (attribBindings != null) {
+            for (int i = 0; i < attribBindings.length; i++) {
+                GLES20.glBindAttribLocation(program, i, attribBindings[i]);
             }
         }
 
@@ -92,28 +154,28 @@ public class GpuProgram implements GpuObject {
             GLES20.glDeleteProgram(program);
             GLES20.glDeleteShader(vs);
             GLES20.glDeleteShader(fs);
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "GpuProgram", "constructor",
-                "Error linking GL program \n" + msg));
+            Logger.logMessage(Logger.ERROR, this.getClass().getSimpleName(), "buildProgram",
+                "Error linking GL program \n" + msg);
+            return;
         }
 
         this.programId = program;
-        this.programSize = vertexShaderSource.length() + fragmentShaderSource.length(); // proportional to program complexity
-        this.vertexShaderId = vs;
-        this.fragmentShaderId = fs;
+        this.shaderId[0] = vs;
+        this.shaderId[1] = fs;
     }
 
-    @Override
-    public int getObjectId() {
-        return programId;
+    protected void initProgram(DrawContext dc) {
+
     }
 
-    @Override
-    public void dispose(DrawContext dc) {
+    protected void deleteProgram(DrawContext dc) {
         if (this.programId != 0) {
             GLES20.glDeleteProgram(this.programId);
-            GLES20.glDeleteShader(this.vertexShaderId);
-            GLES20.glDeleteShader(this.fragmentShaderId);
-            this.programId = this.vertexShaderId = this.fragmentShaderId = 0;
+            GLES20.glDeleteShader(this.shaderId[VERTEX_SHADER]);
+            GLES20.glDeleteShader(this.shaderId[FRAGMENT_SHADER]);
+            this.programId = 0;
+            this.shaderId[VERTEX_SHADER] = 0;
+            this.shaderId[FRAGMENT_SHADER] = 0;
         }
     }
 }

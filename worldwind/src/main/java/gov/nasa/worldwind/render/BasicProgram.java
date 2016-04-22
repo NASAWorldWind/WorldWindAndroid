@@ -5,9 +5,8 @@
 
 package gov.nasa.worldwind.render;
 
+import android.content.res.Resources;
 import android.opengl.GLES20;
-
-import java.io.IOException;
 
 import gov.nasa.worldwind.R;
 import gov.nasa.worldwind.geom.Matrix3;
@@ -16,6 +15,8 @@ import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
 
 public class BasicProgram extends GpuProgram {
+
+    public static final Object KEY = BasicProgram.class.getName();
 
     protected int enableTextureId;
 
@@ -29,18 +30,18 @@ public class BasicProgram extends GpuProgram {
 
     protected float[] array = new float[16];
 
-    public BasicProgram(DrawContext dc) throws IOException {
-        super(WWUtil.readResourceAsText(dc.resources, R.raw.gov_nasa_worldwind_basicprogram_vert),
-            WWUtil.readResourceAsText(dc.resources, R.raw.gov_nasa_worldwind_basicprogram_frag),
-            new String[]{"vertexPoint", "vertexTexCoord"});
-        this.init();
+    public BasicProgram(Resources resources) {
+        try {
+            String vs = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_basicprogram_vert);
+            String fs = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_basicprogram_frag);
+            this.setProgramSources(vs, fs);
+            this.setAttribBindings("vertexPoint", "vertexTexCoord");
+        } catch (Exception logged) {
+            Logger.logMessage(Logger.ERROR, "BasicProgram", "constructor", "errorReadingProgramSource", logged);
+        }
     }
 
-    protected void init() {
-        int[] prevProgram = new int[1];
-        GLES20.glGetIntegerv(GLES20.GL_CURRENT_PROGRAM, prevProgram, 0);
-        GLES20.glUseProgram(this.programId);
-
+    protected void initProgram(DrawContext dc) {
         this.enableTextureId = GLES20.glGetUniformLocation(this.programId, "enableTexture");
         GLES20.glUniform1i(this.enableTextureId, 0); // disable texture
 
@@ -57,8 +58,6 @@ public class BasicProgram extends GpuProgram {
 
         this.texSamplerId = GLES20.glGetUniformLocation(this.programId, "texSampler");
         GLES20.glUniform1i(this.texSamplerId, 0); // GL_TEXTURE0
-
-        GLES20.glUseProgram(prevProgram[0]);
     }
 
     public void enableTexture(boolean enable) {
@@ -66,21 +65,11 @@ public class BasicProgram extends GpuProgram {
     }
 
     public void loadModelviewProjection(Matrix4 matrix) {
-        if (matrix == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicProgram", "loadModelviewProjection", "missingMatrix"));
-        }
-
         matrix.transposeToArray(this.array, 0);
         GLES20.glUniformMatrix4fv(this.mvpMatrixId, 1, false, this.array, 0);
     }
 
     public void loadTexCoordMatrix(Matrix3 matrix) {
-        if (matrix == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicProgram", "loadTexCoordMatrix", "missingMatrix"));
-        }
-
         matrix.transposeToArray(this.array, 0);
         GLES20.glUniformMatrix3fv(this.texCoordMatrixId, 1, false, this.array, 0);
     }

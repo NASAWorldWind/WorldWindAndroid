@@ -84,13 +84,14 @@ public class AtmosphereLayer extends AbstractLayer {
 
     protected void drawSky(DrawContext dc) {
 
-        AtmosphereProgram program = (AtmosphereProgram) dc.gpuObjectCache.retrieveProgram(dc, SkyProgram.class);
+        SkyProgram program = (SkyProgram) dc.getProgram(SkyProgram.KEY);
         if (program == null) {
-            return; // program is not in the GPU object cache yet
+            program = (SkyProgram) dc.putProgram(SkyProgram.KEY, new SkyProgram(dc.resources));
         }
 
-        // Use this layer's GLSL program.
-        dc.useProgram(program);
+        if (!program.useProgram(dc)) {
+            return; // program failed to build
+        }
 
         // Use the draw context's globe.
         program.loadGlobe(dc.globe);
@@ -134,13 +135,14 @@ public class AtmosphereLayer extends AbstractLayer {
             return; // no terrain surface to render on
         }
 
-        AtmosphereProgram program = (AtmosphereProgram) dc.gpuObjectCache.retrieveProgram(dc, GroundProgram.class);
+        GroundProgram program = (GroundProgram) dc.getProgram(GroundProgram.KEY);
         if (program == null) {
-            return; // program is not in the GPU object cache yet
+            program = (GroundProgram) dc.putProgram(GroundProgram.KEY, new GroundProgram(dc.resources));
         }
 
-        // Use this layer's GLSL program.
-        dc.useProgram(program);
+        if (!program.useProgram(dc)) {
+            return; // program failed to build
+        }
 
         // Use the draw context's globe.
         program.loadGlobe(dc.globe);

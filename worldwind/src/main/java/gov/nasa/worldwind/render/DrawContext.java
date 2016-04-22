@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.opengl.GLES20;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -284,6 +285,17 @@ public class DrawContext {
         return true;
     }
 
+    public GpuProgram getProgram(Object key) {
+        return (GpuProgram) this.gpuObjectCache.get(key);
+    }
+
+    public GpuProgram putProgram(Object key, GpuProgram program) {
+        this.gpuObjectCache.put(key, program, (program != null) ? program.getProgramLength() : 0);
+        return program;
+    }
+
+    // TODO complementary get/put methods for GpuTexture
+
     public void offerOrderedRenderable(OrderedRenderable renderable, double eyeDistance) {
         this.orderedRenderables.offerRenderable(renderable, eyeDistance);
     }
@@ -341,23 +353,26 @@ public class DrawContext {
     }
 
     public void contextLost() {
-        // Reset properties tracking the current OpenGL state, which are now invalid.
+        // Clear objects and values associated with the current OpenGL context.
         this.glProgramId = 0;
         this.glTexUnit = GLES20.GL_TEXTURE0;
+        Arrays.fill(this.glTexId, 0);
+    }
 
-        for (int i = 0; i < this.glTexId.length; i++) {
-            this.glTexId[i] = 0;
+    public int activeProgram() {
+        return this.glProgramId;
+    }
+
+    public void useProgram(int programId) {
+        if (this.glProgramId != programId) {
+            this.glProgramId = programId;
+            GLES20.glUseProgram(programId);
         }
     }
 
-    // TODO refactor to accept a programId argument
-    public void useProgram(GpuProgram program) {
-        int objectId = (program != null) ? program.getObjectId() : 0;
-
-        if (this.glProgramId != objectId) {
-            this.glProgramId = objectId;
-            GLES20.glUseProgram(objectId);
-        }
+    public int activeTexture(int texUnit) {
+        int texUnitIndex = texUnit - GLES20.GL_TEXTURE0;
+        return this.glTexId[texUnitIndex];
     }
 
     public void bindTexture(int texUnit, int textureId) {

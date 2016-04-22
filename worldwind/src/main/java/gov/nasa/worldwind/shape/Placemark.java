@@ -741,11 +741,14 @@ public class Placemark extends AbstractRenderable {
          */
         protected void drawOrderedPlacemark(DrawContext dc) {
             // Use World Wind's basic GLSL program.
-            BasicProgram program = (BasicProgram) dc.gpuObjectCache.retrieveProgram(dc, BasicProgram.class);
+            BasicProgram program = (BasicProgram) dc.getProgram(BasicProgram.KEY);
             if (program == null) {
-                return; // program is not in the GPU object cache yet
+                program = (BasicProgram) dc.putProgram(BasicProgram.KEY, new BasicProgram(dc.resources));
             }
-            dc.useProgram(program);
+
+            if (!program.useProgram(dc)) {
+                return; // program failed to build
+            }
 
             boolean depthTest = true;
 // TODO: move to 792

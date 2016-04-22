@@ -39,13 +39,14 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
             return; // surface tile's texture is not in the GPU object cache yet
         }
 
-        SurfaceTileProgram program = (SurfaceTileProgram) dc.gpuObjectCache.retrieveProgram(dc, SurfaceTileProgram.class);
+        SurfaceTileProgram program = (SurfaceTileProgram) dc.getProgram(SurfaceTileProgram.KEY);
         if (program == null) {
-            return; // program is not in the GPU object cache yet
+            program = (SurfaceTileProgram) dc.putProgram(SurfaceTileProgram.KEY, new SurfaceTileProgram(dc.resources));
         }
 
-        // Use World Wind's surface tile GLSL program.
-        dc.useProgram(program);
+        if (!program.useProgram(dc)) {
+            return; // program failed to build
+        }
 
         // Get the draw context's tessellated terrain and the surface tile's sector.
         Terrain terrain = dc.terrain;
@@ -96,13 +97,14 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
                 Logger.logMessage(Logger.ERROR, "BasicSurfaceTileRenderer", "renderTiles", "missingList"));
         }
 
-        SurfaceTileProgram program = (SurfaceTileProgram) dc.gpuObjectCache.retrieveProgram(dc, SurfaceTileProgram.class);
+        SurfaceTileProgram program = (SurfaceTileProgram) dc.getProgram(SurfaceTileProgram.KEY);
         if (program == null) {
-            return; // program is not in the GPU object cache yet
+            program = (SurfaceTileProgram) dc.putProgram(SurfaceTileProgram.KEY, new SurfaceTileProgram(dc.resources));
         }
 
-        // Use World Wind's surface tile GLSL program.
-        dc.useProgram(program);
+        if (!program.useProgram(dc)) {
+            return; // program failed to build
+        }
 
         // Get the draw context's tessellated terrain.
         Terrain terrain = dc.terrain;
