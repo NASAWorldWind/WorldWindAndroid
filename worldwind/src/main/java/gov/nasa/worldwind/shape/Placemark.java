@@ -630,6 +630,9 @@ public class Placemark extends AbstractRenderable {
             // Prepare the image
             ////////////////////////
 
+            // Make multitexture unit 0 active.
+            dc.activeTextureUnit(GLES20.GL_TEXTURE0);
+
             // Get the active texture, if applicable, creating it if necessary from the imageSource object.
             if (this.attributes.imageSource != null) {
                 this.activeTexture = (GpuTexture) dc.gpuObjectCache.get(this.attributes.imageSource);
@@ -668,7 +671,7 @@ public class Placemark extends AbstractRenderable {
             // image offset and image scale. The image offset is defined with its origin at the image's bottom-left corner and
             // axes that extend up and to the right from the origin point. When the placemark has no active texture the image
             // scale defines the image size and no other scaling is applied.
-            if (this.activeTexture != null && this.activeTexture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
+            if (this.activeTexture != null && this.activeTexture.bindTexture(dc)) {
                 int w = this.activeTexture.getImageWidth();
                 int h = this.activeTexture.getImageHeight();
                 double s = this.attributes.imageScale * visibilityScale;
@@ -713,7 +716,7 @@ public class Placemark extends AbstractRenderable {
                     // TODO: Create the label bitmap and texture
                     //this.labelTexture = dc.createFontTexture(Placemark.this.displayName, labelFont, false);
                 }
-                if (this.labelTexture != null && this.labelTexture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
+                if (this.labelTexture != null && this.labelTexture.bindTexture(dc)) {
 
                     if (this.labelTransform == null) {
                         this.labelTransform = new Matrix4();
@@ -821,7 +824,9 @@ public class Placemark extends AbstractRenderable {
             program.loadTexCoordMatrix(this.texCoordMatrix);
 
             if (this.activeTexture != null) {
-                boolean bound = this.activeTexture.bindTexture(dc, GLES20.GL_TEXTURE0);
+                // Make multitexture unit 0 active.
+                dc.activeTextureUnit(GLES20.GL_TEXTURE0);
+                boolean bound = this.activeTexture.bindTexture(dc);
                 program.enableTexture(bound);
             } else {
                 program.enableTexture(false);

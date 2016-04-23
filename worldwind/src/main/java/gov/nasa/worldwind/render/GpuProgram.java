@@ -92,10 +92,13 @@ public class GpuProgram implements GpuObject {
 
             // Give subclasses an opportunity to initialize default GLSL uniform values.
             if (this.programId != 0) {
-                int prevProgram = dc.activeProgram();
-                dc.useProgram(this.programId);
-                this.initProgram(dc);
-                dc.useProgram(prevProgram);
+                int currentProgram = dc.currentProgram();
+                try {
+                    dc.useProgram(this.programId);
+                    this.initProgram(dc);
+                } finally {
+                    dc.useProgram(currentProgram);
+                }
             }
         }
 

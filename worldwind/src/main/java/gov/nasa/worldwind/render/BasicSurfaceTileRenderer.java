@@ -35,7 +35,10 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
                 Logger.logMessage(Logger.ERROR, "BasicSurfaceTileRenderer", "renderTile", "missingTile"));
         }
 
-        if (!texture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
+        // Make multitexture unit 0 active.
+        dc.activeTextureUnit(GLES20.GL_TEXTURE0);
+
+        if (!texture.bindTexture(dc)) {
             return; // surface tile's texture is not in the GPU object cache yet
         }
 
@@ -113,6 +116,9 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
         GLES20.glEnableVertexAttribArray(1);
         terrain.useVertexTexCoordAttrib(dc, 1);
 
+        // Make multitexture unit 0 active.
+        dc.activeTextureUnit(GLES20.GL_TEXTURE0);
+
         for (int idx = 0, len = terrain.getTileCount(); idx < len; idx++) {
 
             // Collect the surface tiles that intersect the terrain tile.
@@ -140,7 +146,7 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
 
             for (SurfaceTile texture : this.intersectingSurfaceTiles) {
 
-                if (!texture.bindTexture(dc, GLES20.GL_TEXTURE0)) {
+                if (!texture.bindTexture(dc)) {
                     continue; // surface tile's texture is not in the GPU object cache yet
                 }
 

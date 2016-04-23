@@ -51,18 +51,18 @@ public class ImageTile extends Tile implements SurfaceTile {
     }
 
     @Override
-    public boolean bindTexture(DrawContext dc, int texUnit) {
+    public boolean bindTexture(DrawContext dc) {
         if (this.imageSource != null) {
             GpuTexture texture = (GpuTexture) dc.gpuObjectCache.get(this.imageSource);
             if (texture == null) {
                 texture = new GpuTexture(dc, this.imageSource); // adds itself to the GPU object cache
             }
-            if (texture.bindTexture(dc, texUnit)) {
+            if (texture.bindTexture(dc)) {
                 return true;
             }
         }
 
-        return (this.fallbackTile != null) && this.fallbackTile.bindTexture(dc, texUnit);
+        return (this.fallbackTile != null) && this.fallbackTile.bindTexture(dc);
     }
 
     @Override

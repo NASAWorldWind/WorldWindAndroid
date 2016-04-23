@@ -165,7 +165,11 @@ public class AtmosphereLayer extends AbstractLayer {
                 texture = new GpuTexture(dc, this.nightImageSource);
             }
 
-            textureBound = texture.bindTexture(dc, GLES20.GL_TEXTURE0);
+            // Make multitexture unit 0 active.
+            dc.activeTextureUnit(GLES20.GL_TEXTURE0);
+
+            // Attempt to bind the night image texture.
+            textureBound = texture.bindTexture(dc);
         }
 
         // Get the draw context's modelview projection matrix.

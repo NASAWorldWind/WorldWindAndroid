@@ -99,7 +99,7 @@ public class GpuTexture implements GpuObject, Runnable {
         return (this.textureId != 0) || (this.imageBitmap != null);
     }
 
-    public boolean bindTexture(DrawContext dc, int texUnit) {
+    public boolean bindTexture(DrawContext dc) {
         if (this.mustLoadImage()) {
             this.loadImage(dc, this.imageBitmap);
             this.imageBitmap = null;
@@ -110,7 +110,7 @@ public class GpuTexture implements GpuObject, Runnable {
         }
 
         if (this.textureId != 0) {
-            dc.bindTexture(texUnit, this.textureId);
+            dc.bindTexture(this.textureId);
         }
 
         return this.textureId != 0;

@@ -78,11 +78,11 @@ public class DrawContext {
 
     protected Map<Object, Object> userProperties = new HashMap<>();
 
-    protected int glProgramId;
+    protected int programId;
 
-    protected int glTexUnit = GLES20.GL_TEXTURE0;
+    protected int textureUnit = GLES20.GL_TEXTURE0;
 
-    protected int[] glTexId = new int[32];
+    protected int[] textureId = new int[32];
 
     public DrawContext() {
     }
@@ -354,36 +354,90 @@ public class DrawContext {
 
     public void contextLost() {
         // Clear objects and values associated with the current OpenGL context.
-        this.glProgramId = 0;
-        this.glTexUnit = GLES20.GL_TEXTURE0;
-        Arrays.fill(this.glTexId, 0);
+        this.programId = 0;
+        this.textureUnit = GLES20.GL_TEXTURE0;
+        Arrays.fill(this.textureId, 0);
     }
 
-    public int activeProgram() {
-        return this.glProgramId;
+    /**
+     * Returns the name of the OpenGL program object that is currently active.
+     *
+     * @return the currently active program object, or 0 if no program object is active
+     */
+    public int currentProgram() {
+        return this.programId;
     }
 
+    /**
+     * Makes an OpenGL program object active as part of current rendering state. This has no effect if the specified
+     * program object is already active. The default is program 0, indicating that no program is active.
+     *
+     * @param programId the name of the OpenGL program object to make active, or 0 to make no program active
+     */
     public void useProgram(int programId) {
-        if (this.glProgramId != programId) {
-            this.glProgramId = programId;
+        if (this.programId != programId) {
+            this.programId = programId;
             GLES20.glUseProgram(programId);
         }
     }
 
-    public int activeTexture(int texUnit) {
-        int texUnitIndex = texUnit - GLES20.GL_TEXTURE0;
-        return this.glTexId[texUnitIndex];
+    /**
+     * Returns the OpenGL multitexture unit that is currently active. Returns a value from the GL_TEXTUREi enumeration,
+     * where i ranges from 0 to 32.
+     *
+     * @return the currently active multitexture unit.
+     */
+    public int currentTextureUnit() {
+        return this.textureUnit;
     }
 
-    public void bindTexture(int texUnit, int textureId) {
-        if (this.glTexUnit != texUnit) {
-            this.glTexUnit = texUnit;
-            GLES20.glActiveTexture(texUnit);
+    /**
+     * Specifies the OpenGL multitexture unit to make active. This has no effect if the specified multitexture unit is
+     * already active. The default is GL_TEXTURE0.
+     *
+     * @param textureUnit the multitexture unit, one of GL_TEXTUREi, where i ranges from 0 to 32.
+     */
+    public void activeTextureUnit(int textureUnit) {
+        if (this.textureUnit != textureUnit) {
+            this.textureUnit = textureUnit;
+            GLES20.glActiveTexture(textureUnit);
         }
+    }
 
-        int texUnitIndex = texUnit - GLES20.GL_TEXTURE0;
-        if (this.glTexId[texUnitIndex] != textureId) {
-            this.glTexId[texUnitIndex] = textureId;
+    /**
+     * Returns the name of the OpenGL texture 2D object currently bound to the active multitexture unit. The active
+     * multitexture unit may be determined by calling currentTextureUnit.
+     *
+     * @return the currently bound texture 2D object, or 0 if no texture object is bound
+     */
+    public int currentTexture() {
+        int textureUnitIndex = this.textureUnit - GLES20.GL_TEXTURE0;
+        return this.textureId[textureUnitIndex];
+    }
+
+    /**
+     * Returns the name of the OpenGL texture 2D object currently bound to the specified multitexture unit.
+     *
+     * @param textureUnit the multitexture unit, one of GL_TEXTUREi, where i ranges from 0 to 32.
+     *
+     * @return the currently bound texture 2D object, or 0 if no texture object is bound
+     */
+    public int currentTexture(int textureUnit) {
+        int textureUnitIndex = textureUnit - GLES20.GL_TEXTURE0;
+        return this.textureId[textureUnitIndex];
+    }
+
+    /**
+     * Makes an OpenGL texture 2D object bound to the specified multitexture unit. This has no effect if the specified
+     * texture object is already bound to the multitexture unit. The default is texture 0, indicating that no texture is
+     * bound.
+     *
+     * @param textureId the name of the OpenGL texture 2D object to make active, or 0 to make no texture active
+     */
+    public void bindTexture(int textureId) {
+        int textureUnitIndex = this.textureUnit - GLES20.GL_TEXTURE0;
+        if (this.textureId[textureUnitIndex] != textureId) {
+            this.textureId[textureUnitIndex] = textureId;
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
         }
     }
