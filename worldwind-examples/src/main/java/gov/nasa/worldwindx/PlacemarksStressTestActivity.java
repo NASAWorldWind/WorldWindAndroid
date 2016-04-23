@@ -16,6 +16,7 @@ import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.layer.ShowTessellationLayer;
+import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
 
@@ -52,17 +53,17 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
 
         // Create some placemarks at a known locations
         Placemark origin = new Placemark(Position.fromDegrees(0, 0, 1e5),
-            PlacemarkAttributes.withImageAndLabelAndLeaderLine(R.drawable.pushpin_plain_yellow).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
-            "Origin");
+            PlacemarkAttributes.withImageAndLabelAndLeaderLine(ImageSource.fromResource(R.drawable.pushpin_plain_yellow)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
+                "Origin");
         Placemark northPole = new Placemark(Position.fromDegrees(90, 0, 1e5),
-            PlacemarkAttributes.withImageAndLabelAndLeaderLine(R.drawable.pushpin_plain_white).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
-            "North Pole");
+            PlacemarkAttributes.withImageAndLabelAndLeaderLine(ImageSource.fromResource(R.drawable.pushpin_plain_white)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
+                "North Pole");
         Placemark southPole = new Placemark(Position.fromDegrees(-90, 0, 0),
-            PlacemarkAttributes.withImageAndLabel(R.drawable.pushpin_plain_black).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
-            "South Pole");
+            PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.pushpin_plain_black)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
+                "South Pole");
         Placemark antiMeridian = new Placemark(Position.fromDegrees(0, 180, 0),
-            PlacemarkAttributes.withImageAndLabel(R.drawable.pushpin_plain_green).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
-            "Anti-meridian");
+            PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.pushpin_plain_green)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
+                "Anti-meridian");
 
         placemarksLayer.addRenderable(origin);
         placemarksLayer.addRenderable(northPole);
@@ -100,7 +101,7 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
 
 
         // Create pushpins anchored at the "pinpoints" with eye distance scaling
-        PlacemarkAttributes attributes = PlacemarkAttributes.withImage(R.drawable.pushpin_plain_red)
+        PlacemarkAttributes attributes = PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.pushpin_plain_red))
             .setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN);
         for (int i = 0; i < NUM_PLACEMARKS; i++) {
             // Create an even distribution of latitude and longitudes across the globe.

@@ -10,6 +10,7 @@ import java.util.List;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.ImageTile;
 import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.LevelSet;
@@ -111,7 +112,8 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
         ImageTile tile = new ImageTile(sector, level, row, column);
 
         if (this.tileUrlFactory != null && this.imageFormat != null) {
-            tile.setImageUrl(this.tileUrlFactory.urlForTile(tile, this.imageFormat));
+            String urlString = this.tileUrlFactory.urlForTile(tile, this.imageFormat);
+            tile.setImageSource(ImageSource.fromUrl(urlString));
         }
 
         return tile;

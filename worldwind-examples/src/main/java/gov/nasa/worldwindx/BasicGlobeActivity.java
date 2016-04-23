@@ -51,7 +51,6 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         this.wwd.getLayers().addLayer(new BackgroundLayer());
         this.wwd.getLayers().addLayer(new BlueMarbleLandsatLayer());
         this.wwd.getLayers().addLayer(new AtmosphereLayer());
-
     }
 
     @Override

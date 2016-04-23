@@ -9,6 +9,7 @@ import android.os.Bundle;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layer.RenderableLayer;
+import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.shape.SurfaceImage;
 
 public class SurfaceImageActivity extends BasicGlobeActivity {
@@ -25,13 +26,13 @@ public class SurfaceImageActivity extends BasicGlobeActivity {
         // Configure a Surface Image to display an Android resource showing the NASA logo.
         Sector sector = new Sector(37.46, 15.5, 0.5, 0.6);
         int resourceId = R.drawable.nasa_logo;
-        SurfaceImage surfaceImageResource = new SurfaceImage(sector, resourceId);
+        SurfaceImage surfaceImageResource = new SurfaceImage(sector, ImageSource.fromResource(resourceId));
 
         // Configure a Surface Image to display a remote image showing Mount Etna erupting on July 13th, 2001.
         // TODO sector constructor from North, South, East, West coordinates
         sector = new Sector(37.46543388598137, 14.60128369746704, 0.45360804083528, 0.75704283995502);
         String urlString = "http://kml-samples.googlecode.com/svn/trunk/resources/etna.jpg";
-        SurfaceImage surfaceImageUrl = new SurfaceImage(sector, urlString);
+        SurfaceImage surfaceImageUrl = new SurfaceImage(sector, ImageSource.fromUrl(urlString));
 
         // Add a World Window layer that displays the Surface Image, just before the Atmosphere layer.
         RenderableLayer layer = new RenderableLayer("Surface Image");

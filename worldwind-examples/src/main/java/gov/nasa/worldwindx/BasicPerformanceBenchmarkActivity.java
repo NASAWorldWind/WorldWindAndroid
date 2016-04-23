@@ -27,6 +27,7 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.layer.RenderableLayer;
+import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
 import gov.nasa.worldwind.util.Logger;
@@ -132,10 +133,10 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
 
         RenderableLayer layer = new RenderableLayer("Placemarks");
         PlacemarkAttributes[] attrs = {
-            PlacemarkAttributes.withImage(R.drawable.air_fixwing),
-            PlacemarkAttributes.withImage(R.drawable.airplane),
-            PlacemarkAttributes.withImage(R.drawable.airport),
-            PlacemarkAttributes.withImage(R.drawable.airport_terminal)};
+            PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.air_fixwing)),
+            PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.airplane)),
+            PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.airport)),
+            PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.airport_terminal))};
 
         BufferedReader reader = null;
         try {

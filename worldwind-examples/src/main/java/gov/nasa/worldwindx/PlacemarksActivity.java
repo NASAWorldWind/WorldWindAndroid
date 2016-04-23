@@ -15,6 +15,7 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.render.Color;
+import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
 
@@ -58,14 +59,14 @@ public class PlacemarksActivity extends BasicGlobeActivity {
         // The image is scaled to 1.5 times its original size.
         Placemark airplane = new Placemark(
             Position.fromDegrees(34.260, -119.2, 5000),
-            PlacemarkAttributes.withImageAndLeaderLine(R.drawable.air_fixwing).setImageScale(1.5));
+            PlacemarkAttributes.withImageAndLeaderLine(ImageSource.fromResource(R.drawable.air_fixwing)).setImageScale(1.5));
 
         // Create an image-based placemark with a label at Oxnard Airport, CA. This placemark demonstrates creation
         // with a constructor and a convenient PlacemarkAttributes factory method. The image is scaled to 2x
         // its original size, with the bottom center of the image anchored at the geographic position.
         Placemark airport = new Placemark(
             Position.fromDegrees(34.200, -119.208, 0),
-            PlacemarkAttributes.withImageAndLabel(R.drawable.airport_terminal).setImageOffset(Offset.BOTTOM_CENTER).setImageScale(2),
+            PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.airport_terminal)).setImageOffset(Offset.BOTTOM_CENTER).setImageScale(2),
             "Oxnard Airport");
 
 

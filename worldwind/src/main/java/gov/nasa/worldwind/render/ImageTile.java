@@ -12,7 +12,7 @@ import gov.nasa.worldwind.util.Tile;
 
 public class ImageTile extends Tile implements SurfaceTile {
 
-    protected String imageUrl;
+    protected ImageSource imageSource;
 
     protected ImageTile fallbackTile;
 
@@ -20,12 +20,12 @@ public class ImageTile extends Tile implements SurfaceTile {
         super(sector, level, row, column);
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public ImageSource getImageSource() {
+        return imageSource;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setImageSource(ImageSource imageSource) {
+        this.imageSource = imageSource;
     }
 
     public ImageTile getFallbackTile() {
@@ -42,8 +42,8 @@ public class ImageTile extends Tile implements SurfaceTile {
     }
 
     public boolean hasTexture(DrawContext dc) {
-        if (this.imageUrl != null) {
-            GpuTexture texture = (GpuTexture) dc.gpuObjectCache.get(this.imageUrl);
+        if (this.imageSource != null) {
+            GpuTexture texture = (GpuTexture) dc.gpuObjectCache.get(this.imageSource);
             return (texture != null) && texture.hasTexture();
         }
 
@@ -52,10 +52,10 @@ public class ImageTile extends Tile implements SurfaceTile {
 
     @Override
     public boolean bindTexture(DrawContext dc, int texUnit) {
-        if (this.imageUrl != null) {
-            GpuTexture texture = (GpuTexture) dc.gpuObjectCache.get(this.imageUrl);
+        if (this.imageSource != null) {
+            GpuTexture texture = (GpuTexture) dc.gpuObjectCache.get(this.imageSource);
             if (texture == null) {
-                texture = new GpuTexture(dc, this.imageUrl); // adds itself to the GPU object cache
+                texture = new GpuTexture(dc, this.imageSource); // adds itself to the GPU object cache
             }
             if (texture.bindTexture(dc, texUnit)) {
                 return true;
@@ -67,8 +67,8 @@ public class ImageTile extends Tile implements SurfaceTile {
 
     @Override
     public boolean applyTexCoordTransform(DrawContext dc, Matrix3 result) {
-        if (this.imageUrl != null) {
-            GpuTexture texture = (GpuTexture) dc.gpuObjectCache.get(this.imageUrl);
+        if (this.imageSource != null) {
+            GpuTexture texture = (GpuTexture) dc.gpuObjectCache.get(this.imageSource);
             if (texture != null && texture.applyTexCoordTransform(result)) {
                 return true; // use this surface tile's tex coord transform
             }

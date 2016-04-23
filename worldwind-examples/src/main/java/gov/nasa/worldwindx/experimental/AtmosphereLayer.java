@@ -5,6 +5,7 @@
 
 package gov.nasa.worldwindx.experimental;
 
+import android.media.Image;
 import android.opengl.GLES20;
 
 import java.nio.ByteBuffer;
@@ -22,11 +23,12 @@ import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.layer.AbstractLayer;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.GpuTexture;
+import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwindx.R;
 
 public class AtmosphereLayer extends AbstractLayer {
 
-    protected Object nightImageSource;
+    protected ImageSource nightImageSource;
 
     protected Location lightLocation = null;
 
@@ -48,19 +50,14 @@ public class AtmosphereLayer extends AbstractLayer {
 
     public AtmosphereLayer() {
         super("Atmosphere");
-        this.nightImageSource = R.drawable.dnb_land_ocean_ice_2012;
+        this.nightImageSource = ImageSource.fromResource(R.drawable.dnb_land_ocean_ice_2012);
     }
 
-    public AtmosphereLayer(Object nightImageSource) {
-        super("Atmosphere");
-        this.nightImageSource = nightImageSource;
-    }
-
-    public Object getNightImageSource() {
+    public ImageSource getNightImageSource() {
         return nightImageSource;
     }
 
-    public void setNightImageSource(Object nightImageSource) {
+    public void setNightImageSource(ImageSource nightImageSource) {
         this.nightImageSource = nightImageSource;
     }
 

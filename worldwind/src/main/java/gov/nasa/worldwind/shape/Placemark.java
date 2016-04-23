@@ -24,6 +24,7 @@ import gov.nasa.worldwind.render.BasicProgram;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.GpuTexture;
+import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.OrderedRenderable;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWMath;
@@ -151,7 +152,7 @@ public class Placemark extends AbstractRenderable {
      *
      * @return
      */
-    public static Placemark simpleImage(Position position, Object imageSource) {
+    public static Placemark simpleImage(Position position, ImageSource imageSource) {
         return new Placemark(position, PlacemarkAttributes.withImage(imageSource));
     }
 
@@ -164,7 +165,7 @@ public class Placemark extends AbstractRenderable {
      *
      * @return
      */
-    public static Placemark simpleImageAndLabel(Position position, Object imageSource, String label) {
+    public static Placemark simpleImageAndLabel(Position position, ImageSource imageSource, String label) {
         return new Placemark(position, PlacemarkAttributes.withImageAndLabel(imageSource), label);
     }
 

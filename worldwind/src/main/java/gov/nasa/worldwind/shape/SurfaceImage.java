@@ -5,13 +5,12 @@
 
 package gov.nasa.worldwind.shape;
 
-import android.support.annotation.DrawableRes;
-
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.GpuTexture;
+import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.SurfaceTile;
 import gov.nasa.worldwind.util.Logger;
 
@@ -19,13 +18,15 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
 
     protected final Sector sector = new Sector();
 
-    protected Object imageSource;
+    protected ImageSource imageSource;
 
     public SurfaceImage() {
         super("Surface Image");
     }
 
-    public SurfaceImage(Sector sector, Object imageSource) {
+    public SurfaceImage(Sector sector, ImageSource imageSource) {
+        super("Surface Image");
+
         if (sector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "SurfaceImage", "constructor", "missingSector"));
@@ -35,38 +36,9 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
         this.imageSource = imageSource;
     }
 
-    public SurfaceImage(Sector sector, @DrawableRes int resourceId) {
-        super("Surface Image");
-
-        if (sector == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "SurfaceImage", "constructor", "missingSector"));
-        }
-
-        this.sector.set(sector);
-        this.imageSource = resourceId;
-    }
-
-    public SurfaceImage(Sector sector, String urlString) {
-        super("Surface Image");
-
-        if (sector == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "SurfaceImage", "constructor", "missingSector"));
-        }
-
-        if (urlString == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "SurfaceImage", "constructor", "missingUrl"));
-        }
-
-        this.sector.set(sector);
-        this.imageSource = urlString;
-    }
-
     @Override
     public Sector getSector() {
-        return sector;
+        return this.sector;
     }
 
     public void setSector(Sector sector) {
@@ -78,25 +50,12 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
         this.sector.set(sector);
     }
 
-    public Object getImageSource() {
+    public ImageSource getImageSource() {
         return imageSource;
     }
 
-    public void setImageSource(Object imageSource) {
+    public void setImageSource(ImageSource imageSource) {
         this.imageSource = imageSource;
-    }
-
-    public void setImageResource(@DrawableRes int resourceId) {
-        this.imageSource = resourceId;
-    }
-
-    public void setImageUrl(String urlString) {
-        if (urlString == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "SurfaceImage", "setImageUrl", "missingUrl"));
-        }
-
-        this.imageSource = urlString;
     }
 
     @Override
@@ -114,17 +73,25 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
 
     @Override
     public boolean bindTexture(DrawContext dc, int texUnit) {
-        GpuTexture texture = (GpuTexture) dc.gpuObjectCache.get(this.imageSource);
-        if (texture == null) {
-            texture = new GpuTexture(dc, this.imageSource); // adds itself to the GPU object cache
+        if (this.imageSource != null) {
+            GpuTexture texture = (GpuTexture) dc.gpuObjectCache.get(this.imageSource);
+            if (texture == null) {
+                texture = new GpuTexture(dc, this.imageSource); // adds itself to the GPU object cache
+            }
+
+            return texture.bindTexture(dc, texUnit);
         }
 
-        return texture.bindTexture(dc, texUnit);
+        return false;
     }
 
     @Override
     public boolean applyTexCoordTransform(DrawContext dc, Matrix3 result) {
-        GpuTexture texture = (GpuTexture) dc.gpuObjectCache.get(this.imageSource);
-        return (texture != null) && texture.applyTexCoordTransform(result);
+        if (this.imageSource != null) {
+            GpuTexture texture = (GpuTexture) dc.gpuObjectCache.get(this.imageSource);
+            return (texture != null) && texture.applyTexCoordTransform(result);
+        }
+
+        return false;
     }
 }

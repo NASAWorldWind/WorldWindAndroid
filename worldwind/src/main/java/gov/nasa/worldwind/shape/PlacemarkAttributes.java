@@ -8,6 +8,7 @@ package gov.nasa.worldwind.shape;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.render.Color;
+import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -20,7 +21,7 @@ public class PlacemarkAttributes {
      */
     public static final Offset OFFSET_PUSHPIN = new Offset(WorldWind.OFFSET_FRACTION, 19d / 64d, WorldWind.OFFSET_FRACTION, 4d / 64d);
 
-    protected Object imageSource;
+    protected ImageSource imageSource;
 
     protected Color imageColor;
 
@@ -86,7 +87,7 @@ public class PlacemarkAttributes {
                 Logger.logMessage(Logger.ERROR, "PlacemarkAttributes", "set", "missingAttributes"));
         }
 
-        this.imageSource = attributes.imageSource;  // TODO: resolve shallow or deep copy of imageSource
+        this.imageSource = attributes.imageSource;
         this.imageColor.set(attributes.imageColor);
         this.imageOffset.set(attributes.imageOffset);
         this.imageScale = attributes.imageScale;
@@ -130,19 +131,19 @@ public class PlacemarkAttributes {
         return new PlacemarkAttributes().setLabelAttributes(new TextAttributes()).setLeaderLineAttributes(new ShapeAttributes()).setDrawLeaderLine(true);
     }
 
-    public static PlacemarkAttributes withImage(Object imageSource) {
+    public static PlacemarkAttributes withImage(ImageSource imageSource) {
         return new PlacemarkAttributes().setImageSource(imageSource);
     }
 
-    public static PlacemarkAttributes withImageAndLabel(Object imageSource) {
+    public static PlacemarkAttributes withImageAndLabel(ImageSource imageSource) {
         return new PlacemarkAttributes().setImageSource(imageSource).setLabelAttributes(new TextAttributes());
     }
 
-    public static PlacemarkAttributes withImageAndLeaderLine(Object imageSource) {
+    public static PlacemarkAttributes withImageAndLeaderLine(ImageSource imageSource) {
         return new PlacemarkAttributes().setImageSource(imageSource).setLeaderLineAttributes(new ShapeAttributes()).setDrawLeaderLine(true);
     }
 
-    public static PlacemarkAttributes withImageAndLabelAndLeaderLine(Object imageSource) {
+    public static PlacemarkAttributes withImageAndLabelAndLeaderLine(ImageSource imageSource) {
         return new PlacemarkAttributes().setImageSource(imageSource).setLabelAttributes(new TextAttributes()).setLeaderLineAttributes(new ShapeAttributes()).setDrawLeaderLine(true);
     }
 
@@ -271,16 +272,14 @@ public class PlacemarkAttributes {
     }
 
     /**
-     * Returns the source of the placemark's image. May be either a string giving the URL of the image, or an {@link
-     * ImageSource} object identifying an Image created dynamically. If null, the placemark is drawn as a square whose
-     * width and height are the value of this attribute object's [imageScale]{@link PlacemarkAttributes#getImageScale}
-     * property.
+     * Returns the source of the placemark's image. If null, the placemark is drawn as a square whose width and height
+     * are the value of this attribute object's [imageScale]{@link PlacemarkAttributes#getImageScale} property.
      */
-    public Object getImageSource() {
+    public ImageSource getImageSource() {
         return imageSource;
     }
 
-    public PlacemarkAttributes setImageSource(Object imageSource) {
+    public PlacemarkAttributes setImageSource(ImageSource imageSource) {
         this.imageSource = imageSource;
         return this;
     }
