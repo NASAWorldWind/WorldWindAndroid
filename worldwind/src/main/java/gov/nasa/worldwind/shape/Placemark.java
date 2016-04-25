@@ -20,7 +20,7 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.AbstractRenderable;
-import gov.nasa.worldwind.render.BasicProgram;
+import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.Texture;
@@ -764,9 +764,9 @@ public class Placemark extends AbstractRenderable {
          */
         protected void drawOrderedPlacemark(DrawContext dc) {
             // Use World Wind's basic GLSL program.
-            BasicProgram program = (BasicProgram) dc.getProgram(BasicProgram.KEY);
+            BasicShaderProgram program = (BasicShaderProgram) dc.getShaderProgram(BasicShaderProgram.KEY);
             if (program == null) {
-                program = (BasicProgram) dc.putProgram(BasicProgram.KEY, new BasicProgram(dc.resources));
+                program = (BasicShaderProgram) dc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(dc.resources));
             }
 
             if (!program.useProgram(dc)) {

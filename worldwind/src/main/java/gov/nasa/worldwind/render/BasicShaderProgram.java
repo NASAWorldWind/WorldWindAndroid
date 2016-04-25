@@ -14,9 +14,9 @@ import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
 
-public class BasicProgram extends GpuProgram {
+public class BasicShaderProgram extends ShaderProgram {
 
-    public static final Object KEY = BasicProgram.class.getName();
+    public static final Object KEY = BasicShaderProgram.class.getName();
 
     protected int enableTextureId;
 
@@ -30,14 +30,14 @@ public class BasicProgram extends GpuProgram {
 
     protected float[] array = new float[16];
 
-    public BasicProgram(Resources resources) {
+    public BasicShaderProgram(Resources resources) {
         try {
             String vs = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_basicprogram_vert);
             String fs = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_basicprogram_frag);
             this.setProgramSources(vs, fs);
             this.setAttribBindings("vertexPoint", "vertexTexCoord");
         } catch (Exception logged) {
-            Logger.logMessage(Logger.ERROR, "BasicProgram", "constructor", "errorReadingProgramSource", logged);
+            Logger.logMessage(Logger.ERROR, "BasicShaderProgram", "constructor", "errorReadingProgramSource", logged);
         }
     }
 

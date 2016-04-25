@@ -11,10 +11,10 @@ import gov.nasa.worldwind.util.Logger;
 
 /**
  * Represents an OpenGL shading language (GLSL) shader program and provides methods for identifying and accessing shader
- * variables. Shader programs are created by instances of this class and made current when the DrawContext.useProgram
+ * variables. Shader programs are created by instances of this class and made current when the DrawContext.useShaderProgram
  * function is invoked.
  */
-public class GpuProgram implements RenderResource { // TODO rename as ShaderProgram
+public class ShaderProgram implements RenderResource {
 
     protected static final int VERTEX_SHADER = 0;
 
@@ -38,7 +38,7 @@ public class GpuProgram implements RenderResource { // TODO rename as ShaderProg
 
     protected boolean mustBuildProgram = true;
 
-    public GpuProgram() {
+    public ShaderProgram() {
     }
 
     public String[] getProgramSources() {

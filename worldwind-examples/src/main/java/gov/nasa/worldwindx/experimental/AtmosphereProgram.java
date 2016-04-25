@@ -17,11 +17,11 @@ import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.render.GpuProgram;
+import gov.nasa.worldwind.render.ShaderProgram;
 
 // TODO Correctly compute the atmosphere color for eye positions beneath the atmosphere
 // TODO Test the effect of working in local coordinates (reference point) on the GLSL atmosphere programs
-public class AtmosphereProgram extends GpuProgram {
+public class AtmosphereProgram extends ShaderProgram {
 
     public static final int FRAGMODE_SKY = 1;
 

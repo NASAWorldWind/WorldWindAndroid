@@ -285,11 +285,11 @@ public class DrawContext {
         return true;
     }
 
-    public GpuProgram getProgram(Object key) {
-        return (GpuProgram) this.renderResourceCache.get(key);
+    public ShaderProgram getShaderProgram(Object key) {
+        return (ShaderProgram) this.renderResourceCache.get(key);
     }
 
-    public GpuProgram putProgram(Object key, GpuProgram program) {
+    public ShaderProgram putShaderProgram(Object key, ShaderProgram program) {
         this.renderResourceCache.put(key, program, (program != null) ? program.getProgramLength() : 0);
         return program;
     }

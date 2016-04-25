@@ -10,7 +10,7 @@ import android.opengl.GLES20;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.Terrain;
-import gov.nasa.worldwind.render.BasicProgram;
+import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.DrawContext;
 
 public class ShowTessellationLayer extends AbstractLayer {
@@ -32,9 +32,9 @@ public class ShowTessellationLayer extends AbstractLayer {
         }
 
         // Use World Wind's basic GLSL program.
-        BasicProgram program = (BasicProgram) dc.getProgram(BasicProgram.KEY);
+        BasicShaderProgram program = (BasicShaderProgram) dc.getShaderProgram(BasicShaderProgram.KEY);
         if (program == null) {
-            program = (BasicProgram) dc.putProgram(BasicProgram.KEY, new BasicProgram(dc.resources));
+            program = (BasicShaderProgram) dc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(dc.resources));
         }
 
         if (!program.useProgram(dc)) {

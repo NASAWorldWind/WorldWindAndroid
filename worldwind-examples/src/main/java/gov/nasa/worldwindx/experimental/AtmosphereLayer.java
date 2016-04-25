@@ -80,9 +80,9 @@ public class AtmosphereLayer extends AbstractLayer {
 
     protected void drawSky(DrawContext dc) {
 
-        SkyProgram program = (SkyProgram) dc.getProgram(SkyProgram.KEY);
+        SkyProgram program = (SkyProgram) dc.getShaderProgram(SkyProgram.KEY);
         if (program == null) {
-            program = (SkyProgram) dc.putProgram(SkyProgram.KEY, new SkyProgram(dc.resources));
+            program = (SkyProgram) dc.putShaderProgram(SkyProgram.KEY, new SkyProgram(dc.resources));
         }
 
         if (!program.useProgram(dc)) {
@@ -131,9 +131,9 @@ public class AtmosphereLayer extends AbstractLayer {
             return; // no terrain surface to render on
         }
 
-        GroundProgram program = (GroundProgram) dc.getProgram(GroundProgram.KEY);
+        GroundProgram program = (GroundProgram) dc.getShaderProgram(GroundProgram.KEY);
         if (program == null) {
-            program = (GroundProgram) dc.putProgram(GroundProgram.KEY, new GroundProgram(dc.resources));
+            program = (GroundProgram) dc.putShaderProgram(GroundProgram.KEY, new GroundProgram(dc.resources));
         }
 
         if (!program.useProgram(dc)) {

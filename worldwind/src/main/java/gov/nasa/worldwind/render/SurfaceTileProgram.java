@@ -18,7 +18,7 @@ import gov.nasa.worldwind.util.WWUtil;
 // TODO index to select the state for a surface tile. This reduces the uniform calls when many surface tiles intersect
 // TODO one terrain tile.
 // TODO Try class representing transform with a specific scale+translate object that can be uploaded to a GLSL vec4
-public class SurfaceTileProgram extends GpuProgram {
+public class SurfaceTileProgram extends ShaderProgram {
 
     public static final Object KEY = SurfaceTileProgram.class.getName();
 

@@ -42,9 +42,9 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
             return; // surface tile's texture is not in the GPU object cache yet
         }
 
-        SurfaceTileProgram program = (SurfaceTileProgram) dc.getProgram(SurfaceTileProgram.KEY);
+        SurfaceTileProgram program = (SurfaceTileProgram) dc.getShaderProgram(SurfaceTileProgram.KEY);
         if (program == null) {
-            program = (SurfaceTileProgram) dc.putProgram(SurfaceTileProgram.KEY, new SurfaceTileProgram(dc.resources));
+            program = (SurfaceTileProgram) dc.putShaderProgram(SurfaceTileProgram.KEY, new SurfaceTileProgram(dc.resources));
         }
 
         if (!program.useProgram(dc)) {
@@ -100,9 +100,9 @@ public class BasicSurfaceTileRenderer implements SurfaceTileRenderer {
                 Logger.logMessage(Logger.ERROR, "BasicSurfaceTileRenderer", "renderTiles", "missingList"));
         }
 
-        SurfaceTileProgram program = (SurfaceTileProgram) dc.getProgram(SurfaceTileProgram.KEY);
+        SurfaceTileProgram program = (SurfaceTileProgram) dc.getShaderProgram(SurfaceTileProgram.KEY);
         if (program == null) {
-            program = (SurfaceTileProgram) dc.putProgram(SurfaceTileProgram.KEY, new SurfaceTileProgram(dc.resources));
+            program = (SurfaceTileProgram) dc.putShaderProgram(SurfaceTileProgram.KEY, new SurfaceTileProgram(dc.resources));
         }
 
         if (!program.useProgram(dc)) {
