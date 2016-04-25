@@ -9,7 +9,7 @@ import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.render.GpuTexture;
+import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.SurfaceTile;
 import gov.nasa.worldwind.util.Logger;
@@ -74,7 +74,7 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
     @Override
     public boolean bindTexture(DrawContext dc) {
         if (this.imageSource != null) {
-            GpuTexture texture = dc.getTexture(this.imageSource);
+            Texture texture = dc.getTexture(this.imageSource);
             if (texture == null) {
                 texture = dc.retrieveTexture(this.imageSource); // adds the retrieved texture to the cache
             }
@@ -88,7 +88,7 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
     @Override
     public boolean applyTexCoordTransform(DrawContext dc, Matrix3 result) {
         if (this.imageSource != null) {
-            GpuTexture texture = dc.getTexture(this.imageSource);
+            Texture texture = dc.getTexture(this.imageSource);
             return (texture != null) && texture.applyTexCoordTransform(result);
         }
 

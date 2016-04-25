@@ -13,7 +13,7 @@ import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWMath;
 
-public class GpuTexture implements RenderResource { // TODO rename as Texture
+public class Texture implements RenderResource {
 
     protected int textureId;
 
@@ -33,13 +33,13 @@ public class GpuTexture implements RenderResource { // TODO rename as Texture
 
     protected Bitmap imageBitmap;
 
-    public GpuTexture() {
+    public Texture() {
     }
 
-    public GpuTexture(Bitmap bitmap) {
+    public Texture(Bitmap bitmap) {
         if (bitmap == null || bitmap.isRecycled()) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "GpuTexture", "constructor", "invalidBitmap"));
+                Logger.logMessage(Logger.ERROR, "Texture", "constructor", "invalidBitmap"));
         }
 
         this.setImage(bitmap);
@@ -68,7 +68,7 @@ public class GpuTexture implements RenderResource { // TODO rename as Texture
     public void setImage(Bitmap bitmap) {
         if (bitmap == null || bitmap.isRecycled()) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "GpuTexture", "setImage", "invalidBitmap"));
+                Logger.logMessage(Logger.ERROR, "Texture", "setImage", "invalidBitmap"));
         }
 
         this.imageWidth = bitmap.getWidth();
@@ -100,7 +100,7 @@ public class GpuTexture implements RenderResource { // TODO rename as Texture
     public boolean applyTexCoordTransform(Matrix3 result) {
         if (result == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "GpuTexture", "applyTexCoordTransform", "missingResult"));
+                Logger.logMessage(Logger.ERROR, "Texture", "applyTexCoordTransform", "missingResult"));
         }
 
         if (this.textureId != 0) {
@@ -130,7 +130,7 @@ public class GpuTexture implements RenderResource { // TODO rename as Texture
             // The bitmap could not be used as image data for an OpenGL texture 2D object. Delete the texture object
             // to ensure that calls to bindTexture and applyTexCoordTransform fail.
             this.deleteTexture(dc);
-            Logger.logMessage(Logger.ERROR, "GpuTexture", "loadTexImage", "Exception attempting to load texture image", e);
+            Logger.logMessage(Logger.ERROR, "Texture", "loadTexImage", "Exception attempting to load texture image", e);
 
         } finally {
 

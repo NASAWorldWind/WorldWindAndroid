@@ -23,7 +23,7 @@ import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.BasicProgram;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.render.GpuTexture;
+import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.OrderedRenderable;
 import gov.nasa.worldwind.util.Logger;
@@ -546,9 +546,9 @@ public class Placemark extends AbstractRenderable {
 
         protected Matrix4 mvpMatrix = new Matrix4();
 
-        protected GpuTexture activeTexture = null;  // will be lazily created if an image texture will be used
+        protected Texture activeTexture = null;  // will be lazily created if an image texture will be used
 
-        protected GpuTexture labelTexture = null;   // will be lazily created if an label texture will be used
+        protected Texture labelTexture = null;   // will be lazily created if an label texture will be used
 
         protected Rect imageBounds = null;  // will be lazily created if an image will be drawn
 
@@ -728,7 +728,7 @@ public class Placemark extends AbstractRenderable {
                 Typeface labelFont = this.attributes.labelAttributes.font;
                 String labelKey = this.label + labelFont.toString();
 
-                this.labelTexture = (GpuTexture) dc.renderResourceCache.get(labelKey);
+                this.labelTexture = (Texture) dc.renderResourceCache.get(labelKey);
                 if (this.labelTexture == null) {
                     // TODO: Create the label bitmap and texture
                     //this.labelTexture = dc.createFontTexture(Placemark.this.displayName, labelFont, false);

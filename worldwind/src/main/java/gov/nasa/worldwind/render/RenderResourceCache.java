@@ -35,7 +35,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource> 
                 Logger.log(Logger.DEBUG, "Image retrieval succeeded \'" + key + "\'");
             }
 
-            GpuTexture texture = new GpuTexture(value);
+            Texture texture = new Texture(value);
             Entry<Object, RenderResource> entry = new Entry<Object, RenderResource>(key, texture, texture.getImageByteCount());
             retrievalQueue.offer(entry);
             WorldWind.requestRender();
@@ -109,17 +109,17 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource> 
         }
     }
 
-    public GpuTexture retrieveTexture(ImageSource imageSource) {
+    public Texture retrieveTexture(ImageSource imageSource) {
         if (imageSource == null) {
             return null;
         }
 
         if (imageSource.isBitmap()) {
-            GpuTexture texture = new GpuTexture(imageSource.asBitmap());
-            return (GpuTexture) this.put(imageSource, texture, texture.getImageByteCount());
+            Texture texture = new Texture(imageSource.asBitmap());
+            return (Texture) this.put(imageSource, texture, texture.getImageByteCount());
         }
 
-        GpuTexture texture = (GpuTexture) this.putRetrievedResources(imageSource);
+        Texture texture = (Texture) this.putRetrievedResources(imageSource);
         if (texture != null) {
             return texture;
         }

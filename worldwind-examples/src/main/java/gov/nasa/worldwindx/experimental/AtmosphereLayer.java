@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwindx.experimental;
 
-import android.media.Image;
 import android.opengl.GLES20;
 
 import java.nio.ByteBuffer;
@@ -22,7 +21,7 @@ import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.layer.AbstractLayer;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.render.GpuTexture;
+import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwindx.R;
 
@@ -154,7 +153,7 @@ public class AtmosphereLayer extends AbstractLayer {
         dc.globe.geographicToCartesianNormal(loc.latitude, loc.longitude, this.vector);
         program.loadLightDirection(this.vector);
 
-        GpuTexture texture = null;
+        Texture texture = null;
         boolean textureBound = false;
 
         // Use this layer's night image when the light location is different than the eye location.

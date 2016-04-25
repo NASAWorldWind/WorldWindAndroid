@@ -52,7 +52,7 @@ public class ImageTile extends Tile implements SurfaceTile {
     @Override
     public boolean bindTexture(DrawContext dc) {
         if (this.imageSource != null) {
-            GpuTexture texture = dc.getTexture(this.imageSource);
+            Texture texture = dc.getTexture(this.imageSource);
             if (texture == null) {
                 texture = dc.retrieveTexture(this.imageSource); // adds the retrieved texture to the cache
             }
@@ -68,7 +68,7 @@ public class ImageTile extends Tile implements SurfaceTile {
     @Override
     public boolean applyTexCoordTransform(DrawContext dc, Matrix3 result) {
         if (this.imageSource != null) {
-            GpuTexture texture = dc.getTexture(this.imageSource);
+            Texture texture = dc.getTexture(this.imageSource);
             if (texture != null && texture.applyTexCoordTransform(result)) {
                 return true; // use this surface tile's tex coord transform
             }

@@ -294,16 +294,16 @@ public class DrawContext {
         return program;
     }
 
-    public GpuTexture getTexture(ImageSource imageSource) {
-        return (GpuTexture) this.renderResourceCache.get(imageSource);
+    public Texture getTexture(ImageSource imageSource) {
+        return (Texture) this.renderResourceCache.get(imageSource);
     }
 
-    public GpuTexture putTexture(ImageSource imageSource, GpuTexture texture) {
+    public Texture putTexture(ImageSource imageSource, Texture texture) {
         this.renderResourceCache.put(imageSource, texture, (texture != null) ? texture.getImageByteCount() : 0);
         return texture;
     }
 
-    public GpuTexture retrieveTexture(ImageSource imageSource) {
+    public Texture retrieveTexture(ImageSource imageSource) {
         return this.renderResourceCache.retrieveTexture(imageSource);
     }
 
