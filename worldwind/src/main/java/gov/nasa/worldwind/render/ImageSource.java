@@ -190,7 +190,11 @@ public class ImageSource {
 
     @Override
     public String toString() {
-        return this.source.toString();
+        if (this.type == TYPE_RESOURCE) {
+            return "Resource " + this.source.toString();
+        } else {
+            return this.source.toString();
+        }
     }
 
     /**
