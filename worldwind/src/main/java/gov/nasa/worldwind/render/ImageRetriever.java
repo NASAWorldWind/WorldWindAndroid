@@ -61,7 +61,7 @@ public class ImageRetriever extends AbstractRetriever<ImageSource, Bitmap> {
 
                 @Override
                 public Thread newThread(@NonNull Runnable r) {
-                    Thread thread = new Thread(r, "World Wind Image Retriever " + threadNumber.getAndIncrement());
+                    Thread thread = new Thread(r, "World Wind Image Retriever " + this.threadNumber.getAndIncrement());
                     thread.setDaemon(true); // retrieval threads do not prevent the process from terminating
                     return thread;
                 }
