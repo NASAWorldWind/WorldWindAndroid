@@ -13,7 +13,7 @@ import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWMath;
 
-public class GpuTexture implements GpuObject {
+public class GpuTexture implements RenderResource { // TODO rename as Texture
 
     protected int textureId;
 
@@ -79,7 +79,7 @@ public class GpuTexture implements GpuObject {
     }
 
     @Override
-    public void dispose(DrawContext dc) {
+    public void release(DrawContext dc) {
         this.deleteTexture(dc);
         this.imageBitmap = null; // imageBitmap can be non-null if the texture has not been bound
     }

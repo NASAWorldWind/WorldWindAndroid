@@ -32,7 +32,7 @@ import gov.nasa.worldwind.render.BasicSurfaceTileRenderer;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.FrameController;
 import gov.nasa.worldwind.render.FrameStatistics;
-import gov.nasa.worldwind.render.GpuObjectCache;
+import gov.nasa.worldwind.render.RenderResourceCache;
 import gov.nasa.worldwind.render.SurfaceTileRenderer;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.MessageListener;
@@ -64,7 +64,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
     protected Rect viewport = new Rect();
 
-    protected GpuObjectCache gpuObjectCache;
+    protected RenderResourceCache renderResourceCache;
 
     protected SurfaceTileRenderer surfaceTileRenderer = new BasicSurfaceTileRenderer();
 
@@ -119,8 +119,8 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         // Initialize the World Window's global caches. Use 50% of the approximate per-application memory class.
         ActivityManager am = (ActivityManager) this.getContext().getSystemService(Context.ACTIVITY_SERVICE);
         int memoryClass = (am != null) ? am.getMemoryClass() : DEFAULT_MEMORY_CLASS; // default to 16 MB class
-        int gpuCacheSize = (memoryClass / 2) * 1024 * 1024;
-        this.gpuObjectCache = new GpuObjectCache(gpuCacheSize);
+        int rrCacheSize = (memoryClass / 2) * 1024 * 1024;
+        this.renderResourceCache = new RenderResourceCache(rrCacheSize);
 
         // Set up to render on demand to an OpenGL ES 2.x context
         // TODO Investigate and use the EGL chooser submitted by jgiovino
@@ -296,7 +296,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
         // Clear any cached OpenGL resources and state, which are now invalid.
         this.dc.contextLost();
-        this.gpuObjectCache.contextLost(this.dc);
+        this.renderResourceCache.contextLost(this.dc);
     }
 
     @Override
@@ -311,8 +311,8 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.prepareToDrawFrame();
         this.frameController.drawFrame(this.dc);
 
-        // Release render resources evicted during the previous traversal.
-        this.gpuObjectCache.releaseEvictedResources(this.dc);
+        // Release render resources evicted during the previous frame.
+        this.renderResourceCache.releaseEvictedResources(this.dc);
 
         // Propagate render requests submitted during rendering to the WorldWindow. The draw context provides a layer of
         // indirection that insulates rendering code from establishing a dependency on a specific WorldWindow.
@@ -340,8 +340,8 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.dc.fieldOfView = this.navigator.getFieldOfView();
         this.dc.horizonDistance = this.globe.horizonDistance(dc.eyePosition.altitude);
         this.dc.viewport.set(this.viewport);
-        this.dc.gpuObjectCache = this.gpuObjectCache;
-        this.dc.gpuObjectCache.setResources(this.getContext().getResources());
+        this.dc.renderResourceCache = this.renderResourceCache;
+        this.dc.renderResourceCache.setResources(this.getContext().getResources());
         this.dc.surfaceTileRenderer = this.surfaceTileRenderer;
         this.dc.resources = this.getContext().getResources();
     }

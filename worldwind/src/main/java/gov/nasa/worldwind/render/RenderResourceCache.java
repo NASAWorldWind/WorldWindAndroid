@@ -17,13 +17,13 @@ import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.LruMemoryCache;
 import gov.nasa.worldwind.util.Retriever;
 
-public class GpuObjectCache extends LruMemoryCache<Object, GpuObject> {
+public class RenderResourceCache extends LruMemoryCache<Object, RenderResource> {
 
     protected Resources resources;
 
-    protected Queue<Entry<Object, GpuObject>> evictionQueue = new ConcurrentLinkedQueue<>();
+    protected Queue<Entry<Object, RenderResource>> evictionQueue = new ConcurrentLinkedQueue<>();
 
-    protected Queue<Entry<Object, GpuObject>> pendingQueue = new ConcurrentLinkedQueue<>();
+    protected Queue<Entry<Object, RenderResource>> retrievalQueue = new ConcurrentLinkedQueue<>();
 
     protected Retriever<ImageSource, Bitmap> imageRetriever = new ImageRetriever();
 
@@ -36,8 +36,8 @@ public class GpuObjectCache extends LruMemoryCache<Object, GpuObject> {
             }
 
             GpuTexture texture = new GpuTexture(value);
-            Entry<Object, GpuObject> entry = new Entry<Object, GpuObject>(key, texture, texture.getImageByteCount());
-            pendingQueue.offer(entry);
+            Entry<Object, RenderResource> entry = new Entry<Object, RenderResource>(key, texture, texture.getImageByteCount());
+            retrievalQueue.offer(entry);
             WorldWind.requestRender();
         }
 
@@ -60,11 +60,11 @@ public class GpuObjectCache extends LruMemoryCache<Object, GpuObject> {
         }
     };
 
-    public GpuObjectCache(int capacity) {
+    public RenderResourceCache(int capacity) {
         super(capacity);
     }
 
-    public GpuObjectCache(int capacity, int lowWater) {
+    public RenderResourceCache(int capacity, int lowWater) {
         super(capacity, lowWater);
     }
 
@@ -82,18 +82,18 @@ public class GpuObjectCache extends LruMemoryCache<Object, GpuObject> {
         // TODO the context lost message is sent to the OpenGL thread, but can this work be done on the Activity thread
         this.entries.clear(); // the cache entries are invalid; clear but don't call entryRemoved
         this.evictionQueue.clear(); // the eviction queue no longer needs to be processed
-        this.pendingQueue.clear();
+        this.retrievalQueue.clear();
         this.usedCapacity = 0;
     }
 
     public void releaseEvictedResources(DrawContext dc) {
-        Entry<Object, GpuObject> evicted;
+        Entry<Object, RenderResource> evicted;
         while ((evicted = this.evictionQueue.poll()) != null) {
             try {
                 if (Logger.isLoggable(Logger.DEBUG)) {
                     Logger.log(Logger.DEBUG, "Released render resource \'" + evicted.key + "\'");
                 }
-                evicted.value.dispose(dc); // TODO rename as dispose as release
+                evicted.value.release(dc);
             } catch (Exception ignored) {
                 if (Logger.isLoggable(Logger.DEBUG)) {
                     Logger.log(Logger.DEBUG, "Exception releasing render resource \'" + evicted.key + "\'", ignored);
@@ -103,7 +103,7 @@ public class GpuObjectCache extends LruMemoryCache<Object, GpuObject> {
     }
 
     @Override
-    protected void entryRemoved(Entry<Object, GpuObject> entry) {
+    protected void entryRemoved(Entry<Object, RenderResource> entry) {
         if (entry != null) {
             this.evictionQueue.offer(entry);
         }
@@ -119,20 +119,20 @@ public class GpuObjectCache extends LruMemoryCache<Object, GpuObject> {
             return (GpuTexture) this.put(imageSource, texture, texture.getImageByteCount());
         }
 
-        GpuTexture texture = (GpuTexture) this.processPendingQueue(imageSource);
+        GpuTexture texture = (GpuTexture) this.putRetrievedResources(imageSource);
         if (texture != null) {
             return texture;
         }
 
-        this.imageRetriever.retrieve(imageSource, this.imageRetrieverCallback); // adds entries to pendingQueue
+        this.imageRetriever.retrieve(imageSource, this.imageRetrieverCallback); // adds entries to retrievalQueue
 
         return null;
     }
 
-    protected GpuObject processPendingQueue(Object key) {
-        Entry<Object, GpuObject> match = null;
-        Entry<Object, GpuObject> pending;
-        while ((pending = this.pendingQueue.poll()) != null) {
+    protected RenderResource putRetrievedResources(Object key) {
+        Entry<Object, RenderResource> match = null;
+        Entry<Object, RenderResource> pending;
+        while ((pending = this.retrievalQueue.poll()) != null) {
             if (match == null && pending.key.equals(key)) {
                 match = pending;
             }

@@ -64,7 +64,7 @@ public class DrawContext {
 
     public Frustum frustum = new Frustum();
 
-    public GpuObjectCache gpuObjectCache;
+    public RenderResourceCache renderResourceCache;
 
     public SurfaceTileRenderer surfaceTileRenderer;
 
@@ -286,25 +286,25 @@ public class DrawContext {
     }
 
     public GpuProgram getProgram(Object key) {
-        return (GpuProgram) this.gpuObjectCache.get(key);
+        return (GpuProgram) this.renderResourceCache.get(key);
     }
 
     public GpuProgram putProgram(Object key, GpuProgram program) {
-        this.gpuObjectCache.put(key, program, (program != null) ? program.getProgramLength() : 0);
+        this.renderResourceCache.put(key, program, (program != null) ? program.getProgramLength() : 0);
         return program;
     }
 
     public GpuTexture getTexture(ImageSource imageSource) {
-        return (GpuTexture) this.gpuObjectCache.get(imageSource);
+        return (GpuTexture) this.renderResourceCache.get(imageSource);
     }
 
     public GpuTexture putTexture(ImageSource imageSource, GpuTexture texture) {
-        this.gpuObjectCache.put(imageSource, texture, (texture != null) ? texture.getImageByteCount() : 0);
+        this.renderResourceCache.put(imageSource, texture, (texture != null) ? texture.getImageByteCount() : 0);
         return texture;
     }
 
     public GpuTexture retrieveTexture(ImageSource imageSource) {
-        return this.gpuObjectCache.retrieveTexture(imageSource);
+        return this.renderResourceCache.retrieveTexture(imageSource);
     }
 
     public void offerOrderedRenderable(OrderedRenderable renderable, double eyeDistance) {
@@ -355,7 +355,7 @@ public class DrawContext {
         this.screenProjection.setToIdentity();
         this.eyePoint.set(0, 0, 0);
         this.frustum.setToUnitFrustum();
-        this.gpuObjectCache = null;
+        this.renderResourceCache = null;
         this.resources = null;
         this.renderRequested = false;
         this.pixelSizeFactor = 0;

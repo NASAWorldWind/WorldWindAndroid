@@ -14,7 +14,7 @@ import gov.nasa.worldwind.util.Logger;
  * variables. Shader programs are created by instances of this class and made current when the DrawContext.useProgram
  * function is invoked.
  */
-public class GpuProgram implements GpuObject {
+public class GpuProgram implements RenderResource { // TODO rename as ShaderProgram
 
     protected static final int VERTEX_SHADER = 0;
 
@@ -71,7 +71,7 @@ public class GpuProgram implements GpuObject {
     }
 
     @Override
-    public void dispose(DrawContext dc) {
+    public void release(DrawContext dc) {
         this.deleteProgram(dc);
     }
 

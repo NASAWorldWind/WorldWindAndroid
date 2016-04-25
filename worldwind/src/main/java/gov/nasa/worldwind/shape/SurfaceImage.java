@@ -88,7 +88,7 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
     @Override
     public boolean applyTexCoordTransform(DrawContext dc, Matrix3 result) {
         if (this.imageSource != null) {
-            GpuTexture texture = (GpuTexture) dc.gpuObjectCache.get(this.imageSource);
+            GpuTexture texture = dc.getTexture(this.imageSource);
             return (texture != null) && texture.applyTexCoordTransform(result);
         }
 

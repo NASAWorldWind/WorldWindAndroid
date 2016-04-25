@@ -728,7 +728,7 @@ public class Placemark extends AbstractRenderable {
                 Typeface labelFont = this.attributes.labelAttributes.font;
                 String labelKey = this.label + labelFont.toString();
 
-                this.labelTexture = (GpuTexture) dc.gpuObjectCache.get(labelKey);
+                this.labelTexture = (GpuTexture) dc.renderResourceCache.get(labelKey);
                 if (this.labelTexture == null) {
                     // TODO: Create the label bitmap and texture
                     //this.labelTexture = dc.createFontTexture(Placemark.this.displayName, labelFont, false);
