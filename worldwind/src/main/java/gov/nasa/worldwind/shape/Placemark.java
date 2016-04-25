@@ -526,9 +526,11 @@ public class Placemark extends AbstractRenderable {
 
         protected Vec3 placePoint = new Vec3(0, 0, 0);
 
-        protected Vec3 groundPoint = null;  // will be created if a leader line must be drawn
+        protected Vec3 screenPlacePoint = new Vec3(0, 0, 0);
 
-        protected Vec3 screenPoint = new Vec3(0, 0, 0);
+        protected Vec3 groundPoint = null;          // will be created if a leader line must be drawn
+
+        protected Vec3 screenGroundPoint = null;    // will be created if a leader line must be drawn
 
         protected double actualRotation = 0;
 
@@ -581,6 +583,9 @@ public class Placemark extends AbstractRenderable {
         /**
          * Prepares this OrderedPlacemark for visibility tests and subsequent rendering.
          *
+         * @param dc        The current draw context.
+         * @param placemark The placemark to be rendered.
+         *
          * @return True if this ordered renderable is in a state ready for rendering.
          */
         public boolean prepareForRendering(DrawContext dc, Placemark placemark) {
@@ -595,11 +600,9 @@ public class Placemark extends AbstractRenderable {
             // Get a copy of the (optional) label. May be null.
             this.label = placemark.getLabel();
 
-            // Precompute the image rotation. Leveraging protected access to Placemark fields.
+            // Precompute the image rotation and tilt, leveraging protected access to Placemark fields.
             this.actualRotation = placemark.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
                 dc.heading - placemark.imageRotation : -placemark.imageRotation;
-
-            // Precompute the image tilt. Leveraging protected access to Placemark fields.
             this.actualTilt = placemark.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
                 dc.tilt + placemark.imageTilt : placemark.imageTilt;
 
@@ -614,17 +617,6 @@ public class Placemark extends AbstractRenderable {
 
             // Compute the eye distance to the place point, the value which is used for sorting/ordering.
             this.eyeDistance = dc.eyePoint.distanceTo(this.placePoint);
-
-            this.enableLeaderLinePicking = placemark.isEnableLeaderLinePicking();
-            this.drawLeader = this.mustDrawLeaderLine(dc);
-            if (this.drawLeader) {
-                if (this.groundPoint == null) {
-                    this.groundPoint = new Vec3();
-                }
-                this.groundPoint = dc.globe.geographicToCartesian(
-                    placemark.position.latitude, placemark.position.longitude, 0, this.groundPoint);
-// TODO: dc.surfacePointForMode(this.position.latitude, this.position.longitude, 0, this.altitudeMode, this.groundPoint);
-            }
 
             ////////////////////////
             // Prepare the image
@@ -659,11 +651,13 @@ public class Placemark extends AbstractRenderable {
                 double metersPerPixel = dc.pixelSizeAtDistance(this.eyeDistance);
                 depthOffset = longestSide * this.attributes.imageScale * metersPerPixel * -1;
             }
-            if (!dc.projectWithDepth(this.placePoint, depthOffset, this.screenPoint)) {
+            if (!dc.projectWithDepth(this.placePoint, depthOffset, this.screenPlacePoint)) {
                 // Probably outside the clipping planes
                 return false;
             }
 
+            // Compute an eye-position proximity scaling factor, so that distant placemarks can be scaled smaller than
+            // nearer placemarks.
             double visibilityScale = placemark.isEyeDistanceScaling() ?
                 Math.max(this.attributes.minimumImageScale, Math.min(1, placemark.getEyeDistanceScalingThreshold() / this.eyeDistance)) : 1;
 
@@ -678,9 +672,9 @@ public class Placemark extends AbstractRenderable {
                 Vec2 offset = this.attributes.imageOffset.offsetForSize(w, h);
 
                 this.imageTransform.setTranslation(
-                    this.screenPoint.x - offset.x * s,
-                    this.screenPoint.y - offset.y * s,
-                    this.screenPoint.z);
+                    this.screenPlacePoint.x - offset.x * s,
+                    this.screenPlacePoint.y - offset.y * s,
+                    this.screenPlacePoint.z);
 
                 this.imageTransform.setScale(w * s, h * s, 1);
 
@@ -689,15 +683,41 @@ public class Placemark extends AbstractRenderable {
                 Vec2 offset = this.attributes.imageOffset.offsetForSize(size, size);
 
                 this.imageTransform.setTranslation(
-                    this.screenPoint.x - offset.x,
-                    this.screenPoint.y - offset.y,
-                    this.screenPoint.z);
+                    this.screenPlacePoint.x - offset.x,
+                    this.screenPlacePoint.y - offset.y,
+                    this.screenPlacePoint.z);
 
                 this.imageTransform.setScale(size, size, 1);
             }
 
             // Compute the image bounding box in screen coordinates for visibility testing
             this.imageBounds = WWMath.boundingRectForUnitQuad(this.imageTransform);
+
+            /////////////////////////////////////
+            // Prepare the optional leader line
+            ////////////////////////////////////
+
+            this.enableLeaderLinePicking = placemark.isEnableLeaderLinePicking();
+            this.drawLeader = this.mustDrawLeaderLine(dc);
+            if (this.drawLeader) {
+                // Perform lazy allocation of vector resources
+                if (this.groundPoint == null) {
+                    this.groundPoint = new Vec3();
+                    this.screenGroundPoint = new Vec3();
+                }
+                // Compute the placemark's ground model point.
+                this.groundPoint = dc.globe.geographicToCartesian(
+                    placemark.position.latitude, placemark.position.longitude, 0, this.groundPoint);
+// TODO: dc.surfacePointForMode(this.position.latitude, this.position.longitude, 0, this.altitudeMode, this.groundPoint);
+
+                // Compute the ground point's screen point, using the the same depthOffset as used for the placePoint
+                // to ensure the proper depth with relation to other placemarks.
+                if (!dc.projectWithDepth(this.groundPoint, depthOffset, this.screenGroundPoint)) {
+                    // Probably outside the clipping planes, don't draw the leader, but continue
+                    // drawing the other placemark elements.
+                    this.drawLeader = false;
+                }
+            }
 
             /////////////////////////
             // Prepare the label
@@ -727,9 +747,9 @@ public class Placemark extends AbstractRenderable {
                     Vec2 offset = this.attributes.labelAttributes.offset.offsetForSize(w, h);
 
                     this.labelTransform.setTranslation(
-                        this.screenPoint.x - offset.x * s,
-                        this.screenPoint.y - offset.y * s,
-                        this.screenPoint.z);
+                        this.screenPlacePoint.x - offset.x * s,
+                        this.screenPlacePoint.y - offset.y * s,
+                        this.screenPlacePoint.z);
 
                     this.labelTransform.setScale(w * s, h * s, 1);
 
@@ -742,6 +762,8 @@ public class Placemark extends AbstractRenderable {
 
         /**
          * Performs the actual rendering of the Placemark.
+         *
+         * @param dc The current draw context.
          */
         protected void drawOrderedPlacemark(DrawContext dc) {
             // Use World Wind's basic GLSL program.
@@ -754,11 +776,9 @@ public class Placemark extends AbstractRenderable {
                 return; // program failed to build
             }
 
-            boolean depthTest = true;
-// TODO: move to 792
-            // Set up to use the shared tex attribute.
-            GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, getUnitQuadBuffer2D());
-            GLES20.glEnableVertexAttribArray(1);    // vertexTexCoord
+            // Initialize vars used to track GL states that may need to be restored
+            boolean depthTesting = true;    // default
+            boolean textureBound = false;
 
             ///////////////////////////////////
             // Draw the optional leader-line
@@ -768,21 +788,28 @@ public class Placemark extends AbstractRenderable {
 
             // Draw the leader line first so that the image and label have visual priority.
             if (this.drawLeader) {
-                GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getLeaderBuffer(this.groundPoint, this.placePoint));
-                GLES20.glEnableVertexAttribArray(0); // TODO: redundant
+                // TODO: Must evaluate the effectiveness of using screen coordinates with depth offsets for the leaderline
+                // TODO: when terrain is used.  I suspect there will be an issue with the ground point.
+                // TODO: Perhaps the ground screen point should not have a depth offset.
+                //GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getLeaderBuffer(this.groundPoint, this.placePoint));
+                GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getLeaderBuffer(this.screenGroundPoint, this.screenPlacePoint));
 
-                program.enableTexture(false);
-                program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.attributes.leaderLineAttributes.outlineColor); // TODO: pickColor
-
-                this.mvpMatrix.set(dc.modelviewProjection);
+                //this.mvpMatrix.set(dc.modelviewProjection);
+                this.mvpMatrix.set(dc.screenProjection);
                 program.loadModelviewProjection(this.mvpMatrix);
 
-                if (!this.attributes.leaderLineAttributes.depthTest && depthTest) {
-                    depthTest = false;
-                    GLES20.glDepthMask(false);
+                program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.attributes.leaderLineAttributes.outlineColor); // TODO: pickColor
+
+                // Toggle depth testing if necessary
+                if (this.attributes.leaderLineAttributes.depthTest != depthTesting) {
+                    depthTesting = !depthTesting;
+                    if (depthTesting) {
+                        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+                    } else {
+                        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+                    }
                 }
                 GLES20.glLineWidth(this.attributes.leaderLineAttributes.outlineWidth);
-                GLES20.glEnableVertexAttribArray(0);    // vertexPoint
                 GLES20.glDrawArrays(GLES20.GL_LINES, 0, 2);
             }
 
@@ -790,9 +817,11 @@ public class Placemark extends AbstractRenderable {
             // Draw the image
             ///////////////////////////////////
 
-            // Allocate a unit-quad buffer for the image coordinates
+            // Set up to use the shared tex attribute.
+            GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, getUnitQuadBuffer2D());
+
+            // Allocate or get a unit-quad buffer for the image coordinates
             GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getUnitQuadBuffer3D());
-            GLES20.glEnableVertexAttribArray(0); // TODO: redundant
 
             // Compute and specify the MVP matrix...
             this.mvpMatrix.set(dc.screenProjection);
@@ -806,11 +835,6 @@ public class Placemark extends AbstractRenderable {
 
             program.loadModelviewProjection(this.mvpMatrix);
 
-            // Enable texture for both normal display and for picking. If picking is enabled in the shader (set in
-            // beginDrawing() above) then the texture's alpha component is still needed in order to modulate the
-            // pick color to mask off transparent pixels.
-            program.enableTexture(true); // TODO: redundant
-
             if (dc.pickingMode) {
 //              program.loadColor(gl, this.pickColor); // TODO: pickColor
             } else {
@@ -821,26 +845,31 @@ public class Placemark extends AbstractRenderable {
             if (this.activeTexture != null) {
                 this.activeTexture.applyTexCoordTransform(this.texCoordMatrix);
             }
+
             program.loadTexCoordMatrix(this.texCoordMatrix);
 
             if (this.activeTexture != null) {
                 // Make multitexture unit 0 active.
                 dc.activeTextureUnit(GLES20.GL_TEXTURE0);
-                boolean bound = this.activeTexture.bindTexture(dc);
-                program.enableTexture(bound);
-            } else {
-                program.enableTexture(false);
+                textureBound = this.activeTexture.bindTexture(dc);
+                if (textureBound) {
+                    program.enableTexture(true);
+                }
             }
 
             // Turn off depth testing for the placemark image if requested. The placemark label and leader line have
             // their own depth-test controls.
-            if (!this.attributes.depthTest && depthTest) {
-                depthTest = false;
-                // Suppress writes to the OpenGL depth buffer.
-                GLES20.glDepthMask(false);  // TODO: depth test or mask gldisable(depthtest)
+            if (this.attributes.depthTest != depthTesting) {
+                depthTesting = !depthTesting;
+                if (depthTesting) {
+                    GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+                } else {
+                    GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+                }
             }
 
             // Draw the placemark's image quad.
+            GLES20.glEnableVertexAttribArray(1);    // vertexTexCoord
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
 
             ///////////////////////////////////
@@ -879,12 +908,13 @@ public class Placemark extends AbstractRenderable {
 //            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
             }
 
-            // Restore depth testing state
-            if (!depthTest) {
-                GLES20.glDepthMask(true);
-            }
-
             // Restore the default World Wind OpenGL state.
+            if (!depthTesting) {
+                GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+            }
+            if (textureBound) {
+                program.enableTexture(false);
+            }
             GLES20.glDisableVertexAttribArray(1);
 
         }
