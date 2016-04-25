@@ -160,16 +160,16 @@ public class AtmosphereLayer extends AbstractLayer {
         // Use this layer's night image when the light location is different than the eye location.
         if (this.nightImageSource != null && this.lightLocation != null) {
 
-            texture = (GpuTexture) dc.gpuObjectCache.get(this.nightImageSource);
-            if (texture == null) {
-                texture = new GpuTexture(dc, this.nightImageSource);
-            }
-
             // Make multitexture unit 0 active.
             dc.activeTextureUnit(GLES20.GL_TEXTURE0);
 
+            texture = dc.getTexture(this.nightImageSource);
+            if (texture == null) {
+                texture = dc.retrieveTexture(this.nightImageSource);
+            }
+
             // Attempt to bind the night image texture.
-            textureBound = texture.bindTexture(dc);
+            textureBound = (texture != null) && texture.bindTexture(dc);
         }
 
         // Get the draw context's modelview projection matrix.

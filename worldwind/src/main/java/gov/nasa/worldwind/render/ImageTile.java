@@ -43,8 +43,7 @@ public class ImageTile extends Tile implements SurfaceTile {
 
     public boolean hasTexture(DrawContext dc) {
         if (this.imageSource != null) {
-            GpuTexture texture = (GpuTexture) dc.gpuObjectCache.get(this.imageSource);
-            return (texture != null) && texture.hasTexture();
+            return dc.gpuObjectCache.containsKey(this.imageSource);
         }
 
         return false;
@@ -53,11 +52,12 @@ public class ImageTile extends Tile implements SurfaceTile {
     @Override
     public boolean bindTexture(DrawContext dc) {
         if (this.imageSource != null) {
-            GpuTexture texture = (GpuTexture) dc.gpuObjectCache.get(this.imageSource);
+            GpuTexture texture = dc.getTexture(this.imageSource);
             if (texture == null) {
-                texture = new GpuTexture(dc, this.imageSource); // adds itself to the GPU object cache
+                texture = dc.retrieveTexture(this.imageSource); // adds the retrieved texture to the cache
             }
-            if (texture.bindTexture(dc)) {
+
+            if (texture != null && texture.bindTexture(dc)) {
                 return true;
             }
         }

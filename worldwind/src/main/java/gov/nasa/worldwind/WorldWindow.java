@@ -68,7 +68,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
     protected SurfaceTileRenderer surfaceTileRenderer = new BasicSurfaceTileRenderer();
 
-    protected DrawContext dc;
+    protected DrawContext dc = new DrawContext();
 
     /**
      * Constructs a WorldWindow associated with the specified application context. This is the constructor to use when
@@ -124,7 +124,6 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
         // Set up to render on demand to an OpenGL ES 2.x context
         // TODO Investigate and use the EGL chooser submitted by jgiovino
-        this.dc = new DrawContext();
         this.setEGLConfigChooser(configChooser);
         this.setEGLContextClientVersion(2); // must be called before setRenderer
         this.setRenderer(this);
@@ -312,10 +311,8 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.prepareToDrawFrame();
         this.frameController.drawFrame(this.dc);
 
-        // Dispose OpenGL resources evicted during the previous frame. Performing this step here, rather than at
-        // eviction time, avoids unexpected side effects like GPU programs being evicted while in use, which can occur
-        // when this cache is too small and thrashes during a frame.
-        this.gpuObjectCache.disposeEvictedObjects(this.dc);
+        // Release render resources evicted during the previous traversal.
+        this.gpuObjectCache.releaseEvictedResources(this.dc);
 
         // Propagate render requests submitted during rendering to the WorldWindow. The draw context provides a layer of
         // indirection that insulates rendering code from establishing a dependency on a specific WorldWindow.
@@ -344,6 +341,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.dc.horizonDistance = this.globe.horizonDistance(dc.eyePosition.altitude);
         this.dc.viewport.set(this.viewport);
         this.dc.gpuObjectCache = this.gpuObjectCache;
+        this.dc.gpuObjectCache.setResources(this.getContext().getResources());
         this.dc.surfaceTileRenderer = this.surfaceTileRenderer;
         this.dc.resources = this.getContext().getResources();
     }

@@ -294,7 +294,18 @@ public class DrawContext {
         return program;
     }
 
-    // TODO complementary get/put methods for GpuTexture
+    public GpuTexture getTexture(ImageSource imageSource) {
+        return (GpuTexture) this.gpuObjectCache.get(imageSource);
+    }
+
+    public GpuTexture putTexture(ImageSource imageSource, GpuTexture texture) {
+        this.gpuObjectCache.put(imageSource, texture, (texture != null) ? texture.getImageByteCount() : 0);
+        return texture;
+    }
+
+    public GpuTexture retrieveTexture(ImageSource imageSource) {
+        return this.gpuObjectCache.retrieveTexture(imageSource);
+    }
 
     public void offerOrderedRenderable(OrderedRenderable renderable, double eyeDistance) {
         this.orderedRenderables.offerRenderable(renderable, eyeDistance);
@@ -428,9 +439,8 @@ public class DrawContext {
     }
 
     /**
-     * Makes an OpenGL texture 2D object bound to the specified multitexture unit. This has no effect if the specified
-     * texture object is already bound to the multitexture unit. The default is texture 0, indicating that no texture is
-     * bound.
+     * Makes an OpenGL texture 2D object bound to the current multitexture unit. This has no effect if the specified
+     * texture object is already bound. The default is texture 0, indicating that no texture is bound.
      *
      * @param textureId the name of the OpenGL texture 2D object to make active, or 0 to make no texture active
      */

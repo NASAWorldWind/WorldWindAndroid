@@ -67,31 +67,18 @@ public class LruMemoryCache<K, V> {
     }
 
     public V put(K key, V value, int size) {
-        if (this.usedCapacity + size > this.capacity) {
-            this.makeSpace(size);
-        }
-
-        Entry<K, V> newEntry = new Entry<>(key, value, size, System.currentTimeMillis());
-        Entry<K, V> oldEntry = this.entries.put(key, newEntry);
-        this.usedCapacity += newEntry.size;
-
-        if (oldEntry != null) {
-            this.usedCapacity -= oldEntry.size;
-
-            if (newEntry.value != oldEntry.value) {
-                this.entryRemoved(oldEntry.key, oldEntry.value);
-                return oldEntry.value;
-            }
-        }
-
-        return null;
+        // TODO can we reuse the same entry when only the size has changed?
+        // TODO use case is high frequency texture updates, where size may or may not change
+        Entry<K, V> newEntry = new Entry<>(key, value, size);
+        Entry<K, V> oldEntry = this.putEntry(newEntry);
+        return (oldEntry != null) ? oldEntry.value : null;
     }
 
     public V remove(K key) {
         Entry<K, V> entry = this.entries.remove(key);
         if (entry != null) {
             this.usedCapacity -= entry.size;
-            this.entryRemoved(entry.key, entry.value);
+            this.entryRemoved(entry);
             return entry.value;
         } else {
             return null;
@@ -104,7 +91,7 @@ public class LruMemoryCache<K, V> {
 
     public void clear() {
         for (Entry<K, V> entry : this.entries.values()) {
-            this.entryRemoved(entry.key, entry.value);
+            this.entryRemoved(entry);
         }
 
         this.entries.clear();
@@ -127,14 +114,35 @@ public class LruMemoryCache<K, V> {
             if (this.usedCapacity > this.lowWater || (this.capacity - this.usedCapacity) < spaceRequired) {
                 this.entries.remove(entry.key);
                 this.usedCapacity -= entry.size;
-                this.entryRemoved(entry.key, entry.value);
+                this.entryRemoved(entry);
             } else {
                 break;
             }
         }
     }
 
-    protected void entryRemoved(K key, V value) {
+    protected Entry<K, V> putEntry(Entry<K, V> newEntry) {
+        if (this.usedCapacity + newEntry.size > this.capacity) {
+            this.makeSpace(newEntry.size);
+        }
+
+        newEntry.lastUsed = System.currentTimeMillis();
+        this.usedCapacity += newEntry.size;
+
+        Entry<K, V> oldEntry = this.entries.put(newEntry.key, newEntry);
+        if (oldEntry != null) {
+            this.usedCapacity -= oldEntry.size;
+
+            if (newEntry.value != oldEntry.value) {
+                this.entryRemoved(oldEntry);
+                return oldEntry;
+            }
+        }
+
+        return null;
+    }
+
+    protected void entryRemoved(Entry<K, V> entry) {
     }
 
     protected static class Entry<K, V> {
@@ -147,11 +155,10 @@ public class LruMemoryCache<K, V> {
 
         public long lastUsed;
 
-        public Entry(K key, V value, int size, long lastUsed) {
+        public Entry(K key, V value, int size) {
             this.key = key;
             this.value = value;
             this.size = size;
-            this.lastUsed = lastUsed;
         }
     }
 }

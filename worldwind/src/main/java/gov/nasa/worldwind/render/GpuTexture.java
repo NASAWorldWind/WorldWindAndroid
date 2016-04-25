@@ -5,68 +5,52 @@
 
 package gov.nasa.worldwind.render;
 
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.URLConnection;
-
-import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWMath;
-import gov.nasa.worldwind.util.WWUtil;
 
-public class GpuTexture implements GpuObject, Runnable {
-
-    protected final ImageSource imageSource;
+public class GpuTexture implements GpuObject {
 
     protected int textureId;
+
+    protected int textureWidth;
+
+    protected int textureHeight;
+
+    protected int textureFormat;
 
     protected int imageWidth;
 
     protected int imageHeight;
 
+    protected int imageFormat;
+
     protected int imageByteCount;
 
-    protected boolean disposed;
+    protected Bitmap imageBitmap;
 
-    protected boolean requested;
-
-    protected volatile Bitmap imageBitmap;
-
-    protected volatile Resources resources;
-
-    public GpuTexture(DrawContext dc, ImageSource imageSource) {
-        if (imageSource == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "GpuTexture", "constructor", "missingSource"));
-        }
-
-        this.imageSource = imageSource;
-
-        if (imageSource.isBitmap()) {
-            this.loadImage(dc, imageSource.asBitmap());
-            dc.gpuObjectCache.put(imageSource, this, this.imageByteCount);
-        } else {
-            dc.gpuObjectCache.put(imageSource, this, 1); // cache entry is replaced upon texture load
-        }
+    public GpuTexture() {
     }
 
-    @Override
-    public String toString() {
-        return "GpuTexture{" +
-            "imageSource=" + this.imageSource +
-            ", textureId=" + this.textureId +
-            ", imageByteCount=" + this.imageByteCount +
-            '}';
+    public GpuTexture(Bitmap bitmap) {
+        if (bitmap == null || bitmap.isRecycled()) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "GpuTexture", "constructor", "invalidBitmap"));
+        }
+
+        this.setImage(bitmap);
+    }
+
+    public int getTextureWidth() {
+        return this.textureWidth;
+    }
+
+    public int getTextureHeight() {
+        return this.textureHeight;
     }
 
     public int getImageWidth() {
@@ -81,32 +65,29 @@ public class GpuTexture implements GpuObject, Runnable {
         return this.imageByteCount;
     }
 
-    @Override
-    public void dispose(DrawContext dc) {
-        synchronized (this) { // synchronize texture disposal and loading
-            if (this.textureId != 0) {
-                GLES20.glDeleteTextures(1, new int[]{this.textureId}, 0);
-            }
-
-            this.textureId = 0;
-            this.imageBitmap = null;
-            this.resources = null;
-            this.disposed = true;
+    public void setImage(Bitmap bitmap) {
+        if (bitmap == null || bitmap.isRecycled()) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "GpuTexture", "setImage", "invalidBitmap"));
         }
+
+        this.imageWidth = bitmap.getWidth();
+        this.imageHeight = bitmap.getHeight();
+        this.imageFormat = GLUtils.getInternalFormat(bitmap);
+        this.imageByteCount = bitmap.getByteCount();
+        this.imageBitmap = bitmap;
     }
 
-    public boolean hasTexture() {
-        return (this.textureId != 0) || (this.imageBitmap != null);
+    @Override
+    public void dispose(DrawContext dc) {
+        this.deleteTexture(dc);
+        this.imageBitmap = null; // imageBitmap can be non-null if the texture has not been bound
     }
 
     public boolean bindTexture(DrawContext dc) {
-        if (this.mustLoadImage()) {
-            this.loadImage(dc, this.imageBitmap);
+        if (this.imageBitmap != null) {
+            this.loadImageBitmap(dc);
             this.imageBitmap = null;
-            this.resources = null;
-            dc.gpuObjectCache.put(this.imageSource, this, this.imageByteCount); // update the GPU cache entry size
-        } else if (this.mustRequestImage()) {
-            this.requestImage(dc);
         }
 
         if (this.textureId != 0) {
@@ -129,152 +110,72 @@ public class GpuTexture implements GpuObject, Runnable {
         return this.textureId != 0;
     }
 
-    @Override
-    public void run() {
-        synchronized (this) { // synchronize texture disposal and loading
-            if (this.disposed) { // texture disposed between request initiated and now
-                return;
-            }
-        }
+    protected void loadImageBitmap(DrawContext dc) {
+        int currentTexture = dc.currentTexture();
 
-        Bitmap bitmap = this.guardedDecodeImage(this.imageSource);
-        if (bitmap == null) {
-            // TODO establish a file caching service for remote resources
-            // TODO retry absent resources, they are currently handled but suppressed entirely after the first failure
-            return; // image retrieval failed; the reason is logged in guardedDecodeImage
-        }
-
-        synchronized (this) { // synchronize texture disposal and loading
-            if (!this.disposed) { // texture disposed during guardedDecodeImage
-                this.imageBitmap = bitmap;
-                WorldWind.requestRender();
-            }
-        }
-    }
-
-    protected boolean mustRequestImage() {
-        return !this.requested;
-    }
-
-    protected void requestImage(DrawContext dc) {
-        this.resources = dc.resources; // temporarily reference used to load Android resources asynchronously
-        this.requested = WorldWind.retrievalService().offer(this); // suppress duplicate requests if the task was accepted
-    }
-
-    protected Bitmap guardedDecodeImage(ImageSource imageSource) {
         try {
 
-            Bitmap bitmap = this.decodeImage(imageSource);
-
-            if (bitmap != null) {
-                if (Logger.isLoggable(Logger.DEBUG)) {
-                    Logger.log(Logger.DEBUG, "Image retrieval succeeded \'" + this.imageSource + "\'");
-                }
-            } else {
-                Logger.log(Logger.ERROR, "Image retrieval failed \'" + this.imageSource + "\'");
+            // Create the OpenGL texture 2D object.
+            if (this.textureId == 0) {
+                this.createTexture(dc);
             }
 
-            return bitmap;
+            // Make the OpenGL texture 2D object bound to the current multitexture unit.
+            dc.bindTexture(this.textureId);
+            // Load the current imageBitmap as the OpenGL texture 2D object's image data.
+            this.loadTexImage(dc);
 
-        } catch (SocketTimeoutException ignored) { // log socket timeout exceptions while suppressing the stack trace
-            Logger.log(Logger.ERROR, "Socket timeout retrieving image \'" + this.imageSource);
-        } catch (Exception logged) { // log checked exceptions with the entire stack trace
-            Logger.log(Logger.ERROR, "Image retrieval failed with exception \'" + this.imageSource, logged);
-        }
+        } catch (Exception e) {
 
-        return null;
-    }
+            // The bitmap could not be used as image data for an OpenGL texture 2D object. Delete the texture object
+            // to ensure that calls to bindTexture and applyTexCoordTransform fail.
+            this.deleteTexture(dc);
+            Logger.logMessage(Logger.ERROR, "GpuTexture", "loadTexImage", "Exception attempting to load texture image", e);
 
-    protected Bitmap decodeImage(ImageSource imageSource) throws IOException {
-        if (imageSource.isBitmap()) {
-            return imageSource.asBitmap();
-        }
-
-        if (imageSource.isResource()) {
-            return this.decodeResource(imageSource.asResource());
-        }
-
-        if (imageSource.isFilePath()) {
-            return this.decodeFilePath(imageSource.asFilePath());
-        }
-
-        if (imageSource.isUrl()) {
-            return this.decodeUrl(imageSource.asUrl());
-        }
-
-        return this.decodeUnrecognized(imageSource);
-    }
-
-    protected Bitmap decodeResource(int id) {
-        BitmapFactory.Options options = this.defaultBitmapFactoryOptions();
-        return BitmapFactory.decodeResource(this.resources, id, options);
-    }
-
-    protected Bitmap decodeFilePath(String pathName) {
-        BitmapFactory.Options options = this.defaultBitmapFactoryOptions();
-        return BitmapFactory.decodeFile(pathName, options);
-    }
-
-    protected Bitmap decodeUrl(String urlString) throws IOException {
-        // TODO establish a file caching service for remote resources
-        // TODO retry absent resources, they are currently handled but suppressed entirely after the first failure
-        // TODO configurable connect and read timeouts
-
-        InputStream stream = null;
-        try {
-            URLConnection conn = new URL(urlString).openConnection();
-            conn.setConnectTimeout(3000);
-            conn.setReadTimeout(30000);
-
-            stream = new BufferedInputStream(conn.getInputStream());
-
-            BitmapFactory.Options options = this.defaultBitmapFactoryOptions();
-            return BitmapFactory.decodeStream(stream, null, options);
         } finally {
-            WWUtil.closeSilently(stream);
+
+            // Restore the current OpenGL texture binding.
+            dc.bindTexture(currentTexture);
         }
     }
 
-    protected Bitmap decodeUnrecognized(ImageSource imageSource) {
-        Logger.log(Logger.WARN, "Unrecognized image source \'" + imageSource + "\'");
-        return null;
-    }
-
-    protected BitmapFactory.Options defaultBitmapFactoryOptions() {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false; // suppress default image scaling; load the image in its native dimensions
-
-        return options;
-    }
-
-    protected boolean mustLoadImage() {
-        return this.imageBitmap != null;
-    }
-
-    protected void loadImage(DrawContext dc, Bitmap bitmap) {
+    protected void createTexture(DrawContext dc) {
         int[] newTexture = new int[1];
-        int[] prevTexture = new int[1];
-        boolean isPowerOfTwo = WWMath.isPowerOfTwo(bitmap.getWidth()) && WWMath.isPowerOfTwo(bitmap.getHeight());
-
         GLES20.glGenTextures(1, newTexture, 0);
-        GLES20.glGetIntegerv(GLES20.GL_TEXTURE_BINDING_2D, prevTexture, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, newTexture[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
-            isPowerOfTwo ? GLES20.GL_LINEAR_MIPMAP_LINEAR : GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, this.imageBitmap, 0);
+        this.textureId = newTexture[0];
+    }
 
+    protected void deleteTexture(DrawContext dc) {
+        if (this.textureId != 0) {
+            GLES20.glDeleteTextures(1, new int[]{this.textureId}, 0);
+            this.textureId = 0;
+        }
+    }
+
+    protected void loadTexImage(DrawContext dc) {
+        boolean isPowerOfTwo = WWMath.isPowerOfTwo(this.imageWidth) && WWMath.isPowerOfTwo(this.imageHeight);
+
+        // Define the OpenGL texture 2D object's image data for level zero. Use the higher performance texture
+        // update function texSubImage2D when the texture's dimensions and internal format have not changed.
+        if (this.textureWidth != this.imageWidth ||
+            this.textureHeight != this.imageHeight ||
+            this.textureFormat != this.imageFormat) {
+            this.textureWidth = this.imageWidth;
+            this.textureHeight = this.imageHeight;
+            this.textureFormat = this.imageFormat;
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
+                isPowerOfTwo ? GLES20.GL_LINEAR_MIPMAP_LINEAR : GLES20.GL_LINEAR);
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, this.imageBitmap, 0);
+        } else {
+            GLUtils.texSubImage2D(GLES20.GL_TEXTURE_2D, 0, 0, 0, this.imageBitmap);
+        }
+
+        // Generate a complete set of mipmaps for the OpenGL texture 2D object's image data levels 1 through N.
         if (isPowerOfTwo) {
             GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
         }
-
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, prevTexture[0]); // restore the previous OpenGL texture binding
-
-        this.textureId = newTexture[0];
-        this.imageWidth = bitmap.getWidth();
-        this.imageHeight = bitmap.getHeight();
-        this.imageByteCount = bitmap.getByteCount();
     }
 }
