@@ -11,6 +11,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import gov.nasa.worldwind.util.MessageService;
+import gov.nasa.worldwind.util.TaskService;
 
 public class WorldWind {
 
@@ -191,19 +192,35 @@ public class WorldWind {
     public static final double WGS84_INVERSE_FLATTENING = 298.257223563;
 
     /**
-     * Provides a global mechanism for broadcasting notifications within the World Wind library and Wordl Wind
+     * Provides a global mechanism for broadcasting notifications within the World Wind library and World Wind
      * applications.
      */
     protected static MessageService messageService = new MessageService();
 
     /**
-     * Returns a singleton MessageService instance that provides a mechanism for broadcasting notifications within a
-     * World Wind application.
+     * Provides a global service for running asynchronous tasks within the World Wind library and World Wind
+     * applications.
+     */
+    protected static TaskService taskService = new TaskService();
+
+    /**
+     * Returns a singleton MessageService instance that provides a mechanism for broadcasting notifications within the
+     * World Wind library and World Wind applications.
      *
      * @return the singleton message center
      */
     public static MessageService messageService() {
         return messageService;
+    }
+
+    /**
+     * Returns a singleton TaskService instance that provides a mechanism for running asynchronous tasks within the
+     * World Wind library and World Wind applications.
+     *
+     * @return the singleton task service
+     */
+    public static TaskService taskService() {
+        return taskService;
     }
 
     /**

@@ -41,42 +41,31 @@ public class ImageTile extends Tile implements SurfaceTile {
         return this.sector;
     }
 
-    public boolean hasTexture(DrawContext dc) {
-        if (this.imageSource != null) {
-            return dc.renderResourceCache.containsKey(this.imageSource);
+    @Override
+    public boolean bindTexture(DrawContext dc) {
+        Texture texture = dc.getTexture(this.imageSource);
+        if (texture != null && texture.bindTexture(dc)) {
+            return true;
+        }
+
+        if (this.fallbackTile != null && this.fallbackTile.bindTexture(dc)) {
+            return true;
         }
 
         return false;
     }
 
     @Override
-    public boolean bindTexture(DrawContext dc) {
-        if (this.imageSource != null) {
-            Texture texture = dc.getTexture(this.imageSource);
-            if (texture == null) {
-                texture = dc.retrieveTexture(this.imageSource); // adds the retrieved texture to the cache
-            }
-
-            if (texture != null && texture.bindTexture(dc)) {
-                return true;
-            }
-        }
-
-        return (this.fallbackTile != null) && this.fallbackTile.bindTexture(dc);
-    }
-
-    @Override
     public boolean applyTexCoordTransform(DrawContext dc, Matrix3 result) {
-        if (this.imageSource != null) {
-            Texture texture = dc.getTexture(this.imageSource);
-            if (texture != null && texture.applyTexCoordTransform(result)) {
-                return true; // use this surface tile's tex coord transform
-            }
+        Texture texture = dc.getTexture(this.imageSource);
+        if (texture != null && texture.applyTexCoordTransform(result)) {
+            return true; // use this surface tile's tex coord transform
         }
 
         // Use the fallback tile's tex coord transform, adjusted to the fallback image into this tile's sector.
         if (this.fallbackTile != null && this.fallbackTile.applyTexCoordTransform(dc, result)) {
             result.multiplyByTileTransform(this.sector, this.fallbackTile.sector);
+            return true;
         }
 
         return false;

@@ -9,69 +9,75 @@ import android.support.v4.util.Pools;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+
+import gov.nasa.worldwind.WorldWind;
 
 public abstract class AbstractRetriever<K, V> implements Retriever<K, V> {
 
     protected final Object lock = new Object();
 
-    protected Pools.Pool<RetrieverTask<K, V>> retrievalTaskPool;
+    protected int maxAsyncTasks;
 
-    protected Set<K> retrievalSet;
+    protected Set<K> asyncTaskSet;
 
-    public AbstractRetriever(int maxTaskPoolSize) {
-        this.retrievalTaskPool = new Pools.SimplePool<>(maxTaskPoolSize);
-        this.retrievalSet = new HashSet<>();
+    protected Pools.Pool<AsyncTask<K, V>> asyncTaskPool;
+
+    public AbstractRetriever(int maxSimultaneousRetrievals) {
+        this.maxAsyncTasks = maxSimultaneousRetrievals;
+        this.asyncTaskSet = new HashSet<>();
+        this.asyncTaskPool = new Pools.SimplePool<>(maxSimultaneousRetrievals);
     }
 
     @Override
     public void retrieve(K key, Callback<K, V> callback) {
-        if (key == null || this.hasTask(key)) { // suppress duplicate requests if the task was accepted
+        if (key == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "AbstractRetriever", "retrieve", "missingKey"));
+        }
+
+        if (callback == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "AbstractRetriever", "retrieve", "missingCallback"));
+        }
+
+        AsyncTask<K, V> task = this.obtainAsyncTask(key, callback);
+        if (task == null) { // too many async tasks running, or a task for 'key' is already running
             callback.retrievalRejected(this, key);
             return;
         }
 
-        RetrieverTask<K, V> task = this.obtainTask(key, callback);
-
         try {
-            this.executor().execute(task);
-        } catch (RejectedExecutionException ignored) {
-            this.recycleTask(task);
+            WorldWind.taskService().execute(task);
+        } catch (RejectedExecutionException ignored) { // singleton task service is full
+            this.recycleAsyncTask(task);
             callback.retrievalRejected(this, key);
         }
     }
 
-    protected abstract Executor executor();
-
     protected abstract void retrieveAsync(K key, Callback<K, V> callback);
 
-    protected boolean hasTask(K key) {
+    protected AsyncTask<K, V> obtainAsyncTask(K key, Callback<K, V> callback) {
         synchronized (this.lock) {
-            return this.retrievalSet.contains(key);
-        }
-    }
-
-    protected RetrieverTask<K, V> obtainTask(K key, Callback<K, V> callback) {
-        synchronized (this.lock) {
-            RetrieverTask<K, V> instance = this.retrievalTaskPool.acquire();
-            if (instance == null) {
-                instance = new RetrieverTask<>();
+            if (this.asyncTaskSet.size() >= this.maxAsyncTasks || this.asyncTaskSet.contains(key)) {
+                return null;
             }
 
-            this.retrievalSet.add(key);
-            return instance.set(this, key, callback);
+            this.asyncTaskSet.add(key);
+
+            AsyncTask<K, V> instance = this.asyncTaskPool.acquire();
+            return (instance != null ? instance : new AsyncTask<K, V>()).set(this, key, callback);
         }
     }
 
-    protected void recycleTask(RetrieverTask<K, V> instance) {
+    protected void recycleAsyncTask(AsyncTask<K, V> instance) {
         synchronized (this.lock) {
-            this.retrievalSet.remove(instance.key);
-            this.retrievalTaskPool.release(instance.reset());
+            this.asyncTaskSet.remove(instance.key);
+            this.asyncTaskPool.release(instance.reset());
         }
     }
 
-    protected static class RetrieverTask<K, V> implements Runnable {
+    protected static class AsyncTask<K, V> implements Runnable {
 
         protected AbstractRetriever<K, V> retriever;
 
@@ -79,14 +85,14 @@ public abstract class AbstractRetriever<K, V> implements Retriever<K, V> {
 
         protected Callback<K, V> callback;
 
-        public RetrieverTask<K, V> set(AbstractRetriever<K, V> retriever, K key, Callback<K, V> callback) {
+        public AsyncTask<K, V> set(AbstractRetriever<K, V> retriever, K key, Callback<K, V> callback) {
             this.retriever = retriever;
             this.key = key;
             this.callback = callback;
             return this;
         }
 
-        public RetrieverTask<K, V> reset() {
+        public AsyncTask<K, V> reset() {
             this.retriever = null;
             this.key = null;
             this.callback = null;
@@ -100,7 +106,7 @@ public abstract class AbstractRetriever<K, V> implements Retriever<K, V> {
             } catch (Throwable ex) {
                 this.callback.retrievalFailed(this.retriever, this.key, ex);
             } finally {
-                this.retriever.recycleTask(this);
+                this.retriever.recycleAsyncTask(this);
             }
         }
     }
