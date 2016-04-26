@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwindx;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 
@@ -70,6 +72,17 @@ public class PlacemarksActivity extends BasicGlobeActivity {
             "Oxnard Airport");
 
 
+        // Create an image-based placemark with a label from a bitmap. This placemark demonstrates creation
+        // with a constructor and a convenient PlacemarkAttributes factory method. A 64x64 bitmap is loaded
+        // and then passed into the placemark attributes. The the bottom center of the image anchored at the
+        // geographic position.
+        Bitmap bitmap = BitmapFactory.decodeResource(getWorldWindow().getResources(), R.drawable.ehipcc);
+        Placemark wildfire = new Placemark(
+            Position.fromDegrees(34.300, -119.25, 0),
+            PlacemarkAttributes.withImageAndLabel(ImageSource.fromBitmap(bitmap)).setImageOffset(Offset.BOTTOM_CENTER),
+            "Fire");
+
+
         /////////////////////////////////////////////////////
         // Third, add the placemarks to the renderable layer
         /////////////////////////////////////////////////////
@@ -77,6 +90,7 @@ public class PlacemarksActivity extends BasicGlobeActivity {
         placemarksLayer.addRenderable(ventura);
         placemarksLayer.addRenderable(airport);
         placemarksLayer.addRenderable(airplane);
+        placemarksLayer.addRenderable(wildfire);
 
 
         // And finally, for this demo, position the viewer to look at the airport placemark
