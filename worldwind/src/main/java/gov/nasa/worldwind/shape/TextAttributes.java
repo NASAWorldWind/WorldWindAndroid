@@ -40,7 +40,7 @@ public class TextAttributes {
      * @param {TextAttributes} attributes Attributes to initialize this attributes instance to. May be null, in which
      *                         case the new instance contains default attributes.
      */
-    public TextAttributes(final TextAttributes copy) {
+    public TextAttributes(TextAttributes copy) {
         this.color = new Color(copy.color);
         this.font = copy.font;
         this.offset = new Offset(copy.offset);
@@ -48,7 +48,7 @@ public class TextAttributes {
         this.depthTest = copy.depthTest;
     }
 
-    public TextAttributes set(final TextAttributes attributes) {
+    public TextAttributes set(TextAttributes attributes) {
         this.color.set(attributes.color);
         this.font = attributes.font;
         this.offset.set(attributes.offset);

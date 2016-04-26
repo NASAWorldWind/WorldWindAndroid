@@ -184,9 +184,9 @@ public class BoundingBox {
      * @param frustum The frustum of interest.
      *
      * @throws IllegalArgumentException If the specified frustum is null or undefined.
-     * @returns true if the specified frustum intersects this bounding box, otherwise false.
+     * @return true if the specified frustum intersects this bounding box, otherwise false.
      */
-    public boolean intersectsFrustum(final Frustum frustum) {
+    public boolean intersectsFrustum(Frustum frustum) {
         if (frustum == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BoundingBox", "intersectsFrustum", "missingFrustum"));
@@ -218,7 +218,7 @@ public class BoundingBox {
     }
 
     // Internal. Intentionally not documented.
-    private double intersectionPoint(final Plane plane, Vec3 endPoint1, Vec3 endPoint2) {
+    private double intersectionPoint(Plane plane, Vec3 endPoint1, Vec3 endPoint2) {
         Vec3 n = plane.normal;
         double effectiveRadius = 0.5 * (Math.abs(this.s.dot(n)) + Math.abs(this.t.dot(n)));
 
@@ -226,7 +226,7 @@ public class BoundingBox {
     }
 
     // Internal. Intentionally not documented.
-    private static double intersectsAt(final Plane plane, final double effRadius, Vec3 endPoint1, Vec3 endPoint2) {
+    private static double intersectsAt(Plane plane, double effRadius, Vec3 endPoint1, Vec3 endPoint2) {
         // Test the distance from the first end-point.
         double dq1 = plane.dot(endPoint1);
         boolean bq1 = dq1 <= -effRadius;
