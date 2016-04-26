@@ -30,9 +30,9 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="match_parent"
         android:layout_weight="3"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
         <FrameLayout
             android:id="@+id/content_globe"
@@ -40,7 +40,7 @@
             xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:paddingBottom="1px"
             android:paddingLeft="1px"
             android:paddingRight="1px"
@@ -51,18 +51,18 @@
             <!--TODO: Resolve hack. Added a 1px visible border to this layout to prevent it from displaying on top of navigation drawer-->
 
         </FrameLayout>
-
     </LinearLayout>
 
+    <!--TODO Fix layout (offset) and restore status bar height and visibility-->
     <LinearLayout
         android:id="@+id/statusdisplay"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:layout_weight="1"
         android:background="@color/transparent_background"
         android:gravity="center"
         android:orientation="horizontal"
-        android:visibility="visible">
+        android:visibility="invisible">
 
         <TextView
             android:id="@+id/latlabel"
