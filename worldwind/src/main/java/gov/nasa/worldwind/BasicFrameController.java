@@ -3,15 +3,16 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-package gov.nasa.worldwind.render;
+package gov.nasa.worldwind;
 
 import android.opengl.GLES20;
 
-import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.globe.Tessellator;
 import gov.nasa.worldwind.layer.Layer;
+import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.OrderedRenderable;
 import gov.nasa.worldwind.util.Logger;
 
 public class BasicFrameController implements FrameController {

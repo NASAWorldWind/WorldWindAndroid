@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-package gov.nasa.worldwind.render;
+package gov.nasa.worldwind;
 
 public class FrameStatistics {
 

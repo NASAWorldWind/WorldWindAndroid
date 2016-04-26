@@ -3,7 +3,9 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-package gov.nasa.worldwind.render;
+package gov.nasa.worldwind;
+
+import gov.nasa.worldwind.render.DrawContext;
 
 public interface FrameController {
 
