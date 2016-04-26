@@ -37,7 +37,7 @@ public class DrawablePlacemark implements Drawable {
 
     public float leaderWidth = 1;
 
-    public Color imageColor = new Color(Color.WHITE);
+    public Color imageColor = new Color(1, 1, 1, 1); // white
 
     public Color leaderColor = null;    // must be allocated if a leader line must be drawn
 

@@ -35,8 +35,8 @@ public class ShapeAttributes {
 
     public ShapeAttributes() {
         this.imageSource = null;
-        this.interiorColor = new Color(Color.WHITE);
-        this.outlineColor = new Color(Color.RED);
+        this.interiorColor = new Color(1, 1, 1, 1); // white
+        this.outlineColor = new Color(1, 0, 0, 1); // red
         this.drawInterior = true;
         this.drawOutline = true;
         this.enableLighting = false;
@@ -48,7 +48,7 @@ public class ShapeAttributes {
         this.applyLighting = false;
     }
 
-    public ShapeAttributes(final ShapeAttributes copy) {
+    public ShapeAttributes(ShapeAttributes copy) {
         this.imageSource = copy.imageSource;
         this.interiorColor = new Color(copy.interiorColor);
         this.outlineColor = new Color(copy.outlineColor);
@@ -63,7 +63,7 @@ public class ShapeAttributes {
         this.applyLighting = copy.applyLighting;
     }
 
-    public ShapeAttributes set(final ShapeAttributes attributes) {
+    public ShapeAttributes set(ShapeAttributes attributes) {
         this.imageSource = attributes.imageSource;
         this.interiorColor.set(attributes.interiorColor);
         this.outlineColor.set(attributes.outlineColor);

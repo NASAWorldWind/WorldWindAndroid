@@ -52,7 +52,7 @@ public class PlacemarksActivity extends BasicGlobeActivity {
 
         // Create a simple placemark at downtown Ventura, CA. This placemark is a 20x20 cyan square centered on the
         // geographic position. This placemark demonstrates the creation with a convenient factory method.
-        Placemark ventura = Placemark.simple(Position.fromDegrees(34.281, -119.293, 0), Color.CYAN, 20);
+        Placemark ventura = Placemark.simple(Position.fromDegrees(34.281, -119.293, 0), new Color(0, 1, 1, 1), 20);
 
         // Create an image-based placemark of an aircraft above the ground with a leader-line to the surface.
         // This placemark demonstrates creation via a constructor and a convenient PlacemarkAttributes factory method.
