@@ -39,9 +39,8 @@ public class GestureRecognizer {
 
     protected float lowPassWeight = 0.4f;
 
-    private
     @WorldWind.GestureState
-    int state = WorldWind.POSSIBLE;
+    private int state = WorldWind.POSSIBLE;
 
     public GestureRecognizer() {
     }
@@ -63,6 +62,7 @@ public class GestureRecognizer {
         this.enabled = enabled;
     }
 
+    @WorldWind.GestureState
     public int getState() {
         return state;
     }
