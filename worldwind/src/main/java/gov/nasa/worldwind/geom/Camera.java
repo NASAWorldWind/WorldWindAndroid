@@ -16,9 +16,8 @@ public class Camera {
 
     public double altitude;
 
-    public
     @WorldWind.AltitudeMode
-    int altitudeMode = WorldWind.ABSOLUTE;
+    public int altitudeMode = WorldWind.ABSOLUTE;
 
     public double heading;
 
