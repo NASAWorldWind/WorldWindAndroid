@@ -124,7 +124,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity
     }
 
     protected void setAboutBoxTitle(String title) {
-        this.aboutBoxText = title;
+        this.aboutBoxTitle = title;
     }
 
     protected void setAboutBoxText(String text) {
