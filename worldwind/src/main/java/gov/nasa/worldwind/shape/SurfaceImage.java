@@ -9,9 +9,9 @@ import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.SurfaceTile;
+import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Logger;
 
 public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
@@ -60,7 +60,7 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
 
     @Override
     protected void doRender(DrawContext dc) {
-        if (this.sector.isEmpty() || this.imageSource == null) {
+        if (this.sector.isEmpty()) {
             return; // nothing to render
         }
 
@@ -68,30 +68,25 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
             return; // nothing to render on
         }
 
-        dc.surfaceTileRenderer.renderTile(dc, this);
+        Texture texture = dc.getTexture(this.imageSource);
+        if (texture == null) {
+            texture = dc.retrieveTexture(this.imageSource); // adds the retrieved texture to the cache
+        }
+
+        if (texture != null) {
+            dc.surfaceTileRenderer.renderTile(dc, this);
+        }
     }
 
     @Override
     public boolean bindTexture(DrawContext dc) {
-        if (this.imageSource != null) {
-            Texture texture = dc.getTexture(this.imageSource);
-            if (texture == null) {
-                texture = dc.retrieveTexture(this.imageSource); // adds the retrieved texture to the cache
-            }
-
-            return (texture != null) && texture.bindTexture(dc);
-        }
-
-        return false;
+        Texture texture = dc.getTexture(this.imageSource);
+        return (texture != null) && texture.bindTexture(dc);
     }
 
     @Override
     public boolean applyTexCoordTransform(DrawContext dc, Matrix3 result) {
-        if (this.imageSource != null) {
-            Texture texture = dc.getTexture(this.imageSource);
-            return (texture != null) && texture.applyTexCoordTransform(result);
-        }
-
-        return false;
+        Texture texture = dc.getTexture(this.imageSource);
+        return (texture != null) && texture.applyTexCoordTransform(result);
     }
 }

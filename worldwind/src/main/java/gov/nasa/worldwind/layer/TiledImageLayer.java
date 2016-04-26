@@ -12,6 +12,7 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.ImageTile;
+import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.Logger;
@@ -119,6 +120,16 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
         return tile;
     }
 
+    protected Texture fetchTileTexture(DrawContext dc, ImageTile tile) {
+        Texture texture = dc.getTexture(tile.getImageSource());
+
+        if (texture == null) {
+            texture = dc.retrieveTexture(tile.getImageSource());
+        }
+
+        return texture;
+    }
+
     protected void assembleTiles(DrawContext dc) {
         this.currentTiles.clear();
 
@@ -149,7 +160,7 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
         }
 
         ImageTile fallbackTile = this.currentFallbackTile;
-        if (tile.hasTexture(dc)) { // use it as a fallback tile for descendants
+        if (this.fetchTileTexture(dc, tile) != null) { // use it as a fallback tile for descendants
             this.currentFallbackTile = tile;
         }
 
@@ -161,11 +172,12 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
     }
 
     protected void addTile(DrawContext dc, ImageTile tile) {
-        if (!tile.hasTexture(dc)) {
+        if (this.fetchTileTexture(dc, tile) != null) { // use the tile's own texture
+            this.currentTiles.add(tile);
+        } else if (this.currentFallbackTile != null) { // use the fallback tile's texture
             tile.setFallbackTile(this.currentFallbackTile);
+            this.currentTiles.add(tile);
         }
-
-        this.currentTiles.add(tile);
     }
 
     protected void clearTiles() {
