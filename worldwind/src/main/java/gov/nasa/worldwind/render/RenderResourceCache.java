@@ -31,14 +31,14 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource> 
 
         @Override
         public void retrievalSucceeded(Retriever<ImageSource, Bitmap> retriever, ImageSource key, Bitmap value) {
-            if (Logger.isLoggable(Logger.DEBUG)) {
-                Logger.log(Logger.DEBUG, "Image retrieval succeeded \'" + key + "\'");
-            }
-
             Texture texture = new Texture(value);
             Entry<Object, RenderResource> entry = new Entry<Object, RenderResource>(key, texture, texture.getImageByteCount());
             retrievalQueue.offer(entry);
             WorldWind.requestRender();
+
+            if (Logger.isLoggable(Logger.DEBUG)) {
+                Logger.log(Logger.DEBUG, "Image retrieval succeeded \'" + key + "\'");
+            }
         }
 
         @Override

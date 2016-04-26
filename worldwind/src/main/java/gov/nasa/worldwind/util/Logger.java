@@ -44,12 +44,14 @@ public class Logger {
         messageTable.put("invalidWidthOrHeight", "The width or the height is invalid");
         messageTable.put("missingArray", "The array is null or insufficient length");
         messageTable.put("missingBuffer", "The buffer is null or insufficient length");
+        messageTable.put("missingCallback", "The callback is null");
         messageTable.put("missingCamera", "The camera is null");
         messageTable.put("missingConfig", "The configuration is null");
         messageTable.put("missingCoordinateSystem", "The coordinate system is null");
         messageTable.put("missingFormat", "The format is null");
         messageTable.put("missingGlobe", "The globe is null");
         messageTable.put("missingImageFormat", "The image format is null");
+        messageTable.put("missingKey", "The key is null");
         messageTable.put("missingLayer", "The layer is null");
         messageTable.put("missingLayerNames", "The layer names are null");
         messageTable.put("missingLevel", "The level is null");
