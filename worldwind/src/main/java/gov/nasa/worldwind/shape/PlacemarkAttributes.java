@@ -45,8 +45,8 @@ public class PlacemarkAttributes {
      */
     public PlacemarkAttributes() {
         this.imageSource = null;
-        this.imageColor = new Color(1, 1, 1, 1);
-        this.imageOffset = new Offset(Offset.CENTER);
+        this.imageColor = new Color(1, 1, 1, 1); // white
+        this.imageOffset = Offset.center();
         this.imageScale = 1;
         this.minimumImageScale = 0;
         this.labelAttributes = null;

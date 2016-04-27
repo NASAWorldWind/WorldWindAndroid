@@ -68,19 +68,18 @@ public class PlacemarksActivity extends BasicGlobeActivity {
         // its original size, with the bottom center of the image anchored at the geographic position.
         Placemark airport = new Placemark(
             Position.fromDegrees(34.200, -119.208, 0),
-            PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.airport_terminal)).setImageOffset(Offset.BOTTOM_CENTER).setImageScale(2),
+            PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.airport_terminal)).setImageOffset(Offset.bottomCenter()).setImageScale(2),
             "Oxnard Airport");
 
 
-        // Create an image-based placemark with a label from a bitmap. This placemark demonstrates creation
-        // with a constructor and a convenient PlacemarkAttributes factory method. A 64x64 bitmap is loaded
-        // and then passed into the placemark attributes. The the bottom center of the image anchored at the
-        // geographic position.
+        // Create an image-based placemark from a bitmap. This placemark demonstrates creation with a
+        // constructor and a convenient PlacemarkAttributes factory method. First, a 64x64 bitmap is loaded
+        // and then it is passed into the placemark attributes. The the bottom center of the image anchored
+        // at the geographic position.
         Bitmap bitmap = BitmapFactory.decodeResource(getWorldWindow().getResources(), R.drawable.ehipcc);
         Placemark wildfire = new Placemark(
             Position.fromDegrees(34.300, -119.25, 0),
-            PlacemarkAttributes.withImageAndLabel(ImageSource.fromBitmap(bitmap)).setImageOffset(Offset.BOTTOM_CENTER),
-            "Fire");
+            PlacemarkAttributes.withImage(ImageSource.fromBitmap(bitmap)).setImageOffset(Offset.bottomCenter()));
 
 
         /////////////////////////////////////////////////////

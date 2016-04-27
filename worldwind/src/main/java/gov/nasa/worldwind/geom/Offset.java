@@ -11,25 +11,6 @@ import gov.nasa.worldwind.WorldWind;
  * Specifies an offset relative to a rectangle. Used by renderable shapes.
  */
 public class Offset {
-    /**
-     * An offset for centering a placemark image on its geographic position.
-     */
-    public static final Offset CENTER = new Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.5);
-
-    /**
-     * An offset for anchoring a placemark image to the bottom, left of its geographic position.
-     */
-    public static final Offset BOTTOM_LEFT = new Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 0.0);
-
-    /**
-     * An offset for anchoring a placemark image at the center width and bottom.
-     */
-    public static final Offset BOTTOM_CENTER = new Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.0);
-
-    /**
-     * An offset for anchoring a placemark image to the bottom, left of its geographic position.
-     */
-    public static final Offset BOTTOM_RIGHT = new Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 0.0);
 
     /**
      * The offset in the X dimension, interpreted according to this instance's xUnits argument.
@@ -85,6 +66,43 @@ public class Offset {
         this.y = copy.y;
         this.xUnits = copy.xUnits;
         this.yUnits = copy.yUnits;
+    }
+
+    /**
+     * This factory method returns a new offset for centering an image on its geographic position.
+     *
+     * @return Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.5)
+     */
+    public static Offset center() {
+        return new Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.5);
+    }
+
+    /**
+     * This factory method returns a new offset used for anchoring an image to the bottom, left of its geographic
+     * position.
+     *
+     * @return Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 0.0)
+     */
+    public static Offset bottomLeft() {
+        return new Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 0.0);
+    }
+
+    /**
+     * This factory method returns a new offset for anchoring an image to the bottom and the center width.
+     *
+     * @return Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.0)
+     */
+    public static Offset bottomCenter() {
+        return new Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.0);
+    }
+
+    /**
+     * This factory method returns a new offset for anchoring an image to the bottom, right of its geographic position.
+     *
+     * @return Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 0.0)
+     */
+    public static Offset bottomRight() {
+        return new Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 0.0);
     }
 
     /**
