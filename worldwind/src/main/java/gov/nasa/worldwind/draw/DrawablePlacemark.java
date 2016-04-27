@@ -135,7 +135,6 @@ public class DrawablePlacemark implements Drawable {
     }
 
 
-
     /**
      * Performs the actual rendering of the Placemark.
      *
@@ -168,10 +167,8 @@ public class DrawablePlacemark implements Drawable {
             // TODO: Must evaluate the effectiveness of using screen coordinates with depth offsets for the leaderline
             // TODO: when terrain is used.  I suspect there will be an issue with the ground point.
             // TODO: Perhaps the ground screen point should not have a depth offset.
-            //GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getLeaderBuffer(this.groundPoint, this.placePoint));
             GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getLeaderBuffer(this.screenGroundPoint, this.screenPlacePoint));
 
-            //this.mvpMatrix.set(dc.modelviewProjection);
             this.mvpMatrix.set(dc.screenProjection);
             program.loadModelviewProjection(this.mvpMatrix);
 
@@ -194,11 +191,11 @@ public class DrawablePlacemark implements Drawable {
         // Draw the image
         ///////////////////////////////////
 
-        // Set up to use the shared tex attribute.
-        GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, getUnitQuadBuffer2D());
-
         // Allocate or get a unit-quad buffer for the image coordinates
         GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getUnitQuadBuffer3D());
+
+        // Set up to use the shared tex attribute.
+        GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, getUnitQuadBuffer2D());
 
         // Compute and specify the MVP matrix...
         this.mvpMatrix.set(dc.screenProjection);
@@ -209,34 +206,29 @@ public class DrawablePlacemark implements Drawable {
         this.mvpMatrix.multiplyByTranslation(-0.5, -0.5, 0);
         // ... and perform the tilt so that the image tilts back from its base into the view volume.
         this.mvpMatrix.multiplyByRotation(-1, 0, 0, this.actualTilt);
-
+        // Now load the MVP matrix
         program.loadModelviewProjection(this.mvpMatrix);
 
-        if (dc.pickingMode) {
-//              program.loadColor(gl, this.pickColor); // TODO: pickColor
-        } else {
-            program.loadColor(this.imageColor);
-        }
-
-        this.texCoordMatrix.setToIdentity();
+        // Bind the texture
         if (this.activeTexture != null) {
-            this.activeTexture.applyTexCoordTransform(this.texCoordMatrix);
-        }
-
-        program.loadTexCoordMatrix(this.texCoordMatrix);
-
-        if (this.activeTexture != null) {
-            // Make multitexture unit 0 active.
+            // Make multi-texture unit 0 active.
             dc.activeTextureUnit(GLES20.GL_TEXTURE0);
             textureBound = this.activeTexture.bindTexture(dc);
             if (textureBound) {
                 program.enableTexture(true);
+                // Perform a vertical flip of the bound texture to match
+                // the reversed Y-axis of the screen coordinate system
+                this.texCoordMatrix.setToIdentity();
+                this.activeTexture.applyTexCoordTransform(this.texCoordMatrix);
+                program.loadTexCoordMatrix(this.texCoordMatrix);
             }
         }
 
+        // Load the color used for the image
+        program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.imageColor); // TODO: pickColor
 
-        // Turn off depth testing for the placemark image if requested. The placemark label and leader line have
-        // their own depth-test controls.
+        // Turn off depth testing for the placemark image if requested.
+        // Note the placemark label and leader line have their own depth-test controls.
         if (this.enableImageDepthTest != depthTesting) {
             depthTesting = !depthTesting;
             if (depthTesting) {
