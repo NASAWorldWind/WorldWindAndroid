@@ -20,8 +20,6 @@ public class MilStd2525Renderer {
 
     private static boolean initialized = false;
 
-    private static SparseArray<String> attributes = new SparseArray<String>();
-
     public static void initialize(Context applicationContext) {
         if (initialized) {
             return;
@@ -45,13 +43,14 @@ public class MilStd2525Renderer {
         //rs.setTextBackgroundMethod(RendererSettings.TextBackgroundMethod_COLORFILL);
         //rs.setTextBackgroundMethod(RendererSettings.TextBackgroundMethod_NONE);
 
-        attributes.put(MilStdAttributes.SymbologyStandard, "0");
-
         initialized = true;
     }
 
 
-    public static ImageInfo renderImage(String symbolCode, SparseArray<String> modifiers) {
+    public static ImageInfo renderImage(String symbolCode, SparseArray<String> modifiers, SparseArray<String> attributes) {
+        if (!initialized) {
+            throw new IllegalStateException("MilStd2525Renderer has not been initialized.");
+        }
         return renderer.RenderIcon(symbolCode, modifiers, attributes);
     }
 }

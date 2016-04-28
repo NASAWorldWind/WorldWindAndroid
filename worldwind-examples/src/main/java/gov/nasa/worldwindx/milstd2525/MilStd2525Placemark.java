@@ -19,18 +19,18 @@ import gov.nasa.worldwind.shape.PlacemarkAttributes;
 
 public class MilStd2525Placemark extends Placemark {
 
+    private static SparseArray<String> defaultAttributes = new SparseArray<>();
 
     public static MilStd2525Placemark fromSymbolCode(Position position, String symbolCode, SparseArray<String> modifiers) {
-        ImageInfo imageInfo = MilStd2525Renderer.renderImage(symbolCode, modifiers);
+        ImageInfo imageInfo = MilStd2525Renderer.renderImage(symbolCode, modifiers, defaultAttributes);
         return fromImageInfo(position, imageInfo);
     }
 
     public static MilStd2525Placemark fromImageInfo(Position position, ImageInfo imageInfo) {
 
-        // TODO: Interrogate the imageInfo meta data to determine the proper imageOffset.
-        Point centerPoint = imageInfo.getCenterPoint();
-        Rect imageBounds = imageInfo.getImageBounds();
-        Rect symbolBounds = imageInfo.getSymbolBounds();
+        Rect imageBounds = imageInfo.getImageBounds();      // The bounds of the entire image, including text
+        Rect symbolBounds = imageInfo.getSymbolBounds();    // The bounds of the core symbol
+        Point centerPoint = imageInfo.getCenterPoint();     // The center of the core symbol
 
         PlacemarkAttributes attr;
         if (position.altitude > 0) {
@@ -38,7 +38,12 @@ public class MilStd2525Placemark extends Placemark {
         } else {
             attr = PlacemarkAttributes.withImage(ImageSource.fromBitmap(imageInfo.getImage()));
         }
-        Offset imageOffset = new Offset(WorldWind.OFFSET_FRACTION, ((double) centerPoint.x) / imageBounds.width(), WorldWind.OFFSET_FRACTION, 0.0);
+
+        // Place the bottom of the image at the specified position and
+        // anchor it horizontally at the center of the core symbol.
+        Offset imageOffset = new Offset(
+            WorldWind.OFFSET_FRACTION, ((double) centerPoint.x) / imageBounds.width(), // x offset
+            WorldWind.OFFSET_FRACTION, 0.0); // y offset
         attr.setImageOffset(imageOffset);
 
         return new MilStd2525Placemark(position, attr, null);
