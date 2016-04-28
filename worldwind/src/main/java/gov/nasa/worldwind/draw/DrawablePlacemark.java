@@ -31,25 +31,17 @@ public class DrawablePlacemark implements Drawable {
 
     protected static float[] leaderPoints; // will be lazily created if a leader will be drawn
 
-    public String label;
-
     public float leaderWidth = 1;
 
     public Color imageColor = new Color(1, 1, 1, 1); // white
 
     public Color leaderColor; // must be assigned if a leader line must be drawn
 
-    public Color labelColor; // must be assigned if a label must be drawn
-
     public boolean drawLeader;
-
-    public boolean drawLabel;
 
     public boolean enableImageDepthTest = true;
 
     public boolean enableLeaderDepthTest = true;
-
-    public boolean enableLabelDepthTest = true;
 
     public boolean enableLeaderPicking = false;
 
@@ -65,11 +57,7 @@ public class DrawablePlacemark implements Drawable {
 
     public Texture iconTexture;  // must be assigned if an image texture will be used
 
-    public Texture labelTexture;   // must be assigned a label texture will be used
-
     public Matrix4 imageTransform = new Matrix4();
-
-    public Matrix4 labelTransform;    // will be lazily created if a label must be drawn
 
     protected Matrix3 texCoordMatrix = new Matrix3();
 
@@ -144,11 +132,6 @@ public class DrawablePlacemark implements Drawable {
         // Draw the placemark icon, either textured or a simple colored square.
         this.drawIcon(dc);
 
-        // Draw the placemark's label.
-        if (this.drawLabel) {
-            this.drawLabel(dc);
-        }
-
         // Restore the default World Wind OpenGL state.
         if (!this.enableDepthTest) {
             GLES20.glEnable(GLES20.GL_DEPTH_TEST);
@@ -174,18 +157,19 @@ public class DrawablePlacemark implements Drawable {
         // Now load the MVP matrix
         this.program.loadModelviewProjection(this.mvpMatrix);
 
-        // Bind the texture
-        if (this.iconTexture != null) {
-            // Make multi-texture unit 0 active.
-            dc.activeTextureUnit(GLES20.GL_TEXTURE0);
-            if (this.iconTexture.bindTexture(dc)) {
-                this.program.enableTexture(true);
-                // Perform a vertical flip of the bound texture to match
-                // the reversed Y-axis of the screen coordinate system
-                this.texCoordMatrix.setToIdentity();
-                this.iconTexture.applyTexCoordTransform(this.texCoordMatrix);
-                this.program.loadTexCoordMatrix(this.texCoordMatrix);
-            }
+        // Make multi-texture unit 0 active.
+        dc.activeTextureUnit(GLES20.GL_TEXTURE0);
+
+        // Attempt to bind the texture.
+        if (this.iconTexture != null && this.iconTexture.bindTexture(dc)) {
+            this.program.enableTexture(true);
+            // Perform a vertical flip of the bound texture to match
+            // the reversed Y-axis of the screen coordinate system
+            this.texCoordMatrix.setToIdentity();
+            this.iconTexture.applyTexCoordTransform(this.texCoordMatrix);
+            this.program.loadTexCoordMatrix(this.texCoordMatrix);
+        } else {
+            this.program.enableTexture(false);
         }
 
         // Load the color used for the image
@@ -205,8 +189,8 @@ public class DrawablePlacemark implements Drawable {
         // TODO: Perhaps the ground screen point should not have a depth offset.
         GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getLeaderBuffer(this.screenGroundPoint, this.screenPlacePoint));
 
-        this.mvpMatrix.set(dc.screenProjection);
-        this.program.loadModelviewProjection(this.mvpMatrix);
+        this.program.enableTexture(false);
+        this.program.loadModelviewProjection(dc.screenProjection);
         this.program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.leaderColor); // TODO: pickColor
 
         // Disable leader depth testing if requested.
@@ -214,10 +198,6 @@ public class DrawablePlacemark implements Drawable {
 
         GLES20.glLineWidth(this.leaderWidth);
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, 2);
-    }
-
-    protected void drawLabel(DrawContext dc) {
-        // TODO: drawLabel
     }
 
     protected void enableDepthTest(boolean enable) {
