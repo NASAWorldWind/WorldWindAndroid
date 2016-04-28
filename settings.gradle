@@ -1,1 +1,1 @@
-include ':worldwind', ':worldwind-examples'
+include ':worldwind', ':worldwind-examples', ':mil-sym-android'
