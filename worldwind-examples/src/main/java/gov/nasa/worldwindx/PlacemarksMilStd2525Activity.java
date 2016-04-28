@@ -6,11 +6,7 @@
 package gov.nasa.worldwindx;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.SparseArray;
-
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import armyc2.c2sd.renderer.utilities.ModifiersUnits;
 import gov.nasa.worldwind.WorldWind;
@@ -18,9 +14,7 @@ import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.layer.RenderableLayer;
-import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.shape.Placemark;
-import gov.nasa.worldwindx.milstd2525.MilStd2525Renderer;
 import gov.nasa.worldwindx.milstd2525.MilStd2525Placemark;
 
 public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
@@ -59,20 +53,23 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
         WorldWind.taskService().execute(new Runnable() {
             @Override
             public void run() {
-                // The symbol renderer can take a long time to initialize.
-                MilStd2525Renderer.initialize(getApplicationContext());
 
-                // We must add the new renderables on the GLThread.
+                // The symbol renderer can take a long time to initialize.
+                MilStd2525Placemark.initializeRenderer(getApplicationContext());
+
                 // TODO: demonstrate an efficient/foolproof way of adding renderables to a running application.
+                // We must add the new renderables on the GLThread.
                 getWorldWindow().queueEvent(new Runnable() {
                     @Override
                     public void run() {
+
                         // "MIL-STD-2525 Friendly SOF Drone Aircraft"
                         SparseArray<String> modifiers = new SparseArray<String>();
                         modifiers.put(ModifiersUnits.Q_DIRECTION_OF_MOVEMENT, "235");
-                        MilStd2525Placemark drone = MilStd2525Placemark.fromSymbolCode(
+                        Placemark drone = MilStd2525Placemark.fromSymbolCode(
                             Position.fromDegrees(32.4520, 63.44553, 3000),
                             "SFAPMFQM--GIUSA", modifiers);
+
                         symbolLayer.addRenderable(drone);
                         //symbolLayer.addRenderable(Placemark.simple(drone.getPosition(), new Color(1, 1, 1, 1), 4)); // for placement verification
 
@@ -80,9 +77,10 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
                         modifiers.clear();
                         modifiers.put(ModifiersUnits.Q_DIRECTION_OF_MOVEMENT, "90");
                         modifiers.put(ModifiersUnits.AJ_SPEED_LEADER, "0.1");
-                        MilStd2525Placemark launcher = MilStd2525Placemark.fromSymbolCode(
+                        Placemark launcher = MilStd2525Placemark.fromSymbolCode(
                             Position.fromDegrees(32.4014, 63.3894, 0),
                             "SHGXUCFRMS----G", modifiers);
+
                         symbolLayer.addRenderable(launcher);
                         //symbolLayer.addRenderable(Placemark.simple(launcher.getPosition(), new Color(1, 1, 1, 1), 4)); // for placement verification
 
@@ -93,9 +91,10 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
                         modifiers.put(ModifiersUnits.H_ADDITIONAL_INFO_1, "ADDED SUPPORT FOR JJ");
                         modifiers.put(ModifiersUnits.V_EQUIP_TYPE, "MACHINE GUN");
                         modifiers.put(ModifiersUnits.W_DTG_1, "30140000ZSEP97");    // Date/Time Group
-                        MilStd2525Placemark machineGun = MilStd2525Placemark.fromSymbolCode(
+                        Placemark machineGun = MilStd2525Placemark.fromSymbolCode(
                             Position.fromDegrees(32.3902, 63.4161, 0),
                             "SFGPEWRH--MTUSG", modifiers);
+
                         symbolLayer.addRenderable(machineGun);
                         //symbolLayer.addRenderable(Placemark.simple(machineGun.getPosition(), new Color(1, 1, 1, 1), 4)); // for placement verification
 
