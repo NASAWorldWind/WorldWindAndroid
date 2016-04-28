@@ -15,6 +15,7 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.AbstractRenderable;
+import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.ImageSource;
@@ -202,10 +203,11 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Placemark", "constructor", "missingPosition"));
         }
-        setPosition(position);
-        setAltitudeMode(WorldWind.ABSOLUTE);
-        setDisplayName(displayName);
-        setLabel(label);
+
+        this.setPosition(position);
+        this.setAltitudeMode(WorldWind.ABSOLUTE);
+        this.setDisplayName(displayName);
+        this.setLabel(label);
         this.attributes = attributes != null ? attributes : new PlacemarkAttributes();
         this.highlightAttributes = null;
         this.highlighted = false;
@@ -475,7 +477,7 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
      * @param dc The current DrawContext.
      */
     public PlacemarkAttributes getActiveAttributes(DrawContext dc) {
-        return this.attributes;
+        return this.attributes; // TODO interpret highlighted state
     }
 
     /**
@@ -486,7 +488,7 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
     @Override
     protected void doRender(DrawContext dc) {
 
-        PlacemarkAttributes activeAttributes = getActiveAttributes(dc);
+        PlacemarkAttributes activeAttributes = this.getActiveAttributes(dc);
 
         // Compute the placemark's model point and corresponding distance to the eye point. If the placemark's
         // position is terrain-dependent but off the terrain, then compute it ABSOLUTE so that we have a point for
@@ -517,7 +519,7 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
         DrawablePlacemark drawable = this.makeDrawablePlacemark(dc);
 
         // Prepare the drawable for portrayal of this placemark
-        if (this.prepareDrawable(drawable, dc) && isVisible(drawable, dc)) {
+        if (this.prepareDrawable(drawable, dc) && this.isVisible(drawable, dc)) {
             // Rendering is deferred for ordered renderables -- these renderables will be sorted
             // by eye distance and rendered after the layers are rendered. Simply add this placemark
             // to the collection of ordered renderables for rendering later via Placemark.renderOrdered().
@@ -556,7 +558,7 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
     protected boolean prepareDrawable(DrawablePlacemark drawable, DrawContext dc) {
 
         // Get a reference to the attributes to use in the next drawing pass.
-        PlacemarkAttributes activeAttributes = getActiveAttributes(dc);
+        PlacemarkAttributes activeAttributes = this.getActiveAttributes(dc);
 
         // Set the (optional) label. May be null.
         drawable.label = this.getLabel();
@@ -600,9 +602,16 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
             double metersPerPixel = dc.pixelSizeAtDistance(this.eyeDistance);
             depthOffset = longestSide * activeAttributes.imageScale * metersPerPixel * -1;
         }
+
         if (!dc.projectWithDepth(this.placePoint, depthOffset, drawable.screenPlacePoint)) {
             // Probably outside the clipping planes
             return false;
+        }
+
+        // Use World Wind's basic GLSL program.
+        drawable.program = (BasicShaderProgram) dc.getShaderProgram(BasicShaderProgram.KEY);
+        if (drawable.program == null) {
+            drawable.program = (BasicShaderProgram) dc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(dc.resources));
         }
 
         // Compute an eye-position proximity scaling factor, so that distant placemarks can be scaled smaller than
@@ -638,7 +647,6 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
 
             drawable.imageTransform.setScale(size, size, 1);
         }
-
 
         /////////////////////////////////////
         // Prepare the optional leader line
@@ -706,6 +714,7 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
                 drawable.labelTransform.setScale(w * s, h * s, 1);
             }
         }
+
         return true;
     }
 
@@ -740,7 +749,7 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
      */
 
     public boolean mustDrawLabel(DrawContext dc) {
-        PlacemarkAttributes activeAttributes = getActiveAttributes(dc);
+        PlacemarkAttributes activeAttributes = this.getActiveAttributes(dc);
         return this.label != null && !this.label.isEmpty() && activeAttributes.labelAttributes != null;
     }
 
@@ -750,9 +759,8 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
      * @return True if leader-line directive is enabled and there are valid leader-line attributes.
      */
     public boolean mustDrawLeaderLine(DrawContext dc) {
-        PlacemarkAttributes activeAttributes = getActiveAttributes(dc);
+        PlacemarkAttributes activeAttributes = this.getActiveAttributes(dc);
         return activeAttributes.drawLeaderLine && activeAttributes.leaderLineAttributes != null
             && (!dc.pickingMode || this.enableLeaderLinePicking);
     }
-
 }

@@ -25,25 +25,25 @@ import gov.nasa.worldwind.render.Texture;
  */
 public class DrawablePlacemark implements Drawable {
 
-    protected static FloatBuffer unitQuadBuffer = null;
+    protected static FloatBuffer unitQuadBuffer;
 
-    protected static FloatBuffer leaderBuffer = null;
+    protected static FloatBuffer leaderBuffer;
 
-    protected static float[] leaderPoints = null;  // will be lazily created if a leader will be drawn
+    protected static float[] leaderPoints; // will be lazily created if a leader will be drawn
 
-    public String label = null;
+    public String label;
 
     public float leaderWidth = 1;
 
     public Color imageColor = new Color(1, 1, 1, 1); // white
 
-    public Color leaderColor = null;    // must be allocated if a leader line must be drawn
+    public Color leaderColor; // must be assigned if a leader line must be drawn
 
-    public Color labelColor = null;     // must be allocated if a label must be drawn
+    public Color labelColor; // must be assigned if a label must be drawn
 
-    public boolean drawLeader = false;
+    public boolean drawLeader;
 
-    public boolean drawLabel = false;
+    public boolean drawLabel;
 
     public boolean enableImageDepthTest = true;
 
@@ -55,19 +55,21 @@ public class DrawablePlacemark implements Drawable {
 
     public Vec3 screenPlacePoint = new Vec3(0, 0, 0);
 
-    public Vec3 screenGroundPoint = null;    // must be created if a leader line must be drawn
+    public Vec3 screenGroundPoint;    // must be created if a leader line must be drawn
 
     public double actualRotation = 0;
 
     public double actualTilt = 0;
 
-    public Texture activeTexture = null;  // must be allocated if image texture will be used
+    public BasicShaderProgram program;
 
-    public Texture labelTexture = null;   // must be allocated a label texture will be used
+    public Texture activeTexture;  // must be assigned if an image texture will be used
+
+    public Texture labelTexture;   // must be assigned a label texture will be used
 
     public Matrix4 imageTransform = new Matrix4();
 
-    public Matrix4 labelTransform = null;    // will be lazily created if a label must be drawn
+    public Matrix4 labelTransform;    // will be lazily created if a label must be drawn
 
     protected Matrix3 texCoordMatrix = new Matrix3();
 
@@ -118,13 +120,12 @@ public class DrawablePlacemark implements Drawable {
      */
     @Override
     public void draw(DrawContext dc) {
-        // Use World Wind's basic GLSL program.
-        BasicShaderProgram program = (BasicShaderProgram) dc.getShaderProgram(BasicShaderProgram.KEY);
-        if (program == null) {
-            program = (BasicShaderProgram) dc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(dc.resources));
+
+        if (this.program == null) {
+            return; // no program assigned
         }
 
-        if (!program.useProgram(dc)) {
+        if (!this.program.useProgram(dc)) {
             return; // program failed to build
         }
 
@@ -182,7 +183,7 @@ public class DrawablePlacemark implements Drawable {
         // ... and perform the tilt so that the image tilts back from its base into the view volume.
         this.mvpMatrix.multiplyByRotation(-1, 0, 0, this.actualTilt);
         // Now load the MVP matrix
-        program.loadModelviewProjection(this.mvpMatrix);
+        this.program.loadModelviewProjection(this.mvpMatrix);
 
         // Bind the texture
         if (this.activeTexture != null) {
@@ -190,17 +191,17 @@ public class DrawablePlacemark implements Drawable {
             dc.activeTextureUnit(GLES20.GL_TEXTURE0);
             textureBound = this.activeTexture.bindTexture(dc);
             if (textureBound) {
-                program.enableTexture(true);
+                this.program.enableTexture(true);
                 // Perform a vertical flip of the bound texture to match
                 // the reversed Y-axis of the screen coordinate system
                 this.texCoordMatrix.setToIdentity();
                 this.activeTexture.applyTexCoordTransform(this.texCoordMatrix);
-                program.loadTexCoordMatrix(this.texCoordMatrix);
+                this.program.loadTexCoordMatrix(this.texCoordMatrix);
             }
         }
 
         // Load the color used for the image
-        program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.imageColor); // TODO: pickColor
+        this.program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.imageColor); // TODO: pickColor
 
         // Turn off depth testing for the placemark image if requested.
         // Note the placemark label and leader line have their own depth-test controls.
@@ -221,24 +222,24 @@ public class DrawablePlacemark implements Drawable {
         ///////////////////////////////////
 
         if (this.drawLabel) { // TODO: drawLabel
-//            program.loadOpacity(gl, dc.pickingMode ? 1 : this.layer.opacity * this.currentVisibility);
+//            this.program.loadOpacity(gl, dc.pickingMode ? 1 : this.layer.opacity * this.currentVisibility);
 //
 //            Placemark.matrix.copy(dc.screenProjection);
 //            Placemark.matrix.multiplyMatrix(this.labelTransform);
-//            program.loadModelviewProjection(gl, Placemark.matrix);
+//            this.program.loadModelviewProjection(gl, Placemark.matrix);
 //
 //            if (!dc.pickingMode && this.labelTexture) {
 //                this.texCoordMatrix.setToIdentity();
 //                this.texCoordMatrix.multiplyByTextureTransform(this.labelTexture);
 //
-//                program.loadTextureMatrix(gl, this.texCoordMatrix);
-//                program.loadColor(gl, this.attributes.labelAttributes.color);
+//                this.program.loadTextureMatrix(gl, this.texCoordMatrix);
+//                this.program.loadColor(gl, this.attributes.labelAttributes.color);
 //
 //                textureBound = this.labelTexture.bind(dc);
-//                program.loadTextureEnabled(gl, textureBound);
+//                this.program.loadTextureEnabled(gl, textureBound);
 //            } else {
-//                program.loadTextureEnabled(gl, false);
-//                program.loadColor(gl, this.pickColor);
+//                this.program.loadTextureEnabled(gl, false);
+//                this.program.loadColor(gl, this.pickColor);
 //            }
 //
 //            if (this.attributes.labelAttributes.depthTest && depthTest) {
@@ -257,7 +258,7 @@ public class DrawablePlacemark implements Drawable {
             GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         }
         if (textureBound) {
-            program.enableTexture(false);
+            this.program.enableTexture(false);
         }
         GLES20.glDisableVertexAttribArray(1);
     }
