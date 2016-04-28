@@ -578,13 +578,13 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
 
         // Set the active texture to use, if applicable, creating it if necessary from the imageSource object.
         if (activeAttributes.imageSource != null) {
-            drawable.activeTexture = dc.getTexture(activeAttributes.imageSource);
-            if (drawable.activeTexture == null) {
-                drawable.activeTexture = dc.retrieveTexture(activeAttributes.imageSource); // puts retrieved textures in the cache
+            drawable.iconTexture = dc.getTexture(activeAttributes.imageSource);
+            if (drawable.iconTexture == null) {
+                drawable.iconTexture = dc.retrieveTexture(activeAttributes.imageSource); // puts retrieved textures in the cache
             }
         } else {
             // When there is no imageSource we draw a simple colored square
-            drawable.activeTexture = null;
+            drawable.iconTexture = null;
         }
 
         // Compute the placemark's screen point in the OpenGL coordinate system of the WorldWindow by projecting its
@@ -597,8 +597,8 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
         if (this.eyeDistance < dc.horizonDistance) {
             // Offset the image towards the eye such that whatever the orientation of the image, with respect to the
             // globe, the entire image is guaranteed to be in front of the globe/terrain.
-            double longestSide = drawable.activeTexture != null ?
-                Math.max(drawable.activeTexture.getImageWidth(), drawable.activeTexture.getImageHeight()) : 1;
+            double longestSide = drawable.iconTexture != null ?
+                Math.max(drawable.iconTexture.getImageWidth(), drawable.iconTexture.getImageHeight()) : 1;
             double metersPerPixel = dc.pixelSizeAtDistance(this.eyeDistance);
             depthOffset = longestSide * activeAttributes.imageScale * metersPerPixel * -1;
         }
@@ -623,9 +623,9 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
         // image offset and image scale. The image offset is defined with its origin at the image's bottom-left corner and
         // axes that extend up and to the right from the origin point. When the placemark has no active texture the image
         // scale defines the image size and no other scaling is applied.
-        if (drawable.activeTexture != null) {
-            int w = drawable.activeTexture.getImageWidth();
-            int h = drawable.activeTexture.getImageHeight();
+        if (drawable.iconTexture != null) {
+            int w = drawable.iconTexture.getImageWidth();
+            int h = drawable.iconTexture.getImageHeight();
             double s = activeAttributes.imageScale * visibilityScale;
             Vec2 offset = activeAttributes.imageOffset.offsetForSize(w, h);
 

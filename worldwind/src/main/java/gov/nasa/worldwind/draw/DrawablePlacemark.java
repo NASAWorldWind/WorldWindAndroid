@@ -63,7 +63,7 @@ public class DrawablePlacemark implements Drawable {
 
     public BasicShaderProgram program;
 
-    public Texture activeTexture;  // must be assigned if an image texture will be used
+    public Texture iconTexture;  // must be assigned if an image texture will be used
 
     public Texture labelTexture;   // must be assigned a label texture will be used
 
@@ -74,6 +74,8 @@ public class DrawablePlacemark implements Drawable {
     protected Matrix3 texCoordMatrix = new Matrix3();
 
     protected Matrix4 mvpMatrix = new Matrix4();
+
+    protected boolean enableDepthTest = true;
 
     /**
      * Returns a buffer containing a unit quadrilateral expressed as four 2D vertices at (0, 1), (0, 0), (1, 1) and (1,
@@ -129,44 +131,31 @@ public class DrawablePlacemark implements Drawable {
             return; // program failed to build
         }
 
-        // program.loadOpacity(gl, dc.pickingMode ? 1 : this.layer.opacity); // TODO: opacity
+        // this.program.loadOpacity(gl, dc.pickingMode ? 1 : this.layer.opacity); // TODO: opacity
 
         // Initialize vars used to track GL states that may need to be restored
-        boolean depthTesting = true;    // default
-        boolean textureBound = false;
+        this.enableDepthTest = true; // default
 
-        ///////////////////////////////////
-        // Draw the optional leader-line
-        ///////////////////////////////////
-
-        // Draw the leader line first so that the image and label have visual priority.
+        // Draw the placemark's leader line first so that the icon and label display on top.
         if (this.drawLeader) {
-            // TODO: Must evaluate the effectiveness of using screen coordinates with depth offsets for the leaderline
-            // TODO: when terrain is used.  I suspect there will be an issue with the ground point.
-            // TODO: Perhaps the ground screen point should not have a depth offset.
-            GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getLeaderBuffer(this.screenGroundPoint, this.screenPlacePoint));
-
-            this.mvpMatrix.set(dc.screenProjection);
-            program.loadModelviewProjection(this.mvpMatrix);
-            program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.leaderColor); // TODO: pickColor
-
-            // Toggle depth testing if necessary
-            if (this.enableLeaderDepthTest != depthTesting) {
-                depthTesting = !depthTesting;
-                if (depthTesting) {
-                    GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-                } else {
-                    GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-                }
-            }
-            GLES20.glLineWidth(this.leaderWidth);
-            GLES20.glDrawArrays(GLES20.GL_LINES, 0, 2);
+            this.drawLeader(dc);
         }
 
-        ///////////////////////////////////
-        // Draw the image
-        ///////////////////////////////////
+        // Draw the placemark icon, either textured or a simple colored square.
+        this.drawIcon(dc);
 
+        // Draw the placemark's label.
+        if (this.drawLabel) {
+            this.drawLabel(dc);
+        }
+
+        // Restore the default World Wind OpenGL state.
+        if (!this.enableDepthTest) {
+            GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+        }
+    }
+
+    protected void drawIcon(DrawContext dc) {
         // Set up a 2D unit quad as the source of vertex points and texture coordinates.
         Buffer unitQuadBuffer = getUnitQuadBuffer();
         GLES20.glEnableVertexAttribArray(1); // enable vertex attrib 1; vertex attrib 0 is enabled by default
@@ -186,16 +175,15 @@ public class DrawablePlacemark implements Drawable {
         this.program.loadModelviewProjection(this.mvpMatrix);
 
         // Bind the texture
-        if (this.activeTexture != null) {
+        if (this.iconTexture != null) {
             // Make multi-texture unit 0 active.
             dc.activeTextureUnit(GLES20.GL_TEXTURE0);
-            textureBound = this.activeTexture.bindTexture(dc);
-            if (textureBound) {
+            if (this.iconTexture.bindTexture(dc)) {
                 this.program.enableTexture(true);
                 // Perform a vertical flip of the bound texture to match
                 // the reversed Y-axis of the screen coordinate system
                 this.texCoordMatrix.setToIdentity();
-                this.activeTexture.applyTexCoordTransform(this.texCoordMatrix);
+                this.iconTexture.applyTexCoordTransform(this.texCoordMatrix);
                 this.program.loadTexCoordMatrix(this.texCoordMatrix);
             }
         }
@@ -203,63 +191,43 @@ public class DrawablePlacemark implements Drawable {
         // Load the color used for the image
         this.program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.imageColor); // TODO: pickColor
 
-        // Turn off depth testing for the placemark image if requested.
-        // Note the placemark label and leader line have their own depth-test controls.
-        if (this.enableImageDepthTest != depthTesting) {
-            depthTesting = !depthTesting;
-            if (depthTesting) {
+        // Disable icon depth testing if requested. Note the icon and leader line have their own depth-test controls.
+        this.enableDepthTest(this.enableImageDepthTest);
+
+        // Draw the placemark's image quad.
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        GLES20.glDisableVertexAttribArray(1);
+    }
+
+    protected void drawLeader(DrawContext dc) {
+        // TODO: Must evaluate the effectiveness of using screen coordinates with depth offsets for the leaderline
+        // TODO: when terrain is used.  I suspect there will be an issue with the ground point.
+        // TODO: Perhaps the ground screen point should not have a depth offset.
+        GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getLeaderBuffer(this.screenGroundPoint, this.screenPlacePoint));
+
+        this.mvpMatrix.set(dc.screenProjection);
+        this.program.loadModelviewProjection(this.mvpMatrix);
+        this.program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.leaderColor); // TODO: pickColor
+
+        // Disable leader depth testing if requested.
+        this.enableDepthTest(this.enableLeaderDepthTest);
+
+        GLES20.glLineWidth(this.leaderWidth);
+        GLES20.glDrawArrays(GLES20.GL_LINES, 0, 2);
+    }
+
+    protected void drawLabel(DrawContext dc) {
+        // TODO: drawLabel
+    }
+
+    protected void enableDepthTest(boolean enable) {
+        if (this.enableDepthTest != enable) {
+            this.enableDepthTest = enable;
+            if (enable) {
                 GLES20.glEnable(GLES20.GL_DEPTH_TEST);
             } else {
                 GLES20.glDisable(GLES20.GL_DEPTH_TEST);
             }
         }
-
-        // Draw the placemark's image quad.
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
-
-        ///////////////////////////////////
-        // Draw the label
-        ///////////////////////////////////
-
-        if (this.drawLabel) { // TODO: drawLabel
-//            this.program.loadOpacity(gl, dc.pickingMode ? 1 : this.layer.opacity * this.currentVisibility);
-//
-//            Placemark.matrix.copy(dc.screenProjection);
-//            Placemark.matrix.multiplyMatrix(this.labelTransform);
-//            this.program.loadModelviewProjection(gl, Placemark.matrix);
-//
-//            if (!dc.pickingMode && this.labelTexture) {
-//                this.texCoordMatrix.setToIdentity();
-//                this.texCoordMatrix.multiplyByTextureTransform(this.labelTexture);
-//
-//                this.program.loadTextureMatrix(gl, this.texCoordMatrix);
-//                this.program.loadColor(gl, this.attributes.labelAttributes.color);
-//
-//                textureBound = this.labelTexture.bind(dc);
-//                this.program.loadTextureEnabled(gl, textureBound);
-//            } else {
-//                this.program.loadTextureEnabled(gl, false);
-//                this.program.loadColor(gl, this.pickColor);
-//            }
-//
-//            if (this.attributes.labelAttributes.depthTest && depthTest) {
-//                    depthTest = true;
-//                    gl.enable(gl.DEPTH_TEST);
-//            } else {
-//                depthTest = false;
-//                gl.disable(gl.DEPTH_TEST);
-//            }
-//
-//            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-        }
-
-        // Restore the default World Wind OpenGL state.
-        if (!depthTesting) {
-            GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-        }
-        if (textureBound) {
-            this.program.enableTexture(false);
-        }
-        GLES20.glDisableVertexAttribArray(1);
     }
 }
