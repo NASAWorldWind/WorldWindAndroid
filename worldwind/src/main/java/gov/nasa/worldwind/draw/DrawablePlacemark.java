@@ -7,6 +7,7 @@ package gov.nasa.worldwind.draw;
 
 import android.opengl.GLES20;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -24,14 +25,11 @@ import gov.nasa.worldwind.render.Texture;
  */
 public class DrawablePlacemark implements Drawable {
 
+    protected static FloatBuffer unitQuadBuffer = null;
 
-    private static FloatBuffer unitQuadBuffer2 = null;
+    protected static FloatBuffer leaderBuffer = null;
 
-    private static FloatBuffer unitQuadBuffer3 = null;
-
-    private static FloatBuffer leaderBuffer = null;
-
-    private static float[] leaderPoints = null;  // will be lazily created if a leader will be drawn
+    protected static float[] leaderPoints = null;  // will be lazily created if a leader will be drawn
 
     public String label = null;
 
@@ -75,48 +73,27 @@ public class DrawablePlacemark implements Drawable {
 
     protected Matrix4 mvpMatrix = new Matrix4();
 
-
     /**
      * Returns a buffer containing a unit quadrilateral expressed as four 2D vertices at (0, 1), (0, 0), (1, 1) and (1,
      * 0). The four vertices are in the order required by a triangle strip. The buffer is created on first use and
      * cached. Subsequent calls to this method return the cached buffer.
      */
-    static public FloatBuffer getUnitQuadBuffer2D() {
-        if (unitQuadBuffer2 == null) {
+    protected static FloatBuffer getUnitQuadBuffer() {
+        if (unitQuadBuffer == null) {
             float[] points = new float[]{
                 0, 1,   // upper left corner
                 0, 0,   // lower left corner
                 1, 1,   // upper right corner
                 1, 0};  // lower right corner
             int size = points.length * 4;
-            unitQuadBuffer2 = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
-            unitQuadBuffer2.put(points).rewind();
+            unitQuadBuffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            unitQuadBuffer.put(points).rewind();
         }
-        return unitQuadBuffer2;
+
+        return unitQuadBuffer;
     }
 
-    /**
-     * Returns a buffer containing a unit quadrilateral expressed as four 3D vertices at (0, 1, 0), (0, 0, 0), (1, 1, 0)
-     * and (1, 0, 0). The four vertices are in the order required by a triangle strip. The buffer is created on first
-     * use and cached. Subsequent calls to this method return the cached buffer.
-     *
-     * @return
-     */
-    static public FloatBuffer getUnitQuadBuffer3D() {
-        if (unitQuadBuffer3 == null) {
-            float[] points = new float[]{
-                0, 1, 0,    // upper left corner
-                0, 0, 0,    // lower left corner
-                1, 1, 0,    // upper right corner
-                1, 0, 0};   // lower right corner
-            int size = points.length * 4;
-            unitQuadBuffer3 = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
-            unitQuadBuffer3.put(points).rewind();
-        }
-        return unitQuadBuffer3;
-    }
-
-    static public FloatBuffer getLeaderBuffer(Vec3 groundPoint, Vec3 placePoint) {
+    protected static FloatBuffer getLeaderBuffer(Vec3 groundPoint, Vec3 placePoint) {
         if (leaderBuffer == null) {
             leaderPoints = new float[6];
             int size = leaderPoints.length * 4;
@@ -133,7 +110,6 @@ public class DrawablePlacemark implements Drawable {
 
         return leaderBuffer;
     }
-
 
     /**
      * Performs the actual rendering of the Placemark.
@@ -171,7 +147,6 @@ public class DrawablePlacemark implements Drawable {
 
             this.mvpMatrix.set(dc.screenProjection);
             program.loadModelviewProjection(this.mvpMatrix);
-
             program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.leaderColor); // TODO: pickColor
 
             // Toggle depth testing if necessary
@@ -191,11 +166,11 @@ public class DrawablePlacemark implements Drawable {
         // Draw the image
         ///////////////////////////////////
 
-        // Allocate or get a unit-quad buffer for the image coordinates
-        GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getUnitQuadBuffer3D());
-
-        // Set up to use the shared tex attribute.
-        GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, getUnitQuadBuffer2D());
+        // Set up a 2D unit quad as the source of vertex points and texture coordinates.
+        Buffer unitQuadBuffer = getUnitQuadBuffer();
+        GLES20.glEnableVertexAttribArray(1); // enable vertex attrib 1; vertex attrib 0 is enabled by default
+        GLES20.glVertexAttribPointer(0, 2, GLES20.GL_FLOAT, false, 0, unitQuadBuffer);
+        GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, unitQuadBuffer);
 
         // Compute and specify the MVP matrix...
         this.mvpMatrix.set(dc.screenProjection);
@@ -239,7 +214,6 @@ public class DrawablePlacemark implements Drawable {
         }
 
         // Draw the placemark's image quad.
-        GLES20.glEnableVertexAttribArray(1);    // vertexTexCoord
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
 
         ///////////////////////////////////
@@ -286,7 +260,5 @@ public class DrawablePlacemark implements Drawable {
             program.enableTexture(false);
         }
         GLES20.glDisableVertexAttribArray(1);
-
     }
-
 }
