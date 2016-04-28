@@ -116,7 +116,8 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource> 
 
         if (imageSource.isBitmap()) {
             Texture texture = new Texture(imageSource.asBitmap());
-            return (Texture) this.put(imageSource, texture, texture.getImageByteCount());
+            this.put(imageSource, texture, texture.getImageByteCount());
+            return texture;
         }
 
         Texture texture = (Texture) this.putRetrievedResources(imageSource);
