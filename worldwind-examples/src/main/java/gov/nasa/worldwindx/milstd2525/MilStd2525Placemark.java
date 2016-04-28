@@ -6,9 +6,11 @@
 package gov.nasa.worldwindx.milstd2525;
 
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.util.SparseArray;
 
 import armyc2.c2sd.renderer.utilities.ImageInfo;
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.render.ImageSource;
@@ -19,31 +21,25 @@ public class MilStd2525Placemark extends Placemark {
 
 
     public static MilStd2525Placemark fromSymbolCode(Position position, String symbolCode, SparseArray<String> modifiers) {
-
         ImageInfo imageInfo = MilStd2525Renderer.renderImage(symbolCode, modifiers);
-
-        // TODO: Interrogate the imageInfo meta data to determine the proper imageOffset.
-        Point centerPoint = imageInfo.getCenterPoint();
-        PlacemarkAttributes attr;
-        if (position.altitude > 0) {
-            attr = PlacemarkAttributes.withImageAndLeaderLine(ImageSource.fromBitmap(imageInfo.getImage())).setImageOffset(Offset.bottomCenter());
-        } else {
-            attr = PlacemarkAttributes.withImage(ImageSource.fromBitmap(imageInfo.getImage())).setImageOffset(Offset.bottomCenter());
-        }
-
-        return new MilStd2525Placemark(position, attr, null);
+        return fromImageInfo(position, imageInfo);
     }
 
     public static MilStd2525Placemark fromImageInfo(Position position, ImageInfo imageInfo) {
 
         // TODO: Interrogate the imageInfo meta data to determine the proper imageOffset.
         Point centerPoint = imageInfo.getCenterPoint();
+        Rect imageBounds = imageInfo.getImageBounds();
+        Rect symbolBounds = imageInfo.getSymbolBounds();
+
         PlacemarkAttributes attr;
         if (position.altitude > 0) {
-            attr = PlacemarkAttributes.withImageAndLeaderLine(ImageSource.fromBitmap(imageInfo.getImage())).setImageOffset(Offset.bottomCenter());
+            attr = PlacemarkAttributes.withImageAndLeaderLine(ImageSource.fromBitmap(imageInfo.getImage()));
         } else {
-            attr = PlacemarkAttributes.withImage(ImageSource.fromBitmap(imageInfo.getImage())).setImageOffset(Offset.bottomCenter());
+            attr = PlacemarkAttributes.withImage(ImageSource.fromBitmap(imageInfo.getImage()));
         }
+        Offset imageOffset = new Offset(WorldWind.OFFSET_FRACTION, ((double) centerPoint.x) / imageBounds.width(), WorldWind.OFFSET_FRACTION, 0.0);
+        attr.setImageOffset(imageOffset);
 
         return new MilStd2525Placemark(position, attr, null);
     }

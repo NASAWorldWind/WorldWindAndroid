@@ -18,6 +18,8 @@ import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.layer.RenderableLayer;
+import gov.nasa.worldwind.render.Color;
+import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwindx.milstd2525.MilStd2525Renderer;
 import gov.nasa.worldwindx.milstd2525.MilStd2525Placemark;
 
@@ -41,16 +43,15 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
         int index = layers.indexOfLayerNamed("Atmosphere");
         layers.addLayer(index, this.symbolLayer);
 
-        // The rendering service takes time initialize. We'll display the globe while the service is initializing
-        // on a background thread.
-        initializeSymbols();
-
-
         // Set the camera to look at the area where the symbols will be displayed.
         Position pos = new Position(32.4520, 63.44553, 0);
         LookAt lookAt = new LookAt().set(pos.latitude, pos.longitude, pos.altitude, WorldWind.ABSOLUTE,
             1e5 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
         this.getWorldWindow().getNavigator().setAsLookAt(this.getWorldWindow().getGlobe(), lookAt);
+
+        // The rendering service takes time initialize. We'll display the globe while the service is initializing
+        // on a background thread.
+        initializeSymbols();
     }
 
     private void initializeSymbols() {
@@ -60,26 +61,30 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
                 // The symbol renderer can take a long time to initialize.
                 MilStd2525Renderer.initialize(getApplicationContext());
 
-                getWorldWindow().queueEvent(new Runnable() {
+                //
+                activityHandler.post(new Runnable() {
                     @Override
                     public void run() {
 
                         // "MIL-STD-2525 Friendly SOF Drone Aircraft"
                         SparseArray<String> modifiers = new SparseArray<String>();
                         modifiers.put(ModifiersUnits.Q_DIRECTION_OF_MOVEMENT, "235");
-                        MilStd2525Placemark droneSymbol = MilStd2525Placemark.fromSymbolCode(
-                            Position.fromDegrees(32.4520, 63.44553, 3000), "SFAPMFQM--GIUSA", modifiers);
-                        // TODO: try queueEvent()
-                        // TODO: lookat WorldWindow executor service
-                        // TODO: lookat AxyncTask
-                        symbolLayer.addRenderable(droneSymbol);
+                        MilStd2525Placemark drone = MilStd2525Placemark.fromSymbolCode(
+                            Position.fromDegrees(32.4520, 63.44553, 3000),
+                            "SFAPMFQM--GIUSA", modifiers);
+                        symbolLayer.addRenderable(drone);
+                        symbolLayer.addRenderable(Placemark.simple(drone.getPosition(), new Color(1, 1, 1, 1), 4)); // for placement verification
+
 
                         // "MIL-STD-2525 Hostile Self-Propelled Rocket Launchers"
                         modifiers.clear();
                         modifiers.put(ModifiersUnits.Q_DIRECTION_OF_MOVEMENT, "90");
                         modifiers.put(ModifiersUnits.AJ_SPEED_LEADER, "0.1");
-                        symbolLayer.addRenderable(MilStd2525Placemark.fromSymbolCode(
-                            Position.fromDegrees(32.4014, 63.3894, 0), "SHGXUCFRMS----G", modifiers));
+                        MilStd2525Placemark launcher = MilStd2525Placemark.fromSymbolCode(
+                            Position.fromDegrees(32.4014, 63.3894, 0),
+                            "SHGXUCFRMS----G", modifiers);
+                        symbolLayer.addRenderable(launcher);
+                        symbolLayer.addRenderable(Placemark.simple(launcher.getPosition(), new Color(1, 1, 1, 1), 4)); // for placement verification
 
                         // "MIL-STD-2525 Friendly Heavy Machine Gun"
                         modifiers.clear();
@@ -88,11 +93,13 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
                         modifiers.put(ModifiersUnits.H_ADDITIONAL_INFO_1, "ADDED SUPPORT FOR JJ");
                         modifiers.put(ModifiersUnits.V_EQUIP_TYPE, "MACHINE GUN");
                         modifiers.put(ModifiersUnits.W_DTG_1, "30140000ZSEP97");    // Date/Time Group
-                        symbolLayer.addRenderable(MilStd2525Placemark.fromSymbolCode(
-                            Position.fromDegrees(32.3902, 63.4161, 0), "SFGPEWRH--MTUSG", modifiers));
+                        MilStd2525Placemark machineGun = MilStd2525Placemark.fromSymbolCode(
+                            Position.fromDegrees(32.3902, 63.4161, 0),
+                            "SFGPEWRH--MTUSG", modifiers);
+                        symbolLayer.addRenderable(machineGun);
+                        symbolLayer.addRenderable(Placemark.simple(machineGun.getPosition(), new Color(1, 1, 1, 1), 4)); // for placement verification
 
                         // Signal a change in the WorldWind scene; requestRender() is callable from any thread.
-                        // TODO: requestRender() isn't working consistently when called from a background thread. Why?
                         getWorldWindow().requestRender();
                     }
                 });
