@@ -198,11 +198,17 @@ public abstract class AbstractMainActivity extends AppCompatActivity
             case R.id.nav_camera_control_activity:
                 startActivity(new Intent(getApplicationContext(), CameraControlActivity.class));
                 break;
+            case R.id.nav_day_night_cycle_activity:
+                startActivity(new Intent(getApplicationContext(), DayNightCycleActivity.class));
+                break;
             case R.id.nav_look_at_view_activity:
                 startActivity(new Intent(getApplicationContext(), LookAtViewActivity.class));
                 break;
             case R.id.nav_placemarks_activity:
                 startActivity(new Intent(getApplicationContext(), PlacemarksActivity.class));
+                break;
+            case R.id.nav_placemarks_milstd2525_activity:
+                startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525Activity.class));
                 break;
             case R.id.nav_placemarks_stress_activity:
                 startActivity(new Intent(getApplicationContext(), PlacemarksStressTestActivity.class));
@@ -215,9 +221,6 @@ public abstract class AbstractMainActivity extends AppCompatActivity
                 break;
             case R.id.nav_wms_layer_activity:
                 startActivity(new Intent(getApplicationContext(), WmsLayerActivity.class));
-                break;
-            case R.id.nav_day_night_cycle_activity:
-                startActivity(new Intent(getApplicationContext(), DayNightCycleActivity.class));
                 break;
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

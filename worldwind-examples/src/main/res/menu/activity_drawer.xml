@@ -36,6 +36,14 @@
             android:icon="@android:drawable/ic_menu_myplaces"
             android:title="@string/title_placemarks_stress_test"/>
         <item
+            android:id="@+id/nav_placemarks_milstd2525_activity"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="@string/title_placemarks_milstd2525"/>
+        <item
+            android:id="@+id/nav_day_night_cycle_activity"
+            android:icon="@android:drawable/ic_menu_recent_history"
+            android:title="@string/title_day_night_cycle"/>
+        <item
             android:id="@+id/nav_camera_control_activity"
             android:icon="@android:drawable/ic_menu_camera"
             android:title="@string/title_camera_controls"/>
@@ -43,10 +51,6 @@
             android:id="@+id/nav_show_tessellation_activity"
             android:icon="@android:drawable/ic_menu_manage"
             android:title="@string/title_show_tessellation"/>
-        <item
-            android:id="@+id/nav_day_night_cycle_activity"
-            android:icon="@android:drawable/ic_menu_recent_history"
-            android:title="@string/title_day_night_cycle"/>
         <item
             android:id="@+id/nav_basic_stress_test_activity"
             android:icon="@android:drawable/ic_menu_preferences"
