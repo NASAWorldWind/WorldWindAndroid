@@ -84,7 +84,7 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
         // After a 1 second initial delay, clear the frame statistics associated with this test.
         Executor exec = getCommandExecutor();
         exec.execute(new SleepCommand(1000));
-        exec.execute(new ClearFrameStatisticsCommand(wwd));
+        exec.execute(new ClearFrameMetricsCommand(wwd));
 
         // After a 1/2 second delay, fly to NASA Ames Research Center over 100 frames.
         Camera cam = new Camera(arc.latitude, arc.longitude, 10e3, WorldWind.ABSOLUTE, 0, 0, 0);
@@ -126,7 +126,7 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
 
         // After a 1 second delay, log the frame statistics associated with this test.
         exec.execute(new SleepCommand(1000));
-        exec.execute(new LogFrameStatisticsCommand(wwd));
+        exec.execute(new LogFrameMetricsCommand(wwd));
     }
 
     protected Layer createPlacemarksLayer() {
@@ -274,11 +274,11 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
         }
     }
 
-    public static class LogFrameStatisticsCommand implements Runnable {
+    public static class LogFrameMetricsCommand implements Runnable {
 
         protected WorldWindow wwd;
 
-        public LogFrameStatisticsCommand(WorldWindow wwd) {
+        public LogFrameMetricsCommand(WorldWindow wwd) {
             this.wwd = wwd;
         }
 
@@ -287,16 +287,16 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
             if (!isActivityThread()) {
                 runOnActivityThread(this);
             } else {
-                Logger.log(Logger.INFO, this.wwd.getFrameStatistics().toString());
+                Logger.log(Logger.INFO, this.wwd.getFrameMetrics().toString());
             }
         }
     }
 
-    public static class ClearFrameStatisticsCommand implements Runnable {
+    public static class ClearFrameMetricsCommand implements Runnable {
 
         protected WorldWindow wwd;
 
-        public ClearFrameStatisticsCommand(WorldWindow wwd) {
+        public ClearFrameMetricsCommand(WorldWindow wwd) {
             this.wwd = wwd;
         }
 
@@ -305,7 +305,7 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
             if (!isActivityThread()) {
                 runOnActivityThread(this);
             } else {
-                this.wwd.getFrameStatistics().reset();
+                this.wwd.getFrameMetrics().reset();
             }
         }
     }

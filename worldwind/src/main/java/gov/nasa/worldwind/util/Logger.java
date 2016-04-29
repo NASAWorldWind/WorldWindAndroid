@@ -49,7 +49,7 @@ public class Logger {
         messageTable.put("missingConfig", "The configuration is null");
         messageTable.put("missingCoordinateSystem", "The coordinate system is null");
         messageTable.put("missingFormat", "The format is null");
-        messageTable.put("missingFrameStatistics", "The frame statistics argument is null");
+        messageTable.put("missingFrameMetrics", "The frame metrics argument is null");
         messageTable.put("missingGlobe", "The globe is null");
         messageTable.put("missingImageFormat", "The image format is null");
         messageTable.put("missingKey", "The key is null");

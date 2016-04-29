@@ -5,7 +5,7 @@
 
 package gov.nasa.worldwind;
 
-public class FrameStatistics { // TODO rename as frame metrics
+public class FrameMetrics {
 
     private final Object lock = new Object(); // TODO remove lock and associated synchronization
 
@@ -13,7 +13,7 @@ public class FrameStatistics { // TODO rename as frame metrics
 
     protected Metrics drawMetrics = new Metrics();
 
-    public FrameStatistics() {
+    public FrameMetrics() {
     }
 
     public long getRenderTime() {
@@ -78,7 +78,7 @@ public class FrameStatistics { // TODO rename as frame metrics
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("FrameStatistics");
+        StringBuilder sb = new StringBuilder("FrameMetrics");
         sb.append("{\n");
 
         synchronized (this.lock) {

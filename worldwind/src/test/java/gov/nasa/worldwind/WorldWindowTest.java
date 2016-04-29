@@ -86,7 +86,7 @@ public class WorldWindowTest {
 
     @Ignore
     @Test
-    public void testGetFrameStatistics() throws Exception {
+    public void testGetFrameMetrics() throws Exception {
         fail("The test case is a stub");
 
     }
