@@ -180,7 +180,7 @@ public class DrawContext {
 
         // Convert the X and Y coordinates from the range [0,1] to screen coordinates.
         x = x * this.viewport.width() + viewport.left;
-        y = y * this.viewport.height() + viewport.top;
+        y = y * this.viewport.height() + viewport.top; // viewport rectangle is inverted in OpenGL coordinates
 
         result.x = x;
         result.y = y;
@@ -262,7 +262,7 @@ public class DrawContext {
         // Transform the Z eye coordinate to clip coordinates again, this time applying a depth offset. The depth
         // offset is applied only to the matrix element affecting the projected Z coordinate, so we inline the
         // computation here instead of re-computing X, Y, Z and W in order to improve performance. See
-        // Matrix.offsetProjectionDepth for more information on the effect of this offset.
+        // Matrix4.offsetProjectionDepth for more information on the effect of this offset.
         z = p[8] * ex + p[9] * ey + p[10] * ez * (1 + depthOffset) + p[11] * ew;
         z /= w;
 
@@ -280,7 +280,7 @@ public class DrawContext {
 
         // Convert the X and Y coordinates from the range [0,1] to screen coordinates.
         x = x * viewport.width() + viewport.left;
-        y = y * viewport.height() + viewport.top;
+        y = y * viewport.height() + viewport.top; // viewport rectangle is inverted in OpenGL coordinates
 
         result.x = x;
         result.y = y;
