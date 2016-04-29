@@ -7,12 +7,12 @@ package gov.nasa.worldwind;
 
 import android.opengl.GLES20;
 
+import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.globe.Tessellator;
 import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.render.OrderedRenderable;
 import gov.nasa.worldwind.util.Logger;
 
 public class BasicFrameController implements FrameController {
@@ -32,25 +32,20 @@ public class BasicFrameController implements FrameController {
     }
 
     @Override
-    public void drawFrame(DrawContext dc) {
+    public void renderFrame(DrawContext dc) {
         try {
-            this.frameStatistics.beginFrame();
-            this.doDrawFrame(dc);
+            this.frameStatistics.beginRendering(); // TODO move this to WorldWindow
+            this.clearFrame(dc);
+            this.doRenderFrame(dc);
         } finally {
-            this.frameStatistics.endFrame();
+            this.frameStatistics.endRendering();
         }
     }
 
-    protected void doDrawFrame(DrawContext dc) {
-        this.clearFrame(dc);
+    protected void doRenderFrame(DrawContext dc) {
         this.createViewingState(dc);
         this.createTerrain(dc);
-        this.drawLayers(dc);
-        this.drawOrderedRenderables(dc);
-    }
-
-    protected void clearFrame(DrawContext dc) {
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        this.renderLayers(dc);
     }
 
     protected void createViewingState(DrawContext dc) {
@@ -88,36 +83,52 @@ public class BasicFrameController implements FrameController {
         dc.terrain = tess.tessellate(dc);
     }
 
-    protected void drawLayers(DrawContext dc) {
+    protected void renderLayers(DrawContext dc) {
 
         for (Layer layer : dc.layers) {
-            if (layer != null) {
-                dc.currentLayer = layer;
-                try {
-                    layer.render(dc);
-                } catch (Exception e) {
-                    Logger.logMessage(Logger.ERROR, "BasicFrameController", "drawLayers",
-                        "Exception while rendering layer \'" + layer.getDisplayName() + "\'", e);
-                    // Keep going. Draw the remaining layers.
-                }
+            dc.currentLayer = layer;
+            try {
+                layer.render(dc);
+            } catch (Exception e) {
+                Logger.logMessage(Logger.ERROR, "BasicFrameController", "drawLayers",
+                    "Exception while rendering layer \'" + layer.getDisplayName() + "\'", e);
+                // Keep going. Draw the remaining layers.
             }
         }
 
         dc.currentLayer = null;
     }
 
-    protected void drawOrderedRenderables(DrawContext dc) {
-
-        OrderedRenderable or;
-        while ((or = dc.pollOrderedRenderable()) != null) {
-            try {
-                or.renderOrdered(dc);
-            } catch (Exception e) {
-                Logger.logMessage(Logger.ERROR, "BasicFrameController", "drawOrderedRenderables",
-                    "Exception while rendering ordered renderable \'" + or + "\'", e);
-                // Keep going. Draw the remaining ordered renderables.
-            }
+    @Override
+    public void drawFrame(DrawContext dc) {
+        try {
+            this.frameStatistics.beginDrawing(); // TODO move this to WorldWindow
+            this.doDrawFrame(dc);
+        } finally {
+            this.frameStatistics.endDrawing();
         }
     }
 
+    protected void doDrawFrame(DrawContext dc) {
+        this.drawDrawables(dc);
+    }
+
+    protected void clearFrame(DrawContext dc) {
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+    }
+
+    protected void drawDrawables(DrawContext dc) {
+        dc.sortDrawables();
+
+        Drawable next;
+        while ((next = dc.pollDrawable()) != null) {
+            try {
+                next.draw(dc);
+            } catch (Exception e) {
+                Logger.logMessage(Logger.ERROR, "BasicFrameController", "drawDrawables",
+                    "Exception while drawing \'" + next + "\'");
+                // Keep going. Draw the remaining drawables.
+            }
+        }
+    }
 }

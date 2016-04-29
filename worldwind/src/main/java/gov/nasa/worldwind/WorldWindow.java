@@ -306,6 +306,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     public void onDrawFrame(GL10 unused) {
         // Setup the draw context according to the World Window's current state and draw the WorldWindow.
         this.prepareToDrawFrame();
+        this.frameController.renderFrame(this.dc);
         this.frameController.drawFrame(this.dc);
 
         // Release render resources evicted during the previous frame.

@@ -13,6 +13,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import gov.nasa.worldwind.draw.Drawable;
+import gov.nasa.worldwind.draw.DrawableQueue;
 import gov.nasa.worldwind.geom.Frustum;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
@@ -75,6 +77,8 @@ public class DrawContext {
     protected double pixelSizeFactor;
 
     protected OrderedRenderableQueue orderedRenderables = new OrderedRenderableQueue(1000);
+
+    protected DrawableQueue drawableQueue = new DrawableQueue();
 
     protected Map<Object, Object> userProperties = new HashMap<>();
 
@@ -319,6 +323,22 @@ public class DrawContext {
         return this.orderedRenderables.pollRenderable();
     }
 
+    public void offerDrawable(Drawable drawable, double depth) {
+        this.drawableQueue.offerDrawable(drawable, depth);
+    }
+
+    public Drawable peekDrawable() {
+        return this.drawableQueue.peekDrawable();
+    }
+
+    public Drawable pollDrawable() {
+        return this.drawableQueue.pollDrawable();
+    }
+
+    public void sortDrawables() {
+        this.drawableQueue.sortBackToFront();
+    }
+
     public Object getUserProperty(Object key) {
         return this.userProperties.get(key);
     }
@@ -360,6 +380,7 @@ public class DrawContext {
         this.renderRequested = false;
         this.pixelSizeFactor = 0;
         this.orderedRenderables.clearRenderables();
+        this.drawableQueue.recycle();
         this.userProperties.clear();
     }
 
