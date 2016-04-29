@@ -17,7 +17,6 @@ import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.ImageSource;
-import gov.nasa.worldwind.render.OrderedRenderable;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWMath;
 
@@ -31,7 +30,7 @@ import gov.nasa.worldwind.util.WWMath;
  * scaled by the image scale attribute. Otherwise, the placemark is drawn as a square with width and height equal to the
  * value of the image scale attribute, in pixels, and color equal to the image color attribute.
  */
-public class Placemark extends AbstractRenderable implements OrderedRenderable {
+public class Placemark extends AbstractRenderable {
 
     /**
      * The default eye distance above which to reduce the size of this placemark, in meters. If {@link
@@ -516,7 +515,7 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
             // Rendering is deferred for ordered renderables -- these renderables will be sorted by eye distance and
             // rendered after the layers are rendered. Simply add this placemark to the collection of ordered
             // renderables for rendering later via Placemark.renderOrdered().
-            dc.offerOrderedRenderable(this, this.eyeDistance);
+            dc.offerDrawable(drawable, this.eyeDistance);
         }
     }
 
@@ -531,14 +530,6 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
         } else {
             this.activeAttributes = this.attributes;
         }
-    }
-
-    /**
-     * Renders the ordered placemark.
-     */
-    @Override
-    public void renderOrdered(DrawContext dc) {
-        this.drawablePlacemark.draw(dc);
     }
 
     /**
