@@ -21,28 +21,12 @@ public class BasicFrameController implements FrameController {
 
     protected Matrix4 matrix = new Matrix4();
 
-    protected FrameStatistics frameStatistics = new FrameStatistics();
-
     public BasicFrameController() {
     }
 
     @Override
-    public FrameStatistics getFrameStatistics() {
-        return frameStatistics;
-    }
-
-    @Override
     public void renderFrame(DrawContext dc) {
-        try {
-            this.frameStatistics.beginRendering(); // TODO move this to WorldWindow
-            this.clearFrame(dc);
-            this.doRenderFrame(dc);
-        } finally {
-            this.frameStatistics.endRendering();
-        }
-    }
-
-    protected void doRenderFrame(DrawContext dc) {
+        this.clearFrame(dc);
         this.createViewingState(dc);
         this.createTerrain(dc);
         this.renderLayers(dc);
@@ -101,15 +85,6 @@ public class BasicFrameController implements FrameController {
 
     @Override
     public void drawFrame(DrawContext dc) {
-        try {
-            this.frameStatistics.beginDrawing(); // TODO move this to WorldWindow
-            this.doDrawFrame(dc);
-        } finally {
-            this.frameStatistics.endDrawing();
-        }
-    }
-
-    protected void doDrawFrame(DrawContext dc) {
         this.drawDrawables(dc);
     }
 

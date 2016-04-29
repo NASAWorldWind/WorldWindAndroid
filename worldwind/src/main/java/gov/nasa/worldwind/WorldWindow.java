@@ -55,6 +55,8 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
     protected FrameController frameController = new BasicFrameController();
 
+    protected FrameStatistics frameStatistics = new FrameStatistics();
+
     protected WorldWindowController worldWindowController = new BasicWorldWindowController();
 
     protected GestureGroup gestureGroup = new GestureGroup();
@@ -210,7 +212,16 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     }
 
     public FrameStatistics getFrameStatistics() {
-        return this.frameController.getFrameStatistics();
+        return this.frameStatistics;
+    }
+
+    public void setFrameStatistics(FrameStatistics frameStatistics) {
+        if (frameStatistics == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "setFrameStatistics", "missingFrameStatistics"));
+        }
+
+        this.frameStatistics = frameStatistics;
     }
 
     public WorldWindowController getWorldWindowController() {
@@ -304,13 +315,17 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
     @Override
     public void onDrawFrame(GL10 unused) {
+        this.frameStatistics.beginRendering();
         // Setup the draw context according to the World Window's current state and draw the WorldWindow.
-        this.prepareToDrawFrame();
+        this.prepareToRenderFrame();
         this.frameController.renderFrame(this.dc);
-        this.frameController.drawFrame(this.dc);
+        this.frameStatistics.endRendering();
 
+        this.frameStatistics.beginDrawing();
+        this.frameController.drawFrame(this.dc);
         // Release render resources evicted during the previous frame.
         this.renderResourceCache.releaseEvictedResources(this.dc);
+        this.frameStatistics.endDrawing();
 
         // Propagate render requests submitted during rendering to the WorldWindow. The draw context provides a layer of
         // indirection that insulates rendering code from establishing a dependency on a specific WorldWindow.
@@ -327,7 +342,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         return super.onTouchEvent(event) || this.gestureGroup.onTouchEvent(event);
     }
 
-    protected void prepareToDrawFrame() {
+    protected void prepareToRenderFrame() {
         this.dc.globe = this.globe;
         this.dc.layers.addAllLayers(this.layers);
         this.dc.verticalExaggeration = this.verticalExaggeration;
