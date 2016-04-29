@@ -138,13 +138,13 @@ public class DrawablePlacemark implements Drawable {
         }
     }
 
-    protected void drawIcon(DrawContext dc) {
-        // Set up a 2D unit quad as the source of vertex points and texture coordinates.
-        Buffer unitQuadBuffer = getUnitQuadBuffer();
-        GLES20.glEnableVertexAttribArray(1); // enable vertex attrib 1; vertex attrib 0 is enabled by default
-        GLES20.glVertexAttribPointer(0, 2, GLES20.GL_FLOAT, false, 0, unitQuadBuffer);
-        GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, unitQuadBuffer);
+    @Override
+    public void recycle() {
+        this.program = null;
+        this.iconTexture = null;
+    }
 
+    protected void drawIcon(DrawContext dc) {
         // Compute and specify the MVP matrix...
         this.mvpMatrix.set(dc.screenProjection);
         this.mvpMatrix.multiplyByMatrix(this.imageTransform);
@@ -157,10 +157,8 @@ public class DrawablePlacemark implements Drawable {
         // Now load the MVP matrix
         this.program.loadModelviewProjection(this.mvpMatrix);
 
-        // Make multi-texture unit 0 active.
+        // Attempt to bind the texture to multi-texture unit 0.
         dc.activeTextureUnit(GLES20.GL_TEXTURE0);
-
-        // Attempt to bind the texture.
         if (this.iconTexture != null && this.iconTexture.bindTexture(dc)) {
             this.program.enableTexture(true);
             // Perform a vertical flip of the bound texture to match
@@ -178,17 +176,20 @@ public class DrawablePlacemark implements Drawable {
         // Disable icon depth testing if requested. Note the icon and leader line have their own depth-test controls.
         this.enableDepthTest(this.enableImageDepthTest);
 
-        // Draw the placemark's image quad.
+        // Use a 2D unit quad as the vertex point and vertex tex coord attributes.
+        Buffer unitQuadBuffer = getUnitQuadBuffer();
+        GLES20.glEnableVertexAttribArray(1); // enable vertex attrib 1; vertex attrib 0 is enabled by default
+        GLES20.glVertexAttribPointer(0, 2, GLES20.GL_FLOAT, false, 0, unitQuadBuffer);
+        GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, unitQuadBuffer);
+
+        // Draw the 2D unit quad as triangles.
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+
+        // Restore the default World Wind OpenGL state.
         GLES20.glDisableVertexAttribArray(1);
     }
 
     protected void drawLeader(DrawContext dc) {
-        // TODO: Must evaluate the effectiveness of using screen coordinates with depth offsets for the leaderline
-        // TODO: when terrain is used.  I suspect there will be an issue with the ground point.
-        // TODO: Perhaps the ground screen point should not have a depth offset.
-        GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getLeaderBuffer(this.screenGroundPoint, this.screenPlacePoint));
-
         this.program.enableTexture(false);
         this.program.loadModelviewProjection(dc.screenProjection);
         this.program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.leaderColor); // TODO: pickColor
@@ -196,7 +197,16 @@ public class DrawablePlacemark implements Drawable {
         // Disable leader depth testing if requested.
         this.enableDepthTest(this.enableLeaderDepthTest);
 
+        // Apply the leader's line width in screen pixels.
         GLES20.glLineWidth(this.leaderWidth);
+
+        // TODO: Must evaluate the effectiveness of using screen coordinates with depth offsets for the leaderline
+        // TODO: when terrain is used.  I suspect there will be an issue with the ground point.
+        // TODO: Perhaps the ground screen point should not have a depth offset.
+        // Use the leader line as the vertex point attribute.
+        GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getLeaderBuffer(this.screenGroundPoint, this.screenPlacePoint));
+
+        // Draw the leader line.
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, 2);
     }
 
