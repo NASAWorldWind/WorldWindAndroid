@@ -128,7 +128,7 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
 
     private double eyeDistance;
 
-    private Vec3 placePoint = new Vec3(0, 0, 0);
+    private Vec3 placePoint = new Vec3();
 
     private Vec3 groundPoint;  // will be created if a leader line must be drawn
 
@@ -564,9 +564,9 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
     protected boolean prepareDrawable(DrawablePlacemark drawable, DrawContext dc) {
 
         // Precompute the image rotation and tilt.
-        drawable.actualRotation = this.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
+        drawable.rotation = this.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
             dc.heading - this.imageRotation : -this.imageRotation;
-        drawable.actualTilt = this.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
+        drawable.tilt = this.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
             dc.tilt + this.imageTilt : this.imageTilt;
 
         ////////////////////////

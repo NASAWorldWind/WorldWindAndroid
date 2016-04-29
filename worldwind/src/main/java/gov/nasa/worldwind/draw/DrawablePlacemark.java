@@ -33,7 +33,7 @@ public class DrawablePlacemark implements Drawable {
 
     public float leaderWidth = 1;
 
-    public Color imageColor = new Color(1, 1, 1, 1); // white
+    public Color imageColor = new Color();
 
     public Color leaderColor; // must be assigned if a leader line must be drawn
 
@@ -45,13 +45,13 @@ public class DrawablePlacemark implements Drawable {
 
     public boolean enableLeaderPicking = false;
 
-    public Vec3 screenPlacePoint = new Vec3(0, 0, 0);
+    public Vec3 screenPlacePoint = new Vec3();
 
-    public Vec3 screenGroundPoint;    // must be created if a leader line must be drawn
+    public Vec3 screenGroundPoint; // must be assigned if a leader line must be drawn
 
-    public double actualRotation = 0;
+    public double rotation = 0;
 
-    public double actualTilt = 0;
+    public double tilt = 0;
 
     public BasicShaderProgram program;
 
@@ -150,10 +150,10 @@ public class DrawablePlacemark implements Drawable {
         this.mvpMatrix.multiplyByMatrix(this.imageTransform);
         // ... perform image rotation
         this.mvpMatrix.multiplyByTranslation(0.5, 0.5, 0);
-        this.mvpMatrix.multiplyByRotation(0, 0, 1, this.actualRotation);
+        this.mvpMatrix.multiplyByRotation(0, 0, 1, this.rotation);
         this.mvpMatrix.multiplyByTranslation(-0.5, -0.5, 0);
         // ... and perform the tilt so that the image tilts back from its base into the view volume.
-        this.mvpMatrix.multiplyByRotation(-1, 0, 0, this.actualTilt);
+        this.mvpMatrix.multiplyByRotation(-1, 0, 0, this.tilt);
         // Now load the MVP matrix
         this.program.loadModelviewProjection(this.mvpMatrix);
 
