@@ -96,7 +96,7 @@ public class BasicFrameController implements FrameController {
         dc.sortDrawables();
 
         Drawable next;
-        while ((next = dc.pollDrawable()) != null) {
+        while ((next = dc.nextDrawable()) != null) {
             try {
                 next.draw(dc);
             } catch (Exception e) {

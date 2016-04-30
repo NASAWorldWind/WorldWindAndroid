@@ -336,12 +336,16 @@ public class DrawContext {
         this.drawableQueue.offerDrawable(drawable, depth);
     }
 
-    public Drawable peekDrawable() {
-        return this.drawableQueue.peekDrawable();
+    public Drawable nextDrawable() {
+        return this.drawableQueue.nextDrawable();
     }
 
-    public Drawable pollDrawable() {
-        return this.drawableQueue.pollDrawable();
+    public void markDrawables() {
+        this.drawableQueue.mark();
+    }
+
+    public void resetDrawables() {
+        this.drawableQueue.reset();
     }
 
     public void sortDrawables() {
@@ -389,7 +393,7 @@ public class DrawContext {
         this.renderRequested = false;
         this.pixelSizeFactor = 0;
         this.orderedRenderables.clearRenderables();
-        this.drawableQueue.recycle();
+        this.drawableQueue.clear();
         this.userProperties.clear();
     }
 

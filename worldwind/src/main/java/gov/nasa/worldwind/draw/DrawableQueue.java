@@ -16,6 +16,8 @@ public class DrawableQueue {
 
     protected int position;
 
+    protected int mark;
+
     /**
      * Sorts drawables by depth from front to back and then by insertion time.
      */
@@ -35,13 +37,14 @@ public class DrawableQueue {
     public DrawableQueue() {
     }
 
-    public void recycle() {
+    public void clear() {
         for (int i = 0, len = this.size; i < len; i++) {
             this.entries[i].recycle();
         }
 
         this.size = 0;
         this.position = 0;
+        this.mark = 0;
     }
 
     public void offerDrawable(Drawable drawable, double depth) {
@@ -61,16 +64,20 @@ public class DrawableQueue {
         }
     }
 
-    public Drawable peekDrawable() {
-        return (this.position < this.size) ? this.entries[this.position].drawable : null;
-    }
-
-    public Drawable pollDrawable() {
+    public Drawable nextDrawable() {
         return (this.position < this.size) ? this.entries[this.position++].drawable : null;
     }
 
-    public void rewindDrawables() {
+    public void rewind() {
         this.position = 0;
+    }
+
+    public void mark() {
+        this.mark = this.position;
+    }
+
+    public void reset() {
+        this.position = this.mark;
     }
 
     public void sortBackToFront() {
