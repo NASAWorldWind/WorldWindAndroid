@@ -9,6 +9,7 @@ import android.graphics.Rect;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.draw.DrawablePlacemark;
+import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
@@ -39,7 +40,7 @@ public class Placemark extends AbstractRenderable {
      */
     protected static final double DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD = 1e6;
 
-    private static final double DEFAULT_DEPTH_OFFSET = -0.003;
+    private static final double DEFAULT_DEPTH_OFFSET = -0.1;
 
     /**
      * The placemark's geographic position.
@@ -129,7 +130,9 @@ public class Placemark extends AbstractRenderable {
 
     private Vec3 placePoint = new Vec3();
 
-    private Vec3 groundPoint;  // will be created if a leader line must be drawn
+    private Vec3 screenPlacePoint = new Vec3();
+
+    private Vec3 groundPoint = null; // will be allocated if a leader line must be drawn
 
     public Placemark(Position position, PlacemarkAttributes attributes) {
         this(position, attributes, null, null, false);
@@ -475,37 +478,46 @@ public class Placemark extends AbstractRenderable {
             return;
         }
 
-        // Compute the placemark's model point and corresponding distance to the eye point. If the placemark's
-        // position is terrain-dependent but off the terrain, then compute it ABSOLUTE so that we have a point for the
-        // placemark and are thus able to draw it. Otherwise its image and label portion that are potentially over the
-        // terrain won't get drawn, and would disappear as soon as there is no terrain at the placemark's position. This
-        // can occur at the window edges.
-        this.placePoint = dc.globe.geographicToCartesian(
+        // Compute the placemark's Cartesian model point.
+        // TODO: dc.surfacePointForMode
+        dc.globe.geographicToCartesian(
             this.position.latitude, this.position.longitude, this.position.altitude, this.placePoint);
-        // TODO: dc.surfacePointForMode(this.position.latitude, this.position.longitude, this.position.altitude, this.altitudeMode, this.placePoint);
 
-        // Compute the eye distance to the place point, the value which is used for sorting/ordering the OrderedRenderables
+        // Compute the eye distance to the place point, the value which is used for ordering the placemark drawable and
+        // determining the amount of depth offset to apply.
         this.eyeDistance = dc.eyePoint.distanceTo(this.placePoint);
 
-        // If a leader line is desired for placemarks off of the terrain surface, we'll need a ground model point for
-        // one end of the leader line.  The placePoint is the other end.
-        if (this.activeAttributes.drawLeaderLine) {
-            // Perform lazy allocation of the vector
-            if (this.groundPoint == null) {
-                this.groundPoint = new Vec3();
-            }
-            // Compute the placemark's ground model point.
-            this.groundPoint = dc.globe.geographicToCartesian(
-                this.position.latitude, this.position.longitude, 0, this.groundPoint);
-            // TODO: dc.surfacePointForMode(this.position.latitude, this.position.longitude, 0, this.altitudeMode, this.groundPoint);
+        double depthOffset = 0;
+        if (this.eyeDistance < dc.horizonDistance) {
+            depthOffset = DEFAULT_DEPTH_OFFSET;
         }
 
-        // Get the drawable delegate for this placemark.
+        // Project the placemark's model point to screen coordinates. Use a screen depth offset appropriate for the
+        // current viewing distance.
+        if (!dc.projectWithDepth(this.placePoint, depthOffset, this.screenPlacePoint)) {
+            return; // clipped by the near plane or the far plane
+        }
+
+        // Obtain a drawable delegate for this placemark.
         DrawablePlacemark drawable = this.makeDrawablePlacemark(dc);
 
-        // Prepare the drawable for portrayal of this placemark
-        if (this.prepareDrawable(drawable, dc) && this.isVisible(drawable, dc)) {
+        // Prepare the drawable icon properties.
+        this.prepareDrawableIcon(dc, drawable);
 
+        // If a leader line is desired for placemarks off of the terrain surface, prepare the drawable leader properties.
+        drawable.drawLeader = this.mustDrawLeaderLine(dc);
+        if (drawable.drawLeader) {
+            // If a leader line is desired for placemarks off of the terrain surface, we'll need a ground model point
+            // for one end of the leader line. The placePoint is the other end.
+            // TODO: use dc.surfacePointForMode
+            this.groundPoint = dc.globe.geographicToCartesian(this.position.latitude, this.position.longitude, 0,
+                (this.groundPoint != null) ? this.groundPoint : new Vec3());
+
+            // Prepare the drawable leader line properties.
+            this.prepareDrawableLeader(dc, drawable);
+        }
+
+        if (this.isVisible(dc, drawable)) {
             // Set up the drawable to use World Wind's basic GLSL program.
             drawable.program = (BasicShaderProgram) dc.getShaderProgram(BasicShaderProgram.KEY);
             if (drawable.program == null) {
@@ -516,6 +528,9 @@ public class Placemark extends AbstractRenderable {
             // rendered after the layers are rendered. Simply add this placemark to the collection of ordered
             // renderables for rendering later via Placemark.renderOrdered().
             dc.offerDrawable(drawable, this.eyeDistance);
+        } else {
+            // The drawable will not be used; recycle it.
+            drawable.recycle();
         }
     }
 
@@ -546,26 +561,9 @@ public class Placemark extends AbstractRenderable {
         return this.drawablePlacemark;
     }
 
-    /**
-     * Returns an ordered renderable for this placemark. The renderable may be a new instance or an existing instance.
-     *
-     * @return The DrawablePlacemark to use for rendering; will be null if the placemark cannot or should not be
-     * rendered.
-     */
-    protected boolean prepareDrawable(DrawablePlacemark drawable, DrawContext dc) {
-
-        // Precompute the image rotation and tilt.
-        drawable.rotation = this.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
-            dc.heading - this.imageRotation : -this.imageRotation;
-        drawable.tilt = this.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
-            dc.tilt + this.imageTilt : this.imageTilt;
-
-        ////////////////////////
-        // Prepare the image
-        ////////////////////////
-
-        // Set the color used for the image
-        drawable.imageColor.set(this.activeAttributes.imageColor);
+    protected void prepareDrawableIcon(DrawContext dc, DrawablePlacemark drawable) {
+        // Set the color used for the icon.
+        drawable.iconColor.set(this.activeAttributes.imageColor);
 
         // Set the active texture to use, if applicable, creating it if necessary from the imageSource object.
         if (this.activeAttributes.imageSource != null) {
@@ -578,91 +576,90 @@ public class Placemark extends AbstractRenderable {
             drawable.iconTexture = null;
         }
 
-        // Compute the placemark's screen point in the OpenGL coordinate system of the WorldWindow by projecting its
-        // model coordinate point onto the viewport. Apply a depth offset in order to cause the entire placemark
-        // image to appear above the globe/terrain. When a placemark is displayed near the terrain or the horizon,
-        // portions of its geometry are often behind the terrain, yet as a screen element the placemark is expected
-        // to be visible. We adjust its depth values rather than moving the placemark itself to avoid obscuring its
-        // actual position.
-        double depthOffset = Placemark.DEFAULT_DEPTH_OFFSET;
-        if (this.eyeDistance < dc.horizonDistance) {
-            // Offset the image towards the eye such that whatever the orientation of the image, with respect to the
-            // globe, the entire image is guaranteed to be in front of the globe/terrain.
-            double longestSide = drawable.iconTexture != null ?
-                Math.max(drawable.iconTexture.getImageWidth(), drawable.iconTexture.getImageHeight()) : 1;
-            double metersPerPixel = dc.pixelSizeAtDistance(this.eyeDistance);
-            depthOffset = longestSide * this.activeAttributes.imageScale * metersPerPixel * -1;
-        }
-
-        if (!dc.projectWithDepth(this.placePoint, depthOffset, drawable.screenPlacePoint)) {
-            // Probably outside the clipping planes
-            return false;
-        }
-
         // Compute an eye-position proximity scaling factor, so that distant placemarks can be scaled smaller than
         // nearer placemarks.
         double visibilityScale = this.isEyeDistanceScaling() ?
             Math.max(this.activeAttributes.minimumImageScale, Math.min(1, this.getEyeDistanceScalingThreshold() / this.eyeDistance)) : 1;
 
-        // Compute the placemark's transform matrix and texture coordinate matrix according to its screen point, image size,
-        // image offset and image scale. The image offset is defined with its origin at the image's bottom-left corner and
-        // axes that extend up and to the right from the origin point. When the placemark has no active texture the image
-        // scale defines the image size and no other scaling is applied.
+        // Compute the icon's modelview-projection matrix, beginning with the draw context's screen projection.
+        drawable.iconMvpMatrix.set(dc.screenProjection);
+
+        // Apply the icon's translation and scale according to the image size, image offset and image scale. The image
+        // offset is defined with its origin at the image's bottom-left corner and axes that extend up and to the right
+        // from the origin point. When the placemark has no active texture the image scale defines the image size and no
+        // other scaling is applied.
         if (drawable.iconTexture != null) {
             int w = drawable.iconTexture.getImageWidth();
             int h = drawable.iconTexture.getImageHeight();
             double s = this.activeAttributes.imageScale * visibilityScale;
             Vec2 offset = this.activeAttributes.imageOffset.offsetForSize(w, h);
 
-            drawable.imageTransform.setTranslation(
-                drawable.screenPlacePoint.x - offset.x * s,
-                drawable.screenPlacePoint.y - offset.y * s,
-                drawable.screenPlacePoint.z);
+            drawable.iconMvpMatrix.multiplyByTranslation(
+                this.screenPlacePoint.x - offset.x * s,
+                this.screenPlacePoint.y - offset.y * s,
+                this.screenPlacePoint.z);
 
-            drawable.imageTransform.setScale(w * s, h * s, 1);
+            drawable.iconMvpMatrix.multiplyByScale(w * s, h * s, 1);
 
         } else {
             double size = this.activeAttributes.imageScale * visibilityScale;
             Vec2 offset = this.activeAttributes.imageOffset.offsetForSize(size, size);
 
-            drawable.imageTransform.setTranslation(
-                drawable.screenPlacePoint.x - offset.x,
-                drawable.screenPlacePoint.y - offset.y,
-                drawable.screenPlacePoint.z);
+            drawable.iconMvpMatrix.multiplyByTranslation(
+                this.screenPlacePoint.x - offset.x,
+                this.screenPlacePoint.y - offset.y,
+                this.screenPlacePoint.z);
 
-            drawable.imageTransform.setScale(size, size, 1);
+            drawable.iconMvpMatrix.multiplyByScale(size, size, 1);
         }
 
-        /////////////////////////////////////
-        // Prepare the optional leader line
-        ////////////////////////////////////
-
-        drawable.drawLeader = this.mustDrawLeaderLine(dc);
-        if (drawable.drawLeader) {
-            if (drawable.leaderColor == null) {
-                drawable.leaderColor = new Color(this.activeAttributes.leaderLineAttributes.outlineColor);
-            } else {
-                drawable.leaderColor.set(this.activeAttributes.leaderLineAttributes.outlineColor);
-            }
-
-            drawable.leaderWidth = this.activeAttributes.leaderLineAttributes.outlineWidth;
-            drawable.enableLeaderPicking = this.isEnableLeaderLinePicking();
-
-            // Perform lazy allocation of vector resources
-            if (drawable.screenGroundPoint == null) {
-                drawable.screenGroundPoint = new Vec3();
-            }
-
-            // Compute the ground point's screen point, using the the same depthOffset as used for the placePoint
-            // to ensure the proper depth with relation to other placemarks.
-            if (!dc.projectWithDepth(this.groundPoint, depthOffset, drawable.screenGroundPoint)) {
-                // Probably outside the clipping planes, don't draw the leader, but continue
-                // drawing the other placemark elements.
-                drawable.drawLeader = false;
-            }
+        // ... perform image rotation
+        if (this.imageRotation != 0) {
+            double rotation = this.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
+                dc.heading - this.imageRotation : -this.imageRotation;
+            drawable.iconMvpMatrix.multiplyByTranslation(0.5, 0.5, 0);
+            drawable.iconMvpMatrix.multiplyByRotation(0, 0, 1, rotation);
+            drawable.iconMvpMatrix.multiplyByTranslation(-0.5, -0.5, 0);
         }
 
-        return true;
+        // ... and perform the tilt so that the image tilts back from its base into the view volume.
+        if (this.imageTilt != 0) {
+            double tilt = this.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
+                dc.tilt + this.imageTilt : this.imageTilt;
+            drawable.iconMvpMatrix.multiplyByRotation(-1, 0, 0, tilt);
+        }
+    }
+
+    protected void prepareDrawableLeader(DrawContext dc, DrawablePlacemark drawable) {
+        // Allocate drawable leader properties that are null unless a leader is to be drawn.
+        if (drawable.leaderColor == null) {
+            drawable.leaderColor = new Color();
+        }
+
+        if (drawable.leaderMvpMatrix == null) {
+            drawable.leaderMvpMatrix = new Matrix4();
+        }
+
+        if (drawable.leaderVertexPoint == null) {
+            drawable.leaderVertexPoint = new float[6];
+        }
+
+        // Set the leader's line width and color.
+        drawable.leaderWidth = this.activeAttributes.leaderLineAttributes.outlineWidth;
+        drawable.leaderColor.set(this.activeAttributes.leaderLineAttributes.outlineColor);
+
+        // Set the leader's depth testing and picking enabled states.
+        drawable.enableLeaderDepthTest = this.activeAttributes.leaderLineAttributes.depthTest;
+        drawable.enableLeaderPicking = this.enableLeaderLinePicking;
+
+        // Compute the leader's modelview-projection matrix, relative to the placemark's ground point.
+        drawable.leaderMvpMatrix.set(dc.modelviewProjection);
+        drawable.leaderMvpMatrix.multiplyByTranslation(this.groundPoint.x, this.groundPoint.y, this.groundPoint.z);
+
+        // Compute the leader's vertex point attribute array, indices 0-2 are 0.0 to indicate the ground point.
+        drawable.leaderVertexPoint[3] = (float) (this.placePoint.x - this.groundPoint.x);
+        drawable.leaderVertexPoint[4] = (float) (this.placePoint.y - this.groundPoint.y);
+        drawable.leaderVertexPoint[5] = (float) (this.placePoint.z - this.groundPoint.z);
     }
 
     /**
@@ -670,9 +667,9 @@ public class Placemark extends AbstractRenderable {
      *
      * @return True if the image, label and/or leader-line intercept the viewport.
      */
-    protected boolean isVisible(DrawablePlacemark drawable, DrawContext dc) {
+    protected boolean isVisible(DrawContext dc, DrawablePlacemark drawable) {
         // Compute the bounding boxes in screen coordinates
-        Rect imageBounds = (drawable.imageTransform) == null ? null : WWMath.boundingRectForUnitQuad(drawable.imageTransform);
+        Rect imageBounds = WWMath.boundingRectForUnitQuad(drawable.iconMvpMatrix); // TODO allocation
 
         return (imageBounds != null && Rect.intersects(imageBounds, dc.viewport))
             || (this.mustDrawLeaderLine(dc) && dc.frustum.intersectsSegment(this.groundPoint, this.placePoint));

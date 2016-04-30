@@ -7,14 +7,12 @@ package gov.nasa.worldwind.draw;
 
 import android.opengl.GLES20;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Matrix4;
-import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.DrawContext;
@@ -25,80 +23,44 @@ import gov.nasa.worldwind.render.Texture;
  */
 public class DrawablePlacemark implements Drawable {
 
-    protected static FloatBuffer unitQuadBuffer;
-
     protected static FloatBuffer leaderBuffer;
-
-    protected static float[] leaderPoints; // will be lazily created if a leader will be drawn
 
     public float leaderWidth = 1;
 
-    public Color imageColor = new Color();
+    public Color iconColor = new Color();
 
-    public Color leaderColor; // must be assigned if a leader line must be drawn
+    public Color leaderColor = null; // must be assigned if a leader line will be drawn
 
-    public boolean drawLeader;
+    public boolean drawLeader = false;
 
-    public boolean enableImageDepthTest = true;
+    public boolean enableIconDepthTest = true;
 
     public boolean enableLeaderDepthTest = true;
 
     public boolean enableLeaderPicking = false;
 
-    public Vec3 screenPlacePoint = new Vec3();
+    public BasicShaderProgram program = null; // must be assigned in order to draw the placemark
 
-    public Vec3 screenGroundPoint; // must be assigned if a leader line must be drawn
+    public Texture iconTexture = null;  // must be assigned if an image texture will be used
 
-    public double rotation = 0;
+    public Matrix4 iconMvpMatrix = new Matrix4();
 
-    public double tilt = 0;
+    public Matrix4 leaderMvpMatrix = null; // must be assigned if a leader line will be drawn
 
-    public BasicShaderProgram program;
-
-    public Texture iconTexture;  // must be assigned if an image texture will be used
-
-    public Matrix4 imageTransform = new Matrix4();
+    public float[] leaderVertexPoint = null; // must be assigned if a leader line will be drawn
 
     protected Matrix3 texCoordMatrix = new Matrix3();
 
-    protected Matrix4 mvpMatrix = new Matrix4();
-
     protected boolean enableDepthTest = true;
 
-    /**
-     * Returns a buffer containing a unit quadrilateral expressed as four 2D vertices at (0, 1), (0, 0), (1, 1) and (1,
-     * 0). The four vertices are in the order required by a triangle strip. The buffer is created on first use and
-     * cached. Subsequent calls to this method return the cached buffer.
-     */
-    protected static FloatBuffer getUnitQuadBuffer() {
-        if (unitQuadBuffer == null) {
-            float[] points = new float[]{
-                0, 1,   // upper left corner
-                0, 0,   // lower left corner
-                1, 1,   // upper right corner
-                1, 0};  // lower right corner
-            int size = points.length * 4;
-            unitQuadBuffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
-            unitQuadBuffer.put(points).rewind();
+    protected static FloatBuffer getLeaderBuffer(float[] points) {
+        int size = points.length;
+        if (leaderBuffer == null || leaderBuffer.capacity() < size) {
+            leaderBuffer = ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         }
 
-        return unitQuadBuffer;
-    }
-
-    protected static FloatBuffer getLeaderBuffer(Vec3 groundPoint, Vec3 placePoint) {
-        if (leaderBuffer == null) {
-            leaderPoints = new float[6];
-            int size = leaderPoints.length * 4;
-            leaderBuffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        }
-        // TODO: consider whether these assignments should be inlined.
-        leaderPoints[0] = (float) groundPoint.x;
-        leaderPoints[1] = (float) groundPoint.y;
-        leaderPoints[2] = (float) groundPoint.z;
-        leaderPoints[3] = (float) placePoint.x;
-        leaderPoints[4] = (float) placePoint.y;
-        leaderPoints[5] = (float) placePoint.z;
-        leaderBuffer.put(leaderPoints).rewind();
+        leaderBuffer.clear();
+        leaderBuffer.put(points).flip();
 
         return leaderBuffer;
     }
@@ -145,69 +107,68 @@ public class DrawablePlacemark implements Drawable {
     }
 
     protected void drawIcon(DrawContext dc) {
-        // Compute and specify the MVP matrix...
-        this.mvpMatrix.set(dc.screenProjection);
-        this.mvpMatrix.multiplyByMatrix(this.imageTransform);
-        // ... perform image rotation
-        this.mvpMatrix.multiplyByTranslation(0.5, 0.5, 0);
-        this.mvpMatrix.multiplyByRotation(0, 0, 1, this.rotation);
-        this.mvpMatrix.multiplyByTranslation(-0.5, -0.5, 0);
-        // ... and perform the tilt so that the image tilts back from its base into the view volume.
-        this.mvpMatrix.multiplyByRotation(-1, 0, 0, this.tilt);
-        // Now load the MVP matrix
-        this.program.loadModelviewProjection(this.mvpMatrix);
-
-        // Attempt to bind the texture to multi-texture unit 0.
+        // Attempt to bind the icon's texture to multi-texture unit 0.
         dc.activeTextureUnit(GLES20.GL_TEXTURE0);
         if (this.iconTexture != null && this.iconTexture.bindTexture(dc)) {
+            // Enable texturing if the icon texture successfully bound.
             this.program.enableTexture(true);
-            // Perform a vertical flip of the bound texture to match
-            // the reversed Y-axis of the screen coordinate system
+            // Use the icon's tex coord matrix.
             this.texCoordMatrix.setToIdentity();
             this.iconTexture.applyTexCoordTransform(this.texCoordMatrix);
             this.program.loadTexCoordMatrix(this.texCoordMatrix);
         } else {
+            // Disable texturing if the icon has no texture, or if the texture failed to bind.
             this.program.enableTexture(false);
         }
 
-        // Load the color used for the image
-        this.program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.imageColor); // TODO: pickColor
+        // Use the icon's color.
+        this.program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.iconColor); // TODO: pickColor
 
-        // Disable icon depth testing if requested. Note the icon and leader line have their own depth-test controls.
-        this.enableDepthTest(this.enableImageDepthTest);
+        // Use the icon's modelview-projection matrix.
+        this.program.loadModelviewProjection(this.iconMvpMatrix);
+
+        // Disable icon depth testing if requested. The icon and leader line have their own depth-test controls.
+        this.enableDepthTest(this.enableIconDepthTest);
+
+        // Disable writing to the depth buffer.
+        GLES20.glDepthMask(false);
 
         // Use a 2D unit quad as the vertex point and vertex tex coord attributes.
-        Buffer unitQuadBuffer = getUnitQuadBuffer();
+        dc.bindBuffer(GLES20.GL_ARRAY_BUFFER, dc.unitQuadBuffer());
         GLES20.glEnableVertexAttribArray(1); // enable vertex attrib 1; vertex attrib 0 is enabled by default
-        GLES20.glVertexAttribPointer(0, 2, GLES20.GL_FLOAT, false, 0, unitQuadBuffer);
-        GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, unitQuadBuffer);
+        GLES20.glVertexAttribPointer(0, 2, GLES20.GL_FLOAT, false, 0, 0);
+        GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, 0);
 
         // Draw the 2D unit quad as triangles.
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
 
         // Restore the default World Wind OpenGL state.
+        dc.bindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+        GLES20.glDepthMask(true);
         GLES20.glDisableVertexAttribArray(1);
     }
 
     protected void drawLeader(DrawContext dc) {
+        // Disable texturing.
         this.program.enableTexture(false);
-        this.program.loadModelviewProjection(dc.screenProjection);
+
+        // Use the leader's color.
         this.program.loadColor(/*dc.pickingMode ? this.pickColor : */ this.leaderColor); // TODO: pickColor
 
-        // Disable leader depth testing if requested.
+        // Use the leader's modelview-projection matrix.
+        this.program.loadModelviewProjection(this.leaderMvpMatrix);
+
+        // Disable leader depth testing if requested. The icon and leader line have their own depth-test controls.
         this.enableDepthTest(this.enableLeaderDepthTest);
 
         // Apply the leader's line width in screen pixels.
         GLES20.glLineWidth(this.leaderWidth);
 
-        // TODO: Must evaluate the effectiveness of using screen coordinates with depth offsets for the leaderline
-        // TODO: when terrain is used.  I suspect there will be an issue with the ground point.
-        // TODO: Perhaps the ground screen point should not have a depth offset.
         // Use the leader line as the vertex point attribute.
-        GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getLeaderBuffer(this.screenGroundPoint, this.screenPlacePoint));
+        GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getLeaderBuffer(this.leaderVertexPoint));
 
         // Draw the leader line.
-        GLES20.glDrawArrays(GLES20.GL_LINES, 0, 2);
+        GLES20.glDrawArrays(GLES20.GL_LINES, 0, this.leaderVertexPoint.length / 3);
     }
 
     protected void enableDepthTest(boolean enable) {
