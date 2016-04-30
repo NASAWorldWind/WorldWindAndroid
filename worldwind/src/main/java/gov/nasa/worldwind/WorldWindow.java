@@ -130,6 +130,10 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
         // Set up to receive broadcast messages from World Wind's message center.
         WorldWind.messageService().addListener(this);
+
+        // Log a message with some basic information about the world window's configuration.
+        int rrCacheSizeMB = Math.round(rrCacheSize / 1024 / 1024);
+        Logger.log(Logger.INFO, "World Window initialized {RenderResourceCache=" + rrCacheSizeMB + " MB}");
     }
 
     /**
