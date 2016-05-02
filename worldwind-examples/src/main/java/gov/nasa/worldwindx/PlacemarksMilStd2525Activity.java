@@ -15,7 +15,7 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.shape.Placemark;
-import gov.nasa.worldwindx.milstd2525.MilStd2525Placemark;
+import gov.nasa.worldwindx.milstd2525.MilStd2525;
 
 public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
 
@@ -24,7 +24,7 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks));
+        setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks_milstd2525));
         setAboutBoxText("Demonstrates how to add MilStd2525C Symbols to a RenderableLayer.");
 
         // Create a layer for the military symbols and add it just before the Atmosphere layer
@@ -55,7 +55,7 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
             public void run() {
 
                 // The symbol renderer can take a long time to initialize.
-                MilStd2525Placemark.initializeRenderer(getApplicationContext());
+                MilStd2525.initializeRenderer(getApplicationContext());
 
                 // TODO: demonstrate an efficient/foolproof way of adding renderables to a running application.
                 // We must add the new renderables on the GLThread.
@@ -66,9 +66,9 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
                         // "MIL-STD-2525 Friendly SOF Drone Aircraft"
                         SparseArray<String> modifiers = new SparseArray<String>();
                         modifiers.put(ModifiersUnits.Q_DIRECTION_OF_MOVEMENT, "235");
-                        Placemark drone = MilStd2525Placemark.fromSymbolCode(
+                        Placemark drone = new Placemark(
                             Position.fromDegrees(32.4520, 63.44553, 3000),
-                            "SFAPMFQM--GIUSA", modifiers);
+                            MilStd2525.attributesFromSymbolCode("SFAPMFQM--GIUSA", modifiers));
 
                         symbolLayer.addRenderable(drone);
                         //symbolLayer.addRenderable(Placemark.simple(drone.getPosition(), new Color(1, 1, 1, 1), 4)); // for placement verification
@@ -77,9 +77,9 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
                         modifiers.clear();
                         modifiers.put(ModifiersUnits.Q_DIRECTION_OF_MOVEMENT, "90");
                         modifiers.put(ModifiersUnits.AJ_SPEED_LEADER, "0.1");
-                        Placemark launcher = MilStd2525Placemark.fromSymbolCode(
+                        Placemark launcher = new Placemark(
                             Position.fromDegrees(32.4014, 63.3894, 0),
-                            "SHGXUCFRMS----G", modifiers);
+                            MilStd2525.attributesFromSymbolCode("SHGXUCFRMS----G", modifiers));
 
                         symbolLayer.addRenderable(launcher);
                         //symbolLayer.addRenderable(Placemark.simple(launcher.getPosition(), new Color(1, 1, 1, 1), 4)); // for placement verification
@@ -91,9 +91,9 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
                         modifiers.put(ModifiersUnits.H_ADDITIONAL_INFO_1, "ADDED SUPPORT FOR JJ");
                         modifiers.put(ModifiersUnits.V_EQUIP_TYPE, "MACHINE GUN");
                         modifiers.put(ModifiersUnits.W_DTG_1, "30140000ZSEP97");    // Date/Time Group
-                        Placemark machineGun = MilStd2525Placemark.fromSymbolCode(
+                        Placemark machineGun = new Placemark(
                             Position.fromDegrees(32.3902, 63.4161, 0),
-                            "SFGPEWRH--MTUSG", modifiers);
+                            MilStd2525.attributesFromSymbolCode("SFGPEWRH--MTUSG", modifiers));
 
                         symbolLayer.addRenderable(machineGun);
                         //symbolLayer.addRenderable(Placemark.simple(machineGun.getPosition(), new Color(1, 1, 1, 1), 4)); // for placement verification
