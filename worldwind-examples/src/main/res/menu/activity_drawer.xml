@@ -40,6 +40,10 @@
             android:icon="@android:drawable/ic_menu_myplaces"
             android:title="@string/title_placemarks_milstd2525"/>
         <item
+            android:id="@+id/nav_placemarks_milstd2525_stress_activity"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="@string/title_placemarks_milstd2525_stress_test"/>
+        <item
             android:id="@+id/nav_day_night_cycle_activity"
             android:icon="@android:drawable/ic_menu_recent_history"
             android:title="@string/title_day_night_cycle"/>
