@@ -134,48 +134,69 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
     private static final double DEFAULT_DEPTH_OFFSET = -0.003;
 
     /**
-     * Factory method
+     * This factory method creates a Placemark and an associated PlacemarkAttributes bundle that draws a simple square
+     * centered on the supplied position with the given size and color.
      *
-     * @param position
-     * @param color
-     * @param pixelSize
+     * @param position  The geographic position where the placemark is drawn.
+     * @param color     The color of the placemark.
+     * @param pixelSize The width and height of the placemark.
      *
-     * @return
+     * @return A new Placemark with a PlacemarkAttributes bundle.
      */
     public static Placemark simple(Position position, Color color, int pixelSize) {
         return new Placemark(position, PlacemarkAttributes.defaults().setImageColor(color).setImageScale(pixelSize));
     }
 
+
     /**
-     * Factory method
+     * This factory method creates a Placemark and an associated PlacemarkAttributes bundle that draws the given image
+     * centered on the supplied position.
      *
-     * @param position
-     * @param imageSource
+     * @param position    The geographic position with the placemark is drawn.
+     * @param imageSource The object containing the image that is drawn.
      *
-     * @return
+     * @return A new Placemark with a PlacemarkAttributes bundle.
      */
     public static Placemark simpleImage(Position position, ImageSource imageSource) {
         return new Placemark(position, PlacemarkAttributes.withImage(imageSource));
     }
 
     /**
-     * Factory method
+     * This factory method creates a Placemark and an associated PlacemarkAttributes bundle (with TextAttributes) that
+     * draws the given image centered on the supplied position with a nearby label.
      *
-     * @param position
-     * @param imageSource
-     * @param label
+     * @param position    The geographic position with the placemark is drawn.
+     * @param imageSource The object containing the image that is drawn.
+     * @param label       The text that is drawn near the image. This parameter becomes the placemark's displayName
+     *                    property.
      *
-     * @return
+     * @return A new Placemark with a PlacemarkAttributes bundle containing TextAttributes.
      */
     public static Placemark simpleImageAndLabel(Position position, ImageSource imageSource, String label) {
         return new Placemark(position, PlacemarkAttributes.withImageAndLabel(imageSource), label);
     }
 
 
+    /**
+     * Constructs a Placemark that draws its representation at the supplied position using the given PlacemarkAttributes
+     * bundle. The displayName and label properties are empty.
+     *
+     * @param position   The geographic position with the placemark is drawn.
+     * @param attributes The attributes bundle reference that defines how the placemark is drawn.
+     */
     public Placemark(Position position, PlacemarkAttributes attributes) {
         this(position, attributes, null, null, false);
     }
 
+    /**
+     * Constructs a Placemark with a label that draws its representation at the supplied position using the given
+     * PlacemarkAttributes bundle. The displayName property is set to the supplied label string, which is drawn
+     * according to the (optional) TextAttributes within the PlacemarkAttributes.
+     *
+     * @param position   The geographic position with the placemark is drawn.
+     * @param attributes The attributes bundle reference that defines how the placemark and label are drawn.
+     * @param label      The text assigned to the displayName property that is optionally drawn near the image.
+     */
     public Placemark(Position position, PlacemarkAttributes attributes, String label) {
         this(position, attributes, label, null, false);
     }
@@ -194,15 +215,13 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
      * @param eyeDistanceScaling Indicates whether the size of this placemark scales with eye distance. See
      *                           [eyeDistanceScalingThreshold]{@link Placemark#eyeDistanceScalingThreshold} and
      *                           [eyeDistanceScalingLabelThreshold]{@link Placemark#eyeDistanceScalingLabelThreshold}.
-     *
-     * @throws IllegalArgumentException If the specified position is null orderedRenderable undefined.
      */
     public Placemark(Position position, PlacemarkAttributes attributes, String displayName, String label, boolean eyeDistanceScaling) {
         setPosition(position);
         setAltitudeMode(WorldWind.ABSOLUTE);
         setDisplayName(displayName);
         setLabel(label);
-        this.attributes = attributes != null ? attributes : new PlacemarkAttributes();
+        this.attributes = attributes;
         this.highlightAttributes = null;
         this.highlighted = false;
         this.eyeDistanceScaling = eyeDistanceScaling;
@@ -216,7 +235,9 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
     }
 
     /**
-     * Returns this placemark's geographic position.
+     * Gets this placemark's geographic position.
+     *
+     * @return The geographic position where this placemark is drawn.
      */
     public Position getPosition() {
         return position;
@@ -225,7 +246,7 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
     /**
      * Sets this placemark's geographic position to the values in the supplied position.
      *
-     * @param position The new position to be copied.
+     * @param position The new position where this placemark will be drawn.
      *
      * @return This placemark.
      */
@@ -285,8 +306,8 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
     }
 
     /**
-     * The attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is true,
-     * this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
+     * Gets the attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is
+     * true, this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
      */
     public PlacemarkAttributes getHighlightAttributes() {
         return highlightAttributes;
