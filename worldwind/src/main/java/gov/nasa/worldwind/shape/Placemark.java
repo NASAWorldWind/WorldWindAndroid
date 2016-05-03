@@ -198,10 +198,6 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
      * @throws IllegalArgumentException If the specified position is null orderedRenderable undefined.
      */
     public Placemark(Position position, PlacemarkAttributes attributes, String displayName, String label, boolean eyeDistanceScaling) {
-        if (position == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Placemark", "constructor", "missingPosition"));
-        }
         setPosition(position);
         setAltitudeMode(WorldWind.ABSOLUTE);
         setDisplayName(displayName);
@@ -227,12 +223,22 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
     }
 
     /**
-     * Sets this placemark's geographic position.
+     * Sets this placemark's geographic position to the values in the supplied position.
      *
-     * @param position The new position for the placemark.
+     * @param position The new position to be copied.
+     *
+     * @return This placemark.
      */
     public Placemark setPosition(Position position) {
-        this.position = position;
+        if (position == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Placemark", "setPosition", "missingPosition"));
+        }
+        if (this.position == null) {
+            this.position = new Position(position);
+        } else {
+            this.position.set(position);
+        }
         return this;
     }
 
@@ -266,7 +272,12 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
     }
 
     /**
-     * The placemark's attributes. If null and this placemark is not highlighted, this placemark is not drawn.
+     * Sets the placemark's attributes to the supplied attributes bundle. If null and this placemark is not highlighted,
+     * this placemark is not drawn.
+     *
+     * @param attributes The attributes bundle used to be used by this placemark.
+     *
+     * @return This placemark.
      */
     public Placemark setAttributes(PlacemarkAttributes attributes) {
         this.attributes = attributes;
@@ -284,6 +295,10 @@ public class Placemark extends AbstractRenderable implements OrderedRenderable {
     /**
      * The attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is true,
      * this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
+     *
+     * @param highlightAttributes The attributes bundle used to be used by this placemark when highlighted.
+     *
+     * @return This placemark.
      */
     public Placemark setHighlightAttributes(PlacemarkAttributes highlightAttributes) {
         this.highlightAttributes = highlightAttributes;
