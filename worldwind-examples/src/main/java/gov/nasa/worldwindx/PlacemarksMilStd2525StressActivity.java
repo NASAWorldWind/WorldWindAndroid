@@ -330,25 +330,17 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
         @Override
         public void run() {
-            SparseArray<String> modifiers = new SparseArray<String>();
-            SparseArray<String> civilianColorAttributes = new SparseArray<String>();
-            civilianColorAttributes.put(MilStdAttributes.FillColor, SymbolUtilities.colorToHexString(Color.magenta, false));
-
-            PlacemarkAttributes militaryAttributes = MilStd2525.attributesFromSymbolCode("SFAPMF----*****", modifiers);
-            PlacemarkAttributes civilianAttributes = MilStd2525.attributesFromSymbolCode("SFAPCF----*****", modifiers);
-            PlacemarkAttributes unknownAttributes = MilStd2525.attributesFromSymbolCode("SUAP------*****", modifiers);
-            PlacemarkAttributes neutralAttributes = MilStd2525.attributesFromSymbolCode("SNAP------*****", modifiers);
-            PlacemarkAttributes hostileAttributes = MilStd2525.attributesFromSymbolCode("SHAP------*****", modifiers);
 
             for (int i = 0; i < NUM_AIRCRAFT; i++) {
-                // Randomly assign start and finish airports for the aircraft animation
+                // Randomly assign departure and arrival airports to each aircraft
                 Airport departure = airports.get(random.nextInt(NUM_AIRPORTS - 1));
                 Airport arrival = airports.get(random.nextInt(NUM_AIRPORTS - 1));
 
                 String symbolCode = createAircraftSymbolCode(departure.country, departure.use);
                 PlacemarkAttributes attributes = getAttributesForSymbol(symbolCode);
 
-                // Allocate the end points of the flight path
+                // Allocate the end points of the flight path.  The animation will move the aircraft
+                // along the great circle route between these two points.
                 Position origin = Position.fromDegrees(departure.position.latitude, departure.position.longitude, AIRCRAFT_ALT);
                 Position destination = Position.fromDegrees(arrival.position.latitude, arrival.position.longitude, AIRCRAFT_ALT);
 
