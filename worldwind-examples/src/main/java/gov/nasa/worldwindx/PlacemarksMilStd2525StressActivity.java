@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -43,7 +44,7 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
     // There are 9,809 airports in the world airports database.
     protected static final int NUM_AIRPORTS = 9809;
 
-    protected static final int NUM_AIRCRAFT = 1000;
+    protected static final int NUM_AIRCRAFT = 5000;
 
     protected static final double AIRCRAFT_ALT = 10000; // meters
 
@@ -61,6 +62,9 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
     protected RenderableLayer aircraftLayer = null;
 
+    protected HashMap<String, PlacemarkAttributes> symbolMap = new HashMap<>();
+
+
     protected static final List<String> friends = Arrays.asList(
         // NATO countries
         "US", "CA", "UK", "DA", "FR", "IT", "IC", "NL", "NO", "PO",
@@ -75,9 +79,14 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
     protected static final List<String> hostiles = Arrays.asList("RS", "IR");
 
+    public PlacemarksMilStd2525StressActivity() {
+        super();
+        System.out.println(this.getClass().getSimpleName() + ": constructor called");
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        System.out.println(this.getClass().getSimpleName() + ": onCreate() called");
         super.onCreate(savedInstanceState);
         setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks_milstd2525_stress_test));
         setAboutBoxText("Demonstrates a LOT of MILSTD2525 Placemarks.");
@@ -111,6 +120,7 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
     @Override
     protected void onPause() {
+        System.out.println(this.getClass().getSimpleName() + ": onPause() called");
         super.onPause();
         // Stop running the animation when this activity is paused.
         this.pauseAnimation = true;
@@ -118,12 +128,24 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
     @Override
     protected void onResume() {
+        System.out.println(this.getClass().getSimpleName() + ": onResume() called");
         super.onResume();
         // Resume the Handler that animates the aircraft
         if (animationStared) {
             pauseAnimation = false;
             this.animationHandler.postDelayed(this, DELAY_TIME);
         }
+    }
+    @Override
+    protected void onStop() {
+        System.out.println(this.getClass().getSimpleName() + ": onStop() called");
+        super.onStop();
+
+    }
+    @Override
+    protected void onDestroy() {
+        System.out.println(this.getClass().getSimpleName() + ": onDestroy() called");
+        super.onDestroy();
     }
 
     @Override
@@ -312,21 +334,26 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
             SparseArray<String> civilianColorAttributes = new SparseArray<String>();
             civilianColorAttributes.put(MilStdAttributes.FillColor, SymbolUtilities.colorToHexString(Color.magenta, false));
 
-            PlacemarkAttributes milAirTrackAttributes = MilStd2525.attributesFromSymbolCode("SFAPM-----*****", modifiers);
-            PlacemarkAttributes civFixedWingAttributes = MilStd2525.attributesFromSymbolCode("SFAPCF----*****", modifiers);
+            PlacemarkAttributes militaryAttributes = MilStd2525.attributesFromSymbolCode("SFAPMF----*****", modifiers);
+            PlacemarkAttributes civilianAttributes = MilStd2525.attributesFromSymbolCode("SFAPCF----*****", modifiers);
+            PlacemarkAttributes unknownAttributes = MilStd2525.attributesFromSymbolCode("SUAP------*****", modifiers);
+            PlacemarkAttributes neutralAttributes = MilStd2525.attributesFromSymbolCode("SNAP------*****", modifiers);
+            PlacemarkAttributes hostileAttributes = MilStd2525.attributesFromSymbolCode("SHAP------*****", modifiers);
 
             for (int i = 0; i < NUM_AIRCRAFT; i++) {
                 // Randomly assign start and finish airports for the aircraft animation
-                Airport start = airports.get(random.nextInt(NUM_AIRPORTS - 1));
-                Airport finish = airports.get(random.nextInt(NUM_AIRPORTS - 1));
+                Airport departure = airports.get(random.nextInt(NUM_AIRPORTS - 1));
+                Airport arrival = airports.get(random.nextInt(NUM_AIRPORTS - 1));
+
+                String symbolCode = createAircraftSymbolCode(departure.country, departure.use);
+                PlacemarkAttributes attributes = getAttributesForSymbol(symbolCode);
 
                 // Allocate the end points of the flight path
-                Position origin = Position.fromDegrees(start.position.latitude, start.position.longitude, AIRCRAFT_ALT);
-                Position destination = Position.fromDegrees(finish.position.latitude, finish.position.longitude, AIRCRAFT_ALT);
+                Position origin = Position.fromDegrees(departure.position.latitude, departure.position.longitude, AIRCRAFT_ALT);
+                Position destination = Position.fromDegrees(arrival.position.latitude, arrival.position.longitude, AIRCRAFT_ALT);
 
-                // The Placemark constructor will allocate a mutable copy of the origin for the initial position.
                 // Store copies of the origin and destination in the user properties for computation of the flight path.
-                Placemark placemark = new Placemark(origin, milAirTrackAttributes);
+                Placemark placemark = new Placemark(origin, attributes);
                 placemark.putUserProperty("origin", origin);
                 placemark.putUserProperty("destination", destination);
                 placemark.setEyeDistanceScaling(true);
@@ -339,4 +366,42 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         }
     }
 
+    protected String createAircraftSymbolCode(String country, String departure) {
+        String identity;
+        if (friends.contains(country)) {
+            identity = "F";
+        } else if (neutrals.contains(country)) {
+            identity = "N";
+        } else if (hostiles.contains(country)) {
+            identity = "H";
+        } else {
+            identity = "U";
+        }
+        String type;
+        switch (departure) {
+            case Airport.MILITARY:
+            case Airport.JOINT:
+                type = "MF";
+                break;
+            case Airport.CIVILIAN:
+            case Airport.OTHER:
+                type = "CF";
+                break;
+            default:
+                type = "--";
+        }
+        String symbolCode = "S" + identity + "AP" + type + "----**" + country + "*";
+
+        return symbolCode;
+    }
+
+    protected PlacemarkAttributes getAttributesForSymbol(String symbolCode) {
+        PlacemarkAttributes attributes = this.symbolMap.get(symbolCode);
+        if (attributes == null) {
+            SparseArray<String> modifiers = new SparseArray<String>();
+            attributes = MilStd2525.attributesFromSymbolCode(symbolCode, modifiers);
+            this.symbolMap.put(symbolCode, attributes);
+        }
+        return attributes;
+    }
 }

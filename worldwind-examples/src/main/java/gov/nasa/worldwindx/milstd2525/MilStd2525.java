@@ -64,7 +64,7 @@ public class MilStd2525 {
 
         // Configure modifier text output
         rs.setTextBackgroundMethod(RendererSettings.TextBackgroundMethod_OUTLINE);
-        rs.setTextOutlineWidth(2);
+        rs.setTextOutlineWidth(4);  // 4 is the default
 
         initialized = true;
     }
