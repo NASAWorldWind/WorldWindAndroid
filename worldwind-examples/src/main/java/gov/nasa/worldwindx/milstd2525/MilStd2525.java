@@ -23,31 +23,30 @@ import gov.nasa.worldwind.shape.PlacemarkAttributes;
 import gov.nasa.worldwind.util.Logger;
 
 /**
- * This utility class generates PlacemarkAttributes bundles with MILSTD2525C symbols. The symbols are generated from the
- * MIL-STD-2525 Symbol Rendering Library (<a href="https://github.com/missioncommand/mil-sym-android">https://github.com/missioncommand/mil-sym-android</a>)
+ * This utility class generates PlacemarkAttributes bundles with MIL-STD-2525 symbols. The symbols are generated from
+ * the MIL-STD-2525 Symbol Rendering Library (<a href="https://github.com/missioncommand/mil-sym-android">https://github.com/missioncommand/mil-sym-android</a>)
  * contained in the mil-sym-android module.
  */
 public class MilStd2525 {
 
+    /**
+     * The actual rendering engine for the MIL-STD-2525 graphics.
+     */
     private static MilStdIconRenderer renderer = MilStdIconRenderer.getInstance();
 
-    // defaultModifiers is an empty array.
-    // See: https://github.com/missioncommand/mil-sym-android/blob/master/Renderer/src/main/java/armyc2/c2sd/renderer/utilities/ModifiersUnits.java
-    private static SparseArray<String> defaultModifiers = new SparseArray<>();
-
-    // defaultAttributes is an empty array.
-    // See: https://github.com/missioncommand/mil-sym-android/blob/master/Renderer/src/main/java/armyc2/c2sd/renderer/utilities/MilStdAttributes.java
-    private static SparseArray<String> defaultAttributes = new SparseArray<>();
-
-    // A (simple) cache of PlacemarkAttribute bundles containing MIL-STD-2525 symbols.
-    // Using a cache is essential for memory management--we want to reuse the bitmap textures for identical symbols.
+    /**
+     * A (simple) cache of PlacemarkAttribute bundles containing MIL-STD-2525 symbols. Using a cache is essential for
+     * memory management--we want to reuse the bitmap textures for identical symbols.
+     */
     private static HashMap<String, PlacemarkAttributes> symbolCache = new HashMap<>();
+
+    private static SparseArray<String> emptyArray = new SparseArray<>();    // may be used in a cache key
 
     private static boolean initialized = false;
 
 
     /**
-     * Initializes the static MILSTD2525C symbol renderer.  This method must be called one time before calling
+     * Initializes the static MIL-STD-2525 symbol renderer.  This method must be called one time before calling
      * renderImage().
      *
      * @param applicationContext The Context used to define the location of the renderer's cache directly.
@@ -78,14 +77,23 @@ public class MilStd2525 {
     }
 
     /**
+     * Releases cached PlacemarkAttribute bundles.
+     */
+    public static void clearSymbolCache() {
+        symbolCache.clear();
+    }
+
+    /**
      * Gets a PlacemarkAttributes bundle for the supplied symbol specification. The attribute bundle is retrieved from a
      * cache. If the symbol is not found in the cache, an attribute bundle is created and added to the cache before it
      * is returned.
      *
      * @param symbolCode A 15-character alphanumeric identifier that provides the information necessary to display or
      *                   transmit a tactical symbol between MIL-STD-2525 compliant systems.
-     * @param modifiers  A optional collection of unit or tactical graphic modifiers.
-     * @param attributes A optional collection of rendering attributes.
+     * @param modifiers  A optional collection of unit or tactical graphic modifiers. See:
+     *                   https://github.com/missioncommand/mil-sym-android/blob/master/Renderer/src/main/java/armyc2/c2sd/renderer/utilities/ModifiersUnits.java
+     *                   and https://github.com/missioncommand/mil-sym-android/blob/master/Renderer/src/main/java/armyc2/c2sd/renderer/utilities/ModifiersTG.java
+     * @param attributes A optional collection of rendering attributes. See https://github.com/missioncommand/mil-sym-android/blob/master/Renderer/src/main/java/armyc2/c2sd/renderer/utilities/MilStdAttributes.java
      *
      * @return Either a new or a cached PlacemarkAttributes bundle containing the specified symbol embedded in the
      * bundle's imageSource property.
@@ -93,12 +101,15 @@ public class MilStd2525 {
     public static PlacemarkAttributes getPlacemarkAttributes(String symbolCode, SparseArray<String> modifiers, SparseArray<String> attributes) {
 
         // Generate a cache key for the symbol
-        String key = symbolCode + (modifiers == null ? "{}" : modifiers.toString()) + (attributes == null ? "{}" : attributes.toString());
+        String key = symbolCode
+            + (modifiers == null ? emptyArray.toString() : modifiers.toString())
+            + (attributes == null ? emptyArray.toString() : attributes.toString());
 
         // Get the attribute bundle from the cache
         PlacemarkAttributes placemarkAttributes = symbolCache.get(key);
 
         if (placemarkAttributes == null) {
+
             // Create the attributes bundle and add it to the cache.
             placemarkAttributes = MilStd2525.createPlacemarkAttributes(symbolCode, modifiers, attributes);
             if (placemarkAttributes == null) {
@@ -110,15 +121,16 @@ public class MilStd2525 {
         return placemarkAttributes;
     }
 
+
     /**
-     * Creates a placemark attributes bundle containing a MilStd2525C symbol using the specified modifiers and
+     * Creates a placemark attributes bundle containing a MIL-STD-2525 symbol using the specified modifiers and
      * attributes.
      *
      * @param symbolCode The 15-character SIDC (symbol identification coding scheme) code.
      * @param modifiers  The ModifierUnit (unit) or ModifierTG (tactical graphic) modifiers collection. May be null.
      * @param attributes The MilStdAttributes attributes collection. May be null.
      *
-     * @return A new PlacemarkAttributes bundle representing the MILSTD2525C symbol.
+     * @return A new PlacemarkAttributes bundle representing the MIL-STD-2525 symbol.
      */
     public static PlacemarkAttributes createPlacemarkAttributes(String symbolCode, SparseArray<String> modifiers, SparseArray<String> attributes) {
 
@@ -149,11 +161,11 @@ public class MilStd2525 {
 
 
     /**
-     * Creates an MILSTD2525C symbol from the specified symbol code, modifiers and attributes.
+     * Creates an MIL-STD-2525 symbol from the specified symbol code, modifiers and attributes.
      *
-     * @param symbolCode The MILSTD2525C symbol code.
-     * @param modifiers  The MILSTD2525C modifiers. If null, a default (empty) modifier list will be used.
-     * @param attributes The MILSTD2525C attributes. If null, a default (empty) attribute list will be used.
+     * @param symbolCode The MIL-STD-2525 symbol code.
+     * @param modifiers  The MIL-STD-2525 modifiers. If null, a default (empty) modifier list will be used.
+     * @param attributes The MIL-STD-2525 attributes. If null, a default (empty) attribute list will be used.
      *
      * @return An ImageInfo object containing the symbol's bitmap and meta data.
      */
@@ -163,8 +175,8 @@ public class MilStd2525 {
                 Logger.logMessage(Logger.ERROR, "MilStd2525", "renderImage", "renderer has not been initialized."));
         }
         return renderer.RenderIcon(symbolCode,
-            modifiers == null ? defaultModifiers : modifiers,
-            attributes == null ? defaultAttributes : attributes);
+            modifiers == null ? new SparseArray<String>() : modifiers,
+            attributes == null ? new SparseArray<String>() : attributes);
     }
 
 }
