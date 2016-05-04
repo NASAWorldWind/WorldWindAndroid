@@ -132,8 +132,8 @@ public class DrawablePlacemark implements Drawable {
         // Use a 2D unit quad as the vertex point and vertex tex coord attributes.
         dc.bindBuffer(GLES20.GL_ARRAY_BUFFER, dc.unitQuadBuffer());
         GLES20.glEnableVertexAttribArray(1); // enable vertex attrib 1; vertex attrib 0 is enabled by default
-        GLES20.glVertexAttribPointer(0, 2, GLES20.GL_FLOAT, false, 0, 0);
-        GLES20.glVertexAttribPointer(1, 2, GLES20.GL_FLOAT, false, 0, 0);
+        GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 2, GLES20.GL_FLOAT, false, 0, 0);
+        GLES20.glVertexAttribPointer(1 /*vertexTexCoord*/, 2, GLES20.GL_FLOAT, false, 0, 0);
 
         // Draw the 2D unit quad as triangles.
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
@@ -164,7 +164,7 @@ public class DrawablePlacemark implements Drawable {
         GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getLeaderBuffer(this.leaderVertexPoint));
 
         // Draw the leader line.
-        GLES20.glDrawArrays(GLES20.GL_LINES, 0, this.leaderVertexPoint.length / 3);
+        GLES20.glDrawArrays(GLES20.GL_LINES, 0 /*first*/, this.leaderVertexPoint.length / 3 /*count*/);
     }
 
     protected void enableDepthTest(boolean enable) {
