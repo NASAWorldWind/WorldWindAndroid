@@ -8,6 +8,8 @@ package gov.nasa.worldwindx;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.SparseArray;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,7 +17,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -50,7 +51,7 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
     protected static final Executor executor = Executors.newSingleThreadExecutor();
 
-    protected Handler animationHandler = new Handler();
+    protected Handler handler = new Handler();
 
     protected boolean animationStared = false;
 
@@ -61,6 +62,8 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
     protected RenderableLayer airportLayer = null;
 
     protected RenderableLayer aircraftLayer = null;
+
+    protected TextView statusText = null;
 
     protected static final List<String> friends = Arrays.asList(
         // NATO countries
@@ -88,6 +91,12 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         setAboutBoxText("Demonstrates a LOT of MIL-STD-2525 Placemarks.\n"
             + "There are " + NUM_AIRPORTS + " airports and " + NUM_AIRCRAFT + " aircraft symbols in this example.");
 
+        // Add a TextView on top of the globe to convey the status of this activity
+        this.statusText = new TextView(this);
+        this.statusText.setTextColor(android.graphics.Color.YELLOW);
+        FrameLayout globeLayout = (FrameLayout) findViewById(R.id.content_globe);
+        globeLayout.addView(this.statusText);
+
         // Add a Renderable layer for the placemarks before the Atmosphere layer
         this.airportLayer = new RenderableLayer("Airports");
         this.aircraftLayer = new RenderableLayer("Aircraft");
@@ -98,10 +107,13 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                // TODO: Display "Loading MIL-STD-2525 Renderer" message
+                // Update the status on the UI thread
+                handler.post(new StatusTask("Initializing the MIL-STD-2525 Renderer..."));
 
                 // Initialize the military symbol renderer singleton
                 MilStd2525.initializeRenderer(getApplicationContext());
+
+                handler.post(new StatusTask("Loading airports and aircraft symbols..."));
 
                 // Load the airport collection from the database on this thread.
                 ArrayList<Airport> airports = loadAirportDatabase();
@@ -128,7 +140,7 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         // Resume the Handler that animates the aircraft
         if (animationStared) {
             pauseAnimation = false;
-            this.animationHandler.postDelayed(this, DELAY_TIME);
+            this.handler.postDelayed(this, DELAY_TIME);
         }
     }
 
@@ -140,14 +152,19 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
     }
 
     /**
-     * Initiates the animation on this
+     * Initiates the aircraft animation.
      */
     protected void startAnimation() {
         this.animationStared = true;
         this.pauseAnimation = false;
-        this.run();
+        handler.post(new StatusTask("Starting the animation...")); // update the UI on the main thread
+        handler.post(this); // post this Runnable on the main thread.
+        handler.postDelayed(new StatusTask(""), 3000);   // clear the status text after a few seconds
     }
 
+    /**
+     * This Runnable interface updates the aircraft positions.
+     */
     @Override
     public void run() {
 
@@ -181,11 +198,13 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
                     // The aircraft a arrived at their destinations; pause the animation and generate frame statistics
                     // TODO: Generate frame statistics.
                     pauseAnimation = true;
+                    handler.post(new StatusTask("Animation complete."));
+
                 }
 
                 // Re-execute the animation event after the prescribed delay
                 if (!pauseAnimation) {
-                    animationHandler.postDelayed(this, DELAY_TIME);
+                    handler.postDelayed(this, DELAY_TIME);
                 }
             }
         });
@@ -372,50 +391,64 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
             // Start the animation
             PlacemarksMilStd2525StressActivity.this.startAnimation();
         }
+
+
+        /**
+         * Generates a SIDC (symbol identification coding scheme) for an aircraft originating the given county and
+         * departure airport use type.
+         *
+         * @param country    A country code as defined in the airports database.
+         * @param airportUse The use code for the departure airport.
+         *
+         * @return A 15-character alphanumeric identifier.
+         */
+        protected String createAircraftSymbolCode(String country, String airportUse) {
+
+            String identity;
+            if (friends.contains(country)) {
+                identity = "F";
+            } else if (neutrals.contains(country)) {
+                identity = "N";
+            } else if (hostiles.contains(country)) {
+                identity = "H";
+            } else {
+                identity = "U";
+            }
+
+            String type;
+            switch (airportUse) {
+                case Airport.MILITARY:
+                case Airport.JOINT:
+                    type = "MF";    // Military fixed wing
+                    break;
+                case Airport.CIVILIAN:
+                case Airport.OTHER:
+                    type = "CF";    // Civilian fixed wing
+                    break;
+                default:
+                    type = "--";
+            }
+
+            // Adding the country code the the symboel creates more and larger images, but it adds a useful bit
+            // of context to the aircraft as they fly across the globe.  Replace country with "**" to reduce the
+            // the memory footprint of the image textures.
+            String symbolCode = "S" + identity + "AP" + type + "----**" + country + "*";
+
+            return symbolCode;
+        }
     }
 
+    protected class StatusTask implements Runnable {
 
-    /**
-     * Generates a SIDC (symbol identification coding scheme) for an aircraft originating the given county and departure
-     * airport use type.
-     *
-     * @param country    A country code as defined in the airports database.
-     * @param airportUse The use code for the departure airport.
-     *
-     * @return A 15-character alphanumeric identifier.
-     */
-    protected String createAircraftSymbolCode(String country, String airportUse) {
+        private final String statusMessage;
 
-        String identity;
-        if (friends.contains(country)) {
-            identity = "F";
-        } else if (neutrals.contains(country)) {
-            identity = "N";
-        } else if (hostiles.contains(country)) {
-            identity = "H";
-        } else {
-            identity = "U";
+        public StatusTask(String statusMessage) {
+            this.statusMessage = statusMessage;
         }
 
-        String type;
-        switch (airportUse) {
-            case Airport.MILITARY:
-            case Airport.JOINT:
-                type = "MF";    // Military fixed wing
-                break;
-            case Airport.CIVILIAN:
-            case Airport.OTHER:
-                type = "CF";    // Civilian fixed wing
-                break;
-            default:
-                type = "--";
+        @Override
+        public void run() {
+            statusText.setText(statusMessage);
         }
-
-        // Adding the country code the the symboel creates more and larger images, but it adds a useful bit
-        // of context to the aircraft as they fly across the globe.  Replace country with "**" to reduce the
-        // the memory footprint of the image textures.
-        String symbolCode = "S" + identity + "AP" + type + "----**" + country + "*";
-
-        return symbolCode;
     }
 }

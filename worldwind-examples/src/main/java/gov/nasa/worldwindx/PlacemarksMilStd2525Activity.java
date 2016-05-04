@@ -6,7 +6,10 @@
 package gov.nasa.worldwindx;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.SparseArray;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import armyc2.c2sd.renderer.utilities.ModifiersUnits;
 import gov.nasa.worldwind.WorldWind;
@@ -21,11 +24,20 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
 
     protected RenderableLayer symbolLayer = null;
 
+    protected Handler handler = new Handler();
+
+    protected TextView statusText = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks_milstd2525));
         setAboutBoxText("Demonstrates how to add MilStd2525C Symbols to a RenderableLayer.");
+
+        this.statusText = new TextView(this);
+        this.statusText.setTextColor(android.graphics.Color.YELLOW);
+        FrameLayout globeLayout = (FrameLayout) findViewById(R.id.content_globe);
+        globeLayout.addView(this.statusText);
 
         // Create a layer for the military symbols and add it just before the Atmosphere layer
         this.symbolLayer = new RenderableLayer("Symbols");
@@ -50,14 +62,16 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
      * complete.
      */
     private void initializeSymbols() {
+        // The symbol renderer can take a long time to initialize so we use a background thread.
         WorldWind.taskService().execute(new Runnable() {
             @Override
             public void run() {
 
-                // The symbol renderer can take a long time to initialize.
+                // Initialize the MIL-STD-2525 renderer here, but update the status text on the UI thread
+                handler.post(new StatusTask("Initializing the MIL-STD-2525 Renderer..."));
                 MilStd2525.initializeRenderer(getApplicationContext());
+                handler.post(new StatusTask(""));
 
-                // TODO: demonstrate an efficient/foolproof way of adding renderables to a running application.
                 // We must add the new renderables on the GLThread.
                 getWorldWindow().queueEvent(new Runnable() {
                     @Override
@@ -96,12 +110,24 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
                         symbolLayer.addRenderable(machineGun);
 
                         // Signal a change in the WorldWind scene; requestRender() is callable from any thread.
-                        getWorldWindow().requestRender();
+                            getWorldWindow().requestRender();
                     }
                 });
 
             }
         });
     }
+    protected class StatusTask implements Runnable {
 
+        private final String statusMessage;
+
+        public StatusTask(String statusMessage) {
+            this.statusMessage = statusMessage;
+        }
+
+        @Override
+        public void run() {
+            statusText.setText(statusMessage);
+        }
+    }
 }
