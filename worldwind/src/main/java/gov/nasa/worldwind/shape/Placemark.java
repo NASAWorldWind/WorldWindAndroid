@@ -63,6 +63,9 @@ public class Placemark extends AbstractRenderable {
      */
     protected PlacemarkAttributes highlightAttributes;
 
+    /**
+     * The attributes identified for use during the current render pass.
+     */
     protected PlacemarkAttributes activeAttributes;
 
     /**
@@ -218,13 +221,11 @@ public class Placemark extends AbstractRenderable {
      *                           [eyeDistanceScalingLabelThreshold]{@link Placemark#eyeDistanceScalingLabelThreshold}.
      */
     public Placemark(Position position, PlacemarkAttributes attributes, String displayName, String label, boolean eyeDistanceScaling) {
-        setPosition(position);
-        setAltitudeMode(WorldWind.ABSOLUTE);
-        setDisplayName(displayName);
-        setLabel(label);
+        this.setPosition(position);
+        this.setAltitudeMode(WorldWind.ABSOLUTE);
+        this.setDisplayName(displayName);
+        this.setLabel(label);
         this.attributes = attributes;
-        this.highlightAttributes = null;
-        this.highlighted = false;
         this.eyeDistanceScaling = eyeDistanceScaling;
         this.eyeDistanceScalingThreshold = DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD;
         this.eyeDistanceScalingLabelThreshold = 1.5 * this.eyeDistanceScalingThreshold;
