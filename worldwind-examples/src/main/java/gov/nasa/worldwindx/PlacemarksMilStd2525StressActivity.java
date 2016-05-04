@@ -62,7 +62,6 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
     protected RenderableLayer aircraftLayer = null;
 
-
     protected static final List<String> friends = Arrays.asList(
         // NATO countries
         "US", "CA", "UK", "DA", "FR", "IT", "IC", "NL", "NO", "PO",
@@ -86,7 +85,7 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks_milstd2525_stress_test));
-        setAboutBoxText("Demonstrates a LOT of MILSTD2525 Placemarks.\n"
+        setAboutBoxText("Demonstrates a LOT of MIL-STD-2525 Placemarks.\n"
             + "There are " + NUM_AIRPORTS + " airports and " + NUM_AIRCRAFT + " aircraft symbols in this example.");
 
         // Add a Renderable layer for the placemarks before the Atmosphere layer
@@ -99,7 +98,7 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                // TODO: Display "Loading MILSTD2525 Renderer" message
+                // TODO: Display "Loading MIL-STD-2525 Renderer" message
 
                 // Initialize the military symbol renderer singleton
                 MilStd2525.initializeRenderer(getApplicationContext());
@@ -131,6 +130,13 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
             pauseAnimation = false;
             this.animationHandler.postDelayed(this, DELAY_TIME);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        // Release the cached MIL-STD-2525 PlacemarkAttributes
+        MilStd2525.clearSymbolCache();
+        super.onDestroy();
     }
 
     /**
@@ -412,5 +418,4 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
         return symbolCode;
     }
-
 }
