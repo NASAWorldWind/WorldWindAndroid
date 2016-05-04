@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class FrameStatisticsTest {
+public class FrameMetricsTest {
     @Ignore("not implemented")
     @Test
     public void testConstructor_default() throws Exception {

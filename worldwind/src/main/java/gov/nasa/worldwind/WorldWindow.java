@@ -55,6 +55,8 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
     protected FrameController frameController = new BasicFrameController();
 
+    protected FrameMetrics frameMetrics = new FrameMetrics();
+
     protected WorldWindowController worldWindowController = new BasicWorldWindowController();
 
     protected GestureGroup gestureGroup = new GestureGroup();
@@ -128,6 +130,10 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
         // Set up to receive broadcast messages from World Wind's message center.
         WorldWind.messageService().addListener(this);
+
+        // Log a message with some basic information about the world window's configuration.
+        int rrCacheSizeMB = Math.round(rrCacheSize / 1024 / 1024);
+        Logger.log(Logger.INFO, "World Window initialized {RenderResourceCache=" + rrCacheSizeMB + " MB}");
     }
 
     /**
@@ -209,8 +215,17 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.frameController = frameController;
     }
 
-    public FrameStatistics getFrameStatistics() {
-        return this.frameController.getFrameStatistics();
+    public FrameMetrics getFrameMetrics() {
+        return this.frameMetrics;
+    }
+
+    public void setFrameMetrics(FrameMetrics frameMetrics) {
+        if (frameMetrics == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "setFrameMetrics", "missingFrameMetrics"));
+        }
+
+        this.frameMetrics = frameMetrics;
     }
 
     public WorldWindowController getWorldWindowController() {
@@ -304,12 +319,17 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
     @Override
     public void onDrawFrame(GL10 unused) {
+        this.frameMetrics.beginRendering();
         // Setup the draw context according to the World Window's current state and draw the WorldWindow.
-        this.prepareToDrawFrame();
-        this.frameController.drawFrame(this.dc);
+        this.prepareToRenderFrame();
+        this.frameController.renderFrame(this.dc);
+        this.frameMetrics.endRendering();
 
+        this.frameMetrics.beginDrawing();
+        this.frameController.drawFrame(this.dc);
         // Release render resources evicted during the previous frame.
         this.renderResourceCache.releaseEvictedResources(this.dc);
+        this.frameMetrics.endDrawing();
 
         // Propagate render requests submitted during rendering to the WorldWindow. The draw context provides a layer of
         // indirection that insulates rendering code from establishing a dependency on a specific WorldWindow.
@@ -326,7 +346,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         return super.onTouchEvent(event) || this.gestureGroup.onTouchEvent(event);
     }
 
-    protected void prepareToDrawFrame() {
+    protected void prepareToRenderFrame() {
         this.dc.globe = this.globe;
         this.dc.layers.addAllLayers(this.layers);
         this.dc.verticalExaggeration = this.verticalExaggeration;

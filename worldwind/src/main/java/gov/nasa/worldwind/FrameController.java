@@ -9,7 +9,7 @@ import gov.nasa.worldwind.render.DrawContext;
 
 public interface FrameController {
 
-    FrameStatistics getFrameStatistics();
+    void renderFrame(DrawContext dc);
 
     void drawFrame(DrawContext dc);
 }

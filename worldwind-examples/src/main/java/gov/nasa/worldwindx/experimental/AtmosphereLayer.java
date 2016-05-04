@@ -191,9 +191,8 @@ public class AtmosphereLayer extends AbstractLayer {
 
             // Use the texture's transform matrix.
             if (textureBound) {
-                this.texCoordMatrix.setToIdentity();
-                texture.applyTexCoordTransform(this.texCoordMatrix);
-                terrain.applyTexCoordTransform(idx, this.fullSphereSector, this.texCoordMatrix);
+                this.texCoordMatrix.set(texture.getTexCoordTransform());
+                this.texCoordMatrix.multiplyByTileTransform(terrain.getTileSector(idx), this.fullSphereSector);
                 program.loadTexCoordMatrix(this.texCoordMatrix);
             }
 
