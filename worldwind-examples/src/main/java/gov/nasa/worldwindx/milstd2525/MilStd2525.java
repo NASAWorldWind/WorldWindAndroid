@@ -159,7 +159,6 @@ public class MilStd2525 {
         return PlacemarkAttributes.withImageAndLeaderLine(ImageSource.fromBitmap(imageInfo.getImage())).setImageOffset(imageOffset);
     }
 
-
     /**
      * Creates an MIL-STD-2525 symbol from the specified symbol code, modifiers and attributes.
      *
@@ -178,5 +177,4 @@ public class MilStd2525 {
             modifiers == null ? new SparseArray<String>() : modifiers,
             attributes == null ? new SparseArray<String>() : attributes);
     }
-
 }
