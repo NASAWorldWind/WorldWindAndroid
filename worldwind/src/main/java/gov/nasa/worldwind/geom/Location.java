@@ -439,14 +439,19 @@ public class Location {
         double latRadians = Math.toRadians(this.latitude);
         double lonRadians = Math.toRadians(this.longitude);
         double azimuthRadians = Math.toRadians(azimuthDegrees);
+        double cosLat = Math.cos(latRadians);
+        double sinLat = Math.sin(latRadians);
+        double cosAzimuth = Math.cos(azimuthRadians);
+        double sinAzimuth = Math.sin(azimuthRadians);
+        double sinDistance = Math.sin(distanceRadians);
+        double cosDistance = Math.cos(distanceRadians);
 
         // Taken from "Map Projections - A Working Manual", page 31, equation 5-5 and 5-6.
-        double endLatRadians = Math.asin(Math.sin(latRadians) * Math.cos(distanceRadians) +
-            Math.cos(latRadians) * Math.sin(distanceRadians) * Math.cos(azimuthRadians));
+        double endLatRadians = Math.asin(sinLat * cosDistance +
+            cosLat * sinDistance * cosAzimuth);
         double endLonRadians = lonRadians + Math.atan2(
-            Math.sin(distanceRadians) * Math.sin(azimuthRadians),
-            Math.cos(latRadians) * Math.cos(distanceRadians) -
-                Math.sin(latRadians) * Math.sin(distanceRadians) * Math.cos(azimuthRadians));
+            sinDistance * sinAzimuth,
+            cosLat * cosDistance - sinLat * sinDistance * cosAzimuth);
 
         if (Double.isNaN(endLatRadians) || Double.isNaN(endLonRadians)) {
             result.latitude = this.latitude;
