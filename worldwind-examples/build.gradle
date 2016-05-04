@@ -19,7 +19,7 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':worldwind')
     compile project(':mil-sym-android')
     testCompile 'junit:junit:4.12'
