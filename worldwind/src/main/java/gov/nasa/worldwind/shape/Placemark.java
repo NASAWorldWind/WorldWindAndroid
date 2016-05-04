@@ -563,7 +563,7 @@ public class Placemark extends AbstractRenderable {
             }
 
             // Enqueue the drawable placemark for processing on the OpenGL thread.
-            dc.offerDrawable(drawable, this.eyeDistance);
+            dc.offerDrawable(drawable, WorldWind.SHAPE_DRAWABLE, this.eyeDistance);
         } else {
             // The drawable will not be used; recycle it.
             drawable.recycle();

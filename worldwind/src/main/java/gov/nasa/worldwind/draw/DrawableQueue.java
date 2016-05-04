@@ -16,15 +16,17 @@ public class DrawableQueue {
 
     protected int position;
 
-    protected int mark;
-
     /**
-     * Sorts drawables by depth from front to back and then by insertion time.
+     * Sorts drawables by ascending group ID, then descending depth, then by ascending ordinal.
      */
-    protected Comparator<Entry> backToFrontComparator = new Comparator<Entry>() {
+    protected Comparator<Entry> sortComparator = new Comparator<Entry>() {
         @Override
         public int compare(Entry lhs, Entry rhs) {
-            if (lhs.depth > rhs.depth) { // lhs is farther than rhs; sort lhs before rhs
+            if (lhs.groupId < rhs.groupId) { // lhs group is first; sort lhs before rhs
+                return -1;
+            } else if (lhs.groupId > rhs.groupId) { // rhs group is first; sort rhs before lhs
+                return 1;
+            } else if (lhs.depth > rhs.depth) { // lhs is farther than rhs; sort lhs before rhs
                 return -1;
             } else if (lhs.depth < rhs.depth) {  // lhs is closer than rhs; sort rhs before lhs
                 return 1;
@@ -37,17 +39,7 @@ public class DrawableQueue {
     public DrawableQueue() {
     }
 
-    public void clear() {
-        for (int i = 0, len = this.size; i < len; i++) {
-            this.entries[i].recycle();
-        }
-
-        this.size = 0;
-        this.position = 0;
-        this.mark = 0;
-    }
-
-    public void offerDrawable(Drawable drawable, double depth) {
+    public void offerDrawable(Drawable drawable, int groupId, double depth) {
         if (drawable != null) {
             if (this.entries.length <= this.size) {
                 Entry[] newArray = new Entry[this.size + (this.size >> 1)];
@@ -59,46 +51,54 @@ public class DrawableQueue {
                 this.entries[this.size] = new Entry();
             }
 
-            this.entries[this.size].set(drawable, depth, this.size);
+            this.entries[this.size].set(drawable, groupId, depth, this.size);
             this.size++;
         }
     }
 
-    public Drawable nextDrawable() {
+    public Drawable peekDrawable() {
+        return (this.position < this.size) ? this.entries[this.position].drawable : null;
+    }
+
+    public Drawable pollDrawable() {
         return (this.position < this.size) ? this.entries[this.position++].drawable : null;
     }
 
-    public void rewind() {
+    public void rewindDrawables() {
         this.position = 0;
     }
 
-    public void mark() {
-        this.mark = this.position;
+    public void clearDrawables() {
+        for (int i = 0, len = this.size; i < len; i++) {
+            this.entries[i].recycle();
+        }
+
+        this.size = 0;
+        this.position = 0;
     }
 
-    public void reset() {
-        this.position = this.mark;
-    }
-
-    public void sortBackToFront() {
-        Arrays.sort(this.entries, 0, this.size, this.backToFrontComparator);
+    public void sortDrawables() {
+        Arrays.sort(this.entries, 0, this.size, this.sortComparator);
     }
 
     protected static class Entry {
 
         public Drawable drawable;
 
+        public int groupId;
+
         public double depth;
 
         public int ordinal;
 
-        public final void set(Drawable drawable, double depth, int ordinal) {
+        public void set(Drawable drawable, int groupId, double depth, int ordinal) {
             this.drawable = drawable;
+            this.groupId = groupId;
             this.depth = depth;
             this.ordinal = ordinal;
         }
 
-        public final void recycle() {
+        public void recycle() {
             this.drawable.recycle();
             this.drawable = null;
         }

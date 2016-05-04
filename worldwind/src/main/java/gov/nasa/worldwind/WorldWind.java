@@ -44,6 +44,41 @@ public class WorldWind {
     }
 
     /**
+     * {@link DrawableGroup} constant indicating drawables displayed before everything else. This group is typically
+     * used to display atmosphere and stars before all other drawables.
+     */
+    public static final int BACKGROUND_DRAWABLE = 0;
+
+    /**
+     * {@link DrawableGroup} constant indicating drawables displayed on the globe's surface. Surface drawables are
+     * displayed beneath shapes and screen drawables.
+     */
+    public static final int SURFACE_DRAWABLE = 1;
+
+    /**
+     * {@link DrawableGroup} constant indicating shape drawables, such as placemarks, polygons and polylines. Shape
+     * drawables are displayed on top of surface drawables, but beneath screen drawables.
+     */
+    public static final int SHAPE_DRAWABLE = 2;
+
+    /**
+     * {@link DrawableGroup} constant indicating drawables displayed in the plane of the screen. Screen drawables are
+     * displayed on top of everything else.
+     */
+    public static final int SCREEN_DRAWABLE = 3;
+
+    /**
+     * Drawable group provides a standard set of group IDs for organizing World Window drawing into four phases:
+     * background, surface, shape, and screen. Accepted values are {@link #BACKGROUND_DRAWABLE}, {@link
+     * #SURFACE_DRAWABLE}, {@link #SHAPE_DRAWABLE} and {@link #SCREEN_DRAWABLE}.
+     */
+    @IntDef({BACKGROUND_DRAWABLE, SURFACE_DRAWABLE, SHAPE_DRAWABLE, SCREEN_DRAWABLE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DrawableGroup {
+
+    }
+
+    /**
      * {@link GestureState} constant for the POSSIBLE gesture recognizer state. Gesture recognizers in this state are
      * idle when there is no input event to evaluate, or are evaluating input events to determine whether or not to
      * transition into another state.

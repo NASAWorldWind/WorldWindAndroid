@@ -332,24 +332,20 @@ public class DrawContext {
         return this.orderedRenderables.pollRenderable();
     }
 
-    public void offerDrawable(Drawable drawable, double depth) {
-        this.drawableQueue.offerDrawable(drawable, depth);
+    public void offerDrawable(Drawable drawable, int groupId, double depth) {
+        this.drawableQueue.offerDrawable(drawable, groupId, depth);
     }
 
-    public Drawable nextDrawable() {
-        return this.drawableQueue.nextDrawable();
+    public Drawable peekDrawable() {
+        return this.drawableQueue.peekDrawable();
     }
 
-    public void markDrawables() {
-        this.drawableQueue.mark();
-    }
-
-    public void resetDrawables() {
-        this.drawableQueue.reset();
+    public Drawable pollDrawable() {
+        return this.drawableQueue.pollDrawable();
     }
 
     public void sortDrawables() {
-        this.drawableQueue.sortBackToFront();
+        this.drawableQueue.sortDrawables();
     }
 
     public Object getUserProperty(Object key) {
@@ -393,7 +389,7 @@ public class DrawContext {
         this.renderRequested = false;
         this.pixelSizeFactor = 0;
         this.orderedRenderables.clearRenderables();
-        this.drawableQueue.clear();
+        this.drawableQueue.clearDrawables();
         this.userProperties.clear();
     }
 
