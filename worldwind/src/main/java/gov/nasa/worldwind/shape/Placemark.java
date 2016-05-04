@@ -637,6 +637,8 @@ public class Placemark extends AbstractRenderable {
 
             drawable.iconMvpMatrix.multiplyByScale(w * s, h * s, 1);
 
+            drawable.iconTexCoordMatrix.set(drawable.iconTexture.getTexCoordTransform());
+
         } else {
             double size = this.activeAttributes.imageScale * visibilityScale;
             Vec2 offset = this.activeAttributes.imageOffset.offsetForSize(size, size);

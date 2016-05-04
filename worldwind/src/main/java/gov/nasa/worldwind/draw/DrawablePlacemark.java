@@ -43,13 +43,13 @@ public class DrawablePlacemark implements Drawable {
 
     public Texture iconTexture = null;  // must be assigned if an image texture will be used
 
+    public Matrix3 iconTexCoordMatrix = new Matrix3();
+
     public Matrix4 iconMvpMatrix = new Matrix4();
 
     public Matrix4 leaderMvpMatrix = null; // must be assigned if a leader line will be drawn
 
     public float[] leaderVertexPoint = null; // must be assigned if a leader line will be drawn
-
-    protected Matrix3 texCoordMatrix = new Matrix3();
 
     protected boolean enableDepthTest = true;
 
@@ -111,10 +111,7 @@ public class DrawablePlacemark implements Drawable {
         if (this.iconTexture != null && this.iconTexture.bindTexture(dc)) {
             // Enable texturing if the icon texture successfully bound.
             this.program.enableTexture(true);
-            // Use the icon's tex coord matrix.
-            this.texCoordMatrix.setToIdentity();
-            this.iconTexture.applyTexCoordTransform(this.texCoordMatrix);
-            this.program.loadTexCoordMatrix(this.texCoordMatrix);
+            this.program.loadTexCoordMatrix(this.iconTexCoordMatrix);
         } else {
             // Disable texturing if the icon has no texture, or if the texture failed to bind.
             this.program.enableTexture(false);

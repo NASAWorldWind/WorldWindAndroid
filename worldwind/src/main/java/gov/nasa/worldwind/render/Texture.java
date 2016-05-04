@@ -33,6 +33,8 @@ public class Texture implements RenderResource {
 
     protected Bitmap imageBitmap;
 
+    protected Matrix3 texCoordTransform = new Matrix3();
+
     public Texture() {
     }
 
@@ -76,6 +78,11 @@ public class Texture implements RenderResource {
         this.imageFormat = GLUtils.getInternalFormat(bitmap);
         this.imageByteCount = bitmap.getByteCount();
         this.imageBitmap = bitmap;
+        this.texCoordTransform.setToVerticalFlip();
+    }
+
+    public Matrix3 getTexCoordTransform() {
+        return this.texCoordTransform;
     }
 
     @Override
@@ -92,19 +99,6 @@ public class Texture implements RenderResource {
 
         if (this.textureId != 0) {
             dc.bindTexture(this.textureId);
-        }
-
-        return this.textureId != 0;
-    }
-
-    public boolean applyTexCoordTransform(Matrix3 result) {
-        if (result == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Texture", "applyTexCoordTransform", "missingResult"));
-        }
-
-        if (this.textureId != 0) {
-            result.multiplyByVerticalFlip();
         }
 
         return this.textureId != 0;
