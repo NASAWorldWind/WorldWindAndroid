@@ -86,7 +86,8 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks_milstd2525_stress_test));
-        setAboutBoxText("Demonstrates a LOT of MILSTD2525 Placemarks.");
+        setAboutBoxText("Demonstrates a LOT of MILSTD2525 Placemarks.\n"
+            + "There are " + NUM_AIRPORTS + " airports and " + NUM_AIRCRAFT + " aircraft symbols in this example.");
 
         // Add a Renderable layer for the placemarks before the Atmosphere layer
         this.airportLayer = new RenderableLayer("Airports");
@@ -404,6 +405,9 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
                 type = "--";
         }
 
+        // Adding the country code the the symboel creates more and larger images, but it adds a useful bit
+        // of context to the aircraft as they fly across the globe.  Replace country with "**" to reduce the
+        // the memory footprint of the image textures.
         String symbolCode = "S" + identity + "AP" + type + "----**" + country + "*";
 
         return symbolCode;
