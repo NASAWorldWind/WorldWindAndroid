@@ -134,10 +134,70 @@ public class Placemark extends AbstractRenderable {
 
     private Vec3 groundPoint = null; // will be allocated if a leader line must be drawn
 
+    /**
+     * This factory method creates a Placemark and an associated PlacemarkAttributes bundle that draws a simple square
+     * centered on the supplied position with the given size and color.
+     *
+     * @param position  The geographic position where the placemark is drawn.
+     * @param color     The color of the placemark.
+     * @param pixelSize The width and height of the placemark.
+     *
+     * @return A new Placemark with a PlacemarkAttributes bundle.
+     */
+    public static Placemark simple(Position position, Color color, int pixelSize) {
+        return new Placemark(position, PlacemarkAttributes.defaults().setImageColor(color).setImageScale(pixelSize));
+    }
+
+
+    /**
+     * This factory method creates a Placemark and an associated PlacemarkAttributes bundle that draws the given image
+     * centered on the supplied position.
+     *
+     * @param position    The geographic position with the placemark is drawn.
+     * @param imageSource The object containing the image that is drawn.
+     *
+     * @return A new Placemark with a PlacemarkAttributes bundle.
+     */
+    public static Placemark simpleImage(Position position, ImageSource imageSource) {
+        return new Placemark(position, PlacemarkAttributes.withImage(imageSource));
+    }
+
+    /**
+     * This factory method creates a Placemark and an associated PlacemarkAttributes bundle (with TextAttributes) that
+     * draws the given image centered on the supplied position with a nearby label.
+     *
+     * @param position    The geographic position with the placemark is drawn.
+     * @param imageSource The object containing the image that is drawn.
+     * @param label       The text that is drawn near the image. This parameter becomes the placemark's displayName
+     *                    property.
+     *
+     * @return A new Placemark with a PlacemarkAttributes bundle containing TextAttributes.
+     */
+    public static Placemark simpleImageAndLabel(Position position, ImageSource imageSource, String label) {
+        return new Placemark(position, PlacemarkAttributes.withImageAndLabel(imageSource), label);
+    }
+
+
+    /**
+     * Constructs a Placemark that draws its representation at the supplied position using the given PlacemarkAttributes
+     * bundle. The displayName and label properties are empty.
+     *
+     * @param position   The geographic position with the placemark is drawn.
+     * @param attributes The attributes bundle reference that defines how the placemark is drawn.
+     */
     public Placemark(Position position, PlacemarkAttributes attributes) {
         this(position, attributes, null, null, false);
     }
 
+    /**
+     * Constructs a Placemark with a label that draws its representation at the supplied position using the given
+     * PlacemarkAttributes bundle. The displayName property is set to the supplied label string, which is drawn
+     * according to the (optional) TextAttributes within the PlacemarkAttributes.
+     *
+     * @param position   The geographic position with the placemark is drawn.
+     * @param attributes The attributes bundle reference that defines how the placemark and label are drawn.
+     * @param label      The text assigned to the displayName property that is optionally drawn near the image.
+     */
     public Placemark(Position position, PlacemarkAttributes attributes, String label) {
         this(position, attributes, label, null, false);
     }
@@ -156,20 +216,15 @@ public class Placemark extends AbstractRenderable {
      * @param eyeDistanceScaling Indicates whether the size of this placemark scales with eye distance. See
      *                           [eyeDistanceScalingThreshold]{@link Placemark#eyeDistanceScalingThreshold} and
      *                           [eyeDistanceScalingLabelThreshold]{@link Placemark#eyeDistanceScalingLabelThreshold}.
-     *
-     * @throws IllegalArgumentException If the specified position is null orderedRenderable undefined.
      */
     public Placemark(Position position, PlacemarkAttributes attributes, String displayName, String label, boolean eyeDistanceScaling) {
-        if (position == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Placemark", "constructor", "missingPosition"));
-        }
-
-        this.setPosition(position);
-        this.setAltitudeMode(WorldWind.ABSOLUTE);
-        this.setDisplayName(displayName);
-        this.setLabel(label);
-        this.attributes = attributes != null ? attributes : new PlacemarkAttributes();
+        setPosition(position);
+        setAltitudeMode(WorldWind.ABSOLUTE);
+        setDisplayName(displayName);
+        setLabel(label);
+        this.attributes = attributes;
+        this.highlightAttributes = null;
+        this.highlighted = false;
         this.eyeDistanceScaling = eyeDistanceScaling;
         this.eyeDistanceScalingThreshold = DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD;
         this.eyeDistanceScalingLabelThreshold = 1.5 * this.eyeDistanceScalingThreshold;
@@ -178,57 +233,31 @@ public class Placemark extends AbstractRenderable {
     }
 
     /**
-     * Factory method
+     * Gets this placemark's geographic position.
      *
-     * @param position
-     * @param color
-     * @param pixelSize
-     *
-     * @return
-     */
-    public static Placemark simple(Position position, Color color, int pixelSize) {
-        return new Placemark(position, PlacemarkAttributes.defaults().setImageColor(color).setImageScale(pixelSize));
-    }
-
-    /**
-     * Factory method
-     *
-     * @param position
-     * @param imageSource
-     *
-     * @return
-     */
-    public static Placemark simpleImage(Position position, ImageSource imageSource) {
-        return new Placemark(position, PlacemarkAttributes.withImage(imageSource));
-    }
-
-    /**
-     * Factory method
-     *
-     * @param position
-     * @param imageSource
-     * @param label
-     *
-     * @return
-     */
-    public static Placemark simpleImageAndLabel(Position position, ImageSource imageSource, String label) {
-        return new Placemark(position, PlacemarkAttributes.withImageAndLabel(imageSource), label);
-    }
-
-    /**
-     * Returns this placemark's geographic position.
+     * @return The geographic position where this placemark is drawn.
      */
     public Position getPosition() {
         return position;
     }
 
     /**
-     * Sets this placemark's geographic position.
+     * Sets this placemark's geographic position to the values in the supplied position.
      *
-     * @param position The new position for the placemark.
+     * @param position The new position where this placemark will be drawn.
+     *
+     * @return This placemark.
      */
     public Placemark setPosition(Position position) {
-        this.position = position;
+        if (position == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Placemark", "setPosition", "missingPosition"));
+        }
+        if (this.position == null) {
+            this.position = new Position(position);
+        } else {
+            this.position.set(position);
+        }
         return this;
     }
 
@@ -262,7 +291,12 @@ public class Placemark extends AbstractRenderable {
     }
 
     /**
-     * The placemark's attributes. If null and this placemark is not highlighted, this placemark is not drawn.
+     * Sets the placemark's attributes to the supplied attributes bundle. If null and this placemark is not highlighted,
+     * this placemark is not drawn.
+     *
+     * @param attributes The attributes bundle used to be used by this placemark.
+     *
+     * @return This placemark.
      */
     public Placemark setAttributes(PlacemarkAttributes attributes) {
         this.attributes = attributes;
@@ -270,8 +304,8 @@ public class Placemark extends AbstractRenderable {
     }
 
     /**
-     * The attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is true,
-     * this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
+     * Gets the attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is
+     * true, this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
      */
     public PlacemarkAttributes getHighlightAttributes() {
         return highlightAttributes;
@@ -280,6 +314,10 @@ public class Placemark extends AbstractRenderable {
     /**
      * The attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is true,
      * this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
+     *
+     * @param highlightAttributes The attributes bundle used to be used by this placemark when highlighted.
+     *
+     * @return This placemark.
      */
     public Placemark setHighlightAttributes(PlacemarkAttributes highlightAttributes) {
         this.highlightAttributes = highlightAttributes;

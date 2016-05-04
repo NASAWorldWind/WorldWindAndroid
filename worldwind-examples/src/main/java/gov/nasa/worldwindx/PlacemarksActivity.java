@@ -23,14 +23,6 @@ import gov.nasa.worldwind.shape.PlacemarkAttributes;
 
 public class PlacemarksActivity extends BasicGlobeActivity {
 
-    protected Handler animationHandler = new Handler();
-
-    protected boolean pauseHandler;
-
-    static final int DELAY_TIME = 100;
-
-    static final int NUM_PLACEMARKS = 1000;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
