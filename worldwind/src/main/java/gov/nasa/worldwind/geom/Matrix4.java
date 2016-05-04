@@ -741,11 +741,33 @@ public class Matrix4 {
      */
     public Matrix4 multiplyByScale(double xScale, double yScale, double zScale) {
 
-        this.multiplyByMatrix(
-            xScale, 0, 0, 0,
-            0, yScale, 0, 0,
-            0, 0, zScale, 0,
-            0, 0, 0, 1);
+        // This is equivalent to the following operation, but is potentially much faster:
+        //
+        // this.multiplyByMatrix(
+        //     xScale, 0, 0, 0,
+        //     0, yScale, 0, 0,
+        //     0, 0, zScale, 0,
+        //     0, 0, 0, 1);
+        //
+        // This inline version eliminates unnecessary multiplication by 1 and 0 in the scale matrix's components,
+        // reducing the total number of primitive operations from 144 to 12.
+
+        double[] m = this.m;
+
+        m[0] *= xScale;
+        m[4] *= xScale;
+        m[8] *= xScale;
+        m[12] *= xScale;
+
+        m[1] *= yScale;
+        m[5] *= yScale;
+        m[9] *= yScale;
+        m[13] *= yScale;
+
+        m[2] *= zScale;
+        m[6] *= zScale;
+        m[10] *= zScale;
+        m[14] *= zScale;
 
         return this;
     }
