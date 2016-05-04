@@ -72,7 +72,6 @@ public class DrawablePlacemark implements Drawable {
      */
     @Override
     public void draw(DrawContext dc) {
-
         if (this.program == null) {
             return; // no program assigned
         }
@@ -83,7 +82,7 @@ public class DrawablePlacemark implements Drawable {
 
         // this.program.loadOpacity(gl, dc.pickingMode ? 1 : this.layer.opacity); // TODO: opacity
 
-        // Initialize vars used to track GL states that may need to be restored
+        // Initialize vars used to track GL states that may need to be restored.
         this.enableDepthTest = true; // default
 
         // Draw the placemark's leader line first so that the icon and label display on top.

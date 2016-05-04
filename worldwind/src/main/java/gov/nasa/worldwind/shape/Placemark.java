@@ -507,8 +507,7 @@ public class Placemark extends AbstractRenderable {
         // If a leader line is desired for placemarks off of the terrain surface, prepare the drawable leader properties.
         drawable.drawLeader = this.mustDrawLeaderLine(dc);
         if (drawable.drawLeader) {
-            // If a leader line is desired for placemarks off of the terrain surface, we'll need a ground model point
-            // for one end of the leader line. The placePoint is the other end.
+            // Compute the ground model point for one end of the leader line. The placePoint is the other end.
             // TODO: use dc.surfacePointForMode
             this.groundPoint = dc.globe.geographicToCartesian(this.position.latitude, this.position.longitude, 0,
                 (this.groundPoint != null) ? this.groundPoint : new Vec3());
@@ -524,9 +523,7 @@ public class Placemark extends AbstractRenderable {
                 drawable.program = (BasicShaderProgram) dc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(dc.resources));
             }
 
-            // Rendering is deferred for ordered renderables -- these renderables will be sorted by eye distance and
-            // rendered after the layers are rendered. Simply add this placemark to the collection of ordered
-            // renderables for rendering later via Placemark.renderOrdered().
+            // Enqueue the drawable placemark for processing on the OpenGL thread.
             dc.offerDrawable(drawable, this.eyeDistance);
         } else {
             // The drawable will not be used; recycle it.
@@ -656,7 +653,10 @@ public class Placemark extends AbstractRenderable {
         drawable.leaderMvpMatrix.set(dc.modelviewProjection);
         drawable.leaderMvpMatrix.multiplyByTranslation(this.groundPoint.x, this.groundPoint.y, this.groundPoint.z);
 
-        // Compute the leader's vertex point attribute array, indices 0-2 are 0.0 to indicate the ground point.
+        // Compute the leader's vertex point coordinates, relative to the placemark's ground point.
+        drawable.leaderVertexPoint[0] = 0; // groundPoint.x - groundPoint.x
+        drawable.leaderVertexPoint[1] = 0; // groundPoint.y - groundPoint.y
+        drawable.leaderVertexPoint[2] = 0; // groundPoint.z - groundPoint.z
         drawable.leaderVertexPoint[3] = (float) (this.placePoint.x - this.groundPoint.x);
         drawable.leaderVertexPoint[4] = (float) (this.placePoint.y - this.groundPoint.y);
         drawable.leaderVertexPoint[5] = (float) (this.placePoint.z - this.groundPoint.z);
