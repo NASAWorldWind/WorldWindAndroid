@@ -68,10 +68,9 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
                         modifiers.put(ModifiersUnits.Q_DIRECTION_OF_MOVEMENT, "235");
                         Placemark drone = new Placemark(
                             Position.fromDegrees(32.4520, 63.44553, 3000),
-                            MilStd2525.attributesFromSymbolCode("SFAPMFQM--GIUSA", modifiers));
+                            MilStd2525.getPlacemarkAttributes("SFAPMFQM--GIUSA", modifiers, null));
 
                         symbolLayer.addRenderable(drone);
-                        //symbolLayer.addRenderable(Placemark.simple(drone.getPosition(), new Color(1, 1, 1, 1), 4)); // for placement verification
 
                         // "MIL-STD-2525 Hostile Self-Propelled Rocket Launchers"
                         modifiers.clear();
@@ -79,10 +78,9 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
                         modifiers.put(ModifiersUnits.AJ_SPEED_LEADER, "0.1");
                         Placemark launcher = new Placemark(
                             Position.fromDegrees(32.4014, 63.3894, 0),
-                            MilStd2525.attributesFromSymbolCode("SHGXUCFRMS----G", modifiers));
+                            MilStd2525.getPlacemarkAttributes("SHGXUCFRMS----G", modifiers, null));
 
                         symbolLayer.addRenderable(launcher);
-                        //symbolLayer.addRenderable(Placemark.simple(launcher.getPosition(), new Color(1, 1, 1, 1), 4)); // for placement verification
 
                         // "MIL-STD-2525 Friendly Heavy Machine Gun"
                         modifiers.clear();
@@ -93,10 +91,9 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
                         modifiers.put(ModifiersUnits.W_DTG_1, "30140000ZSEP97");    // Date/Time Group
                         Placemark machineGun = new Placemark(
                             Position.fromDegrees(32.3902, 63.4161, 0),
-                            MilStd2525.attributesFromSymbolCode("SFGPEWRH--MTUSG", modifiers));
+                            MilStd2525.getPlacemarkAttributes("SFGPEWRH--MTUSG", modifiers, null));
 
                         symbolLayer.addRenderable(machineGun);
-                        //symbolLayer.addRenderable(Placemark.simple(machineGun.getPosition(), new Color(1, 1, 1, 1), 4)); // for placement verification
 
                         // Signal a change in the WorldWind scene; requestRender() is callable from any thread.
                         getWorldWindow().requestRender();

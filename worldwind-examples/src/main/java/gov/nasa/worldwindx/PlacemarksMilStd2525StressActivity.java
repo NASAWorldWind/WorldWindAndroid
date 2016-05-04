@@ -62,8 +62,6 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
     protected RenderableLayer aircraftLayer = null;
 
-    protected HashMap<String, PlacemarkAttributes> symbolMap = new HashMap<>();
-
 
     protected static final List<String> friends = Arrays.asList(
         // NATO countries
@@ -86,7 +84,6 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        System.out.println(this.getClass().getSimpleName() + ": onCreate() called");
         super.onCreate(savedInstanceState);
         setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks_milstd2525_stress_test));
         setAboutBoxText("Demonstrates a LOT of MILSTD2525 Placemarks.");
@@ -120,7 +117,6 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
     @Override
     protected void onPause() {
-        System.out.println(this.getClass().getSimpleName() + ": onPause() called");
         super.onPause();
         // Stop running the animation when this activity is paused.
         this.pauseAnimation = true;
@@ -128,7 +124,6 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
     @Override
     protected void onResume() {
-        System.out.println(this.getClass().getSimpleName() + ": onResume() called");
         super.onResume();
         // Resume the Handler that animates the aircraft
         if (animationStared) {
@@ -136,16 +131,14 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
             this.animationHandler.postDelayed(this, DELAY_TIME);
         }
     }
-    @Override
-    protected void onStop() {
-        System.out.println(this.getClass().getSimpleName() + ": onStop() called");
-        super.onStop();
 
-    }
-    @Override
-    protected void onDestroy() {
-        System.out.println(this.getClass().getSimpleName() + ": onDestroy() called");
-        super.onDestroy();
+    /**
+     * Initiates the animation on this
+     */
+    protected void startAnimation() {
+        this.animationStared = true;
+        this.pauseAnimation = false;
+        this.run();
     }
 
     @Override
@@ -155,16 +148,20 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         this.getWorldWindow().queueEvent(new Runnable() {
             @Override
             public void run() {
+
+                // This animation runs for a fixed number of frames. During the animation, aircraft symbols
+                // transit from a departure airport to an arrival airport.
                 if (++frameCount <= ANIMATION_FRAMES) {
                     Iterator<Renderable> i = aircraftLayer.iterator();
-                    while (i.hasNext()) {
-                        Renderable r = i.next();
+                    for (Renderable r : aircraftLayer) {
                         if (r instanceof Placemark) {
+
+                            // Move the aircraft placemark along its great circle route flight path.
                             Placemark placemark = (Placemark) r;
                             Position origin = (Position) placemark.getUserProperty("origin");
                             Position destination = (Position) placemark.getUserProperty("destination");
 
-                            // Compute the new coordinates along the great circle route and update the position in place.
+                            // Compute the new coordinates on flight path and update the position property in-place.
                             origin.interpolateAlongPath(
                                 destination, WorldWind.GREAT_CIRCLE, (double) frameCount / ANIMATION_FRAMES,
                                 placemark.getPosition());
@@ -172,13 +169,15 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
                     }
                     // Redraw the World Window to display the above changes.
                     getWorldWindow().requestRender();
+
                 } else {
-                    // Finished with the animation.
+                    // The aircraft a arrived at their destinations; pause the animation and generate frame statistics
+                    // TODO: Generate frame statistics.
                     pauseAnimation = true;
                 }
 
-                if (!pauseAnimation) { // stop running when this activity is paused; the Handler is resumed in onResume
-                    // Re-execute the animation event after the prescribed delay time
+                // Re-execute the animation event after the prescribed delay
+                if (!pauseAnimation) {
                     animationHandler.postDelayed(this, DELAY_TIME);
                 }
             }
@@ -186,12 +185,11 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
     }
 
-    protected void startAnimation() {
-        this.animationStared = true;
-        this.pauseAnimation = false;
-        this.run();
-    }
-
+    /**
+     * Loads and returns the the world airports.
+     *
+     * @return A collection of Airport plain-old-data structures.
+     */
     protected ArrayList<Airport> loadAirportDatabase() {
 
         ArrayList<Airport> airports = new ArrayList<>(NUM_AIRPORTS);
@@ -229,6 +227,9 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         return airports;
     }
 
+    /**
+     * An simple POD (plain old data) structure representing an airport.
+     */
     protected static class Airport {
 
         static final String MILITARY = "8"; //"Military" USE code
@@ -265,6 +266,9 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         }
     }
 
+    /**
+     * This Runnable creates the airport placemarks.  An instance of this class should be run on the GL Thread.
+     */
     protected class CreateAirportPlacemarks implements Runnable {
 
         private final ArrayList<Airport> airports;
@@ -275,40 +279,41 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
         @Override
         public void run() {
-            SparseArray<String> modifiers = new SparseArray<String>();
-            SparseArray<String> civilianColorAttributes = new SparseArray<String>();
+            SparseArray<String> unitModifiers = new SparseArray<>();
+            SparseArray<String> milStdAttributes = new SparseArray<>();
+            SparseArray<String> civilianColorAttributes = new SparseArray<>();
             civilianColorAttributes.put(MilStdAttributes.FillColor, SymbolUtilities.colorToHexString(Color.magenta, false));
 
-            PlacemarkAttributes friendAttributes = MilStd2525.attributesFromSymbolCode("SFGPIBA---H****", modifiers);
-            PlacemarkAttributes hostileAttributes = MilStd2525.attributesFromSymbolCode("SHGPIBA---H****", modifiers);
-            PlacemarkAttributes neutralAttributes = MilStd2525.attributesFromSymbolCode("SNGPIBA---H****", modifiers);
-            PlacemarkAttributes unknownAttributes = MilStd2525.attributesFromSymbolCode("SUGPIBA---H****", modifiers);
-            PlacemarkAttributes civilianAttributes = MilStd2525.attributesFromSymbolCode("SFGPIBA---H****", modifiers, civilianColorAttributes);
+            PlacemarkAttributes friendAttributes = MilStd2525.getPlacemarkAttributes("SFGPIBA---H****", unitModifiers, milStdAttributes);
+            PlacemarkAttributes hostileAttributes = MilStd2525.getPlacemarkAttributes("SHGPIBA---H****", unitModifiers, milStdAttributes);
+            PlacemarkAttributes neutralAttributes = MilStd2525.getPlacemarkAttributes("SNGPIBA---H****", unitModifiers, milStdAttributes);
+            PlacemarkAttributes unknownAttributes = MilStd2525.getPlacemarkAttributes("SUGPIBA---H****", unitModifiers, milStdAttributes);
+            PlacemarkAttributes civilianAttributes = MilStd2525.getPlacemarkAttributes("SFGPIBA---H****", unitModifiers, civilianColorAttributes);
 
             for (Airport airport : airports) {
-                PlacemarkAttributes attributes;
+                PlacemarkAttributes placemarkAttributes;
                 if (friends.contains(airport.country)) {
                     switch (airport.use) {
                         case Airport.MILITARY:
                         case Airport.JOINT:
-                            attributes = friendAttributes;
+                            placemarkAttributes = friendAttributes;
                             break;
                         case Airport.CIVILIAN:
                         case Airport.OTHER:
-                            attributes = civilianAttributes;
+                            placemarkAttributes = civilianAttributes;
                             break;
                         default:
-                            attributes = unknownAttributes;
+                            placemarkAttributes = unknownAttributes;
                     }
                 } else if (neutrals.contains(airport.country)) {
-                    attributes = neutralAttributes;
+                    placemarkAttributes = neutralAttributes;
                 } else if (hostiles.contains(airport.country)) {
-                    attributes = hostileAttributes;
+                    placemarkAttributes = hostileAttributes;
                 } else {
-                    attributes = unknownAttributes;
+                    placemarkAttributes = unknownAttributes;
                 }
 
-                Placemark placemark = new Placemark(airport.position, attributes);
+                Placemark placemark = new Placemark(airport.position, placemarkAttributes);
 
                 // Eye scaling is essential for a reasonable display with a high density of airports
                 placemark.setEyeDistanceScaling(true);
@@ -318,6 +323,10 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         }
     }
 
+    /**
+     * This Runnable creates the aircraft placemarks and initiates the animation.  An instance of this class should be
+     * run on the GL Thread.
+     */
     protected class CreateAircraftPlacemarks implements Runnable {
 
         private final ArrayList<Airport> airports;
@@ -337,7 +346,7 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
                 Airport arrival = airports.get(random.nextInt(NUM_AIRPORTS - 1));
 
                 String symbolCode = createAircraftSymbolCode(departure.country, departure.use);
-                PlacemarkAttributes attributes = getAttributesForSymbol(symbolCode);
+                PlacemarkAttributes attributes = MilStd2525.getPlacemarkAttributes(symbolCode, null, null);
 
                 // Allocate the end points of the flight path.  The animation will move the aircraft
                 // along the great circle route between these two points.
@@ -358,7 +367,18 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         }
     }
 
-    protected String createAircraftSymbolCode(String country, String departure) {
+
+    /**
+     * Generates a SIDC (symbol identification coding scheme) for an aircraft originating the given county and departure
+     * airport use type.
+     *
+     * @param country    A country code as defined in the airports database.
+     * @param airportUse The use code for the departure airport.
+     *
+     * @return A 15-character alphanumeric identifier.
+     */
+    protected String createAircraftSymbolCode(String country, String airportUse) {
+
         String identity;
         if (friends.contains(country)) {
             identity = "F";
@@ -369,31 +389,24 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         } else {
             identity = "U";
         }
+
         String type;
-        switch (departure) {
+        switch (airportUse) {
             case Airport.MILITARY:
             case Airport.JOINT:
-                type = "MF";
+                type = "MF";    // Military fixed wing
                 break;
             case Airport.CIVILIAN:
             case Airport.OTHER:
-                type = "CF";
+                type = "CF";    // Civilian fixed wing
                 break;
             default:
                 type = "--";
         }
+
         String symbolCode = "S" + identity + "AP" + type + "----**" + country + "*";
 
         return symbolCode;
     }
 
-    protected PlacemarkAttributes getAttributesForSymbol(String symbolCode) {
-        PlacemarkAttributes attributes = this.symbolMap.get(symbolCode);
-        if (attributes == null) {
-            SparseArray<String> modifiers = new SparseArray<String>();
-            attributes = MilStd2525.attributesFromSymbolCode(symbolCode, modifiers);
-            this.symbolMap.put(symbolCode, attributes);
-        }
-        return attributes;
-    }
 }
