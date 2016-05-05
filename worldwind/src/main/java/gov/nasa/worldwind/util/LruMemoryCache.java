@@ -29,8 +29,8 @@ public class LruMemoryCache<K, V> {
 
     public LruMemoryCache(int capacity) {
         if (capacity < 1) {
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "LruMemoryCache", "constructor",
-                "The specified capacity is less than 1"));
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LruMemoryCache", "constructor", "invalidCapacity"));
         }
 
         this.capacity = capacity;
@@ -39,8 +39,8 @@ public class LruMemoryCache<K, V> {
 
     public LruMemoryCache(int capacity, int lowWater) {
         if (capacity < 1) {
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "LruMemoryCache", "constructor",
-                "The specified capacity is less than 1"));
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LruMemoryCache", "constructor", "invalidCapacity"));
         }
 
         if (lowWater >= capacity || lowWater < 0) {
