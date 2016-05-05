@@ -9,7 +9,7 @@ import gov.nasa.worldwind.render.DrawContext;
 
 public interface Drawable {
 
-    void draw(DrawContext dc);
-
     void recycle();
+
+    void draw(DrawContext dc);
 }

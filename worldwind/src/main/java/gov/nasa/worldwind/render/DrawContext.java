@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableQueue;
 import gov.nasa.worldwind.geom.Frustum;
@@ -318,8 +319,16 @@ public class DrawContext {
         return this.renderResourceCache.retrieveTexture(imageSource);
     }
 
-    public void offerDrawable(Drawable drawable, int groupId, double depth) {
-        this.drawableQueue.offerDrawable(drawable, groupId, depth);
+    public void offerDrawable(Drawable drawable, int groupId, double order) {
+        this.drawableQueue.offerDrawable(drawable, groupId, order);
+    }
+
+    public void offerSurfaceDrawable(Drawable drawable, double zOrder) {
+        this.drawableQueue.offerDrawable(drawable, WorldWind.SURFACE_DRAWABLE, zOrder);
+    }
+
+    public void offerShapeDrawable(Drawable drawable, double eyeDistance) {
+        this.drawableQueue.offerDrawable(drawable, WorldWind.SHAPE_DRAWABLE, -eyeDistance); // order by descending eye distance
     }
 
     public Drawable peekDrawable() {

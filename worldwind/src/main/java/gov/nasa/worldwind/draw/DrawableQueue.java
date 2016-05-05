@@ -17,20 +17,20 @@ public class DrawableQueue {
     protected int position;
 
     /**
-     * Sorts drawables by ascending group ID, then descending depth, then by ascending ordinal.
+     * Sorts drawables by ascending group ID, then ascending order, then by ascending ordinal.
      */
     protected Comparator<Entry> sortComparator = new Comparator<Entry>() {
         @Override
         public int compare(Entry lhs, Entry rhs) {
-            if (lhs.groupId < rhs.groupId) { // lhs group is first; sort lhs before rhs
+            if (lhs.groupId < rhs.groupId) { // sort by ascending group ID
                 return -1;
-            } else if (lhs.groupId > rhs.groupId) { // rhs group is first; sort rhs before lhs
+            } else if (lhs.groupId > rhs.groupId) {
                 return 1;
-            } else if (lhs.depth > rhs.depth) { // lhs is farther than rhs; sort lhs before rhs
+            } else if (lhs.order < rhs.order) { // sort by ascending order
                 return -1;
-            } else if (lhs.depth < rhs.depth) {  // lhs is closer than rhs; sort rhs before lhs
+            } else if (lhs.order > rhs.order) {
                 return 1;
-            } else { // lhs and rhs have the same depth; sort by insertion order
+            } else { // sort by ascending ordinal
                 return lhs.ordinal - rhs.ordinal;
             }
         }
@@ -41,10 +41,11 @@ public class DrawableQueue {
 
     public void offerDrawable(Drawable drawable, int groupId, double depth) {
         if (drawable != null) {
-            if (this.entries.length <= this.size) {
-                Entry[] newArray = new Entry[this.size + (this.size >> 1)];
-                System.arraycopy(this.entries, 0, newArray, 0, this.size);
-                this.entries = newArray;
+            int capacity = this.entries.length;
+            if (capacity == this.size) {
+                Entry[] newEntries = new Entry[capacity + (capacity >> 1)];
+                System.arraycopy(this.entries, 0, newEntries, 0, capacity);
+                this.entries = newEntries;
             }
 
             if (this.entries[this.size] == null) {
@@ -87,14 +88,14 @@ public class DrawableQueue {
 
         public int groupId;
 
-        public double depth;
+        public double order;
 
         public int ordinal;
 
-        public void set(Drawable drawable, int groupId, double depth, int ordinal) {
+        public void set(Drawable drawable, int groupId, double order, int ordinal) {
             this.drawable = drawable;
             this.groupId = groupId;
-            this.depth = depth;
+            this.order = order;
             this.ordinal = ordinal;
         }
 
