@@ -79,8 +79,6 @@ public class DrawContext {
 
     protected double pixelSizeFactor;
 
-    protected OrderedRenderableQueue orderedRenderables = new OrderedRenderableQueue(1000);
-
     protected DrawableQueue drawableQueue = new DrawableQueue();
 
     protected Map<Object, Object> userProperties = new HashMap<>();
@@ -320,18 +318,6 @@ public class DrawContext {
         return this.renderResourceCache.retrieveTexture(imageSource);
     }
 
-    public void offerOrderedRenderable(OrderedRenderable renderable, double eyeDistance) {
-        this.orderedRenderables.offerRenderable(renderable, eyeDistance);
-    }
-
-    public OrderedRenderable peekOrderedRenderble() {
-        return this.orderedRenderables.peekRenderable();
-    }
-
-    public OrderedRenderable pollOrderedRenderable() {
-        return this.orderedRenderables.pollRenderable();
-    }
-
     public void offerDrawable(Drawable drawable, int groupId, double depth) {
         this.drawableQueue.offerDrawable(drawable, groupId, depth);
     }
@@ -388,7 +374,6 @@ public class DrawContext {
         this.resources = null;
         this.renderRequested = false;
         this.pixelSizeFactor = 0;
-        this.orderedRenderables.clearRenderables();
         this.drawableQueue.clearDrawables();
         this.userProperties.clear();
     }
