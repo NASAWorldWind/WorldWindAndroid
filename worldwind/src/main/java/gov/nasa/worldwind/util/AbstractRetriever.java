@@ -5,8 +5,6 @@
 
 package gov.nasa.worldwind.util;
 
-import android.support.v4.util.Pools;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
@@ -26,7 +24,7 @@ public abstract class AbstractRetriever<K, V> implements Retriever<K, V> {
     public AbstractRetriever(int maxSimultaneousRetrievals) {
         this.maxAsyncTasks = maxSimultaneousRetrievals;
         this.asyncTaskSet = new HashSet<>();
-        this.asyncTaskPool = new Pools.SimplePool<>(maxSimultaneousRetrievals);
+        this.asyncTaskPool = Pools.newPool(maxSimultaneousRetrievals);
     }
 
     @Override
