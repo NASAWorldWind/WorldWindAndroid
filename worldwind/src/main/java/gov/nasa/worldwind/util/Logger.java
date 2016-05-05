@@ -29,6 +29,7 @@ public class Logger {
         messageTable.put("errorReadingProgramSource", "Error reading program sources");
         messageTable.put("invalidBitmap", "The bitmap is null or recycled");
         messageTable.put("invalidCache", "The cache is null");
+        messageTable.put("invalidCapacity", "The capacity is less than 1");
         messageTable.put("invalidClass", "The class is null or cannot be found");
         messageTable.put("invalidClipDistance", "The clip distance is invalid");
         messageTable.put("invalidFieldOfView", "The field of view is invalid");
@@ -46,6 +47,7 @@ public class Logger {
         messageTable.put("missingBuffer", "The buffer is null or insufficient length");
         messageTable.put("missingCallback", "The callback is null");
         messageTable.put("missingCamera", "The camera is null");
+        messageTable.put("missingColor", "The color is null");
         messageTable.put("missingConfig", "The configuration is null");
         messageTable.put("missingCoordinateSystem", "The coordinate system is null");
         messageTable.put("missingFormat", "The format is null");
