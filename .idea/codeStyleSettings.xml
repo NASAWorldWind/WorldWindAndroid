@@ -90,6 +90,31 @@
               <section>
                 <rule>
                   <match>
+                    <ENUM>true</ENUM>
+                  </match>
+                </rule>
+              </section>
+              <section>
+                <rule>
+                  <match>
+                    <INTERFACE>true</INTERFACE>
+                  </match>
+                </rule>
+              </section>
+              <section>
+                <rule>
+                  <match>
+                    <AND>
+                      <CLASS>true</CLASS>
+                      <PUBLIC>true</PUBLIC>
+                      <STATIC>true</STATIC>
+                    </AND>
+                  </match>
+                </rule>
+              </section>
+              <section>
+                <rule>
+                  <match>
                     <AND>
                       <FIELD>true</FIELD>
                       <FINAL>true</FINAL>
@@ -342,20 +367,6 @@
                       <PRIVATE>true</PRIVATE>
                       <STATIC>true</STATIC>
                     </AND>
-                  </match>
-                </rule>
-              </section>
-              <section>
-                <rule>
-                  <match>
-                    <ENUM>true</ENUM>
-                  </match>
-                </rule>
-              </section>
-              <section>
-                <rule>
-                  <match>
-                    <INTERFACE>true</INTERFACE>
                   </match>
                 </rule>
               </section>
