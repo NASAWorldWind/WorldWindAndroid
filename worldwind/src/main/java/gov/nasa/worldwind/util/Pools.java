@@ -49,9 +49,9 @@ public class Pools {
 
     protected static class BasicPool<T> implements Pool<T> {
 
-        protected Object[] pool;
+        protected Object[] entries;
 
-        protected int remaining;
+        protected int size;
 
         public BasicPool(int initialCapacity) {
             if (initialCapacity < 1) {
@@ -59,15 +59,15 @@ public class Pools {
                     Logger.logMessage(Logger.ERROR, "Pools.BasicPool", "constructor", "invalidCapacity"));
             }
 
-            this.pool = new Object[initialCapacity];
+            this.entries = new Object[initialCapacity];
         }
 
         @SuppressWarnings("unchecked")
         public T acquire() {
-            if (this.remaining > 0) {
-                int last = --this.remaining;
-                T instance = (T) this.pool[last];
-                this.pool[last] = null;
+            if (this.size > 0) {
+                int last = --this.size;
+                T instance = (T) this.entries[last];
+                this.entries[last] = null;
                 return instance;
             }
 
@@ -77,14 +77,14 @@ public class Pools {
         public void release(T instance) {
             // TODO reduce the pool size when excess entries may not be needed
             if (instance != null) {
-                int capacity = this.pool.length;
-                if (capacity <= this.remaining) {
-                    Object[] newPool = new Object[capacity + (capacity >> 1)];
-                    System.arraycopy(this.pool, 0, newPool, 0, capacity);
-                    this.pool = newPool;
+                int capacity = this.entries.length;
+                if (capacity == this.size) { // increase the pool size by 50%
+                    Object[] newEntries = new Object[capacity + (capacity >> 1)];
+                    System.arraycopy(this.entries, 0, newEntries, 0, capacity);
+                    this.entries = newEntries;
                 }
 
-                this.pool[this.remaining++] = instance;
+                this.entries[this.size++] = instance;
             }
         }
     }
