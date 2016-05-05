@@ -29,22 +29,12 @@ public class Pools {
         void release(T instance);
     }
 
-    public static <T> Pool<T> newPool(int initialCapacity) {
-        if (initialCapacity < 1) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Pools", "newBasicPool", "invalidCapacity"));
-        }
-
-        return new BasicPool<>(initialCapacity);
+    public static <T> Pool<T> newPool() {
+        return new BasicPool<>();
     }
 
-    public static <T> Pool<T> newSynchronizedPool(int initialCapacity) {
-        if (initialCapacity < 1) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Pools", "newSynchronizedPool", "invalidCapacity"));
-        }
-
-        return new SynchronizedPool<>(initialCapacity);
+    public static <T> Pool<T> newSynchronizedPool() {
+        return new SynchronizedPool<>();
     }
 
     protected static class BasicPool<T> implements Pool<T> {
@@ -53,13 +43,8 @@ public class Pools {
 
         protected int size;
 
-        public BasicPool(int initialCapacity) {
-            if (initialCapacity < 1) {
-                throw new IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Pools.BasicPool", "constructor", "invalidCapacity"));
-            }
-
-            this.entries = new Object[initialCapacity];
+        public BasicPool() {
+            this.entries = new Object[10]; // default capacity is 10
         }
 
         @SuppressWarnings("unchecked")
@@ -93,8 +78,7 @@ public class Pools {
 
         protected final Object lock = new Object();
 
-        public SynchronizedPool(int initialCapacity) {
-            super(initialCapacity);
+        public SynchronizedPool() {
         }
 
         @Override
