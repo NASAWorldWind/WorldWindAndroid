@@ -19,12 +19,12 @@ public abstract class AbstractRetriever<K, V> implements Retriever<K, V> {
 
     protected Set<K> asyncTaskSet;
 
-    protected Pools.Pool<AsyncTask<K, V>> asyncTaskPool;
+    protected Pool<AsyncTask<K, V>> asyncTaskPool;
 
     public AbstractRetriever(int maxSimultaneousRetrievals) {
         this.maxAsyncTasks = maxSimultaneousRetrievals;
         this.asyncTaskSet = new HashSet<>();
-        this.asyncTaskPool = Pools.newPool(maxSimultaneousRetrievals);
+        this.asyncTaskPool = new BasicPool<>();
     }
 
     @Override
