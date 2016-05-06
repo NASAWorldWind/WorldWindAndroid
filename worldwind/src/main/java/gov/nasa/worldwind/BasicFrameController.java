@@ -11,7 +11,7 @@ import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.globe.Tessellator;
-import gov.nasa.worldwind.layer.Layer;
+import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Logger;
 
@@ -26,7 +26,6 @@ public class BasicFrameController implements FrameController {
 
     @Override
     public void renderFrame(DrawContext dc) {
-        this.clearFrame(dc);
         this.createViewingState(dc);
         this.createTerrain(dc);
         this.renderLayers(dc);
@@ -68,14 +67,14 @@ public class BasicFrameController implements FrameController {
     }
 
     protected void renderLayers(DrawContext dc) {
-
-        for (Layer layer : dc.layers) {
-            dc.currentLayer = layer;
+        LayerList layers = dc.layers;
+        for (int idx = 0, len = layers.count(); idx < len; idx++) {
+            dc.currentLayer = layers.getLayer(idx);
             try {
-                layer.render(dc);
+                dc.currentLayer.render(dc);
             } catch (Exception e) {
                 Logger.logMessage(Logger.ERROR, "BasicFrameController", "drawLayers",
-                    "Exception while rendering layer \'" + layer.getDisplayName() + "\'", e);
+                    "Exception while rendering layer \'" + dc.currentLayer.getDisplayName() + "\'", e);
                 // Keep going. Draw the remaining layers.
             }
         }
@@ -85,6 +84,7 @@ public class BasicFrameController implements FrameController {
 
     @Override
     public void drawFrame(DrawContext dc) {
+        this.clearFrame(dc);
         this.drawDrawables(dc);
     }
 
