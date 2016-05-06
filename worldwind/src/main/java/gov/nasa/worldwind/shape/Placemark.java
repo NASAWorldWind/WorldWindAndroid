@@ -538,7 +538,7 @@ public class Placemark extends AbstractRenderable {
         }
 
         // Obtain a drawable delegate for this placemark.
-        DrawablePlacemark drawable = this.makeDrawablePlacemark(dc);
+        DrawablePlacemark drawable = DrawablePlacemark.obtain();
 
         // Prepare the drawable icon properties.
         this.prepareDrawableIcon(dc, drawable);
@@ -563,7 +563,7 @@ public class Placemark extends AbstractRenderable {
             }
 
             // Enqueue the drawable placemark for processing on the OpenGL thread.
-            dc.offerDrawable(drawable, WorldWind.SHAPE_DRAWABLE, this.eyeDistance);
+            dc.offerShapeDrawable(drawable, this.eyeDistance);
         } else {
             // The drawable will not be used; recycle it.
             drawable.recycle();
@@ -581,20 +581,6 @@ public class Placemark extends AbstractRenderable {
         } else {
             this.activeAttributes = this.attributes;
         }
-    }
-
-    /**
-     * Returns an ordered renderable for this placemark. The renderable may be a new instance or an existing instance.
-     *
-     * @return The DrawablePlacemark to use for rendering.
-     */
-    protected DrawablePlacemark makeDrawablePlacemark(DrawContext dc) {
-        // Create a new instance if necessary, otherwise reuse the existing instance
-        // TODO: consider pooling of DrawablePlacemarks
-        if (this.drawablePlacemark == null) {
-            this.drawablePlacemark = new DrawablePlacemark();
-        }
-        return this.drawablePlacemark;
     }
 
     protected void prepareDrawableIcon(DrawContext dc, DrawablePlacemark drawable) {

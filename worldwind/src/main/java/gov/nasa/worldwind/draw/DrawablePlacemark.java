@@ -17,11 +17,15 @@ import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.Texture;
+import gov.nasa.worldwind.util.Pool;
+import gov.nasa.worldwind.util.SynchronizedPool;
 
 /**
  * DrawablePlacemark is the delegate responsible for drawing a Placemark renderable with eye distance ordering.
  */
 public class DrawablePlacemark implements Drawable {
+
+    protected static final Pool<DrawablePlacemark> pool = new SynchronizedPool<>(); // acquire and are release called in separate threads
 
     protected static FloatBuffer leaderBuffer;
 
@@ -53,16 +57,19 @@ public class DrawablePlacemark implements Drawable {
 
     protected boolean enableDepthTest = true;
 
-    protected static FloatBuffer getLeaderBuffer(float[] points) {
-        int size = points.length;
-        if (leaderBuffer == null || leaderBuffer.capacity() < size) {
-            leaderBuffer = ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        }
+    protected DrawablePlacemark() {
+    }
 
-        leaderBuffer.clear();
-        leaderBuffer.put(points).flip();
+    public static DrawablePlacemark obtain() {
+        DrawablePlacemark instance = pool.acquire(); // get an instance from the the pool
+        return (instance != null) ? instance : new DrawablePlacemark();
+    }
 
-        return leaderBuffer;
+    @Override
+    public void recycle() {
+        this.program = null;
+        this.iconTexture = null;
+        pool.release(this); // return this instance to the pool
     }
 
     /**
@@ -97,12 +104,6 @@ public class DrawablePlacemark implements Drawable {
         if (!this.enableDepthTest) {
             GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         }
-    }
-
-    @Override
-    public void recycle() {
-        this.program = null;
-        this.iconTexture = null;
     }
 
     protected void drawIcon(DrawContext dc) {
@@ -176,5 +177,17 @@ public class DrawablePlacemark implements Drawable {
                 GLES20.glDisable(GLES20.GL_DEPTH_TEST);
             }
         }
+    }
+
+    protected static FloatBuffer getLeaderBuffer(float[] points) {
+        int size = points.length;
+        if (leaderBuffer == null || leaderBuffer.capacity() < size) {
+            leaderBuffer = ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        }
+
+        leaderBuffer.clear();
+        leaderBuffer.put(points).flip();
+
+        return leaderBuffer;
     }
 }
