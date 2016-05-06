@@ -8,10 +8,14 @@ package gov.nasa.worldwind.layer;
 import java.util.ArrayList;
 import java.util.List;
 
+import gov.nasa.worldwind.draw.Drawable;
+import gov.nasa.worldwind.draw.DrawableSurfaceTexture;
+import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.ImageTile;
+import gov.nasa.worldwind.render.SurfaceTextureProgram;
 import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.LevelSet;
@@ -33,11 +37,15 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
 
     protected List<Tile> topLevelTiles = new ArrayList<>();
 
-    protected List<ImageTile> currentTiles = new ArrayList<>();
-
-    protected ImageTile currentFallbackTile = null;
-
     protected LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(600); // capacity for 600 tiles
+
+    protected SurfaceTextureProgram activeProgram;
+
+    protected ImageTile ancestorTile;
+
+    protected Texture ancestorTexture;
+
+    protected Matrix3 ancestorTexCoordMatrix = new Matrix3();
 
     public TiledImageLayer() {
         this.setDisplayName("Tiled Image Layer");
@@ -99,13 +107,12 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
             return; // no terrain surface to render on
         }
 
+        this.determineActiveProgram(dc);
         this.assembleTiles(dc);
 
-        if (this.currentTiles.size() > 0) { // draw the tiles on the terrain
-            dc.surfaceTileRenderer.renderTiles(dc, this.currentTiles);
-        }
-
-        this.clearTiles(); // clear references to cached tiles; there may be no more calls to render
+        this.activeProgram = null; // clear the active program to avoid leaking render resources
+        this.ancestorTile = null; // clear the ancestor tile and texture
+        this.ancestorTexture = null;
     }
 
     @Override
@@ -120,25 +127,21 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
         return tile;
     }
 
-    protected Texture fetchTileTexture(DrawContext dc, ImageTile tile) {
-        Texture texture = dc.getTexture(tile.getImageSource());
+    protected void determineActiveProgram(DrawContext dc) {
+        this.activeProgram = (SurfaceTextureProgram) dc.getShaderProgram(SurfaceTextureProgram.KEY);
 
-        if (texture == null) {
-            texture = dc.retrieveTexture(tile.getImageSource());
+        if (this.activeProgram == null) {
+            this.activeProgram = (SurfaceTextureProgram) dc.putShaderProgram(SurfaceTextureProgram.KEY, new SurfaceTextureProgram(dc.resources));
         }
-
-        return texture;
     }
 
     protected void assembleTiles(DrawContext dc) {
-        this.currentTiles.clear();
-
         if (this.topLevelTiles.isEmpty()) {
             this.createTopLevelTiles();
         }
 
-        for (Tile tile : this.topLevelTiles) {
-            this.addTileOrDescendants(dc, (ImageTile) tile);
+        for (int idx = 0, len = this.topLevelTiles.size(); idx < len; idx++) {
+            this.addTileOrDescendants(dc, (ImageTile) this.topLevelTiles.get(idx));
         }
     }
 
@@ -159,39 +162,43 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
             return; // use the tile if it does not need to be subdivided
         }
 
-        ImageTile fallbackTile = this.currentFallbackTile;
-        if (this.fetchTileTexture(dc, tile) != null) { // use it as a fallback tile for descendants
-            this.currentFallbackTile = tile;
+        ImageTile currentAncestorTile = this.ancestorTile;
+        Texture currentAncestorTexture = this.ancestorTexture;
+
+        Texture tileTexture = dc.getTexture(tile.getImageSource());
+        if (tileTexture != null) { // use it as a fallback tile for descendants
+            this.ancestorTile = tile;
+            this.ancestorTexture = tileTexture;
         }
 
         for (Tile child : tile.subdivideToCache(this, this.tileCache, 4)) { // each tile has a cached size of 1
             this.addTileOrDescendants(dc, (ImageTile) child); // recursively process the tile's children
         }
 
-        this.currentFallbackTile = fallbackTile; // restore the last fallback tile, even if it was null
+        this.ancestorTile = currentAncestorTile; // restore the last fallback tile, even if it was null
+        this.ancestorTexture = currentAncestorTexture;
     }
 
     protected void addTile(DrawContext dc, ImageTile tile) {
-        if (this.fetchTileTexture(dc, tile) != null) { // use the tile's own texture
-            this.currentTiles.add(tile);
-        } else if (this.currentFallbackTile != null) { // use the fallback tile's texture
-            tile.setFallbackTile(this.currentFallbackTile);
-            this.currentTiles.add(tile);
-        }
-    }
+        Texture texture = dc.getTexture(tile.getImageSource());
 
-    protected void clearTiles() {
-        for (ImageTile tile : this.currentTiles) {
-            tile.setFallbackTile(null); // avoid memory leaks due to fallback tile references
+        if (texture == null) {
+            texture = dc.retrieveTexture(tile.getImageSource());
         }
 
-        this.currentTiles.clear(); // clear the tile list
-        this.currentFallbackTile = null; // clear the fallback tile
+        if (texture != null) { // use the tile's own texture
+            Drawable drawable = DrawableSurfaceTexture.obtain(this.activeProgram, tile.sector, texture);
+            dc.offerSurfaceDrawable(drawable, 0 /*z-order*/);
+        } else if (this.ancestorTile != null) { // use the ancestor tile's texture, transformed to fill the tile sector
+            this.ancestorTexCoordMatrix.set(this.ancestorTexture.getTexCoordTransform());
+            this.ancestorTexCoordMatrix.multiplyByTileTransform(tile.sector, this.ancestorTile.sector);
+            Drawable drawable = DrawableSurfaceTexture.obtain(this.activeProgram, tile.sector, this.ancestorTexture, this.ancestorTexCoordMatrix);
+            dc.offerSurfaceDrawable(drawable, 0 /*z-order*/);
+        }
     }
 
     protected void invalidateTiles() {
         this.topLevelTiles.clear();
-        this.currentTiles.clear();
         this.tileCache.clear();
     }
 }

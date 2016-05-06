@@ -5,16 +5,17 @@
 
 package gov.nasa.worldwind.shape;
 
-import gov.nasa.worldwind.geom.Matrix3;
+import gov.nasa.worldwind.draw.Drawable;
+import gov.nasa.worldwind.draw.DrawableSurfaceTexture;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.ImageSource;
-import gov.nasa.worldwind.render.SurfaceTile;
+import gov.nasa.worldwind.render.SurfaceTextureProgram;
 import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Logger;
 
-public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
+public class SurfaceImage extends AbstractRenderable {
 
     protected final Sector sector = new Sector();
 
@@ -36,7 +37,6 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
         this.imageSource = imageSource;
     }
 
-    @Override
     public Sector getSector() {
         return this.sector;
     }
@@ -65,32 +65,30 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
         }
 
         if (!dc.terrain.getSector().intersects(this.sector)) {
-            return; // nothing to render on
+            return; // no terrain surface to render on
         }
 
-        Texture texture = dc.getTexture(this.imageSource);
+        Texture texture = dc.getTexture(this.imageSource); // try to get the texture from the cache
         if (texture == null) {
             texture = dc.retrieveTexture(this.imageSource); // adds the retrieved texture to the cache
         }
 
-        if (texture != null) {
-            dc.surfaceTileRenderer.renderTile(dc, this);
-        }
-    }
-
-    @Override
-    public boolean bindTexture(DrawContext dc) {
-        Texture texture = dc.getTexture(this.imageSource);
-        return (texture != null) && texture.bindTexture(dc);
-    }
-
-    @Override
-    public boolean applyTexCoordTransform(DrawContext dc, Matrix3 result) {
-        Texture texture = dc.getTexture(this.imageSource);
-        if (texture != null) {
-            result.multiplyByMatrix(texture.getTexCoordTransform());
+        if (texture == null) {
+            return; // no texture to draw
         }
 
-        return true;
+        SurfaceTextureProgram program = this.getShaderProgram(dc);
+        Drawable drawable = DrawableSurfaceTexture.obtain(program, this.sector, texture);
+        dc.offerSurfaceDrawable(drawable, 0 /*z-order*/);
+    }
+
+    protected SurfaceTextureProgram getShaderProgram(DrawContext dc) {
+        SurfaceTextureProgram program = (SurfaceTextureProgram) dc.getShaderProgram(SurfaceTextureProgram.KEY);
+
+        if (program == null) {
+            program = (SurfaceTextureProgram) dc.putShaderProgram(SurfaceTextureProgram.KEY, new SurfaceTextureProgram(dc.resources));
+        }
+
+        return program;
     }
 }
