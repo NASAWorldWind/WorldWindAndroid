@@ -7,7 +7,6 @@ package gov.nasa.worldwind.layer;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.Renderable;
@@ -15,7 +14,7 @@ import gov.nasa.worldwind.util.Logger;
 
 public class RenderableLayer extends AbstractLayer implements Iterable<Renderable> {
 
-    protected List<Renderable> renderables = new ArrayList<>();
+    protected ArrayList<Renderable> renderables = new ArrayList<>();
 
     public RenderableLayer() {
     }
@@ -184,8 +183,8 @@ public class RenderableLayer extends AbstractLayer implements Iterable<Renderabl
 
     @Override
     protected void doRender(DrawContext dc) {
-
-        for (Renderable renderable : this.renderables) {
+        for (int idx = 0, len = this.renderables.size(); idx < len; idx++) {
+            Renderable renderable = this.renderables.get(idx);
             try {
                 renderable.render(dc);
             } catch (Exception e) {

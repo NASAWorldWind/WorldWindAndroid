@@ -79,8 +79,8 @@ public class BasicTessellator implements Tessellator, TileFactory {
             this.createTopLevelTiles();
         }
 
-        for (Tile tile : this.topLevelTiles) {
-            this.addTileOrDescendants(dc, (TerrainTile) tile);
+        for (int idx = 0, len = this.topLevelTiles.size(); idx < len; idx++) {
+            this.addTileOrDescendants(dc, (TerrainTile) this.topLevelTiles.get(idx));
         }
     }
 

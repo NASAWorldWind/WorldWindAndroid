@@ -7,13 +7,12 @@ package gov.nasa.worldwind.layer;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import gov.nasa.worldwind.util.Logger;
 
 public class LayerList implements Iterable<Layer> {
 
-    protected List<Layer> layers = new ArrayList<>();
+    protected ArrayList<Layer> layers = new ArrayList<>();
 
     public LayerList() {
     }
@@ -126,6 +125,21 @@ public class LayerList implements Iterable<Layer> {
             }
 
             this.layers.add(layer);
+        }
+    }
+
+    public void addAllLayers(LayerList layerList) {
+        if (layerList == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerList", "addAllLayers", "missingList"));
+        }
+
+        ArrayList<Layer> thisList = this.layers;
+        ArrayList<Layer> thatList = layerList.layers;
+        thisList.ensureCapacity(thatList.size());
+
+        for (int idx = 0, len = thatList.size(); idx < len; idx++) {
+            thisList.add(thatList.get(idx)); // we know the contents of layerList.layers is valid
         }
     }
 

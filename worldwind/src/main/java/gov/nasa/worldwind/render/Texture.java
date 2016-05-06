@@ -15,7 +15,7 @@ import gov.nasa.worldwind.util.WWMath;
 
 public class Texture implements RenderResource {
 
-    protected int textureId;
+    protected int[] textureId = new int[1];
 
     protected int textureWidth;
 
@@ -97,11 +97,11 @@ public class Texture implements RenderResource {
             this.imageBitmap = null;
         }
 
-        if (this.textureId != 0) {
-            dc.bindTexture(this.textureId);
+        if (this.textureId[0] != 0) {
+            dc.bindTexture(this.textureId[0]);
         }
 
-        return this.textureId != 0;
+        return this.textureId[0] != 0;
     }
 
     protected void loadImageBitmap(DrawContext dc) {
@@ -110,12 +110,12 @@ public class Texture implements RenderResource {
         try {
 
             // Create the OpenGL texture 2D object.
-            if (this.textureId == 0) {
+            if (this.textureId[0] == 0) {
                 this.createTexture(dc);
             }
 
             // Make the OpenGL texture 2D object bound to the current multitexture unit.
-            dc.bindTexture(this.textureId);
+            dc.bindTexture(this.textureId[0]);
             // Load the current imageBitmap as the OpenGL texture 2D object's image data.
             this.loadTexImage(dc);
 
@@ -134,15 +134,13 @@ public class Texture implements RenderResource {
     }
 
     protected void createTexture(DrawContext dc) {
-        int[] newTexture = new int[1];
-        GLES20.glGenTextures(1, newTexture, 0);
-        this.textureId = newTexture[0];
+        GLES20.glGenTextures(1, this.textureId, 0);
     }
 
     protected void deleteTexture(DrawContext dc) {
-        if (this.textureId != 0) {
-            GLES20.glDeleteTextures(1, new int[]{this.textureId}, 0);
-            this.textureId = 0;
+        if (this.textureId[0] != 0) {
+            GLES20.glDeleteTextures(1, this.textureId, 0);
+            this.textureId[0] = 0;
         }
     }
 
