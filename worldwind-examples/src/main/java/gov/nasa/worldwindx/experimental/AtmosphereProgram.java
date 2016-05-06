@@ -15,13 +15,23 @@ import java.util.Arrays;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec3;
-import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.ShaderProgram;
 
 // TODO Correctly compute the atmosphere color for eye positions beneath the atmosphere
 // TODO Test the effect of working in local coordinates (reference point) on the GLSL atmosphere programs
 public class AtmosphereProgram extends ShaderProgram {
+
+    /**
+     * Frag color indicates the atmospheric scattering color components written to the fragment color. Accepted values
+     * are {@link #FRAGMODE_SKY}, {@link #FRAGMODE_GROUND_PRIMARY}, {@link #FRAGMODE_GROUND_SECONDARY} and {@link
+     * #FRAGMODE_GROUND_PRIMARY_TEX_BLEND}.
+     */
+    @IntDef({FRAGMODE_SKY, FRAGMODE_GROUND_PRIMARY, FRAGMODE_GROUND_SECONDARY, FRAGMODE_GROUND_PRIMARY_TEX_BLEND})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FragMode {
+
+    }
 
     public static final int FRAGMODE_SKY = 1;
 
@@ -196,6 +206,10 @@ public class AtmosphereProgram extends ShaderProgram {
         GLES20.glUniform3fv(this.vertexOriginId, 1, this.array, 0);
     }
 
+    public void loadVertexOrigin(double x, double y, double z) {
+        GLES20.glUniform3f(this.vertexOriginId, (float) x, (float) y, (float) z);
+    }
+
     public void loadLightDirection(Vec3 direction) {
         direction.toArray(this.array, 0);
         GLES20.glUniform3fv(this.lightDirectionId, 1, this.array, 0);
@@ -208,22 +222,11 @@ public class AtmosphereProgram extends ShaderProgram {
         GLES20.glUniform1f(this.eyeMagnitude2Id, (float) eyePoint.magnitudeSquared());
     }
 
-    public void loadGlobe(Globe globe) {
-        double gr = globe.getEquatorialRadius();
+    public void loadGlobeRadius(double equatorialRadius) {
+        double gr = equatorialRadius;
         double ar = gr + this.altitude;
         GLES20.glUniform1f(this.globeRadiusId, (float) gr);
         GLES20.glUniform1f(this.atmosphereRadiusId, (float) ar);
         GLES20.glUniform1f(this.atmosphereRadius2Id, (float) (ar * ar));
-    }
-
-    /**
-     * Frag color indicates the atmospheric scattering color components written to the fragment color. Accepted values
-     * are {@link #FRAGMODE_SKY}, {@link #FRAGMODE_GROUND_PRIMARY}, {@link #FRAGMODE_GROUND_SECONDARY} and {@link
-     * #FRAGMODE_GROUND_PRIMARY_TEX_BLEND}.
-     */
-    @IntDef({FRAGMODE_SKY, FRAGMODE_GROUND_PRIMARY, FRAGMODE_GROUND_SECONDARY, FRAGMODE_GROUND_PRIMARY_TEX_BLEND})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface FragMode {
-
     }
 }
