@@ -25,7 +25,7 @@ import gov.nasa.worldwind.util.WWMath;
  * Represents a Placemark shape. A placemark displays an image, a label and a leader line connecting the placemark's
  * geographic position to the ground. All three of these items are optional. By default, the leader line is not
  * pickable. See {@link Placemark#setEnableLeaderLinePicking(boolean)}.
- * <p/>
+ * <p>
  * Placemarks may be drawn with either an image or as single-color square with a specified size. When the placemark
  * attributes indicate a valid image, the placemark's image is drawn as a rectangle in the image's original dimensions,
  * scaled by the image scale attribute. Otherwise, the placemark is drawn as a square with width and height equal to the
@@ -189,7 +189,7 @@ public class Placemark extends AbstractRenderable {
      * @param attributes The attributes bundle reference that defines how the placemark is drawn.
      */
     public Placemark(Position position, PlacemarkAttributes attributes) {
-        this(position, attributes, null, null, false);
+        this(position, attributes, null, null);
     }
 
     /**
@@ -202,31 +202,28 @@ public class Placemark extends AbstractRenderable {
      * @param label      The text assigned to the displayName property that is optionally drawn near the image.
      */
     public Placemark(Position position, PlacemarkAttributes attributes, String label) {
-        this(position, attributes, label, null, false);
+        this(position, attributes, label, null);
     }
 
     /**
      * Constructs a placemark.
      *
-     * @param position           The placemark's geographic position.
-     * @param attributes         The attributes to associate with this placemark. May be null, but if null the placemark
-     *                           will not be drawn.
-     * @param displayName        The display name associated with this placemark. May be null. If a name is specified,
-     *                           but a label is not, then the name will be used for the label.
-     * @param label              The label associated with this placemark. May be null. If specified, the label will be
-     *                           drawn with the active {@link PlacemarkAttributes#labelAttributes}. If these attributes
-     *                           are null, the label will not be drawn.
-     * @param eyeDistanceScaling Indicates whether the size of this placemark scales with eye distance. See
-     *                           [eyeDistanceScalingThreshold]{@link Placemark#eyeDistanceScalingThreshold} and
-     *                           [eyeDistanceScalingLabelThreshold]{@link Placemark#eyeDistanceScalingLabelThreshold}.
+     * @param position    The placemark's geographic position.
+     * @param attributes  The attributes to associate with this placemark. May be null, but if null the placemark will
+     *                    not be drawn.
+     * @param displayName The display name associated with this placemark. May be null. If a name is specified, but a
+     *                    label is not, then the name will be used for the label.
+     * @param label       The label associated with this placemark. May be null. If specified, the label will be drawn
+     *                    with the active {@link PlacemarkAttributes#labelAttributes}. If these attributes are null, the
+     *                    label will not be drawn.
      */
-    public Placemark(Position position, PlacemarkAttributes attributes, String displayName, String label, boolean eyeDistanceScaling) {
+    public Placemark(Position position, PlacemarkAttributes attributes, String displayName, String label) {
         this.setPosition(position);
         this.setAltitudeMode(WorldWind.ABSOLUTE);
         this.setDisplayName(displayName);
         this.setLabel(label);
         this.attributes = attributes;
-        this.eyeDistanceScaling = eyeDistanceScaling;
+        this.eyeDistanceScaling = false;
         this.eyeDistanceScalingThreshold = DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD;
         this.eyeDistanceScalingLabelThreshold = 1.5 * this.eyeDistanceScalingThreshold;
         this.imageRotationReference = WorldWind.RELATIVE_TO_SCREEN;
@@ -271,13 +268,12 @@ public class Placemark extends AbstractRenderable {
     }
 
     /**
-     * Sets this placemark's altitude mode. May be one of <pre>
-     *  <ul>
-     *  <li>[WorldWind.ABSOLUTE]{@link WorldWind#ABSOLUTE}</li>
-     *  <li>[WorldWind.RELATIVE_TO_GROUND]{@link WorldWind#RELATIVE_TO_GROUND}</li>
-     *  <li>[WorldWind.CLAMP_TO_GROUND]{@link WorldWind#CLAMP_TO_GROUND}</li>
-     *  </ul>
-     * </pre>default WorldWind.ABSOLUTE
+     * Sets this placemark's altitude mode.
+     *
+     * @param altitudeMode The new altitude mode. See {@link gov.nasa.worldwind.WorldWind.AltitudeMode} for acceptable
+     *                     values
+     *
+     * @return This placemark.
      */
     public Placemark setAltitudeMode(@WorldWind.AltitudeMode int altitudeMode) {
         this.altitudeMode = altitudeMode;
@@ -285,7 +281,10 @@ public class Placemark extends AbstractRenderable {
     }
 
     /**
-     * The placemark's attributes. If null and this placemark is not highlighted, this placemark is not drawn.
+     * Gets the placemark's "normal" attributes, that is the attributes used when the placemark's highlighted flag is
+     * false. If null and this placemark is not highlighted, this placemark is not drawn.
+     *
+     * @return A reference to this placemark's attributes bundle.
      */
     public PlacemarkAttributes getAttributes() {
         return attributes;
@@ -294,8 +293,10 @@ public class Placemark extends AbstractRenderable {
     /**
      * Sets the placemark's attributes to the supplied attributes bundle. If null and this placemark is not highlighted,
      * this placemark is not drawn.
+     * <p>
+     * It is permissible to share attribute bundles between placemarks.
      *
-     * @param attributes The attributes bundle used to be used by this placemark.
+     * @param attributes A reference to an attributes bundle used by this placemark when not highlighted.
      *
      * @return This placemark.
      */
@@ -307,16 +308,20 @@ public class Placemark extends AbstractRenderable {
     /**
      * Gets the attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is
      * true, this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
+     *
+     * @return A reference to this placemark's highlight attributes bundle.
      */
     public PlacemarkAttributes getHighlightAttributes() {
         return highlightAttributes;
     }
 
     /**
-     * The attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is true,
-     * this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
+     * Sets the attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is
+     * true, this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
+     * <p>
+     * It is permissible to share attribute bundles between placemarks.
      *
-     * @param highlightAttributes The attributes bundle used to be used by this placemark when highlighted.
+     * @param highlightAttributes A reference to the attributes bundle used by this placemark when highlighted.
      *
      * @return This placemark.
      */
@@ -325,6 +330,12 @@ public class Placemark extends AbstractRenderable {
         return this;
     }
 
+    /**
+     * Gets the text used to label this placemark on the globe. If null, then the {@link Placemark#displayName} property
+     * is used for the label.
+     *
+     * @return The text used to label a placemark on the globe when labels are enabled.
+     */
     public String getLabel() {
         if (this.label == null) {
             return this.getDisplayName();
@@ -332,6 +343,19 @@ public class Placemark extends AbstractRenderable {
         return label;
     }
 
+    /**
+     * Sets the text used for this placemark's label on the globe. If non-null, then this property will be used for the
+     * label in lieu of the displayName. If null, then the {@link Placemark#displayName} property is used for the label
+     * text.
+     * <p>
+     * A typical use case is to use the displayName property in lists of placemarks and use the label property for the
+     * placemark labels on the globe, allowing for short or abbreviated names to be used on a cluttered globe.
+     *
+     * @param label The new label text. If set, this value supersedes the use of {@link Placemark#displayName} property
+     *              for the label. An empty string is permissible.
+     *
+     * @return This placemark.
+     */
     public Placemark setLabel(String label) {
         this.label = label;
         return this;
@@ -339,13 +363,20 @@ public class Placemark extends AbstractRenderable {
 
     /**
      * Indicates whether this placemark uses its highlight attributes rather than its normal attributes.
+     *
+     * @return True if this placemark should be highlighted.
      */
     public boolean isHighlighted() {
         return highlighted;
     }
 
     /**
-     * Indicates whether this placemark uses its highlight attributes rather than its normal attributes.
+     * Sets the highlighted state of this placemark, which indicates whether this placemark uses its highlight
+     * attributes rather than its normal attributes.
+     *
+     * @param highlighted The highlighted state applied to this placemark.
+     *
+     * @return This placemark.
      */
     public Placemark setHighlighted(boolean highlighted) {
         this.highlighted = highlighted;
@@ -354,21 +385,26 @@ public class Placemark extends AbstractRenderable {
 
     /**
      * Indicates whether this placemark's size is reduced at higher eye distances. If true, this placemark's size is
-     * scaled inversely proportional to the eye distance if the eye distance is greater than the value of the
-     * [eyeDistanceScalingThreshold]{@link Placemark#eyeDistanceScalingThreshold} property. When the eye distance is
-     * below the threshold, this placemark is scaled only according to the [imageScale]{@link
-     * PlacemarkAttributes#imageScale}.
+     * scaled inversely proportional to the eye distance if the eye distance is greater than the value of the {@link
+     * Placemark#getEyeDistanceScalingThreshold()} property. When the eye distance is below the threshold, this
+     * placemark is scaled only according to the {@link PlacemarkAttributes#getImageScale()}.
+     *
+     * @return True if eye distance scaling should be applied.
      */
     public boolean isEyeDistanceScaling() {
         return eyeDistanceScaling;
     }
 
     /**
-     * Indicates whether this placemark's size is reduced at higher eye distances. If true, this placemark's size is
-     * scaled inversely proportional to the eye distance if the eye distance is greater than the value of the
-     * [eyeDistanceScalingThreshold]{@link Placemark#eyeDistanceScalingThreshold} property. When the eye distance is
-     * below the threshold, this placemark is scaled only according to the [imageScale]{@link
-     * PlacemarkAttributes#imageScale}.
+     * Enables or disables the eye distance scaling feature for this placemark. When enabled, the placemark's size is
+     * reduced at higher eye distances. If true, this placemark's size is scaled inversely proportional to the eye
+     * distance if the eye distance is greater than the value of the {@link Placemark#getEyeDistanceScalingThreshold()}
+     * property. When the eye distance is below the threshold, this placemark is scaled only according to the {@link
+     * PlacemarkAttributes#getImageScale()}.
+     *
+     * @param eyeDistanceScaling The new state for the eye distance scaling feature.
+     *
+     * @return This placemark.
      */
     public Placemark setEyeDistanceScaling(boolean eyeDistanceScaling) {
         this.eyeDistanceScaling = eyeDistanceScaling;
@@ -376,18 +412,25 @@ public class Placemark extends AbstractRenderable {
     }
 
     /**
-     * The eye distance above which to reduce the size of this placemark, in meters. If [eyeDistanceScaling]{@link
-     * Placemark#eyeDistanceScaling} is true, this placemark's image, label and leader line sizes are reduced as the eye
-     * distance increases beyond this threshold.
+     * Gets the eye distance above which to reduce the size of this placemark, in meters. If {@link
+     * Placemark#isEyeDistanceScaling()} is true, this placemark's image, label and leader line sizes are reduced as the
+     * eye distance increases beyond this threshold.
+     *
+     * @return The current threshold value, in meters.
      */
     public double getEyeDistanceScalingThreshold() {
         return eyeDistanceScalingThreshold;
     }
 
     /**
-     * The eye distance above which to reduce the size of this placemark, in meters. If [eyeDistanceScaling]{@link
-     * Placemark#eyeDistanceScaling} is true, this placemark's image, label and leader line sizes are reduced as the eye
-     * distance increases beyond this threshold.
+     * Sets the eye distance above which to reduce the size of this placemark, in meters. If {@link
+     * Placemark#isEyeDistanceScaling()} is true, this placemark's image, label and leader line sizes are reduced as the
+     * eye distance increases beyond this threshold.
+     *
+     * @param eyeDistanceScalingThreshold The new threshold value, in meters, used to determine if eye distance scaling
+     *                                    should be applied.
+     *
+     * @return This placemark.
      */
     public Placemark setEyeDistanceScalingThreshold(double eyeDistanceScalingThreshold) {
         this.eyeDistanceScalingThreshold = eyeDistanceScalingThreshold;
@@ -395,14 +438,21 @@ public class Placemark extends AbstractRenderable {
     }
 
     /**
-     * The eye altitude above which this placemark's label is not displayed.
+     * Gets the eye altitude, in meters, above which this placemark's label is not displayed.
+     *
+     * @return The current label scaling threshold.
      */
     public double getEyeDistanceScalingLabelThreshold() {
         return eyeDistanceScalingLabelThreshold;
     }
 
     /**
-     * The eye altitude above which this placemark's label is not displayed.
+     * Sets the eye altitude, in meters, above which this placemark's label is not displayed.
+     *
+     * @param eyeDistanceScalingLabelThreshold The new threshold value, in meters, used to determine if eye distance
+     *                                         label scaling should be applied.
+     *
+     * @return This placemark.
      */
     public Placemark setEyeDistanceScalingLabelThreshold(double eyeDistanceScalingLabelThreshold) {
         this.eyeDistanceScalingLabelThreshold = eyeDistanceScalingLabelThreshold;
@@ -410,16 +460,22 @@ public class Placemark extends AbstractRenderable {
     }
 
     /**
-     * The amount of rotation to apply to the image, measured in degrees clockwise and relative to this placemark's
-     * [imageRotationReference]{@link Placemark#imageRotationReference}.
+     * Gets the amount of rotation to apply to the image, measured in degrees clockwise and relative to this placemark's
+     * {@link Placemark#getImageRotationReference()}.
+     *
+     * @return The current image rotation value in degrees.
      */
     public double getImageRotation() {
         return imageRotation;
     }
 
     /**
-     * The amount of rotation to apply to the image, measured in degrees clockwise and relative to this placemark's
-     * [imageRotationReference]{@link Placemark#imageRotationReference}.
+     * Sets the amount of rotation to apply to the image, measured in degrees clockwise and relative to this placemark's
+     * {@link Placemark#getImageRotationReference()}.
+     *
+     * @param imageRotation The amount in degrees to rotate the image. Zero is no rotation.
+     *
+     * @return This placemark.
      */
     public Placemark setImageRotation(double imageRotation) {
         this.imageRotation = imageRotation;
@@ -427,11 +483,15 @@ public class Placemark extends AbstractRenderable {
     }
 
     /**
-     * Indicates whether to apply this placemark's image rotation relative to the screen orderedRenderable the globe. If
-     * WorldWind.RELATIVE_TO_SCREEN, this placemark's image is rotated in the plane of the screen and its orientation
-     * relative to the globe changes as the view changes. If WorldWind.RELATIVE_TO_GLOBE, this placemark's image is
-     * rotated in a plane tangent to the globe at this placemark's position and retains its orientation relative to the
-     * globe. See {@link gov.nasa.worldwind.WorldWind.OrientationMode}
+     * Gets the type of rotation to apply if the {@link Placemark#getImageRotation()} is not zero. This value indicates
+     * whether to apply this placemark's image rotation relative to the screen or the globe.
+     * <p>
+     * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is rotated in the plane of the screen and its
+     * orientation relative to the globe changes as the view changes. If {@link WorldWind#RELATIVE_TO_GLOBE}, this
+     * placemark's image is rotated in a plane tangent to the globe at this placemark's position and retains its
+     * orientation relative to the globe.
+     *
+     * @return The {@link gov.nasa.worldwind.WorldWind.OrientationMode} to use when image rotation applied.
      */
     @WorldWind.OrientationMode
     public int getImageRotationReference() {
@@ -439,11 +499,18 @@ public class Placemark extends AbstractRenderable {
     }
 
     /**
-     * Indicates whether to apply this placemark's image rotation relative to the screen orderedRenderable the globe. If
-     * WorldWind.RELATIVE_TO_SCREEN, this placemark's image is rotated in the plane of the screen and its orientation
-     * relative to the globe changes as the view changes. If WorldWind.RELATIVE_TO_GLOBE, this placemark's image is
-     * rotated in a plane tangent to the globe at this placemark's position and retains its orientation relative to the
-     * globe. See {@link gov.nasa.worldwind.WorldWind.OrientationMode}
+     * Sets the type of rotation to apply if the {@link Placemark#getImageRotation()} is not zero. This value indicates
+     * whether to apply this placemark's image rotation relative to the screen or the globe.
+     * <p>
+     * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is rotated in the plane of the screen and its
+     * orientation relative to the globe changes as the view changes. If {@link WorldWind#RELATIVE_TO_GLOBE}, this
+     * placemark's image is rotated in a plane tangent to the globe at this placemark's position and retains its
+     * orientation relative to the globe.
+     *
+     * @param imageRotationReference The {@link gov.nasa.worldwind.WorldWind.OrientationMode} to use when image rotation
+     *                               applied.
+     *
+     * @return This placemark.
      */
     public Placemark setImageRotationReference(@WorldWind.OrientationMode int imageRotationReference) {
         this.imageRotationReference = imageRotationReference;
@@ -451,20 +518,24 @@ public class Placemark extends AbstractRenderable {
     }
 
     /**
-     * The amount of tilt to apply to the image, measured in degrees away from the eye point and relative to this
-     * placemark's [imageTiltReference]{@link Placemark#imageTiltReference}. While any positive orderedRenderable
-     * negative number may be specified, values outside the range [0. 90] cause some orderedRenderable all of the image
-     * to be clipped.
+     * Gets the amount of tilt to apply to the image, measured in degrees away from the eye point and relative to this
+     * placemark's {@link Placemark#getImageTiltReference()}. While any positive or negative number may be specified,
+     * values outside the range [0. 90] cause some or all of the image to be clipped.
+     *
+     * @return The amount, in degrees, to tilt the image.
      */
     public double getImageTilt() {
         return imageTilt;
     }
 
     /**
-     * The amount of tilt to apply to the image, measured in degrees away from the eye point and relative to this
-     * placemark's [imageTiltReference]{@link Placemark#imageTiltReference}. While any positive orderedRenderable
-     * negative number may be specified, values outside the range [0. 90] cause some orderedRenderable all of the image
-     * to be clipped.
+     * Sets the amount of tilt to apply to the image, measured in degrees away from the eye point and relative to this
+     * placemark's {@link Placemark#getImageTiltReference()}. While any positive or negative number may be specified,
+     * values outside the range [0. 90] cause some or all of the image to be clipped.
+     *
+     * @param imageTilt The amount, in degrees, to tilt the image.
+     *
+     * @return This placemark.
      */
     public Placemark setImageTilt(double imageTilt) {
         this.imageTilt = imageTilt;
@@ -472,11 +543,15 @@ public class Placemark extends AbstractRenderable {
     }
 
     /**
-     * Indicates whether to apply this placemark's image tilt relative to the screen orderedRenderable the globe. If
-     * WorldWind.RELATIVE_TO_SCREEN, this placemark's image is tilted inwards (for positive tilts) relative to the plane
-     * of the screen, and its orientation relative to the globe changes as the view changes. If
-     * WorldWind.RELATIVE_TO_GLOBE, this placemark's image is tilted towards the globe's surface, and retains its
-     * orientation relative to the surface. See {@link gov.nasa.worldwind.WorldWind.OrientationMode}
+     * Gets the type tilt to apply when {@link Placemark#getImageTilt()} is non-zero. This value indicates whether to
+     * apply this placemark's image tilt relative to the screen or the globe.
+     * <p>
+     * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is tilted inwards (for positive tilts) relative
+     * to the plane of the screen, and its orientation relative to the globe changes as the view changes. If {@link
+     * WorldWind#RELATIVE_TO_GLOBE}, this placemark's image is tilted towards the globe's surface, and retains its
+     * orientation relative to the surface.
+     *
+     * @return The {@link gov.nasa.worldwind.WorldWind.OrientationMode} to use when the image is tilted.
      */
     @WorldWind.OrientationMode
     public int getImageTiltReference() {
@@ -484,21 +559,40 @@ public class Placemark extends AbstractRenderable {
     }
 
     /**
-     * Indicates whether to apply this placemark's image tilt relative to the screen orderedRenderable the globe. If
-     * WorldWind.RELATIVE_TO_SCREEN, this placemark's image is tilted inwards (for positive tilts) relative to the plane
-     * of the screen, and its orientation relative to the globe changes as the view changes. If
-     * WorldWind.RELATIVE_TO_GLOBE, this placemark's image is tilted towards the globe's surface, and retains its
-     * orientation relative to the surface. See {@link gov.nasa.worldwind.WorldWind.OrientationMode}
+     * Sets the type tilt to apply when {@link Placemark#getImageTilt()} is non-zero. This value indicates whether to
+     * apply this placemark's image tilt relative to the screen or the globe.
+     * <p>
+     * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is tilted inwards (for positive tilts) relative
+     * to the plane of the screen, and its orientation relative to the globe changes as the view changes. If {@link
+     * WorldWind#RELATIVE_TO_GLOBE}, this placemark's image is tilted towards the globe's surface, and retains its
+     * orientation relative to the surface.
+     *
+     * @param imageTiltReference The {@link gov.nasa.worldwind.WorldWind.OrientationMode} to use when the image is
+     *                           tilted.
+     *
+     * @return This placemark.
      */
     public Placemark setImageTiltReference(@WorldWind.OrientationMode int imageTiltReference) {
         this.imageTiltReference = imageTiltReference;
         return this;
     }
 
+    /**
+     * Indicates if picking is allowed on this placemark's (optional) leader line.
+     *
+     * @return True if leader line picking is enable.
+     */
     public boolean isEnableLeaderLinePicking() {
         return enableLeaderLinePicking;
     }
 
+    /**
+     * Sets whether picking is allowed on this placemark's (optional) leader line.
+     *
+     * @param enableLeaderLinePicking True if leader line picking should be enabled.
+     *
+     * @return This placemark.
+     */
     public Placemark setEnableLeaderLinePicking(boolean enableLeaderLinePicking) {
         this.enableLeaderLinePicking = enableLeaderLinePicking;
         return this;
@@ -583,6 +677,14 @@ public class Placemark extends AbstractRenderable {
         }
     }
 
+    /**
+     * Prepares this placemark's icon or symbol to for drawing in a subsequent drawing pass.
+     * <p>
+     * Implementations must be careful not to leak resources from Placemark into the Drawable.
+     *
+     * @param dc       The current DrawContext.
+     * @param drawable The Drawable to be prepared.
+     */
     protected void prepareDrawableIcon(DrawContext dc, DrawablePlacemark drawable) {
         // Set the color used for the icon.
         drawable.iconColor.set(this.activeAttributes.imageColor);
@@ -654,6 +756,14 @@ public class Placemark extends AbstractRenderable {
         }
     }
 
+    /**
+     * Prepares this placemark's leader line to for drawing in a subsequent drawing pass.
+     * <p>
+     * Implementations must be careful not to leak resources from Placemark into the Drawable.
+     *
+     * @param dc       The current DrawContext.
+     * @param drawable The Drawable to be prepared.
+     */
     protected void prepareDrawableLeader(DrawContext dc, DrawablePlacemark drawable) {
         // Allocate drawable leader properties that are null unless a leader is to be drawn.
         if (drawable.leaderColor == null) {
