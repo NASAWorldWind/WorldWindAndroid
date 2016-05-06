@@ -10,7 +10,9 @@ import java.util.Comparator;
 
 public class DrawableQueue {
 
-    protected Entry[] entries = new Entry[32];
+    protected static final int MIN_CAPACITY_INCREMENT = 12;
+
+    protected Entry[] entries = new Entry[0];
 
     protected int size;
 
@@ -43,7 +45,8 @@ public class DrawableQueue {
         if (drawable != null) {
             int capacity = this.entries.length;
             if (capacity == this.size) {
-                Entry[] newEntries = new Entry[capacity + (capacity >> 1)];
+                int increment = Math.max(capacity >> 1, MIN_CAPACITY_INCREMENT);
+                Entry[] newEntries = new Entry[capacity + increment];
                 System.arraycopy(this.entries, 0, newEntries, 0, capacity);
                 this.entries = newEntries;
             }
@@ -70,8 +73,8 @@ public class DrawableQueue {
     }
 
     public void clearDrawables() {
-        for (int i = 0, len = this.size; i < len; i++) {
-            this.entries[i].recycle();
+        for (int idx = 0, len = this.size; idx < len; idx++) {
+            this.entries[idx].recycle();
         }
 
         this.size = 0;
