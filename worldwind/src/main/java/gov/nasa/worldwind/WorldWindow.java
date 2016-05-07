@@ -12,6 +12,7 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.SurfaceHolder;
 
 import java.util.List;
 import java.util.Map;
@@ -123,9 +124,6 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.setEGLContextClientVersion(2); // must be called before setRenderer
         this.setRenderer(this);
         this.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY); // must be called after setRenderer
-
-        // Set up to receive broadcast messages from World Wind's message center.
-        WorldWind.messageService().addListener(this);
 
         // Log a message with some basic information about the world window's configuration.
         int rrCacheSizeMB = Math.round(rrCacheSize / 1024 / 1024);
@@ -292,6 +290,10 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         return radius / sinfovy_2 - radius;
     }
 
+    /**
+     * Implements the GLSurfaceView.Renderer.onSurfaceChanged interface which is called on the GLThread when the surface
+     * is created.
+     */
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
         // Specify the default World Wind OpenGL state.
@@ -307,12 +309,20 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.renderResourceCache.contextLost(this.dc);
     }
 
+    /**
+     * Implements the GLSurfaceView.Renderer.onSurfaceChanged interface which is called on the GLThread when the window
+     * size changes.
+     */
     @Override
     public void onSurfaceChanged(GL10 unused, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
         this.viewport.set(0, 0, width, height);
     }
 
+    /**
+     * Implementes the GLSurfaceView.Renderer.onDrawFrame interface which is called on the GLThread when rendering is
+     * requested.
+     */
     @Override
     public void onDrawFrame(GL10 unused) {
         this.frameMetrics.beginRendering();
@@ -335,6 +345,34 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
         // Reset the draw context's state in preparation for the next frame.
         this.dc.resetFrameProperties();
+    }
+
+    /**
+     * This is called immediately after the surface is first created, in which case this WorldWindow instance adds
+     * itself as a listener to the {@link WorldWind#messageService()}. The WorldWind.messageService is a facility for
+     * broadcasting {@link WorldWind#requestRender()} requests to active WorldWindows.
+     *
+     * @param holder The SurfaceHolder whose surface is being created.
+     */
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        super.surfaceCreated(holder);
+        // Set up to receive broadcast messages from World Wind's message center.
+        WorldWind.messageService().addListener(this);
+    }
+
+    /**
+     * This is called immediately before a surface is being destroyed, in which case this WorldWindow instance removes
+     * itself from {@link WorldWind#messageService()}. Failure to do so may result in a memory leak this WorldWindow
+     * instance when its owner is release/collected.
+     *
+     * @param holder The SurfaceHolder whose surface is being destroyed.
+     */
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        // Release this WorldWindow reference from the global message service
+        WorldWind.messageService().removeListener(this);
+        super.surfaceDestroyed(holder);
     }
 
     @Override
