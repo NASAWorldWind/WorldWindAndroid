@@ -72,8 +72,6 @@ public class DrawContext {
 
     public RenderResourceCache renderResourceCache;
 
-    public SurfaceTileRenderer surfaceTileRenderer;
-
     public Resources resources;
 
     protected boolean renderRequested;

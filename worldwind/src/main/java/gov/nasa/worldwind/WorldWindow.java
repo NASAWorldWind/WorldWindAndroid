@@ -27,10 +27,8 @@ import gov.nasa.worldwind.globe.GeographicProjection;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.GlobeWgs84;
 import gov.nasa.worldwind.layer.LayerList;
-import gov.nasa.worldwind.render.BasicSurfaceTileRenderer;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.RenderResourceCache;
-import gov.nasa.worldwind.render.SurfaceTileRenderer;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.MessageListener;
 
@@ -64,8 +62,6 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     protected Rect viewport = new Rect();
 
     protected RenderResourceCache renderResourceCache;
-
-    protected SurfaceTileRenderer surfaceTileRenderer = new BasicSurfaceTileRenderer();
 
     protected DrawContext dc = new DrawContext();
 
@@ -359,7 +355,6 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.dc.viewport.set(this.viewport);
         this.dc.renderResourceCache = this.renderResourceCache;
         this.dc.renderResourceCache.setResources(this.getContext().getResources());
-        this.dc.surfaceTileRenderer = this.surfaceTileRenderer;
         this.dc.resources = this.getContext().getResources();
     }
 
