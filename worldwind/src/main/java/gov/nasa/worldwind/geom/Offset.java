@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.geom;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.util.Logger;
 
 /**
  * Specifies an offset relative to a rectangle. Used by renderable shapes.
@@ -158,12 +159,18 @@ public class Offset {
      * returned offset is in pixels relative to the rectangle's origin, and is defined in the coordinate system used by
      * the caller.
      *
-     * @param width  The rectangle's width in pixels.
-     * @param height The rectangles height in pixels.
+     * @param width  the rectangle's width in pixels
+     * @param height the rectangles height in pixels
+     * @param result a pre-allocated Vec2 in which to return the computed offset relative to the rectangle's origin
      *
-     * @return The computed offset relative to the rectangle's origin.
+     * @return the result argument set to the computed offset
      */
-    public Vec2 offsetForSize(double width, double height) {
+    public Vec2 offsetForSize(double width, double height, Vec2 result) {
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Offset", "offsetForSize", "missingResult"));
+        }
+
         double x, y;
 
         if (this.xUnits == WorldWind.OFFSET_FRACTION) {
@@ -182,7 +189,7 @@ public class Offset {
             y = this.y;
         }
 
-        return new Vec2(x, y);
+        return result.set(x, y);
     }
 
 }

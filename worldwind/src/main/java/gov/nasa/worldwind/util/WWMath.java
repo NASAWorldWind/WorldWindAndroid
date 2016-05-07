@@ -170,14 +170,20 @@ public class WWMath {
      * Computes the bounding rectangle for a unit quadrilateral after applying a transformation matrix to that
      * quadrilateral.
      *
-     * @param transformMatrix The matrix to apply to the unit quadrilateral.
+     * @param transformMatrix the matrix to apply to the unit quadrilateral
+     * @param result          a pre-allocated Rect in which to return the computed bounding rectangle
      *
-     * @return The computed bounding rectangle.
+     * @return the result argument set to the computed bounding rectangle
      */
-    public static Rect boundingRectForUnitQuad(Matrix4 transformMatrix) {
+    public static Rect boundingRectForUnitQuad(Matrix4 transformMatrix, Rect result) {
         if (transformMatrix == null) {
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "WWMath", "boundingRectForUnitQuad",
-                "missingMatrix"));
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WWMath", "boundingRectForUnitQuad", "missingMatrix"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WWMath", "boundingRectForUnitQuad", "missingResult"));
         }
 
         double[] m = transformMatrix.m;
@@ -199,7 +205,8 @@ public class WWMath {
         int minY = (int) Math.floor(Math.min(Math.min(y1, y2), Math.min(y3, y4)));
         int maxY = (int) Math.ceil(Math.max(Math.max(y1, y2), Math.max(y3, y4)));
 
-        return new Rect(minX, minY, maxX - minX, maxY - minY);
+        result.set(minX, minY, maxX - minX, maxY - minY);
+        return result;
     }
 
     /**

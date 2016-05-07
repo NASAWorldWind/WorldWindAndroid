@@ -140,7 +140,11 @@ public class Placemark extends AbstractRenderable {
 
     private Vec3 groundPoint = new Vec3();
 
+    private Vec2 offset = new Vec2();
+
     private Matrix4 unitQuadTransform = new Matrix4();
+
+    private Rect unitQuadBounds = new Rect();
 
     /**
      * Constructs a Placemark that draws its representation at the supplied position using the given PlacemarkAttributes
@@ -654,8 +658,8 @@ public class Placemark extends AbstractRenderable {
         this.determineActiveTexture(dc);
 
         // If the placemark's icon is visible, enqueue a drawable icon for processing on the OpenGL thread.
-        Rect iconBounds = WWMath.boundingRectForUnitQuad(this.unitQuadTransform); // TODO allocation
-        if (Rect.intersects(iconBounds, dc.viewport)) {
+        WWMath.boundingRectForUnitQuad(this.unitQuadTransform, this.unitQuadBounds);
+        if (Rect.intersects(dc.viewport, this.unitQuadBounds)) {
             Pool<DrawableQuad> pool = dc.getDrawablePool(DrawableQuad.class);
             DrawableQuad drawable = DrawableQuad.obtain(pool);
             this.prepareDrawableIcon(dc, drawable);
@@ -710,7 +714,7 @@ public class Placemark extends AbstractRenderable {
             int w = this.activeTexture.getImageWidth();
             int h = this.activeTexture.getImageHeight();
             double s = this.activeAttributes.imageScale * visibilityScale;
-            Vec2 offset = this.activeAttributes.imageOffset.offsetForSize(w, h); // TODO allocation
+            Vec2 offset = this.activeAttributes.imageOffset.offsetForSize(w, h, this.offset);
 
             this.unitQuadTransform.multiplyByTranslation(
                 this.screenPlacePoint.x - offset.x * s,
@@ -721,7 +725,7 @@ public class Placemark extends AbstractRenderable {
 
         } else {
             double size = this.activeAttributes.imageScale * visibilityScale;
-            Vec2 offset = this.activeAttributes.imageOffset.offsetForSize(size, size); // TODO allocation
+            Vec2 offset = this.activeAttributes.imageOffset.offsetForSize(size, size, this.offset);
 
             this.unitQuadTransform.multiplyByTranslation(
                 this.screenPlacePoint.x - offset.x,
