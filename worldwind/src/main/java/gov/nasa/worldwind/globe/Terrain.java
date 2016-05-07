@@ -21,8 +21,6 @@ public interface Terrain {
 
     Vec3 getTileVertexOrigin(int index);
 
-    void applyTexCoordTransform(int index, Sector dst, Matrix3 result);
-
     void useVertexPointAttrib(DrawContext dc, int index, int attribLocation);
 
     void useVertexTexCoordAttrib(DrawContext dc, int attribLocation);

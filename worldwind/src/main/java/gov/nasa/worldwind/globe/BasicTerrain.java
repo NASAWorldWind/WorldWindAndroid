@@ -104,28 +104,6 @@ public class BasicTerrain implements Terrain {
         return this.tiles.get(index).tileOrigin;
     }
 
-
-    @Override
-    public void applyTexCoordTransform(int index, Sector dst, Matrix3 result) {
-        if (index < 0 || index >= this.tiles.size()) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicTerrain", "applyTexCoordTransform", "invalidIndex"));
-        }
-
-        if (dst == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicTerrain", "applyTexCoordTransform", "missingSector"));
-        }
-
-        if (result == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicTerrain", "applyTexCoordTransform", "missingResult"));
-        }
-
-        Sector src = this.tiles.get(index).sector;
-        result.multiplyByTileTransform(src, dst);
-    }
-
     @Override
     public void useVertexPointAttrib(DrawContext dc, int index, int attribLocation) {
         if (index < 0 || index >= this.tiles.size()) {
