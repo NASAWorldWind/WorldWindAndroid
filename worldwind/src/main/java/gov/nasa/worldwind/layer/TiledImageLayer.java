@@ -21,6 +21,7 @@ import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.LruMemoryCache;
+import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.Tile;
 import gov.nasa.worldwind.util.TileFactory;
 import gov.nasa.worldwind.util.TileUrlFactory;
@@ -187,12 +188,14 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
         }
 
         if (texture != null) { // use the tile's own texture
-            Drawable drawable = DrawableSurfaceTexture.obtain(this.activeProgram, tile.sector, texture);
+            Pool<DrawableSurfaceTexture> pool = dc.getDrawablePool(DrawableSurfaceTexture.class);
+            Drawable drawable = DrawableSurfaceTexture.obtain(pool).set(this.activeProgram, tile.sector, texture, texture.getTexCoordTransform());
             dc.offerSurfaceDrawable(drawable, 0 /*z-order*/);
         } else if (this.ancestorTile != null) { // use the ancestor tile's texture, transformed to fill the tile sector
             this.ancestorTexCoordMatrix.set(this.ancestorTexture.getTexCoordTransform());
             this.ancestorTexCoordMatrix.multiplyByTileTransform(tile.sector, this.ancestorTile.sector);
-            Drawable drawable = DrawableSurfaceTexture.obtain(this.activeProgram, tile.sector, this.ancestorTexture, this.ancestorTexCoordMatrix);
+            Pool<DrawableSurfaceTexture> pool = dc.getDrawablePool(DrawableSurfaceTexture.class);
+            Drawable drawable = DrawableSurfaceTexture.obtain(pool).set(this.activeProgram, tile.sector, this.ancestorTexture, this.ancestorTexCoordMatrix);
             dc.offerSurfaceDrawable(drawable, 0 /*z-order*/);
         }
     }

@@ -28,6 +28,8 @@ import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.Pool;
+import gov.nasa.worldwind.util.SynchronizedPool;
 import gov.nasa.worldwind.util.WWMath;
 
 public class DrawContext {
@@ -79,6 +81,8 @@ public class DrawContext {
     protected double pixelSizeFactor;
 
     protected DrawableQueue drawableQueue = new DrawableQueue();
+
+    protected Map<Object, Pool<?>> drawablePools = new HashMap<>();
 
     protected Map<Object, Object> userProperties = new HashMap<>();
 
@@ -339,6 +343,18 @@ public class DrawContext {
 
     public void sortDrawables() {
         this.drawableQueue.sortDrawables();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Drawable> Pool<T> getDrawablePool(Class<T> key) {
+        Pool<T> pool = (Pool<T>) this.drawablePools.get(key);
+
+        if (pool == null) {
+            pool = new SynchronizedPool<>(); // use SynchronizedPool; acquire and are release may be called in separate threads
+            this.drawablePools.put(key, pool);
+        }
+
+        return pool;
     }
 
     public Object getUserProperty(Object key) {

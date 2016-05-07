@@ -13,6 +13,7 @@ import gov.nasa.worldwind.layer.AbstractLayer;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.Texture;
+import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwindx.R;
 
 public class AtmosphereLayer extends AbstractLayer {
@@ -72,7 +73,8 @@ public class AtmosphereLayer extends AbstractLayer {
             program = (SkyProgram) dc.putShaderProgram(SkyProgram.KEY, new SkyProgram(dc.resources));
         }
 
-        Drawable drawable = DrawableSkyAtmosphere.obtain(program, this.activeLightDirection);
+        Pool<DrawableSkyAtmosphere> pool = dc.getDrawablePool(DrawableSkyAtmosphere.class);
+        Drawable drawable = DrawableSkyAtmosphere.obtain(pool).set(program, this.activeLightDirection);
         dc.offerDrawable(drawable, WorldWind.BACKGROUND_DRAWABLE, 0 /*z-order*/);
     }
 
@@ -95,7 +97,8 @@ public class AtmosphereLayer extends AbstractLayer {
             }
         }
 
-        Drawable drawable = DrawableGroundAtmosphere.obtain(program, this.activeLightDirection, nightTexture);
+        Pool<DrawableGroundAtmosphere> pool = dc.getDrawablePool(DrawableGroundAtmosphere.class);
+        Drawable drawable = DrawableGroundAtmosphere.obtain(pool).set(program, this.activeLightDirection, nightTexture);
         dc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY /*z-order after all other surface drawables*/);
     }
 }

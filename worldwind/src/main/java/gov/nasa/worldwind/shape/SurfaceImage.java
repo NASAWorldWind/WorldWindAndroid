@@ -14,6 +14,7 @@ import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.SurfaceTextureProgram;
 import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.Pool;
 
 public class SurfaceImage extends AbstractRenderable {
 
@@ -78,7 +79,8 @@ public class SurfaceImage extends AbstractRenderable {
         }
 
         SurfaceTextureProgram program = this.getShaderProgram(dc);
-        Drawable drawable = DrawableSurfaceTexture.obtain(program, this.sector, texture);
+        Pool<DrawableSurfaceTexture> pool = dc.getDrawablePool(DrawableSurfaceTexture.class);
+        Drawable drawable = DrawableSurfaceTexture.obtain(pool).set(program, this.sector, texture, texture.getTexCoordTransform());
         dc.offerSurfaceDrawable(drawable, 0 /*z-order*/);
     }
 

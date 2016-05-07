@@ -11,6 +11,7 @@ import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.Pool;
 
 public class ShowTessellationLayer extends AbstractLayer {
 
@@ -46,7 +47,8 @@ public class ShowTessellationLayer extends AbstractLayer {
             program = (BasicShaderProgram) dc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(dc.resources));
         }
 
-        Drawable drawable = DrawableTessellation.obtain(program, this.color);
+        Pool<DrawableTessellation> pool = dc.getDrawablePool(DrawableTessellation.class);
+        Drawable drawable = DrawableTessellation.obtain(pool).set(program, this.color);
         dc.offerSurfaceDrawable(drawable, 1.0 /*z-order after surface textures*/);
     }
 }

@@ -16,17 +16,14 @@ import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Pool;
-import gov.nasa.worldwind.util.SynchronizedPool;
 
 public class DrawableGroundAtmosphere implements Drawable {
 
-    protected static final Pool<DrawableGroundAtmosphere> pool = new SynchronizedPool<>(); // acquire and are release called in separate threads
+    public GroundProgram program;
 
-    protected GroundProgram program;
+    public Vec3 lightDirection = new Vec3();
 
-    protected Vec3 lightDirection = new Vec3();
-
-    protected Texture nightTexture;
+    public Texture nightTexture;
 
     protected Matrix4 mvpMatrix = new Matrix4();
 
@@ -34,32 +31,43 @@ public class DrawableGroundAtmosphere implements Drawable {
 
     protected Sector fullSphereSector = new Sector().setFullSphere();
 
-    protected DrawableGroundAtmosphere() {
+    private Pool<DrawableGroundAtmosphere> pool;
+
+    public DrawableGroundAtmosphere() {
     }
 
-    public static DrawableGroundAtmosphere obtain(GroundProgram program, Vec3 lightDirection, Texture nightTexture) {
+    public static DrawableGroundAtmosphere obtain(Pool<DrawableGroundAtmosphere> pool) {
         DrawableGroundAtmosphere instance = pool.acquire(); // get an instance from the pool
-        if (instance == null) {
-            instance = new DrawableGroundAtmosphere();
-        }
+        return (instance != null) ? instance.setPool(pool) : new DrawableGroundAtmosphere().setPool(pool);
+    }
 
-        instance.program = program;
-        instance.nightTexture = nightTexture;
+    private DrawableGroundAtmosphere setPool(Pool<DrawableGroundAtmosphere> pool) {
+        this.pool = pool;
+        return this;
+    }
+
+    public DrawableGroundAtmosphere set(GroundProgram program, Vec3 lightDirection, Texture nightTexture) {
+        this.program = program;
+        this.nightTexture = nightTexture;
 
         if (lightDirection != null) {
-            instance.lightDirection.set(lightDirection);
+            this.lightDirection.set(lightDirection);
         } else {
-            instance.lightDirection.set(0, 0, 1);
+            this.lightDirection.set(0, 0, 1);
         }
 
-        return instance;
+        return this;
     }
 
     @Override
     public void recycle() {
         this.program = null;
         this.nightTexture = null;
-        pool.release(this); // return this instance to the pool
+
+        if (this.pool != null) { // return this instance to the pool
+            this.pool.release(this);
+            this.pool = null;
+        }
     }
 
     @Override

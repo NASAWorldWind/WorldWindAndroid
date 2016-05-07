@@ -18,14 +18,11 @@ import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Pool;
-import gov.nasa.worldwind.util.SynchronizedPool;
 
 /**
  * DrawablePlacemark is the delegate responsible for drawing a Placemark renderable with eye distance ordering.
  */
 public class DrawablePlacemark implements Drawable {
-
-    protected static final Pool<DrawablePlacemark> pool = new SynchronizedPool<>(); // acquire and are release called in separate threads
 
     protected static FloatBuffer leaderBuffer;
 
@@ -33,7 +30,7 @@ public class DrawablePlacemark implements Drawable {
 
     public Color iconColor = new Color();
 
-    public Color leaderColor = null; // must be assigned if a leader line will be drawn
+    public Color leaderColor = new Color();
 
     public boolean drawLeader = false;
 
@@ -51,25 +48,36 @@ public class DrawablePlacemark implements Drawable {
 
     public Matrix4 iconMvpMatrix = new Matrix4();
 
-    public Matrix4 leaderMvpMatrix = null; // must be assigned if a leader line will be drawn
+    public Matrix4 leaderMvpMatrix = new Matrix4();
 
-    public float[] leaderVertexPoint = null; // must be assigned if a leader line will be drawn
+    public float[] leaderVertexPoint = new float[6];
 
-    protected boolean enableDepthTest = true;
+    private boolean enableDepthTest = true;
 
-    protected DrawablePlacemark() {
+    private Pool<DrawablePlacemark> pool;
+
+    public DrawablePlacemark() {
     }
 
-    public static DrawablePlacemark obtain() {
-        DrawablePlacemark instance = pool.acquire(); // get an instance from the the pool
-        return (instance != null) ? instance : new DrawablePlacemark();
+    public static DrawablePlacemark obtain(Pool<DrawablePlacemark> pool) {
+        DrawablePlacemark instance = pool.acquire(); // get an instance from the pool
+        return (instance != null) ? instance.setPool(pool) : new DrawablePlacemark().setPool(pool);
+    }
+
+    private DrawablePlacemark setPool(Pool<DrawablePlacemark> pool) {
+        this.pool = pool;
+        return this;
     }
 
     @Override
     public void recycle() {
         this.program = null;
         this.iconTexture = null;
-        pool.release(this); // return this instance to the pool
+
+        if (this.pool != null) { // return this instance to the pool
+            this.pool.release(this);
+            this.pool = null;
+        }
     }
 
     /**

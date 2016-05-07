@@ -9,7 +9,6 @@ import android.graphics.Rect;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.draw.DrawablePlacemark;
-import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
@@ -19,13 +18,14 @@ import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.WWMath;
 
 /**
  * Represents a Placemark shape. A placemark displays an image, a label and a leader line connecting the placemark's
  * geographic position to the ground. All three of these items are optional. By default, the leader line is not
  * pickable. See {@link Placemark#setEnableLeaderLinePicking(boolean)}.
- * <p>
+ * <p/>
  * Placemarks may be drawn with either an image or as single-color square with a specified size. When the placemark
  * attributes indicate a valid image, the placemark's image is drawn as a rectangle in the image's original dimensions,
  * scaled by the image scale attribute. Otherwise, the placemark is drawn as a square with width and height equal to the
@@ -138,50 +138,6 @@ public class Placemark extends AbstractRenderable {
     private Vec3 groundPoint = null; // will be allocated if a leader line must be drawn
 
     /**
-     * This factory method creates a Placemark and an associated PlacemarkAttributes bundle that draws a simple square
-     * centered on the supplied position with the given size and color.
-     *
-     * @param position  The geographic position where the placemark is drawn.
-     * @param color     The color of the placemark.
-     * @param pixelSize The width and height of the placemark.
-     *
-     * @return A new Placemark with a PlacemarkAttributes bundle.
-     */
-    public static Placemark simple(Position position, Color color, int pixelSize) {
-        return new Placemark(position, PlacemarkAttributes.defaults().setImageColor(color).setImageScale(pixelSize));
-    }
-
-
-    /**
-     * This factory method creates a Placemark and an associated PlacemarkAttributes bundle that draws the given image
-     * centered on the supplied position.
-     *
-     * @param position    The geographic position with the placemark is drawn.
-     * @param imageSource The object containing the image that is drawn.
-     *
-     * @return A new Placemark with a PlacemarkAttributes bundle.
-     */
-    public static Placemark simpleImage(Position position, ImageSource imageSource) {
-        return new Placemark(position, PlacemarkAttributes.withImage(imageSource));
-    }
-
-    /**
-     * This factory method creates a Placemark and an associated PlacemarkAttributes bundle (with TextAttributes) that
-     * draws the given image centered on the supplied position with a nearby label.
-     *
-     * @param position    The geographic position with the placemark is drawn.
-     * @param imageSource The object containing the image that is drawn.
-     * @param label       The text that is drawn near the image. This parameter becomes the placemark's displayName
-     *                    property.
-     *
-     * @return A new Placemark with a PlacemarkAttributes bundle containing TextAttributes.
-     */
-    public static Placemark simpleImageAndLabel(Position position, ImageSource imageSource, String label) {
-        return new Placemark(position, PlacemarkAttributes.withImageAndLabel(imageSource), label);
-    }
-
-
-    /**
      * Constructs a Placemark that draws its representation at the supplied position using the given PlacemarkAttributes
      * bundle. The displayName and label properties are empty.
      *
@@ -191,6 +147,7 @@ public class Placemark extends AbstractRenderable {
     public Placemark(Position position, PlacemarkAttributes attributes) {
         this(position, attributes, null, null);
     }
+
 
     /**
      * Constructs a Placemark with a label that draws its representation at the supplied position using the given
@@ -228,6 +185,48 @@ public class Placemark extends AbstractRenderable {
         this.eyeDistanceScalingLabelThreshold = 1.5 * this.eyeDistanceScalingThreshold;
         this.imageRotationReference = WorldWind.RELATIVE_TO_SCREEN;
         this.imageTiltReference = WorldWind.RELATIVE_TO_SCREEN;
+    }
+
+    /**
+     * This factory method creates a Placemark and an associated PlacemarkAttributes bundle that draws a simple square
+     * centered on the supplied position with the given size and color.
+     *
+     * @param position  The geographic position where the placemark is drawn.
+     * @param color     The color of the placemark.
+     * @param pixelSize The width and height of the placemark.
+     *
+     * @return A new Placemark with a PlacemarkAttributes bundle.
+     */
+    public static Placemark simple(Position position, Color color, int pixelSize) {
+        return new Placemark(position, PlacemarkAttributes.defaults().setImageColor(color).setImageScale(pixelSize));
+    }
+
+    /**
+     * This factory method creates a Placemark and an associated PlacemarkAttributes bundle that draws the given image
+     * centered on the supplied position.
+     *
+     * @param position    The geographic position with the placemark is drawn.
+     * @param imageSource The object containing the image that is drawn.
+     *
+     * @return A new Placemark with a PlacemarkAttributes bundle.
+     */
+    public static Placemark simpleImage(Position position, ImageSource imageSource) {
+        return new Placemark(position, PlacemarkAttributes.withImage(imageSource));
+    }
+
+    /**
+     * This factory method creates a Placemark and an associated PlacemarkAttributes bundle (with TextAttributes) that
+     * draws the given image centered on the supplied position with a nearby label.
+     *
+     * @param position    The geographic position with the placemark is drawn.
+     * @param imageSource The object containing the image that is drawn.
+     * @param label       The text that is drawn near the image. This parameter becomes the placemark's displayName
+     *                    property.
+     *
+     * @return A new Placemark with a PlacemarkAttributes bundle containing TextAttributes.
+     */
+    public static Placemark simpleImageAndLabel(Position position, ImageSource imageSource, String label) {
+        return new Placemark(position, PlacemarkAttributes.withImageAndLabel(imageSource), label);
     }
 
     /**
@@ -293,7 +292,7 @@ public class Placemark extends AbstractRenderable {
     /**
      * Sets the placemark's attributes to the supplied attributes bundle. If null and this placemark is not highlighted,
      * this placemark is not drawn.
-     * <p>
+     * <p/>
      * It is permissible to share attribute bundles between placemarks.
      *
      * @param attributes A reference to an attributes bundle used by this placemark when not highlighted.
@@ -318,7 +317,7 @@ public class Placemark extends AbstractRenderable {
     /**
      * Sets the attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is
      * true, this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
-     * <p>
+     * <p/>
      * It is permissible to share attribute bundles between placemarks.
      *
      * @param highlightAttributes A reference to the attributes bundle used by this placemark when highlighted.
@@ -347,7 +346,7 @@ public class Placemark extends AbstractRenderable {
      * Sets the text used for this placemark's label on the globe. If non-null, then this property will be used for the
      * label in lieu of the displayName. If null, then the {@link Placemark#displayName} property is used for the label
      * text.
-     * <p>
+     * <p/>
      * A typical use case is to use the displayName property in lists of placemarks and use the label property for the
      * placemark labels on the globe, allowing for short or abbreviated names to be used on a cluttered globe.
      *
@@ -485,7 +484,7 @@ public class Placemark extends AbstractRenderable {
     /**
      * Gets the type of rotation to apply if the {@link Placemark#getImageRotation()} is not zero. This value indicates
      * whether to apply this placemark's image rotation relative to the screen or the globe.
-     * <p>
+     * <p/>
      * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is rotated in the plane of the screen and its
      * orientation relative to the globe changes as the view changes. If {@link WorldWind#RELATIVE_TO_GLOBE}, this
      * placemark's image is rotated in a plane tangent to the globe at this placemark's position and retains its
@@ -501,7 +500,7 @@ public class Placemark extends AbstractRenderable {
     /**
      * Sets the type of rotation to apply if the {@link Placemark#getImageRotation()} is not zero. This value indicates
      * whether to apply this placemark's image rotation relative to the screen or the globe.
-     * <p>
+     * <p/>
      * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is rotated in the plane of the screen and its
      * orientation relative to the globe changes as the view changes. If {@link WorldWind#RELATIVE_TO_GLOBE}, this
      * placemark's image is rotated in a plane tangent to the globe at this placemark's position and retains its
@@ -545,7 +544,7 @@ public class Placemark extends AbstractRenderable {
     /**
      * Gets the type tilt to apply when {@link Placemark#getImageTilt()} is non-zero. This value indicates whether to
      * apply this placemark's image tilt relative to the screen or the globe.
-     * <p>
+     * <p/>
      * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is tilted inwards (for positive tilts) relative
      * to the plane of the screen, and its orientation relative to the globe changes as the view changes. If {@link
      * WorldWind#RELATIVE_TO_GLOBE}, this placemark's image is tilted towards the globe's surface, and retains its
@@ -561,7 +560,7 @@ public class Placemark extends AbstractRenderable {
     /**
      * Sets the type tilt to apply when {@link Placemark#getImageTilt()} is non-zero. This value indicates whether to
      * apply this placemark's image tilt relative to the screen or the globe.
-     * <p>
+     * <p/>
      * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is tilted inwards (for positive tilts) relative
      * to the plane of the screen, and its orientation relative to the globe changes as the view changes. If {@link
      * WorldWind#RELATIVE_TO_GLOBE}, this placemark's image is tilted towards the globe's surface, and retains its
@@ -632,7 +631,8 @@ public class Placemark extends AbstractRenderable {
         }
 
         // Obtain a drawable delegate for this placemark.
-        DrawablePlacemark drawable = DrawablePlacemark.obtain();
+        Pool<DrawablePlacemark> pool = dc.getDrawablePool(DrawablePlacemark.class);
+        DrawablePlacemark drawable = DrawablePlacemark.obtain(pool);
 
         // Prepare the drawable icon properties.
         this.prepareDrawableIcon(dc, drawable);
@@ -679,7 +679,7 @@ public class Placemark extends AbstractRenderable {
 
     /**
      * Prepares this placemark's icon or symbol to for drawing in a subsequent drawing pass.
-     * <p>
+     * <p/>
      * Implementations must be careful not to leak resources from Placemark into the Drawable.
      *
      * @param dc       The current DrawContext.
@@ -758,26 +758,13 @@ public class Placemark extends AbstractRenderable {
 
     /**
      * Prepares this placemark's leader line to for drawing in a subsequent drawing pass.
-     * <p>
+     * <p/>
      * Implementations must be careful not to leak resources from Placemark into the Drawable.
      *
      * @param dc       The current DrawContext.
      * @param drawable The Drawable to be prepared.
      */
     protected void prepareDrawableLeader(DrawContext dc, DrawablePlacemark drawable) {
-        // Allocate drawable leader properties that are null unless a leader is to be drawn.
-        if (drawable.leaderColor == null) {
-            drawable.leaderColor = new Color();
-        }
-
-        if (drawable.leaderMvpMatrix == null) {
-            drawable.leaderMvpMatrix = new Matrix4();
-        }
-
-        if (drawable.leaderVertexPoint == null) {
-            drawable.leaderVertexPoint = new float[6];
-        }
-
         // Set the leader's line width and color.
         drawable.leaderWidth = this.activeAttributes.leaderLineAttributes.outlineWidth;
         drawable.leaderColor.set(this.activeAttributes.leaderLineAttributes.outlineColor);

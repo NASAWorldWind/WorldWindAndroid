@@ -12,73 +12,60 @@ import gov.nasa.worldwind.render.SurfaceTexture;
 import gov.nasa.worldwind.render.SurfaceTextureProgram;
 import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Pool;
-import gov.nasa.worldwind.util.SynchronizedPool;
 
 public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
 
-    protected static final Pool<DrawableSurfaceTexture> pool = new SynchronizedPool<>(); // acquire and are release called in separate threads
+    public SurfaceTextureProgram program;
 
-    protected SurfaceTextureProgram program;
+    public Sector sector = new Sector();
 
-    protected Sector sector = new Sector();
+    public Texture texture;
 
-    protected Texture texture;
+    public Matrix3 texCoordMatrix = new Matrix3();
 
-    protected Matrix3 texCoordMatrix = new Matrix3();
+    private Pool<DrawableSurfaceTexture> pool;
 
-    protected DrawableSurfaceTexture() {
+    public DrawableSurfaceTexture() {
     }
 
-    protected static DrawableSurfaceTexture obtain() {
-        DrawableSurfaceTexture instance = pool.acquire(); // get an instance from the the pool
-        return (instance != null) ? instance : new DrawableSurfaceTexture();
+    public static DrawableSurfaceTexture obtain(Pool<DrawableSurfaceTexture> pool) {
+        DrawableSurfaceTexture instance = pool.acquire(); // get an instance from the pool
+        return (instance != null) ? instance.setPool(pool) : new DrawableSurfaceTexture().setPool(pool);
     }
 
-    public static DrawableSurfaceTexture obtain(SurfaceTextureProgram program, Sector sector, Texture texture) {
-        DrawableSurfaceTexture instance = obtain(); // get an instance from the the pool
-        instance.program = program;
+    private DrawableSurfaceTexture setPool(Pool<DrawableSurfaceTexture> pool) {
+        this.pool = pool;
+        return this;
+    }
+
+    public DrawableSurfaceTexture set(SurfaceTextureProgram program, Sector sector, Texture texture, Matrix3 texCoordMatrix) {
+        this.program = program;
+        this.texture = texture;
 
         if (sector != null) {
-            instance.sector.set(sector);
+            this.sector.set(sector);
         } else {
-            instance.sector.setEmpty();
-        }
-
-        if (texture != null) {
-            instance.texture = texture;
-            instance.texCoordMatrix.set(texture.getTexCoordTransform());
-        } else {
-            instance.texCoordMatrix.setToIdentity();
-        }
-
-        return instance;
-    }
-
-    public static DrawableSurfaceTexture obtain(SurfaceTextureProgram program, Sector sector, Texture texture, Matrix3 texCoordMatrix) {
-        DrawableSurfaceTexture instance = obtain(); // get an instance from the the pool
-        instance.program = program;
-        instance.texture = texture;
-
-        if (sector != null) {
-            instance.sector.set(sector);
-        } else {
-            instance.sector.setEmpty();
+            this.sector.setEmpty();
         }
 
         if (texCoordMatrix != null) {
-            instance.texCoordMatrix.set(texCoordMatrix);
+            this.texCoordMatrix.set(texCoordMatrix);
         } else {
-            instance.texCoordMatrix.setToIdentity();
+            this.texCoordMatrix.setToIdentity();
         }
 
-        return instance;
+        return this;
     }
 
     @Override
     public void recycle() {
         this.texture = null;
         this.program = null;
-        pool.release(this); // return this instance to the pool
+
+        if (this.pool != null) { // return this instance to the pool
+            this.pool.release(this);
+            this.pool = null;
+        }
     }
 
     @Override

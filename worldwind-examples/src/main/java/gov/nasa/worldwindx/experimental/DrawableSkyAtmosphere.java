@@ -18,15 +18,12 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Pool;
-import gov.nasa.worldwind.util.SynchronizedPool;
 
 public class DrawableSkyAtmosphere implements Drawable {
 
-    protected static final Pool<DrawableSkyAtmosphere> pool = new SynchronizedPool<>(); // acquire and are release called in separate threads
+    public SkyProgram program;
 
-    protected SkyProgram program;
-
-    protected Vec3 lightDirection = new Vec3();
+    public Vec3 lightDirection = new Vec3();
 
     protected int skyWidth = 128;
 
@@ -38,30 +35,41 @@ public class DrawableSkyAtmosphere implements Drawable {
 
     protected Sector fullSphereSector = new Sector().setFullSphere();
 
-    protected DrawableSkyAtmosphere() {
+    private Pool<DrawableSkyAtmosphere> pool;
+
+    public DrawableSkyAtmosphere() {
     }
 
-    public static DrawableSkyAtmosphere obtain(SkyProgram program, Vec3 lightDirection) {
+    public static DrawableSkyAtmosphere obtain(Pool<DrawableSkyAtmosphere> pool) {
         DrawableSkyAtmosphere instance = pool.acquire(); // get an instance from the pool
-        if (instance == null) {
-            instance = new DrawableSkyAtmosphere();
-        }
+        return (instance != null) ? instance.setPool(pool) : new DrawableSkyAtmosphere().setPool(pool);
+    }
 
-        instance.program = program;
+    private DrawableSkyAtmosphere setPool(Pool<DrawableSkyAtmosphere> pool) {
+        this.pool = pool;
+        return this;
+    }
+
+    public DrawableSkyAtmosphere set(SkyProgram program, Vec3 lightDirection) {
+        this.program = program;
 
         if (lightDirection != null) {
-            instance.lightDirection.set(lightDirection);
+            this.lightDirection.set(lightDirection);
         } else {
-            instance.lightDirection.set(0, 0, 1);
+            this.lightDirection.set(0, 0, 1);
         }
 
-        return instance;
+        return this;
     }
 
     @Override
     public void recycle() {
         this.program = null;
-        pool.release(this); // return this instance to the pool
+
+        if (this.pool != null) { // return this instance to the pool
+            this.pool.release(this);
+            this.pool = null;
+        }
     }
 
     @Override

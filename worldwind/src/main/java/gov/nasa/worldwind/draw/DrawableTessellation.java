@@ -14,49 +14,56 @@ import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Pool;
-import gov.nasa.worldwind.util.SynchronizedPool;
 
 public class DrawableTessellation implements Drawable {
 
-    protected static final Pool<DrawableTessellation> pool = new SynchronizedPool<>(); // acquire and are release called in separate threads
+    public BasicShaderProgram program;
 
-    protected Matrix4 offsetMvpMatrix = new Matrix4();
+    public Color color = new Color();
 
     protected Matrix4 mvpMatrix = new Matrix4();
 
-    protected BasicShaderProgram program;
+    protected Matrix4 offsetMvpMatrix = new Matrix4();
 
-    protected Color color = new Color();
+    private Pool<DrawableTessellation> pool;
 
-    protected DrawableTessellation() {
+    public DrawableTessellation() {
     }
 
-    public static DrawableTessellation obtain(BasicShaderProgram program, Color color) {
-        DrawableTessellation instance = pool.acquire(); // get an instance from the the pool
-        if (instance == null) {
-            instance = new DrawableTessellation();
-        }
+    public static DrawableTessellation obtain(Pool<DrawableTessellation> pool) {
+        DrawableTessellation instance = pool.acquire(); // get an instance from the pool
+        return (instance != null) ? instance.setPool(pool) : new DrawableTessellation().setPool(pool);
+    }
 
-        instance.program = program;
+    private DrawableTessellation setPool(Pool<DrawableTessellation> pool) {
+        this.pool = pool;
+        return this;
+    }
+
+    public DrawableTessellation set(BasicShaderProgram program, Color color) {
+        this.program = program;
 
         if (color != null) {
-            instance.color.set(color);
+            this.color.set(color);
         } else {
-            instance.color.set(1, 1, 1, 1); // white
+            this.color.set(1, 1, 1, 1);
         }
 
-        return instance;
+        return this;
     }
 
     @Override
     public void recycle() {
         this.program = null;
-        pool.release(this); // return this instance to the pool
+
+        if (this.pool != null) { // return this instance to the pool
+            this.pool.release(this);
+            this.pool = null;
+        }
     }
 
     @Override
     public void draw(DrawContext dc) {
-
         if (this.program == null) {
             return; // program unspecified
         }
