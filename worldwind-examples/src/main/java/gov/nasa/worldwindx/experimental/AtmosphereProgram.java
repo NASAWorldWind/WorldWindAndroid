@@ -41,7 +41,7 @@ public class AtmosphereProgram extends ShaderProgram {
 
     public static final int FRAGMODE_GROUND_PRIMARY_TEX_BLEND = 4;
 
-    protected double altitude;
+    protected double altitude = 160000;
 
     protected int fragModeId;
 
@@ -95,7 +95,6 @@ public class AtmosphereProgram extends ShaderProgram {
     }
 
     protected void initProgram(DrawContext dc) {
-        this.altitude = 160000;
         Vec3 invWavelength = new Vec3(
             1 / Math.pow(0.650, 4),  // 650 nm for red
             1 / Math.pow(0.570, 4),  // 570 nm for green

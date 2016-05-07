@@ -5,13 +5,17 @@
 
 package gov.nasa.worldwindx.experimental;
 
-import gov.nasa.worldwind.draw.Drawable;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.ShortBuffer;
+import java.util.Arrays;
+
 import gov.nasa.worldwind.geom.Location;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.layer.AbstractLayer;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.ImageSource;
-import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwindx.R;
 
@@ -22,6 +26,12 @@ public class AtmosphereLayer extends AbstractLayer {
     protected Location lightLocation;
 
     protected Vec3 activeLightDirection = new Vec3();
+
+    private int skyWidth = 128;
+
+    private int skyHeight = 128;
+
+    private Sector fullSphereSector = new Sector().setFullSphere();
 
     public AtmosphereLayer() {
         super("Atmosphere");
@@ -67,13 +77,31 @@ public class AtmosphereLayer extends AbstractLayer {
     }
 
     protected void renderSky(DrawContext dc) {
-        SkyProgram program = (SkyProgram) dc.getShaderProgram(SkyProgram.KEY);
-        if (program == null) {
-            program = (SkyProgram) dc.putShaderProgram(SkyProgram.KEY, new SkyProgram(dc.resources));
+        Pool<DrawableSkyAtmosphere> pool = dc.getDrawablePool(DrawableSkyAtmosphere.class);
+        DrawableSkyAtmosphere drawable = DrawableSkyAtmosphere.obtain(pool);
+
+        drawable.program = (SkyProgram) dc.getShaderProgram(SkyProgram.KEY);
+        if (drawable.program == null) {
+            drawable.program = (SkyProgram) dc.putShaderProgram(SkyProgram.KEY, new SkyProgram(dc.resources));
         }
 
-        Pool<DrawableSkyAtmosphere> pool = dc.getDrawablePool(DrawableSkyAtmosphere.class);
-        Drawable drawable = DrawableSkyAtmosphere.obtain(pool).set(program, this.activeLightDirection);
+        drawable.lightDirection.set(this.activeLightDirection);
+        drawable.globeRadius = dc.globe.getEquatorialRadius();
+
+        if (drawable.vertexPoints == null) {
+            int count = this.skyWidth * this.skyHeight;
+            double[] array = new double[count];
+            Arrays.fill(array, drawable.program.getAltitude());
+
+            drawable.vertexPoints = ByteBuffer.allocateDirect(count * 12).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            dc.globe.geographicToCartesianGrid(this.fullSphereSector, this.skyWidth, this.skyHeight, array, null,
+                drawable.vertexPoints, 3).rewind();
+        }
+
+        if (drawable.triStripElements == null) {
+            drawable.triStripElements = assembleTriStripElements(this.skyWidth, this.skyHeight);
+        }
+
         dc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY /*z-order after all other surface drawables*/);
     }
 
@@ -82,22 +110,62 @@ public class AtmosphereLayer extends AbstractLayer {
             return; // no terrain surface to render on
         }
 
-        GroundProgram program = (GroundProgram) dc.getShaderProgram(GroundProgram.KEY);
-        if (program == null) {
-            program = (GroundProgram) dc.putShaderProgram(GroundProgram.KEY, new GroundProgram(dc.resources));
+        Pool<DrawableGroundAtmosphere> pool = dc.getDrawablePool(DrawableGroundAtmosphere.class);
+        DrawableGroundAtmosphere drawable = DrawableGroundAtmosphere.obtain(pool);
+
+        drawable.program = (GroundProgram) dc.getShaderProgram(GroundProgram.KEY);
+        if (drawable.program == null) {
+            drawable.program = (GroundProgram) dc.putShaderProgram(GroundProgram.KEY, new GroundProgram(dc.resources));
         }
 
+        drawable.lightDirection.set(this.activeLightDirection);
+        drawable.globeRadius = dc.globe.getEquatorialRadius();
+
         // Use this layer's night image when the light location is different than the eye location.
-        Texture nightTexture = null;
         if (this.nightImageSource != null && this.lightLocation != null) {
-            nightTexture = dc.getTexture(this.nightImageSource);
-            if (nightTexture == null) {
-                nightTexture = dc.retrieveTexture(this.nightImageSource);
+            drawable.nightTexture = dc.getTexture(this.nightImageSource);
+            if (drawable.nightTexture == null) {
+                drawable.nightTexture = dc.retrieveTexture(this.nightImageSource);
+            }
+        } else {
+            drawable.nightTexture = null;
+        }
+
+        dc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY /*z-order after all other surface drawables*/);
+    }
+
+    // TODO move this into a basic tessellator implementation in World Wind
+    // TODO tessellator and atmosphere needs the TriStripIndices - could we add these to BasicGlobe (needs to be on a static context)
+    // TODO may need to switch the tessellation method anyway - geographic grid may produce artifacts at the poles
+    protected static ShortBuffer assembleTriStripElements(int numLat, int numLon) {
+
+        // Allocate a buffer to hold the indices.
+        int count = ((numLat - 1) * numLon + (numLat - 2)) * 2;
+        ShortBuffer result = ByteBuffer.allocateDirect(count * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
+        short[] index = new short[2];
+        int vertex = 0;
+
+        for (int latIndex = 0; latIndex < numLat - 1; latIndex++) {
+            // Create a triangle strip joining each adjacent column of vertices, starting in the bottom left corner and
+            // proceeding to the right. The first vertex starts with the left row of vertices and moves right to create
+            // a counterclockwise winding order.
+            for (int lonIndex = 0; lonIndex < numLon; lonIndex++) {
+                vertex = lonIndex + latIndex * numLon;
+                index[0] = (short) (vertex + numLon);
+                index[1] = (short) vertex;
+                result.put(index);
+            }
+
+            // Insert indices to create 2 degenerate triangles:
+            // - one for the end of the current row, and
+            // - one for the beginning of the next row
+            if (latIndex < numLat - 2) {
+                index[0] = (short) vertex;
+                index[1] = (short) ((latIndex + 2) * numLon);
+                result.put(index);
             }
         }
 
-        Pool<DrawableGroundAtmosphere> pool = dc.getDrawablePool(DrawableGroundAtmosphere.class);
-        Drawable drawable = DrawableGroundAtmosphere.obtain(pool).set(program, this.activeLightDirection, nightTexture);
-        dc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY /*z-order after all other surface drawables*/);
+        return (ShortBuffer) result.rewind();
     }
 }

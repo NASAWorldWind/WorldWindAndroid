@@ -23,6 +23,8 @@ public class DrawableGroundAtmosphere implements Drawable {
 
     public Vec3 lightDirection = new Vec3();
 
+    public double globeRadius;
+
     public Texture nightTexture;
 
     protected Matrix4 mvpMatrix = new Matrix4();
@@ -43,19 +45,6 @@ public class DrawableGroundAtmosphere implements Drawable {
 
     private DrawableGroundAtmosphere setPool(Pool<DrawableGroundAtmosphere> pool) {
         this.pool = pool;
-        return this;
-    }
-
-    public DrawableGroundAtmosphere set(GroundProgram program, Vec3 lightDirection, Texture nightTexture) {
-        this.program = program;
-        this.nightTexture = nightTexture;
-
-        if (lightDirection != null) {
-            this.lightDirection.set(lightDirection);
-        } else {
-            this.lightDirection.set(0, 0, 1);
-        }
-
         return this;
     }
 
@@ -81,7 +70,7 @@ public class DrawableGroundAtmosphere implements Drawable {
         }
 
         // Use the draw context's globe.
-        this.program.loadGlobeRadius(dc.globe.getEquatorialRadius()); // TODO the Globe is rendering state
+        this.program.loadGlobeRadius(this.globeRadius);
 
         // Use the draw context's eye point.
         this.program.loadEyePoint(dc.eyePoint);
