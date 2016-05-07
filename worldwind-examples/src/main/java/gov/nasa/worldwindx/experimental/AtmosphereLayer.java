@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwindx.experimental;
 
-import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Vec3;
@@ -75,7 +74,7 @@ public class AtmosphereLayer extends AbstractLayer {
 
         Pool<DrawableSkyAtmosphere> pool = dc.getDrawablePool(DrawableSkyAtmosphere.class);
         Drawable drawable = DrawableSkyAtmosphere.obtain(pool).set(program, this.activeLightDirection);
-        dc.offerDrawable(drawable, WorldWind.BACKGROUND_DRAWABLE, 0 /*z-order*/);
+        dc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY /*z-order after all other surface drawables*/);
     }
 
     protected void renderGround(DrawContext dc) {
