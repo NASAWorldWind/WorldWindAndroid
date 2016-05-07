@@ -45,6 +45,18 @@ public class Placemark extends AbstractRenderable {
 
     private static final double DEFAULT_DEPTH_OFFSET = -0.1;
 
+    private static Vec3 placePoint = new Vec3();
+
+    private static Vec3 screenPlacePoint = new Vec3();
+
+    private static Vec3 groundPoint = new Vec3();
+
+    private static Vec2 offset = new Vec2();
+
+    private static Matrix4 unitQuadTransform = new Matrix4();
+
+    private static Rect unitQuadBounds = new Rect();
+
     /**
      * The placemark's geographic position.
      */
@@ -133,18 +145,6 @@ public class Placemark extends AbstractRenderable {
     protected int imageTiltReference;
 
     private double eyeDistance;
-
-    private Vec3 placePoint = new Vec3();
-
-    private Vec3 screenPlacePoint = new Vec3();
-
-    private Vec3 groundPoint = new Vec3();
-
-    private Vec2 offset = new Vec2();
-
-    private Matrix4 unitQuadTransform = new Matrix4();
-
-    private Rect unitQuadBounds = new Rect();
 
     /**
      * Constructs a Placemark that draws its representation at the supplied position using the given PlacemarkAttributes
@@ -621,11 +621,11 @@ public class Placemark extends AbstractRenderable {
 
         // Compute the placemark's Cartesian model point. TODO: dc.surfacePointForMode
         dc.globe.geographicToCartesian(this.position.latitude, this.position.longitude, this.position.altitude,
-            this.placePoint);
+            placePoint);
 
         // Compute the eye distance to the place point, the value which is used for ordering the placemark drawable and
         // determining the amount of depth offset to apply.
-        this.eyeDistance = dc.eyePoint.distanceTo(this.placePoint);
+        this.eyeDistance = dc.eyePoint.distanceTo(placePoint);
 
         // Compute a screen depth offset appropriate for the current viewing parameters.
         double depthOffset = 0;
@@ -635,7 +635,7 @@ public class Placemark extends AbstractRenderable {
 
         // Project the placemark's model point to screen coordinates, using the screen depth offset to push the screen
         // point's z component closer to the eye point.
-        if (!dc.projectWithDepth(this.placePoint, depthOffset, this.screenPlacePoint)) {
+        if (!dc.projectWithDepth(placePoint, depthOffset, screenPlacePoint)) {
             return; // clipped by the near plane or the far plane
         }
 
@@ -643,10 +643,10 @@ public class Placemark extends AbstractRenderable {
         // icon drawable in order to give the icon visual priority over the leader line.
         if (this.mustDrawLeaderLine(dc)) {
             // Compute the placemark's Cartesian ground point. TODO: use dc.surfacePointForMode
-            dc.globe.geographicToCartesian(this.position.latitude, this.position.longitude, 0, this.groundPoint);
+            dc.globe.geographicToCartesian(this.position.latitude, this.position.longitude, 0, groundPoint);
 
             // If the leader line is visible, enqueue a drawable leader line for processing on the OpenGL thread.
-            if (dc.frustum.intersectsSegment(this.groundPoint, this.placePoint)) {
+            if (dc.frustum.intersectsSegment(groundPoint, placePoint)) {
                 Pool<DrawableLines> pool = dc.getDrawablePool(DrawableLines.class);
                 DrawableLines drawable = DrawableLines.obtain(pool);
                 this.prepareDrawableLeader(dc, drawable);
@@ -658,8 +658,8 @@ public class Placemark extends AbstractRenderable {
         this.determineActiveTexture(dc);
 
         // If the placemark's icon is visible, enqueue a drawable icon for processing on the OpenGL thread.
-        WWMath.boundingRectForUnitQuad(this.unitQuadTransform, this.unitQuadBounds);
-        if (Rect.intersects(dc.viewport, this.unitQuadBounds)) {
+        WWMath.boundingRectForUnitQuad(unitQuadTransform, unitQuadBounds);
+        if (Rect.intersects(dc.viewport, unitQuadBounds)) {
             Pool<DrawableQuad> pool = dc.getDrawablePool(DrawableQuad.class);
             DrawableQuad drawable = DrawableQuad.obtain(pool);
             this.prepareDrawableIcon(dc, drawable);
@@ -704,7 +704,7 @@ public class Placemark extends AbstractRenderable {
             Math.max(this.activeAttributes.minimumImageScale, Math.min(1, this.getEyeDistanceScalingThreshold() / this.eyeDistance)) : 1;
 
         // Initialize the unit quad transform to the identity matrix.
-        this.unitQuadTransform.setToIdentity();
+        unitQuadTransform.setToIdentity();
 
         // Apply the icon's translation and scale according to the image size, image offset and image scale. The image
         // offset is defined with its origin at the image's bottom-left corner and axes that extend up and to the right
@@ -714,41 +714,41 @@ public class Placemark extends AbstractRenderable {
             int w = this.activeTexture.getImageWidth();
             int h = this.activeTexture.getImageHeight();
             double s = this.activeAttributes.imageScale * visibilityScale;
-            Vec2 offset = this.activeAttributes.imageOffset.offsetForSize(w, h, this.offset);
+            this.activeAttributes.imageOffset.offsetForSize(w, h, offset);
 
-            this.unitQuadTransform.multiplyByTranslation(
-                this.screenPlacePoint.x - offset.x * s,
-                this.screenPlacePoint.y - offset.y * s,
-                this.screenPlacePoint.z);
+            unitQuadTransform.multiplyByTranslation(
+                screenPlacePoint.x - offset.x * s,
+                screenPlacePoint.y - offset.y * s,
+                screenPlacePoint.z);
 
-            this.unitQuadTransform.multiplyByScale(w * s, h * s, 1);
+            unitQuadTransform.multiplyByScale(w * s, h * s, 1);
 
         } else {
             double size = this.activeAttributes.imageScale * visibilityScale;
-            Vec2 offset = this.activeAttributes.imageOffset.offsetForSize(size, size, this.offset);
+            this.activeAttributes.imageOffset.offsetForSize(size, size, offset);
 
-            this.unitQuadTransform.multiplyByTranslation(
-                this.screenPlacePoint.x - offset.x,
-                this.screenPlacePoint.y - offset.y,
-                this.screenPlacePoint.z);
+            unitQuadTransform.multiplyByTranslation(
+                screenPlacePoint.x - offset.x,
+                screenPlacePoint.y - offset.y,
+                screenPlacePoint.z);
 
-            this.unitQuadTransform.multiplyByScale(size, size, 1);
+            unitQuadTransform.multiplyByScale(size, size, 1);
         }
 
         // ... perform image rotation
         if (this.imageRotation != 0) {
             double rotation = this.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
                 dc.heading - this.imageRotation : -this.imageRotation;
-            this.unitQuadTransform.multiplyByTranslation(0.5, 0.5, 0);
-            this.unitQuadTransform.multiplyByRotation(0, 0, 1, rotation);
-            this.unitQuadTransform.multiplyByTranslation(-0.5, -0.5, 0);
+            unitQuadTransform.multiplyByTranslation(0.5, 0.5, 0);
+            unitQuadTransform.multiplyByRotation(0, 0, 1, rotation);
+            unitQuadTransform.multiplyByTranslation(-0.5, -0.5, 0);
         }
 
         // ... and perform the tilt so that the image tilts back from its base into the view volume.
         if (this.imageTilt != 0) {
             double tilt = this.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
                 dc.tilt + this.imageTilt : this.imageTilt;
-            this.unitQuadTransform.multiplyByRotation(-1, 0, 0, tilt);
+            unitQuadTransform.multiplyByRotation(-1, 0, 0, tilt);
         }
     }
 
@@ -767,20 +767,14 @@ public class Placemark extends AbstractRenderable {
         }
 
         // Compute the drawable's modelview-projection matrix, transforming unit quad coordinates to screen coordinates.
-        drawable.mvpMatrix.setToMultiply(dc.screenProjection, this.unitQuadTransform);
+        drawable.mvpMatrix.setToMultiply(dc.screenProjection, unitQuadTransform);
 
-        // Configure the drawable according to the placemark's active attributes.
+        // Configure the drawable according to the placemark's active attributes. Use the texture associated with the
+        // active attributes' image source and its associated tex coord transform. If the texture is not specified or
+        // not available, draw a simple colored square.
         drawable.color.set(this.activeAttributes.imageColor);
+        drawable.texture = this.activeTexture;
         drawable.enableDepthTest = this.activeAttributes.depthTest;
-
-        // Use the texture associated with the active attributes' image source and its associated tex coord transform.
-        // If the texture is not specified or not available, draw a simple colored square.
-        if (this.activeTexture != null) {
-            drawable.texture = this.activeTexture;
-            drawable.texCoordMatrix.set(this.activeTexture.getTexCoordTransform());
-        } else {
-            drawable.texture = null;
-        }
     }
 
     /**
@@ -801,13 +795,13 @@ public class Placemark extends AbstractRenderable {
         drawable.vertexPoints[0] = 0; // groundPoint.x - groundPoint.x
         drawable.vertexPoints[1] = 0; // groundPoint.y - groundPoint.y
         drawable.vertexPoints[2] = 0; // groundPoint.z - groundPoint.z
-        drawable.vertexPoints[3] = (float) (this.placePoint.x - this.groundPoint.x);
-        drawable.vertexPoints[4] = (float) (this.placePoint.y - this.groundPoint.y);
-        drawable.vertexPoints[5] = (float) (this.placePoint.z - this.groundPoint.z);
+        drawable.vertexPoints[3] = (float) (placePoint.x - groundPoint.x);
+        drawable.vertexPoints[4] = (float) (placePoint.y - groundPoint.y);
+        drawable.vertexPoints[5] = (float) (placePoint.z - groundPoint.z);
 
         // Compute the drawable's modelview-projection matrix, relative to the placemark's ground point.
         drawable.mvpMatrix.set(dc.modelviewProjection);
-        drawable.mvpMatrix.multiplyByTranslation(this.groundPoint.x, this.groundPoint.y, this.groundPoint.z);
+        drawable.mvpMatrix.multiplyByTranslation(groundPoint.x, groundPoint.y, groundPoint.z);
 
         // Configure the drawable according to the placemark's active leader line attributes.
         drawable.color.set(this.activeAttributes.leaderLineAttributes.outlineColor);

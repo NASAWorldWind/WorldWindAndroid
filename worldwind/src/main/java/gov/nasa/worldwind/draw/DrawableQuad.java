@@ -7,7 +7,6 @@ package gov.nasa.worldwind.draw;
 
 import android.opengl.GLES20;
 
-import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
@@ -20,8 +19,6 @@ public class DrawableQuad implements Drawable {
     public BasicShaderProgram program = null;
 
     public Matrix4 mvpMatrix = new Matrix4();
-
-    public Matrix3 texCoordMatrix = new Matrix3();
 
     public Color color = new Color();
 
@@ -65,9 +62,6 @@ public class DrawableQuad implements Drawable {
             return; // program failed to build
         }
 
-        // Use the drawable's modelview-projection matrix.
-        this.program.loadModelviewProjection(this.mvpMatrix);
-
         // Use the drawable's color.
         this.program.loadColor(this.color);
 
@@ -76,7 +70,7 @@ public class DrawableQuad implements Drawable {
         dc.activeTextureUnit(GLES20.GL_TEXTURE0);
         if (this.texture != null && this.texture.bindTexture(dc)) {
             this.program.enableTexture(true);
-            this.program.loadTexCoordMatrix(this.texCoordMatrix);
+            this.program.loadTexCoordMatrix(this.texture.getTexCoordTransform());
         } else {
             this.program.enableTexture(false);
         }
@@ -93,8 +87,21 @@ public class DrawableQuad implements Drawable {
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 2, GLES20.GL_FLOAT, false, 0, 0);
         GLES20.glVertexAttribPointer(1 /*vertexTexCoord*/, 2, GLES20.GL_FLOAT, false, 0, 0);
 
+        // Use the drawable's modelview-projection matrix.
+        this.program.loadModelviewProjection(this.mvpMatrix);
+
         // Draw the 2D unit quad as triangles.
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+
+        Drawable next;
+        while ((next = dc.peekDrawable()) != null && this.canBatchWith(next)) { // check if the drawable at the front of the queue can be batched
+            // Use the next drawable's modelview-projection matrix.
+            DrawableQuad drawable = (DrawableQuad) dc.pollDrawable(); // take it off the queue
+            this.program.loadModelviewProjection(drawable.mvpMatrix);
+
+            // Draw the 2D unit quad as triangles.
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        }
 
         // Restore the default World Wind OpenGL state.
         GLES20.glDepthMask(true);
@@ -103,5 +110,13 @@ public class DrawableQuad implements Drawable {
         }
         dc.bindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
         GLES20.glDisableVertexAttribArray(1);
+    }
+
+    protected boolean canBatchWith(Drawable that) {
+        return this.getClass() == that.getClass()
+            && this.program == ((DrawableQuad) that).program
+            && this.color.equals(((DrawableQuad) that).color)
+            && this.texture == ((DrawableQuad) that).texture
+            && this.enableDepthTest == ((DrawableQuad) that).enableDepthTest;
     }
 }
