@@ -71,7 +71,7 @@ public class SurfaceImage extends AbstractRenderable {
 
         Texture texture = dc.getTexture(this.imageSource); // try to get the texture from the cache
         if (texture == null) {
-            texture = dc.retrieveTexture(this.imageSource); // adds the retrieved texture to the cache
+            texture = dc.retrieveTexture(this.imageSource); // puts retrieved textures in the cache
         }
 
         if (texture == null) {
