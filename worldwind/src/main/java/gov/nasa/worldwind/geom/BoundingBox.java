@@ -53,9 +53,9 @@ public class BoundingBox {
      */
     protected double radius = Math.sqrt(3);
 
-    protected Vec3 endPoint1 = new Vec3();
+    private Vec3 endPoint1 = new Vec3();
 
-    protected Vec3 endPoint2 = new Vec3();
+    private Vec3 endPoint2 = new Vec3();
 
     public BoundingBox() {
     }
