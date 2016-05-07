@@ -16,7 +16,7 @@ import gov.nasa.worldwind.util.WWUtil;
 
 public class BasicShaderProgram extends ShaderProgram {
 
-    public static final Object KEY = BasicShaderProgram.class.getName();
+    public static final Object KEY = BasicShaderProgram.class;
 
     protected int enableTextureId;
 

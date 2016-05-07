@@ -22,7 +22,7 @@ import gov.nasa.worldwind.util.WWUtil;
 // TODO Try class representing transform with a specific scale+translate object that can be uploaded to a GLSL vec4
 public class SurfaceTextureProgram extends ShaderProgram {
 
-    public static final Object KEY = SurfaceTextureProgram.class.getName();
+    public static final Object KEY = SurfaceTextureProgram.class;
 
     public final ArrayList<SurfaceTexture> surfaceTextures = new ArrayList<>();
 

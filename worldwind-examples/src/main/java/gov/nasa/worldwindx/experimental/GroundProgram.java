@@ -13,7 +13,7 @@ import gov.nasa.worldwindx.R;
 
 public class GroundProgram extends AtmosphereProgram {
 
-    public static final Object KEY = GroundProgram.class.getName();
+    public static final Object KEY = GroundProgram.class;
 
     public GroundProgram(Resources resources) {
         try {

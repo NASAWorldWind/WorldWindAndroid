@@ -13,7 +13,7 @@ import gov.nasa.worldwindx.R;
 
 public class SkyProgram extends AtmosphereProgram {
 
-    public static final Object KEY = SkyProgram.class.getName();
+    public static final Object KEY = SkyProgram.class;
 
     public SkyProgram(Resources resources) {
         try {
