@@ -104,7 +104,7 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
 
     @Override
     protected void doRender(DrawContext dc) {
-        if (dc.terrain.getTileCount() == 0) {
+        if (dc.terrain.getSector().isEmpty()) {
             return; // no terrain surface to render on
         }
 

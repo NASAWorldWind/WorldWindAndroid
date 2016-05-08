@@ -10,7 +10,6 @@ import android.opengl.GLES20;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
-import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.SurfaceTexture;
 import gov.nasa.worldwind.render.SurfaceTextureProgram;
@@ -101,20 +100,20 @@ public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
     }
 
     protected void drawSurfaceTextures(DrawContext dc) {
-        // Get the draw context's tessellated terrain.
-        Terrain terrain = dc.terrain;
-
-        // Set up to use the shared terrain tex coord attributes.
+        // Set up to use vertex tex coord attributes.
         GLES20.glEnableVertexAttribArray(1);
-        terrain.useVertexTexCoordAttrib(dc, 1);
 
         // Make multitexture unit 0 active.
         dc.activeTextureUnit(GLES20.GL_TEXTURE0);
 
-        for (int idx = 0, len = terrain.getTileCount(); idx < len; idx++) {
-            // Get the terrain tile's sector, and keep a flag to ensure we apply the terrain tile's state at most once.
-            Sector terrainSector = terrain.getTileSector(idx);
-            boolean usingTerrainTileState = false;
+        for (int idx = 0, len = dc.getDrawableTerrainCount(); idx < len; idx++) {
+            // Get the drawable terrain associated with the draw context.
+            DrawableTerrain terrain = dc.getDrawableTerrain(idx);
+
+            // Get the terrain's attributes, and keep a flag to ensure we apply the terrain's attributes at most once.
+            Sector terrainSector = terrain.getSector();
+            Vec3 terrainOrigin = terrain.getVertexOrigin();
+            boolean usingTerrainAttrs = false;
 
             for (int jidx = 0, jlen = this.program.surfaceTextures.size(); jidx < jlen; jidx++) {
                 // Get the surface texture and its sector.
@@ -122,35 +121,34 @@ public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
                 Sector textureSector = texture.getSector();
 
                 if (!textureSector.intersects(terrainSector)) {
-                    continue; // texture does not intersect the terrain tile
+                    continue; // texture does not intersect the terrain
                 }
 
                 if (!texture.bindTexture(dc)) {
                     continue; // texture failed to bind
                 }
 
-                if (!usingTerrainTileState) {
-                    // Use the draw context's modelview projection matrix, transformed to the terrain tile's local
-                    // coordinates.
-                    Vec3 terrainOrigin = terrain.getTileVertexOrigin(idx);
+                if (!usingTerrainAttrs) {
+                    // Use the draw context's modelview projection matrix, transformed to terrain local coordinates.
                     this.program.mvpMatrix.set(dc.modelviewProjection);
                     this.program.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
                     this.program.loadModelviewProjection();
-                    // Use the terrain tile's vertex point attribute.
-                    terrain.useVertexPointAttrib(dc, idx, 0);
-                    // Suppress subsequent tile state application until the next terrain tile.
-                    usingTerrainTileState = true;
+                    // Use the terrain's vertex point attribute and vertex tex coord attribute.
+                    terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/);
+                    terrain.useVertexTexCoordAttrib(dc, 1 /*vertexTexCoord*/);
+                    // Suppress subsequent tile state application until the next terrain.
+                    usingTerrainAttrs = true;
                 }
 
-                // Use tex coord matrices that registers the surface texture correctly and mask terrain tile fragments
-                // that fall outside the surface texture's sector.
+                // Use tex coord matrices that registers the surface texture correctly and mask terrain fragments that
+                // fall outside the surface texture's sector.
                 this.program.texCoordMatrix[0].set(texture.getTexCoordTransform());
                 this.program.texCoordMatrix[0].multiplyByTileTransform(terrainSector, textureSector);
                 this.program.texCoordMatrix[1].setToTileTransform(terrainSector, textureSector);
                 this.program.loadTexCoordMatrix();
 
-                // Draw the terrain tile as triangles.
-                terrain.drawTileTriangles(dc, idx);
+                // Draw the terrain as triangles.
+                terrain.drawTriangles(dc);
             }
         }
 

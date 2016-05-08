@@ -8,11 +8,11 @@ package gov.nasa.worldwindx.experimental;
 import android.opengl.GLES20;
 
 import gov.nasa.worldwind.draw.Drawable;
+import gov.nasa.worldwind.draw.DrawableTerrain;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
-import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Pool;
@@ -78,48 +78,47 @@ public class DrawableGroundAtmosphere implements Drawable {
         // Use this layer's light direction.
         this.program.loadLightDirection(this.lightDirection);
 
-        // Get the draw context's tessellated terrain.
-        Terrain terrain = dc.terrain;
-
         // Set up to use the shared tile tex coord attributes.
         GLES20.glEnableVertexAttribArray(1);
-        terrain.useVertexTexCoordAttrib(dc, 1);
 
         // Attempt to bind the night side texture to multi-texture unit 0.
         dc.activeTextureUnit(GLES20.GL_TEXTURE0);
         boolean textureBound = this.nightTexture != null && this.nightTexture.bindTexture(dc);
 
-        for (int idx = 0, len = terrain.getTileCount(); idx < len; idx++) {
+        for (int idx = 0, len = dc.getDrawableTerrainCount(); idx < len; idx++) {
+            // Get the drawable terrain associated with the draw context.
+            DrawableTerrain terrain = dc.getDrawableTerrain(idx);
 
-            // Use the vertex origin for the terrain tile.
-            Vec3 terrainOrigin = terrain.getTileVertexOrigin(idx);
+            // Use the vertex origin for the terrain.
+            Vec3 terrainOrigin = terrain.getVertexOrigin();
             this.program.loadVertexOrigin(terrainOrigin);
 
-            // Use the draw context's modelview projection matrix, transformed to the terrain tile's local coordinates.
+            // Use the draw context's modelview projection matrix, transformed to terrain local coordinates.
             this.mvpMatrix.set(dc.modelviewProjection);
             this.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
             this.program.loadModelviewProjection(this.mvpMatrix);
 
-            // Use a tex coord matrix that registers the night texture correctly on each terrain tile.
+            // Use a tex coord matrix that registers the night texture correctly on each terrain.
             if (textureBound) {
                 this.texCoordMatrix.set(this.nightTexture.getTexCoordTransform());
-                this.texCoordMatrix.multiplyByTileTransform(terrain.getTileSector(idx), this.fullSphereSector);
+                this.texCoordMatrix.multiplyByTileTransform(terrain.getSector(), this.fullSphereSector);
                 this.program.loadTexCoordMatrix(this.texCoordMatrix);
             }
 
-            // Use the terrain tile's vertex point attribute.
-            terrain.useVertexPointAttrib(dc, idx, 0);
+            // Use the terrain's vertex point attribute and vertex tex coord attribute.
+            terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/);
+            terrain.useVertexTexCoordAttrib(dc, 1 /*vertexTexCoord*/);
 
-            // Draw the terrain tile as triangles, multiplying the current fragment color by the program's secondary color.
+            // Draw the terrain as triangles, multiplying the current fragment color by the program's secondary color.
             this.program.loadFragMode(AtmosphereProgram.FRAGMODE_GROUND_SECONDARY);
             GLES20.glBlendFunc(GLES20.GL_DST_COLOR, GLES20.GL_ZERO);
-            terrain.drawTileTriangles(dc, idx);
+            terrain.drawTriangles(dc);
 
-            // Draw the terrain tile as triangles, adding the current fragment color to the program's primary color.
+            // Draw the terrain as triangles, adding the current fragment color to the program's primary color.
             this.program.loadFragMode(textureBound ?
                 AtmosphereProgram.FRAGMODE_GROUND_PRIMARY_TEX_BLEND : AtmosphereProgram.FRAGMODE_GROUND_PRIMARY);
             GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE);
-            terrain.drawTileTriangles(dc, idx);
+            terrain.drawTriangles(dc);
         }
 
         // Restore the default World Wind OpenGL state.

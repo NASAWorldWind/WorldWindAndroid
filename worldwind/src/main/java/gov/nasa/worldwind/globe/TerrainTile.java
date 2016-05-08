@@ -5,13 +5,10 @@
 
 package gov.nasa.worldwind.globe;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
-import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.Tile;
 
@@ -20,15 +17,9 @@ import gov.nasa.worldwind.util.Tile;
  */
 public class TerrainTile extends Tile {
 
-    /**
-     *
-     */
-    public Vec3 tileOrigin;
+    protected Vec3 vertexOrigin = new Vec3();
 
-    /**
-     *
-     */
-    public FloatBuffer tileVertices;
+    protected FloatBuffer vertexPoints;
 
     /**
      * {@inheritDoc}
@@ -37,24 +28,19 @@ public class TerrainTile extends Tile {
         super(sector, level, row, column);
     }
 
-    public boolean mustAssembleTileVertices(DrawContext dc) {
-        return this.tileVertices == null;
+    public Vec3 getVertexOrigin() {
+        return this.vertexOrigin;
     }
 
-    public void assembleTileVertices(DrawContext dc) {
-        int numLat = this.level.tileWidth;
-        int numLon = this.level.tileHeight;
+    public void setVertexOrigin(Vec3 vertexOrigin) {
+        this.vertexOrigin = vertexOrigin;
+    }
 
-        if (this.tileOrigin == null) {
-            this.tileOrigin = new Vec3();
-        }
+    public FloatBuffer getVertexPoints() {
+        return this.vertexPoints;
+    }
 
-        if (this.tileVertices == null) {
-            this.tileVertices = ByteBuffer.allocateDirect(numLat * numLon * 12).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        }
-
-        Globe globe = dc.globe;
-        globe.geographicToCartesian(this.sector.centroidLatitude(), this.sector.centroidLongitude(), 0, this.tileOrigin);
-        globe.geographicToCartesianGrid(this.sector, numLat, numLon, null, this.tileOrigin, this.tileVertices, 3).rewind();
+    public void setVertexPoints(FloatBuffer vertexPoints) {
+        this.vertexPoints = vertexPoints;
     }
 }

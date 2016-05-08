@@ -9,5 +9,5 @@ import gov.nasa.worldwind.render.DrawContext;
 
 public interface Tessellator {
 
-    Terrain tessellate(DrawContext dc);
+    void tessellate(DrawContext dc);
 }

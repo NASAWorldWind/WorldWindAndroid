@@ -9,7 +9,6 @@ import android.opengl.GLES20;
 
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec3;
-import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.DrawContext;
@@ -84,20 +83,21 @@ public class DrawableTessellation implements Drawable {
         this.offsetMvpMatrix.offsetProjectionDepth(-1.0e-3); // offset this layer's depth values toward the eye
         this.offsetMvpMatrix.multiplyByMatrix(dc.modelview);
 
-        Terrain terrain = dc.terrain;
-        for (int idx = 0, len = terrain.getTileCount(); idx < len; idx++) {
+        for (int idx = 0, len = dc.getDrawableTerrainCount(); idx < len; idx++) {
+            // Get the drawable terrain associated with the draw context.
+            DrawableTerrain terrain = dc.getDrawableTerrain(idx);
 
-            // Use the draw context's modelview projection matrix, transformed to the terrain tile's local coordinates.
-            Vec3 terrainOrigin = terrain.getTileVertexOrigin(idx);
+            // Use the draw context's modelview projection matrix, transformed to terrain local coordinates.
+            Vec3 terrainOrigin = terrain.getVertexOrigin();
             this.mvpMatrix.set(this.offsetMvpMatrix);
             this.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
-            program.loadModelviewProjection(this.mvpMatrix);
+            this.program.loadModelviewProjection(this.mvpMatrix);
 
-            // Use the terrain tile's vertex point attribute.
-            terrain.useVertexPointAttrib(dc, idx, 0);
+            // Use the terrain's vertex point attribute.
+            terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/);
 
-            // Draw the terrain tile vertices as lines.
-            terrain.drawTileLines(dc, idx);
+            // Draw the terrain as lines.
+            terrain.drawLines(dc);
         }
 
         // Restore default World Wind OpenGL state.

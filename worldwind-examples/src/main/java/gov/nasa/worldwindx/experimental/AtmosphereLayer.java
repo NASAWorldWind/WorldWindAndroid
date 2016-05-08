@@ -27,10 +27,6 @@ public class AtmosphereLayer extends AbstractLayer {
 
     protected Vec3 activeLightDirection = new Vec3();
 
-    private int skyWidth = 128;
-
-    private int skyHeight = 128;
-
     private Sector fullSphereSector = new Sector().setFullSphere();
 
     public AtmosphereLayer() {
@@ -88,25 +84,26 @@ public class AtmosphereLayer extends AbstractLayer {
         drawable.lightDirection.set(this.activeLightDirection);
         drawable.globeRadius = dc.globe.getEquatorialRadius();
 
+        int size = 128;
         if (drawable.vertexPoints == null) {
-            int count = this.skyWidth * this.skyHeight;
+            int count = size * size;
             double[] array = new double[count];
             Arrays.fill(array, drawable.program.getAltitude());
 
             drawable.vertexPoints = ByteBuffer.allocateDirect(count * 12).order(ByteOrder.nativeOrder()).asFloatBuffer();
-            dc.globe.geographicToCartesianGrid(this.fullSphereSector, this.skyWidth, this.skyHeight, array, null,
+            dc.globe.geographicToCartesianGrid(this.fullSphereSector, size, size, array, null,
                 drawable.vertexPoints, 3).rewind();
         }
 
         if (drawable.triStripElements == null) {
-            drawable.triStripElements = assembleTriStripElements(this.skyWidth, this.skyHeight);
+            drawable.triStripElements = assembleTriStripElements(size, size);
         }
 
         dc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY /*z-order after all other surface drawables*/);
     }
 
     protected void renderGround(DrawContext dc) {
-        if (dc.terrain.getTileCount() == 0) {
+        if (dc.terrain.getSector().isEmpty()) {
             return; // no terrain surface to render on
         }
 

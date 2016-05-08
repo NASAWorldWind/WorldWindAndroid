@@ -337,7 +337,7 @@ public class DrawContext {
         this.drawableQueue.offerDrawable(drawable, WorldWind.SHAPE_DRAWABLE, -eyeDistance); // order by descending eye distance
     }
 
-    public void offerTerrainDrawable(DrawableTerrain drawable) {
+    public void offerDrawableTerrain(DrawableTerrain drawable) {
         this.drawableTerrain.offerDrawable(drawable);
     }
 
@@ -353,11 +353,11 @@ public class DrawContext {
         this.drawableQueue.sortDrawables();
     }
 
-    public int getTerrainDrawableCount() {
+    public int getDrawableTerrainCount() {
         return this.drawableTerrain.count();
     }
 
-    public DrawableTerrain getTerrainDrawable(int index) {
+    public DrawableTerrain getDrawableTerrain(int index) {
         return (DrawableTerrain) this.drawableTerrain.getDrawable(index);
     }
 

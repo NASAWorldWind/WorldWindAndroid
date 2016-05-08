@@ -37,7 +37,7 @@ public class ShowTessellationLayer extends AbstractLayer {
     @Override
     protected void doRender(DrawContext dc) {
 
-        if (dc.terrain.getTileCount() == 0) {
+        if (dc.terrain.getSector().isEmpty()) {
             return; // no terrain to render
         }
 
