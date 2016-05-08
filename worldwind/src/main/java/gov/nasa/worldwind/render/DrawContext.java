@@ -18,7 +18,9 @@ import java.util.Map;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.draw.Drawable;
+import gov.nasa.worldwind.draw.DrawableList;
 import gov.nasa.worldwind.draw.DrawableQueue;
+import gov.nasa.worldwind.draw.DrawableTerrain;
 import gov.nasa.worldwind.geom.Frustum;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
@@ -81,6 +83,8 @@ public class DrawContext {
     protected double pixelSizeFactor;
 
     protected DrawableQueue drawableQueue = new DrawableQueue();
+
+    protected DrawableList drawableTerrain = new DrawableList();
 
     protected Map<Object, Pool<?>> drawablePools = new HashMap<>();
 
@@ -333,6 +337,10 @@ public class DrawContext {
         this.drawableQueue.offerDrawable(drawable, WorldWind.SHAPE_DRAWABLE, -eyeDistance); // order by descending eye distance
     }
 
+    public void offerTerrainDrawable(DrawableTerrain drawable) {
+        this.drawableTerrain.offerDrawable(drawable);
+    }
+
     public Drawable peekDrawable() {
         return this.drawableQueue.peekDrawable();
     }
@@ -343,6 +351,14 @@ public class DrawContext {
 
     public void sortDrawables() {
         this.drawableQueue.sortDrawables();
+    }
+
+    public int getTerrainDrawableCount() {
+        return this.drawableTerrain.count();
+    }
+
+    public DrawableTerrain getTerrainDrawable(int index) {
+        return (DrawableTerrain) this.drawableTerrain.getDrawable(index);
     }
 
     @SuppressWarnings("unchecked")
@@ -398,6 +414,7 @@ public class DrawContext {
         this.renderRequested = false;
         this.pixelSizeFactor = 0;
         this.drawableQueue.clearDrawables();
+        this.drawableTerrain.clearDrawables();
         this.userProperties.clear();
     }
 
