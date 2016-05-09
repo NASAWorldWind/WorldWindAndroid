@@ -101,7 +101,7 @@ public class DrawContext {
 
     protected int elementArrayBufferId;
 
-    protected int unitQuadBufferId;
+    protected int unitSquareBufferId;
 
     protected ArrayList<Object> scratchList = new ArrayList<>();
 
@@ -428,7 +428,7 @@ public class DrawContext {
         this.textureUnit = GLES20.GL_TEXTURE0;
         this.arrayBufferId = 0;
         this.elementArrayBufferId = 0;
-        this.unitQuadBufferId = 0;
+        this.unitSquareBufferId = 0;
         Arrays.fill(this.textureId, 0);
     }
 
@@ -551,21 +551,21 @@ public class DrawContext {
     }
 
     /**
-     * Returns the name of an OpenGL buffer object containing a unit quadrilateral expressed as four vertices at (0, 1),
-     * (0, 0), (1, 1) and (1, 0). Each vertex is stored as two 32-bit floating point coordinates. The four vertices are
-     * in the order required by a triangle strip.
+     * Returns the name of an OpenGL buffer object containing a unit square expressed as four vertices at (0, 1), (0,
+     * 0), (1, 1) and (1, 0). Each vertex is stored as two 32-bit floating point coordinates. The four vertices are in
+     * the order required by a triangle strip.
      * <p/>
      * The OpenGL buffer object is created on first use and cached. Subsequent calls to this method return the cached
      * buffer object.
      */
-    public int unitQuadBuffer() {
-        if (this.unitQuadBufferId != 0) {
-            return this.unitQuadBufferId;
+    public int unitSquareBuffer() {
+        if (this.unitSquareBufferId != 0) {
+            return this.unitSquareBufferId;
         }
 
         int[] newBuffer = new int[1];
         GLES20.glGenBuffers(1, newBuffer, 0);
-        this.unitQuadBufferId = newBuffer[0];
+        this.unitSquareBufferId = newBuffer[0];
 
         float[] points = new float[]{
             0, 1,   // upper left corner
@@ -578,13 +578,13 @@ public class DrawContext {
 
         int currentBuffer = this.currentBuffer(GLES20.GL_ARRAY_BUFFER);
         try {
-            this.bindBuffer(GLES20.GL_ARRAY_BUFFER, this.unitQuadBufferId);
+            this.bindBuffer(GLES20.GL_ARRAY_BUFFER, this.unitSquareBufferId);
             GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, size * 4, quadBuffer, GLES20.GL_STATIC_DRAW);
         } finally {
             this.bindBuffer(GLES20.GL_ARRAY_BUFFER, currentBuffer);
         }
 
-        return this.unitQuadBufferId;
+        return this.unitSquareBufferId;
     }
 
     /**

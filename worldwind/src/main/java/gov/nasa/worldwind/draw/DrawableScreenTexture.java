@@ -81,8 +81,8 @@ public class DrawableScreenTexture implements Drawable {
             GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         }
 
-        // Use a 2D unit quad as the vertex point and vertex tex coord attributes.
-        dc.bindBuffer(GLES20.GL_ARRAY_BUFFER, dc.unitQuadBuffer());
+        // Use a 2D unit square as the vertex point and vertex tex coord attributes.
+        dc.bindBuffer(GLES20.GL_ARRAY_BUFFER, dc.unitSquareBuffer());
         GLES20.glEnableVertexAttribArray(1); // enable vertex attrib 1; vertex attrib 0 is enabled by default
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 2, GLES20.GL_FLOAT, false, 0, 0);
         GLES20.glVertexAttribPointer(1 /*vertexTexCoord*/, 2, GLES20.GL_FLOAT, false, 0, 0);
@@ -90,7 +90,7 @@ public class DrawableScreenTexture implements Drawable {
         // Use the drawable's modelview-projection matrix.
         this.program.loadModelviewProjection(this.mvpMatrix);
 
-        // Draw the 2D unit quad as triangles.
+        // Draw the 2D unit square as triangles.
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
 
         Drawable next;
@@ -99,7 +99,7 @@ public class DrawableScreenTexture implements Drawable {
             DrawableScreenTexture drawable = (DrawableScreenTexture) dc.pollDrawable(); // take it off the queue
             this.program.loadModelviewProjection(drawable.mvpMatrix);
 
-            // Draw the 2D unit quad as triangles.
+            // Draw the 2D unit square as triangles.
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         }
 
