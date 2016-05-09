@@ -204,10 +204,10 @@ public class WWMath {
         double x4 = m[0] + m[1] + m[3];
         double y4 = m[4] + m[5] + m[7];
 
-        int minX = (int) Math.floor(Math.min(Math.min(x1, x2), Math.min(x3, x4)));
-        int maxX = (int) Math.ceil(Math.max(Math.max(x1, x2), Math.max(x3, x4)));
-        int minY = (int) Math.floor(Math.min(Math.min(y1, y2), Math.min(y3, y4)));
-        int maxY = (int) Math.ceil(Math.max(Math.max(y1, y2), Math.max(y3, y4)));
+        int minX = (int) Math.min(Math.min(x1, x2), Math.min(x3, x4));
+        int maxX = (int) Math.max(Math.max(x1, x2), Math.max(x3, x4));
+        int minY = (int) Math.min(Math.min(y1, y2), Math.min(y3, y4));
+        int maxY = (int) Math.max(Math.max(y1, y2), Math.max(y3, y4));
 
         result.set(minX, minY, maxX - minX, maxY - minY);
         return result;

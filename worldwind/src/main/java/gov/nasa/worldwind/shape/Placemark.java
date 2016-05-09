@@ -766,8 +766,8 @@ public class Placemark extends AbstractRenderable {
             drawable.program = (BasicShaderProgram) dc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(dc.resources));
         }
 
-        // Compute the drawable's modelview-projection matrix, transforming unit square coordinates to screen coordinates.
-        drawable.mvpMatrix.setToMultiply(dc.screenProjection, unitSquareTransform);
+        // Use the plaemark's unit square transform matrix.
+        drawable.unitSquareTransform.set(unitSquareTransform);
 
         // Configure the drawable according to the placemark's active attributes. Use the texture associated with the
         // active attributes' image source and its associated tex coord transform. If the texture is not specified or

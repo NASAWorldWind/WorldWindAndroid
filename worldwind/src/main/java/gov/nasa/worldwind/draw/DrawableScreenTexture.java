@@ -18,7 +18,7 @@ public class DrawableScreenTexture implements Drawable {
 
     public BasicShaderProgram program = null;
 
-    public Matrix4 mvpMatrix = new Matrix4();
+    public Matrix4 unitSquareTransform = new Matrix4();
 
     public Color color = new Color();
 
@@ -27,6 +27,8 @@ public class DrawableScreenTexture implements Drawable {
     public boolean enableDepthTest = true;
 
     private Pool<DrawableScreenTexture> pool;
+
+    private Matrix4 mvpMatrix = new Matrix4();
 
     public DrawableScreenTexture() {
     }
@@ -87,7 +89,8 @@ public class DrawableScreenTexture implements Drawable {
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 2, GLES20.GL_FLOAT, false, 0, 0);
         GLES20.glVertexAttribPointer(1 /*vertexTexCoord*/, 2, GLES20.GL_FLOAT, false, 0, 0);
 
-        // Use the drawable's modelview-projection matrix.
+        // Use a modelview-projection matrix that transforms the unit square to screen coordinates.
+        this.mvpMatrix.setToMultiply(dc.screenProjection, this.unitSquareTransform);
         this.program.loadModelviewProjection(this.mvpMatrix);
 
         // Draw the 2D unit square as triangles.
@@ -95,9 +98,10 @@ public class DrawableScreenTexture implements Drawable {
 
         Drawable next;
         while ((next = dc.peekDrawable()) != null && this.canBatchWith(next)) { // check if the drawable at the front of the queue can be batched
-            // Use the next drawable's modelview-projection matrix.
+            // Use a modelview-projection matrix that transforms the unit square to screen coordinates.
             DrawableScreenTexture drawable = (DrawableScreenTexture) dc.pollDrawable(); // take it off the queue
-            this.program.loadModelviewProjection(drawable.mvpMatrix);
+            this.mvpMatrix.setToMultiply(dc.screenProjection, drawable.unitSquareTransform);
+            this.program.loadModelviewProjection(this.mvpMatrix);
 
             // Draw the 2D unit square as triangles.
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
