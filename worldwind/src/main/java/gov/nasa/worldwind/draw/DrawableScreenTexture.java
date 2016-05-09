@@ -14,7 +14,7 @@ import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Pool;
 
-public class DrawableQuad implements Drawable {
+public class DrawableScreenTexture implements Drawable {
 
     public BasicShaderProgram program = null;
 
@@ -26,17 +26,17 @@ public class DrawableQuad implements Drawable {
 
     public boolean enableDepthTest = true;
 
-    private Pool<DrawableQuad> pool;
+    private Pool<DrawableScreenTexture> pool;
 
-    public DrawableQuad() {
+    public DrawableScreenTexture() {
     }
 
-    public static DrawableQuad obtain(Pool<DrawableQuad> pool) {
-        DrawableQuad instance = pool.acquire(); // get an instance from the pool
-        return (instance != null) ? instance.setPool(pool) : new DrawableQuad().setPool(pool);
+    public static DrawableScreenTexture obtain(Pool<DrawableScreenTexture> pool) {
+        DrawableScreenTexture instance = pool.acquire(); // get an instance from the pool
+        return (instance != null) ? instance.setPool(pool) : new DrawableScreenTexture().setPool(pool);
     }
 
-    private DrawableQuad setPool(Pool<DrawableQuad> pool) {
+    private DrawableScreenTexture setPool(Pool<DrawableScreenTexture> pool) {
         this.pool = pool;
         return this;
     }
@@ -96,7 +96,7 @@ public class DrawableQuad implements Drawable {
         Drawable next;
         while ((next = dc.peekDrawable()) != null && this.canBatchWith(next)) { // check if the drawable at the front of the queue can be batched
             // Use the next drawable's modelview-projection matrix.
-            DrawableQuad drawable = (DrawableQuad) dc.pollDrawable(); // take it off the queue
+            DrawableScreenTexture drawable = (DrawableScreenTexture) dc.pollDrawable(); // take it off the queue
             this.program.loadModelviewProjection(drawable.mvpMatrix);
 
             // Draw the 2D unit quad as triangles.
@@ -114,9 +114,9 @@ public class DrawableQuad implements Drawable {
 
     protected boolean canBatchWith(Drawable that) {
         return this.getClass() == that.getClass()
-            && this.program == ((DrawableQuad) that).program
-            && this.color.equals(((DrawableQuad) that).color)
-            && this.texture == ((DrawableQuad) that).texture
-            && this.enableDepthTest == ((DrawableQuad) that).enableDepthTest;
+            && this.program == ((DrawableScreenTexture) that).program
+            && this.color.equals(((DrawableScreenTexture) that).color)
+            && this.texture == ((DrawableScreenTexture) that).texture
+            && this.enableDepthTest == ((DrawableScreenTexture) that).enableDepthTest;
     }
 }

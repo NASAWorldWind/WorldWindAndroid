@@ -9,7 +9,7 @@ import android.graphics.Rect;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.draw.DrawableLines;
-import gov.nasa.worldwind.draw.DrawableQuad;
+import gov.nasa.worldwind.draw.DrawableScreenTexture;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec2;
@@ -660,8 +660,8 @@ public class Placemark extends AbstractRenderable {
         // If the placemark's icon is visible, enqueue a drawable icon for processing on the OpenGL thread.
         WWMath.boundingRectForUnitQuad(unitQuadTransform, unitQuadBounds);
         if (Rect.intersects(dc.viewport, unitQuadBounds)) {
-            Pool<DrawableQuad> pool = dc.getDrawablePool(DrawableQuad.class);
-            DrawableQuad drawable = DrawableQuad.obtain(pool);
+            Pool<DrawableScreenTexture> pool = dc.getDrawablePool(DrawableScreenTexture.class);
+            DrawableScreenTexture drawable = DrawableScreenTexture.obtain(pool);
             this.prepareDrawableIcon(dc, drawable);
             dc.offerShapeDrawable(drawable, this.eyeDistance);
         }
@@ -759,7 +759,7 @@ public class Placemark extends AbstractRenderable {
      * @param dc       the current draw context
      * @param drawable the Drawable to be prepared
      */
-    protected void prepareDrawableIcon(DrawContext dc, DrawableQuad drawable) {
+    protected void prepareDrawableIcon(DrawContext dc, DrawableScreenTexture drawable) {
         // Use the basic GLSL program to draw the placemark's icon.
         drawable.program = (BasicShaderProgram) dc.getShaderProgram(BasicShaderProgram.KEY);
         if (drawable.program == null) {
