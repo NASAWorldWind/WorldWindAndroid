@@ -53,9 +53,9 @@ public class Placemark extends AbstractRenderable {
 
     private static Vec2 offset = new Vec2();
 
-    private static Matrix4 unitQuadTransform = new Matrix4();
+    private static Matrix4 unitSquareTransform = new Matrix4();
 
-    private static Rect unitQuadBounds = new Rect();
+    private static Rect screenBounds = new Rect();
 
     /**
      * The placemark's geographic position.
@@ -654,12 +654,12 @@ public class Placemark extends AbstractRenderable {
             }
         }
 
-        // Compute the placemark icon's active texture and unit quad transform.
+        // Compute the placemark icon's active texture and unit square transform.
         this.determineActiveTexture(dc);
 
         // If the placemark's icon is visible, enqueue a drawable icon for processing on the OpenGL thread.
-        WWMath.boundingRectForUnitQuad(unitQuadTransform, unitQuadBounds);
-        if (Rect.intersects(dc.viewport, unitQuadBounds)) {
+        WWMath.boundingRectForUnitSquare(unitSquareTransform, screenBounds);
+        if (Rect.intersects(dc.viewport, screenBounds)) {
             Pool<DrawableScreenTexture> pool = dc.getDrawablePool(DrawableScreenTexture.class);
             DrawableScreenTexture drawable = DrawableScreenTexture.obtain(pool);
             this.prepareDrawableIcon(dc, drawable);
@@ -684,7 +684,7 @@ public class Placemark extends AbstractRenderable {
     }
 
     /**
-     * Determines the image texture and unit quad transform to use for the current render pass.
+     * Determines the image texture and unit square transform to use for the current render pass.
      *
      * @param dc the current draw context
      */
@@ -703,8 +703,8 @@ public class Placemark extends AbstractRenderable {
         double visibilityScale = this.isEyeDistanceScaling() ?
             Math.max(this.activeAttributes.minimumImageScale, Math.min(1, this.getEyeDistanceScalingThreshold() / this.eyeDistance)) : 1;
 
-        // Initialize the unit quad transform to the identity matrix.
-        unitQuadTransform.setToIdentity();
+        // Initialize the unit square transform to the identity matrix.
+        unitSquareTransform.setToIdentity();
 
         // Apply the icon's translation and scale according to the image size, image offset and image scale. The image
         // offset is defined with its origin at the image's bottom-left corner and axes that extend up and to the right
@@ -716,39 +716,39 @@ public class Placemark extends AbstractRenderable {
             double s = this.activeAttributes.imageScale * visibilityScale;
             this.activeAttributes.imageOffset.offsetForSize(w, h, offset);
 
-            unitQuadTransform.multiplyByTranslation(
+            unitSquareTransform.multiplyByTranslation(
                 screenPlacePoint.x - offset.x * s,
                 screenPlacePoint.y - offset.y * s,
                 screenPlacePoint.z);
 
-            unitQuadTransform.multiplyByScale(w * s, h * s, 1);
+            unitSquareTransform.multiplyByScale(w * s, h * s, 1);
 
         } else {
             double size = this.activeAttributes.imageScale * visibilityScale;
             this.activeAttributes.imageOffset.offsetForSize(size, size, offset);
 
-            unitQuadTransform.multiplyByTranslation(
+            unitSquareTransform.multiplyByTranslation(
                 screenPlacePoint.x - offset.x,
                 screenPlacePoint.y - offset.y,
                 screenPlacePoint.z);
 
-            unitQuadTransform.multiplyByScale(size, size, 1);
+            unitSquareTransform.multiplyByScale(size, size, 1);
         }
 
         // ... perform image rotation
         if (this.imageRotation != 0) {
             double rotation = this.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
                 dc.heading - this.imageRotation : -this.imageRotation;
-            unitQuadTransform.multiplyByTranslation(0.5, 0.5, 0);
-            unitQuadTransform.multiplyByRotation(0, 0, 1, rotation);
-            unitQuadTransform.multiplyByTranslation(-0.5, -0.5, 0);
+            unitSquareTransform.multiplyByTranslation(0.5, 0.5, 0);
+            unitSquareTransform.multiplyByRotation(0, 0, 1, rotation);
+            unitSquareTransform.multiplyByTranslation(-0.5, -0.5, 0);
         }
 
         // ... and perform the tilt so that the image tilts back from its base into the view volume.
         if (this.imageTilt != 0) {
             double tilt = this.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
                 dc.tilt + this.imageTilt : this.imageTilt;
-            unitQuadTransform.multiplyByRotation(-1, 0, 0, tilt);
+            unitSquareTransform.multiplyByRotation(-1, 0, 0, tilt);
         }
     }
 
@@ -766,8 +766,8 @@ public class Placemark extends AbstractRenderable {
             drawable.program = (BasicShaderProgram) dc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(dc.resources));
         }
 
-        // Compute the drawable's modelview-projection matrix, transforming unit quad coordinates to screen coordinates.
-        drawable.mvpMatrix.setToMultiply(dc.screenProjection, unitQuadTransform);
+        // Compute the drawable's modelview-projection matrix, transforming unit square coordinates to screen coordinates.
+        drawable.mvpMatrix.setToMultiply(dc.screenProjection, unitSquareTransform);
 
         // Configure the drawable according to the placemark's active attributes. Use the texture associated with the
         // active attributes' image source and its associated tex coord transform. If the texture is not specified or
@@ -791,7 +791,7 @@ public class Placemark extends AbstractRenderable {
             drawable.program = (BasicShaderProgram) dc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(dc.resources));
         }
 
-        // Compute the drawable's vertex point coordinates, relative to the placemark's ground point.
+        // Compute the drawable's vertex points, in Cartesian coordinates relative to the placemark's ground point.
         drawable.vertexPoints[0] = 0; // groundPoint.x - groundPoint.x
         drawable.vertexPoints[1] = 0; // groundPoint.y - groundPoint.y
         drawable.vertexPoints[2] = 0; // groundPoint.z - groundPoint.z

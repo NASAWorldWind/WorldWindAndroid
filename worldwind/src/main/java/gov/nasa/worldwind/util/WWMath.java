@@ -167,35 +167,39 @@ public class WWMath {
     }
 
     /**
-     * Computes the bounding rectangle for a unit quadrilateral after applying a transformation matrix to that
-     * quadrilateral.
+     * Computes the bounding rectangle for a unit square after applying a transformation matrix to the square's four
+     * corners.
      *
-     * @param transformMatrix the matrix to apply to the unit quadrilateral
-     * @param result          a pre-allocated Rect in which to return the computed bounding rectangle
+     * @param unitSquareTransform the matrix to apply to the unit square
+     * @param result              a pre-allocated Rect in which to return the computed bounding rectangle
      *
      * @return the result argument set to the computed bounding rectangle
      */
-    public static Rect boundingRectForUnitQuad(Matrix4 transformMatrix, Rect result) {
-        if (transformMatrix == null) {
+    public static Rect boundingRectForUnitSquare(Matrix4 unitSquareTransform, Rect result) {
+        if (unitSquareTransform == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WWMath", "boundingRectForUnitQuad", "missingMatrix"));
+                Logger.logMessage(Logger.ERROR, "WWMath", "boundingRectForUnitSquare", "missingMatrix"));
         }
 
         if (result == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WWMath", "boundingRectForUnitQuad", "missingResult"));
+                Logger.logMessage(Logger.ERROR, "WWMath", "boundingRectForUnitSquare", "missingResult"));
         }
 
-        double[] m = transformMatrix.m;
+        double[] m = unitSquareTransform.m;
+
         // transform of (0, 0)
         double x1 = m[3];
         double y1 = m[7];
+
         // transform of (1, 0)
         double x2 = m[0] + m[3];
         double y2 = m[4] + m[7];
+
         // transform of (0, 1)
         double x3 = m[1] + m[3];
         double y3 = m[5] + m[7];
+
         // transform of (1, 1)
         double x4 = m[0] + m[1] + m[3];
         double y4 = m[4] + m[5] + m[7];
