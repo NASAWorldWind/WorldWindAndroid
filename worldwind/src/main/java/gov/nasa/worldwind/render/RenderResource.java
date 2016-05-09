@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.render;
 
+import gov.nasa.worldwind.draw.DrawContext;
+
 /**
  * Handle to a rendering resource, such as a GLSL program, GL texture or GL vertex buffer object.
  */

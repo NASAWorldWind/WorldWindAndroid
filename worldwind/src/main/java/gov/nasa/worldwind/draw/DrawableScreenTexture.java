@@ -10,7 +10,6 @@ import android.opengl.GLES20;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
-import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Pool;
 

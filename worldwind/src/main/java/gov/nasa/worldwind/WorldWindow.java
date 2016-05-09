@@ -21,6 +21,9 @@ import java.util.TimeZone;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import gov.nasa.worldwind.draw.DrawContext;
+import gov.nasa.worldwind.draw.DrawableList;
+import gov.nasa.worldwind.draw.DrawableQueue;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.gesture.GestureGroup;
 import gov.nasa.worldwind.gesture.GestureRecognizer;
@@ -28,7 +31,7 @@ import gov.nasa.worldwind.globe.GeographicProjection;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.GlobeWgs84;
 import gov.nasa.worldwind.layer.LayerList;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.render.RenderResourceCache;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.MessageListener;
@@ -63,6 +66,12 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     protected Rect viewport = new Rect();
 
     protected RenderResourceCache renderResourceCache;
+
+    protected DrawableQueue drawableQueue = new DrawableQueue();
+
+    protected DrawableList drawableTerrain = new DrawableList();
+
+    protected RenderContext rc = new RenderContext();
 
     protected DrawContext dc = new DrawContext();
 
@@ -306,7 +315,10 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
         // Clear any cached OpenGL resources and state, which are now invalid.
         this.dc.contextLost();
-        this.renderResourceCache.contextLost(this.dc);
+
+        // Clear the render resource cache; it's entries are now invalid.
+        // TODO move this to surfaceDestroyed and surfaceCreated when rendering occurs on the main thread.
+        this.renderResourceCache.clear();
     }
 
     /**
@@ -325,26 +337,38 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
      */
     @Override
     public void onDrawFrame(GL10 unused) {
+        // Setup the render context according to the World Window's current state, then render the World Window
+        // traversing the Navigator, Tessellator, Layers and Renderables and collecting Drawables.
         this.frameMetrics.beginRendering();
-        // Setup the draw context according to the World Window's current state and draw the WorldWindow.
         this.prepareToRenderFrame();
-        this.frameController.renderFrame(this.dc);
+        this.frameController.renderFrame(this.rc);
         this.frameMetrics.endRendering();
-
-        this.frameMetrics.beginDrawing();
-        this.frameController.drawFrame(this.dc);
-        // Release render resources evicted during the previous frame.
-        this.renderResourceCache.releaseEvictedResources(this.dc);
-        this.frameMetrics.endDrawing();
 
         // Propagate render requests submitted during rendering to the WorldWindow. The draw context provides a layer of
         // indirection that insulates rendering code from establishing a dependency on a specific WorldWindow.
-        if (this.dc.isRenderRequested()) {
+        if (this.rc.isRenderRequested()) {
             this.requestRender(); // inherited from GLSurfaceView
         }
 
-        // Reset the draw context's state in preparation for the next frame.
-        this.dc.resetFrameProperties();
+        // TODO move this just before drawFrame once the frame state is collected in a separate structure.
+        this.prepareToDrawFrame();
+
+        // Reset the render context's state in preparation for the next frame.
+        this.rc.reset();
+
+        // Setup the draw context according to the state collected during render, then draw the World Window; traversing
+        // the Drawables collected during the render phase.
+        this.frameMetrics.beginDrawing();
+        this.frameController.drawFrame(this.dc);
+
+        // Release resources evicted during the previous frame.
+        this.renderResourceCache.releaseEvictedResources(this.dc);
+        this.dc.reset();
+        this.frameMetrics.endDrawing();
+
+        // Clear the drawables accumulated and processed during this frame.
+        this.drawableQueue.clearDrawables();
+        this.drawableTerrain.clearDrawables();
     }
 
     /**
@@ -356,6 +380,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
      */
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+        // Call the superclass method.
         super.surfaceCreated(holder);
         // Set up to receive broadcast messages from World Wind's message center.
         WorldWind.messageService().addListener(this);
@@ -372,6 +397,7 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     public void surfaceDestroyed(SurfaceHolder holder) {
         // Release this WorldWindow reference from the global message service
         WorldWind.messageService().removeListener(this);
+        // Call the superclass method.
         super.surfaceDestroyed(holder);
     }
 
@@ -380,26 +406,39 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         return super.onTouchEvent(event) || this.gestureGroup.onTouchEvent(event);
     }
 
-    protected void prepareToRenderFrame() {
-        this.dc.globe = this.globe;
-        this.dc.layers.addAllLayers(this.layers);
-        this.dc.verticalExaggeration = this.verticalExaggeration;
-        this.dc.eyePosition.set(this.navigator.getLatitude(), this.navigator.getLongitude(), this.navigator.getAltitude());
-        this.dc.heading = this.navigator.getHeading();
-        this.dc.tilt = this.navigator.getTilt();
-        this.dc.roll = this.navigator.getRoll();
-        this.dc.fieldOfView = this.navigator.getFieldOfView();
-        this.dc.horizonDistance = this.globe.horizonDistance(dc.eyePosition.altitude);
-        this.dc.viewport.set(this.viewport);
-        this.dc.renderResourceCache = this.renderResourceCache;
-        this.dc.renderResourceCache.setResources(this.getContext().getResources());
-        this.dc.resources = this.getContext().getResources();
-    }
-
     @Override
     public void onMessage(String name, Object sender, Map<Object, Object> userProperties) {
         if (name.equals(WorldWind.REQUEST_RENDER)) {
             this.requestRender(); // inherited from GLSurfaceView; may be called on any thread
         }
+    }
+
+    protected void prepareToRenderFrame() {
+        this.rc.globe = this.globe;
+        this.rc.layers.addAllLayers(this.layers);
+        this.rc.verticalExaggeration = this.verticalExaggeration;
+        this.rc.eyePosition.set(this.navigator.getLatitude(), this.navigator.getLongitude(), this.navigator.getAltitude());
+        this.rc.heading = this.navigator.getHeading();
+        this.rc.tilt = this.navigator.getTilt();
+        this.rc.roll = this.navigator.getRoll();
+        this.rc.fieldOfView = this.navigator.getFieldOfView();
+        this.rc.horizonDistance = this.globe.horizonDistance(rc.eyePosition.altitude);
+        this.rc.viewport.set(this.viewport);
+        this.rc.renderResourceCache = this.renderResourceCache;
+        this.rc.renderResourceCache.setResources(this.getContext().getResources());
+        this.rc.resources = this.getContext().getResources();
+        this.rc.drawableQueue = this.drawableQueue;
+        this.rc.drawableTerrain = this.drawableTerrain;
+    }
+
+    protected void prepareToDrawFrame() {
+        this.dc.viewport.set(this.rc.viewport);
+        this.dc.modelview.set(this.rc.modelview);
+        this.dc.projection.set(this.rc.projection);
+        this.dc.modelviewProjection.set(this.rc.modelviewProjection);
+        this.dc.screenProjection.set(this.rc.screenProjection);
+        this.dc.eyePoint.set(this.rc.eyePoint);
+        this.dc.drawableQueue = this.drawableQueue;
+        this.dc.drawableTerrain = this.drawableTerrain;
     }
 }

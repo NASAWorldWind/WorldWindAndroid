@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
-import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.SurfaceTexture;
 import gov.nasa.worldwind.render.SurfaceTextureProgram;
 import gov.nasa.worldwind.render.Texture;

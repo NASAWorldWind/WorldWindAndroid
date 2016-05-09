@@ -15,7 +15,6 @@ import java.nio.FloatBuffer;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
-import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Pool;
 
 public class DrawableLines implements Drawable {

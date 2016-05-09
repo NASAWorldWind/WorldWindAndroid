@@ -7,6 +7,7 @@ package gov.nasa.worldwind.render;
 
 import android.opengl.GLES20;
 
+import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.util.Logger;
 
 /**

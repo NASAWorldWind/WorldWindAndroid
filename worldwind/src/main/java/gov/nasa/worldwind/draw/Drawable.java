@@ -5,8 +5,6 @@
 
 package gov.nasa.worldwind.draw;
 
-import gov.nasa.worldwind.render.DrawContext;
-
 public interface Drawable {
 
     void recycle();

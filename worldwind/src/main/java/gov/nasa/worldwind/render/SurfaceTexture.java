@@ -5,10 +5,11 @@
 
 package gov.nasa.worldwind.render;
 
+import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
 
-public interface SurfaceTexture {
+public interface SurfaceTexture { // TODO this likely belongs in the draw package
 
     Sector getSector();
 

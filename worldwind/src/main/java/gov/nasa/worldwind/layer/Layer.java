@@ -5,7 +5,7 @@
 
 package gov.nasa.worldwind.layer;
 
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.RenderContext;
 
 public interface Layer {
 
@@ -41,7 +41,7 @@ public interface Layer {
 
     boolean hasUserProperty(Object key);
 
-    void render(DrawContext dc);
+    void render(RenderContext rc);
 
-    boolean isWithinActiveAltitudes(DrawContext dc);
+    boolean isWithinActiveAltitudes(RenderContext rc);
 }

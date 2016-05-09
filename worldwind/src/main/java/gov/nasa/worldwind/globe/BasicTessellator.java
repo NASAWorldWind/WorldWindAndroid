@@ -15,7 +15,7 @@ import java.util.List;
 import gov.nasa.worldwind.draw.BasicDrawableTerrain;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.Logger;
@@ -69,8 +69,8 @@ public class BasicTessellator implements Tessellator, TileFactory {
     }
 
     @Override
-    public void tessellate(DrawContext dc) {
-        this.assembleTiles(dc);
+    public void tessellate(RenderContext rc) {
+        this.assembleTiles(rc);
     }
 
     @Override
@@ -78,7 +78,7 @@ public class BasicTessellator implements Tessellator, TileFactory {
         return new TerrainTile(sector, level, row, column);
     }
 
-    protected void assembleTiles(DrawContext dc) {
+    protected void assembleTiles(RenderContext rc) {
         this.currentTerrain.clearTiles();
 
         if (this.topLevelTiles.isEmpty()) {
@@ -86,10 +86,10 @@ public class BasicTessellator implements Tessellator, TileFactory {
         }
 
         for (int idx = 0, len = this.topLevelTiles.size(); idx < len; idx++) {
-            this.addTileOrDescendants(dc, (TerrainTile) this.topLevelTiles.get(idx));
+            this.addTileOrDescendants(rc, (TerrainTile) this.topLevelTiles.get(idx));
         }
 
-        dc.terrain = this.currentTerrain;
+        rc.terrain = this.currentTerrain;
     }
 
     protected void createTopLevelTiles() {
@@ -99,28 +99,28 @@ public class BasicTessellator implements Tessellator, TileFactory {
         }
     }
 
-    protected void addTileOrDescendants(DrawContext dc, TerrainTile tile) {
-        if (!tile.intersectsSector(this.levelSet.sector) || !tile.intersectsFrustum(dc, dc.frustum)) {
+    protected void addTileOrDescendants(RenderContext rc, TerrainTile tile) {
+        if (!tile.intersectsSector(this.levelSet.sector) || !tile.intersectsFrustum(rc, rc.frustum)) {
             return; // ignore the tile and its descendants if it's not needed or not visible
         }
 
-        if (tile.level.isLastLevel() || !tile.mustSubdivide(dc, this.detailControl)) {
-            this.addTile(dc, tile);
+        if (tile.level.isLastLevel() || !tile.mustSubdivide(rc, this.detailControl)) {
+            this.addTile(rc, tile);
             return; // use the tile if it does not need to be subdivided
         }
 
         for (Tile child : tile.subdivideToCache(this, this.tileCache, 4)) { // each tile has a cached size of 1
-            this.addTileOrDescendants(dc, (TerrainTile) child); // recursively process the tile's children
+            this.addTileOrDescendants(rc, (TerrainTile) child); // recursively process the tile's children
         }
     }
 
-    protected void addTile(DrawContext dc, TerrainTile tile) {
+    protected void addTile(RenderContext rc, TerrainTile tile) {
         int numLat = this.levelSet.tileHeight;
         int numLon = this.levelSet.tileWidth;
 
         // Assemble the tile's vertex points when necessary.
-        if (this.mustAssembleVertexPoints(dc, tile)) {
-            this.assembleVertexPoints(dc, tile);
+        if (this.mustAssembleVertexPoints(rc, tile)) {
+            this.assembleVertexPoints(rc, tile);
         }
 
         // Assemble the shared vertex tex coord buffer.
@@ -147,7 +147,7 @@ public class BasicTessellator implements Tessellator, TileFactory {
         // TODO set up the drawable with the terrain tile's vertex attributes and dimensions (for elements)
         // TODO thread safety can be ensured by performing a copy here; could multiple copies be reduced by
         // TODO storing them in a BufferObject?
-        Pool<BasicDrawableTerrain> pool = dc.getDrawablePool(BasicDrawableTerrain.class);
+        Pool<BasicDrawableTerrain> pool = rc.getDrawablePool(BasicDrawableTerrain.class);
         BasicDrawableTerrain drawable = BasicDrawableTerrain.obtain(pool);
         drawable.sector.set(tile.sector);
         drawable.vertexOrigin.set(tile.vertexOrigin);
@@ -155,7 +155,7 @@ public class BasicTessellator implements Tessellator, TileFactory {
         drawable.vertexTexCoords = this.tileVertexTexCoords;
         drawable.triStripElements = this.tileTriStripElements;
         drawable.lineElements = this.tileLineElements;
-        dc.offerDrawableTerrain(drawable);
+        rc.offerDrawableTerrain(drawable);
     }
 
     protected void invalidateTiles() {
@@ -167,11 +167,11 @@ public class BasicTessellator implements Tessellator, TileFactory {
         this.tileTriStripElements = null;
     }
 
-    public boolean mustAssembleVertexPoints(DrawContext dc, TerrainTile tile) {
+    public boolean mustAssembleVertexPoints(RenderContext rc, TerrainTile tile) {
         return tile.getVertexPoints() == null;
     }
 
-    protected void assembleVertexPoints(DrawContext dc, TerrainTile tile) {
+    protected void assembleVertexPoints(RenderContext rc, TerrainTile tile) {
         int numLat = tile.level.tileWidth;
         int numLon = tile.level.tileHeight;
 
@@ -185,7 +185,7 @@ public class BasicTessellator implements Tessellator, TileFactory {
             buffer = ByteBuffer.allocateDirect(numLat * numLon * 12).order(ByteOrder.nativeOrder()).asFloatBuffer();
         }
 
-        Globe globe = dc.globe;
+        Globe globe = rc.globe;
         globe.geographicToCartesian(tile.sector.centroidLatitude(), tile.sector.centroidLongitude(), 0, origin);
         globe.geographicToCartesianGrid(tile.sector, numLat, numLon, null, origin, buffer, 3).rewind();
         tile.setVertexOrigin(origin);

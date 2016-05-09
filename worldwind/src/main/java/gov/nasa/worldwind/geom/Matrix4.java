@@ -532,7 +532,7 @@ public class Matrix4 {
      * coordinates without modification. A point's XY coordinates are interpreted as literal screen coordinates and must
      * be in the viewport to be visible. A point's Z coordinate is interpreted as a depth value that ranges from 0 to 1.
      * Additionally, the screen projection matrix preserves the depth value returned by
-     * <code>DrawContext.project</code>.
+     * <code>RenderContext.project</code>.
      *
      * @param viewportWidth  the viewport width in screen coordinates
      * @param viewportHeight the viewport height in screen coordinates
@@ -1173,7 +1173,7 @@ public class Matrix4 {
      * reasonable to apply a depth offset to an screen projection, the effect is most appropriate when applied to the
      * projection used to draw the scene. For example, when an object's coordinates are projected by a perspective
      * projection into screen coordinates then drawn using a screen projection, it is best to apply the offset to the
-     * original perspective projection. The method <code>DrawContext.project</code> performs the correct behavior for
+     * original perspective projection. The method <code>RenderContext.project</code> performs the correct behavior for
      * the projection type used to draw the scene.
      *
      * @param depthOffset the amount of offset to apply

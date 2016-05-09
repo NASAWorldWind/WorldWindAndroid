@@ -12,9 +12,9 @@ import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableSurfaceTexture;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.ImageTile;
+import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.render.SurfaceTextureProgram;
 import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Level;
@@ -103,13 +103,13 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
     }
 
     @Override
-    protected void doRender(DrawContext dc) {
-        if (dc.terrain.getSector().isEmpty()) {
+    protected void doRender(RenderContext rc) {
+        if (rc.terrain.getSector().isEmpty()) {
             return; // no terrain surface to render on
         }
 
-        this.determineActiveProgram(dc);
-        this.assembleTiles(dc);
+        this.determineActiveProgram(rc);
+        this.assembleTiles(rc);
 
         this.activeProgram = null; // clear the active program to avoid leaking render resources
         this.ancestorTile = null; // clear the ancestor tile and texture
@@ -128,21 +128,21 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
         return tile;
     }
 
-    protected void determineActiveProgram(DrawContext dc) {
-        this.activeProgram = (SurfaceTextureProgram) dc.getShaderProgram(SurfaceTextureProgram.KEY);
+    protected void determineActiveProgram(RenderContext rc) {
+        this.activeProgram = (SurfaceTextureProgram) rc.getShaderProgram(SurfaceTextureProgram.KEY);
 
         if (this.activeProgram == null) {
-            this.activeProgram = (SurfaceTextureProgram) dc.putShaderProgram(SurfaceTextureProgram.KEY, new SurfaceTextureProgram(dc.resources));
+            this.activeProgram = (SurfaceTextureProgram) rc.putShaderProgram(SurfaceTextureProgram.KEY, new SurfaceTextureProgram(rc.resources));
         }
     }
 
-    protected void assembleTiles(DrawContext dc) {
+    protected void assembleTiles(RenderContext rc) {
         if (this.topLevelTiles.isEmpty()) {
             this.createTopLevelTiles();
         }
 
         for (int idx = 0, len = this.topLevelTiles.size(); idx < len; idx++) {
-            this.addTileOrDescendants(dc, (ImageTile) this.topLevelTiles.get(idx));
+            this.addTileOrDescendants(rc, (ImageTile) this.topLevelTiles.get(idx));
         }
     }
 
@@ -153,49 +153,49 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
         }
     }
 
-    protected void addTileOrDescendants(DrawContext dc, ImageTile tile) {
-        if (!tile.intersectsSector(this.levelSet.sector) || !tile.intersectsFrustum(dc, dc.frustum)) {
+    protected void addTileOrDescendants(RenderContext rc, ImageTile tile) {
+        if (!tile.intersectsSector(this.levelSet.sector) || !tile.intersectsFrustum(rc, rc.frustum)) {
             return; // ignore the tile and its descendants if it's not needed or not visible
         }
 
-        if (tile.level.isLastLevel() || !tile.mustSubdivide(dc, this.detailControl)) {
-            this.addTile(dc, tile);
+        if (tile.level.isLastLevel() || !tile.mustSubdivide(rc, this.detailControl)) {
+            this.addTile(rc, tile);
             return; // use the tile if it does not need to be subdivided
         }
 
         ImageTile currentAncestorTile = this.ancestorTile;
         Texture currentAncestorTexture = this.ancestorTexture;
 
-        Texture tileTexture = dc.getTexture(tile.getImageSource());
+        Texture tileTexture = rc.getTexture(tile.getImageSource());
         if (tileTexture != null) { // use it as a fallback tile for descendants
             this.ancestorTile = tile;
             this.ancestorTexture = tileTexture;
         }
 
         for (Tile child : tile.subdivideToCache(this, this.tileCache, 4)) { // each tile has a cached size of 1
-            this.addTileOrDescendants(dc, (ImageTile) child); // recursively process the tile's children
+            this.addTileOrDescendants(rc, (ImageTile) child); // recursively process the tile's children
         }
 
         this.ancestorTile = currentAncestorTile; // restore the last fallback tile, even if it was null
         this.ancestorTexture = currentAncestorTexture;
     }
 
-    protected void addTile(DrawContext dc, ImageTile tile) {
-        Texture texture = dc.getTexture(tile.getImageSource()); // try to get the texture from the cache
+    protected void addTile(RenderContext rc, ImageTile tile) {
+        Texture texture = rc.getTexture(tile.getImageSource()); // try to get the texture from the cache
         if (texture == null) {
-            texture = dc.retrieveTexture(tile.getImageSource()); // puts retrieved textures in the cache
+            texture = rc.retrieveTexture(tile.getImageSource()); // puts retrieved textures in the cache
         }
 
         if (texture != null) { // use the tile's own texture
-            Pool<DrawableSurfaceTexture> pool = dc.getDrawablePool(DrawableSurfaceTexture.class);
+            Pool<DrawableSurfaceTexture> pool = rc.getDrawablePool(DrawableSurfaceTexture.class);
             Drawable drawable = DrawableSurfaceTexture.obtain(pool).set(this.activeProgram, tile.sector, texture, texture.getTexCoordTransform());
-            dc.offerSurfaceDrawable(drawable, 0 /*z-order*/);
+            rc.offerSurfaceDrawable(drawable, 0 /*z-order*/);
         } else if (this.ancestorTile != null) { // use the ancestor tile's texture, transformed to fill the tile sector
             this.ancestorTexCoordMatrix.set(this.ancestorTexture.getTexCoordTransform());
             this.ancestorTexCoordMatrix.multiplyByTileTransform(tile.sector, this.ancestorTile.sector);
-            Pool<DrawableSurfaceTexture> pool = dc.getDrawablePool(DrawableSurfaceTexture.class);
+            Pool<DrawableSurfaceTexture> pool = rc.getDrawablePool(DrawableSurfaceTexture.class);
             Drawable drawable = DrawableSurfaceTexture.obtain(pool).set(this.activeProgram, tile.sector, this.ancestorTexture, this.ancestorTexCoordMatrix);
-            dc.offerSurfaceDrawable(drawable, 0 /*z-order*/);
+            rc.offerSurfaceDrawable(drawable, 0 /*z-order*/);
         }
     }
 

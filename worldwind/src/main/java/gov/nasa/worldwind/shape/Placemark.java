@@ -17,8 +17,8 @@ import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
-import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.ImageSource;
+import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
@@ -609,61 +609,61 @@ public class Placemark extends AbstractRenderable {
     /**
      * Performs the rendering; called by the public render method.
      *
-     * @param dc The current DrawContext.
+     * @param rc the current render context
      */
     @Override
-    protected void doRender(DrawContext dc) {
+    protected void doRender(RenderContext rc) {
 
-        this.determineActiveAttributes(dc);
+        this.determineActiveAttributes(rc);
         if (this.activeAttributes == null) {
             return;
         }
 
         // Compute the placemark's Cartesian model point. TODO: dc.surfacePointForMode
-        dc.globe.geographicToCartesian(this.position.latitude, this.position.longitude, this.position.altitude,
+        rc.globe.geographicToCartesian(this.position.latitude, this.position.longitude, this.position.altitude,
             placePoint);
 
         // Compute the eye distance to the place point, the value which is used for ordering the placemark drawable and
         // determining the amount of depth offset to apply.
-        this.eyeDistance = dc.eyePoint.distanceTo(placePoint);
+        this.eyeDistance = rc.eyePoint.distanceTo(placePoint);
 
         // Compute a screen depth offset appropriate for the current viewing parameters.
         double depthOffset = 0;
-        if (this.eyeDistance < dc.horizonDistance) {
+        if (this.eyeDistance < rc.horizonDistance) {
             depthOffset = DEFAULT_DEPTH_OFFSET;
         }
 
         // Project the placemark's model point to screen coordinates, using the screen depth offset to push the screen
         // point's z component closer to the eye point.
-        if (!dc.projectWithDepth(placePoint, depthOffset, screenPlacePoint)) {
+        if (!rc.projectWithDepth(placePoint, depthOffset, screenPlacePoint)) {
             return; // clipped by the near plane or the far plane
         }
 
         // Prepare a drawable for the placemark's leader line, if requested. Enqueue the leader line drawable before the
         // icon drawable in order to give the icon visual priority over the leader line.
-        if (this.mustDrawLeaderLine(dc)) {
+        if (this.mustDrawLeaderLine(rc)) {
             // Compute the placemark's Cartesian ground point. TODO: use dc.surfacePointForMode
-            dc.globe.geographicToCartesian(this.position.latitude, this.position.longitude, 0, groundPoint);
+            rc.globe.geographicToCartesian(this.position.latitude, this.position.longitude, 0, groundPoint);
 
             // If the leader line is visible, enqueue a drawable leader line for processing on the OpenGL thread.
-            if (dc.frustum.intersectsSegment(groundPoint, placePoint)) {
-                Pool<DrawableLines> pool = dc.getDrawablePool(DrawableLines.class);
+            if (rc.frustum.intersectsSegment(groundPoint, placePoint)) {
+                Pool<DrawableLines> pool = rc.getDrawablePool(DrawableLines.class);
                 DrawableLines drawable = DrawableLines.obtain(pool);
-                this.prepareDrawableLeader(dc, drawable);
-                dc.offerShapeDrawable(drawable, this.eyeDistance);
+                this.prepareDrawableLeader(rc, drawable);
+                rc.offerShapeDrawable(drawable, this.eyeDistance);
             }
         }
 
         // Compute the placemark icon's active texture and unit square transform.
-        this.determineActiveTexture(dc);
+        this.determineActiveTexture(rc);
 
         // If the placemark's icon is visible, enqueue a drawable icon for processing on the OpenGL thread.
         WWMath.boundingRectForUnitSquare(unitSquareTransform, screenBounds);
-        if (Rect.intersects(dc.viewport, screenBounds)) {
-            Pool<DrawableScreenTexture> pool = dc.getDrawablePool(DrawableScreenTexture.class);
+        if (Rect.intersects(rc.viewport, screenBounds)) {
+            Pool<DrawableScreenTexture> pool = rc.getDrawablePool(DrawableScreenTexture.class);
             DrawableScreenTexture drawable = DrawableScreenTexture.obtain(pool);
-            this.prepareDrawableIcon(dc, drawable);
-            dc.offerShapeDrawable(drawable, this.eyeDistance);
+            this.prepareDrawableIcon(rc, drawable);
+            rc.offerShapeDrawable(drawable, this.eyeDistance);
         }
 
         // Release references to objects stored in the render resource cache.
@@ -673,9 +673,9 @@ public class Placemark extends AbstractRenderable {
     /**
      * Determines the placemark attributes to use for the current render pass.
      *
-     * @param dc the current draw context
+     * @param rc the current render context
      */
-    protected void determineActiveAttributes(DrawContext dc) {
+    protected void determineActiveAttributes(RenderContext rc) {
         if (this.highlighted && this.highlightAttributes != null) {
             this.activeAttributes = this.highlightAttributes;
         } else {
@@ -686,13 +686,13 @@ public class Placemark extends AbstractRenderable {
     /**
      * Determines the image texture and unit square transform to use for the current render pass.
      *
-     * @param dc the current draw context
+     * @param rc the current render context
      */
-    protected void determineActiveTexture(DrawContext dc) {
+    protected void determineActiveTexture(RenderContext rc) {
         if (this.activeAttributes.imageSource != null) {
-            this.activeTexture = dc.getTexture(this.activeAttributes.imageSource); // try to get the texture from the cache
+            this.activeTexture = rc.getTexture(this.activeAttributes.imageSource); // try to get the texture from the cache
             if (this.activeTexture == null) {
-                this.activeTexture = dc.retrieveTexture(this.activeAttributes.imageSource); // puts retrieved textures in the cache
+                this.activeTexture = rc.retrieveTexture(this.activeAttributes.imageSource); // puts retrieved textures in the cache
             }
         } else {
             this.activeTexture = null; // there is no imageSource; draw a simple colored square
@@ -738,7 +738,7 @@ public class Placemark extends AbstractRenderable {
         // ... perform image rotation
         if (this.imageRotation != 0) {
             double rotation = this.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
-                dc.heading - this.imageRotation : -this.imageRotation;
+                rc.heading - this.imageRotation : -this.imageRotation;
             unitSquareTransform.multiplyByTranslation(0.5, 0.5, 0);
             unitSquareTransform.multiplyByRotation(0, 0, 1, rotation);
             unitSquareTransform.multiplyByTranslation(-0.5, -0.5, 0);
@@ -747,7 +747,7 @@ public class Placemark extends AbstractRenderable {
         // ... and perform the tilt so that the image tilts back from its base into the view volume.
         if (this.imageTilt != 0) {
             double tilt = this.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
-                dc.tilt + this.imageTilt : this.imageTilt;
+                rc.tilt + this.imageTilt : this.imageTilt;
             unitSquareTransform.multiplyByRotation(-1, 0, 0, tilt);
         }
     }
@@ -756,14 +756,14 @@ public class Placemark extends AbstractRenderable {
      * Prepares this placemark's icon or symbol for processing in a subsequent drawing pass. Implementations must be
      * careful not to leak resources from Placemark into the Drawable.
      *
-     * @param dc       the current draw context
+     * @param rc       the current render context
      * @param drawable the Drawable to be prepared
      */
-    protected void prepareDrawableIcon(DrawContext dc, DrawableScreenTexture drawable) {
+    protected void prepareDrawableIcon(RenderContext rc, DrawableScreenTexture drawable) {
         // Use the basic GLSL program to draw the placemark's icon.
-        drawable.program = (BasicShaderProgram) dc.getShaderProgram(BasicShaderProgram.KEY);
+        drawable.program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
         if (drawable.program == null) {
-            drawable.program = (BasicShaderProgram) dc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(dc.resources));
+            drawable.program = (BasicShaderProgram) rc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(rc.resources));
         }
 
         // Use the plaemark's unit square transform matrix.
@@ -781,14 +781,14 @@ public class Placemark extends AbstractRenderable {
      * Prepares this placemark's leader line to for drawing in a subsequent drawing pass. Implementations must be
      * careful not to leak resources from Placemark into the Drawable.
      *
-     * @param dc       the current draw context
+     * @param rc       the current render context
      * @param drawable the Drawable to be prepared
      */
-    protected void prepareDrawableLeader(DrawContext dc, DrawableLines drawable) {
+    protected void prepareDrawableLeader(RenderContext rc, DrawableLines drawable) {
         // Use the basic GLSL program to draw the placemark's leader line.
-        drawable.program = (BasicShaderProgram) dc.getShaderProgram(BasicShaderProgram.KEY);
+        drawable.program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
         if (drawable.program == null) {
-            drawable.program = (BasicShaderProgram) dc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(dc.resources));
+            drawable.program = (BasicShaderProgram) rc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(rc.resources));
         }
 
         // Compute the drawable's vertex points, in Cartesian coordinates relative to the placemark's ground point.
@@ -800,7 +800,7 @@ public class Placemark extends AbstractRenderable {
         drawable.vertexPoints[5] = (float) (placePoint.z - groundPoint.z);
 
         // Compute the drawable's modelview-projection matrix, relative to the placemark's ground point.
-        drawable.mvpMatrix.set(dc.modelviewProjection);
+        drawable.mvpMatrix.set(rc.modelviewProjection);
         drawable.mvpMatrix.multiplyByTranslation(groundPoint.x, groundPoint.y, groundPoint.z);
 
         // Configure the drawable according to the placemark's active leader line attributes.
@@ -815,7 +815,7 @@ public class Placemark extends AbstractRenderable {
      * @return True if there is a valid label and label attributes.
      */
 
-    protected boolean mustDrawLabel(DrawContext dc) {
+    protected boolean mustDrawLabel(RenderContext rc) {
         return this.label != null
             && !this.label.isEmpty()
             && this.activeAttributes.labelAttributes != null;
@@ -826,9 +826,9 @@ public class Placemark extends AbstractRenderable {
      *
      * @return True if leader-line directive is enabled and there are valid leader-line attributes.
      */
-    protected boolean mustDrawLeaderLine(DrawContext dc) {
+    protected boolean mustDrawLeaderLine(RenderContext rc) {
         return this.activeAttributes.drawLeaderLine
             && this.activeAttributes.leaderLineAttributes != null
-            && (this.enableLeaderLinePicking || !dc.pickingMode);
+            && (this.enableLeaderLinePicking || !rc.pickingMode);
     }
 }

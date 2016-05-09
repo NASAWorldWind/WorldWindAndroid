@@ -5,11 +5,12 @@
 
 package gov.nasa.worldwind;
 
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.draw.DrawContext;
+import gov.nasa.worldwind.render.RenderContext;
 
 public interface FrameController {
 
-    void renderFrame(DrawContext dc);
+    void renderFrame(RenderContext rc);
 
     void drawFrame(DrawContext dc);
 }

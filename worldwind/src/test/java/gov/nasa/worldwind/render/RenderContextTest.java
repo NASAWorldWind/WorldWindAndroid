@@ -8,9 +8,9 @@ package gov.nasa.worldwind.render;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
-public class DrawContextTest {
+public class RenderContextTest {
     @Ignore("not implemented")
     @Test
     public void testConstructor_default() throws Exception {

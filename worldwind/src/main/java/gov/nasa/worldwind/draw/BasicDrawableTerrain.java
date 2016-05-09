@@ -12,7 +12,6 @@ import java.nio.ShortBuffer;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
-import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Pool;
 
 public class BasicDrawableTerrain implements DrawableTerrain {

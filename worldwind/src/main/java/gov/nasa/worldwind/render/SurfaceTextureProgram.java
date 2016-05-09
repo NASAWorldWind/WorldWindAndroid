@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.opengl.GLES20;
 
 import gov.nasa.worldwind.R;
+import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.util.Logger;

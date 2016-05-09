@@ -13,6 +13,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.LruMemoryCache;
 import gov.nasa.worldwind.util.Retriever;
@@ -77,12 +78,9 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource> 
         ((ImageRetriever) this.imageRetriever).setResources(res);
     }
 
-    public void contextLost(DrawContext dc) {
-        // TODO requires synchronization between the Activity thread and the OpenGL thread (eventually)
-        // TODO the context lost message is sent to the OpenGL thread, but can this work be done on the Activity thread
+    public void clear() {
         this.entries.clear(); // the cache entries are invalid; clear but don't call entryRemoved
         this.evictionQueue.clear(); // the eviction queue no longer needs to be processed
-        this.retrievalQueue.clear();
         this.usedCapacity = 0;
     }
 

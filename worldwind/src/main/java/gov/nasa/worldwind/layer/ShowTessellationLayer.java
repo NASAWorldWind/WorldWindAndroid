@@ -9,7 +9,7 @@ import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableTessellation;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
 
@@ -35,20 +35,20 @@ public class ShowTessellationLayer extends AbstractLayer {
     }
 
     @Override
-    protected void doRender(DrawContext dc) {
+    protected void doRender(RenderContext rc) {
 
-        if (dc.terrain.getSector().isEmpty()) {
+        if (rc.terrain.getSector().isEmpty()) {
             return; // no terrain to render
         }
 
         // Use World Wind's basic GLSL program.
-        BasicShaderProgram program = (BasicShaderProgram) dc.getShaderProgram(BasicShaderProgram.KEY);
+        BasicShaderProgram program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
         if (program == null) {
-            program = (BasicShaderProgram) dc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(dc.resources));
+            program = (BasicShaderProgram) rc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(rc.resources));
         }
 
-        Pool<DrawableTessellation> pool = dc.getDrawablePool(DrawableTessellation.class);
+        Pool<DrawableTessellation> pool = rc.getDrawablePool(DrawableTessellation.class);
         Drawable drawable = DrawableTessellation.obtain(pool).set(program, this.color);
-        dc.offerSurfaceDrawable(drawable, 1.0 /*z-order after surface textures*/);
+        rc.offerSurfaceDrawable(drawable, 1.0 /*z-order after surface textures*/);
     }
 }

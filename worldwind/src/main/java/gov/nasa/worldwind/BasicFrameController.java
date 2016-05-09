@@ -7,12 +7,13 @@ package gov.nasa.worldwind;
 
 import android.opengl.GLES20;
 
+import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.globe.Tessellator;
 import gov.nasa.worldwind.layer.LayerList;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Logger;
 
 public class BasicFrameController implements FrameController {
@@ -25,61 +26,61 @@ public class BasicFrameController implements FrameController {
     }
 
     @Override
-    public void renderFrame(DrawContext dc) {
-        this.createViewingState(dc);
-        this.createTerrain(dc);
-        this.renderLayers(dc);
+    public void renderFrame(RenderContext rc) {
+        this.createViewingState(rc);
+        this.createTerrain(rc);
+        this.renderLayers(rc);
     }
 
-    protected void createViewingState(DrawContext dc) {
+    protected void createViewingState(RenderContext rc) {
 
         // Compute the clip plane distances. The near distance is set to a large value that does not clip the globe's
         // surface. The far distance is set to the smallest value that does not clip the atmosphere.
         // TODO adjust the clip plane distances based on the navigator's orientation - shorter distances when the
         // TODO horizon is not in view
         // TODO parameterize the object altitude for horizon distance
-        double near = dc.eyePosition.altitude * 0.75;
-        double far = dc.globe.horizonDistance(dc.eyePosition.altitude, 160000);
+        double near = rc.eyePosition.altitude * 0.75;
+        double far = rc.globe.horizonDistance(rc.eyePosition.altitude, 160000);
 
         // Configure a camera object with the draw context's viewing parameters. This is used to compute the draw
         // context's Cartesian modelview matrix.
-        this.camera.set(dc.eyePosition.latitude, dc.eyePosition.longitude, dc.eyePosition.altitude, WorldWind.ABSOLUTE,
-            dc.heading, dc.tilt, dc.roll);
+        this.camera.set(rc.eyePosition.latitude, rc.eyePosition.longitude, rc.eyePosition.altitude, WorldWind.ABSOLUTE,
+            rc.heading, rc.tilt, rc.roll);
 
         // Compute the draw context's Cartesian modelview matrix, eye coordinate projection matrix, and the combined
         // modelview-projection matrix. Extract the Cartesian eye point from the modelview matrix.
-        dc.globe.cameraToCartesianTransform(this.camera, dc.modelview).invertOrthonormal();
-        dc.modelview.extractEyePoint(dc.eyePoint);
-        dc.projection.setToPerspectiveProjection(dc.viewport.width(), dc.viewport.height(), dc.fieldOfView, near, far);
-        dc.modelviewProjection.setToMultiply(dc.projection, dc.modelview);
-        dc.screenProjection.setToScreenProjection(dc.viewport.width(), dc.viewport.height());
+        rc.globe.cameraToCartesianTransform(this.camera, rc.modelview).invertOrthonormal();
+        rc.modelview.extractEyePoint(rc.eyePoint);
+        rc.projection.setToPerspectiveProjection(rc.viewport.width(), rc.viewport.height(), rc.fieldOfView, near, far);
+        rc.modelviewProjection.setToMultiply(rc.projection, rc.modelview);
+        rc.screenProjection.setToScreenProjection(rc.viewport.width(), rc.viewport.height());
 
         // Compute the projection's Cartesian frustum, which must be transformed from eye coordinates to world Cartesian
         // coordinates.
-        dc.frustum.setToProjectionMatrix(dc.projection);
-        dc.frustum.transformByMatrix(this.matrix.transposeMatrix(dc.modelview));
-        dc.frustum.normalize();
+        rc.frustum.setToProjectionMatrix(rc.projection);
+        rc.frustum.transformByMatrix(this.matrix.transposeMatrix(rc.modelview));
+        rc.frustum.normalize();
     }
 
-    protected void createTerrain(DrawContext dc) {
-        Tessellator tess = dc.globe.getTessellator();
-        tess.tessellate(dc);
+    protected void createTerrain(RenderContext rc) {
+        Tessellator tess = rc.globe.getTessellator();
+        tess.tessellate(rc);
     }
 
-    protected void renderLayers(DrawContext dc) {
-        LayerList layers = dc.layers;
+    protected void renderLayers(RenderContext rc) {
+        LayerList layers = rc.layers;
         for (int idx = 0, len = layers.count(); idx < len; idx++) {
-            dc.currentLayer = layers.getLayer(idx);
+            rc.currentLayer = layers.getLayer(idx);
             try {
-                dc.currentLayer.render(dc);
+                rc.currentLayer.render(rc);
             } catch (Exception e) {
                 Logger.logMessage(Logger.ERROR, "BasicFrameController", "drawLayers",
-                    "Exception while rendering layer \'" + dc.currentLayer.getDisplayName() + "\'", e);
+                    "Exception while rendering layer \'" + rc.currentLayer.getDisplayName() + "\'", e);
                 // Keep going. Draw the remaining layers.
             }
         }
 
-        dc.currentLayer = null;
+        rc.currentLayer = null;
     }
 
     @Override

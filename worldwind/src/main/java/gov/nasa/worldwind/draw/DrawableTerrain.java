@@ -7,7 +7,6 @@ package gov.nasa.worldwind.draw;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
-import gov.nasa.worldwind.render.DrawContext;
 
 public interface DrawableTerrain extends Drawable {
 

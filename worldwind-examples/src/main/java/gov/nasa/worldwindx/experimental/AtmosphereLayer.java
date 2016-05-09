@@ -14,8 +14,8 @@ import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.layer.AbstractLayer;
-import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.ImageSource;
+import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwindx.R;
 
@@ -51,38 +51,38 @@ public class AtmosphereLayer extends AbstractLayer {
     }
 
     @Override
-    protected void doRender(DrawContext dc) {
+    protected void doRender(RenderContext rc) {
         // Compute the currently active light direction.
-        this.determineLightDirection(dc);
+        this.determineLightDirection(rc);
 
         // Render the sky portion of the atmosphere.
-        this.renderSky(dc);
+        this.renderSky(rc);
 
         // Render the ground portion of the atmosphere.
-        this.renderGround(dc);
+        this.renderGround(rc);
     }
 
-    protected void determineLightDirection(DrawContext dc) {
-        // TODO Make light/sun direction an optional property of the WorldWindow and attach it to the DrawContext each frame
-        // TODO DrawContext property defaults to the eye lat/lon like we have below
+    protected void determineLightDirection(RenderContext rc) {
+        // TODO Make light/sun direction an optional property of the WorldWindow and attach it to the RenderContext each frame
+        // TODO RenderContext property defaults to the eye lat/lon like we have below
         if (this.lightLocation != null) {
-            dc.globe.geographicToCartesianNormal(this.lightLocation.latitude, this.lightLocation.longitude, this.activeLightDirection);
+            rc.globe.geographicToCartesianNormal(this.lightLocation.latitude, this.lightLocation.longitude, this.activeLightDirection);
         } else {
-            dc.globe.geographicToCartesianNormal(dc.eyePosition.latitude, dc.eyePosition.longitude, this.activeLightDirection);
+            rc.globe.geographicToCartesianNormal(rc.eyePosition.latitude, rc.eyePosition.longitude, this.activeLightDirection);
         }
     }
 
-    protected void renderSky(DrawContext dc) {
-        Pool<DrawableSkyAtmosphere> pool = dc.getDrawablePool(DrawableSkyAtmosphere.class);
+    protected void renderSky(RenderContext rc) {
+        Pool<DrawableSkyAtmosphere> pool = rc.getDrawablePool(DrawableSkyAtmosphere.class);
         DrawableSkyAtmosphere drawable = DrawableSkyAtmosphere.obtain(pool);
 
-        drawable.program = (SkyProgram) dc.getShaderProgram(SkyProgram.KEY);
+        drawable.program = (SkyProgram) rc.getShaderProgram(SkyProgram.KEY);
         if (drawable.program == null) {
-            drawable.program = (SkyProgram) dc.putShaderProgram(SkyProgram.KEY, new SkyProgram(dc.resources));
+            drawable.program = (SkyProgram) rc.putShaderProgram(SkyProgram.KEY, new SkyProgram(rc.resources));
         }
 
         drawable.lightDirection.set(this.activeLightDirection);
-        drawable.globeRadius = dc.globe.getEquatorialRadius();
+        drawable.globeRadius = rc.globe.getEquatorialRadius();
 
         int size = 128;
         if (drawable.vertexPoints == null) {
@@ -91,7 +91,7 @@ public class AtmosphereLayer extends AbstractLayer {
             Arrays.fill(array, drawable.program.getAltitude());
 
             drawable.vertexPoints = ByteBuffer.allocateDirect(count * 12).order(ByteOrder.nativeOrder()).asFloatBuffer();
-            dc.globe.geographicToCartesianGrid(this.fullSphereSector, size, size, array, null,
+            rc.globe.geographicToCartesianGrid(this.fullSphereSector, size, size, array, null,
                 drawable.vertexPoints, 3).rewind();
         }
 
@@ -99,36 +99,36 @@ public class AtmosphereLayer extends AbstractLayer {
             drawable.triStripElements = assembleTriStripElements(size, size);
         }
 
-        dc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY /*z-order after all other surface drawables*/);
+        rc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY /*z-order after all other surface drawables*/);
     }
 
-    protected void renderGround(DrawContext dc) {
-        if (dc.terrain.getSector().isEmpty()) {
+    protected void renderGround(RenderContext rc) {
+        if (rc.terrain.getSector().isEmpty()) {
             return; // no terrain surface to render on
         }
 
-        Pool<DrawableGroundAtmosphere> pool = dc.getDrawablePool(DrawableGroundAtmosphere.class);
+        Pool<DrawableGroundAtmosphere> pool = rc.getDrawablePool(DrawableGroundAtmosphere.class);
         DrawableGroundAtmosphere drawable = DrawableGroundAtmosphere.obtain(pool);
 
-        drawable.program = (GroundProgram) dc.getShaderProgram(GroundProgram.KEY);
+        drawable.program = (GroundProgram) rc.getShaderProgram(GroundProgram.KEY);
         if (drawable.program == null) {
-            drawable.program = (GroundProgram) dc.putShaderProgram(GroundProgram.KEY, new GroundProgram(dc.resources));
+            drawable.program = (GroundProgram) rc.putShaderProgram(GroundProgram.KEY, new GroundProgram(rc.resources));
         }
 
         drawable.lightDirection.set(this.activeLightDirection);
-        drawable.globeRadius = dc.globe.getEquatorialRadius();
+        drawable.globeRadius = rc.globe.getEquatorialRadius();
 
         // Use this layer's night image when the light location is different than the eye location.
         if (this.nightImageSource != null && this.lightLocation != null) {
-            drawable.nightTexture = dc.getTexture(this.nightImageSource);
+            drawable.nightTexture = rc.getTexture(this.nightImageSource);
             if (drawable.nightTexture == null) {
-                drawable.nightTexture = dc.retrieveTexture(this.nightImageSource);
+                drawable.nightTexture = rc.retrieveTexture(this.nightImageSource);
             }
         } else {
             drawable.nightTexture = null;
         }
 
-        dc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY /*z-order after all other surface drawables*/);
+        rc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY /*z-order after all other surface drawables*/);
     }
 
     // TODO move this into a basic tessellator implementation in World Wind

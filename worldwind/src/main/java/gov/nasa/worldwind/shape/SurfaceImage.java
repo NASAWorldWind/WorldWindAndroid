@@ -9,8 +9,8 @@ import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableSurfaceTexture;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.AbstractRenderable;
-import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.ImageSource;
+import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.render.SurfaceTextureProgram;
 import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Logger;
@@ -60,35 +60,35 @@ public class SurfaceImage extends AbstractRenderable {
     }
 
     @Override
-    protected void doRender(DrawContext dc) {
+    protected void doRender(RenderContext rc) {
         if (this.sector.isEmpty()) {
             return; // nothing to render
         }
 
-        if (!dc.terrain.getSector().intersects(this.sector)) {
+        if (!rc.terrain.getSector().intersects(this.sector)) {
             return; // no terrain surface to render on
         }
 
-        Texture texture = dc.getTexture(this.imageSource); // try to get the texture from the cache
+        Texture texture = rc.getTexture(this.imageSource); // try to get the texture from the cache
         if (texture == null) {
-            texture = dc.retrieveTexture(this.imageSource); // puts retrieved textures in the cache
+            texture = rc.retrieveTexture(this.imageSource); // puts retrieved textures in the cache
         }
 
         if (texture == null) {
             return; // no texture to draw
         }
 
-        SurfaceTextureProgram program = this.getShaderProgram(dc);
-        Pool<DrawableSurfaceTexture> pool = dc.getDrawablePool(DrawableSurfaceTexture.class);
+        SurfaceTextureProgram program = this.getShaderProgram(rc);
+        Pool<DrawableSurfaceTexture> pool = rc.getDrawablePool(DrawableSurfaceTexture.class);
         Drawable drawable = DrawableSurfaceTexture.obtain(pool).set(program, this.sector, texture, texture.getTexCoordTransform());
-        dc.offerSurfaceDrawable(drawable, 0 /*z-order*/);
+        rc.offerSurfaceDrawable(drawable, 0 /*z-order*/);
     }
 
-    protected SurfaceTextureProgram getShaderProgram(DrawContext dc) {
-        SurfaceTextureProgram program = (SurfaceTextureProgram) dc.getShaderProgram(SurfaceTextureProgram.KEY);
+    protected SurfaceTextureProgram getShaderProgram(RenderContext rc) {
+        SurfaceTextureProgram program = (SurfaceTextureProgram) rc.getShaderProgram(SurfaceTextureProgram.KEY);
 
         if (program == null) {
-            program = (SurfaceTextureProgram) dc.putShaderProgram(SurfaceTextureProgram.KEY, new SurfaceTextureProgram(dc.resources));
+            program = (SurfaceTextureProgram) rc.putShaderProgram(SurfaceTextureProgram.KEY, new SurfaceTextureProgram(rc.resources));
         }
 
         return program;

@@ -10,7 +10,7 @@ import java.util.Collection;
 import gov.nasa.worldwind.geom.BoundingBox;
 import gov.nasa.worldwind.geom.Frustum;
 import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.RenderContext;
 
 /**
  * Geographically rectangular tile within a {@link LevelSet}, typically representing terrain or imagery. Provides a base
@@ -206,20 +206,20 @@ public class Tile {
     /**
      * Indicates whether this tile's Cartesian extent intersects a specified frustum.
      *
-     * @param dc      the current draw context
+     * @param rc      the current render context
      * @param frustum the frustum of interest
      *
      * @return true if the specified frustum intersects this tile's extent, otherwise false
      *
      * @throws IllegalArgumentException If the frustum is null
      */
-    public boolean intersectsFrustum(DrawContext dc, Frustum frustum) {
+    public boolean intersectsFrustum(RenderContext rc, Frustum frustum) {
         if (frustum == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Tile", "intersectsFrustum", "missingFrustum"));
         }
 
-        return this.getExtent(dc).intersectsFrustum(frustum);
+        return this.getExtent(rc).intersectsFrustum(frustum);
     }
 
     /**
@@ -244,15 +244,15 @@ public class Tile {
      * Indicates whether this tile should be subdivided based on the current navigation state and a specified detail
      * factor.
      *
-     * @param dc           the current draw context
+     * @param rc           the current render context
      * @param detailFactor the detail factor to consider
      *
      * @return true if the tile should be subdivided, otherwise false
      */
-    public boolean mustSubdivide(DrawContext dc, double detailFactor) {
-        double distance = this.getExtent(dc).distanceTo(dc.eyePoint);
-        double texelSize = this.level.texelHeight * dc.globe.getEquatorialRadius();
-        double pixelSize = dc.pixelSizeAtDistance(distance);
+    public boolean mustSubdivide(RenderContext rc, double detailFactor) {
+        double distance = this.getExtent(rc).distanceTo(rc.eyePoint);
+        double texelSize = this.level.texelHeight * rc.globe.getEquatorialRadius();
+        double pixelSize = rc.pixelSizeAtDistance(distance);
 
         return texelSize > pixelSize * detailFactor;
     }
@@ -346,10 +346,10 @@ public class Tile {
         return children;
     }
 
-    protected BoundingBox getExtent(DrawContext dc) {
+    protected BoundingBox getExtent(RenderContext rc) {
         if (this.extent == null) {
             this.extent = new BoundingBox();
-            this.extent.setToSector(this.sector, dc.globe, 0, 0);
+            this.extent.setToSector(this.sector, rc.globe, 0, 0);
         }
 
         return this.extent;

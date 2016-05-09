@@ -10,9 +10,9 @@ import android.opengl.GLES20;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
+import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.geom.Vec3;
-import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Pool;
 
 public class DrawableSkyAtmosphere implements Drawable {
