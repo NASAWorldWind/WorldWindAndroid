@@ -8,8 +8,6 @@ package gov.nasa.worldwind.render;
 import android.content.res.Resources;
 import android.opengl.GLES20;
 
-import java.util.ArrayList;
-
 import gov.nasa.worldwind.R;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Matrix4;
@@ -23,8 +21,6 @@ import gov.nasa.worldwind.util.WWUtil;
 public class SurfaceTextureProgram extends ShaderProgram {
 
     public static final Object KEY = SurfaceTextureProgram.class;
-
-    public final ArrayList<SurfaceTexture> surfaceTextures = new ArrayList<>();
 
     public Matrix4 mvpMatrix = new Matrix4();
 

@@ -7,6 +7,8 @@ package gov.nasa.worldwind.draw;
 
 import android.opengl.GLES20;
 
+import java.util.ArrayList;
+
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
@@ -81,21 +83,24 @@ public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
             return; // program failed to build
         }
 
+        // Accumulate surface textures in the draw context's scratch list.
+        ArrayList<Object> scratchList = dc.scratchList();
+
         try {
             // Add this surface texture.
-            this.program.surfaceTextures.add(this);
+            scratchList.add(this);
 
             // Add all surface textures that are contiguous in the drawable queue.
             Drawable next;
             while ((next = dc.peekDrawable()) != null && this.canBatchWith(next)) { // check if the drawable at the front of the queue can be batched
-                this.program.surfaceTextures.add((SurfaceTexture) dc.pollDrawable()); // take it off the queue
+                scratchList.add(dc.pollDrawable()); // take it off the queue
             }
 
-            // Draw the accumulated  surface textures.
+            // Draw the accumulated surface textures.
             this.drawSurfaceTextures(dc);
         } finally {
-            // Clear the program's accumulated surface textures.
-            this.program.surfaceTextures.clear();
+            // Clear the accumulated surface textures.
+            scratchList.clear();
         }
     }
 
@@ -106,6 +111,9 @@ public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
         // Make multitexture unit 0 active.
         dc.activeTextureUnit(GLES20.GL_TEXTURE0);
 
+        // Surface textures have been accumulated in the draw context's scratch list.
+        ArrayList<Object> scratchList = dc.scratchList();
+
         for (int idx = 0, len = dc.getDrawableTerrainCount(); idx < len; idx++) {
             // Get the drawable terrain associated with the draw context.
             DrawableTerrain terrain = dc.getDrawableTerrain(idx);
@@ -115,9 +123,9 @@ public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
             Vec3 terrainOrigin = terrain.getVertexOrigin();
             boolean usingTerrainAttrs = false;
 
-            for (int jidx = 0, jlen = this.program.surfaceTextures.size(); jidx < jlen; jidx++) {
+            for (int jidx = 0, jlen = scratchList.size(); jidx < jlen; jidx++) {
                 // Get the surface texture and its sector.
-                SurfaceTexture texture = this.program.surfaceTextures.get(jidx);
+                SurfaceTexture texture = (SurfaceTexture) scratchList.get(jidx);
                 Sector textureSector = texture.getSector();
 
                 if (!textureSector.intersects(terrainSector)) {

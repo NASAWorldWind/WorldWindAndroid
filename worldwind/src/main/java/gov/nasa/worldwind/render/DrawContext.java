@@ -12,6 +12,7 @@ import android.opengl.GLES20;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -101,6 +102,8 @@ public class DrawContext {
     protected int elementArrayBufferId;
 
     protected int unitQuadBufferId;
+
+    protected ArrayList<Object> scratchList = new ArrayList<>();
 
     public DrawContext() {
     }
@@ -416,6 +419,7 @@ public class DrawContext {
         this.drawableQueue.clearDrawables();
         this.drawableTerrain.clearDrawables();
         this.userProperties.clear();
+        this.scratchList.clear();
     }
 
     public void contextLost() {
@@ -581,5 +585,15 @@ public class DrawContext {
         }
 
         return this.unitQuadBufferId;
+    }
+
+    /**
+     * Returns a scratch list suitable for accumulating entries during drawing. This list is cleared before each frame,
+     * otherwise its contents are undefined.
+     *
+     * @return the draw context's scratch list
+     */
+    public ArrayList<Object> scratchList() {
+        return this.scratchList;
     }
 }
