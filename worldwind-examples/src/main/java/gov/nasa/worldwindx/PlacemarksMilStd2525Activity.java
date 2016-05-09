@@ -39,11 +39,9 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
         FrameLayout globeLayout = (FrameLayout) findViewById(R.id.content_globe);
         globeLayout.addView(this.statusText);
 
-        // Create a layer for the military symbols and add it just before the Atmosphere layer
+        // Create a layer for the military symbols and add it to the WorldWindow
         this.symbolLayer = new RenderableLayer("Symbols");
-        LayerList layers = this.getWorldWindow().getLayers();
-        int index = layers.indexOfLayerNamed("Atmosphere");
-        layers.addLayer(index, this.symbolLayer);
+        this.getWorldWindow().getLayers().addLayer(this.symbolLayer);
 
         // The rendering service takes time initialize. We'll display the globe
         // while the service is initializing on a background thread.

@@ -38,8 +38,7 @@ public class SurfaceImageActivity extends BasicGlobeActivity {
         RenderableLayer layer = new RenderableLayer("Surface Image");
         layer.addRenderable(surfaceImageResource);
         layer.addRenderable(surfaceImageUrl);
-        int index = this.getWorldWindow().getLayers().indexOfLayerNamed("Atmosphere");
-        this.getWorldWindow().getLayers().addLayer(index, layer);
+        this.getWorldWindow().getLayers().addLayer(layer);
 
         // Position the viewer so that the Surface Images are visible when the activity is created.
         this.getWorldWindow().getNavigator().setLatitude(37.46543388598137);

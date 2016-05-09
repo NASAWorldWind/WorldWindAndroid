@@ -39,17 +39,16 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
         setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks_stress_test));
         setAboutBoxText("Demonstrates a LOT of Placemarks.");
 
-        // Turn off all layers while debugging/profiling memory allocations
+        // Turn off all layers while debugging/profiling memory allocations...
         for (Layer l : this.getWorldWindow().getLayers()) {
             l.setEnabled(false);
         }
+        // ... and add the tessellation layer instead
         this.getWorldWindow().getLayers().addLayer(new ShowTessellationLayer());
 
-        // Add a Renderable layer for the placemarks before the Atmosphere layer
-        LayerList layers = this.getWorldWindow().getLayers();
-        int index = layers.indexOfLayerNamed("Atmosphere");
+        // Create a Renderable layer for the placemarks and add it to the WorldWindow
         RenderableLayer placemarksLayer = new RenderableLayer("Placemarks");
-        this.getWorldWindow().getLayers().addLayer(index, placemarksLayer);
+        this.getWorldWindow().getLayers().addLayer(placemarksLayer);
 
         // Create some placemarks at a known locations
         Placemark origin = new Placemark(Position.fromDegrees(0, 0, 1e5),

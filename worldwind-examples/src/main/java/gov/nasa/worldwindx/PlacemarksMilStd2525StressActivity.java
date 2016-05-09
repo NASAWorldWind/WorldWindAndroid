@@ -97,12 +97,11 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         FrameLayout globeLayout = (FrameLayout) findViewById(R.id.content_globe);
         globeLayout.addView(this.statusText);
 
-        // Add a Renderable layer for the placemarks before the Atmosphere layer
+        // Add Renderable layers for the airports and aircraft to the WorldWindow
         this.airportLayer = new RenderableLayer("Airports");
         this.aircraftLayer = new RenderableLayer("Aircraft");
-        int index = this.getWorldWindow().getLayers().indexOfLayerNamed("Atmosphere");
-        this.getWorldWindow().getLayers().addLayer(index++, airportLayer);
-        this.getWorldWindow().getLayers().addLayer(index, aircraftLayer);
+        this.getWorldWindow().getLayers().addLayer(this.airportLayer);
+        this.getWorldWindow().getLayers().addLayer(this.aircraftLayer);
 
         executor.execute(new Runnable() {
             @Override
