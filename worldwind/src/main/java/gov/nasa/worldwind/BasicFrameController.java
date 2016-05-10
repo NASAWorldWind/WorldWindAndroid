@@ -27,13 +27,13 @@ public class BasicFrameController implements FrameController {
 
     @Override
     public void renderFrame(RenderContext rc) {
-        this.createViewingState(rc);
-        this.createTerrain(rc);
+        this.prepareViewingState(rc);
+        this.tessellateTerrain(rc);
         this.renderLayers(rc);
+        this.prepareDrawables(rc);
     }
 
-    protected void createViewingState(RenderContext rc) {
-
+    protected void prepareViewingState(RenderContext rc) {
         // Compute the clip plane distances. The near distance is set to a large value that does not clip the globe's
         // surface. The far distance is set to the smallest value that does not clip the atmosphere.
         // TODO adjust the clip plane distances based on the navigator's orientation - shorter distances when the
@@ -42,12 +42,12 @@ public class BasicFrameController implements FrameController {
         double near = rc.eyePosition.altitude * 0.75;
         double far = rc.globe.horizonDistance(rc.eyePosition.altitude, 160000);
 
-        // Configure a camera object with the draw context's viewing parameters. This is used to compute the draw
+        // Configure a camera object with the render context's viewing parameters. This is used to compute the draw
         // context's Cartesian modelview matrix.
         this.camera.set(rc.eyePosition.latitude, rc.eyePosition.longitude, rc.eyePosition.altitude, WorldWind.ABSOLUTE,
             rc.heading, rc.tilt, rc.roll);
 
-        // Compute the draw context's Cartesian modelview matrix, eye coordinate projection matrix, and the combined
+        // Compute the render context's Cartesian modelview matrix, eye coordinate projection matrix, and the combined
         // modelview-projection matrix. Extract the Cartesian eye point from the modelview matrix.
         rc.globe.cameraToCartesianTransform(this.camera, rc.modelview).invertOrthonormal();
         rc.modelview.extractEyePoint(rc.eyePoint);
@@ -61,7 +61,7 @@ public class BasicFrameController implements FrameController {
         rc.frustum.normalize();
     }
 
-    protected void createTerrain(RenderContext rc) {
+    protected void tessellateTerrain(RenderContext rc) {
         Tessellator tess = rc.globe.getTessellator();
         tess.tessellate(rc);
     }
@@ -82,6 +82,10 @@ public class BasicFrameController implements FrameController {
         rc.currentLayer = null;
     }
 
+    protected void prepareDrawables(RenderContext rc) {
+        rc.sortDrawables();
+    }
+
     @Override
     public void drawFrame(DrawContext dc) {
         this.clearFrame(dc);
@@ -93,7 +97,7 @@ public class BasicFrameController implements FrameController {
     }
 
     protected void drawDrawables(DrawContext dc) {
-        dc.sortDrawables();
+        dc.rewindDrawables();
 
         Drawable next;
         while ((next = dc.pollDrawable()) != null) {

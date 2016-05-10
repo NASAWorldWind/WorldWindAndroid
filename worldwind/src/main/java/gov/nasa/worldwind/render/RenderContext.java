@@ -358,6 +358,12 @@ public class RenderContext {
         }
     }
 
+    public void sortDrawables() {
+        if (this.drawableQueue != null) {
+            this.drawableQueue.sortDrawables();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public <T extends Drawable> Pool<T> getDrawablePool(Class<T> key) {
         Pool<T> pool = (Pool<T>) this.drawablePools.get(key);

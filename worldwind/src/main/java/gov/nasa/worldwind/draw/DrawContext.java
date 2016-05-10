@@ -70,18 +70,18 @@ public class DrawContext {
         Arrays.fill(this.textureId, 0);
     }
 
-    public void sortDrawables() {
-        if (this.drawableQueue != null) {
-            this.drawableQueue.sortDrawables();
-        }
-    }
-
     public Drawable peekDrawable() {
         return (this.drawableQueue != null) ? this.drawableQueue.peekDrawable() : null;
     }
 
     public Drawable pollDrawable() {
         return (this.drawableQueue != null) ? this.drawableQueue.pollDrawable() : null;
+    }
+
+    public void rewindDrawables() {
+        if (this.drawableQueue != null) {
+            this.drawableQueue.rewindDrawables();
+        }
     }
 
     public int getDrawableTerrainCount() {

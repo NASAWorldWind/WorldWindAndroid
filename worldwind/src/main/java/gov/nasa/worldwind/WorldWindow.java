@@ -22,8 +22,6 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import gov.nasa.worldwind.draw.DrawContext;
-import gov.nasa.worldwind.draw.DrawableList;
-import gov.nasa.worldwind.draw.DrawableQueue;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.gesture.GestureGroup;
 import gov.nasa.worldwind.gesture.GestureRecognizer;
@@ -35,6 +33,8 @@ import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.render.RenderResourceCache;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.MessageListener;
+import gov.nasa.worldwind.util.Pool;
+import gov.nasa.worldwind.util.SynchronizedPool;
 
 /**
  * Provides a World Wind window that implements a virtual globe inside of the Android view hierarchy. By default, World
@@ -67,13 +67,11 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
     protected RenderResourceCache renderResourceCache;
 
-    protected DrawableQueue drawableQueue = new DrawableQueue();
-
-    protected DrawableList drawableTerrain = new DrawableList();
-
     protected RenderContext rc = new RenderContext();
 
     protected DrawContext dc = new DrawContext();
+
+    protected Pool<Frame> framePool = new SynchronizedPool<>();
 
     /**
      * Constructs a WorldWindow associated with the specified application context. This is the constructor to use when
@@ -337,38 +335,18 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
      */
     @Override
     public void onDrawFrame(GL10 unused) {
-        // Setup the render context according to the World Window's current state, then render the World Window
-        // traversing the Navigator, Tessellator, Layers and Renderables and collecting Drawables.
-        this.frameMetrics.beginRendering();
-        this.prepareToRenderFrame();
-        this.frameController.renderFrame(this.rc);
-        this.frameMetrics.endRendering();
+        // Obtain a frame to process.
+        Frame frame = Frame.obtain(this.framePool);
 
-        // Propagate render requests submitted during rendering to the WorldWindow. The draw context provides a layer of
-        // indirection that insulates rendering code from establishing a dependency on a specific WorldWindow.
-        if (this.rc.isRenderRequested()) {
-            this.requestRender(); // inherited from GLSurfaceView
-        }
+        // Render the frame by traversing the Navigator, Globe, and Layers, accumulating Drawables to process in the
+        // OpenGL thread during the draw phase.
+        this.renderFrame(frame);
 
-        // TODO move this just before drawFrame once the frame state is collected in a separate structure.
-        this.prepareToDrawFrame();
+        // Process and display the Drawables accumulated during the render phase.
+        this.drawFrame(frame);
 
-        // Reset the render context's state in preparation for the next frame.
-        this.rc.reset();
-
-        // Setup the draw context according to the state collected during render, then draw the World Window; traversing
-        // the Drawables collected during the render phase.
-        this.frameMetrics.beginDrawing();
-        this.frameController.drawFrame(this.dc);
-
-        // Release resources evicted during the previous frame.
-        this.renderResourceCache.releaseEvictedResources(this.dc);
-        this.dc.reset();
-        this.frameMetrics.endDrawing();
-
-        // Clear the drawables accumulated and processed during this frame.
-        this.drawableQueue.clearDrawables();
-        this.drawableTerrain.clearDrawables();
+        // Recycle the frame.
+        frame.recycle();
     }
 
     /**
@@ -413,7 +391,17 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         }
     }
 
-    protected void prepareToRenderFrame() {
+    protected void renderFrame(Frame frame) {
+        this.willRenderFrame(frame);
+        this.frameController.renderFrame(this.rc);
+        this.didRenderFrame(frame);
+    }
+
+    protected void willRenderFrame(Frame frame) {
+        // Mark the beginning of a frame render.
+        this.frameMetrics.beginRendering();
+
+        // Setup the render context according to the World Window's current state.
         this.rc.globe = this.globe;
         this.rc.layers.addAllLayers(this.layers);
         this.rc.verticalExaggeration = this.verticalExaggeration;
@@ -422,22 +410,62 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         this.rc.tilt = this.navigator.getTilt();
         this.rc.roll = this.navigator.getRoll();
         this.rc.fieldOfView = this.navigator.getFieldOfView();
-        this.rc.horizonDistance = this.globe.horizonDistance(rc.eyePosition.altitude);
+        this.rc.horizonDistance = this.globe.horizonDistance(this.navigator.getAltitude());
         this.rc.viewport.set(this.viewport);
         this.rc.renderResourceCache = this.renderResourceCache;
         this.rc.renderResourceCache.setResources(this.getContext().getResources());
         this.rc.resources = this.getContext().getResources();
-        this.rc.drawableQueue = this.drawableQueue;
-        this.rc.drawableTerrain = this.drawableTerrain;
+        this.rc.drawableQueue = frame.drawableQueue;
+        this.rc.drawableTerrain = frame.drawableTerrain;
     }
 
-    protected void prepareToDrawFrame() {
-        this.dc.modelview.set(this.rc.modelview);
-        this.dc.projection.set(this.rc.projection);
-        this.dc.modelviewProjection.set(this.rc.modelviewProjection);
-        this.dc.screenProjection.setToScreenProjection(this.viewport.width(), this.viewport.height());
-        this.dc.eyePoint.set(this.rc.eyePoint);
-        this.dc.drawableQueue = this.drawableQueue;
-        this.dc.drawableTerrain = this.drawableTerrain;
+    protected void didRenderFrame(Frame frame) {
+        // Copy the render context's Cartesian modelview matrix, eye coordinate projection matrix to the frame.
+        frame.viewport.set(this.viewport);
+        frame.modelview.set(this.rc.modelview);
+        frame.projection.set(this.rc.projection);
+
+        // Propagate render requests submitted during rendering to the WorldWindow. The draw context provides a layer of
+        // indirection that insulates rendering code from establishing a dependency on a specific WorldWindow.
+        if (this.rc.isRenderRequested()) {
+            this.requestRender(); // inherited from GLSurfaceView
+        }
+
+        // Reset the render context's state in preparation for the next frame.
+        this.rc.reset();
+
+        // Mark the end of a frame render.
+        this.frameMetrics.endRendering();
+    }
+
+    protected void drawFrame(Frame frame) {
+        this.willDrawFrame(frame);
+        this.frameController.drawFrame(this.dc);
+        this.didDrawFrame(frame);
+    }
+
+    protected void willDrawFrame(Frame frame) {
+        // Mark the beginning of a frame draw.
+        this.frameMetrics.beginDrawing();
+
+        // Setup the draw context according to the frame's current state.
+        this.dc.modelview.set(frame.modelview);
+        this.dc.modelview.extractEyePoint(this.dc.eyePoint);
+        this.dc.projection.set(frame.projection);
+        this.dc.modelviewProjection.setToMultiply(frame.projection, frame.modelview);
+        this.dc.screenProjection.setToScreenProjection(frame.viewport.width(), frame.viewport.height());
+        this.dc.drawableQueue = frame.drawableQueue;
+        this.dc.drawableTerrain = frame.drawableTerrain;
+    }
+
+    protected void didDrawFrame(Frame frame) {
+        // Release resources evicted during the previous frame.
+        this.renderResourceCache.releaseEvictedResources(this.dc);
+
+        // Reset the draw context's state in preparation for the next frame.
+        this.dc.reset();
+
+        // Mark the end of a frame draw.
+        this.frameMetrics.endDrawing();
     }
 }

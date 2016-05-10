@@ -72,6 +72,11 @@ public class DrawableQueue {
         this.position = 0;
     }
 
+    public void sortDrawables() {
+        Arrays.sort(this.entries, 0, this.size, this.sortComparator);
+        this.position = 0;
+    }
+
     public void clearDrawables() {
         for (int idx = 0, len = this.size; idx < len; idx++) {
             this.entries[idx].recycle();
@@ -79,10 +84,6 @@ public class DrawableQueue {
 
         this.size = 0;
         this.position = 0;
-    }
-
-    public void sortDrawables() {
-        Arrays.sort(this.entries, 0, this.size, this.sortComparator);
     }
 
     protected static class Entry {
