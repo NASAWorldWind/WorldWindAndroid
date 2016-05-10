@@ -5,6 +5,7 @@
 
 package gov.nasa.worldwindx;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.SparseArray;
@@ -17,11 +18,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import armyc2.c2sd.renderer.utilities.Color;
 import armyc2.c2sd.renderer.utilities.MilStdAttributes;
@@ -29,7 +28,6 @@ import armyc2.c2sd.renderer.utilities.SymbolUtilities;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
-import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
 import gov.nasa.worldwind.util.Logger;
@@ -38,35 +36,22 @@ import gov.nasa.worldwindx.milstd2525.MilStd2525;
 
 public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity implements Runnable {
 
+    // The delay in milliseconds between aircraft animation frames
     protected static final int DELAY_TIME = 100;
 
+    // The number of frames for the aircraft animation
     protected static final int ANIMATION_FRAMES = 1000;
 
     // There are 9,809 airports in the world airports database.
     protected static final int NUM_AIRPORTS = 9809;
 
+    // The number of aircraft in the animation
     protected static final int NUM_AIRCRAFT = 5000;
 
     protected static final double AIRCRAFT_ALT = 10000; // meters
 
-    protected static final Executor executor = Executors.newSingleThreadExecutor();
-
-    protected Handler handler = new Handler();
-
-    protected boolean animationStared = false;
-
-    protected boolean pauseAnimation = false;
-
-    protected int frameCount = 0;
-
-    protected RenderableLayer airportLayer = null;
-
-    protected RenderableLayer aircraftLayer = null;
-
-    protected TextView statusText = null;
-
+    // NATO countries
     protected static final List<String> friends = Arrays.asList(
-        // NATO countries
         "US", "CA", "UK", "DA", "FR", "IT", "IC", "NL", "NO", "PO",
         "GR", "TU",
         "GM",
@@ -75,14 +60,27 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         "SI", "RO", "BU", "LO", "LH", "LG", "EN",
         "AL", "HR");
 
+    // A few neutral countries
     protected static final List<String> neutrals = Arrays.asList("AU", "MX", "SW", "SZ");
 
+    // A few hostile countries
     protected static final List<String> hostiles = Arrays.asList("RS", "IR");
 
-    public PlacemarksMilStd2525StressActivity() {
-        super();
-        System.out.println(this.getClass().getSimpleName() + ": constructor called");
-    }
+    // The handler for the aircraft animation
+    protected Handler handler = new Handler();
+
+    protected boolean animationStared = false;
+
+    protected boolean pauseAnimation = false;
+
+    protected int frameCount = 0;
+
+    // A component for displaying the status of this activity
+    protected TextView statusText = null;
+
+    // A collection of aircraft to be animated
+    protected HashMap<Placemark, Position> aircraftPositions = new HashMap<>(NUM_AIRCRAFT);
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,33 +95,10 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         FrameLayout globeLayout = (FrameLayout) findViewById(R.id.content_globe);
         globeLayout.addView(this.statusText);
 
-        // Add Renderable layers for the airports and aircraft to the WorldWindow
-        this.airportLayer = new RenderableLayer("Airports");
-        this.aircraftLayer = new RenderableLayer("Aircraft");
-        this.getWorldWindow().getLayers().addLayer(this.airportLayer);
-        this.getWorldWindow().getLayers().addLayer(this.aircraftLayer);
-
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                // Update the status on the UI thread
-                handler.post(new StatusTask("Initializing the MIL-STD-2525 Renderer..."));
-
-                // Initialize the military symbol renderer singleton
-                MilStd2525.initializeRenderer(getApplicationContext());
-
-                handler.post(new StatusTask("Loading airports and aircraft symbols..."));
-
-                // Load the airport collection from the database on this thread.
-                ArrayList<Airport> airports = loadAirportDatabase();
-
-                // Create the airports on the GL Thread
-                getWorldWindow().queueEvent(new CreateAirportPlacemarks(airports));
-
-                // Create the aircraft on the GL Thread and start the animation
-                getWorldWindow().queueEvent(new CreateAircraftPlacemarks(airports));
-            }
-        });
+        // Initialize MIL-STD-2525 rendering library and symbols on background threads. AsyncTask tasks
+        // are executed serially, ensuring the renderer is initialized before we create symbols.
+        new InitializeRendererTask().execute();
+        new CreateSymbolsTask().execute();
     }
 
     @Override
@@ -154,106 +129,33 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
      * Initiates the aircraft animation.
      */
     protected void startAnimation() {
+        this.statusText.setText("Starting the animation...");
         this.animationStared = true;
         this.pauseAnimation = false;
-        handler.post(new StatusTask("Starting the animation...")); // update the UI on the main thread
-        handler.post(this); // post this Runnable on the main thread.
-        handler.postDelayed(new StatusTask(""), 3000);   // clear the status text after a few seconds
+
+        // Post this Runnable on the main thread to start the animation
+        handler.post(this);
+
+        // Clear the "Starting..." status text after a few seconds
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                statusText.setText("");
+            }
+        }, 3000);
     }
 
     /**
-     * This Runnable interface updates the aircraft positions.
+     * Animates the aircraft symbols. Each execution of this method is an "animation frame" that updates the aircraft
+     * positions on the UI Thread.
      */
     @Override
     public void run() {
-
-        // Animate the aircraft positions on the GL Thread
-        this.getWorldWindow().queueEvent(new Runnable() {
-            @Override
-            public void run() {
-
-                // This animation runs for a fixed number of frames. During the animation, aircraft symbols
-                // transit from a departure airport to an arrival airport.
-                if (++frameCount <= ANIMATION_FRAMES) {
-                    Iterator<Renderable> i = aircraftLayer.iterator();
-                    for (Renderable r : aircraftLayer) {
-                        if (r instanceof Placemark) {
-
-                            // Move the aircraft placemark along its great circle route flight path.
-                            Placemark placemark = (Placemark) r;
-                            Position origin = (Position) placemark.getUserProperty("origin");
-                            Position destination = (Position) placemark.getUserProperty("destination");
-
-                            // Compute the new coordinates on flight path and update the position property in-place.
-                            origin.interpolateAlongPath(
-                                destination, WorldWind.GREAT_CIRCLE, (double) frameCount / ANIMATION_FRAMES,
-                                placemark.getPosition());
-                        }
-                    }
-                    // Redraw the World Window to display the above changes.
-                    getWorldWindow().requestRender();
-
-                } else {
-                    // The aircraft a arrived at their destinations; pause the animation and generate frame statistics
-                    // TODO: Generate frame statistics.
-                    pauseAnimation = true;
-                    handler.post(new StatusTask("Animation complete."));
-
-                }
-
-                // Re-execute the animation event after the prescribed delay
-                if (!pauseAnimation) {
-                    handler.postDelayed(this, DELAY_TIME);
-                }
-            }
-        });
-
+        new AnimateAircraftTask().execute();
     }
 
     /**
-     * Loads and returns the the world airports.
-     *
-     * @return A collection of Airport plain-old-data structures.
-     */
-    protected ArrayList<Airport> loadAirportDatabase() {
-
-        ArrayList<Airport> airports = new ArrayList<>(NUM_AIRPORTS);
-
-        BufferedReader reader = null;
-        try {
-            InputStream in = this.getResources().openRawResource(R.raw.world_apts);
-            reader = new BufferedReader(new InputStreamReader(in));
-
-            // The first line is the CSV header:
-            //  LAT,LON,ALT,NAM,IKO,NA3,USE,USEdesc
-            String line = reader.readLine();
-            List<String> headers = Arrays.asList(line.split(","));
-            final int LAT = headers.indexOf("LAT");
-            final int LON = headers.indexOf("LON");
-            final int NAM = headers.indexOf("NAM");
-            final int NA3 = headers.indexOf("NA3");
-            final int USE = headers.indexOf("USE");
-
-            // Read the remaining lines
-            while ((line = reader.readLine()) != null) {
-                String[] fields = line.split(",");
-                Airport airport = new Airport(
-                    Position.fromDegrees(Double.parseDouble(fields[LAT]), Double.parseDouble(fields[LON]), 0),
-                    fields[NAM],
-                    fields[USE],
-                    fields[NA3].substring(0, 2));
-                airports.add(airport);
-            }
-        } catch (IOException e) {
-            Logger.log(Logger.ERROR, "Exception attempting to read Airports database");
-        } finally {
-            WWUtil.closeSilently(reader);
-        }
-        return airports;
-    }
-
-    /**
-     * An simple POD (plain old data) structure representing an airport.
+     * The Airport class ia a simple POD (plain old data) structure representing an airport from VMAP0 data.
      */
     protected static class Airport {
 
@@ -292,18 +194,131 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
     }
 
     /**
-     * This Runnable creates the airport placemarks.  An instance of this class should be run on the GL Thread.
+     * InitializeRendererTask is an AsyncTask that initializes the MIL-STD-2525 Rendering Library on a background
+     * thread. It must be created and executed on the UI Thread.
      */
-    protected class CreateAirportPlacemarks implements Runnable {
+    protected class InitializeRendererTask extends AsyncTask<Void, Void, Void> {
 
-        private final ArrayList<Airport> airports;
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            statusText.setText("Initializing the MIL-STD-2525 Library...");
+        }
 
-        public CreateAirportPlacemarks(ArrayList<Airport> airports) {
-            this.airports = airports;
+        /**
+         * Initialize the MIL-STD-2525 Rendering Library.
+         */
+        @Override
+        protected Void doInBackground(Void... notUsed) {
+            // Time consuming . . .
+            MilStd2525.initializeRenderer(getApplicationContext());
+            return null;
         }
 
         @Override
-        public void run() {
+        protected void onPostExecute(Void notUsed) {
+            super.onPostExecute(notUsed);
+            statusText.setText("");
+        }
+    }
+
+    /**
+     * CreateSymbolsTask is an AsyncTask that initializes the aircraft and airport symbols on a background thread. It
+     * must be created and executed on the UI Thread.
+     */
+    protected class CreateSymbolsTask extends AsyncTask<Void, String, Void> {
+
+        private ArrayList<Airport> airports = new ArrayList<>(NUM_AIRPORTS);
+
+        private RenderableLayer airportLayer = new RenderableLayer();
+
+        private RenderableLayer aircraftLayer = new RenderableLayer();
+
+        /**
+         * Loads the aircraft database and creates the placemarks on a background thread. The {@link RenderableLayer}
+         * objects for the airport and aircraft symbols have not been attached to the WorldWind at this stage, so its
+         * safe to perform this operation on a background thread.  The layers will be added to the WorldWindow in
+         * onPostExecute.
+         */
+        @Override
+        protected Void doInBackground(Void... notUsed) {
+            loadAirportDatabase();
+            createAirportSymbols();
+            createAircraftSymbols();
+            return null;
+        }
+
+        /**
+         * Updates the statusText TextView on the UI Thread.
+         *
+         * @param strings An array of status messages.
+         */
+        @Override
+        protected void onProgressUpdate(String... strings) {
+            super.onProgressUpdate(strings);
+            statusText.setText(strings[0]);
+        }
+
+        /**
+         * Updates the WorldWindow layer list on the UI Thread and starts the animation.
+         */
+        @Override
+        protected void onPostExecute(Void notUsed) {
+            super.onPostExecute(notUsed);
+
+            getWorldWindow().getLayers().addLayer(this.airportLayer);
+            getWorldWindow().getLayers().addLayer(this.aircraftLayer);
+
+            statusText.setText("");
+            PlacemarksMilStd2525StressActivity.this.startAnimation();
+        }
+
+        /**
+         * Loads the VMAP0 world airport data.
+         */
+        private void loadAirportDatabase() {
+
+            publishProgress("Loading world airports database...");
+
+            BufferedReader reader = null;
+            try {
+                InputStream in = getResources().openRawResource(R.raw.world_apts);
+                reader = new BufferedReader(new InputStreamReader(in));
+
+                // The first line is the CSV header:
+                //  LAT,LON,ALT,NAM,IKO,NA3,USE,USEdesc
+                String line = reader.readLine();
+                List<String> headers = Arrays.asList(line.split(","));
+                final int LAT = headers.indexOf("LAT");
+                final int LON = headers.indexOf("LON");
+                final int NAM = headers.indexOf("NAM");
+                final int NA3 = headers.indexOf("NA3");
+                final int USE = headers.indexOf("USE");
+
+                // Read the remaining lines
+                while ((line = reader.readLine()) != null) {
+                    String[] fields = line.split(",");
+                    Airport airport = new Airport(
+                        Position.fromDegrees(Double.parseDouble(fields[LAT]), Double.parseDouble(fields[LON]), 0),
+                        fields[NAM],
+                        fields[USE],
+                        fields[NA3].substring(0, 2));
+                    this.airports.add(airport);
+                }
+            } catch (IOException e) {
+                Logger.log(Logger.ERROR, "Exception attempting to read Airports database");
+            } finally {
+                WWUtil.closeSilently(reader);
+            }
+        }
+
+        /**
+         * Creates airport symbols from the airports collection and adds them to the airports layer.
+         */
+        private void createAirportSymbols() {
+
+            publishProgress("Creating airport symbols...");
+
             SparseArray<String> unitModifiers = new SparseArray<>();
             SparseArray<String> milStdAttributes = new SparseArray<>();
             SparseArray<String> civilianColorAttributes = new SparseArray<>();
@@ -315,7 +330,7 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
             PlacemarkAttributes unknownAttributes = MilStd2525.getPlacemarkAttributes("SUGPIBA---H****", unitModifiers, milStdAttributes);
             PlacemarkAttributes civilianAttributes = MilStd2525.getPlacemarkAttributes("SFGPIBA---H****", unitModifiers, civilianColorAttributes);
 
-            for (Airport airport : airports) {
+            for (Airport airport : this.airports) {
                 PlacemarkAttributes placemarkAttributes;
                 if (friends.contains(airport.country)) {
                     switch (airport.use) {
@@ -343,54 +358,52 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
                 // Eye scaling is essential for a reasonable display with a high density of airports
                 placemark.setEyeDistanceScaling(true);
 
-                airportLayer.addRenderable(placemark);
+                this.airportLayer.addRenderable(placemark);
             }
         }
-    }
 
-    /**
-     * This Runnable creates the aircraft placemarks and initiates the animation.  An instance of this class should be
-     * run on the GL Thread.
-     */
-    protected class CreateAircraftPlacemarks implements Runnable {
+        /**
+         * Creates aircraft symbols with randomly assigned origin and destination positions, and adds symbols to the
+         * aircraft layer.
+         */
+        private void createAircraftSymbols() {
 
-        private final ArrayList<Airport> airports;
+            publishProgress("Creating aircraft symbols...");
 
-        private final Random random = new Random(123);
-
-        public CreateAircraftPlacemarks(ArrayList<Airport> airports) {
-            this.airports = airports;
-        }
-
-        @Override
-        public void run() {
-
+            Random random = new Random(123);
             for (int i = 0; i < NUM_AIRCRAFT; i++) {
+
                 // Randomly assign departure and arrival airports to each aircraft
-                Airport departure = airports.get(random.nextInt(NUM_AIRPORTS - 1));
-                Airport arrival = airports.get(random.nextInt(NUM_AIRPORTS - 1));
+                Airport departure = this.airports.get(random.nextInt(NUM_AIRPORTS - 1));
+                Airport arrival = this.airports.get(random.nextInt(NUM_AIRPORTS - 1));
 
-                String symbolCode = createAircraftSymbolCode(departure.country, departure.use);
-                PlacemarkAttributes attributes = MilStd2525.getPlacemarkAttributes(symbolCode, null, null);
-
-                // Allocate the end points of the flight path.  The animation will move the aircraft
-                // along the great circle route between these two points.
+                // Allocate the end points of the aircraft's flight path.
                 Position origin = Position.fromDegrees(departure.position.latitude, departure.position.longitude, AIRCRAFT_ALT);
                 Position destination = Position.fromDegrees(arrival.position.latitude, arrival.position.longitude, AIRCRAFT_ALT);
 
-                // Store copies of the origin and destination in the user properties for computation of the flight path.
+                // Create a MIL-STD-2525 symbol based on the departure airport
+                String symbolCode = createAircraftSymbolCode(departure.country, departure.use);
+                PlacemarkAttributes attributes = MilStd2525.getPlacemarkAttributes(symbolCode, null, null);
+
                 Placemark placemark = new Placemark(origin, attributes);
-                placemark.putUserProperty("origin", origin);
-                placemark.putUserProperty("destination", destination);
                 placemark.setEyeDistanceScaling(true);
 
-                aircraftLayer.addRenderable(placemark);
+                // Store these flight path end points in the user properties for the computation of the flight path
+                // during the animation frame. The animation will move the aircraft along the great circle route
+                // between these two points.
+                placemark.putUserProperty("origin", origin);
+                placemark.putUserProperty("destination", destination);
+
+                // Add the placemark to the layer that will render it.
+                this.aircraftLayer.addRenderable(placemark);
+
+                // Add the aircraft the collection of aircraft positions to be animated. The position in this HashMap
+                // is the current position of the aircraft.  It is computed and updated in-place by the
+                // AnimateAircraftTask.doInBackground() method, and subsequently the placemark's position is set
+                // to this value in the AnimateAircraftTask.onPostExecute() method.
+                PlacemarksMilStd2525StressActivity.this.aircraftPositions.put(placemark, new Position());
             }
-
-            // Start the animation
-            PlacemarksMilStd2525StressActivity.this.startAnimation();
         }
-
 
         /**
          * Generates a SIDC (symbol identification coding scheme) for an aircraft originating the given county and
@@ -401,7 +414,7 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
          *
          * @return A 15-character alphanumeric identifier.
          */
-        protected String createAircraftSymbolCode(String country, String airportUse) {
+        private String createAircraftSymbolCode(String country, String airportUse) {
 
             String identity;
             if (friends.contains(country)) {
@@ -431,23 +444,61 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
             // Adding the country code the the symboel creates more and larger images, but it adds a useful bit
             // of context to the aircraft as they fly across the globe.  Replace country with "**" to reduce the
             // the memory footprint of the image textures.
-            String symbolCode = "S" + identity + "AP" + type + "----**" + country + "*";
-
-            return symbolCode;
+            return "S" + identity + "AP" + type + "----**" + country + "*";
         }
     }
 
-    protected class StatusTask implements Runnable {
 
-        private final String statusMessage;
+    /**
+     * AnimateAircraftTask is an AsyncTask that computes and updates the aircraft positions. It must be created and
+     * executed on the UI Thread.
+     */
+    protected class AnimateAircraftTask extends AsyncTask<Void, Void, Void> {
 
-        public StatusTask(String statusMessage) {
-            this.statusMessage = statusMessage;
+        /**
+         * Computes the aircraft positions on a background thread.
+         */
+        @Override
+        protected Void doInBackground(Void... params) {
+            double amount = (double) frameCount++ / ANIMATION_FRAMES; // fractional amount along path
+
+            for (Placemark aircraft : aircraftPositions.keySet()) {
+
+                // Move the aircraft placemark along its great circle flight path.
+                Position origin = (Position) aircraft.getUserProperty("origin");
+                Position destination = (Position) aircraft.getUserProperty("destination");
+                Position currentPosition = aircraftPositions.get(aircraft);
+
+                // Update the currentPosition members (in-place)
+                origin.interpolateAlongPath(destination, WorldWind.GREAT_CIRCLE, amount, currentPosition);
+            }
+            return null;
         }
 
+        /**
+         * Updates the aircraft placemark positions on the UI Thread.
+         */
         @Override
-        public void run() {
-            statusText.setText(statusMessage);
+        protected void onPostExecute(Void notUsed) {
+            super.onPostExecute(notUsed);
+
+            // Update the aircraft placemark positions with the positions computed on the background thread.
+            for (Placemark aircraft : aircraftPositions.keySet()) {
+                aircraft.setPosition(aircraftPositions.get(aircraft));
+            }
+            getWorldWindow().requestRender();
+
+            // Determine if the animation is done
+            if (frameCount > ANIMATION_FRAMES) {
+                // All the aircraft have arrived at their destinations; pause the animation
+                pauseAnimation = true;
+                statusText.setText("Animation complete");
+            }
+
+            // Re-execute the animation after the prescribed delay
+            if (!pauseAnimation) {
+                handler.postDelayed(PlacemarksMilStd2525StressActivity.this, DELAY_TIME);
+            }
         }
     }
 }
