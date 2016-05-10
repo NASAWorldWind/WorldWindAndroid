@@ -432,11 +432,10 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     }
 
     protected void prepareToDrawFrame() {
-        this.dc.viewport.set(this.rc.viewport);
         this.dc.modelview.set(this.rc.modelview);
         this.dc.projection.set(this.rc.projection);
         this.dc.modelviewProjection.set(this.rc.modelviewProjection);
-        this.dc.screenProjection.set(this.rc.screenProjection);
+        this.dc.screenProjection.setToScreenProjection(this.viewport.width(), this.viewport.height());
         this.dc.eyePoint.set(this.rc.eyePoint);
         this.dc.drawableQueue = this.drawableQueue;
         this.dc.drawableTerrain = this.drawableTerrain;

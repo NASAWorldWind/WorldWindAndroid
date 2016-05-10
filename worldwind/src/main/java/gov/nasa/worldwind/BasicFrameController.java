@@ -53,7 +53,6 @@ public class BasicFrameController implements FrameController {
         rc.modelview.extractEyePoint(rc.eyePoint);
         rc.projection.setToPerspectiveProjection(rc.viewport.width(), rc.viewport.height(), rc.fieldOfView, near, far);
         rc.modelviewProjection.setToMultiply(rc.projection, rc.modelview);
-        rc.screenProjection.setToScreenProjection(rc.viewport.width(), rc.viewport.height());
 
         // Compute the projection's Cartesian frustum, which must be transformed from eye coordinates to world Cartesian
         // coordinates.

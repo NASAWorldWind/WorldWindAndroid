@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwind.draw;
 
-import android.graphics.Rect;
 import android.opengl.GLES20;
 
 import java.nio.ByteBuffer;
@@ -18,8 +17,6 @@ import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec3;
 
 public class DrawContext {
-
-    public Rect viewport = new Rect();
 
     public Matrix4 modelview = new Matrix4();
 
@@ -53,7 +50,6 @@ public class DrawContext {
     }
 
     public void reset() {
-        this.viewport.setEmpty();
         this.modelview.setToIdentity();
         this.projection.setToIdentity();
         this.modelviewProjection.setToIdentity();
