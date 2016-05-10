@@ -56,7 +56,7 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Runnabl
         this.atmosphereLayer.setLightLocation(this.sunLocation);
 
         // Redraw the World Window to display the above changes.
-        getWorldWindow().requestRender();
+        getWorldWindow().requestRedraw();
 
         if (!this.pauseHandler) { // stop running when this activity is paused; the Handler is resumed in onResume
             this.animationHandler.postDelayed(this, 30);

@@ -75,7 +75,7 @@ public class RenderContext {
 
     public DrawableList drawableTerrain;
 
-    protected boolean renderRequested;
+    protected boolean redrawRequested;
 
     protected double pixelSizeFactor;
 
@@ -107,19 +107,19 @@ public class RenderContext {
         this.frustum.setToUnitFrustum();
         this.renderResourceCache = null;
         this.resources = null;
-        this.renderRequested = false;
+        this.redrawRequested = false;
         this.pixelSizeFactor = 0;
         this.drawableQueue = null;
         this.drawableTerrain = null;
         this.userProperties.clear();
     }
 
-    public boolean isRenderRequested() {
-        return this.renderRequested;
+    public boolean isRedrawRequested() {
+        return this.redrawRequested;
     }
 
-    public void requestRender() {
-        this.renderRequested = true;
+    public void requestRedraw() {
+        this.redrawRequested = true;
     }
 
     /**

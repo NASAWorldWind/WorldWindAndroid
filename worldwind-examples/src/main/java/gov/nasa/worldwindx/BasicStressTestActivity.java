@@ -39,7 +39,7 @@ public class BasicStressTestActivity extends BasicGlobeActivity implements Runna
         navigator.setLongitude(navigator.getLongitude() + 1.0e-4);
 
         // Redraw the World Window to display the above changes.
-        this.getWorldWindow().requestRender();
+        this.getWorldWindow().requestRedraw();
 
         if (!this.pauseHandler) { // stop running when this activity is paused; the Handler is resumed in onResume
             this.animationHandler.postDelayed(this, 30);

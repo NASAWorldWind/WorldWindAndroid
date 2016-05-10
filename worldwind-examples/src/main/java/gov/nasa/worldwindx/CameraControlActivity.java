@@ -111,7 +111,7 @@ public class CameraControlActivity extends BasicGlobeActivity {
                 //this.camera.heading = WWMath.normalizeAngle360(heading + sideDegrees * 1000);
 
                 this.wwd.getNavigator().setAsCamera(this.wwd.getGlobe(), this.camera);
-                this.wwd.requestRender();
+                this.wwd.requestRedraw();
             } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
                 this.gestureDidEnd();
             }
@@ -132,7 +132,7 @@ public class CameraControlActivity extends BasicGlobeActivity {
                     this.applyLimits(this.camera);
 
                     this.wwd.getNavigator().setAsCamera(this.wwd.getGlobe(), this.camera);
-                    this.wwd.requestRender();
+                    this.wwd.requestRedraw();
                 }
             } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
                 this.gestureDidEnd();
@@ -155,7 +155,7 @@ public class CameraControlActivity extends BasicGlobeActivity {
                 this.lastRotation = rotation;
 
                 this.wwd.getNavigator().setAsCamera(this.wwd.getGlobe(), this.camera);
-                this.wwd.requestRender();
+                this.wwd.requestRedraw();
             } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
                 this.gestureDidEnd();
             }
@@ -180,7 +180,7 @@ public class CameraControlActivity extends BasicGlobeActivity {
                 this.applyLimits(camera);
 
                 this.wwd.getNavigator().setAsCamera(this.wwd.getGlobe(), this.camera);
-                this.wwd.requestRender();
+                this.wwd.requestRedraw();
             } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
                 this.gestureDidEnd();
             }

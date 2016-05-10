@@ -486,7 +486,7 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
             for (Placemark aircraft : aircraftPositions.keySet()) {
                 aircraft.setPosition(aircraftPositions.get(aircraft));
             }
-            getWorldWindow().requestRender();
+            getWorldWindow().requestRedraw();
 
             // Determine if the animation is done
             if (frameCount > ANIMATION_FRAMES) {

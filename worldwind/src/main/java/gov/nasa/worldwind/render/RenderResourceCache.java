@@ -35,7 +35,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource> 
             Texture texture = new Texture(value);
             Entry<Object, RenderResource> entry = new Entry<Object, RenderResource>(key, texture, texture.getImageByteCount());
             retrievalQueue.offer(entry);
-            WorldWind.requestRender();
+            WorldWind.requestRedraw();
 
             if (Logger.isLoggable(Logger.DEBUG)) {
                 Logger.log(Logger.DEBUG, "Image retrieval succeeded \'" + key + "\'");

@@ -10,13 +10,18 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.AttributeSet;
+import android.view.Choreographer;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -40,9 +45,11 @@ import gov.nasa.worldwind.util.SynchronizedPool;
  * Provides a World Wind window that implements a virtual globe inside of the Android view hierarchy. By default, World
  * Window is configured to display an ellipsoidal globe using the WGS 84 reference values.
  */
-public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer, MessageListener {
+public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCallback, GLSurfaceView.Renderer, MessageListener {
 
     protected static final int DEFAULT_MEMORY_CLASS = 16;
+
+    protected static final int MAX_FRAME_QUEUE_SIZE = 2;
 
     /**
      * Indicates the planet or celestial object displayed by this World Window.
@@ -72,6 +79,20 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     protected DrawContext dc = new DrawContext();
 
     protected Pool<Frame> framePool = new SynchronizedPool<>();
+
+    protected ConcurrentLinkedQueue<Frame> frameQueue = new ConcurrentLinkedQueue<>();
+
+    protected Frame currentFrame;
+
+    protected boolean waitingForRedraw;
+
+    protected Handler redrawHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            requestRedraw();
+            return false;
+        }
+    });
 
     /**
      * Constructs a WorldWindow associated with the specified application context. This is the constructor to use when
@@ -298,6 +319,75 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     }
 
     /**
+     * Request that this World Window update its display. Prior changes to this World Window's Navigator, Globe and
+     * Layers (including the contents of layers) are reflected on screen sometime after calling this method. May be
+     * called from any thread.
+     */
+    public void requestRedraw() {
+        // Forward calls to requestRedraw to the main thread.
+        if (Thread.currentThread() != Looper.getMainLooper().getThread()) {
+            this.redrawHandler.obtainMessage().sendToTarget();
+            return;
+        }
+
+        // Suppress duplicate requests for redraw.
+        if (!this.waitingForRedraw) {
+            Choreographer.getInstance().postFrameCallback(this);
+            this.waitingForRedraw = true;
+        }
+    }
+
+    @Override
+    public void doFrame(long frameTimeNanos) {
+        // When OpenGL thread falls behind on drawing frames, skip frames until it catches up. We let the World Window
+        // get at most two frames ahead of the OpenGL thread.
+        if (this.frameQueue.size() >= MAX_FRAME_QUEUE_SIZE) {
+            Choreographer.getInstance().postFrameCallback(this);
+            return;
+        }
+
+        // Suppress duplicate requests for redraw.
+        this.waitingForRedraw = false;
+
+        // Obtain a frame to process from the pool.
+        Frame frame = Frame.obtain(this.framePool);
+
+        // Render the frame by traversing the Navigator, Globe and Layers, accumulating Drawables to process in the
+        // OpenGL thread.
+        this.renderFrame(frame);
+
+        // Enqueue the frame for processing on the OpenGL thread and wake the OpenGL thread.
+        this.frameQueue.offer(frame);
+        super.requestRender();
+    }
+
+    /**
+     * Requests that this World Window's OpenGL renderer display another frame on the OpenGL thread. Does not cause the
+     * World Window's to display changes in its Navigator, Globe or Layers. Use {@link #requestRedraw()} instead.
+     *
+     * @deprecated Use {@link #requestRedraw} instead.
+     */
+    public void requestRender() {
+        super.requestRender();
+    }
+
+    /**
+     * Queues a runnable to be executed on this World Window's OpenGL thread. Must not be used to affect changes to this
+     * World Window's state, including the Navigator, Globe and Layers. See the Android developers guide on <a
+     * href="http://developer.android.com/training/multiple-threads/communicate-ui.html">Communicating with the UI
+     * Thread</a> instead.
+     *
+     * @param r the runnable to execute
+     *
+     * @deprecated See <a href="http://developer.android.com/training/multiple-threads/communicate-ui.html">Communicating
+     * with the UI Thread</a> instead.
+     */
+    @Override
+    public void queueEvent(Runnable r) {
+        super.queueEvent(r);
+    }
+
+    /**
      * Implements the GLSurfaceView.Renderer.onSurfaceChanged interface which is called on the GLThread when the surface
      * is created.
      */
@@ -313,10 +403,6 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
         // Clear any cached OpenGL resources and state, which are now invalid.
         this.dc.contextLost();
-
-        // Clear the render resource cache; it's entries are now invalid.
-        // TODO move this to surfaceDestroyed and surfaceCreated when rendering occurs on the main thread.
-        this.renderResourceCache.clear();
     }
 
     /**
@@ -326,57 +412,101 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
     @Override
     public void onSurfaceChanged(GL10 unused, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
-        this.viewport.set(0, 0, width, height);
     }
 
     /**
-     * Implementes the GLSurfaceView.Renderer.onDrawFrame interface which is called on the GLThread when rendering is
+     * Implements the GLSurfaceView.Renderer.onDrawFrame interface which is called on the GLThread when rendering is
      * requested.
      */
     @Override
     public void onDrawFrame(GL10 unused) {
-        // Obtain a frame to process.
-        Frame frame = Frame.obtain(this.framePool);
-
-        // Render the frame by traversing the Navigator, Globe, and Layers, accumulating Drawables to process in the
-        // OpenGL thread during the draw phase.
-        this.renderFrame(frame);
+        // Remove the oldest frame from the front of the queue and recycle the previous frame back into the pool.
+        Frame nextFrame = this.frameQueue.poll();
+        if (nextFrame != null) {
+            if (this.currentFrame != null) {
+                this.currentFrame.recycle();
+            }
+            this.currentFrame = nextFrame;
+        }
 
         // Process and display the Drawables accumulated during the render phase.
-        this.drawFrame(frame);
+        if (this.currentFrame != null) {
+            this.drawFrame(this.currentFrame);
+        }
 
-        // Recycle the frame.
-        frame.recycle();
+        // Continue processing the frame queue on the OpenGL thread until the queue is empty.
+        if (!this.frameQueue.isEmpty()) {
+            super.requestRender();
+        }
     }
 
     /**
-     * This is called immediately after the surface is first created, in which case this WorldWindow instance adds
-     * itself as a listener to the {@link WorldWind#messageService()}. The WorldWind.messageService is a facility for
-     * broadcasting {@link WorldWind#requestRender()} requests to active WorldWindows.
+     * This is called immediately after the surface is first created, in which case the WorldWindow instance adds itself
+     * as a listener to the {@link WorldWind#messageService()}. The WorldWind.messageService is a facility for
+     * broadcasting global redraw requests to active WorldWindows.
      *
-     * @param holder The SurfaceHolder whose surface is being created.
+     * @param holder the SurfaceHolder whose surface is being created
      */
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        // Call the superclass method.
         super.surfaceCreated(holder);
+
         // Set up to receive broadcast messages from World Wind's message center.
         WorldWind.messageService().addListener(this);
     }
 
     /**
-     * This is called immediately before a surface is being destroyed, in which case this WorldWindow instance removes
+     * This is called immediately before a surface is being destroyed, in which case the WorldWindow instance removes
      * itself from {@link WorldWind#messageService()}. Failure to do so may result in a memory leak this WorldWindow
      * instance when its owner is release/collected.
      *
-     * @param holder The SurfaceHolder whose surface is being destroyed.
+     * @param holder the SurfaceHolder whose surface is being destroyed
      */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        super.surfaceDestroyed(holder);
+
         // Release this WorldWindow reference from the global message service
         WorldWind.messageService().removeListener(this);
-        // Call the superclass method.
-        super.surfaceDestroyed(holder);
+
+        // Clear the render resource cache; it's entries are now invalid.
+        this.renderResourceCache.clear();
+
+        // Cancel any outstanding redraw requests.
+        Choreographer.getInstance().removeFrameCallback(this);
+
+        // Clear the frame queue and recycle pending frames back into the frame pool.
+        Frame frame;
+        while ((frame = this.frameQueue.poll()) != null) {
+            frame.recycle();
+        }
+        this.frameQueue.clear();
+
+        // Recycle the current frame back into the frame pool.
+        if (this.currentFrame != null) {
+            this.currentFrame.recycle();
+            this.currentFrame = null;
+        }
+    }
+
+    /**
+     * This is called immediately after any structural changes (format or size) have been made to the surface, in which
+     * case the WorldWindow redraws itself.
+     *
+     * @param holder the SurfaceHolder whose surface is has changed
+     * @param format the new PixelFormat of the surface
+     * @param width  the new width of the surface
+     * @param height the new height of the surface
+     */
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        super.surfaceChanged(holder, format, width, height);
+
+        // Set up the viewport to use during rendering.
+        this.viewport.set(0, 0, this.getWidth(), this.getHeight());
+
+        // Redraw this World Window with the new viewport.
+        this.requestRedraw();
     }
 
     @Override
@@ -386,8 +516,8 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
 
     @Override
     public void onMessage(String name, Object sender, Map<Object, Object> userProperties) {
-        if (name.equals(WorldWind.REQUEST_RENDER)) {
-            this.requestRender(); // inherited from GLSurfaceView; may be called on any thread
+        if (name.equals(WorldWind.REQUEST_REDRAW)) {
+            this.requestRedraw(); // may be called on any thread
         }
     }
 
@@ -425,10 +555,10 @@ public class WorldWindow extends GLSurfaceView implements GLSurfaceView.Renderer
         frame.modelview.set(this.rc.modelview);
         frame.projection.set(this.rc.projection);
 
-        // Propagate render requests submitted during rendering to the WorldWindow. The draw context provides a layer of
-        // indirection that insulates rendering code from establishing a dependency on a specific WorldWindow.
-        if (this.rc.isRenderRequested()) {
-            this.requestRender(); // inherited from GLSurfaceView
+        // Propagate redraw requests submitted during rendering. The render context provides a layer of indirection that
+        // insulates rendering code from establishing a dependency on a specific WorldWindow.
+        if (this.rc.isRedrawRequested()) {
+            this.requestRedraw();
         }
 
         // Reset the render context's state in preparation for the next frame.

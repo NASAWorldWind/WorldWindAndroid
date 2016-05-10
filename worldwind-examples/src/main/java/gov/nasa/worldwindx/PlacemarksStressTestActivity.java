@@ -24,13 +24,13 @@ import static java.lang.Math.toDegrees;
 
 public class PlacemarksStressTestActivity extends BasicGlobeActivity implements Runnable {
 
-    protected Handler animationHandler = new Handler();
-
-    protected boolean pauseHandler;
-
     static final int DELAY_TIME = 100;
 
     static final int NUM_PLACEMARKS = 10000;
+
+    protected Handler animationHandler = new Handler();
+
+    protected boolean pauseHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +99,7 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
         navigator.setLongitude(navigator.getLongitude() - 0.03);
 
         // Redraw the World Window to display the above changes.
-        getWorldWindow().requestRender();
+        getWorldWindow().requestRedraw();
 
         if (!this.pauseHandler) { // stop running when this activity is paused; the Handler is resumed in onResume
             this.animationHandler.postDelayed(this, 30);

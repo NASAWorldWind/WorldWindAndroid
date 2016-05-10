@@ -25,7 +25,6 @@ import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.Layer;
-import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.shape.Placemark;
@@ -35,6 +34,156 @@ import gov.nasa.worldwind.util.WWMath;
 import gov.nasa.worldwind.util.WWUtil;
 
 public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
+
+    public static class NoOpWorldWindowController implements WorldWindowController {
+
+        @Override
+        public WorldWindow getWorldWindow() {
+            return null;
+        }
+
+        @Override
+        public void setWorldWindow(WorldWindow wwd) {
+        }
+    }
+
+    public static class AnimateCameraCommand implements Runnable {
+
+        protected WorldWindow wwd;
+
+        protected Camera beginCamera = new Camera();
+
+        protected Camera endCamera = new Camera();
+
+        protected Camera curCamera = new Camera();
+
+        protected Position beginPos = new Position();
+
+        protected Position endPos = new Position();
+
+        protected Position curPos = new Position();
+
+        protected int steps;
+
+        public AnimateCameraCommand(WorldWindow wwd, Camera end, int steps) {
+            this.wwd = wwd;
+            this.endCamera.set(end);
+            this.endPos.set(end.latitude, end.longitude, end.altitude);
+            this.steps = steps;
+        }
+
+        @Override
+        public void run() {
+            this.wwd.getNavigator().getAsCamera(this.wwd.getGlobe(), this.beginCamera);
+            this.beginPos.set(this.beginCamera.latitude, this.beginCamera.longitude, this.beginCamera.altitude);
+
+            for (int i = 0; i < this.steps; i++) {
+
+                double amount = (double) i / (double) (this.steps - 1);
+                this.beginPos.interpolateAlongPath(this.endPos, WorldWind.GREAT_CIRCLE, amount, this.curPos);
+
+                this.curCamera.latitude = this.curPos.latitude;
+                this.curCamera.longitude = this.curPos.longitude;
+                this.curCamera.altitude = this.curPos.altitude;
+                this.curCamera.heading = WWMath.interpolateAngle360(amount, this.beginCamera.heading, this.endCamera.heading);
+                this.curCamera.tilt = WWMath.interpolateAngle180(amount, this.beginCamera.tilt, this.endCamera.tilt);
+                this.curCamera.roll = WWMath.interpolateAngle180(amount, this.beginCamera.roll, this.endCamera.roll);
+
+                Runnable setCommand = SetCameraCommand.obtain(this.wwd, this.curCamera);
+                runOnActivityThread(setCommand);
+                sleepQuietly(FRAME_INTERVAL);
+            }
+        }
+    }
+
+    public static class SetCameraCommand implements Runnable {
+
+        private static Pools.Pool<SetCameraCommand> pool = new Pools.SynchronizedPool<>(10);
+
+        private WorldWindow wwd;
+
+        private Camera camera = new Camera();
+
+        private SetCameraCommand() {
+        }
+
+        public static SetCameraCommand obtain(WorldWindow wwd, Camera camera) {
+            SetCameraCommand command = pool.acquire();
+            if (command == null) {
+                command = new SetCameraCommand();
+            }
+
+            return command.set(wwd, camera);
+        }
+
+        private SetCameraCommand set(WorldWindow wwd, Camera camera) {
+            this.wwd = wwd;
+            this.camera.set(camera);
+            return this;
+        }
+
+        private SetCameraCommand reset() {
+            this.wwd = null;
+            return this;
+        }
+
+        @Override
+        public void run() {
+            this.wwd.getNavigator().setAsCamera(this.wwd.getGlobe(), this.camera);
+            this.wwd.requestRedraw();
+            pool.release(this.reset());
+        }
+    }
+
+    public static class SleepCommand implements Runnable {
+
+        protected long durationMillis;
+
+        public SleepCommand(long durationMillis) {
+            this.durationMillis = durationMillis;
+        }
+
+        @Override
+        public void run() {
+            sleepQuietly(this.durationMillis);
+        }
+    }
+
+    public static class LogFrameMetricsCommand implements Runnable {
+
+        protected WorldWindow wwd;
+
+        public LogFrameMetricsCommand(WorldWindow wwd) {
+            this.wwd = wwd;
+        }
+
+        @Override
+        public void run() {
+            if (!isActivityThread()) {
+                runOnActivityThread(this);
+            } else {
+                Logger.log(Logger.INFO, this.wwd.getFrameMetrics().toString());
+            }
+        }
+    }
+
+    public static class ClearFrameMetricsCommand implements Runnable {
+
+        protected WorldWindow wwd;
+
+        public ClearFrameMetricsCommand(WorldWindow wwd) {
+            this.wwd = wwd;
+        }
+
+        @Override
+        public void run() {
+            if (!isActivityThread()) {
+                runOnActivityThread(this);
+            } else {
+                this.wwd.getFrameMetrics().reset();
+            }
+        }
+    }
 
     protected static final int FRAME_INTERVAL = 67; // 67 millis; 15 frames per second
 
@@ -156,155 +305,5 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
         }
 
         return layer;
-    }
-
-    public static class NoOpWorldWindowController implements WorldWindowController {
-
-        @Override
-        public WorldWindow getWorldWindow() {
-            return null;
-        }
-
-        @Override
-        public void setWorldWindow(WorldWindow wwd) {
-        }
-    }
-
-    public static class AnimateCameraCommand implements Runnable {
-
-        protected WorldWindow wwd;
-
-        protected Camera beginCamera = new Camera();
-
-        protected Camera endCamera = new Camera();
-
-        protected Camera curCamera = new Camera();
-
-        protected Position beginPos = new Position();
-
-        protected Position endPos = new Position();
-
-        protected Position curPos = new Position();
-
-        protected int steps;
-
-        public AnimateCameraCommand(WorldWindow wwd, Camera end, int steps) {
-            this.wwd = wwd;
-            this.endCamera.set(end);
-            this.endPos.set(end.latitude, end.longitude, end.altitude);
-            this.steps = steps;
-        }
-
-        @Override
-        public void run() {
-            this.wwd.getNavigator().getAsCamera(this.wwd.getGlobe(), this.beginCamera);
-            this.beginPos.set(this.beginCamera.latitude, this.beginCamera.longitude, this.beginCamera.altitude);
-
-            for (int i = 0; i < this.steps; i++) {
-
-                double amount = (double) i / (double) (this.steps - 1);
-                this.beginPos.interpolateAlongPath(this.endPos, WorldWind.GREAT_CIRCLE, amount, this.curPos);
-
-                this.curCamera.latitude = this.curPos.latitude;
-                this.curCamera.longitude = this.curPos.longitude;
-                this.curCamera.altitude = this.curPos.altitude;
-                this.curCamera.heading = WWMath.interpolateAngle360(amount, this.beginCamera.heading, this.endCamera.heading);
-                this.curCamera.tilt = WWMath.interpolateAngle180(amount, this.beginCamera.tilt, this.endCamera.tilt);
-                this.curCamera.roll = WWMath.interpolateAngle180(amount, this.beginCamera.roll, this.endCamera.roll);
-
-                Runnable setCommand = SetCameraCommand.obtain(this.wwd, this.curCamera);
-                runOnActivityThread(setCommand);
-                sleepQuietly(FRAME_INTERVAL);
-            }
-        }
-    }
-
-    public static class SetCameraCommand implements Runnable {
-
-        private static Pools.Pool<SetCameraCommand> pool = new Pools.SynchronizedPool<>(10);
-
-        private WorldWindow wwd;
-
-        private Camera camera = new Camera();
-
-        private SetCameraCommand() {
-        }
-
-        public static SetCameraCommand obtain(WorldWindow wwd, Camera camera) {
-            SetCameraCommand command = pool.acquire();
-            if (command == null) {
-                command = new SetCameraCommand();
-            }
-
-            return command.set(wwd, camera);
-        }
-
-        private SetCameraCommand set(WorldWindow wwd, Camera camera) {
-            this.wwd = wwd;
-            this.camera.set(camera);
-            return this;
-        }
-
-        private SetCameraCommand reset() {
-            this.wwd = null;
-            return this;
-        }
-
-        @Override
-        public void run() {
-            this.wwd.getNavigator().setAsCamera(this.wwd.getGlobe(), this.camera);
-            this.wwd.requestRender();
-            pool.release(this.reset());
-        }
-    }
-
-    public static class SleepCommand implements Runnable {
-
-        protected long durationMillis;
-
-        public SleepCommand(long durationMillis) {
-            this.durationMillis = durationMillis;
-        }
-
-        @Override
-        public void run() {
-            sleepQuietly(this.durationMillis);
-        }
-    }
-
-    public static class LogFrameMetricsCommand implements Runnable {
-
-        protected WorldWindow wwd;
-
-        public LogFrameMetricsCommand(WorldWindow wwd) {
-            this.wwd = wwd;
-        }
-
-        @Override
-        public void run() {
-            if (!isActivityThread()) {
-                runOnActivityThread(this);
-            } else {
-                Logger.log(Logger.INFO, this.wwd.getFrameMetrics().toString());
-            }
-        }
-    }
-
-    public static class ClearFrameMetricsCommand implements Runnable {
-
-        protected WorldWindow wwd;
-
-        public ClearFrameMetricsCommand(WorldWindow wwd) {
-            this.wwd = wwd;
-        }
-
-        @Override
-        public void run() {
-            if (!isActivityThread()) {
-                runOnActivityThread(this);
-            } else {
-                this.wwd.getFrameMetrics().reset();
-            }
-        }
     }
 }

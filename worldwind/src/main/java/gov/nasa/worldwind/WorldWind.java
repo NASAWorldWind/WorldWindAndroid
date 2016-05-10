@@ -16,6 +16,70 @@ import gov.nasa.worldwind.util.TaskService;
 public class WorldWind {
 
     /**
+     * Altitude mode indicates how World Wind interprets a position's altitude component. Accepted values are {@link
+     * #ABSOLUTE}, {@link #CLAMP_TO_GROUND} and {@link #RELATIVE_TO_GROUND}.
+     */
+    @IntDef({ABSOLUTE, CLAMP_TO_GROUND, RELATIVE_TO_GROUND})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface AltitudeMode {
+
+    }
+
+    /**
+     * Drawable group provides a standard set of group IDs for organizing World Window drawing into four phases:
+     * background, surface, shape, and screen. Accepted values are {@link #BACKGROUND_DRAWABLE}, {@link
+     * #SURFACE_DRAWABLE}, {@link #SHAPE_DRAWABLE} and {@link #SCREEN_DRAWABLE}.
+     */
+    @IntDef({BACKGROUND_DRAWABLE, SURFACE_DRAWABLE, SHAPE_DRAWABLE, SCREEN_DRAWABLE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DrawableGroup {
+
+    }
+
+    /**
+     * Gesture state indicates a GestureRecognizer's current state. Accepted values are {@link #POSSIBLE}, {@link
+     * #FAILED}, {@link #RECOGNIZED}, {@link #BEGAN}, {@link #CHANGED}, {@link #CANCELLED}, and {@link #ENDED}.
+     */
+    @IntDef({POSSIBLE, FAILED, RECOGNIZED, BEGAN, CHANGED, CANCELLED, ENDED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface GestureState {
+
+    }
+
+    /**
+     * Path type indicates how World Wind create a geographic path between two locations. Accepted values are {@link
+     * #GREAT_CIRCLE}, {@link #LINEAR} and {@link #RHUMB_LINE}.
+     */
+
+    @IntDef({GREAT_CIRCLE, LINEAR, RHUMB_LINE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PathType {
+
+    }
+
+    /**
+     * Offset mode indicates how World Wind interprets an offset's x and y values. Accepted values are {@link
+     * #OFFSET_FRACTION}, {@link #OFFSET_INSET_PIXELS} and {@link #OFFSET_PIXELS}.
+     */
+
+    @IntDef({OFFSET_FRACTION, OFFSET_INSET_PIXELS, OFFSET_PIXELS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface OffsetMode {
+
+    }
+
+    /**
+     * Orientation mode indicates how World Wind interprets a renderable's orientation value, e.g., tilt and rotate
+     * values. Accepted values are {@link #RELATIVE_TO_GLOBE}, and {@link #RELATIVE_TO_SCREEN}.
+     */
+
+    @IntDef({RELATIVE_TO_GLOBE, RELATIVE_TO_SCREEN})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface OrientationMode {
+
+    }
+
+    /**
      * {@link AltitudeMode} constant indicating an altitude relative to the globe's ellipsoid. Ignores the elevation of
      * the terrain directly beneath the position's latitude and longitude.
      */
@@ -32,16 +96,6 @@ public class WorldWind {
      * the terrain directly beneath the position's latitude and longitude.
      */
     public static final int RELATIVE_TO_GROUND = 2;
-
-    /**
-     * Altitude mode indicates how World Wind interprets a position's altitude component. Accepted values are {@link
-     * #ABSOLUTE}, {@link #CLAMP_TO_GROUND} and {@link #RELATIVE_TO_GROUND}.
-     */
-    @IntDef({ABSOLUTE, CLAMP_TO_GROUND, RELATIVE_TO_GROUND})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface AltitudeMode {
-
-    }
 
     /**
      * {@link DrawableGroup} constant indicating drawables displayed before everything else. This group is typically
@@ -66,17 +120,6 @@ public class WorldWind {
      * displayed on top of everything else.
      */
     public static final int SCREEN_DRAWABLE = 3;
-
-    /**
-     * Drawable group provides a standard set of group IDs for organizing World Window drawing into four phases:
-     * background, surface, shape, and screen. Accepted values are {@link #BACKGROUND_DRAWABLE}, {@link
-     * #SURFACE_DRAWABLE}, {@link #SHAPE_DRAWABLE} and {@link #SCREEN_DRAWABLE}.
-     */
-    @IntDef({BACKGROUND_DRAWABLE, SURFACE_DRAWABLE, SHAPE_DRAWABLE, SCREEN_DRAWABLE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface DrawableGroup {
-
-    }
 
     /**
      * {@link GestureState} constant for the POSSIBLE gesture recognizer state. Gesture recognizers in this state are
@@ -124,16 +167,6 @@ public class WorldWind {
     public static final int ENDED = 6;
 
     /**
-     * Gesture state indicates a GestureRecognizer's current state. Accepted values are {@link #POSSIBLE}, {@link
-     * #FAILED}, {@link #RECOGNIZED}, {@link #BEGAN}, {@link #CHANGED}, {@link #CANCELLED}, and {@link #ENDED}.
-     */
-    @IntDef({POSSIBLE, FAILED, RECOGNIZED, BEGAN, CHANGED, CANCELLED, ENDED})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface GestureState {
-
-    }
-
-    /**
      * {@link PathType} constant indicating a great circle arc between two locations.
      */
     public static final int GREAT_CIRCLE = 0;
@@ -147,17 +180,6 @@ public class WorldWind {
      * {@link PathType} constant indicating a line of constant bearing between two locations.
      */
     public static final int RHUMB_LINE = 2;
-
-    /**
-     * Path type indicates how World Wind create a geographic path between two locations. Accepted values are {@link
-     * #GREAT_CIRCLE}, {@link #LINEAR} and {@link #RHUMB_LINE}.
-     */
-
-    @IntDef({GREAT_CIRCLE, LINEAR, RHUMB_LINE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface PathType {
-
-    }
 
     /**
      * {@link OffsetMode} constant indicating that the associated parameters are fractional values of the virtual
@@ -179,17 +201,6 @@ public class WorldWind {
     public static final int OFFSET_PIXELS = 2;
 
     /**
-     * Offset mode indicates how World Wind interprets an offset's x and y values. Accepted values are {@link
-     * #OFFSET_FRACTION}, {@link #OFFSET_INSET_PIXELS} and {@link #OFFSET_PIXELS}.
-     */
-
-    @IntDef({OFFSET_FRACTION, OFFSET_INSET_PIXELS, OFFSET_PIXELS})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface OffsetMode {
-
-    }
-
-    /**
      * {@link OrientationMode} constant indicating that the related value is specified relative to the globe.
      */
     public static final int RELATIVE_TO_GLOBE = 0;
@@ -201,20 +212,9 @@ public class WorldWind {
     public static final int RELATIVE_TO_SCREEN = 1;
 
     /**
-     * Orientation mode indicates how World Wind interprets a renderable's orientation value, e.g., tilt and rotate
-     * values. Accepted values are {@link #RELATIVE_TO_GLOBE}, and {@link #RELATIVE_TO_SCREEN}.
+     * Notification constant requesting that World Window instances update their display.
      */
-
-    @IntDef({RELATIVE_TO_GLOBE, RELATIVE_TO_SCREEN})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface OrientationMode {
-
-    }
-
-    /**
-     * Notification constant requesting that World Window instances render a frame.
-     */
-    public static final String REQUEST_RENDER = "gov.nasa.worldwind.RequestRender";
+    public static final String REQUEST_REDRAW = "gov.nasa.worldwind.RequestRedraw";
 
     /**
      * WGS 84 reference value for the Earth ellipsoid's semi-major axis: 6378137.0.
@@ -259,10 +259,10 @@ public class WorldWind {
     }
 
     /**
-     * Requests that all World Window instances render a frame. Internally, this dispaches a REQUEST_RENDER message to
-     * the World Wind message center.
+     * Requests that all World Window instances update their display. Internally, this dispatches a REQUEST_REDRAW
+     * message to the World Wind message center.
      */
-    public static void requestRender() {
-        messageService.postMessage(REQUEST_RENDER, null, null); // specify null for no sender, no user properties
+    public static void requestRedraw() {
+        messageService.postMessage(REQUEST_REDRAW, null, null); // specify null for no sender, no user properties
     }
 }

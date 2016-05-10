@@ -16,7 +16,6 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
-import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwindx.milstd2525.MilStd2525;
 
@@ -113,9 +112,9 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
 
             symbolLayer.addRenderable(machineGun);
 
-            // Signal a change in the WorldWind scene; requestRender() is callable from any thread.
+            // Signal a change in the WorldWind scene; requestRedraw() is callable from any thread.
             //noinspection ResourceType
-            getWorldWindow().requestRender();
+            getWorldWindow().requestRedraw();
 
             // Clear the status message set in onPreExecute
             statusText.setText("");

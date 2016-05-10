@@ -136,7 +136,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             }
 
             this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
-            this.wwd.requestRender();
+            this.wwd.requestRedraw();
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             this.gestureDidEnd();
         }
@@ -155,7 +155,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
                 this.applyLimits(this.lookAt);
 
                 this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
-                this.wwd.requestRender();
+                this.wwd.requestRedraw();
             }
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             this.gestureDidEnd();
@@ -176,7 +176,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.lastRotation = rotation;
 
             this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
-            this.wwd.requestRender();
+            this.wwd.requestRedraw();
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             this.gestureDidEnd();
         }
@@ -199,7 +199,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.applyLimits(this.lookAt);
 
             this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
-            this.wwd.requestRender();
+            this.wwd.requestRedraw();
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             this.gestureDidEnd();
         }
