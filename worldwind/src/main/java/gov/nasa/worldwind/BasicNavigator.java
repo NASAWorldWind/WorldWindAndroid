@@ -31,80 +31,79 @@ public class BasicNavigator implements Navigator {
     public BasicNavigator() {
     }
 
-    // TODO remove method level synchronization
     @Override
-    public synchronized double getLatitude() {
+    public double getLatitude() {
         return this.latitude;
     }
 
     @Override
-    public synchronized Navigator setLatitude(double latitude) {
+    public Navigator setLatitude(double latitude) {
         this.latitude = latitude;
         return this;
     }
 
     @Override
-    public synchronized double getLongitude() {
+    public double getLongitude() {
         return this.longitude;
     }
 
     @Override
-    public synchronized Navigator setLongitude(double longitude) {
+    public Navigator setLongitude(double longitude) {
         this.longitude = longitude;
         return this;
     }
 
     @Override
-    public synchronized double getAltitude() {
+    public double getAltitude() {
         return this.altitude;
     }
 
     @Override
-    public synchronized Navigator setAltitude(double altitude) {
+    public Navigator setAltitude(double altitude) {
         this.altitude = altitude;
         return this;
     }
 
     @Override
-    public synchronized double getHeading() {
+    public double getHeading() {
         return this.heading;
     }
 
     @Override
-    public synchronized Navigator setHeading(double headingDegrees) {
+    public Navigator setHeading(double headingDegrees) {
         this.heading = headingDegrees;
         return this;
     }
 
     @Override
-    public synchronized double getTilt() {
+    public double getTilt() {
         return this.tilt;
     }
 
     @Override
-    public synchronized Navigator setTilt(double tiltDegrees) {
+    public Navigator setTilt(double tiltDegrees) {
         this.tilt = tiltDegrees;
         return this;
     }
 
     @Override
-    public synchronized double getRoll() {
+    public double getRoll() {
         return this.roll;
     }
 
     @Override
-    public synchronized Navigator setRoll(double rollDegrees) {
+    public Navigator setRoll(double rollDegrees) {
         this.roll = rollDegrees;
         return this;
     }
 
     @Override
-    public synchronized double getFieldOfView() {
+    public double getFieldOfView() {
         return fieldOfView;
     }
 
     @Override
-    public synchronized Navigator setFieldOfView(double fovyDegrees) {
+    public Navigator setFieldOfView(double fovyDegrees) {
         if (fovyDegrees <= 0 || fovyDegrees >= 180) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "setPosition", "invalidFieldOfView"));
@@ -115,7 +114,7 @@ public class BasicNavigator implements Navigator {
     }
 
     @Override
-    public synchronized Camera getAsCamera(Globe globe, Camera result) {
+    public Camera getAsCamera(Globe globe, Camera result) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "getAsCamera", "missingGlobe"));
@@ -138,7 +137,7 @@ public class BasicNavigator implements Navigator {
     }
 
     @Override
-    public synchronized Navigator setAsCamera(Globe globe, Camera camera) {
+    public Navigator setAsCamera(Globe globe, Camera camera) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "setAsCamera", "missingGlobe"));
@@ -160,7 +159,7 @@ public class BasicNavigator implements Navigator {
     }
 
     @Override
-    public synchronized LookAt getAsLookAt(Globe globe, LookAt result) {
+    public LookAt getAsLookAt(Globe globe, LookAt result) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "getAsLookAt", "missingGlobe"));
@@ -178,7 +177,7 @@ public class BasicNavigator implements Navigator {
     }
 
     @Override
-    public synchronized Navigator setAsLookAt(Globe globe, LookAt lookAt) {
+    public Navigator setAsLookAt(Globe globe, LookAt lookAt) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "setAsLookAt", "missingGlobe"));

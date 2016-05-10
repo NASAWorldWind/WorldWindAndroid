@@ -7,7 +7,7 @@ package gov.nasa.worldwind;
 
 public class FrameMetrics {
 
-    private final Object lock = new Object(); // TODO remove lock and associated synchronization
+    private final Object drawLock = new Object();
 
     protected Metrics renderMetrics = new Metrics();
 
@@ -17,61 +17,51 @@ public class FrameMetrics {
     }
 
     public long getRenderTime() {
-        synchronized (this.lock) {
-            return this.renderMetrics.time;
-        }
+        return this.renderMetrics.time;
     }
 
     public double getRenderTimeAverage() {
-        synchronized (this.lock) {
-            return this.computeTimeAverage(this.renderMetrics);
-        }
+        return this.computeTimeAverage(this.renderMetrics);
     }
 
     public double getRenderTimeStdDev() {
-        synchronized (this.lock) {
-            return this.computeTimeStdDev(this.renderMetrics);
-        }
+        return this.computeTimeStdDev(this.renderMetrics);
     }
 
     public long getRenderTimeTotal() {
-        synchronized (this.lock) {
-            return this.renderMetrics.timeSum;
-        }
+        return this.renderMetrics.timeSum;
     }
 
     public long getRenderCount() {
-        synchronized (this.lock) {
-            return this.renderMetrics.count;
-        }
+        return this.renderMetrics.count;
     }
 
     public long getDrawTime() {
-        synchronized (this.lock) {
+        synchronized (this.drawLock) {
             return this.drawMetrics.time;
         }
     }
 
     public double getDrawTimeAverage() {
-        synchronized (this.lock) {
+        synchronized (this.drawLock) {
             return this.computeTimeAverage(this.drawMetrics);
         }
     }
 
     public double getDrawTimeStdDev() {
-        synchronized (this.lock) {
+        synchronized (this.drawLock) {
             return this.computeTimeStdDev(this.drawMetrics);
         }
     }
 
     public long getDrawTimeTotal() {
-        synchronized (this.lock) {
+        synchronized (this.drawLock) {
             return this.drawMetrics.timeSum;
         }
     }
 
     public long getDrawCount() {
-        synchronized (this.lock) {
+        synchronized (this.drawLock) {
             return this.drawMetrics.count;
         }
     }
@@ -80,14 +70,14 @@ public class FrameMetrics {
     public String toString() {
         StringBuilder sb = new StringBuilder("FrameMetrics");
         sb.append("{\n");
+        sb.append("renderTime=").append(this.renderMetrics.time);
+        sb.append(", renderTimeTotal=").append(this.renderMetrics.timeSum);
+        sb.append(", renderCount=").append(this.renderMetrics.count);
+        sb.append(", renderTimeAvg=").append(String.format("%.1f", this.computeTimeAverage(this.renderMetrics)));
+        sb.append(", renderTimeStdDev=").append(String.format("%.1f", this.computeTimeStdDev(this.renderMetrics)));
+        sb.append("\n");
 
-        synchronized (this.lock) {
-            sb.append("renderTime=").append(this.renderMetrics.time);
-            sb.append(", renderTimeTotal=").append(this.renderMetrics.timeSum);
-            sb.append(", renderCount=").append(this.renderMetrics.count);
-            sb.append(", renderTimeAvg=").append(String.format("%.1f", this.computeTimeAverage(this.renderMetrics)));
-            sb.append(", renderTimeStdDev=").append(String.format("%.1f", this.computeTimeStdDev(this.renderMetrics)));
-            sb.append("\n");
+        synchronized (this.drawLock) {
             sb.append("drawTime=").append(this.drawMetrics.time);
             sb.append(", drawTimeTotal=").append(this.drawMetrics.timeSum);
             sb.append(", drawCount=").append(this.drawMetrics.count);
@@ -103,23 +93,18 @@ public class FrameMetrics {
     public void beginRendering() {
         long now = System.currentTimeMillis();
 
-        synchronized (this.lock) {
-            this.markBegin(this.renderMetrics, now);
-        }
+        this.markBegin(this.renderMetrics, now);
     }
 
     public void endRendering() {
         long now = System.currentTimeMillis();
-
-        synchronized (this.lock) {
-            this.markEnd(this.renderMetrics, now);
-        }
+        this.markEnd(this.renderMetrics, now);
     }
 
     public void beginDrawing() {
         long now = System.currentTimeMillis();
 
-        synchronized (this.lock) {
+        synchronized (this.drawLock) {
             this.markBegin(this.drawMetrics, now);
         }
     }
@@ -127,14 +112,15 @@ public class FrameMetrics {
     public void endDrawing() {
         long now = System.currentTimeMillis();
 
-        synchronized (this.lock) {
+        synchronized (this.drawLock) {
             this.markEnd(this.drawMetrics, now);
         }
     }
 
     public void reset() {
-        synchronized (this.lock) {
-            this.resetMetrics(this.renderMetrics);
+        this.resetMetrics(this.renderMetrics);
+
+        synchronized (this.drawLock) {
             this.resetMetrics(this.drawMetrics);
         }
     }
