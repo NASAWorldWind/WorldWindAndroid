@@ -285,21 +285,22 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
         @Override
         public void run() {
-            this.wwd = this.activity.getWorldWindow();
-            if (this.wwd != null) {
-                // Query the globe for debug info on the WorldWindow's GLThread
-                this.wwd.queueEvent(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Get a copy of the current "look at" position...
-                        LookAt lookAt = wwd.getNavigator().getAsLookAt(wwd.getGlobe(), new LookAt());
-                        // ... and post the results on the UI Thread.
-                        handler.obtainMessage(LOOK_AT_MSG_ID, lookAt).sendToTarget();
-                    }
-                });
-            }
-            // Rerun this task after the prescribed interval
-            this.handler.postDelayed(this, POLLING_INTERVAL);
+            // TODO: refactor to avoid queue event
+//            this.wwd = this.activity.getWorldWindow();
+//            if (this.wwd != null) {
+//                // Query the globe for debug info on the WorldWindow's GLThread
+//                this.wwd.queueEvent(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        // Get a copy of the current "look at" position...
+//                        LookAt lookAt = wwd.getNavigator().getAsLookAt(wwd.getGlobe(), new LookAt());
+//                        // ... and post the results on the UI Thread.
+//                        handler.obtainMessage(LOOK_AT_MSG_ID, lookAt).sendToTarget();
+//                    }
+//                });
+//            }
+//            // Rerun this task after the prescribed interval
+//            this.handler.postDelayed(this, POLLING_INTERVAL);
         }
     }
 }

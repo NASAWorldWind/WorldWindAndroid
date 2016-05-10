@@ -72,9 +72,7 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
         wwd.setWorldWindowController(new NoOpWorldWindowController());
 
         // Add a layer containing a large number of placemarks.
-        LayerList layers = this.getWorldWindow().getLayers();
-        int index = layers.indexOfLayerNamed("Atmosphere");
-        layers.addLayer(index, this.createPlacemarksLayer());
+        this.getWorldWindow().getLayers().addLayer(this.createPlacemarksLayer());
 
         // Create location objects for the places used in this test.
         Location arc = new Location(37.415229, -122.06265);

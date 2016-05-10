@@ -33,12 +33,9 @@ public class PlacemarksActivity extends BasicGlobeActivity {
         // First, setup the WorldWind globe to support the rendering of placemarks
         ///////////////////////////////////////////////////////////////////////////
 
-        // Create a RenderableLayer for the placemarks
+        // Create a RenderableLayer for placemarks and add it to the WorldWindow
         RenderableLayer placemarksLayer = new RenderableLayer("Placemarks");
-        // Add the new layer to the globe's layer list; for this demo, place it just in front of the Atmosphere layer
-        LayerList layers = this.getWorldWindow().getLayers();
-        int index = layers.indexOfLayerNamed("Atmosphere");
-        layers.addLayer(index, placemarksLayer);
+        this.getWorldWindow().getLayers().addLayer(placemarksLayer);
 
         //////////////////////////////////////
         // Second, create some placemarks...

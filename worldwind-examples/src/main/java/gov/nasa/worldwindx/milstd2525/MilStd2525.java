@@ -51,7 +51,7 @@ public class MilStd2525 {
      *
      * @param applicationContext The Context used to define the location of the renderer's cache directly.
      */
-    public static void initializeRenderer(Context applicationContext) {
+    public static synchronized void initializeRenderer(Context applicationContext) {
         if (initialized) {
             return;
         }

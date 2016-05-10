@@ -28,8 +28,7 @@ public class WmsLayerActivity extends BasicGlobeActivity {
         config.layerNames = "MYD28M"; // Sea surface temperature (MODIS)
         WmsLayer layer = new WmsLayer(new Sector().setFullSphere(), 1e3, config); // 1km resolution
 
-        // Add the WMS layer to the World Window before the Atmosphere layer.
-        int index = this.getWorldWindow().getLayers().indexOfLayerNamed("Atmosphere");
-        this.getWorldWindow().getLayers().addLayer(index, layer);
+        // Add the WMS layer to the World Window.
+        this.getWorldWindow().getLayers().addLayer(layer);
     }
 }

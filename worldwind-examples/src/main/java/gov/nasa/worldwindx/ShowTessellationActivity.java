@@ -20,9 +20,6 @@ public class ShowTessellationActivity extends BasicGlobeActivity {
 
         // Create a layer that displays the globe's tessellation geometry.
         ShowTessellationLayer layer = new ShowTessellationLayer();
-
-        // Add the WMS layer to the World Window before the Atmosphere layer.
-        int index = this.getWorldWindow().getLayers().indexOfLayerNamed("Atmosphere");
-        this.getWorldWindow().getLayers().addLayer(index, layer);
+        this.getWorldWindow().getLayers().addLayer(layer);
     }
 }
