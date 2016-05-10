@@ -47,7 +47,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource> 
             if (ex instanceof SocketTimeoutException) { // log socket timeout exceptions while suppressing the stack trace
                 Logger.log(Logger.ERROR, "Socket timeout retrieving image \'" + key + "\'");
             } else if (ex != null) { // log checked exceptions with the entire stack trace
-                Logger.log(Logger.ERROR, "Image retrieval failed with exception \'" + key + "\'");
+                Logger.log(Logger.ERROR, "Image retrieval failed with exception \'" + key + "\'", ex);
             } else {
                 Logger.log(Logger.ERROR, "Image retrieval failed \'" + key + "\'");
             }
