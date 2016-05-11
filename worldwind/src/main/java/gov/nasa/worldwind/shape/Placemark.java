@@ -34,7 +34,7 @@ import gov.nasa.worldwind.util.WWMath;
  * scaled by the image scale attribute. Otherwise, the placemark is drawn as a square with width and height equal to the
  * value of the image scale attribute, in pixels, and color equal to the image color attribute.
  */
-public class Placemark extends AbstractRenderable {
+public class Placemark extends AbstractRenderable implements Highlightable {
 
     /**
      * The default eye distance above which to reduce the size of this placemark, in meters. If {@link
@@ -147,47 +147,45 @@ public class Placemark extends AbstractRenderable {
     private double eyeDistance;
 
     /**
-     * Constructs a Placemark that draws its representation at the supplied position using the given PlacemarkAttributes
-     * bundle. The displayName and label properties are empty.
+     * Constructs a Placemark that draws its representation at the supplied position using default {@link
+     * PlacemarkAttributes} * bundle. The displayName and label properties are empty.
+     *
+     * @param position The geographic position with the placemark is drawn.
+     */
+    public Placemark(Position position) {
+        this(position, PlacemarkAttributes.defaults());
+    }
+
+    /**
+     * Constructs a Placemark that draws its representation at the supplied position using the given {@link
+     * PlacemarkAttributes} bundle. The displayName and label properties are empty.
      *
      * @param position   The geographic position with the placemark is drawn.
      * @param attributes The attributes bundle reference that defines how the placemark is drawn.
      */
     public Placemark(Position position, PlacemarkAttributes attributes) {
-        this(position, attributes, null, null);
-    }
-
-
-    /**
-     * Constructs a Placemark with a label that draws its representation at the supplied position using the given
-     * PlacemarkAttributes bundle. The displayName property is set to the supplied label string, which is drawn
-     * according to the (optional) TextAttributes within the PlacemarkAttributes.
-     *
-     * @param position   The geographic position with the placemark is drawn.
-     * @param attributes The attributes bundle reference that defines how the placemark and label are drawn.
-     * @param label      The text assigned to the displayName property that is optionally drawn near the image.
-     */
-    public Placemark(Position position, PlacemarkAttributes attributes, String label) {
-        this(position, attributes, label, null);
+        this(position, attributes, null);
     }
 
     /**
-     * Constructs a placemark.
+     * Constructs a Placemark with a label that draws its representation at the supplied position using the given {@link
+     * PlacemarkAttributes} bundle. The displayName and label properties are set to the supplied name string. The text
+     * is drawn according to the (optional) TextAttributes within the PlacemarkAttributes.  The {@link
+     * Placemark#setDisplayName(String)} and {@link Placemark#setLabel(String)} can be used to provide different text
+     * between these two properties.
      *
-     * @param position    The placemark's geographic position.
-     * @param attributes  The attributes to associate with this placemark. May be null, but if null the placemark will
-     *                    not be drawn.
-     * @param displayName The display name associated with this placemark. May be null. If a name is specified, but a
-     *                    label is not, then the name will be used for the label.
-     * @param label       The label associated with this placemark. May be null. If specified, the label will be drawn
-     *                    with the active {@link PlacemarkAttributes#labelAttributes}. If these attributes are null, the
-     *                    label will not be drawn.
+     * @param position   The placemark's geographic position.
+     * @param attributes The attributes to associate with this placemark. May be null, but if null the placemark will
+     *                   not be drawn.
+     * @param name       The text for the {@link Placemark#displayName} and {@link Placemark#label} properties
+     *                   associated with this placemark. May be null. If specified, the label will be drawn with the
+     *                   active {@link PlacemarkAttributes#labelAttributes}. If these attributes are null, the label
+     *                   will not be drawn.
      */
-    public Placemark(Position position, PlacemarkAttributes attributes, String displayName, String label) {
+    public Placemark(Position position, PlacemarkAttributes attributes, String name) {
         this.setPosition(position);
         this.setAltitudeMode(WorldWind.ABSOLUTE);
-        this.setDisplayName(displayName);
-        this.setLabel(label);
+        this.setDisplayName(name);
         this.attributes = attributes;
         this.eyeDistanceScaling = false;
         this.eyeDistanceScalingThreshold = DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD;
@@ -206,7 +204,7 @@ public class Placemark extends AbstractRenderable {
      *
      * @return A new Placemark with a PlacemarkAttributes bundle.
      */
-    public static Placemark simple(Position position, Color color, int pixelSize) {
+    public static Placemark createSimple(Position position, Color color, int pixelSize) {
         return new Placemark(position, PlacemarkAttributes.defaults().setImageColor(color).setImageScale(pixelSize));
     }
 
@@ -219,7 +217,7 @@ public class Placemark extends AbstractRenderable {
      *
      * @return A new Placemark with a PlacemarkAttributes bundle.
      */
-    public static Placemark simpleImage(Position position, ImageSource imageSource) {
+    public static Placemark createSimpleImage(Position position, ImageSource imageSource) {
         return new Placemark(position, PlacemarkAttributes.withImage(imageSource));
     }
 
@@ -234,7 +232,7 @@ public class Placemark extends AbstractRenderable {
      *
      * @return A new Placemark with a PlacemarkAttributes bundle containing TextAttributes.
      */
-    public static Placemark simpleImageAndLabel(Position position, ImageSource imageSource, String label) {
+    public static Placemark createSimpleImageAndLabel(Position position, ImageSource imageSource, String label) {
         return new Placemark(position, PlacemarkAttributes.withImageAndLabel(imageSource), label);
     }
 
@@ -366,28 +364,6 @@ public class Placemark extends AbstractRenderable {
      */
     public Placemark setLabel(String label) {
         this.label = label;
-        return this;
-    }
-
-    /**
-     * Indicates whether this placemark uses its highlight attributes rather than its normal attributes.
-     *
-     * @return True if this placemark should be highlighted.
-     */
-    public boolean isHighlighted() {
-        return highlighted;
-    }
-
-    /**
-     * Sets the highlighted state of this placemark, which indicates whether this placemark uses its highlight
-     * attributes rather than its normal attributes.
-     *
-     * @param highlighted The highlighted state applied to this placemark.
-     *
-     * @return This placemark.
-     */
-    public Placemark setHighlighted(boolean highlighted) {
-        this.highlighted = highlighted;
         return this;
     }
 
@@ -607,6 +583,28 @@ public class Placemark extends AbstractRenderable {
     }
 
     /**
+     * Indicates whether this placemark uses its highlight attributes rather than its normal attributes.
+     *
+     * @return True if this placemark should be highlighted.
+     */
+    @Override
+    public boolean isHighlighted() {
+        return highlighted;
+    }
+
+    /**
+     * Sets the highlighted state of this placemark, which indicates whether this placemark uses its highlight
+     * attributes rather than its normal attributes.
+     *
+     * @param highlighted The highlighted state applied to this placemark.
+     */
+    @Override
+    public void setHighlighted(boolean highlighted) {
+        this.highlighted = highlighted;
+    }
+
+
+    /**
      * Performs the rendering; called by the public render method.
      *
      * @param rc the current render context
@@ -804,9 +802,9 @@ public class Placemark extends AbstractRenderable {
         drawable.mvpMatrix.multiplyByTranslation(groundPoint.x, groundPoint.y, groundPoint.z);
 
         // Configure the drawable according to the placemark's active leader line attributes.
-        drawable.color.set(this.activeAttributes.leaderLineAttributes.outlineColor);
-        drawable.lineWidth = this.activeAttributes.leaderLineAttributes.outlineWidth;
-        drawable.enableDepthTest = this.activeAttributes.leaderLineAttributes.depthTest;
+        drawable.color.set(this.activeAttributes.leaderAttributes.outlineColor);
+        drawable.lineWidth = this.activeAttributes.leaderAttributes.outlineWidth;
+        drawable.enableDepthTest = this.activeAttributes.leaderAttributes.depthTest;
     }
 
     /**
@@ -827,8 +825,8 @@ public class Placemark extends AbstractRenderable {
      * @return True if leader-line directive is enabled and there are valid leader-line attributes.
      */
     protected boolean mustDrawLeaderLine(RenderContext rc) {
-        return this.activeAttributes.drawLeaderLine
-            && this.activeAttributes.leaderLineAttributes != null
+        return this.activeAttributes.drawLeader
+            && this.activeAttributes.leaderAttributes != null
             && (this.enableLeaderLinePicking || !rc.pickingMode);
     }
 }
