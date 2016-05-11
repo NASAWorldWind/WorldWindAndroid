@@ -492,6 +492,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // We no longer have an Android surface to draw to.
         this.haveSurface.set(false);
+        this.waitingForRedraw = false;
 
         // Clear the render resource cache; it's entries are now invalid.
         this.renderResourceCache.clear();
