@@ -24,7 +24,7 @@ import static java.lang.Math.toDegrees;
 
 public class PlacemarksStressTestActivity extends BasicGlobeActivity implements Runnable {
 
-    static final int DELAY_TIME = 100;
+    static final int DELAY_TIME = 30;
 
     static final int NUM_PLACEMARKS = 10000;
 
@@ -51,10 +51,10 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
 
         // Create some placemarks at a known locations
         Placemark origin = new Placemark(Position.fromDegrees(0, 0, 1e5),
-            PlacemarkAttributes.withImageAndLabelAndLeaderLine(ImageSource.fromResource(R.drawable.pushpin_plain_yellow)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
+            PlacemarkAttributes.withImageAndLabelAndLeader(ImageSource.fromResource(R.drawable.pushpin_plain_yellow)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
                 "Origin");
         Placemark northPole = new Placemark(Position.fromDegrees(90, 0, 1e5),
-            PlacemarkAttributes.withImageAndLabelAndLeaderLine(ImageSource.fromResource(R.drawable.pushpin_plain_white)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
+            PlacemarkAttributes.withImageAndLabelAndLeader(ImageSource.fromResource(R.drawable.pushpin_plain_white)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
                 "North Pole");
         Placemark southPole = new Placemark(Position.fromDegrees(-90, 0, 0),
             PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.pushpin_plain_black)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
@@ -102,7 +102,7 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
         getWorldWindow().requestRedraw();
 
         if (!this.pauseHandler) { // stop running when this activity is paused; the Handler is resumed in onResume
-            this.animationHandler.postDelayed(this, 30);
+            this.animationHandler.postDelayed(this, DELAY_TIME);
         }
     }
 

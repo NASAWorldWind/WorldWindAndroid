@@ -8,13 +8,11 @@ package gov.nasa.worldwindx;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Handler;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.ImageSource;
@@ -43,14 +41,14 @@ public class PlacemarksActivity extends BasicGlobeActivity {
 
         // Create a simple placemark at downtown Ventura, CA. This placemark is a 20x20 cyan square centered on the
         // geographic position. This placemark demonstrates the creation with a convenient factory method.
-        Placemark ventura = Placemark.simple(Position.fromDegrees(34.281, -119.293, 0), new Color(0, 1, 1, 1), 20);
+        Placemark ventura = Placemark.createSimple(Position.fromDegrees(34.281, -119.293, 0), new Color(0, 1, 1, 1), 20);
 
         // Create an image-based placemark of an aircraft above the ground with a leader-line to the surface.
         // This placemark demonstrates creation via a constructor and a convenient PlacemarkAttributes factory method.
         // The image is scaled to 1.5 times its original size.
         Placemark airplane = new Placemark(
             Position.fromDegrees(34.260, -119.2, 5000),
-            PlacemarkAttributes.withImageAndLeaderLine(ImageSource.fromResource(R.drawable.air_fixwing)).setImageScale(1.5));
+            PlacemarkAttributes.withImageAndLeader(ImageSource.fromResource(R.drawable.air_fixwing)).setImageScale(1.5));
 
         // Create an image-based placemark with a label at Oxnard Airport, CA. This placemark demonstrates creation
         // with a constructor and a convenient PlacemarkAttributes factory method. The image is scaled to 2x
@@ -59,7 +57,6 @@ public class PlacemarksActivity extends BasicGlobeActivity {
             Position.fromDegrees(34.200, -119.208, 0),
             PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.airport_terminal)).setImageOffset(Offset.bottomCenter()).setImageScale(2),
             "Oxnard Airport");
-
 
         // Create an image-based placemark from a bitmap. This placemark demonstrates creation with a
         // constructor and a convenient PlacemarkAttributes factory method. First, a 64x64 bitmap is loaded
