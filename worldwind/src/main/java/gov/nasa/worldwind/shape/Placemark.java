@@ -27,8 +27,8 @@ import gov.nasa.worldwind.util.WWMath;
 /**
  * Represents a Placemark shape. A placemark displays an image, a label and a leader line connecting the placemark's
  * geographic position to the ground. All three of these items are optional. By default, the leader line is not
- * pickable. See {@link Placemark#setEnableLeaderLinePicking(boolean)}.
- * <p/>
+ * pickable. See {@link Placemark#setEnableLeaderPicking(boolean)}.
+ * <p>
  * Placemarks may be drawn with either an image or as single-color square with a specified size. When the placemark
  * attributes indicate a valid image, the placemark's image is drawn as a rectangle in the image's original dimensions,
  * scaled by the image scale attribute. Otherwise, the placemark is drawn as a square with width and height equal to the
@@ -43,7 +43,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      */
     protected static final double DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD = 1e6;
 
-    private static final double DEFAULT_DEPTH_OFFSET = -0.1;
+    protected static final double DEFAULT_DEPTH_OFFSET = -0.1;
 
     private static Vec3 placePoint = new Vec3();
 
@@ -116,7 +116,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     /**
      * Indicates whether this placemark's leader line, if any, is pickable.
      */
-    protected boolean enableLeaderLinePicking;
+    protected boolean enableLeaderPicking;
 
     /**
      * The amount of rotation to apply to the image, measured in degrees clockwise and relative to this placemark's
@@ -148,7 +148,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
 
     /**
      * Constructs a Placemark that draws its representation at the supplied position using default {@link
-     * PlacemarkAttributes} * bundle. The displayName and label properties are empty.
+     * PlacemarkAttributes} bundle. The displayName and label properties are empty.
      *
      * @param position The geographic position with the placemark is drawn.
      */
@@ -299,7 +299,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     /**
      * Sets the placemark's attributes to the supplied attributes bundle. If null and this placemark is not highlighted,
      * this placemark is not drawn.
-     * <p/>
+     * <p>
      * It is permissible to share attribute bundles between placemarks.
      *
      * @param attributes A reference to an attributes bundle used by this placemark when not highlighted.
@@ -324,7 +324,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     /**
      * Sets the attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is
      * true, this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
-     * <p/>
+     * <p>
      * It is permissible to share attribute bundles between placemarks.
      *
      * @param highlightAttributes A reference to the attributes bundle used by this placemark when highlighted.
@@ -353,7 +353,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      * Sets the text used for this placemark's label on the globe. If non-null, then this property will be used for the
      * label in lieu of the displayName. If null, then the {@link Placemark#displayName} property is used for the label
      * text.
-     * <p/>
+     * <p>
      * A typical use case is to use the displayName property in lists of placemarks and use the label property for the
      * placemark labels on the globe, allowing for short or abbreviated names to be used on a cluttered globe.
      *
@@ -469,7 +469,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     /**
      * Gets the type of rotation to apply if the {@link Placemark#getImageRotation()} is not zero. This value indicates
      * whether to apply this placemark's image rotation relative to the screen or the globe.
-     * <p/>
+     * <p>
      * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is rotated in the plane of the screen and its
      * orientation relative to the globe changes as the view changes. If {@link WorldWind#RELATIVE_TO_GLOBE}, this
      * placemark's image is rotated in a plane tangent to the globe at this placemark's position and retains its
@@ -485,7 +485,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     /**
      * Sets the type of rotation to apply if the {@link Placemark#getImageRotation()} is not zero. This value indicates
      * whether to apply this placemark's image rotation relative to the screen or the globe.
-     * <p/>
+     * <p>
      * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is rotated in the plane of the screen and its
      * orientation relative to the globe changes as the view changes. If {@link WorldWind#RELATIVE_TO_GLOBE}, this
      * placemark's image is rotated in a plane tangent to the globe at this placemark's position and retains its
@@ -529,7 +529,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     /**
      * Gets the type tilt to apply when {@link Placemark#getImageTilt()} is non-zero. This value indicates whether to
      * apply this placemark's image tilt relative to the screen or the globe.
-     * <p/>
+     * <p>
      * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is tilted inwards (for positive tilts) relative
      * to the plane of the screen, and its orientation relative to the globe changes as the view changes. If {@link
      * WorldWind#RELATIVE_TO_GLOBE}, this placemark's image is tilted towards the globe's surface, and retains its
@@ -545,7 +545,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     /**
      * Sets the type tilt to apply when {@link Placemark#getImageTilt()} is non-zero. This value indicates whether to
      * apply this placemark's image tilt relative to the screen or the globe.
-     * <p/>
+     * <p>
      * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is tilted inwards (for positive tilts) relative
      * to the plane of the screen, and its orientation relative to the globe changes as the view changes. If {@link
      * WorldWind#RELATIVE_TO_GLOBE}, this placemark's image is tilted towards the globe's surface, and retains its
@@ -564,21 +564,21 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     /**
      * Indicates if picking is allowed on this placemark's (optional) leader line.
      *
-     * @return True if leader line picking is enable.
+     * @return true if leader line picking is enabled, otherwise false
      */
-    public boolean isEnableLeaderLinePicking() {
-        return enableLeaderLinePicking;
+    public boolean isEnableLeaderPicking() {
+        return this.enableLeaderPicking;
     }
 
     /**
      * Sets whether picking is allowed on this placemark's (optional) leader line.
      *
-     * @param enableLeaderLinePicking True if leader line picking should be enabled.
+     * @param enableLeaderPicking true if leader line picking should be enabled, otherwise false
      *
-     * @return This placemark.
+     * @return this placemark
      */
-    public Placemark setEnableLeaderLinePicking(boolean enableLeaderLinePicking) {
-        this.enableLeaderLinePicking = enableLeaderLinePicking;
+    public Placemark setEnableLeaderPicking(boolean enableLeaderPicking) {
+        this.enableLeaderPicking = enableLeaderPicking;
         return this;
     }
 
@@ -603,7 +603,6 @@ public class Placemark extends AbstractRenderable implements Highlightable {
         this.highlighted = highlighted;
     }
 
-
     /**
      * Performs the rendering; called by the public render method.
      *
@@ -611,7 +610,6 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      */
     @Override
     protected void doRender(RenderContext rc) {
-
         this.determineActiveAttributes(rc);
         if (this.activeAttributes == null) {
             return;
@@ -639,7 +637,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
 
         // Prepare a drawable for the placemark's leader line, if requested. Enqueue the leader line drawable before the
         // icon drawable in order to give the icon visual priority over the leader line.
-        if (this.mustDrawLeaderLine(rc)) {
+        if (this.mustDrawLeader(rc)) {
             // Compute the placemark's Cartesian ground point. TODO: use dc.surfacePointForMode
             rc.globe.geographicToCartesian(this.position.latitude, this.position.longitude, 0, groundPoint);
 
@@ -824,9 +822,9 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      *
      * @return True if leader-line directive is enabled and there are valid leader-line attributes.
      */
-    protected boolean mustDrawLeaderLine(RenderContext rc) {
+    protected boolean mustDrawLeader(RenderContext rc) {
         return this.activeAttributes.drawLeader
             && this.activeAttributes.leaderAttributes != null
-            && (this.enableLeaderLinePicking || !rc.pickingMode);
+            && (this.enableLeaderPicking || !rc.pickingMode);
     }
 }
