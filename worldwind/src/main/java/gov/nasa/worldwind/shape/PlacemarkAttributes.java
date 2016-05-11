@@ -35,9 +35,9 @@ public class PlacemarkAttributes {
 
     protected TextAttributes labelAttributes;
 
-    protected boolean drawLeaderLine;
+    protected ShapeAttributes leaderAttributes;
 
-    protected ShapeAttributes leaderLineAttributes;
+    protected boolean drawLeader;
 
     /**
      * Constructs a placemark attributes bundle. The defaults indicate a placemark displayed as a white 1x1 pixel square
@@ -50,8 +50,8 @@ public class PlacemarkAttributes {
         this.imageScale = 1;
         this.minimumImageScale = 0;
         this.labelAttributes = null;
-        this.leaderLineAttributes = null;
-        this.drawLeaderLine = false;
+        this.leaderAttributes = null;
+        this.drawLeader = false;
         this.depthTest = true;
     }
 
@@ -77,8 +77,8 @@ public class PlacemarkAttributes {
         this.minimumImageScale = copy.minimumImageScale;
         this.depthTest = copy.depthTest;
         this.labelAttributes = copy.labelAttributes != null ? new TextAttributes(copy.labelAttributes) : null;
-        this.drawLeaderLine = copy.drawLeaderLine;
-        this.leaderLineAttributes = copy.leaderLineAttributes != null ? new ShapeAttributes(copy.leaderLineAttributes) : null;
+        this.drawLeader = copy.drawLeader;
+        this.leaderAttributes = copy.leaderAttributes != null ? new ShapeAttributes(copy.leaderAttributes) : null;
     }
 
     public PlacemarkAttributes set(PlacemarkAttributes attributes) {
@@ -102,15 +102,15 @@ public class PlacemarkAttributes {
         } else {
             this.labelAttributes = null;
         }
-        this.drawLeaderLine = attributes.drawLeaderLine;
-        if (attributes.leaderLineAttributes != null) {
-            if (this.leaderLineAttributes == null) {
-                this.leaderLineAttributes = new ShapeAttributes(attributes.leaderLineAttributes);
+        this.drawLeader = attributes.drawLeader;
+        if (attributes.leaderAttributes != null) {
+            if (this.leaderAttributes == null) {
+                this.leaderAttributes = new ShapeAttributes(attributes.leaderAttributes);
             } else {
-                this.leaderLineAttributes.set(attributes.leaderLineAttributes);
+                this.leaderAttributes.set(attributes.leaderAttributes);
             }
         } else {
-            this.leaderLineAttributes = null;
+            this.leaderAttributes = null;
         }
         return this;
     }
@@ -123,12 +123,12 @@ public class PlacemarkAttributes {
         return new PlacemarkAttributes().setLabelAttributes(new TextAttributes());
     }
 
-    public static PlacemarkAttributes defaultsAndLeaderLine() {
-        return new PlacemarkAttributes().setLeaderLineAttributes(new ShapeAttributes()).setDrawLeaderLine(true);
+    public static PlacemarkAttributes defaultsAndLeader() {
+        return new PlacemarkAttributes().setLeaderAttributes(new ShapeAttributes()).setDrawLeader(true);
     }
 
-    public static PlacemarkAttributes defaultsAndLabelAndLeaderLine() {
-        return new PlacemarkAttributes().setLabelAttributes(new TextAttributes()).setLeaderLineAttributes(new ShapeAttributes()).setDrawLeaderLine(true);
+    public static PlacemarkAttributes defaultsAndLabelAndLeader() {
+        return new PlacemarkAttributes().setLabelAttributes(new TextAttributes()).setLeaderAttributes(new ShapeAttributes()).setDrawLeader(true);
     }
 
     public static PlacemarkAttributes withImage(ImageSource imageSource) {
@@ -139,12 +139,12 @@ public class PlacemarkAttributes {
         return new PlacemarkAttributes().setImageSource(imageSource).setLabelAttributes(new TextAttributes());
     }
 
-    public static PlacemarkAttributes withImageAndLeaderLine(ImageSource imageSource) {
-        return new PlacemarkAttributes().setImageSource(imageSource).setLeaderLineAttributes(new ShapeAttributes()).setDrawLeaderLine(true);
+    public static PlacemarkAttributes withImageAndLeader(ImageSource imageSource) {
+        return new PlacemarkAttributes().setImageSource(imageSource).setLeaderAttributes(new ShapeAttributes()).setDrawLeader(true);
     }
 
-    public static PlacemarkAttributes withImageAndLabelAndLeaderLine(ImageSource imageSource) {
-        return new PlacemarkAttributes().setImageSource(imageSource).setLabelAttributes(new TextAttributes()).setLeaderLineAttributes(new ShapeAttributes()).setDrawLeaderLine(true);
+    public static PlacemarkAttributes withImageAndLabelAndLeader(ImageSource imageSource) {
+        return new PlacemarkAttributes().setImageSource(imageSource).setLabelAttributes(new TextAttributes()).setLeaderAttributes(new ShapeAttributes()).setDrawLeader(true);
     }
 
 
@@ -157,13 +157,13 @@ public class PlacemarkAttributes {
 
         if (Double.compare(that.imageScale, imageScale) != 0) return false;
         if (depthTest != that.depthTest) return false;
-        if (drawLeaderLine != that.drawLeaderLine) return false;
+        if (drawLeader != that.drawLeader) return false;
         if (imageColor != null ? !imageColor.equals(that.imageColor) : that.imageColor != null) return false;
         if (imageOffset != null ? !imageOffset.equals(that.imageOffset) : that.imageOffset != null) return false;
         if (imageSource != null ? !imageSource.equals(that.imageSource) : that.imageSource != null) return false;
         if (labelAttributes != null ? !labelAttributes.equals(that.labelAttributes) : that.labelAttributes != null)
             return false;
-        return !(leaderLineAttributes != null ? !leaderLineAttributes.equals(that.leaderLineAttributes) : that.leaderLineAttributes != null);
+        return !(leaderAttributes != null ? !leaderAttributes.equals(that.leaderAttributes) : that.leaderAttributes != null);
 
     }
 
@@ -178,8 +178,8 @@ public class PlacemarkAttributes {
         result = 31 * result + (imageSource != null ? imageSource.hashCode() : 0);
         result = 31 * result + (depthTest ? 1 : 0);
         result = 31 * result + (labelAttributes != null ? labelAttributes.hashCode() : 0);
-        result = 31 * result + (drawLeaderLine ? 1 : 0);
-        result = 31 * result + (leaderLineAttributes != null ? leaderLineAttributes.hashCode() : 0);
+        result = 31 * result + (drawLeader ? 1 : 0);
+        result = 31 * result + (leaderAttributes != null ? leaderAttributes.hashCode() : 0);
         return result;
     }
 
@@ -327,17 +327,17 @@ public class PlacemarkAttributes {
     /**
      * Returns whether to draw a line from the placemark's geographic position to the ground.
      */
-    public boolean isDrawLeaderLine() {
-        return drawLeaderLine;
+    public boolean isDrawLeader() {
+        return drawLeader;
     }
 
     /**
      * Sets whether to draw a line from the placemark's geographic position to the ground.
      *
-     * @param drawLeaderLine The new draw leader-line setting.
+     * @param drawLeader The new draw leader-line setting.
      */
-    public PlacemarkAttributes setDrawLeaderLine(boolean drawLeaderLine) {
-        this.drawLeaderLine = drawLeaderLine;
+    public PlacemarkAttributes setDrawLeader(boolean drawLeader) {
+        this.drawLeader = drawLeader;
         return this;
     }
 
@@ -345,18 +345,18 @@ public class PlacemarkAttributes {
      * Returns the attributes to apply to the leader line if it's drawn. If null, the placemark's leader line is not
      * drawn.
      */
-    public ShapeAttributes getLeaderLineAttributes() {
-        return leaderLineAttributes;
+    public ShapeAttributes getLeaderAttributes() {
+        return leaderAttributes;
     }
 
     /**
      * Sets the attributes to apply to the leader line if it's drawn. If null, the placemark's leader line is not
      * drawn.
      *
-     * @param leaderLineAttributes The new leader-line attributes. May be null.
+     * @param leaderAttributes The new leader-line attributes. May be null.
      */
-    public PlacemarkAttributes setLeaderLineAttributes(ShapeAttributes leaderLineAttributes) {
-        this.leaderLineAttributes = leaderLineAttributes;
+    public PlacemarkAttributes setLeaderAttributes(ShapeAttributes leaderAttributes) {
+        this.leaderAttributes = leaderAttributes;
         return this;
     }
 }
