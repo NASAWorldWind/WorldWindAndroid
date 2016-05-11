@@ -437,16 +437,16 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      */
     @Override
     public void onDrawFrame(GL10 unused) {
-        // Remove the oldest frame from the front of the queue, if any.
+        // Remove the oldest frame from the front of the queue and recycle the previous frame back into the pool.
         Frame nextFrame = this.frameQueue.poll();
         if (nextFrame != null) {
-            // Recycle the previous frame back into the pool.
             if (this.currentFrame != null) {
                 this.currentFrame.recycle();
             }
             this.currentFrame = nextFrame;
 
-            // Continue processing the frame queue on the OpenGL thread until the queue is empty.
+            // Continue processing the frame queue on the OpenGL thread until the queue is empty. This has the result of
+            // drawing the last frame twice, but improves overall concurrency between render and draw.
             super.requestRender();
         }
 
