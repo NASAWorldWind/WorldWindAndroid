@@ -375,6 +375,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      *
      * @deprecated Use {@link #requestRedraw} instead.
      */
+    @Deprecated
     public void requestRender() {
         super.requestRender();
     }
@@ -390,6 +391,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * @deprecated See <a href="http://developer.android.com/training/multiple-threads/communicate-ui.html">Communicating
      * with the UI Thread</a> instead.
      */
+    @Deprecated
     @Override
     public void queueEvent(Runnable r) {
         super.queueEvent(r);
