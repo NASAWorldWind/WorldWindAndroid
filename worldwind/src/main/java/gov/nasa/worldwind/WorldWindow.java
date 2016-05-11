@@ -358,11 +358,15 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
         Frame frame = Frame.obtain(this.framePool);
+        this.willRenderFrame();
         this.renderFrame(frame);
 
-        // Enqueue the frame for processing on the OpenGL thread, then wake the OpenGL thread.
+        // Enqueue the frame for processing on the OpenGL thread as soon as possible, then wake the OpenGL thread.
         this.frameQueue.offer(frame);
         super.requestRender();
+
+        // Perform any necessary actions after rendering the frame.
+        this.didRenderFrame();
     }
 
     /**
@@ -433,23 +437,24 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      */
     @Override
     public void onDrawFrame(GL10 unused) {
-        // Remove the oldest frame from the front of the queue and recycle the previous frame back into the pool.
+        // Remove the oldest frame from the front of the queue, if any.
         Frame nextFrame = this.frameQueue.poll();
         if (nextFrame != null) {
+            // Recycle the previous frame back into the pool.
             if (this.currentFrame != null) {
                 this.currentFrame.recycle();
             }
             this.currentFrame = nextFrame;
+
+            // Continue processing the frame queue on the OpenGL thread until the queue is empty.
+            super.requestRender();
         }
 
         // Process and display the Drawables accumulated during the render phase.
         if (this.currentFrame != null) {
+            this.willDrawFrame();
             this.drawFrame(this.currentFrame);
-        }
-
-        // Continue processing the frame queue on the OpenGL thread until the queue is empty.
-        if (!this.frameQueue.isEmpty()) {
-            super.requestRender();
+            this.didDrawFrame();
         }
     }
 
@@ -492,17 +497,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.renderResourceCache.clear();
 
         // Clear the frame queue and recycle pending frames back into the frame pool.
-        Frame frame;
-        while ((frame = this.frameQueue.poll()) != null) {
-            frame.recycle();
-        }
-        this.frameQueue.clear();
-
-        // Recycle the current frame back into the frame pool.
-        if (this.currentFrame != null) {
-            this.currentFrame.recycle();
-            this.currentFrame = null;
-        }
+        this.clearFrameQueue();
     }
 
     /**
@@ -544,15 +539,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     protected void renderFrame(Frame frame) {
-        this.willRenderFrame(frame);
-        this.frameController.renderFrame(this.rc);
-        this.didRenderFrame(frame);
-    }
-
-    protected void willRenderFrame(Frame frame) {
-        // Mark the beginning of a frame render.
-        this.frameMetrics.beginRendering();
-
         // Setup the render context according to the World Window's current state.
         this.rc.globe = this.globe;
         this.rc.layers.addAllLayers(this.layers);
@@ -567,16 +553,26 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.rc.renderResourceCache = this.renderResourceCache;
         this.rc.renderResourceCache.setResources(this.getContext().getResources());
         this.rc.resources = this.getContext().getResources();
+
+        // Accumulate the Drawables in the frame's drawable queue and drawable terrain data structures.
         this.rc.drawableQueue = frame.drawableQueue;
         this.rc.drawableTerrain = frame.drawableTerrain;
-    }
 
-    protected void didRenderFrame(Frame frame) {
-        // Copy the render context's Cartesian modelview matrix, eye coordinate projection matrix to the frame.
+        // Let the frame controller render the World Window's current state.
+        this.frameController.renderFrame(this.rc);
+
+        // Assign the frame's Cartesian modelview matrix and eye coordinate projection matrix.
         frame.viewport.set(this.viewport);
         frame.modelview.set(this.rc.modelview);
         frame.projection.set(this.rc.projection);
+    }
 
+    protected void willRenderFrame() {
+        // Mark the beginning of a frame render.
+        this.frameMetrics.beginRendering();
+    }
+
+    protected void didRenderFrame() {
         // Propagate redraw requests submitted during rendering. The render context provides a layer of indirection that
         // insulates rendering code from establishing a dependency on a specific WorldWindow.
         if (this.rc.isRedrawRequested()) {
@@ -591,26 +587,27 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     protected void drawFrame(Frame frame) {
-        this.willDrawFrame(frame);
-        this.frameController.drawFrame(this.dc);
-        this.didDrawFrame(frame);
-    }
-
-    protected void willDrawFrame(Frame frame) {
-        // Mark the beginning of a frame draw.
-        this.frameMetrics.beginDrawing();
-
         // Setup the draw context according to the frame's current state.
         this.dc.modelview.set(frame.modelview);
         this.dc.modelview.extractEyePoint(this.dc.eyePoint);
         this.dc.projection.set(frame.projection);
         this.dc.modelviewProjection.setToMultiply(frame.projection, frame.modelview);
         this.dc.screenProjection.setToScreenProjection(frame.viewport.width(), frame.viewport.height());
+
+        // Process the drawables in the frame's drawable queue and drawable terrain data structures.
         this.dc.drawableQueue = frame.drawableQueue;
         this.dc.drawableTerrain = frame.drawableTerrain;
+
+        // Let the frame controller draw the frame's.
+        this.frameController.drawFrame(this.dc);
     }
 
-    protected void didDrawFrame(Frame frame) {
+    protected void willDrawFrame() {
+        // Mark the beginning of a frame draw.
+        this.frameMetrics.beginDrawing();
+    }
+
+    protected void didDrawFrame() {
         // Release resources evicted during the previous frame.
         this.renderResourceCache.releaseEvictedResources(this.dc);
 
@@ -619,5 +616,20 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Mark the end of a frame draw.
         this.frameMetrics.endDrawing();
+    }
+
+    protected void clearFrameQueue() {
+        // Clear the frame queue and recycle pending frames back into the frame pool.
+        Frame frame;
+        while ((frame = this.frameQueue.poll()) != null) {
+            frame.recycle();
+        }
+        this.frameQueue.clear();
+
+        // Recycle the current frame back into the frame pool.
+        if (this.currentFrame != null) {
+            this.currentFrame.recycle();
+            this.currentFrame = null;
+        }
     }
 }
