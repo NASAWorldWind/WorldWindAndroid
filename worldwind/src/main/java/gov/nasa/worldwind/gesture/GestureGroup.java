@@ -42,11 +42,12 @@ public class GestureGroup {
     }
 
     public boolean onTouchEvent(MotionEvent event) {
+        boolean eventRecognized = false;
 
         for (GestureRecognizer recognizer : this.recognizerList) {
-            recognizer.onTouchEvent(event);
+            eventRecognized |= recognizer.onTouchEvent(event);
         }
 
-        return true;
+        return eventRecognized;
     }
 }

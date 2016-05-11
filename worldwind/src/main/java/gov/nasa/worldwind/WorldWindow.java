@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -50,6 +51,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     protected static final int DEFAULT_MEMORY_CLASS = 16;
 
     protected static final int MAX_FRAME_QUEUE_SIZE = 2;
+
+    protected static final int REQUEST_REDRAW_MSG_ID = 1;
 
     /**
      * Indicates the planet or celestial object displayed by this World Window.
@@ -84,12 +87,16 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected Frame currentFrame;
 
+    protected AtomicBoolean haveSurface = new AtomicBoolean();
+
     protected boolean waitingForRedraw;
 
-    protected Handler redrawHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
+    protected Handler mainLoopHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
-            requestRedraw();
+            if (msg.what == REQUEST_REDRAW_MSG_ID) {
+                requestRedraw();
+            }
             return false;
         }
     });
@@ -326,12 +333,12 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     public void requestRedraw() {
         // Forward calls to requestRedraw to the main thread.
         if (Thread.currentThread() != Looper.getMainLooper().getThread()) {
-            this.redrawHandler.obtainMessage().sendToTarget();
+            this.mainLoopHandler.sendEmptyMessage(REQUEST_REDRAW_MSG_ID);
             return;
         }
 
-        // Suppress duplicate requests for redraw.
-        if (!this.waitingForRedraw) {
+        // Suppress duplicate redraw requests and requests that occur before we have an Android surface to draw to.
+        if (!this.waitingForRedraw && this.haveSurface.get()) {
             Choreographer.getInstance().postFrameCallback(this);
             this.waitingForRedraw = true;
         }
@@ -339,26 +346,27 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     @Override
     public void doFrame(long frameTimeNanos) {
-        // When OpenGL thread falls behind on drawing frames, skip frames until it catches up. We let the World Window
-        // get at most two frames ahead of the OpenGL thread.
+        // Skip frames when OpenGL thread has fallen two or more frames behind. Continue to request frame callbacks
+        // until the OpenGL thread catches up.
         if (this.frameQueue.size() >= MAX_FRAME_QUEUE_SIZE) {
             Choreographer.getInstance().postFrameCallback(this);
             return;
         }
 
-        // Suppress duplicate requests for redraw.
+        // Allow subsequent redraw requests.
         this.waitingForRedraw = false;
 
-        // Obtain a frame to process from the pool.
+        // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
         Frame frame = Frame.obtain(this.framePool);
-
-        // Render the frame by traversing the Navigator, Globe and Layers, accumulating Drawables to process in the
-        // OpenGL thread.
+        this.willRenderFrame();
         this.renderFrame(frame);
 
-        // Enqueue the frame for processing on the OpenGL thread and wake the OpenGL thread.
+        // Enqueue the frame for processing on the OpenGL thread as soon as possible, then wake the OpenGL thread.
         this.frameQueue.offer(frame);
         super.requestRender();
+
+        // Perform any necessary actions after rendering the frame.
+        this.didRenderFrame();
     }
 
     /**
@@ -403,6 +411,12 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Clear any cached OpenGL resources and state, which are now invalid.
         this.dc.contextLost();
+
+        // We have an Android surface to draw to.
+        this.haveSurface.set(true);
+
+        // Redraw this World Window with the newly created surface.
+        this.requestRedraw();
     }
 
     /**
@@ -412,6 +426,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     @Override
     public void onSurfaceChanged(GL10 unused, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
+
+        // Redraw this World Window with the new viewport.
+        this.requestRedraw();
     }
 
     /**
@@ -427,16 +444,17 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
                 this.currentFrame.recycle();
             }
             this.currentFrame = nextFrame;
+
+            // Continue processing the frame queue on the OpenGL thread until the queue is empty. This has the result of
+            // drawing the last frame twice, but improves overall concurrency between render and draw.
+            super.requestRender();
         }
 
         // Process and display the Drawables accumulated during the render phase.
         if (this.currentFrame != null) {
+            this.willDrawFrame();
             this.drawFrame(this.currentFrame);
-        }
-
-        // Continue processing the frame queue on the OpenGL thread until the queue is empty.
-        if (!this.frameQueue.isEmpty()) {
-            super.requestRender();
+            this.didDrawFrame();
         }
     }
 
@@ -469,24 +487,18 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // Release this WorldWindow reference from the global message service
         WorldWind.messageService().removeListener(this);
 
-        // Clear the render resource cache; it's entries are now invalid.
-        this.renderResourceCache.clear();
-
         // Cancel any outstanding redraw requests.
         Choreographer.getInstance().removeFrameCallback(this);
 
-        // Clear the frame queue and recycle pending frames back into the frame pool.
-        Frame frame;
-        while ((frame = this.frameQueue.poll()) != null) {
-            frame.recycle();
-        }
-        this.frameQueue.clear();
+        // We no longer have an Android surface to draw to.
+        this.haveSurface.set(false);
+        this.waitingForRedraw = false;
 
-        // Recycle the current frame back into the frame pool.
-        if (this.currentFrame != null) {
-            this.currentFrame.recycle();
-            this.currentFrame = null;
-        }
+        // Clear the render resource cache; it's entries are now invalid.
+        this.renderResourceCache.clear();
+
+        // Clear the frame queue and recycle pending frames back into the frame pool.
+        this.clearFrameQueue();
     }
 
     /**
@@ -503,15 +515,21 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         super.surfaceChanged(holder, format, width, height);
 
         // Set up the viewport to use during rendering.
-        this.viewport.set(0, 0, this.getWidth(), this.getHeight());
-
-        // Redraw this World Window with the new viewport.
-        this.requestRedraw();
+        this.viewport.set(0, 0, width, height);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return super.onTouchEvent(event) || this.gestureGroup.onTouchEvent(event);
+        // Give the superclass the first opportunity to handle the event.
+        if (super.onTouchEvent(event)) {
+            return true; // superclass handled the event
+        }
+
+        // Let the WorldWindow's gestures handle the event.
+        this.gestureGroup.onTouchEvent(event);
+
+        // Always return true to indicate that the event was handled. Otherwise Android suppresses subsequent events.
+        return true;
     }
 
     @Override
@@ -522,15 +540,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     protected void renderFrame(Frame frame) {
-        this.willRenderFrame(frame);
-        this.frameController.renderFrame(this.rc);
-        this.didRenderFrame(frame);
-    }
-
-    protected void willRenderFrame(Frame frame) {
-        // Mark the beginning of a frame render.
-        this.frameMetrics.beginRendering();
-
         // Setup the render context according to the World Window's current state.
         this.rc.globe = this.globe;
         this.rc.layers.addAllLayers(this.layers);
@@ -545,16 +554,26 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.rc.renderResourceCache = this.renderResourceCache;
         this.rc.renderResourceCache.setResources(this.getContext().getResources());
         this.rc.resources = this.getContext().getResources();
+
+        // Accumulate the Drawables in the frame's drawable queue and drawable terrain data structures.
         this.rc.drawableQueue = frame.drawableQueue;
         this.rc.drawableTerrain = frame.drawableTerrain;
-    }
 
-    protected void didRenderFrame(Frame frame) {
-        // Copy the render context's Cartesian modelview matrix, eye coordinate projection matrix to the frame.
+        // Let the frame controller render the World Window's current state.
+        this.frameController.renderFrame(this.rc);
+
+        // Assign the frame's Cartesian modelview matrix and eye coordinate projection matrix.
         frame.viewport.set(this.viewport);
         frame.modelview.set(this.rc.modelview);
         frame.projection.set(this.rc.projection);
+    }
 
+    protected void willRenderFrame() {
+        // Mark the beginning of a frame render.
+        this.frameMetrics.beginRendering();
+    }
+
+    protected void didRenderFrame() {
         // Propagate redraw requests submitted during rendering. The render context provides a layer of indirection that
         // insulates rendering code from establishing a dependency on a specific WorldWindow.
         if (this.rc.isRedrawRequested()) {
@@ -569,26 +588,27 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     protected void drawFrame(Frame frame) {
-        this.willDrawFrame(frame);
-        this.frameController.drawFrame(this.dc);
-        this.didDrawFrame(frame);
-    }
-
-    protected void willDrawFrame(Frame frame) {
-        // Mark the beginning of a frame draw.
-        this.frameMetrics.beginDrawing();
-
         // Setup the draw context according to the frame's current state.
         this.dc.modelview.set(frame.modelview);
         this.dc.modelview.extractEyePoint(this.dc.eyePoint);
         this.dc.projection.set(frame.projection);
         this.dc.modelviewProjection.setToMultiply(frame.projection, frame.modelview);
         this.dc.screenProjection.setToScreenProjection(frame.viewport.width(), frame.viewport.height());
+
+        // Process the drawables in the frame's drawable queue and drawable terrain data structures.
         this.dc.drawableQueue = frame.drawableQueue;
         this.dc.drawableTerrain = frame.drawableTerrain;
+
+        // Let the frame controller draw the frame's.
+        this.frameController.drawFrame(this.dc);
     }
 
-    protected void didDrawFrame(Frame frame) {
+    protected void willDrawFrame() {
+        // Mark the beginning of a frame draw.
+        this.frameMetrics.beginDrawing();
+    }
+
+    protected void didDrawFrame() {
         // Release resources evicted during the previous frame.
         this.renderResourceCache.releaseEvictedResources(this.dc);
 
@@ -597,5 +617,20 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Mark the end of a frame draw.
         this.frameMetrics.endDrawing();
+    }
+
+    protected void clearFrameQueue() {
+        // Clear the frame queue and recycle pending frames back into the frame pool.
+        Frame frame;
+        while ((frame = this.frameQueue.poll()) != null) {
+            frame.recycle();
+        }
+        this.frameQueue.clear();
+
+        // Recycle the current frame back into the frame pool.
+        if (this.currentFrame != null) {
+            this.currentFrame.recycle();
+            this.currentFrame = null;
+        }
     }
 }
