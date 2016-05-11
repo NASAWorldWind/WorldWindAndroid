@@ -18,10 +18,12 @@ import android.view.Choreographer;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -29,6 +31,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.geom.Location;
+import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.gesture.GestureGroup;
 import gov.nasa.worldwind.gesture.GestureRecognizer;
 import gov.nasa.worldwind.globe.GeographicProjection;
@@ -52,7 +55,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected static final int MAX_FRAME_QUEUE_SIZE = 2;
 
-    protected static final int REQUEST_REDRAW_MSG_ID = 1;
+    protected static final int MSG_ID_REQUEST_REDRAW = 1;
+
+    protected static final int MSG_ID_NAVIGATOR_STOPPED = 2;
 
     /**
      * Indicates the planet or celestial object displayed by this World Window.
@@ -64,6 +69,10 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     protected double verticalExaggeration = 1;
 
     protected Navigator navigator = new BasicNavigator();
+
+    protected List<NavigatorListener> navigatorListeners = new ArrayList<>();
+
+    protected long navigatorStoppedDelay = 250;
 
     protected FrameController frameController = new BasicFrameController();
 
@@ -87,6 +96,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected Frame currentFrame;
 
+    protected Matrix4 currentMvpMatrix;
+
     protected AtomicBoolean haveSurface = new AtomicBoolean();
 
     protected boolean waitingForRedraw;
@@ -94,8 +105,10 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     protected Handler mainLoopHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
-            if (msg.what == REQUEST_REDRAW_MSG_ID) {
+            if (msg.what == MSG_ID_REQUEST_REDRAW) {
                 requestRedraw();
+            } else if (msg.what == MSG_ID_NAVIGATOR_STOPPED) {
+                navigatorDidStop();
             }
             return false;
         }
@@ -231,6 +244,32 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.navigator = navigator;
     }
 
+    public void addNavigatorListener(NavigatorListener listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "addNavigatorListener", "missingListener"));
+        }
+
+        this.navigatorListeners.add(listener);
+    }
+
+    public void removeNavigatorListener(NavigatorListener listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "removeNavigatorListener", "missingListener"));
+        }
+
+        this.navigatorListeners.remove(listener);
+    }
+
+    public long getNavigatorStoppedDelay() {
+        return this.navigatorStoppedDelay;
+    }
+
+    public void setNavigatorStoppedDelay(long delay, TimeUnit unit) {
+        this.navigatorStoppedDelay = unit.toMillis(delay);
+    }
+
     public FrameController getFrameController() {
         return frameController;
     }
@@ -333,7 +372,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     public void requestRedraw() {
         // Forward calls to requestRedraw to the main thread.
         if (Thread.currentThread() != Looper.getMainLooper().getThread()) {
-            this.mainLoopHandler.sendEmptyMessage(REQUEST_REDRAW_MSG_ID);
+            this.mainLoopHandler.sendEmptyMessage(MSG_ID_REQUEST_REDRAW);
             return;
         }
 
@@ -492,7 +531,12 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // Cancel any outstanding redraw requests.
         Choreographer.getInstance().removeFrameCallback(this);
 
+        // Cancel any outstanding internal messages.
+        this.mainLoopHandler.removeMessages(MSG_ID_REQUEST_REDRAW);
+        this.mainLoopHandler.removeMessages(MSG_ID_NAVIGATOR_STOPPED);
+
         // We no longer have an Android surface to draw to.
+        this.currentMvpMatrix = null;
         this.haveSurface.set(false);
         this.waitingForRedraw = false;
 
@@ -582,6 +626,14 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
             this.requestRedraw();
         }
 
+        // Notify navigator change listeners when the modelview matrix associated with the frame has changed.
+        if (this.currentMvpMatrix == null) {
+            this.currentMvpMatrix = new Matrix4(this.rc.modelview);
+        } else if (!this.currentMvpMatrix.equals(this.rc.modelview)) {
+            this.currentMvpMatrix.set(this.rc.modelview);
+            this.navigatorDidMove();
+        }
+
         // Reset the render context's state in preparation for the next frame.
         this.rc.reset();
 
@@ -633,6 +685,32 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         if (this.currentFrame != null) {
             this.currentFrame.recycle();
             this.currentFrame = null;
+        }
+    }
+
+    protected void navigatorDidMove() {
+        int count = this.navigatorListeners.size();
+        if (count > 0) {
+            NavigatorEvent event = NavigatorEvent.obtain(this.navigator, WorldWind.NAVIGATOR_MOVED);
+            for (int idx = 0; idx < count; idx++) {
+                this.navigatorListeners.get(idx).onNavigatorEvent(this, event);
+            }
+            event.recycle();
+
+            // Schedule a navigator stopped event after the specified delay in milliseconds.
+            this.mainLoopHandler.removeMessages(MSG_ID_NAVIGATOR_STOPPED);
+            this.mainLoopHandler.sendEmptyMessageDelayed(MSG_ID_NAVIGATOR_STOPPED, this.navigatorStoppedDelay);
+        }
+    }
+
+    protected void navigatorDidStop() {
+        int count = this.navigatorListeners.size();
+        if (count > 0) {
+            NavigatorEvent event = NavigatorEvent.obtain(this.navigator, WorldWind.NAVIGATOR_STOPPED);
+            for (int idx = 0; idx < count; idx++) {
+                this.navigatorListeners.get(idx).onNavigatorEvent(this, event);
+            }
+            event.recycle();
         }
     }
 }

@@ -134,28 +134,23 @@ public class WorldWind {
     }
 
     /**
-     * {@link PathType} constant indicating a great circle arc between two locations.
+     * {@link NavigatorEventType} constant indicating that the navigator has moved.
      */
-    public static final int GREAT_CIRCLE = 0;
+    public static final int NAVIGATOR_MOVED = 1;
 
     /**
-     * {@link PathType} constant indicating simple linear interpolation between two locations.
+     * {@link NavigatorEventType} constant indicating that the navigator has stopped moving.
      */
-    public static final int LINEAR = 1;
+    public static final int NAVIGATOR_STOPPED = 2;
 
     /**
-     * {@link PathType} constant indicating a line of constant bearing between two locations.
+     * Navigator event type indicates the reason a NavigatorEvent has been generated.
+     *
+     * Accepted values are {@link #NAVIGATOR_MOVED} and {@link #NAVIGATOR_STOPPED}.
      */
-    public static final int RHUMB_LINE = 2;
-
-    /**
-     * Path type indicates how World Wind create a geographic path between two locations. Accepted values are {@link
-     * #GREAT_CIRCLE}, {@link #LINEAR} and {@link #RHUMB_LINE}.
-     */
-
-    @IntDef({GREAT_CIRCLE, LINEAR, RHUMB_LINE})
+    @IntDef({NAVIGATOR_MOVED, NAVIGATOR_STOPPED})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface PathType {
+    public @interface NavigatorEventType {
 
     }
 
@@ -182,7 +177,6 @@ public class WorldWind {
      * Offset mode indicates how World Wind interprets an offset's x and y values. Accepted values are {@link
      * #OFFSET_FRACTION}, {@link #OFFSET_INSET_PIXELS} and {@link #OFFSET_PIXELS}.
      */
-
     @IntDef({OFFSET_FRACTION, OFFSET_INSET_PIXELS, OFFSET_PIXELS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface OffsetMode {
@@ -204,10 +198,34 @@ public class WorldWind {
      * Orientation mode indicates how World Wind interprets a renderable's orientation value, e.g., tilt and rotate
      * values. Accepted values are {@link #RELATIVE_TO_GLOBE}, and {@link #RELATIVE_TO_SCREEN}.
      */
-
     @IntDef({RELATIVE_TO_GLOBE, RELATIVE_TO_SCREEN})
     @Retention(RetentionPolicy.SOURCE)
     public @interface OrientationMode {
+
+    }
+
+    /**
+     * {@link PathType} constant indicating a great circle arc between two locations.
+     */
+    public static final int GREAT_CIRCLE = 0;
+
+    /**
+     * {@link PathType} constant indicating simple linear interpolation between two locations.
+     */
+    public static final int LINEAR = 1;
+
+    /**
+     * {@link PathType} constant indicating a line of constant bearing between two locations.
+     */
+    public static final int RHUMB_LINE = 2;
+
+    /**
+     * Path type indicates how World Wind create a geographic path between two locations. Accepted values are {@link
+     * #GREAT_CIRCLE}, {@link #LINEAR} and {@link #RHUMB_LINE}.
+     */
+    @IntDef({GREAT_CIRCLE, LINEAR, RHUMB_LINE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PathType {
 
     }
 
