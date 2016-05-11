@@ -59,6 +59,12 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
+            android:name=".NavigatorEventActivity"
+            android:label="@string/title_navigator_event"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
             android:name=".PlacemarksActivity"
             android:label="@string/title_placemarks"
             android:launchMode="singleInstance"
