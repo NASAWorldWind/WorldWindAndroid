@@ -59,7 +59,7 @@ public class NavigatorEventActivity extends BasicGlobeActivity {
 
                 // Update the status overlay whenever the navigator stops moving,
                 // otherwise at an arbitrary maximum refresh rate of 20 Hz.
-                if (event.getType() == WorldWind.NAVIGATOR_STOPPED || elapsedTime > 50) {
+                if (event.getAction() == WorldWind.NAVIGATOR_STOPPED || elapsedTime > 50) {
                     // Get the current navigator state
                     event.getNavigator().getAsLookAt(wwd.getGlobe(), lookAt);
                     event.getNavigator().getAsCamera(wwd.getGlobe(), camera);
@@ -70,7 +70,7 @@ public class NavigatorEventActivity extends BasicGlobeActivity {
                     altView.setText(formatAltitude(camera.altitude));
 
                     // Set the text color based on the 'moved' vs 'stopped' action
-                    setTextColor(event.getType());
+                    setTextColor(event.getAction());
 
                     lastEventTime = currentTime;
                 }
@@ -81,7 +81,7 @@ public class NavigatorEventActivity extends BasicGlobeActivity {
         this.getWorldWindow().addNavigatorListener(listener);
     }
 
-    private void setTextColor(@WorldWind.NavigatorEventType int action) {
+    private void setTextColor(@WorldWind.NavigatorAction int action) {
         int color = Color.WHITE;
         if (action == WorldWind.NAVIGATOR_MOVED) {
             color = Color.RED;

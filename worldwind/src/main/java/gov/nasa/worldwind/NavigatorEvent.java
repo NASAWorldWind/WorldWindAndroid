@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind;
 
+import android.view.InputEvent;
+
 import gov.nasa.worldwind.util.BasicPool;
 import gov.nasa.worldwind.util.Pool;
 
@@ -14,18 +16,24 @@ public class NavigatorEvent {
 
     protected Navigator navigator;
 
-    @WorldWind.NavigatorEventType
-    protected int type = WorldWind.NAVIGATOR_MOVED;
+    @WorldWind.NavigatorAction
+    protected int action = WorldWind.NAVIGATOR_MOVED;
 
-    public static NavigatorEvent obtain() {
-        NavigatorEvent instance = pool.acquire();
-        return (instance != null) ? instance : new NavigatorEvent();
+    protected InputEvent lastInputEvent;
+
+    protected NavigatorEvent() {
     }
 
-    public static NavigatorEvent obtain(Navigator navigator, @WorldWind.NavigatorEventType int type) {
-        NavigatorEvent instance = obtain();
+    public static NavigatorEvent obtain(Navigator navigator, @WorldWind.NavigatorAction int action, InputEvent lastInputEvent) {
+        NavigatorEvent instance = pool.acquire();
+        if (instance == null) {
+            instance = new NavigatorEvent();
+        }
+
         instance.navigator = navigator;
-        instance.type = type;
+        instance.action = action;
+        instance.lastInputEvent = lastInputEvent;
+
         return instance;
     }
 
@@ -33,17 +41,13 @@ public class NavigatorEvent {
         return this.navigator;
     }
 
-    public void setNavigator(Navigator navigator) {
-        this.navigator = navigator;
+    @WorldWind.NavigatorAction
+    public int getAction() {
+        return this.action;
     }
 
-    @WorldWind.NavigatorEventType
-    public int getType() {
-        return this.type;
-    }
-
-    public void setType(@WorldWind.NavigatorEventType int type) {
-        this.type = type;
+    public InputEvent getLastInputEvent() {
+        return this.lastInputEvent;
     }
 
     /**
@@ -51,7 +55,9 @@ public class NavigatorEvent {
      */
     public void recycle() {
         this.navigator = null;
-        this.type = WorldWind.NAVIGATOR_MOVED;
+        this.action = WorldWind.NAVIGATOR_MOVED;
+        this.lastInputEvent = null;
         pool.release(this);
     }
+
 }

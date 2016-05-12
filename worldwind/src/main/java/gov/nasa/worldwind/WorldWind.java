@@ -134,23 +134,22 @@ public class WorldWind {
     }
 
     /**
-     * {@link NavigatorEventType} constant indicating that the navigator has moved.
+     * {@link NavigatorAction} constant indicating that the navigator has moved.
      */
-    public static final int NAVIGATOR_MOVED = 1;
+    public static final int NAVIGATOR_MOVED = 0;
 
     /**
-     * {@link NavigatorEventType} constant indicating that the navigator has stopped moving.
+     * {@link NavigatorAction} constant indicating that the navigator has stopped moving.
      */
-    public static final int NAVIGATOR_STOPPED = 2;
+    public static final int NAVIGATOR_STOPPED = 1;
 
     /**
-     * Navigator event type indicates the reason a NavigatorEvent has been generated.
-     *
-     * Accepted values are {@link #NAVIGATOR_MOVED} and {@link #NAVIGATOR_STOPPED}.
+     * Navigator event action indicates the type of NavigatorEvent that has been generated. Accepted values are {@link
+     * #NAVIGATOR_MOVED} and {@link #NAVIGATOR_STOPPED}.
      */
     @IntDef({NAVIGATOR_MOVED, NAVIGATOR_STOPPED})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface NavigatorEventType {
+    public @interface NavigatorAction {
 
     }
 
