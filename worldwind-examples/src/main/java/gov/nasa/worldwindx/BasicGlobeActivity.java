@@ -44,7 +44,7 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         this.wwd = new WorldWindow(this);
 
         // Add the WorldWindow view object to the layout that was reserved for the globe.
-        FrameLayout globeLayout = (FrameLayout) findViewById(R.id.content_globe);
+        FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
         globeLayout.addView(this.wwd);
 
         // Setup the World Window's layers.

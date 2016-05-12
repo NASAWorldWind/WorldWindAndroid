@@ -32,7 +32,7 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
         // Create a TextView to show the MIL-STD-2525 renderer's initialization status
         this.statusText = new TextView(this);
         this.statusText.setTextColor(android.graphics.Color.YELLOW);
-        FrameLayout globeLayout = (FrameLayout) findViewById(R.id.content_globe);
+        FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
         globeLayout.addView(this.statusText);
 
         // Set the camera to look at the area where the symbols will be displayed.

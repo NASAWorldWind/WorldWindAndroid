@@ -92,7 +92,7 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         // Add a TextView on top of the globe to convey the status of this activity
         this.statusText = new TextView(this);
         this.statusText.setTextColor(android.graphics.Color.YELLOW);
-        FrameLayout globeLayout = (FrameLayout) findViewById(R.id.content_globe);
+        FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
         globeLayout.addView(this.statusText);
 
         // Initialize MIL-STD-2525 rendering library and symbols on background threads. AsyncTask tasks
