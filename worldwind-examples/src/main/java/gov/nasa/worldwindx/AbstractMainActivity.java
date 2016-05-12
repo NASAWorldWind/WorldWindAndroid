@@ -42,15 +42,12 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
     private String aboutBoxText = "Description goes here;";
 
-    private StatusTask statusTask;
-
-
     /**
-     * Returns a referenced to the WorldWindow.
+     * Returns a reference to the WorldWindow.
      * <p/>
      * Derived classes must implement this method.
      *
-     * @return The WorldWindow object.
+     * @return The WorldWindow GLSurfaceView object
      */
     abstract public WorldWindow getWorldWindow();
 
@@ -234,77 +231,5 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         return true;
     }
 
-    /**
-     * The StatusTask class polls the WorldWindow's globe periodically for information and posts it into the status bar.
-     */
-    public static final class StatusTask implements Runnable {
-
-        private static final int POLLING_INTERVAL = 100; //ms
-
-        private static final int LOOK_AT_MSG_ID = 1;
-
-        private final AbstractMainActivity activity;
-
-        private final TextView latView;
-
-        private final TextView lonView;
-
-        private WorldWindow wwd;
-
-        /**
-         * The Handler object that's attached to the current (UI) thread.
-         */
-        private final Handler handler = new Handler(new Handler.Callback() {
-            @Override
-            public boolean handleMessage(Message msg) {
-                if (msg.obj instanceof LookAt) {
-                    updateStatusBar((LookAt) msg.obj);
-                    return true;
-                }
-                return false;
-            }
-        });
-
-        /**
-         * Constructs the StatusTask for the activity.
-         *
-         * @param activity The activity associated with this StatusTask.
-         */
-        public StatusTask(AbstractMainActivity activity) {
-            this.activity = activity;
-            this.latView = (TextView) activity.findViewById(R.id.latvalue);
-            this.lonView = (TextView) activity.findViewById(R.id.lonvalue);
-        }
-
-        /**
-         * Updates the status views with the contents of the specified LookAt.
-         *
-         * @param lookAt The "look at" data used in the status components.
-         */
-        public void updateStatusBar(LookAt lookAt) {
-            this.latView.setText(String.format("%.3f%n", lookAt.latitude));
-            this.lonView.setText(String.format("%.3f%n", lookAt.longitude));
-        }
-
-        @Override
-        public void run() {
-            // TODO: refactor to avoid queue event
-//            this.wwd = this.activity.getWorldWindow();
-//            if (this.wwd != null) {
-//                // Query the globe for debug info on the WorldWindow's GLThread
-//                this.wwd.queueEvent(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        // Get a copy of the current "look at" position...
-//                        LookAt lookAt = wwd.getNavigator().getAsLookAt(wwd.getGlobe(), new LookAt());
-//                        // ... and post the results on the UI Thread.
-//                        handler.obtainMessage(LOOK_AT_MSG_ID, lookAt).sendToTarget();
-//                    }
-//                });
-//            }
-//            // Rerun this task after the prescribed interval
-//            this.handler.postDelayed(this, POLLING_INTERVAL);
-        }
-    }
 }
 
