@@ -15,7 +15,7 @@ public class NavigatorEvent {
     protected Navigator navigator;
 
     @WorldWind.NavigatorEventType
-    protected int type;
+    protected int type = WorldWind.NAVIGATOR_MOVED;
 
     public static NavigatorEvent obtain() {
         NavigatorEvent instance = pool.acquire();
@@ -50,6 +50,8 @@ public class NavigatorEvent {
      * Recycle the event, making it available to be re-used.
      */
     public void recycle() {
+        this.navigator = null;
+        this.type = WorldWind.NAVIGATOR_MOVED;
         pool.release(this);
     }
 }
