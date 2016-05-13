@@ -21,7 +21,7 @@ use to represent information on the globe or in space.
 - [World Wind Examples 0.2.0](http://worldwindserver.net/android/0.2.0/worldwind-examples.apk) - Example App for 0.2.0; runs on Android 4.4 and newer
 - [World Wind Library 0.2.0](http://worldwindserver.net/android/0.2.0/worldwind.aar) - Android Archive (AAR) for 0.2.0
 - [API Docs 0.2.0](http://worldwindserver.net/android/0.2.0/doc) - Developer documentation for 0.2.0
-- [JIRA 0.2.0](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA/fixforversion/10911) - Detailed release notes for 0.2.0
+- [JIRA 0.2.0](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA/fixforversion/10912) - Detailed release notes for 0.2.0
 
 #### Release Notes
 
