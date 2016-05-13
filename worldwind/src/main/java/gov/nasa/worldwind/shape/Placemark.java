@@ -228,9 +228,10 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      *
      * @return A new Placemark with a PlacemarkAttributes bundle containing TextAttributes.
      */
-    public static Placemark createWithImageAndLabel(Position position, ImageSource imageSource, String label) {
-        return new Placemark(position, PlacemarkAttributes.createWithImage(imageSource), label);
-    }
+    // TODO: implement createWithImageAndLabel factory method
+//    public static Placemark createWithImageAndLabel(Position position, ImageSource imageSource, String label) {
+//        return new Placemark(position, PlacemarkAttributes.createWithImage(imageSource), label);
+//    }
 
     /**
      * Gets this placemark's geographic position.
