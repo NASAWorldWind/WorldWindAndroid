@@ -18,6 +18,14 @@ use to represent information on the globe or in space.
 
 # Release 0.2.0, May 13, 2016
 
+World Wind Android v0.2.0 adds support for screen placemarks and navigation events. The World Wind Android Examples
+app demonstrates NASA World Wind display of MIL-STD-2525C tactical icons by leveraging point placemarks and the US Army
+Mission Command's [MIL-STD-2525 symbol rendering library](https://github.com/missioncommand/mil-sym-android).
+
+This release establishes World Wind support for threaded rendering. Applications are now able to access World Wind
+components from the Activity thread without any synchronization, while the actual OpenGL commands are executed in the
+Android GLSurfaceView component's rendering thread.
+
 - [World Wind Examples 0.2.0](http://worldwindserver.net/android/0.2.0/worldwind-examples.apk) - Example App for 0.2.0; runs on Android 4.4 and newer
 - [World Wind Library 0.2.0](http://worldwindserver.net/android/0.2.0/worldwind.aar) - Android Archive (AAR) for 0.2.0
 - [API Docs 0.2.0](http://worldwindserver.net/android/0.2.0/doc) - Developer documentation for 0.2.0
