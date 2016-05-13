@@ -49,8 +49,8 @@ public class PlacemarkAttributes {
         this.imageOffset = Offset.center();
         this.imageScale = 1;
         this.minimumImageScale = 0;
-        this.labelAttributes = null;
-        this.leaderAttributes = null;
+        this.labelAttributes = new TextAttributes();
+        this.leaderAttributes = new ShapeAttributes();
         this.drawLeader = false;
         this.depthTest = true;
     }
@@ -119,32 +119,12 @@ public class PlacemarkAttributes {
         return new PlacemarkAttributes();
     }
 
-    public static PlacemarkAttributes defaultsAndLabel() {
-        return new PlacemarkAttributes().setLabelAttributes(new TextAttributes());
-    }
-
-    public static PlacemarkAttributes defaultsAndLeader() {
-        return new PlacemarkAttributes().setLeaderAttributes(new ShapeAttributes()).setDrawLeader(true);
-    }
-
-    public static PlacemarkAttributes defaultsAndLabelAndLeader() {
-        return new PlacemarkAttributes().setLabelAttributes(new TextAttributes()).setLeaderAttributes(new ShapeAttributes()).setDrawLeader(true);
-    }
-
     public static PlacemarkAttributes withImage(ImageSource imageSource) {
         return new PlacemarkAttributes().setImageSource(imageSource);
     }
 
-    public static PlacemarkAttributes withImageAndLabel(ImageSource imageSource) {
-        return new PlacemarkAttributes().setImageSource(imageSource).setLabelAttributes(new TextAttributes());
-    }
-
     public static PlacemarkAttributes withImageAndLeader(ImageSource imageSource) {
-        return new PlacemarkAttributes().setImageSource(imageSource).setLeaderAttributes(new ShapeAttributes()).setDrawLeader(true);
-    }
-
-    public static PlacemarkAttributes withImageAndLabelAndLeader(ImageSource imageSource) {
-        return new PlacemarkAttributes().setImageSource(imageSource).setLabelAttributes(new TextAttributes()).setLeaderAttributes(new ShapeAttributes()).setDrawLeader(true);
+        return new PlacemarkAttributes().setImageSource(imageSource).setDrawLeader(true);
     }
 
 
