@@ -51,16 +51,16 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
 
         // Create some placemarks at a known locations
         Placemark origin = new Placemark(Position.fromDegrees(0, 0, 1e5),
-            PlacemarkAttributes.withImageAndLeader(ImageSource.fromResource(R.drawable.airport)),
-                "Origin");
+            PlacemarkAttributes.createWithImageAndLeader(ImageSource.fromResource(R.drawable.airport)),
+            "Origin");
         Placemark northPole = new Placemark(Position.fromDegrees(90, 0, 1e5),
-            PlacemarkAttributes.withImageAndLeader(ImageSource.fromResource(R.drawable.airport_terminal)),
+            PlacemarkAttributes.createWithImageAndLeader(ImageSource.fromResource(R.drawable.airport_terminal)),
             "North Pole");
         Placemark southPole = new Placemark(Position.fromDegrees(-90, 0, 0),
-            PlacemarkAttributes.withImageAndLeader(ImageSource.fromResource(R.drawable.airplane)),
+            PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.airplane)),
             "South Pole");
         Placemark antiMeridian = new Placemark(Position.fromDegrees(0, 180, 0),
-            PlacemarkAttributes.withImageAndLeader(ImageSource.fromResource(R.drawable.ic_menu_home)),
+            PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.ic_menu_home)),
             "Anti-meridian");
 
         placemarksLayer.addRenderable(origin);
@@ -74,7 +74,7 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
         Random random = new Random(123);
 
         // Create pushpins anchored at the "pinpoints" with eye distance scaling
-        PlacemarkAttributes attributes = PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.air_fixwing));
+        PlacemarkAttributes attributes = PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.air_fixwing));
 
         for (int i = 0; i < NUM_PLACEMARKS; i++) {
             // Create an even distribution of latitude and longitudes across the globe.
