@@ -156,7 +156,7 @@ public class MilStd2525 {
             WorldWind.OFFSET_FRACTION, ((double) centerPoint.x) / imageBounds.width(), // x offset
             WorldWind.OFFSET_FRACTION, 0.0); // y offset
 
-        return PlacemarkAttributes.withImage(ImageSource.fromBitmap(imageInfo.getImage())).setImageOffset(imageOffset);
+        return PlacemarkAttributes.createWithImage(ImageSource.fromBitmap(imageInfo.getImage())).setImageOffset(imageOffset);
     }
 
     /**
