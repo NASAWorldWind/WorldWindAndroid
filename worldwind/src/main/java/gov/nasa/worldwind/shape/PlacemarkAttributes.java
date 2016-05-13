@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwind.shape;
 
-import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.ImageSource;
@@ -15,11 +14,6 @@ import gov.nasa.worldwind.util.Logger;
  * Holds attributes applied to {@link Placemark} shapes.
  */
 public class PlacemarkAttributes {
-
-    /**
-     * An offset for anchoring a 64x64 classic pushpin image's "point" on the geographic position.
-     */
-    public static final Offset OFFSET_PUSHPIN = new Offset(WorldWind.OFFSET_FRACTION, 19d / 64d, WorldWind.OFFSET_FRACTION, 4d / 64d);
 
     protected ImageSource imageSource;
 
