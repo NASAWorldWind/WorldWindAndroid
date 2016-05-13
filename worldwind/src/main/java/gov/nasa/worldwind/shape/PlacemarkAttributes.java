@@ -115,15 +115,11 @@ public class PlacemarkAttributes {
         return this;
     }
 
-    public static PlacemarkAttributes defaults() {
-        return new PlacemarkAttributes();
-    }
-
-    public static PlacemarkAttributes withImage(ImageSource imageSource) {
+    public static PlacemarkAttributes createWithImage(ImageSource imageSource) {
         return new PlacemarkAttributes().setImageSource(imageSource);
     }
 
-    public static PlacemarkAttributes withImageAndLeader(ImageSource imageSource) {
+    public static PlacemarkAttributes createWithImageAndLeader(ImageSource imageSource) {
         return new PlacemarkAttributes().setImageSource(imageSource).setDrawLeader(true);
     }
 
