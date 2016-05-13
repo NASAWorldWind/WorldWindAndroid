@@ -25,7 +25,7 @@ import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.LookAt;
 
-public class NavigatorEventActivity extends BasicGlobeActivity implements Choreographer.FrameCallback {
+public class NavigatorEventActivity extends BasicGlobeActivity {
 
     // UI elements
     protected TextView latView;
@@ -51,27 +51,6 @@ public class NavigatorEventActivity extends BasicGlobeActivity implements Choreo
 
     private boolean crosshairsActive;
 
-    // Globe rotation onFrame animation settings
-    private Location currentLocation = new Location();
-
-    private Location targetLocation = new Location();
-
-    private Location lastLocation; // lazily allocated
-
-    private double radiansPerMillisecond;
-
-    private double azimuth;
-
-    private final double COAST_DURATION_MILLIS = 3000;
-
-    private double coastTimeRemainingMillis;
-
-    private long lastFrameTimeNanos;
-
-    private boolean coasting;
-
-    // Track the state of this activity to start/stope the globe animation
-    private boolean activityPaused;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +68,7 @@ public class NavigatorEventActivity extends BasicGlobeActivity implements Choreo
         this.lonView = (TextView) findViewById(R.id.lon_value);
         this.altView = (TextView) findViewById(R.id.alt_value);
         ObjectAnimator fadeOut = ObjectAnimator.ofFloat(this.crosshairs, "alpha", 0f).setDuration(1500);
-        fadeOut.setStartDelay(500);
+        fadeOut.setStartDelay((long) 500);
         this.animatorSet = new AnimatorSet();
         this.animatorSet.play(fadeOut);
 
@@ -116,11 +95,6 @@ public class NavigatorEventActivity extends BasicGlobeActivity implements Choreo
                     updateOverlayContents(lookAt, camera);
                     updateOverlayColor(eventAction, lastInputEvent);
 
-                    // Apply some inertial to the user's gesture
-                    if (receivedUserInput) {
-                        updateInertiaSettings(lookAt, elapsedTime);
-                    }
-
                     lastEventTime = currentTime;
                 }
 
@@ -135,91 +109,6 @@ public class NavigatorEventActivity extends BasicGlobeActivity implements Choreo
 
         // Register the Navigator Listener with the activity's World Window.
         this.getWorldWindow().addNavigatorListener(listener);
-    }
-
-    /**
-     * Animates a rotating globe.
-     */
-    @Override
-    public void doFrame(long frameTimeNanos) {
-        if (this.lastFrameTimeNanos != 0) {
-            // Compute the frame duration in milliseconds.
-            double frameDurationMillis = (frameTimeNanos - this.lastFrameTimeNanos) * 1.0e-6;
-
-            // Move the navigator to simulate inertia from the user's last move gesture
-            if (this.coastTimeRemainingMillis > 0) {
-                Navigator navigator = getWorldWindow().getNavigator();
-
-                // Compute the distance to move in this frame
-                double distanceRadians = this.radiansPerMillisecond * frameDurationMillis;
-                this.currentLocation.set(navigator.getLatitude(), navigator.getLongitude());
-                this.currentLocation.greatCircleLocation(this.azimuth, distanceRadians, this.targetLocation);
-
-                navigator.setLatitude(this.targetLocation.latitude);
-                navigator.setLongitude(this.targetLocation.longitude);
-
-                // Dampen the inertia
-                this.coastTimeRemainingMillis -= frameDurationMillis;
-                if (this.coastTimeRemainingMillis > 0) {
-                    this.radiansPerMillisecond *= coastTimeRemainingMillis / COAST_DURATION_MILLIS;
-                }
-
-                // Redraw the World Window to display the above changes.
-                this.getWorldWindow().requestRedraw();
-            }
-        }
-
-        if (!this.activityPaused) { // stop animating when this Activity is activityPaused
-            Choreographer.getInstance().postFrameCallback(this);
-        }
-
-        this.lastFrameTimeNanos = frameTimeNanos;
-    }
-
-    /**
-     * Pauses the globe animation.
-     */
-    @Override
-    protected void onPause() {
-        super.onPause();
-        // Stop running the globe rotation animation when this activity is activityPaused.
-        this.activityPaused = true;
-        this.lastFrameTimeNanos = 0;
-    }
-
-    /**
-     * Starts the globe animation.
-     */
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Resume the globe rotation animation
-        this.activityPaused = false;
-        this.lastFrameTimeNanos = 0;
-        Choreographer.getInstance().postFrameCallback(this);
-    }
-
-    /**
-     * Updates the settings for user gesture inertia.
-     *
-     * @param lookAt        The current lookAt
-     * @param elapsedTimeMs The time elapsed since the last user action
-     */
-    protected void updateInertiaSettings(LookAt lookAt, long elapsedTimeMs) {
-        if (this.lastLocation == null) {
-            this.lastLocation = new Location(lookAt.latitude, lookAt.longitude);
-        }
-        // Compute the direction used for the coasting inertia
-        this.currentLocation.set(lookAt.latitude, lookAt.longitude);
-        this.azimuth = this.lastLocation.greatCircleAzimuth(this.currentLocation);
-
-        // Compute the velocity used for the coasting
-        this.radiansPerMillisecond = this.lastLocation.greatCircleDistance(this.currentLocation) / elapsedTimeMs;
-
-        // Reset the coasting period on each user action
-        this.coastTimeRemainingMillis = COAST_DURATION_MILLIS;
-
-        this.lastLocation.set(this.currentLocation);
     }
 
     /**
