@@ -31,7 +31,7 @@ public class SurfaceImageActivity extends BasicGlobeActivity {
         // Configure a Surface Image to display a remote image showing Mount Etna erupting on July 13th, 2001.
         // TODO sector constructor from North, South, East, West coordinates
         sector = new Sector(37.46543388598137, 14.60128369746704, 0.45360804083528, 0.75704283995502);
-        String urlString = "http://kml-samples.googlecode.com/svn/trunk/resources/etna.jpg";
+        String urlString = "http://worldwindserver.net/android/images/etna.jpg";
         SurfaceImage surfaceImageUrl = new SurfaceImage(sector, ImageSource.fromUrl(urlString));
 
         // Add a World Window layer that displays the Surface Image, just before the Atmosphere layer.
