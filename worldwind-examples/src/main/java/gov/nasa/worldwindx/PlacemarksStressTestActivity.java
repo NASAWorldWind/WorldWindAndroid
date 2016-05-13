@@ -51,16 +51,16 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
 
         // Create some placemarks at a known locations
         Placemark origin = new Placemark(Position.fromDegrees(0, 0, 1e5),
-            PlacemarkAttributes.withImageAndLeader(ImageSource.fromResource(R.drawable.pushpin_plain_yellow)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
+            PlacemarkAttributes.createWithImageAndLeader(ImageSource.fromResource(R.drawable.pushpin_plain_yellow)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
                 "Origin");
         Placemark northPole = new Placemark(Position.fromDegrees(90, 0, 1e5),
-            PlacemarkAttributes.withImageAndLeader(ImageSource.fromResource(R.drawable.pushpin_plain_white)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
+            PlacemarkAttributes.createWithImageAndLeader(ImageSource.fromResource(R.drawable.pushpin_plain_white)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
                 "North Pole");
         Placemark southPole = new Placemark(Position.fromDegrees(-90, 0, 0),
-            PlacemarkAttributes.withImageAndLeader(ImageSource.fromResource(R.drawable.pushpin_plain_black)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
+            PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.pushpin_plain_black)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
                 "South Pole");
         Placemark antiMeridian = new Placemark(Position.fromDegrees(0, 180, 0),
-            PlacemarkAttributes.withImageAndLeader(ImageSource.fromResource(R.drawable.pushpin_plain_green)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
+            PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.pushpin_plain_green)).setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN),
                 "Anti-meridian");
 
         placemarksLayer.addRenderable(origin);
@@ -74,7 +74,7 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
         Random random = new Random(123);
 
         // Create pushpins anchored at the "pinpoints" with eye distance scaling
-        PlacemarkAttributes attributes = PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.pushpin_plain_red))
+        PlacemarkAttributes attributes = PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.pushpin_plain_red))
             .setImageOffset(PlacemarkAttributes.OFFSET_PUSHPIN);
 
         for (int i = 0; i < NUM_PLACEMARKS; i++) {
