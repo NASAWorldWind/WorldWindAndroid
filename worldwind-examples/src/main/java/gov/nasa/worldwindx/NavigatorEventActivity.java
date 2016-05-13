@@ -80,8 +80,7 @@ public class NavigatorEventActivity extends BasicGlobeActivity {
                 long currentTime = System.currentTimeMillis();
                 long elapsedTime = currentTime - lastEventTime;
                 int eventAction = event.getAction();
-                InputEvent lastInputEvent = event.getLastInputEvent();
-                boolean receivedUserInput = (eventAction == WorldWind.NAVIGATOR_MOVED && lastInputEvent != null);
+                boolean receivedUserInput = (eventAction == WorldWind.NAVIGATOR_MOVED && event.getLastInputEvent() != null);
 
                 // Update the status overlay views whenever the navigator stops moving,
                 // and also it is moving but at an (arbitrary) maximum refresh rate of 20 Hz.
@@ -93,7 +92,7 @@ public class NavigatorEventActivity extends BasicGlobeActivity {
 
                     // Update the overlays
                     updateOverlayContents(lookAt, camera);
-                    updateOverlayColor(eventAction, lastInputEvent);
+                    updateOverlayColor(eventAction);
 
                     lastEventTime = currentTime;
                 }
@@ -149,11 +148,9 @@ public class NavigatorEventActivity extends BasicGlobeActivity {
     /**
      * Brightens the colors of the overlay views when when user input occurs.
      *
-     * @param eventAction    The action associated with this navigator event
-     * @param lastInputEvent The last user input event; will be null if no user input was detected during this navigator
-     *                       event
+     * @param eventAction The action associated with this navigator event
      */
-    protected void updateOverlayColor(@WorldWind.NavigatorAction int eventAction, InputEvent lastInputEvent) {
+    protected void updateOverlayColor(@WorldWind.NavigatorAction int eventAction) {
         int color = (eventAction == WorldWind.NAVIGATOR_STOPPED) ? 0xA0FFFF00 /*semi-transparent yellow*/ : Color.YELLOW;
         latView.setTextColor(color);
         lonView.setTextColor(color);
