@@ -105,7 +105,7 @@ public class BasicFrameController implements FrameController {
                 next.draw(dc);
             } catch (Exception e) {
                 Logger.logMessage(Logger.ERROR, "BasicFrameController", "drawDrawables",
-                    "Exception while drawing \'" + next + "\'");
+                    "Exception while drawing \'" + next + "\'", e);
                 // Keep going. Draw the remaining drawables.
             }
         }

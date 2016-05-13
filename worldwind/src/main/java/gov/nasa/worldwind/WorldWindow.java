@@ -170,6 +170,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // Clear the render resource cache; it's entries are now invalid.
         this.renderResourceCache.clear();
 
+        // Clear the viewport dimensions.
+        this.viewport.setEmpty();
+
         // Clear the frame queue and recycle pending frames back into the frame pool.
         this.clearFrameQueue();
 
@@ -394,7 +397,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
         Frame frame = Frame.obtain(this.framePool);
-        this.willRenderFrame();
+        this.beforeRenderFrame();
         this.renderFrame(frame);
 
         // Enqueue the frame for processing on the OpenGL thread as soon as possible, then wake the OpenGL thread.
@@ -402,7 +405,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         super.requestRender();
 
         // Perform any necessary actions after rendering the frame.
-        this.didRenderFrame();
+        this.afterRenderFrame();
     }
 
     /**
@@ -484,9 +487,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Process and display the Drawables accumulated during the render phase.
         if (this.currentFrame != null) {
-            this.willDrawFrame();
+            this.beforeDrawFrame();
             this.drawFrame(this.currentFrame);
-            this.didDrawFrame();
+            this.afterDrawFrame();
         }
     }
 
@@ -592,12 +595,12 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         frame.projection.set(this.rc.projection);
     }
 
-    protected void willRenderFrame() {
+    protected void beforeRenderFrame() {
         // Mark the beginning of a frame render.
         this.frameMetrics.beginRendering();
     }
 
-    protected void didRenderFrame() {
+    protected void afterRenderFrame() {
         // Propagate redraw requests submitted during rendering. The render context provides a layer of indirection that
         // insulates rendering code from establishing a dependency on a specific WorldWindow.
         if (this.rc.isRedrawRequested()) {
@@ -630,12 +633,12 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.frameController.drawFrame(this.dc);
     }
 
-    protected void willDrawFrame() {
+    protected void beforeDrawFrame() {
         // Mark the beginning of a frame draw.
         this.frameMetrics.beginDrawing();
     }
 
-    protected void didDrawFrame() {
+    protected void afterDrawFrame() {
         // Release resources evicted during the previous frame.
         this.renderResourceCache.releaseEvictedResources(this.dc);
 
