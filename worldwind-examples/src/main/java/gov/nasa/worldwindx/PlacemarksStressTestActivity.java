@@ -7,6 +7,7 @@ package gov.nasa.worldwindx;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.Choreographer;
 
 import java.util.Random;
 
@@ -22,7 +23,7 @@ import gov.nasa.worldwind.shape.PlacemarkAttributes;
 import static java.lang.Math.asin;
 import static java.lang.Math.toDegrees;
 
-public class PlacemarksStressTestActivity extends BasicGlobeActivity implements Runnable {
+public class PlacemarksStressTestActivity extends BasicGlobeActivity implements Choreographer.FrameCallback {
 
     static final int DELAY_TIME = 30;
 
@@ -30,7 +31,11 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
 
     protected Handler animationHandler = new Handler();
 
-    protected boolean pauseHandler;
+    protected boolean activityPaused;
+
+    protected double cameraDegreesPerSecond = 2.0;
+
+    protected long lastFrameTimeNanos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,31 +98,42 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
 
 
     @Override
-    public void run() {
-        // Move the navigator to simulate the Earth's rotation about its axis.
-        Navigator navigator = getWorldWindow().getNavigator();
-        navigator.setLongitude(navigator.getLongitude() - 0.03);
+    public void doFrame(long frameTimeNanos) {
+        if (this.lastFrameTimeNanos != 0) {
+            // Compute the frame duration in seconds.
+            double frameDurationSeconds = (frameTimeNanos - this.lastFrameTimeNanos) * 1.0e-9;
+            double cameraDegrees = (frameDurationSeconds * this.cameraDegreesPerSecond);
 
-        // Redraw the World Window to display the above changes.
-        getWorldWindow().requestRedraw();
+            // Move the navigator to simulate the Earth's rotation about its axis.
+            Navigator navigator = getWorldWindow().getNavigator();
+            navigator.setLongitude(navigator.getLongitude() - cameraDegrees);
 
-        if (!this.pauseHandler) { // stop running when this activity is paused; the Handler is resumed in onResume
-            this.animationHandler.postDelayed(this, DELAY_TIME);
+            // Redraw the World Window to display the above changes.
+            this.getWorldWindow().requestRedraw();
         }
+
+        if (!this.activityPaused) { // stop animating when this Activity is paused
+            Choreographer.getInstance().postFrameCallback(this);
+        }
+
+        this.lastFrameTimeNanos = frameTimeNanos;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        // Stop running the Handler when this activity is paused.
-        this.pauseHandler = true;
+        // Stop running the animation when this activity is paused.
+        this.activityPaused = true;
+        this.lastFrameTimeNanos = 0;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Resume the Handler that changes earth's rotation.
-        this.pauseHandler = false;
-        this.animationHandler.postDelayed(this, DELAY_TIME);
+        // Resume the earth rotation animation
+        this.activityPaused = false;
+        this.lastFrameTimeNanos = 0;
+        Choreographer.getInstance().postFrameCallback(this);
     }
+
 }
