@@ -459,7 +459,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     public void onSurfaceChanged(GL10 unused, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
 
-        // Redraw this World Window with the new viewport.
+        // Redraw this World Window with the new viewport; may be called on any thread.
         this.requestRedraw();
     }
 
@@ -536,9 +536,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         super.surfaceChanged(holder, format, width, height);
 
-        // Redraw this World Window with the new viewport.
+        // Set the World Window's new viewport dimensions.
         this.viewport.set(0, 0, width, height);
-        this.requestRedraw();
     }
 
     @Override
