@@ -16,9 +16,9 @@ public class WmsLayerActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.aboutBoxTitle= "About the " + getResources().getText(R.string.title_wms_layer);
-        this.aboutBoxText="Demonstrates how to construct a WmsLayer with a WmsLayerConfig.\n" +
-            "This example adds a Sea Surface Temperature WMS layer to a the basic globe example.";
+        setAboutBoxTitle("About the " + getResources().getText(R.string.title_wms_layer));
+        setAboutBoxText("Demonstrates how to construct a WmsLayer with a WmsLayerConfig.\n" +
+            "This example adds a Sea Surface Temperature WMS layer to a the basic globe example.");
 
         // Configure an OGC Web Map Service (WMS) layer to display the sea surface temperature layer from
         // NASA's Near Earth Observations WMS.
@@ -28,8 +28,7 @@ public class WmsLayerActivity extends BasicGlobeActivity {
         config.layerNames = "MYD28M"; // Sea surface temperature (MODIS)
         WmsLayer layer = new WmsLayer(new Sector().setFullSphere(), 1e3, config); // 1km resolution
 
-        // Add the WMS layer to the World Window before the Atmosphere layer.
-        int index = this.getWorldWindow().getLayers().indexOfLayerNamed("Atmosphere");
-        this.getWorldWindow().getLayers().addLayer(index, layer);
+        // Add the WMS layer to the World Window.
+        this.getWorldWindow().getLayers().addLayer(layer);
     }
 }

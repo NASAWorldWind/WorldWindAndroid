@@ -80,13 +80,13 @@ public abstract class AbstractRenderable implements Renderable {
     }
 
     @Override
-    public void render(DrawContext dc) {
+    public void render(RenderContext rc) {
         if (!this.enabled) {
             return;
         }
 
-        this.doRender(dc);
+        this.doRender(rc);
     }
 
-    protected abstract void doRender(DrawContext dc);
+    protected abstract void doRender(RenderContext rc);
 }

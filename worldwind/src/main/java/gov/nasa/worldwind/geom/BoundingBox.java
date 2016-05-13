@@ -21,37 +21,41 @@ public class BoundingBox {
     /**
      * The box's center point.
      */
-    Vec3 center = new Vec3(0, 0, 0);
+    protected Vec3 center = new Vec3(0, 0, 0);
 
     /**
      * The center point of the box's bottom. (The origin of the R axis.)
      */
-    Vec3 bottomCenter = new Vec3(-0.5, 0, 0);
+    protected Vec3 bottomCenter = new Vec3(-0.5, 0, 0);
 
     /**
      * The center point of the box's top. (The end of the R axis.)
      */
-    Vec3 topCenter = new Vec3(0.5, 0, 0);
+    protected Vec3 topCenter = new Vec3(0.5, 0, 0);
 
     /**
      * The box's R axis, its longest axis.
      */
-    Vec3 r = new Vec3(1, 0, 0);
+    protected Vec3 r = new Vec3(1, 0, 0);
 
     /**
      * The box's S axis, its mid-length axis.
      */
-    Vec3 s = new Vec3(0, 1, 0);
+    protected Vec3 s = new Vec3(0, 1, 0);
 
     /**
      * The box's T axis, its shortest axis.
      */
-    Vec3 t = new Vec3(0, 0, 1);
+    protected Vec3 t = new Vec3(0, 0, 1);
 
     /**
      * The box's radius. (The half-length of its diagonal.)
      */
-    double radius = Math.sqrt(3);
+    protected double radius = Math.sqrt(3);
+
+    private Vec3 endPoint1 = new Vec3();
+
+    private Vec3 endPoint2 = new Vec3();
 
     public BoundingBox() {
     }
@@ -183,57 +187,57 @@ public class BoundingBox {
      *
      * @param frustum The frustum of interest.
      *
+     * @return true if the specified frustum intersects this bounding box, otherwise false.
+     *
      * @throws IllegalArgumentException If the specified frustum is null or undefined.
-     * @returns true if the specified frustum intersects this bounding box, otherwise false.
      */
-    public boolean intersectsFrustum(final Frustum frustum) {
+    public boolean intersectsFrustum(Frustum frustum) {
         if (frustum == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BoundingBox", "intersectsFrustum", "missingFrustum"));
         }
 
-        Vec3 tmp1 = new Vec3(this.bottomCenter);
-        Vec3 tmp2 = new Vec3(this.topCenter);
+        this.endPoint1.set(this.bottomCenter);
+        this.endPoint2.set(this.topCenter);
 
-        if (this.intersectionPoint(frustum.near, tmp1, tmp2) < 0) {
+        if (this.intersectsAt(frustum.near) < 0) {
             return false;
         }
-        if (this.intersectionPoint(frustum.far, tmp1, tmp2) < 0) {
+
+        if (this.intersectsAt(frustum.far) < 0) {
             return false;
         }
-        if (this.intersectionPoint(frustum.left, tmp1, tmp2) < 0) {
+
+        if (this.intersectsAt(frustum.left) < 0) {
             return false;
         }
-        if (this.intersectionPoint(frustum.right, tmp1, tmp2) < 0) {
+
+        if (this.intersectsAt(frustum.right) < 0) {
             return false;
         }
-        if (this.intersectionPoint(frustum.top, tmp1, tmp2) < 0) {
+
+        if (this.intersectsAt(frustum.top) < 0) {
             return false;
         }
-        if (this.intersectionPoint(frustum.bottom, tmp1, tmp2) < 0) {
+
+        if (this.intersectsAt(frustum.bottom) < 0) {
             return false;
         }
 
         return true;
     }
 
-    // Internal. Intentionally not documented.
-    private double intersectionPoint(final Plane plane, Vec3 endPoint1, Vec3 endPoint2) {
+    private double intersectsAt(Plane plane) {
         Vec3 n = plane.normal;
         double effectiveRadius = 0.5 * (Math.abs(this.s.dot(n)) + Math.abs(this.t.dot(n)));
 
-        return intersectsAt(plane, effectiveRadius, endPoint1, endPoint2);
-    }
-
-    // Internal. Intentionally not documented.
-    private static double intersectsAt(final Plane plane, final double effRadius, Vec3 endPoint1, Vec3 endPoint2) {
         // Test the distance from the first end-point.
-        double dq1 = plane.dot(endPoint1);
-        boolean bq1 = dq1 <= -effRadius;
+        double dq1 = plane.dot(this.endPoint1);
+        boolean bq1 = dq1 <= -effectiveRadius;
 
         // Test the distance from the second end-point.
-        double dq2 = plane.dot(endPoint2);
-        boolean bq2 = dq2 <= -effRadius;
+        double dq2 = plane.dot(this.endPoint2);
+        boolean bq2 = dq2 <= -effectiveRadius;
 
         if (bq1 && bq2) { // endpoints more distant from plane than effective radius; box is on neg. side of plane
             return -1;
@@ -244,26 +248,24 @@ public class BoundingBox {
         }
 
         // Compute and return the endpoints of the box on the positive side of the plane
-        Vec3 tmpPoint = new Vec3(endPoint1);
-        tmpPoint.subtract(endPoint2);
-        double t = (effRadius + dq1) / plane.normal.dot(tmpPoint);
-
-        tmpPoint.set(endPoint2);
-        tmpPoint.subtract(endPoint1);
-        tmpPoint.multiply(t);
-        tmpPoint.add(endPoint1);
+        double dot = n.x * (this.endPoint1.x - this.endPoint2.x)
+            + n.y * (this.endPoint1.y - this.endPoint2.y)
+            + n.z * (this.endPoint1.z - this.endPoint2.z);
+        double t = (effectiveRadius + dq1) / dot;
 
         // Truncate the line to only that in the positive halfspace, e.g., inside the frustum.
+        double x = (this.endPoint2.x - this.endPoint1.x) * t + this.endPoint1.x;
+        double y = (this.endPoint2.y - this.endPoint1.y) * t + this.endPoint1.y;
+        double z = (this.endPoint2.z - this.endPoint1.z) * t + this.endPoint1.z;
         if (bq1) {
-            endPoint1.set(tmpPoint);
+            this.endPoint1.set(x, y, z);
         } else {
-            endPoint2.set(tmpPoint);
+            this.endPoint2.set(x, y, z);
         }
 
         return t;
     }
 
-    // Internal. Intentionally not documented.
     private static void adjustExtremes(Vec3 r, double[] rExtremes, Vec3 s, double[] sExtremes, Vec3 t, double[] tExtremes, Vec3 p) {
         double pdr = p.dot(r);
         if (rExtremes[0] > pdr) {
@@ -290,7 +292,6 @@ public class BoundingBox {
         }
     }
 
-    // Internal. Intentionally not documented.
     private static void swapAxes(Vec3 a, double[] aExtremes, Vec3 b, double[] bExtremes) {
         a.swap(b);
 

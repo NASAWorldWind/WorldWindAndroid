@@ -12,12 +12,15 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import gov.nasa.worldwind.draw.BasicDrawableTerrain;
 import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.LruMemoryCache;
+import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.Tile;
 import gov.nasa.worldwind.util.TileFactory;
 
@@ -33,6 +36,12 @@ public class BasicTessellator implements Tessellator, TileFactory {
     protected BasicTerrain currentTerrain = new BasicTerrain();
 
     protected LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(300); // capacity for 300 tiles
+
+    protected FloatBuffer tileVertexTexCoords;
+
+    protected ShortBuffer tileLineElements;
+
+    protected ShortBuffer tileTriStripElements;
 
     public BasicTessellator() {
     }
@@ -60,11 +69,8 @@ public class BasicTessellator implements Tessellator, TileFactory {
     }
 
     @Override
-    public Terrain tessellate(DrawContext dc) {
-        this.assembleTiles(dc);
-        this.assembleSharedBuffers();
-
-        return this.currentTerrain;
+    public void tessellate(RenderContext rc) {
+        this.assembleTiles(rc);
     }
 
     @Override
@@ -72,16 +78,18 @@ public class BasicTessellator implements Tessellator, TileFactory {
         return new TerrainTile(sector, level, row, column);
     }
 
-    protected void assembleTiles(DrawContext dc) {
+    protected void assembleTiles(RenderContext rc) {
         this.currentTerrain.clearTiles();
 
         if (this.topLevelTiles.isEmpty()) {
             this.createTopLevelTiles();
         }
 
-        for (Tile tile : this.topLevelTiles) {
-            this.addTileOrDescendants(dc, (TerrainTile) tile);
+        for (int idx = 0, len = this.topLevelTiles.size(); idx < len; idx++) {
+            this.addTileOrDescendants(rc, (TerrainTile) this.topLevelTiles.get(idx));
         }
+
+        rc.terrain = this.currentTerrain;
     }
 
     protected void createTopLevelTiles() {
@@ -91,58 +99,100 @@ public class BasicTessellator implements Tessellator, TileFactory {
         }
     }
 
-    protected void addTileOrDescendants(DrawContext dc, TerrainTile tile) {
-        if (!tile.intersectsFrustum(dc, dc.getFrustum())) {
-            return; // ignore the tile and its descendants if it's not visible
+    protected void addTileOrDescendants(RenderContext rc, TerrainTile tile) {
+        if (!tile.intersectsSector(this.levelSet.sector) || !tile.intersectsFrustum(rc, rc.frustum)) {
+            return; // ignore the tile and its descendants if it's not needed or not visible
         }
 
-        if (tile.level.isLastLevel() || !tile.mustSubdivide(dc, this.detailControl)) {
-            this.addTile(dc, tile);
+        if (tile.level.isLastLevel() || !tile.mustSubdivide(rc, this.detailControl)) {
+            this.addTile(rc, tile);
             return; // use the tile if it does not need to be subdivided
         }
 
         for (Tile child : tile.subdivideToCache(this, this.tileCache, 4)) { // each tile has a cached size of 1
-            this.addTileOrDescendants(dc, (TerrainTile) child); // recursively process the tile's children
+            this.addTileOrDescendants(rc, (TerrainTile) child); // recursively process the tile's children
         }
     }
 
-    protected void addTile(DrawContext dc, TerrainTile tile) {
-        if (tile.mustAssembleTileVertices(dc)) {
-            tile.assembleTileVertices(dc); // build the tile's geometry when necessary
+    protected void addTile(RenderContext rc, TerrainTile tile) {
+        int numLat = this.levelSet.tileHeight;
+        int numLon = this.levelSet.tileWidth;
+
+        // Assemble the tile's vertex points when necessary.
+        if (this.mustAssembleVertexPoints(rc, tile)) {
+            this.assembleVertexPoints(rc, tile);
         }
 
+        // Assemble the shared vertex tex coord buffer.
+        if (this.tileVertexTexCoords == null) {
+            this.tileVertexTexCoords = ByteBuffer.allocateDirect(numLat * numLon * 8).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            this.assembleVertexTexCoords(numLat, numLon, this.tileVertexTexCoords, 2).rewind();
+        }
+
+        // Assemble the shared line element buffer.
+        // TODO put line and tri-strip elements in a single buffer, use a range to identify the parts
+        if (this.tileLineElements == null) {
+            this.tileLineElements = this.assembleLineElements(numLat, numLon);
+        }
+
+        // Assemble the shared triangle strip element buffer.
+        if (this.tileTriStripElements == null) {
+            this.tileTriStripElements = this.assembleTriStripElements(numLat, numLon);
+        }
+
+        // Add the terrain tile to the currently active terrain.
         this.currentTerrain.addTile(tile);
+
+        // Prepare a drawable for the terrain tile for processing on the OpenGL thread.
+        // TODO set up the drawable with the terrain tile's vertex attributes and dimensions (for elements)
+        // TODO thread safety can be ensured by performing a copy here; could multiple copies be reduced by
+        // TODO storing them in a BufferObject?
+        Pool<BasicDrawableTerrain> pool = rc.getDrawablePool(BasicDrawableTerrain.class);
+        BasicDrawableTerrain drawable = BasicDrawableTerrain.obtain(pool);
+        drawable.sector.set(tile.sector);
+        drawable.vertexOrigin.set(tile.vertexOrigin);
+        drawable.vertexPoints = tile.vertexPoints;
+        drawable.vertexTexCoords = this.tileVertexTexCoords;
+        drawable.triStripElements = this.tileTriStripElements;
+        drawable.lineElements = this.tileLineElements;
+        rc.offerDrawableTerrain(drawable);
     }
 
     protected void invalidateTiles() {
         this.topLevelTiles.clear();
         this.currentTerrain.clearTiles();
         this.tileCache.clear();
+        this.tileVertexTexCoords = null;
+        this.tileLineElements = null;
+        this.tileTriStripElements = null;
     }
 
-    protected void assembleSharedBuffers() {
-        int numLat = this.levelSet.tileHeight;
-        int numLon = this.levelSet.tileWidth;
-
-        if (this.currentTerrain.getTileTexCoords() == null) {
-            FloatBuffer buffer = ByteBuffer.allocateDirect(numLat * numLon * 8).order(ByteOrder.nativeOrder()).asFloatBuffer();
-            this.assembleTexCoords(numLat, numLon, buffer, 2).rewind();
-            this.currentTerrain.setTileTexCoords(buffer);
-        }
-
-        // TODO put terrain tri-strip and line indices in a single buffer, use a Range (add it if needed) to identify the parts
-        if (this.currentTerrain.getTileTriStripIndices() == null) {
-            ShortBuffer buffer = this.assembleTriStripIndices(numLat, numLon);
-            this.currentTerrain.setTileTriStripIndices(buffer);
-        }
-
-        if (this.currentTerrain.getTileLineIndices() == null) {
-            ShortBuffer buffer = this.assembleLineIndices(numLat, numLon);
-            this.currentTerrain.setTileLineIndices(buffer);
-        }
+    public boolean mustAssembleVertexPoints(RenderContext rc, TerrainTile tile) {
+        return tile.getVertexPoints() == null;
     }
 
-    protected FloatBuffer assembleTexCoords(int numLat, int numLon, FloatBuffer result, int stride) {
+    protected void assembleVertexPoints(RenderContext rc, TerrainTile tile) {
+        int numLat = tile.level.tileWidth;
+        int numLon = tile.level.tileHeight;
+
+        Vec3 origin = tile.getVertexOrigin();
+        if (origin == null) {
+            origin = new Vec3();
+        }
+
+        FloatBuffer buffer = tile.getVertexPoints();
+        if (buffer == null) {
+            buffer = ByteBuffer.allocateDirect(numLat * numLon * 12).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        }
+
+        Globe globe = rc.globe;
+        globe.geographicToCartesian(tile.sector.centroidLatitude(), tile.sector.centroidLongitude(), 0, origin);
+        globe.geographicToCartesianGrid(tile.sector, numLat, numLon, null, origin, buffer, 3).rewind();
+        tile.setVertexOrigin(origin);
+        tile.setVertexPoints(buffer);
+    }
+
+    protected FloatBuffer assembleVertexTexCoords(int numLat, int numLon, FloatBuffer result, int stride) {
 
         float ds = 1f / (numLon > 1 ? numLon - 1 : 1);
         float dt = 1f / (numLat > 1 ? numLat - 1 : 1);
@@ -173,7 +223,37 @@ public class BasicTessellator implements Tessellator, TileFactory {
         return result;
     }
 
-    protected ShortBuffer assembleTriStripIndices(int numLat, int numLon) {
+    protected ShortBuffer assembleLineElements(int numLat, int numLon) {
+
+        // Allocate a buffer to hold the indices.
+        int count = (numLat * (numLon - 1) + numLon * (numLat - 1)) * 2;
+        ShortBuffer result = ByteBuffer.allocateDirect(count * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
+        short[] index = new short[2];
+
+        // Add a line between each row to define the horizontal cell outlines.
+        for (int latIndex = 0; latIndex < numLat; latIndex++) {
+            for (int lonIndex = 0; lonIndex < numLon - 1; lonIndex++) {
+                int vertex = lonIndex + latIndex * numLon;
+                index[0] = (short) vertex;
+                index[1] = (short) (vertex + 1);
+                result.put(index);
+            }
+        }
+
+        // Add a line between each column to define the vertical cell outlines.
+        for (int lonIndex = 0; lonIndex < numLon; lonIndex++) {
+            for (int latIndex = 0; latIndex < numLat - 1; latIndex++) {
+                int vertex = lonIndex + latIndex * numLon;
+                index[0] = (short) vertex;
+                index[1] = (short) (vertex + numLon);
+                result.put(index);
+            }
+        }
+
+        return (ShortBuffer) result.rewind();
+    }
+
+    protected ShortBuffer assembleTriStripElements(int numLat, int numLon) {
 
         // Allocate a buffer to hold the indices.
         int count = ((numLat - 1) * numLon + (numLat - 2)) * 2;
@@ -198,36 +278,6 @@ public class BasicTessellator implements Tessellator, TileFactory {
             if (latIndex < numLat - 2) {
                 index[0] = (short) vertex;
                 index[1] = (short) ((latIndex + 2) * numLon);
-                result.put(index);
-            }
-        }
-
-        return (ShortBuffer) result.rewind();
-    }
-
-    protected ShortBuffer assembleLineIndices(int numLat, int numLon) {
-
-        // Allocate a buffer to hold the indices.
-        int count = (numLat * (numLon - 1) + numLon * (numLat - 1)) * 2;
-        ShortBuffer result = ByteBuffer.allocateDirect(count * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
-        short[] index = new short[2];
-
-        // Add a line between each row to define the horizontal cell outlines.
-        for (int latIndex = 0; latIndex < numLat; latIndex++) {
-            for (int lonIndex = 0; lonIndex < numLon - 1; lonIndex++) {
-                int vertex = lonIndex + latIndex * numLon;
-                index[0] = (short) vertex;
-                index[1] = (short) (vertex + 1);
-                result.put(index);
-            }
-        }
-
-        // Add a line between each column to define the vertical cell outlines.
-        for (int lonIndex = 0; lonIndex < numLon; lonIndex++) {
-            for (int latIndex = 0; latIndex < numLat - 1; latIndex++) {
-                int vertex = lonIndex + latIndex * numLon;
-                index[0] = (short) vertex;
-                index[1] = (short) (vertex + numLon);
                 result.put(index);
             }
         }

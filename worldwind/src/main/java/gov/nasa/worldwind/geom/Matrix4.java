@@ -532,7 +532,7 @@ public class Matrix4 {
      * coordinates without modification. A point's XY coordinates are interpreted as literal screen coordinates and must
      * be in the viewport to be visible. A point's Z coordinate is interpreted as a depth value that ranges from 0 to 1.
      * Additionally, the screen projection matrix preserves the depth value returned by
-     * <code>DrawContext.project</code>.
+     * <code>RenderContext.project</code>.
      *
      * @param viewportWidth  the viewport width in screen coordinates
      * @param viewportHeight the viewport height in screen coordinates
@@ -741,11 +741,33 @@ public class Matrix4 {
      */
     public Matrix4 multiplyByScale(double xScale, double yScale, double zScale) {
 
-        this.multiplyByMatrix(
-            xScale, 0, 0, 0,
-            0, yScale, 0, 0,
-            0, 0, zScale, 0,
-            0, 0, 0, 1);
+        // This is equivalent to the following operation, but is potentially much faster:
+        //
+        // this.multiplyByMatrix(
+        //     xScale, 0, 0, 0,
+        //     0, yScale, 0, 0,
+        //     0, 0, zScale, 0,
+        //     0, 0, 0, 1);
+        //
+        // This inline version eliminates unnecessary multiplication by 1 and 0 in the scale matrix's components,
+        // reducing the total number of primitive operations from 144 to 12.
+
+        double[] m = this.m;
+
+        m[0] *= xScale;
+        m[4] *= xScale;
+        m[8] *= xScale;
+        m[12] *= xScale;
+
+        m[1] *= yScale;
+        m[5] *= yScale;
+        m[9] *= yScale;
+        m[13] *= yScale;
+
+        m[2] *= zScale;
+        m[6] *= zScale;
+        m[10] *= zScale;
+        m[14] *= zScale;
 
         return this;
     }
@@ -1151,7 +1173,7 @@ public class Matrix4 {
      * reasonable to apply a depth offset to an screen projection, the effect is most appropriate when applied to the
      * projection used to draw the scene. For example, when an object's coordinates are projected by a perspective
      * projection into screen coordinates then drawn using a screen projection, it is best to apply the offset to the
-     * original perspective projection. The method <code>DrawContext.project</code> performs the correct behavior for
+     * original perspective projection. The method <code>RenderContext.project</code> performs the correct behavior for
      * the projection type used to draw the scene.
      *
      * @param depthOffset the amount of offset to apply

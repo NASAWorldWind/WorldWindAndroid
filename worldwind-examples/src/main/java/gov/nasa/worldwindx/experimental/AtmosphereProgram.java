@@ -8,24 +8,30 @@ package gov.nasa.worldwindx.experimental;
 import android.opengl.GLES20;
 import android.support.annotation.IntDef;
 
-import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 
+import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec3;
-import gov.nasa.worldwind.globe.Globe;
-import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.render.GpuProgram;
-import gov.nasa.worldwind.util.Logger;
-import gov.nasa.worldwind.util.WWUtil;
-import gov.nasa.worldwindx.R;
+import gov.nasa.worldwind.render.ShaderProgram;
 
 // TODO Correctly compute the atmosphere color for eye positions beneath the atmosphere
 // TODO Test the effect of working in local coordinates (reference point) on the GLSL atmosphere programs
-public class AtmosphereProgram extends GpuProgram {
+public class AtmosphereProgram extends ShaderProgram {
+
+    /**
+     * Frag color indicates the atmospheric scattering color components written to the fragment color. Accepted values
+     * are {@link #FRAGMODE_SKY}, {@link #FRAGMODE_GROUND_PRIMARY}, {@link #FRAGMODE_GROUND_SECONDARY} and {@link
+     * #FRAGMODE_GROUND_PRIMARY_TEX_BLEND}.
+     */
+    @IntDef({FRAGMODE_SKY, FRAGMODE_GROUND_PRIMARY, FRAGMODE_GROUND_SECONDARY, FRAGMODE_GROUND_PRIMARY_TEX_BLEND})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FragMode {
+
+    }
 
     public static final int FRAGMODE_SKY = 1;
 
@@ -35,7 +41,7 @@ public class AtmosphereProgram extends GpuProgram {
 
     public static final int FRAGMODE_GROUND_PRIMARY_TEX_BLEND = 4;
 
-    protected double altitude;
+    protected double altitude = 160000;
 
     protected int fragModeId;
 
@@ -85,17 +91,10 @@ public class AtmosphereProgram extends GpuProgram {
 
     protected float[] array = new float[16];
 
-    public AtmosphereProgram(DrawContext dc, String vertexShaderSource, String fragmentShaderSource) throws IOException {
-        super(vertexShaderSource, fragmentShaderSource, new String[]{"vertexPoint", "vertexTexCoord"});
-        this.init();
+    public AtmosphereProgram() {
     }
 
-    protected void init() {
-        int[] prevProgram = new int[1];
-        GLES20.glGetIntegerv(GLES20.GL_CURRENT_PROGRAM, prevProgram, 0);
-        GLES20.glUseProgram(this.programId);
-
-        this.altitude = 160000;
+    protected void initProgram(DrawContext dc) {
         Vec3 invWavelength = new Vec3(
             1 / Math.pow(0.650, 4),  // 650 nm for red
             1 / Math.pow(0.570, 4),  // 570 nm for green
@@ -121,68 +120,66 @@ public class AtmosphereProgram extends GpuProgram {
         this.texSamplerId = GLES20.glGetUniformLocation(this.programId, "texSampler");
         GLES20.glUniform1i(this.texSamplerId, 0); // GL_TEXTURE0
 
-        this.vertexOriginId = GLES20.glGetUniformLocation(this.getObjectId(), "vertexOrigin");
+        this.vertexOriginId = GLES20.glGetUniformLocation(this.programId, "vertexOrigin");
         Arrays.fill(this.array, 0);
         GLES20.glUniform3fv(this.vertexOriginId, 1, this.array, 0);
 
-        this.eyePointId = GLES20.glGetUniformLocation(this.getObjectId(), "eyePoint");
+        this.eyePointId = GLES20.glGetUniformLocation(this.programId, "eyePoint");
         Arrays.fill(this.array, 0);
         GLES20.glUniform3fv(this.eyePointId, 1, this.array, 0);
 
-        this.eyeMagnitudeId = GLES20.glGetUniformLocation(this.getObjectId(), "eyeMagnitude");
+        this.eyeMagnitudeId = GLES20.glGetUniformLocation(this.programId, "eyeMagnitude");
         GLES20.glUniform1f(this.eyeMagnitudeId, 0);
 
-        this.eyeMagnitude2Id = GLES20.glGetUniformLocation(this.getObjectId(), "eyeMagnitude2");
+        this.eyeMagnitude2Id = GLES20.glGetUniformLocation(this.programId, "eyeMagnitude2");
         GLES20.glUniform1f(this.eyeMagnitude2Id, 0);
 
-        this.lightDirectionId = GLES20.glGetUniformLocation(this.getObjectId(), "lightDirection");
+        this.lightDirectionId = GLES20.glGetUniformLocation(this.programId, "lightDirection");
         Arrays.fill(this.array, 0);
         GLES20.glUniform3fv(this.lightDirectionId, 1, this.array, 0);
 
-        this.invWavelengthId = GLES20.glGetUniformLocation(this.getObjectId(), "invWavelength");
+        this.invWavelengthId = GLES20.glGetUniformLocation(this.programId, "invWavelength");
         invWavelength.toArray(this.array, 0);
         GLES20.glUniform3fv(this.invWavelengthId, 1, this.array, 0);
 
-        this.atmosphereRadiusId = GLES20.glGetUniformLocation(this.getObjectId(), "atmosphereRadius");
+        this.atmosphereRadiusId = GLES20.glGetUniformLocation(this.programId, "atmosphereRadius");
         GLES20.glUniform1f(this.atmosphereRadiusId, 0);
 
-        this.atmosphereRadius2Id = GLES20.glGetUniformLocation(this.getObjectId(), "atmosphereRadius2");
+        this.atmosphereRadius2Id = GLES20.glGetUniformLocation(this.programId, "atmosphereRadius2");
         GLES20.glUniform1f(this.atmosphereRadius2Id, 0);
 
-        this.globeRadiusId = GLES20.glGetUniformLocation(this.getObjectId(), "globeRadius");
+        this.globeRadiusId = GLES20.glGetUniformLocation(this.programId, "globeRadius");
         GLES20.glUniform1f(this.globeRadiusId, 0);
 
-        this.KrESunId = GLES20.glGetUniformLocation(this.getObjectId(), "KrESun");
+        this.KrESunId = GLES20.glGetUniformLocation(this.programId, "KrESun");
         GLES20.glUniform1f(this.KrESunId, (float) (Kr * ESun));
 
-        this.KmESunId = GLES20.glGetUniformLocation(this.getObjectId(), "KmESun");
+        this.KmESunId = GLES20.glGetUniformLocation(this.programId, "KmESun");
         GLES20.glUniform1f(this.KmESunId, (float) (Km * ESun));
 
-        this.Kr4PIId = GLES20.glGetUniformLocation(this.getObjectId(), "Kr4PI");
+        this.Kr4PIId = GLES20.glGetUniformLocation(this.programId, "Kr4PI");
         GLES20.glUniform1f(this.Kr4PIId, (float) (Kr * 4 * Math.PI));
 
-        this.Km4PIId = GLES20.glGetUniformLocation(this.getObjectId(), "Km4PI");
+        this.Km4PIId = GLES20.glGetUniformLocation(this.programId, "Km4PI");
         GLES20.glUniform1f(this.Km4PIId, (float) (Km * 4 * Math.PI));
 
-        this.scaleId = GLES20.glGetUniformLocation(this.getObjectId(), "scale");
+        this.scaleId = GLES20.glGetUniformLocation(this.programId, "scale");
         GLES20.glUniform1f(this.scaleId, (float) (1 / this.altitude));
 
-        this.scaleDepthId = GLES20.glGetUniformLocation(this.getObjectId(), "scaleDepth");
+        this.scaleDepthId = GLES20.glGetUniformLocation(this.programId, "scaleDepth");
         GLES20.glUniform1f(this.scaleDepthId, (float) (rayleighScaleDepth));
 
-        this.scaleOverScaleDepthId = GLES20.glGetUniformLocation(this.getObjectId(), "scaleOverScaleDepth");
+        this.scaleOverScaleDepthId = GLES20.glGetUniformLocation(this.programId, "scaleOverScaleDepth");
         GLES20.glUniform1f(this.scaleOverScaleDepthId, (float) ((1 / this.altitude) / rayleighScaleDepth));
 
-        this.gId = GLES20.glGetUniformLocation(this.getObjectId(), "g");
+        this.gId = GLES20.glGetUniformLocation(this.programId, "g");
         GLES20.glUniform1f(this.gId, (float) (g));
 
-        this.g2Id = GLES20.glGetUniformLocation(this.getObjectId(), "g2");
+        this.g2Id = GLES20.glGetUniformLocation(this.programId, "g2");
         GLES20.glUniform1f(this.g2Id, (float) (g * g));
 
-        this.exposureId = GLES20.glGetUniformLocation(this.getObjectId(), "exposure");
+        this.exposureId = GLES20.glGetUniformLocation(this.programId, "exposure");
         GLES20.glUniform1f(this.exposureId, (float) exposure);
-
-        GLES20.glUseProgram(prevProgram[0]);
     }
 
     public double getAltitude() {
@@ -194,78 +191,41 @@ public class AtmosphereProgram extends GpuProgram {
     }
 
     public void loadModelviewProjection(Matrix4 matrix) {
-        if (matrix == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "AtmosphereProgram", "loadModelviewProjection", "missingMatrix"));
-        }
-
         matrix.transposeToArray(this.array, 0);
         GLES20.glUniformMatrix4fv(this.mvpMatrixId, 1, false, this.array, 0);
     }
 
     public void loadTexCoordMatrix(Matrix3 matrix) {
-        if (matrix == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "AtmosphereProgram", "loadTexCoordMatrix", "missingMatrix"));
-        }
-
         matrix.transposeToArray(this.array, 0);
         GLES20.glUniformMatrix3fv(this.texCoordMatrixId, 1, false, this.array, 0);
     }
 
     public void loadVertexOrigin(Vec3 origin) {
-        if (origin == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "AtmosphereProgram", "loadVertexOrigin", "missingVector"));
-        }
-
         origin.toArray(this.array, 0);
         GLES20.glUniform3fv(this.vertexOriginId, 1, this.array, 0);
     }
 
-    public void loadLightDirection(Vec3 direction) {
-        if (direction == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "AtmosphereProgram", "loadLightDirection", "missingVector"));
-        }
+    public void loadVertexOrigin(double x, double y, double z) {
+        GLES20.glUniform3f(this.vertexOriginId, (float) x, (float) y, (float) z);
+    }
 
+    public void loadLightDirection(Vec3 direction) {
         direction.toArray(this.array, 0);
         GLES20.glUniform3fv(this.lightDirectionId, 1, this.array, 0);
     }
 
     public void loadEyePoint(Vec3 eyePoint) {
-        if (eyePoint == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "AtmosphereProgram", "loadEyePoint", "missingVector"));
-        }
-
         eyePoint.toArray(this.array, 0);
         GLES20.glUniform3fv(this.eyePointId, 1, this.array, 0);
         GLES20.glUniform1f(this.eyeMagnitudeId, (float) eyePoint.magnitude());
         GLES20.glUniform1f(this.eyeMagnitude2Id, (float) eyePoint.magnitudeSquared());
     }
 
-    public void loadGlobe(Globe globe) {
-        if (globe == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "AtmosphereProgram", "loadGlobe", "missingGlobe"));
-        }
-
-        double gr = globe.getEquatorialRadius();
+    public void loadGlobeRadius(double equatorialRadius) {
+        double gr = equatorialRadius;
         double ar = gr + this.altitude;
         GLES20.glUniform1f(this.globeRadiusId, (float) gr);
         GLES20.glUniform1f(this.atmosphereRadiusId, (float) ar);
         GLES20.glUniform1f(this.atmosphereRadius2Id, (float) (ar * ar));
-    }
-
-    /**
-     * Frag color indicates the atmospheric scattering color components written to the fragment color. Accepted values
-     * are {@link #FRAGMODE_SKY}, {@link #FRAGMODE_GROUND_PRIMARY}, {@link #FRAGMODE_GROUND_SECONDARY} and {@link
-     * #FRAGMODE_GROUND_PRIMARY_TEX_BLEND}.
-     */
-    @IntDef({FRAGMODE_SKY, FRAGMODE_GROUND_PRIMARY, FRAGMODE_GROUND_SECONDARY, FRAGMODE_GROUND_PRIMARY_TEX_BLEND})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface FragMode {
-
     }
 }

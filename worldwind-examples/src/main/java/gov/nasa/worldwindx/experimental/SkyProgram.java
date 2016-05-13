@@ -5,16 +5,24 @@
 
 package gov.nasa.worldwindx.experimental;
 
-import java.io.IOException;
+import android.content.res.Resources;
 
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
 import gov.nasa.worldwindx.R;
 
 public class SkyProgram extends AtmosphereProgram {
 
-    public SkyProgram(DrawContext dc) throws IOException {
-        super(dc, WWUtil.readResourceAsText(dc.getResources(), R.raw.gov_nasa_worldwind_skyprogram_vert),
-            WWUtil.readResourceAsText(dc.getResources(), R.raw.gov_nasa_worldwind_atmosphereprogram_frag));
+    public static final Object KEY = SkyProgram.class;
+
+    public SkyProgram(Resources resources) {
+        try {
+            String vs = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_skyprogram_vert);
+            String fs = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_atmosphereprogram_frag);
+            this.setProgramSources(vs, fs);
+            this.setAttribBindings("vertexPoint");
+        } catch (Exception logged) {
+            Logger.logMessage(Logger.ERROR, "SkyProgram", "constructor", "errorReadingProgramSource", logged);
+        }
     }
 }

@@ -113,7 +113,7 @@ public class Position extends Location {
      * @param longitude the new longitude in degrees
      * @param altitude  the new altitude in meters
      *
-     * @return this position
+     * @return this position with its latitude, longitude and altitude set to the specified values
      */
     public Position set(double latitude, double longitude, double altitude) {
         this.latitude = latitude;

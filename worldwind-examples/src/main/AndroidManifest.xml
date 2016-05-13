@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/nasa_logo"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -21,6 +21,18 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".BasicPerformanceBenchmarkActivity"
+            android:label="@string/title_basic_performance_benchmark"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
+            android:name=".BasicStressTestActivity"
+            android:label="@string/title_basic_stress_test"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".CameraControlActivity"
@@ -43,6 +55,36 @@
         <activity
             android:name=".LookAtViewActivity"
             android:label="@string/title_look_at_view"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
+            android:name=".NavigatorEventActivity"
+            android:label="@string/title_navigator_event"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
+            android:name=".PlacemarksActivity"
+            android:label="@string/title_placemarks"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
+            android:name=".PlacemarksMilStd2525Activity"
+            android:label="@string/title_placemarks_milstd2525"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
+            android:name=".PlacemarksMilStd2525StressActivity"
+            android:label="@string/title_placemarks_milstd2525_stress_test"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
+            android:name=".PlacemarksStressTestActivity"
+            android:label="@string/title_placemarks_stress_test"
             android:launchMode="singleInstance"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>

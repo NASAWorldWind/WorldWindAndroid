@@ -5,61 +5,50 @@
 
 package gov.nasa.worldwind.layer;
 
-import android.opengl.GLES20;
-
-import gov.nasa.worldwind.geom.Matrix4;
-import gov.nasa.worldwind.geom.Vec3;
-import gov.nasa.worldwind.globe.Terrain;
-import gov.nasa.worldwind.render.BasicProgram;
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.draw.Drawable;
+import gov.nasa.worldwind.draw.DrawableTessellation;
+import gov.nasa.worldwind.render.BasicShaderProgram;
+import gov.nasa.worldwind.render.Color;
+import gov.nasa.worldwind.render.RenderContext;
+import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.Pool;
 
 public class ShowTessellationLayer extends AbstractLayer {
 
-    protected Matrix4 mvpMatrix = new Matrix4();
+    protected Color color = new Color();
 
     public ShowTessellationLayer() {
         super("Terrain Tessellation");
     }
 
-    @Override
-    protected void doRender(DrawContext dc) {
+    public Color getColor() {
+        return this.color;
+    }
 
-        BasicProgram program = (BasicProgram) dc.getGpuObjectCache().retrieveProgram(dc, BasicProgram.class);
-        if (program == null) {
-            return; // program is not in the GPU object cache yet
+    public void setColor(Color color) {
+        if (color == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ShowTessellationLayer", "setColor", "missingColor"));
+        }
+
+        this.color.set(color);
+    }
+
+    @Override
+    protected void doRender(RenderContext rc) {
+
+        if (rc.terrain.getSector().isEmpty()) {
+            return; // no terrain to render
         }
 
         // Use World Wind's basic GLSL program.
-        dc.useProgram(program);
-
-        // Configure the program to draw opaque white fragments.
-        program.enableTexture(false);
-        program.loadColor(1, 1, 1, 1);
-
-        // Suppress writes to the OpenGL depth buffer.
-        GLES20.glDepthMask(false);
-
-        // Get the draw context's tessellated terrain and modelview projection matrix.
-        Terrain terrain = dc.getTerrain();
-
-        for (int idx = 0, len = terrain.getTileCount(); idx < len; idx++) {
-
-            // Use the draw context's modelview projection matrix, transformed to the terrain tile's local coordinates.
-            Vec3 terrainOrigin = terrain.getTileVertexOrigin(idx);
-            this.mvpMatrix.set(dc.getProjection());
-            this.mvpMatrix.offsetProjectionDepth(-1.0e-3); // offset this layer's depth values toward the eye
-            this.mvpMatrix.multiplyByMatrix(dc.getModelview());
-            this.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
-            program.loadModelviewProjection(this.mvpMatrix);
-
-            // Use the terrain tile's vertex point attribute.
-            terrain.useVertexPointAttrib(dc, idx, 0);
-
-            // Draw the terrain tile vertices as lines.
-            terrain.drawTileLines(dc, idx);
+        BasicShaderProgram program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
+        if (program == null) {
+            program = (BasicShaderProgram) rc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(rc.resources));
         }
 
-        // Restore default World Wind OpenGL state.
-        GLES20.glDepthMask(true);
+        Pool<DrawableTessellation> pool = rc.getDrawablePool(DrawableTessellation.class);
+        Drawable drawable = DrawableTessellation.obtain(pool).set(program, this.color);
+        rc.offerSurfaceDrawable(drawable, 1.0 /*z-order after surface textures*/);
     }
 }

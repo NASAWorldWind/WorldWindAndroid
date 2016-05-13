@@ -18,14 +18,18 @@ public class Logger {
 
     public static final int INFO = Log.INFO;
 
+    public static final int DEBUG = Log.DEBUG;
+
     protected static String TAG = "gov.nasa.worldwind";
 
     protected static Map<String, String> messageTable;
 
     static {
         messageTable = new HashMap<>();
+        messageTable.put("errorReadingProgramSource", "Error reading program sources");
         messageTable.put("invalidBitmap", "The bitmap is null or recycled");
         messageTable.put("invalidCache", "The cache is null");
+        messageTable.put("invalidCapacity", "The capacity is less than 1");
         messageTable.put("invalidClass", "The class is null or cannot be found");
         messageTable.put("invalidClipDistance", "The clip distance is invalid");
         messageTable.put("invalidFieldOfView", "The field of view is invalid");
@@ -35,17 +39,19 @@ public class Logger {
         messageTable.put("invalidRadius", "The radius is invalid");
         messageTable.put("invalidResolution", "The resolution is invalid");
         messageTable.put("invalidResource", "The resource is invalid");
-        messageTable.put("invalidSize", "The size is invalid");
         messageTable.put("invalidStride", "The stride is invalid");
         messageTable.put("invalidTileDelta", "The tile delta is invalid");
         messageTable.put("invalidWidth", "The width is invalid");
         messageTable.put("invalidWidthOrHeight", "The width or the height is invalid");
         messageTable.put("missingArray", "The array is null or insufficient length");
         messageTable.put("missingBuffer", "The buffer is null or insufficient length");
+        messageTable.put("missingCallback", "The callback is null");
         messageTable.put("missingCamera", "The camera is null");
+        messageTable.put("missingColor", "The color is null");
         messageTable.put("missingConfig", "The configuration is null");
         messageTable.put("missingCoordinateSystem", "The coordinate system is null");
         messageTable.put("missingFormat", "The format is null");
+        messageTable.put("missingFrameMetrics", "The frame metrics argument is null");
         messageTable.put("missingGlobe", "The globe is null");
         messageTable.put("missingImageFormat", "The image format is null");
         messageTable.put("missingKey", "The key is null");
@@ -60,6 +66,7 @@ public class Logger {
         messageTable.put("missingLookAt", "The look-at is null");
         messageTable.put("missingMatrix", "The matrix is null");
         messageTable.put("missingName", "The name is null");
+        messageTable.put("missingPathName", "The path name is null");
         messageTable.put("missingPoint", "The point is null");
         messageTable.put("missingPlane", "The plane is null");
         messageTable.put("missingPosition", "The position is null");
@@ -77,11 +84,14 @@ public class Logger {
         messageTable.put("missingTileUrlFactory", "The tile url factory is null");
         messageTable.put("missingTessellator", "The tessellator is null");
         messageTable.put("missingUrl", "The url is null");
-        messageTable.put("missingValue", "The value is null");
         messageTable.put("missingVector", "The vector is null");
         messageTable.put("missingVersion", "The version is null");
         messageTable.put("missingWorldWindow", "The world window is null");
         messageTable.put("singularMatrix", "The matrix cannot be inverted");
+    }
+
+    public static boolean isLoggable(int priority) {
+        return Log.isLoggable(TAG, priority);
     }
 
     public static void log(int priority, String message) {

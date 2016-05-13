@@ -8,7 +8,6 @@ package gov.nasa.worldwind;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.globe.Globe;
-import gov.nasa.worldwind.render.DrawContext;
 
 public interface Navigator {
 
@@ -47,6 +46,4 @@ public interface Navigator {
     LookAt getAsLookAt(Globe globe, LookAt result);
 
     Navigator setAsLookAt(Globe globe, LookAt lookAt);
-
-    void applyState(DrawContext dc);
 }

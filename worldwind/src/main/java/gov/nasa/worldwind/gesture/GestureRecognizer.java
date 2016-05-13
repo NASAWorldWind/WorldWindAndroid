@@ -39,7 +39,10 @@ public class GestureRecognizer {
 
     protected float lowPassWeight = 0.4f;
 
+    @WorldWind.GestureState
     private int state = WorldWind.POSSIBLE;
+
+    private long stateSequence;
 
     public GestureRecognizer() {
     }
@@ -61,6 +64,7 @@ public class GestureRecognizer {
         this.enabled = enabled;
     }
 
+    @WorldWind.GestureState
     public int getState() {
         return state;
     }
@@ -123,6 +127,7 @@ public class GestureRecognizer {
 
     protected void reset() {
         this.state = WorldWind.POSSIBLE;
+        this.stateSequence = 0;
         this.x = 0;
         this.y = 0;
         this.startX = 0;
@@ -140,24 +145,29 @@ public class GestureRecognizer {
                 break;
             case WorldWind.RECOGNIZED:
                 this.state = newState;
+                this.stateSequence++;
                 this.prepareToRecognize(event);
                 this.notifyListeners(event);
                 break;
             case WorldWind.BEGAN:
                 this.state = newState;
+                this.stateSequence++;
                 this.prepareToRecognize(event);
                 this.notifyListeners(event);
                 break;
             case WorldWind.CHANGED:
                 this.state = newState;
+                this.stateSequence++;
                 this.notifyListeners(event);
                 break;
             case WorldWind.CANCELLED:
                 this.state = newState;
+                this.stateSequence++;
                 this.notifyListeners(event);
                 break;
             case WorldWind.ENDED:
                 this.state = newState;
+                this.stateSequence++;
                 this.notifyListeners(event);
                 break;
         }
@@ -166,10 +176,12 @@ public class GestureRecognizer {
     protected void prepareToRecognize(MotionEvent event) {
     }
 
-    public void onTouchEvent(MotionEvent event) {
+    public boolean onTouchEvent(MotionEvent event) {
         if (!this.enabled) {
-            return;
+            return false;
         }
+
+        long currentStateSequence = this.stateSequence;
 
         try {
 
@@ -194,14 +206,18 @@ public class GestureRecognizer {
                     this.handleActionUp(event);
                     break;
                 default:
-                    Logger.logMessage(
-                        Logger.INFO, "GestureRecognizer", "onTouchEvent", "Unrecognized event action \'" + action + "\'");
+                    if (Logger.isLoggable(Logger.DEBUG)) {
+                        Logger.logMessage(Logger.DEBUG, "GestureRecognizer", "onTouchEvent",
+                            "Unrecognized event action \'" + action + "\'");
+                    }
                     break;
             }
 
         } catch (Exception e) {
             Logger.logMessage(Logger.ERROR, "GestureRecognizer", "onTouchEvent", "Exception handling event", e);
         }
+
+        return currentStateSequence != this.stateSequence; // stateSequence changes if the event was recognized
     }
 
     protected void handleActionDown(MotionEvent event) {

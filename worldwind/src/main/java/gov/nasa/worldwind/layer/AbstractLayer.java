@@ -8,7 +8,7 @@ package gov.nasa.worldwind.layer;
 import java.util.HashMap;
 import java.util.Map;
 
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.RenderContext;
 
 public abstract class AbstractLayer implements Layer {
 
@@ -118,27 +118,27 @@ public abstract class AbstractLayer implements Layer {
     }
 
     @Override
-    public void render(DrawContext dc) {
+    public void render(RenderContext rc) {
         if (!this.enabled) {
             return;
         }
 
-        if (dc.isPickingMode() && !this.pickEnabled) {
+        if (rc.pickingMode && !this.pickEnabled) {
             return;
         }
 
-        if (!this.isWithinActiveAltitudes(dc)) {
+        if (!this.isWithinActiveAltitudes(rc)) {
             return;
         }
 
-        this.doRender(dc);
+        this.doRender(rc);
     }
 
     @Override
-    public boolean isWithinActiveAltitudes(DrawContext dc) {
-        double eyeAltitude = dc.getEyePosition().altitude;
+    public boolean isWithinActiveAltitudes(RenderContext rc) {
+        double eyeAltitude = rc.eyePosition.altitude;
         return eyeAltitude >= this.minActiveAltitude && eyeAltitude <= this.maxActiveAltitude;
     }
 
-    protected abstract void doRender(DrawContext dc);
+    protected abstract void doRender(RenderContext rc);
 }

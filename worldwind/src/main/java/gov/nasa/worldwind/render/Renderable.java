@@ -27,5 +27,5 @@ public interface Renderable {
 
     boolean hasUserProperty(Object key);
 
-    void render(DrawContext dc);
+    void render(RenderContext rc);
 }

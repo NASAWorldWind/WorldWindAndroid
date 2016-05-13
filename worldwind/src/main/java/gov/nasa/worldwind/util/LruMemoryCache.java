@@ -9,11 +9,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Map;
 
 public class LruMemoryCache<K, V> {
 
-    protected final Map<K, Entry<K, V>> entries = new HashMap<>();
+    protected final HashMap<K, Entry<K, V>> entries = new HashMap<>();
 
     protected final Comparator<Entry<K, V>> lruComparator = new Comparator<Entry<K, V>>() {
         @Override
@@ -30,8 +29,8 @@ public class LruMemoryCache<K, V> {
 
     public LruMemoryCache(int capacity) {
         if (capacity < 1) {
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "LruMemoryCache", "constructor",
-                "The specified capacity is less than 1"));
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LruMemoryCache", "constructor", "invalidCapacity"));
         }
 
         this.capacity = capacity;
@@ -40,8 +39,8 @@ public class LruMemoryCache<K, V> {
 
     public LruMemoryCache(int capacity, int lowWater) {
         if (capacity < 1) {
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "LruMemoryCache", "constructor",
-                "The specified capacity is less than 1"));
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LruMemoryCache", "constructor", "invalidCapacity"));
         }
 
         if (lowWater >= capacity || lowWater < 0) {
@@ -58,11 +57,6 @@ public class LruMemoryCache<K, V> {
     }
 
     public V get(K key) {
-        if (key == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LruMemoryCache", "get", "missingKey"));
-        }
-
         Entry<K, V> entry = this.entries.get(key);
         if (entry != null) {
             entry.lastUsed = System.currentTimeMillis();
@@ -73,51 +67,18 @@ public class LruMemoryCache<K, V> {
     }
 
     public V put(K key, V value, int size) {
-        if (key == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LruMemoryCache", "put", "missingKey"));
-        }
-
-        if (value == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LruMemoryCache", "put", "missingValue"));
-        }
-
-        if (size < 1) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LruMemoryCache", "put", "invalidSize"));
-        }
-
-        if (this.usedCapacity + size > this.capacity) {
-            this.makeSpace(size);
-        }
-
-        Entry<K, V> newEntry = new Entry<>(key, value, size, System.currentTimeMillis());
-        Entry<K, V> oldEntry = this.entries.put(key, newEntry);
-        this.usedCapacity += newEntry.size;
-
-        if (oldEntry != null) {
-            this.usedCapacity -= oldEntry.size;
-
-            if (newEntry.value != oldEntry.value) {
-                this.entryRemoved(oldEntry.key, oldEntry.value);
-                return oldEntry.value;
-            }
-        }
-
-        return null;
+        // TODO can we reuse the same entry when only the size has changed?
+        // TODO use case is high frequency texture updates, where size may or may not change
+        Entry<K, V> newEntry = new Entry<>(key, value, size);
+        Entry<K, V> oldEntry = this.putEntry(newEntry);
+        return (oldEntry != null) ? oldEntry.value : null;
     }
 
     public V remove(K key) {
-        if (key == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LruMemoryCache", "put", "missingKey"));
-        }
-
         Entry<K, V> entry = this.entries.remove(key);
         if (entry != null) {
             this.usedCapacity -= entry.size;
-            this.entryRemoved(entry.key, entry.value);
+            this.entryRemoved(entry);
             return entry.value;
         } else {
             return null;
@@ -125,10 +86,14 @@ public class LruMemoryCache<K, V> {
     }
 
     public boolean containsKey(K key) {
-        return key != null && this.entries.containsKey(key);
+        return this.entries.containsKey(key);
     }
 
     public void clear() {
+        for (Entry<K, V> entry : this.entries.values()) {
+            this.entryRemoved(entry);
+        }
+
         this.entries.clear();
         this.usedCapacity = 0;
     }
@@ -149,14 +114,35 @@ public class LruMemoryCache<K, V> {
             if (this.usedCapacity > this.lowWater || (this.capacity - this.usedCapacity) < spaceRequired) {
                 this.entries.remove(entry.key);
                 this.usedCapacity -= entry.size;
-                this.entryRemoved(entry.key, entry.value);
+                this.entryRemoved(entry);
             } else {
                 break;
             }
         }
     }
 
-    protected void entryRemoved(K key, V value) {
+    protected Entry<K, V> putEntry(Entry<K, V> newEntry) {
+        if (this.usedCapacity + newEntry.size > this.capacity) {
+            this.makeSpace(newEntry.size);
+        }
+
+        newEntry.lastUsed = System.currentTimeMillis();
+        this.usedCapacity += newEntry.size;
+
+        Entry<K, V> oldEntry = this.entries.put(newEntry.key, newEntry);
+        if (oldEntry != null) {
+            this.usedCapacity -= oldEntry.size;
+
+            if (newEntry.value != oldEntry.value) {
+                this.entryRemoved(oldEntry);
+                return oldEntry;
+            }
+        }
+
+        return null;
+    }
+
+    protected void entryRemoved(Entry<K, V> entry) {
     }
 
     protected static class Entry<K, V> {
@@ -169,11 +155,10 @@ public class LruMemoryCache<K, V> {
 
         public long lastUsed;
 
-        public Entry(K key, V value, int size, long lastUsed) {
+        public Entry(K key, V value, int size) {
             this.key = key;
             this.value = value;
             this.size = size;
-            this.lastUsed = lastUsed;
         }
     }
 }

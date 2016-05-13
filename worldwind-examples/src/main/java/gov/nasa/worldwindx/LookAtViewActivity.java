@@ -17,9 +17,9 @@ public class LookAtViewActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.aboutBoxTitle = "About the " + getResources().getText(R.string.title_look_at_view);
-        this.aboutBoxText = "Demonstrates how to use LookAt to view a position.\n" +
-            "This example simulates a view from an aircraft above Santa Monica, CA looking at the LAX airport.";
+        setAboutBoxTitle("About the " + getResources().getText(R.string.title_look_at_view));
+        setAboutBoxText("Demonstrates how to use LookAt to view a position.\n" +
+            "This example simulates a view from an aircraft above Santa Monica, CA looking at the LAX airport.");
 
         // Create a view of LAX airport as seen from an aircraft above Santa Monica, CA.
         Position aircraft = new Position(34.0158333, -118.4513056, 2500);   // Aircraft above Santa Monica airport, altitude in meters

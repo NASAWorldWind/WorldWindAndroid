@@ -5,102 +5,105 @@
 
 package gov.nasa.worldwind;
 
-import android.graphics.Rect;
-
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.LookAt;
-import gov.nasa.worldwind.geom.Matrix4;
-import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.globe.Globe;
-import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.Logger;
 
 public class BasicNavigator implements Navigator {
 
-    protected Camera camera = new Camera();
+    protected double latitude;
+
+    protected double longitude;
+
+    protected double altitude;
+
+    protected double heading;
+
+    protected double tilt;
+
+    protected double roll;
 
     protected double fieldOfView = 45;
 
-    protected Matrix4 modelview = new Matrix4();
-
-    protected Matrix4 projection = new Matrix4();
+    protected Camera scratchCamera = new Camera();
 
     public BasicNavigator() {
     }
 
     @Override
-    public synchronized double getLatitude() {
-        return this.camera.latitude;
+    public double getLatitude() {
+        return this.latitude;
     }
 
     @Override
-    public synchronized Navigator setLatitude(double latitude) {
-        this.camera.latitude = latitude;
+    public Navigator setLatitude(double latitude) {
+        this.latitude = latitude;
         return this;
     }
 
     @Override
-    public synchronized double getLongitude() {
-        return this.camera.longitude;
+    public double getLongitude() {
+        return this.longitude;
     }
 
     @Override
-    public synchronized Navigator setLongitude(double longitude) {
-        this.camera.longitude = longitude;
+    public Navigator setLongitude(double longitude) {
+        this.longitude = longitude;
         return this;
     }
 
     @Override
-    public synchronized double getAltitude() {
-        return this.camera.altitude;
+    public double getAltitude() {
+        return this.altitude;
     }
 
     @Override
-    public synchronized Navigator setAltitude(double altitude) {
-        this.camera.altitude = altitude;
+    public Navigator setAltitude(double altitude) {
+        this.altitude = altitude;
         return this;
     }
 
     @Override
-    public synchronized double getHeading() {
-        return this.camera.heading;
+    public double getHeading() {
+        return this.heading;
     }
 
     @Override
-    public synchronized Navigator setHeading(double headingDegrees) {
-        this.camera.heading = headingDegrees;
+    public Navigator setHeading(double headingDegrees) {
+        this.heading = headingDegrees;
         return this;
     }
 
     @Override
-    public synchronized double getTilt() {
-        return this.camera.tilt;
+    public double getTilt() {
+        return this.tilt;
     }
 
     @Override
-    public synchronized Navigator setTilt(double tiltDegrees) {
-        this.camera.tilt = tiltDegrees;
+    public Navigator setTilt(double tiltDegrees) {
+        this.tilt = tiltDegrees;
         return this;
     }
 
     @Override
-    public synchronized double getRoll() {
-        return this.camera.roll;
+    public double getRoll() {
+        return this.roll;
     }
 
     @Override
-    public synchronized Navigator setRoll(double rollDegrees) {
-        this.camera.roll = rollDegrees;
+    public Navigator setRoll(double rollDegrees) {
+        this.roll = rollDegrees;
         return this;
     }
 
     @Override
-    public synchronized double getFieldOfView() {
+    public double getFieldOfView() {
         return fieldOfView;
     }
 
     @Override
-    public synchronized Navigator setFieldOfView(double fovyDegrees) {
+    public Navigator setFieldOfView(double fovyDegrees) {
         if (fovyDegrees <= 0 || fovyDegrees >= 180) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "setPosition", "invalidFieldOfView"));
@@ -111,7 +114,7 @@ public class BasicNavigator implements Navigator {
     }
 
     @Override
-    public synchronized Camera getAsCamera(Globe globe, Camera result) {
+    public Camera getAsCamera(Globe globe, Camera result) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "getAsCamera", "missingGlobe"));
@@ -122,13 +125,19 @@ public class BasicNavigator implements Navigator {
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "getAsCamera", "missingResult"));
         }
 
-        result.set(this.camera);
+        result.latitude = this.latitude;
+        result.longitude = this.longitude;
+        result.altitude = this.altitude;
+        result.altitudeMode = WorldWind.ABSOLUTE;
+        result.heading = this.heading;
+        result.tilt = this.tilt;
+        result.roll = this.roll;
 
         return result;
     }
 
     @Override
-    public synchronized Navigator setAsCamera(Globe globe, Camera camera) {
+    public Navigator setAsCamera(Globe globe, Camera camera) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "setAsCamera", "missingGlobe"));
@@ -139,13 +148,18 @@ public class BasicNavigator implements Navigator {
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "setAsCamera", "missingCamera"));
         }
 
-        this.camera.set(camera); // TODO interpret altitude modes other than absolute
+        this.latitude = camera.latitude;
+        this.longitude = camera.longitude;
+        this.altitude = camera.altitude; // TODO interpret altitude modes other than absolute
+        this.heading = camera.heading;
+        this.tilt = camera.tilt;
+        this.roll = camera.roll;
 
         return this;
     }
 
     @Override
-    public synchronized LookAt getAsLookAt(Globe globe, LookAt result) {
+    public LookAt getAsLookAt(Globe globe, LookAt result) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "getAsLookAt", "missingGlobe"));
@@ -156,13 +170,14 @@ public class BasicNavigator implements Navigator {
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "getAsLookAt", "missingResult"));
         }
 
-        globe.cameraToLookAt(this.camera, result);
+        this.getAsCamera(globe, this.scratchCamera); // get this navigator's properties as a Camera
+        globe.cameraToLookAt(this.scratchCamera, result); // convert the Camera to a LookAt
 
         return result;
     }
 
     @Override
-    public synchronized Navigator setAsLookAt(Globe globe, LookAt lookAt) {
+    public Navigator setAsLookAt(Globe globe, LookAt lookAt) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "setAsLookAt", "missingGlobe"));
@@ -173,41 +188,9 @@ public class BasicNavigator implements Navigator {
                 Logger.logMessage(Logger.ERROR, "BasicNavigator", "setAsLookAt", "missingLookAt"));
         }
 
-        globe.lookAtToCamera(lookAt, this.camera); // TODO convert altitudeMode to absolute if necessary
+        globe.lookAtToCamera(lookAt, this.scratchCamera); // convert the LookAt to a Camera
+        this.setAsCamera(globe, this.scratchCamera); // set this navigator's properties as a Camera
 
         return this;
-    }
-
-    public synchronized void applyState(DrawContext dc) {
-
-        // TODO move this responsibility into FrameController
-        dc.setEyePosition(new Position(this.camera.latitude, this.camera.longitude, this.camera.altitude));
-        dc.setHeading(this.camera.heading);
-        dc.setTilt(this.camera.tilt);
-        dc.setRoll(this.camera.roll);
-        dc.setFieldOfView(this.fieldOfView);
-
-        // TODO move this responsibility into FrameController
-        this.computeModelview(dc.getGlobe(), this.modelview);
-        this.computeProjection(dc, this.projection);
-        dc.setModelviewProjection(this.modelview, this.projection);
-    }
-
-    protected Matrix4 computeModelview(Globe globe, Matrix4 result) {
-        globe.cameraToCartesianTransform(this.camera, result).invertOrthonormal();
-
-        return result;
-    }
-
-    protected Matrix4 computeProjection(DrawContext dc, Matrix4 result) {
-        // TODO adjust the clip plane distances based on the navigator's orientation - shorter distances when the
-        // TODO horizon is not in view
-        // TODO parameterize the object altitude for horizon distance
-        double near = this.camera.altitude * 0.75;
-        double far = dc.getGlobe().horizonDistance(this.camera.altitude, 160000);
-        Rect viewport = dc.getViewport();
-        result.setToPerspectiveProjection(viewport.width(), viewport.height(), this.fieldOfView, near, far);
-
-        return result;
     }
 }

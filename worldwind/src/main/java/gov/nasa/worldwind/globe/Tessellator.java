@@ -5,9 +5,9 @@
 
 package gov.nasa.worldwind.globe;
 
-import gov.nasa.worldwind.render.DrawContext;
+import gov.nasa.worldwind.render.RenderContext;
 
 public interface Tessellator {
 
-    Terrain tessellate(DrawContext dc);
+    void tessellate(RenderContext rc);
 }

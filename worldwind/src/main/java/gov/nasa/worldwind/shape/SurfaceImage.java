@@ -5,27 +5,30 @@
 
 package gov.nasa.worldwind.shape;
 
-import android.support.annotation.DrawableRes;
-
-import gov.nasa.worldwind.geom.Matrix3;
+import gov.nasa.worldwind.draw.Drawable;
+import gov.nasa.worldwind.draw.DrawableSurfaceTexture;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.AbstractRenderable;
-import gov.nasa.worldwind.render.DrawContext;
-import gov.nasa.worldwind.render.GpuTexture;
-import gov.nasa.worldwind.render.SurfaceTile;
+import gov.nasa.worldwind.render.ImageSource;
+import gov.nasa.worldwind.render.RenderContext;
+import gov.nasa.worldwind.render.SurfaceTextureProgram;
+import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.Pool;
 
-public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
+public class SurfaceImage extends AbstractRenderable {
 
     protected final Sector sector = new Sector();
 
-    protected Object imageSource;
+    protected ImageSource imageSource;
 
     public SurfaceImage() {
         super("Surface Image");
     }
 
-    public SurfaceImage(Sector sector, Object imageSource) {
+    public SurfaceImage(Sector sector, ImageSource imageSource) {
+        super("Surface Image");
+
         if (sector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "SurfaceImage", "constructor", "missingSector"));
@@ -35,38 +38,8 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
         this.imageSource = imageSource;
     }
 
-    public SurfaceImage(Sector sector, @DrawableRes int resourceId) {
-        super("Surface Image");
-
-        if (sector == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "SurfaceImage", "constructor", "missingSector"));
-        }
-
-        this.sector.set(sector);
-        this.imageSource = resourceId;
-    }
-
-    public SurfaceImage(Sector sector, String urlString) {
-        super("Surface Image");
-
-        if (sector == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "SurfaceImage", "constructor", "missingSector"));
-        }
-
-        if (urlString == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "SurfaceImage", "constructor", "missingUrl"));
-        }
-
-        this.sector.set(sector);
-        this.imageSource = urlString;
-    }
-
-    @Override
     public Sector getSector() {
-        return sector;
+        return this.sector;
     }
 
     public void setSector(Sector sector) {
@@ -78,53 +51,46 @@ public class SurfaceImage extends AbstractRenderable implements SurfaceTile {
         this.sector.set(sector);
     }
 
-    public Object getImageSource() {
+    public ImageSource getImageSource() {
         return imageSource;
     }
 
-    public void setImageSource(Object imageSource) {
+    public void setImageSource(ImageSource imageSource) {
         this.imageSource = imageSource;
     }
 
-    public void setImageResource(@DrawableRes int resourceId) {
-        this.imageSource = resourceId;
-    }
-
-    public void setImageUrl(String urlString) {
-        if (urlString == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "SurfaceImage", "setImageUrl", "missingUrl"));
-        }
-
-        this.imageSource = urlString;
-    }
-
     @Override
-    protected void doRender(DrawContext dc) {
-        if (this.sector.isEmpty() || this.imageSource == null) {
+    protected void doRender(RenderContext rc) {
+        if (this.sector.isEmpty()) {
             return; // nothing to render
         }
 
-        if (!dc.getTerrain().getSector().intersects(this.sector)) {
-            return; // nothing to render on
+        if (!rc.terrain.getSector().intersects(this.sector)) {
+            return; // no terrain surface to render on
         }
 
-        dc.getSurfaceTileRenderer().renderTile(dc, this);
-    }
-
-    @Override
-    public boolean bindTexture(DrawContext dc, int texUnit) {
-        GpuTexture texture = (GpuTexture) dc.getGpuObjectCache().get(this.imageSource);
+        Texture texture = rc.getTexture(this.imageSource); // try to get the texture from the cache
         if (texture == null) {
-            texture = new GpuTexture(dc, this.imageSource); // adds itself to the GPU object cache
+            texture = rc.retrieveTexture(this.imageSource); // puts retrieved textures in the cache
         }
 
-        return texture.bindTexture(dc, texUnit);
+        if (texture == null) {
+            return; // no texture to draw
+        }
+
+        SurfaceTextureProgram program = this.getShaderProgram(rc);
+        Pool<DrawableSurfaceTexture> pool = rc.getDrawablePool(DrawableSurfaceTexture.class);
+        Drawable drawable = DrawableSurfaceTexture.obtain(pool).set(program, this.sector, texture, texture.getTexCoordTransform());
+        rc.offerSurfaceDrawable(drawable, 0 /*z-order*/);
     }
 
-    @Override
-    public boolean applyTexCoordTransform(DrawContext dc, Matrix3 result) {
-        GpuTexture texture = (GpuTexture) dc.getGpuObjectCache().get(this.imageSource);
-        return (texture != null) && texture.applyTexCoordTransform(result);
+    protected SurfaceTextureProgram getShaderProgram(RenderContext rc) {
+        SurfaceTextureProgram program = (SurfaceTextureProgram) rc.getShaderProgram(SurfaceTextureProgram.KEY);
+
+        if (program == null) {
+            program = (SurfaceTextureProgram) rc.putShaderProgram(SurfaceTextureProgram.KEY, new SurfaceTextureProgram(rc.resources));
+        }
+
+        return program;
     }
 }

@@ -16,6 +16,7 @@ public class LookAt {
 
     public double altitude;
 
+    @WorldWind.AltitudeMode
     public int altitudeMode = WorldWind.ABSOLUTE;
 
     public double range;

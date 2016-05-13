@@ -14,15 +14,12 @@ public class ShowTessellationActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.aboutBoxTitle= "About the " + getResources().getText(R.string.title_show_tessellation);
-        this.aboutBoxText="Demonstrates the globe's Tessellator.\n" +
-            "This example adds a layer to the basic globe that shows the tessellation.";
+        setAboutBoxTitle("About the " + getResources().getText(R.string.title_show_tessellation));
+        setAboutBoxText("Demonstrates the globe's Tessellator.\n" +
+            "This example adds a layer to the basic globe that shows the tessellation.");
 
         // Create a layer that displays the globe's tessellation geometry.
         ShowTessellationLayer layer = new ShowTessellationLayer();
-
-        // Add the WMS layer to the World Window before the Atmosphere layer.
-        int index = this.getWorldWindow().getLayers().indexOfLayerNamed("Atmosphere");
-        this.getWorldWindow().getLayers().addLayer(index, layer);
+        this.getWorldWindow().getLayers().addLayer(layer);
     }
 }
