@@ -28,7 +28,7 @@ import gov.nasa.worldwind.util.WWMath;
  * Represents a Placemark shape. A placemark displays an image, a label and a leader line connecting the placemark's
  * geographic position to the ground. All three of these items are optional. By default, the leader line is not
  * pickable. See {@link Placemark#setEnableLeaderPicking(boolean)}.
- * <p>
+ * <p/>
  * Placemarks may be drawn with either an image or as single-color square with a specified size. When the placemark
  * attributes indicate a valid image, the placemark's image is drawn as a rectangle in the image's original dimensions,
  * scaled by the image scale attribute. Otherwise, the placemark is drawn as a square with width and height equal to the
@@ -91,7 +91,8 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     /**
      * The label text to draw near the placemark.
      */
-    protected String label;
+    // TODO: implement label property
+//    protected String label;
 
     /**
      * Determines whether the normal or highlighted attibutes should be used.
@@ -150,7 +151,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      * Constructs a Placemark that draws its representation at the supplied position using default {@link
      * PlacemarkAttributes} bundle. The displayName and label properties are empty.
      *
-     * @param position   The placemark's geographic position
+     * @param position The placemark's geographic position
      */
     public Placemark(Position position) {
         this(position, new PlacemarkAttributes());
@@ -169,24 +170,18 @@ public class Placemark extends AbstractRenderable implements Highlightable {
 
     /**
      * Constructs a Placemark with a label that draws its representation at the supplied position using the given {@link
-     * PlacemarkAttributes} bundle. The displayName and label properties are set to the supplied name string. The text
-     * is drawn according to the (optional) TextAttributes within the PlacemarkAttributes.  The {@link
-     * Placemark#setDisplayName(String)} and {@link Placemark#setLabel(String)} can be used to provide different text
-     * between these two properties.
+     * PlacemarkAttributes} bundle. The displayName is set to the supplied name string.
      *
      * @param position   The placemark's geographic position
      * @param attributes The attributes to associate with this placemark. May be null, but if null the placemark will
      *                   not be drawn.
-     * @param name       The text for the {@link Placemark#displayName} and {@link Placemark#label} properties
-     *                   associated with this placemark. May be null. If specified, the label will be drawn with the
-     *                   active {@link PlacemarkAttributes#labelAttributes}. If these attributes are null, the label
-     *                   will not be drawn.
+     * @param name       The text for the {@link Placemark#displayName}.
      */
     public Placemark(Position position, PlacemarkAttributes attributes, String name) {
         this.setPosition(position);
         this.setAltitudeMode(WorldWind.ABSOLUTE);
         this.setDisplayName(name == null || name.isEmpty() ? "Placemark" : name);
-        this.setLabel(name);
+        // this.setLabel(name); // TODO: call setLabel(name)
         this.attributes = attributes;
         this.eyeDistanceScaling = false;
         this.eyeDistanceScalingThreshold = DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD;
@@ -300,7 +295,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     /**
      * Sets the placemark's attributes to the supplied attributes bundle. If null and this placemark is not highlighted,
      * this placemark is not drawn.
-     * <p>
+     * <p/>
      * It is permissible to share attribute bundles between placemarks.
      *
      * @param attributes A reference to an attributes bundle used by this placemark when not highlighted.
@@ -325,7 +320,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     /**
      * Sets the attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is
      * true, this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
-     * <p>
+     * <p/>
      * It is permissible to share attribute bundles between placemarks.
      *
      * @param highlightAttributes A reference to the attributes bundle used by this placemark when highlighted
@@ -342,9 +337,10 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      *
      * @return The text used to label a placemark on the globe when labels are enabled
      */
-    public String getLabel() {
-        return label;
-    }
+    // TODO: implement getLabel()
+//    public String getLabel() {
+//        return label;
+//    }
 
     /**
      * Sets the text used for this placemark's label on the globe.
@@ -353,10 +349,11 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      *
      * @return This placemark
      */
-    public Placemark setLabel(String label) {
-        this.label = label;
-        return this;
-    }
+    // TODO: implement setLabel()
+//    public Placemark setLabel(String label) {
+//        this.label = label;
+//        return this;
+//    }
 
     /**
      * Indicates whether this placemark's size is reduced at higher eye distances. If true, this placemark's size is
@@ -460,7 +457,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     /**
      * Gets the type of rotation to apply if the {@link Placemark#getImageRotation()} is not zero. This value indicates
      * whether to apply this placemark's image rotation relative to the screen or the globe.
-     * <p>
+     * <p/>
      * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is rotated in the plane of the screen and its
      * orientation relative to the globe changes as the view changes. If {@link WorldWind#RELATIVE_TO_GLOBE}, this
      * placemark's image is rotated in a plane tangent to the globe at this placemark's position and retains its
@@ -476,7 +473,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     /**
      * Sets the type of rotation to apply if the {@link Placemark#getImageRotation()} is not zero. This value indicates
      * whether to apply this placemark's image rotation relative to the screen or the globe.
-     * <p>
+     * <p/>
      * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is rotated in the plane of the screen and its
      * orientation relative to the globe changes as the view changes. If {@link WorldWind#RELATIVE_TO_GLOBE}, this
      * placemark's image is rotated in a plane tangent to the globe at this placemark's position and retains its
@@ -520,7 +517,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     /**
      * Gets the type tilt to apply when {@link Placemark#getImageTilt()} is non-zero. This value indicates whether to
      * apply this placemark's image tilt relative to the screen or the globe.
-     * <p>
+     * <p/>
      * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is tilted inwards (for positive tilts) relative
      * to the plane of the screen, and its orientation relative to the globe changes as the view changes. If {@link
      * WorldWind#RELATIVE_TO_GLOBE}, this placemark's image is tilted towards the globe's surface, and retains its
@@ -536,7 +533,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     /**
      * Sets the type tilt to apply when {@link Placemark#getImageTilt()} is non-zero. This value indicates whether to
      * apply this placemark's image tilt relative to the screen or the globe.
-     * <p>
+     * <p/>
      * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is tilted inwards (for positive tilts) relative
      * to the plane of the screen, and its orientation relative to the globe changes as the view changes. If {@link
      * WorldWind#RELATIVE_TO_GLOBE}, this placemark's image is tilted towards the globe's surface, and retains its
@@ -803,9 +800,11 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      */
 
     protected boolean mustDrawLabel(RenderContext rc) {
-        return this.label != null
-            && !this.label.isEmpty()
-            && this.activeAttributes.labelAttributes != null;
+        return false;
+        // TODO: implement mustDrawLabel()
+//        return this.label != null
+//            && !this.label.isEmpty()
+//            && this.activeAttributes.labelAttributes != null;
     }
 
     /**
