@@ -280,10 +280,10 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
 
         RenderableLayer layer = new RenderableLayer("Placemarks");
         PlacemarkAttributes[] attrs = {
-            PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.air_fixwing)),
-            PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.airplane)),
-            PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.airport)),
-            PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.airport_terminal))};
+            PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.air_fixwing)),
+            PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.airplane)),
+            PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.airport)),
+            PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.airport_terminal))};
 
         BufferedReader reader = null;
         try {
