@@ -153,7 +153,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      * @param position   The placemark's geographic position
      */
     public Placemark(Position position) {
-        this(position, PlacemarkAttributes.defaults());
+        this(position, new PlacemarkAttributes());
     }
 
     /**
@@ -205,8 +205,8 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      *
      * @return A new Placemark with a PlacemarkAttributes bundle.
      */
-    public static Placemark createSimple(Position position, Color color, int pixelSize) {
-        return new Placemark(position, PlacemarkAttributes.defaults().setImageColor(color).setImageScale(pixelSize));
+    public static Placemark createWithColorAndSize(Position position, Color color, int pixelSize) {
+        return new Placemark(position, new PlacemarkAttributes().setImageColor(color).setImageScale(pixelSize));
     }
 
     /**
@@ -218,8 +218,8 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      *
      * @return A new Placemark with a PlacemarkAttributes bundle.
      */
-    public static Placemark createSimpleImage(Position position, ImageSource imageSource) {
-        return new Placemark(position, PlacemarkAttributes.withImage(imageSource));
+    public static Placemark createWithImage(Position position, ImageSource imageSource) {
+        return new Placemark(position, PlacemarkAttributes.createWithImage(imageSource));
     }
 
     /**
@@ -233,8 +233,8 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      *
      * @return A new Placemark with a PlacemarkAttributes bundle containing TextAttributes.
      */
-    public static Placemark createSimpleImageAndLabel(Position position, ImageSource imageSource, String label) {
-        return new Placemark(position, PlacemarkAttributes.withImage(imageSource), label);
+    public static Placemark createWithImageAndLabel(Position position, ImageSource imageSource, String label) {
+        return new Placemark(position, PlacemarkAttributes.createWithImage(imageSource), label);
     }
 
     /**
