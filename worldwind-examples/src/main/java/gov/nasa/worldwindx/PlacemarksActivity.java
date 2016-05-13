@@ -55,7 +55,7 @@ public class PlacemarksActivity extends BasicGlobeActivity {
         // its original size, with the bottom center of the image anchored at the geographic position.
         Placemark airport = new Placemark(
             Position.fromDegrees(34.200, -119.208, 0),
-            PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.airport_terminal)).setImageOffset(Offset.bottomCenter()).setImageScale(2),
+            PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.airport_terminal)).setImageOffset(Offset.bottomCenter()).setImageScale(2),
             "Oxnard Airport");
 
         // Create an image-based placemark from a bitmap. This placemark demonstrates creation with a
