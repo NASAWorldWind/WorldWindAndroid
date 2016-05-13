@@ -150,7 +150,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      * Constructs a Placemark that draws its representation at the supplied position using default {@link
      * PlacemarkAttributes} bundle. The displayName and label properties are empty.
      *
-     * @param position The geographic position with the placemark is drawn.
+     * @param position   The placemark's geographic position
      */
     public Placemark(Position position) {
         this(position, PlacemarkAttributes.defaults());
@@ -160,8 +160,8 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      * Constructs a Placemark that draws its representation at the supplied position using the given {@link
      * PlacemarkAttributes} bundle. The displayName and label properties are empty.
      *
-     * @param position   The geographic position with the placemark is drawn.
-     * @param attributes The attributes bundle reference that defines how the placemark is drawn.
+     * @param position   The placemark's geographic position
+     * @param attributes The attributes bundle reference that defines how the placemark is drawn
      */
     public Placemark(Position position, PlacemarkAttributes attributes) {
         this(position, attributes, null);
@@ -174,7 +174,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      * Placemark#setDisplayName(String)} and {@link Placemark#setLabel(String)} can be used to provide different text
      * between these two properties.
      *
-     * @param position   The placemark's geographic position.
+     * @param position   The placemark's geographic position
      * @param attributes The attributes to associate with this placemark. May be null, but if null the placemark will
      *                   not be drawn.
      * @param name       The text for the {@link Placemark#displayName} and {@link Placemark#label} properties
@@ -185,7 +185,8 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     public Placemark(Position position, PlacemarkAttributes attributes, String name) {
         this.setPosition(position);
         this.setAltitudeMode(WorldWind.ABSOLUTE);
-        this.setDisplayName(name);
+        this.setDisplayName(name == null || name.isEmpty() ? "Placemark" : name);
+        this.setLabel(name);
         this.attributes = attributes;
         this.eyeDistanceScaling = false;
         this.eyeDistanceScalingThreshold = DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD;
@@ -233,13 +234,13 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      * @return A new Placemark with a PlacemarkAttributes bundle containing TextAttributes.
      */
     public static Placemark createSimpleImageAndLabel(Position position, ImageSource imageSource, String label) {
-        return new Placemark(position, PlacemarkAttributes.withImageAndLabel(imageSource), label);
+        return new Placemark(position, PlacemarkAttributes.withImage(imageSource), label);
     }
 
     /**
      * Gets this placemark's geographic position.
      *
-     * @return The geographic position where this placemark is drawn.
+     * @return The geographic position where this placemark is drawn
      */
     public Position getPosition() {
         return position;
@@ -248,9 +249,9 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     /**
      * Sets this placemark's geographic position to the values in the supplied position.
      *
-     * @param position The new position where this placemark will be drawn.
+     * @param position The new position where this placemark will be drawn
      *
-     * @return This placemark.
+     * @return This placemark
      */
     public Placemark setPosition(Position position) {
         if (position == null) {
@@ -279,7 +280,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      * @param altitudeMode The new altitude mode. See {@link gov.nasa.worldwind.WorldWind.AltitudeMode} for acceptable
      *                     values
      *
-     * @return This placemark.
+     * @return This placemark
      */
     public Placemark setAltitudeMode(@WorldWind.AltitudeMode int altitudeMode) {
         this.altitudeMode = altitudeMode;
@@ -304,7 +305,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      *
      * @param attributes A reference to an attributes bundle used by this placemark when not highlighted.
      *
-     * @return This placemark.
+     * @return This placemark
      */
     public Placemark setAttributes(PlacemarkAttributes attributes) {
         this.attributes = attributes;
@@ -315,7 +316,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      * Gets the attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is
      * true, this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
      *
-     * @return A reference to this placemark's highlight attributes bundle.
+     * @return A reference to this placemark's highlight attributes bundle
      */
     public PlacemarkAttributes getHighlightAttributes() {
         return highlightAttributes;
@@ -327,9 +328,9 @@ public class Placemark extends AbstractRenderable implements Highlightable {
      * <p>
      * It is permissible to share attribute bundles between placemarks.
      *
-     * @param highlightAttributes A reference to the attributes bundle used by this placemark when highlighted.
+     * @param highlightAttributes A reference to the attributes bundle used by this placemark when highlighted
      *
-     * @return This placemark.
+     * @return This placemark
      */
     public Placemark setHighlightAttributes(PlacemarkAttributes highlightAttributes) {
         this.highlightAttributes = highlightAttributes;
@@ -337,30 +338,20 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     }
 
     /**
-     * Gets the text used to label this placemark on the globe. If null, then the {@link Placemark#displayName} property
-     * is used for the label.
+     * Gets the text used to label this placemark on the globe.
      *
-     * @return The text used to label a placemark on the globe when labels are enabled.
+     * @return The text used to label a placemark on the globe when labels are enabled
      */
     public String getLabel() {
-        if (this.label == null) {
-            return this.getDisplayName();
-        }
         return label;
     }
 
     /**
-     * Sets the text used for this placemark's label on the globe. If non-null, then this property will be used for the
-     * label in lieu of the displayName. If null, then the {@link Placemark#displayName} property is used for the label
-     * text.
-     * <p>
-     * A typical use case is to use the displayName property in lists of placemarks and use the label property for the
-     * placemark labels on the globe, allowing for short or abbreviated names to be used on a cluttered globe.
+     * Sets the text used for this placemark's label on the globe.
      *
-     * @param label The new label text. If set, this value supersedes the use of {@link Placemark#displayName} property
-     *              for the label. An empty string is permissible.
+     * @param label The new label text; may be null or empty
      *
-     * @return This placemark.
+     * @return This placemark
      */
     public Placemark setLabel(String label) {
         this.label = label;
