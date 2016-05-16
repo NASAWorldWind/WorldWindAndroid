@@ -85,6 +85,43 @@ public class Camera {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Camera camera = (Camera) o;
+
+        if (Double.compare(camera.latitude, latitude) != 0) return false;
+        if (Double.compare(camera.longitude, longitude) != 0) return false;
+        if (Double.compare(camera.altitude, altitude) != 0) return false;
+        if (altitudeMode != camera.altitudeMode) return false;
+        if (Double.compare(camera.heading, heading) != 0) return false;
+        if (Double.compare(camera.tilt, tilt) != 0) return false;
+        return Double.compare(camera.roll, roll) == 0;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        temp = Double.doubleToLongBits(latitude);
+        result = (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(longitude);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(altitude);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + altitudeMode;
+        temp = Double.doubleToLongBits(heading);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(tilt);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(roll);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "Camera{" +
             "latitude=" + latitude +
