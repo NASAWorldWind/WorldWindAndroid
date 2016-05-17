@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.util.Pools;
+import android.view.MotionEvent;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,6 +45,11 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
 
         @Override
         public void setWorldWindow(WorldWindow wwd) {
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent event) {
+            return false;
         }
     }
 

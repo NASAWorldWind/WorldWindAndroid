@@ -28,8 +28,6 @@ import javax.microedition.khronos.opengles.GL10;
 
 import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.geom.Location;
-import gov.nasa.worldwind.gesture.GestureGroup;
-import gov.nasa.worldwind.gesture.GestureRecognizer;
 import gov.nasa.worldwind.globe.GeographicProjection;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.GlobeWgs84;
@@ -69,8 +67,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     protected FrameMetrics frameMetrics = new FrameMetrics();
 
     protected WorldWindowController worldWindowController = new BasicWorldWindowController();
-
-    protected GestureGroup gestureGroup = new GestureGroup();
 
     protected RenderResourceCache renderResourceCache;
 
@@ -118,7 +114,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * Constructs a WorldWindow associated with the specified application context and attributes from an XML tag. This
      * constructor is included to provide support for creating WorldWindow from an Android XML layout file, and is not
      * intended to be used directly.
-     * <p>
+     * <p/>
      * This is called when a view is being constructed from an XML file, supplying attributes that were specified in the
      * XML file. This version uses a default style of 0, so the only attribute values applied are those in the Context's
      * Theme and the given AttributeSet.
@@ -134,12 +130,14 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * @param configChooser optional argument for choosing an EGL configuration; may be null
      */
     protected void init(EGLConfigChooser configChooser) {
-        // Initialize the world window's navigator and controller.
+        // Initialize the World Window's navigator.
         Location initLocation = Location.fromTimeZone(TimeZone.getDefault());
         double initAltitude = this.distanceToViewGlobeExtents() * 1.1; // add to the minimum distance 10%
         this.navigator.setLatitude(initLocation.latitude);
         this.navigator.setLongitude(initLocation.longitude);
         this.navigator.setAltitude(initAltitude);
+
+        // Initialize the World Window's controller.
         this.worldWindowController.setWorldWindow(this);
 
         // Initialize the World Window's global caches. Use 50% of the approximate per-application memory class.
@@ -189,7 +187,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * @return the globe displayed by this World Window
      */
     public Globe getGlobe() {
-        return globe;
+        return this.globe;
     }
 
     /**
@@ -210,7 +208,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     public LayerList getLayers() {
-        return layers;
+        return this.layers;
     }
 
     public void setLayers(LayerList layers) {
@@ -223,7 +221,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     public double getVerticalExaggeration() {
-        return verticalExaggeration;
+        return this.verticalExaggeration;
     }
 
     public void setVerticalExaggeration(double verticalExaggeration) {
@@ -236,7 +234,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     public Navigator getNavigator() {
-        return navigator;
+        return this.navigator;
     }
 
     public void setNavigator(Navigator navigator) {
@@ -275,7 +273,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     public FrameController getFrameController() {
-        return frameController;
+        return this.frameController;
     }
 
     public void setFrameController(FrameController frameController) {
@@ -301,43 +299,25 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     public WorldWindowController getWorldWindowController() {
-        return worldWindowController;
+        return this.worldWindowController;
     }
 
-    public void setWorldWindowController(WorldWindowController worldWindowController) {
-        if (worldWindowController == null) {
+    public void setWorldWindowController(WorldWindowController controller) {
+        if (controller == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "WorldWindow", "setWorldWindowController", "missingController"));
         }
 
         this.worldWindowController.setWorldWindow(null); // detach the old controller
-        this.worldWindowController = worldWindowController; // switch to the new controller
+        this.worldWindowController = controller; // switch to the new controller
         this.worldWindowController.setWorldWindow(this); // attach the new controller
-    }
-
-    public void addGestureRecognizer(GestureRecognizer recognizer) {
-        if (recognizer == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WorldWindow", "addGestureRecognizer", "missingRecognizer"));
-        }
-
-        this.gestureGroup.addRecognizer(recognizer);
-    }
-
-    public void removeGestureRecognizer(GestureRecognizer recognizer) {
-        if (recognizer == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WorldWindow", "removeGestureRecognizer", "missingRecognizer"));
-        }
-
-        this.gestureGroup.removeRecognizer(recognizer);
     }
 
     /**
      * Returns the height of a pixel at a given distance from the eye point. This method assumes the model of a screen
      * composed of rectangular pixels, where pixel coordinates denote infinitely thin space between pixels. The units of
      * the returned size are in meters per pixel.
-     * <p>
+     * <p/>
      * The result of this method is undefined if the distance is negative.
      *
      * @param distance the distance from the eye point in meters
@@ -545,18 +525,13 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        // Give the superclass the first opportunity to handle the event.
-        if (super.onTouchEvent(event)) {
-            return true; // superclass handled the event
+        if (!super.onTouchEvent(event)) { // give the superclass first opportunity to handle the event
+            if (this.worldWindowController.onTouchEvent(event)) { // let the controller try to handle the event
+                this.navigatorEvents.onTouchEvent(event); // the controller handled the event; notify navigator events
+            }
         }
 
-        // Let the WorldWindow's gestures handle the event.
-        if (this.gestureGroup.onTouchEvent(event)) {
-            this.navigatorEvents.onTouchEvent(event);
-        }
-
-        // Always return true to indicate that the event was handled. Otherwise Android suppresses subsequent events.
-        return true;
+        return true; // always return that the event was handled, otherwise Android suppresses subsequent events
     }
 
     @Override
