@@ -37,7 +37,7 @@ public class RenderContext {
 
     public Terrain terrain;
 
-    public LayerList layers = new LayerList();
+    public LayerList layers;
 
     public Layer currentLayer;
 
@@ -90,7 +90,7 @@ public class RenderContext {
         this.pickingMode = false;
         this.globe = null;
         this.terrain = null;
-        this.layers.clearLayers();
+        this.layers = null;
         this.currentLayer = null;
         this.verticalExaggeration = 1;
         this.eyePosition.set(0, 0, 0);

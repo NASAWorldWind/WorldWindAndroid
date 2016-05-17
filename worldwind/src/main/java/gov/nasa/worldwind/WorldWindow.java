@@ -28,8 +28,6 @@ import javax.microedition.khronos.opengles.GL10;
 
 import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.geom.Location;
-import gov.nasa.worldwind.gesture.GestureGroup;
-import gov.nasa.worldwind.gesture.GestureRecognizer;
 import gov.nasa.worldwind.globe.GeographicProjection;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.GlobeWgs84;
@@ -62,15 +60,13 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected Navigator navigator = new BasicNavigator();
 
+    protected NavigatorEventSupport navigatorEvents = new NavigatorEventSupport(this);
+
     protected FrameController frameController = new BasicFrameController();
 
     protected FrameMetrics frameMetrics = new FrameMetrics();
 
     protected WorldWindowController worldWindowController = new BasicWorldWindowController();
-
-    protected GestureGroup gestureGroup = new GestureGroup();
-
-    protected NavigatorEventSupport navigatorEvents = new NavigatorEventSupport(this);
 
     protected RenderResourceCache renderResourceCache;
 
@@ -86,6 +82,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected Frame currentFrame;
 
+    protected boolean waitingForRedraw;
+
     protected Handler redrawHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -93,8 +91,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
             return false;
         }
     });
-
-    protected boolean waitingForRedraw;
 
     /**
      * Constructs a WorldWindow associated with the specified application context. This is the constructor to use when
@@ -134,12 +130,14 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * @param configChooser optional argument for choosing an EGL configuration; may be null
      */
     protected void init(EGLConfigChooser configChooser) {
-        // Initialize the world window's navigator and controller.
+        // Initialize the World Window's navigator.
         Location initLocation = Location.fromTimeZone(TimeZone.getDefault());
         double initAltitude = this.distanceToViewGlobeExtents() * 1.1; // add to the minimum distance 10%
         this.navigator.setLatitude(initLocation.latitude);
         this.navigator.setLongitude(initLocation.longitude);
         this.navigator.setAltitude(initAltitude);
+
+        // Initialize the World Window's controller.
         this.worldWindowController.setWorldWindow(this);
 
         // Initialize the World Window's global caches. Use 50% of the approximate per-application memory class.
@@ -189,7 +187,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * @return the globe displayed by this World Window
      */
     public Globe getGlobe() {
-        return globe;
+        return this.globe;
     }
 
     /**
@@ -210,7 +208,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     public LayerList getLayers() {
-        return layers;
+        return this.layers;
     }
 
     public void setLayers(LayerList layers) {
@@ -223,7 +221,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     public double getVerticalExaggeration() {
-        return verticalExaggeration;
+        return this.verticalExaggeration;
     }
 
     public void setVerticalExaggeration(double verticalExaggeration) {
@@ -236,7 +234,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     public Navigator getNavigator() {
-        return navigator;
+        return this.navigator;
     }
 
     public void setNavigator(Navigator navigator) {
@@ -246,65 +244,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         }
 
         this.navigator = navigator;
-    }
-
-    public FrameController getFrameController() {
-        return frameController;
-    }
-
-    public void setFrameController(FrameController frameController) {
-        if (frameController == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WorldWindow", "setFrameController", "missingController"));
-        }
-
-        this.frameController = frameController;
-    }
-
-    public FrameMetrics getFrameMetrics() {
-        return this.frameMetrics;
-    }
-
-    public void setFrameMetrics(FrameMetrics frameMetrics) {
-        if (frameMetrics == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WorldWindow", "setFrameMetrics", "missingFrameMetrics"));
-        }
-
-        this.frameMetrics = frameMetrics;
-    }
-
-    public WorldWindowController getWorldWindowController() {
-        return worldWindowController;
-    }
-
-    public void setWorldWindowController(WorldWindowController worldWindowController) {
-        if (worldWindowController == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WorldWindow", "setWorldWindowController", "missingController"));
-        }
-
-        this.worldWindowController.setWorldWindow(null); // detach the old controller
-        this.worldWindowController = worldWindowController; // switch to the new controller
-        this.worldWindowController.setWorldWindow(this); // attach the new controller
-    }
-
-    public void addGestureRecognizer(GestureRecognizer recognizer) {
-        if (recognizer == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WorldWindow", "addGestureRecognizer", "missingRecognizer"));
-        }
-
-        this.gestureGroup.addRecognizer(recognizer);
-    }
-
-    public void removeGestureRecognizer(GestureRecognizer recognizer) {
-        if (recognizer == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WorldWindow", "removeGestureRecognizer", "missingRecognizer"));
-        }
-
-        this.gestureGroup.removeRecognizer(recognizer);
     }
 
     public void addNavigatorListener(NavigatorListener listener) {
@@ -331,6 +270,47 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     public void setNavigatorStoppedDelay(long delay, TimeUnit unit) {
         this.navigatorEvents.setNavigatorStoppedDelay(delay, unit);
+    }
+
+    public FrameController getFrameController() {
+        return this.frameController;
+    }
+
+    public void setFrameController(FrameController frameController) {
+        if (frameController == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "setFrameController", "missingController"));
+        }
+
+        this.frameController = frameController;
+    }
+
+    public FrameMetrics getFrameMetrics() {
+        return this.frameMetrics;
+    }
+
+    public void setFrameMetrics(FrameMetrics frameMetrics) {
+        if (frameMetrics == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "setFrameMetrics", "missingFrameMetrics"));
+        }
+
+        this.frameMetrics = frameMetrics;
+    }
+
+    public WorldWindowController getWorldWindowController() {
+        return this.worldWindowController;
+    }
+
+    public void setWorldWindowController(WorldWindowController controller) {
+        if (controller == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "setWorldWindowController", "missingController"));
+        }
+
+        this.worldWindowController.setWorldWindow(null); // detach the old controller
+        this.worldWindowController = controller; // switch to the new controller
+        this.worldWindowController.setWorldWindow(this); // attach the new controller
     }
 
     /**
@@ -545,18 +525,13 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        // Give the superclass the first opportunity to handle the event.
-        if (super.onTouchEvent(event)) {
-            return true; // superclass handled the event
+        if (!super.onTouchEvent(event)) { // give the superclass first opportunity to handle the event
+            if (this.worldWindowController.onTouchEvent(event)) { // let the controller try to handle the event
+                this.navigatorEvents.onTouchEvent(event); // the controller handled the event; notify navigator events
+            }
         }
 
-        // Let the WorldWindow's gestures handle the event.
-        if (this.gestureGroup.onTouchEvent(event)) {
-            this.navigatorEvents.onTouchEvent(event);
-        }
-
-        // Always return true to indicate that the event was handled. Otherwise Android suppresses subsequent events.
-        return true;
+        return true; // always return that the event was handled, otherwise Android suppresses subsequent events
     }
 
     @Override
@@ -569,7 +544,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     protected void renderFrame(Frame frame) {
         // Setup the render context according to the World Window's current state.
         this.rc.globe = this.globe;
-        this.rc.layers.addAllLayers(this.layers);
+        this.rc.layers = this.layers;
         this.rc.verticalExaggeration = this.verticalExaggeration;
         this.rc.eyePosition.set(this.navigator.getLatitude(), this.navigator.getLongitude(), this.navigator.getAltitude());
         this.rc.heading = this.navigator.getHeading();
