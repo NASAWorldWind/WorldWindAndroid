@@ -62,6 +62,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected Navigator navigator = new BasicNavigator();
 
+    protected NavigatorEventSupport navigatorEvents = new NavigatorEventSupport(this);
+
     protected FrameController frameController = new BasicFrameController();
 
     protected FrameMetrics frameMetrics = new FrameMetrics();
@@ -69,8 +71,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     protected WorldWindowController worldWindowController = new BasicWorldWindowController();
 
     protected GestureGroup gestureGroup = new GestureGroup();
-
-    protected NavigatorEventSupport navigatorEvents = new NavigatorEventSupport(this);
 
     protected RenderResourceCache renderResourceCache;
 
@@ -86,6 +86,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected Frame currentFrame;
 
+    protected boolean waitingForRedraw;
+
     protected Handler redrawHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -93,8 +95,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
             return false;
         }
     });
-
-    protected boolean waitingForRedraw;
 
     /**
      * Constructs a WorldWindow associated with the specified application context. This is the constructor to use when
@@ -118,7 +118,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * Constructs a WorldWindow associated with the specified application context and attributes from an XML tag. This
      * constructor is included to provide support for creating WorldWindow from an Android XML layout file, and is not
      * intended to be used directly.
-     * <p/>
+     * <p>
      * This is called when a view is being constructed from an XML file, supplying attributes that were specified in the
      * XML file. This version uses a default style of 0, so the only attribute values applied are those in the Context's
      * Theme and the given AttributeSet.
@@ -248,6 +248,32 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.navigator = navigator;
     }
 
+    public void addNavigatorListener(NavigatorListener listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "addNavigatorListener", "missingListener"));
+        }
+
+        this.navigatorEvents.addNavigatorListener(listener);
+    }
+
+    public void removeNavigatorListener(NavigatorListener listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "removeNavigatorListener", "missingListener"));
+        }
+
+        this.navigatorEvents.addNavigatorListener(listener);
+    }
+
+    public long getNavigatorStoppedDelay() {
+        return this.navigatorEvents.getNavigatorStoppedDelay();
+    }
+
+    public void setNavigatorStoppedDelay(long delay, TimeUnit unit) {
+        this.navigatorEvents.setNavigatorStoppedDelay(delay, unit);
+    }
+
     public FrameController getFrameController() {
         return frameController;
     }
@@ -307,37 +333,11 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.gestureGroup.removeRecognizer(recognizer);
     }
 
-    public void addNavigatorListener(NavigatorListener listener) {
-        if (listener == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WorldWindow", "addNavigatorListener", "missingListener"));
-        }
-
-        this.navigatorEvents.addNavigatorListener(listener);
-    }
-
-    public void removeNavigatorListener(NavigatorListener listener) {
-        if (listener == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WorldWindow", "removeNavigatorListener", "missingListener"));
-        }
-
-        this.navigatorEvents.addNavigatorListener(listener);
-    }
-
-    public long getNavigatorStoppedDelay() {
-        return this.navigatorEvents.getNavigatorStoppedDelay();
-    }
-
-    public void setNavigatorStoppedDelay(long delay, TimeUnit unit) {
-        this.navigatorEvents.setNavigatorStoppedDelay(delay, unit);
-    }
-
     /**
      * Returns the height of a pixel at a given distance from the eye point. This method assumes the model of a screen
      * composed of rectangular pixels, where pixel coordinates denote infinitely thin space between pixels. The units of
      * the returned size are in meters per pixel.
-     * <p/>
+     * <p>
      * The result of this method is undefined if the distance is negative.
      *
      * @param distance the distance from the eye point in meters
@@ -569,7 +569,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     protected void renderFrame(Frame frame) {
         // Setup the render context according to the World Window's current state.
         this.rc.globe = this.globe;
-        this.rc.layers.addAllLayers(this.layers);
+        this.rc.layers = this.layers;
         this.rc.verticalExaggeration = this.verticalExaggeration;
         this.rc.eyePosition.set(this.navigator.getLatitude(), this.navigator.getLongitude(), this.navigator.getAltitude());
         this.rc.heading = this.navigator.getHeading();
