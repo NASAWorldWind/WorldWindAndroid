@@ -7,6 +7,8 @@ package gov.nasa.worldwind;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -27,7 +29,11 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import gov.nasa.worldwind.draw.DrawContext;
+import gov.nasa.worldwind.geom.Camera;
+import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.Location;
+import gov.nasa.worldwind.geom.Matrix4;
+import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.GeographicProjection;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.GlobeWgs84;
@@ -91,6 +97,14 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
             return false;
         }
     });
+
+    private Camera scratchCamera = new Camera();
+
+    private Matrix4 scratchModelview = new Matrix4();
+
+    private Matrix4 scratchProjection = new Matrix4();
+
+    private Vec3 scratchPoint = new Vec3();
 
     /**
      * Constructs a WorldWindow associated with the specified application context. This is the constructor to use when
@@ -311,6 +325,181 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.worldWindowController.setWorldWindow(null); // detach the old controller
         this.worldWindowController = controller; // switch to the new controller
         this.worldWindowController.setWorldWindow(this); // attach the new controller
+    }
+
+    /**
+     * Transforms a Cartesian coordinate point to Android screen coordinates. The resultant screen point is in Android
+     * screen pixels relative to this View.
+     * <p/>
+     * This stores the converted point in the result argument, and returns a boolean value indicating whether or not the
+     * converted is successful. This returns false if the Cartesian point is clipped by either the World Window's near
+     * clipping plane or far clipping plane.
+     *
+     * @param x      the Cartesian point's x component in meters
+     * @param y      the Cartesian point's y component in meters
+     * @param z      the Cartesian point's z component in meters
+     * @param result a pre-allocated {@link Point} in which to return the screen point
+     *
+     * @return true if the transformation is successful, otherwise false
+     *
+     * @throws IllegalArgumentException If the result is null
+     */
+    public boolean cartesianToScreenPoint(double x, double y, double z, PointF result) {
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "cartesianToScreenPoint", "missingResult"));
+        }
+
+        // Compute the World Window's modelview-projection matrix.
+        this.computeViewingTransform(this.scratchProjection, this.scratchModelview);
+        this.scratchProjection.multiplyByMatrix(this.scratchModelview);
+
+        // Transform the model point from model coordinates to eye coordinates then to clip coordinates. This inverts
+        // the Z axis and stores the negative of the eye coordinate Z value in the W coordinate.
+        double[] m = this.scratchProjection.m;
+        double sx = m[0] * x + m[1] * y + m[2] * z + m[3];
+        double sy = m[4] * x + m[5] * y + m[6] * z + m[7];
+        double sz = m[8] * x + m[9] * y + m[10] * z + m[11];
+        double sw = m[12] * x + m[13] * y + m[14] * z + m[15];
+
+        if (sw == 0) {
+            return false;
+        }
+
+        // Complete the conversion from model coordinates to clip coordinates by dividing by W. The resultant X, Y and
+        // Z coordinates are in the range [-1, +1].
+        sx /= sw;
+        sy /= sw;
+        sz /= sw;
+
+        // Clip the point against the near and far clip planes. The result for points outside this range is undefined.
+        if (sz < -1 || sz > 1) {
+            return false;
+        }
+
+        // Convert the point from clip coordinate to the range [0, 1]. This enables the X and Y coordinates to be
+        // converted to screen coordinates, and the Z coordinate to represent a depth value in the range [0, 1].
+        sx = sx * 0.5 + 0.5;
+        sy = sy * 0.5 + 0.5;
+
+        // Convert from OpenGL screen coordinates to Android screen coordinates, both in the range [0, 1].
+        sy = 1 - sy;
+
+        // Convert the X and Y coordinates from the range [0, 1] to Android screen coordinates.
+        sx = sx * this.getWidth();
+        sy = sy * this.getHeight();
+
+        // Store the Android screen coordinates in the result argument.
+        result.x = (float) sx;
+        result.y = (float) sy;
+
+        return true;
+    }
+
+    /**
+     * Transforms a geographic position to Android screen coordinates. The resultant screen point is in Android screen
+     * pixels relative to this View.
+     * <p/>
+     * This stores the converted point in the result argument, and returns a boolean value indicating whether or not the
+     * converted is successful. This returns false if the Cartesian point is clipped by either of the World Window's
+     * near clipping plane or far clipping plane.
+     *
+     * @param latitude  the position's latitude in degrees
+     * @param longitude the position's longitude in degrees
+     * @param altitude  the position's altitude in meters
+     * @param result    a pre-allocated {@link Point} in which to return the screen point
+     *
+     * @return true if the transformation is successful, otherwise false
+     *
+     * @throws IllegalArgumentException If the result is null
+     */
+    public boolean geographicToScreenPoint(double latitude, double longitude, double altitude, PointF result) {
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "geographicToScreenPoint", "missingResult"));
+        }
+
+        // Convert the position from geographic coordinates to Cartesian coordinates.
+        this.globe.geographicToCartesian(latitude, longitude, altitude, this.scratchPoint);
+
+        // Convert the position from Cartesian coordinates to screen coordinates.
+        return this.cartesianToScreenPoint(this.scratchPoint.x, this.scratchPoint.y, this.scratchPoint.z, result);
+    }
+
+    /**
+     * Computes a Cartesian coordinate ray that passes through through a screen point. The X and Y components are
+     * interpreted as coordinates in Android screen pixels relative to this View.
+     *
+     * @param x      the screen point's X coordinate in Android screen pixels
+     * @param y      the screen point's Y coordinate in Android screen pixels
+     * @param result a pre-allocated Line in which to return the computed ray
+     *
+     * @return the result set to the computed ray in Cartesian coordinates
+     *
+     * @throws IllegalArgumentException If the result is null
+     */
+    public boolean rayThroughScreenPoint(float x, float y, Line result) {
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "rayThroughScreenPoint", "missingResult"));
+        }
+
+        // Compute the World Window's inverse modelview-projection matrix.
+        this.computeViewingTransform(this.scratchProjection, this.scratchModelview);
+        this.scratchProjection.multiplyByMatrix(this.scratchModelview).invert();
+
+        // Convert from Android screen coordinates to coordinates in the range [0, 1]. This enables subsequent
+        // conversion to clip coordinates.
+        double sx = x / this.getWidth();
+        double sy = y / this.getHeight();
+
+        // Convert from Android screen coordinates to OpenGL screen coordinates, both in the range [0, 1].
+        sy = 1 - sy;
+
+        // Convert from coordinates in the range [0, 1] to clip coordinates in the range [-1, 1].
+        sx = sx * 2 - 1;
+        sy = sy * 2 - 1;
+
+        // Transform the screen point from clip coordinates to model coordinates. This is a partial transformation
+        // that factors out the contribution from the screen point's X and Y components. The contribution from the Z
+        // component, which is both -1 and +1, is included next.
+        double[] m = this.scratchProjection.m;
+        double mx = (m[0] * sx) + (m[1] * sy) + m[3];
+        double my = (m[4] * sx) + (m[5] * sy) + m[7];
+        double mz = (m[8] * sx) + (m[9] * sy) + m[11];
+        double mw = (m[12] * sx) + (m[13] * sy) + m[15];
+
+        // Transform the screen point at the near clip plane (z = -1) to model coordinates.
+        double nx = mx - m[2];
+        double ny = my - m[6];
+        double nz = mz - m[10];
+        double nw = mw - m[14];
+
+        // Transform the screen point at the far clip plane (z = +1) to model coordinates.
+        double fx = mx + m[2];
+        double fy = my + m[6];
+        double fz = mz + m[10];
+        double fw = mw + m[14];
+
+        if (nw == 0 || fw == 0) {
+            return false;
+        }
+
+        // Complete the conversion from near clip coordinates to model coordinates by dividing by the W component.
+        nx = nx / nw;
+        ny = ny / nw;
+        nz = nz / nw;
+
+        // Complete the conversion from far clip coordinates to model coordinates by dividing by the W component.
+        fx = fx / fw;
+        fy = fy / fw;
+        fz = fz / fw;
+
+        // Store the ray coordinates in the result argument.
+        result.origin.set(nx, ny, nz);
+        result.direction.set(fx - nx, fy - ny, fz - nz).normalize();
+
+        return true;
     }
 
     /**
@@ -553,6 +742,12 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.rc.fieldOfView = this.navigator.getFieldOfView();
         this.rc.horizonDistance = this.globe.horizonDistance(this.navigator.getAltitude());
         this.rc.viewport.set(this.viewport);
+        this.computeViewingTransform(this.rc.projection, this.rc.modelview);
+        this.rc.modelview.extractEyePoint(this.rc.eyePoint); // TODO compute eyePoint using Globe and Navigator
+        this.rc.modelviewProjection.setToMultiply(this.rc.projection, this.rc.modelview);
+        this.rc.frustum.setToProjectionMatrix(this.rc.projection);
+        this.rc.frustum.transformByMatrix(this.scratchModelview.transposeMatrix(this.rc.modelview));
+        this.rc.frustum.normalize();
         this.rc.renderResourceCache = this.renderResourceCache;
         this.rc.renderResourceCache.setResources(this.getContext().getResources());
         this.rc.resources = this.getContext().getResources();
@@ -637,5 +832,24 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
             this.currentFrame.recycle();
             this.currentFrame = null;
         }
+    }
+
+    protected void computeViewingTransform(Matrix4 projection, Matrix4 modelview) {
+        // Compute the clip plane distances. The near distance is set to a large value that does not clip the globe's
+        // surface. The far distance is set to the smallest value that does not clip the atmosphere.
+        // TODO adjust the clip plane distances based on the navigator's orientation - shorter distances when the
+        // TODO horizon is not in view
+        // TODO parameterize the object altitude for horizon distance
+        double near = this.navigator.getAltitude() * 0.75;
+        double far = this.globe.horizonDistance(this.navigator.getAltitude(), 160000);
+
+        // Compute a perspective projection matrix given the World Window's viewport, field of view, and clip distances.
+        projection.setToPerspectiveProjection(this.viewport.width(), this.viewport.height(), this.navigator.getFieldOfView(), near, far);
+
+        // Get the Navigator's properties as a Camera.
+        this.navigator.getAsCamera(this.globe, this.scratchCamera);
+
+        // Convert the Camera to a Cartesian viewing matrix, which is inverted.
+        this.globe.cameraToCartesianTransform(this.scratchCamera, modelview).invertOrthonormal();
     }
 }
