@@ -64,6 +64,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected double verticalExaggeration = 1;
 
+    protected double fieldOfView = 45;
+
     protected Navigator navigator = new BasicNavigator();
 
     protected NavigatorEventSupport navigatorEvents = new NavigatorEventSupport(this);
@@ -245,6 +247,19 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         }
 
         this.verticalExaggeration = verticalExaggeration;
+    }
+
+    public double getFieldOfView() {
+        return this.fieldOfView;
+    }
+
+    public void setFieldOfView(double fovyDegrees) {
+        if (fovyDegrees <= 0 || fovyDegrees >= 180) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "setFieldOfView", "invalidFieldOfView"));
+        }
+
+        this.fieldOfView = fovyDegrees;
     }
 
     public Navigator getNavigator() {
@@ -514,8 +529,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * @return the pixel height in meters per pixel
      */
     public double pixelSizeAtDistance(double distance) {
-        double fovyDegrees = this.navigator.getFieldOfView();
-        double tanfovy_2 = Math.tan(Math.toRadians(fovyDegrees * 0.5));
+        double tanfovy_2 = Math.tan(Math.toRadians(this.fieldOfView * 0.5));
         double frustumHeight = 2 * distance * tanfovy_2;
         return frustumHeight / this.getHeight();
     }
@@ -527,8 +541,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * @return the distance in meters needed to view the entire globe
      */
     public double distanceToViewGlobeExtents() {
-        double fovyDegrees = this.navigator.getFieldOfView();
-        double sinfovy_2 = Math.sin(Math.toRadians(fovyDegrees * 0.5));
+        double sinfovy_2 = Math.sin(Math.toRadians(this.fieldOfView * 0.5));
         double radius = this.globe.getEquatorialRadius();
         return radius / sinfovy_2 - radius;
     }
@@ -739,7 +752,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.rc.heading = this.navigator.getHeading();
         this.rc.tilt = this.navigator.getTilt();
         this.rc.roll = this.navigator.getRoll();
-        this.rc.fieldOfView = this.navigator.getFieldOfView();
+        this.rc.fieldOfView = this.fieldOfView;
         this.rc.horizonDistance = this.globe.horizonDistance(this.navigator.getAltitude());
         this.rc.viewport.set(this.viewport);
         this.computeViewingTransform(this.rc.projection, this.rc.modelview);
@@ -844,7 +857,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         double far = this.globe.horizonDistance(this.navigator.getAltitude(), 160000);
 
         // Compute a perspective projection matrix given the World Window's viewport, field of view, and clip distances.
-        projection.setToPerspectiveProjection(this.viewport.width(), this.viewport.height(), this.navigator.getFieldOfView(), near, far);
+        projection.setToPerspectiveProjection(this.viewport.width(), this.viewport.height(), this.fieldOfView, near, far);
 
         // Get the Navigator's properties as a Camera.
         this.navigator.getAsCamera(this.globe, this.scratchCamera);

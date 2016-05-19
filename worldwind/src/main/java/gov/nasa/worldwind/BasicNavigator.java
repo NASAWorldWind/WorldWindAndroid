@@ -24,8 +24,6 @@ public class BasicNavigator implements Navigator {
 
     protected double roll;
 
-    protected double fieldOfView = 45;
-
     protected Camera scratchCamera = new Camera();
 
     public BasicNavigator() {
@@ -94,22 +92,6 @@ public class BasicNavigator implements Navigator {
     @Override
     public Navigator setRoll(double rollDegrees) {
         this.roll = rollDegrees;
-        return this;
-    }
-
-    @Override
-    public double getFieldOfView() {
-        return fieldOfView;
-    }
-
-    @Override
-    public Navigator setFieldOfView(double fovyDegrees) {
-        if (fovyDegrees <= 0 || fovyDegrees >= 180) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicNavigator", "setPosition", "invalidFieldOfView"));
-        }
-
-        this.fieldOfView = fovyDegrees;
         return this;
     }
 

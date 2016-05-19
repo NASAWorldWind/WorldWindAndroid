@@ -35,10 +35,6 @@ public interface Navigator {
 
     Navigator setRoll(double rollDegrees);
 
-    double getFieldOfView();
-
-    Navigator setFieldOfView(double fovyDegrees);
-
     Camera getAsCamera(Globe globe, Camera result);
 
     Navigator setAsCamera(Globe globe, Camera camera);
