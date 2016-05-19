@@ -66,7 +66,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected double fieldOfView = 45;
 
-    protected Navigator navigator = new BasicNavigator();
+    protected Navigator navigator = new Navigator();
 
     protected NavigatorEventSupport navigatorEvents = new NavigatorEventSupport(this);
 
