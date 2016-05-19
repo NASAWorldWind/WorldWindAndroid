@@ -7,7 +7,6 @@ package gov.nasa.worldwind;
 
 import android.app.ActivityManager;
 import android.content.Context;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.opengl.GLES20;
@@ -353,7 +352,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * @param x      the Cartesian point's x component in meters
      * @param y      the Cartesian point's y component in meters
      * @param z      the Cartesian point's z component in meters
-     * @param result a pre-allocated {@link Point} in which to return the screen point
+     * @param result a pre-allocated {@link PointF} in which to return the screen point
      *
      * @return true if the transformation is successful, otherwise false
      *
@@ -422,7 +421,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * @param latitude  the position's latitude in degrees
      * @param longitude the position's longitude in degrees
      * @param altitude  the position's altitude in meters
-     * @param result    a pre-allocated {@link Point} in which to return the screen point
+     * @param result    a pre-allocated {@link PointF} in which to return the screen point
      *
      * @return true if the transformation is successful, otherwise false
      *
