@@ -18,19 +18,21 @@ import gov.nasa.worldwind.geom.Vec3;
 
 public class DrawContext {
 
-    public Matrix4 modelview = new Matrix4();
+    public Vec3 eyePoint = new Vec3();
 
     public Matrix4 projection = new Matrix4();
+
+    public Matrix4 modelview = new Matrix4();
 
     public Matrix4 modelviewProjection = new Matrix4();
 
     public Matrix4 screenProjection = new Matrix4();
 
-    public Vec3 eyePoint = new Vec3();
-
     public DrawableQueue drawableQueue;
 
     public DrawableList drawableTerrain;
+
+    //public PickedObjectList pickedObjects;
 
     protected int programId;
 
@@ -50,14 +52,15 @@ public class DrawContext {
     }
 
     public void reset() {
-        this.modelview.setToIdentity();
+        this.eyePoint.set(0, 0, 0);
         this.projection.setToIdentity();
+        this.modelview.setToIdentity();
         this.modelviewProjection.setToIdentity();
         this.screenProjection.setToIdentity();
-        this.eyePoint.set(0, 0, 0);
         this.scratchList.clear();
         this.drawableQueue = null;
         this.drawableTerrain = null;
+        //this.pickedObjects = null;
     }
 
     public void contextLost() {

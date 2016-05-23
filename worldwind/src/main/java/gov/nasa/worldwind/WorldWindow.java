@@ -87,6 +87,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected ConcurrentLinkedQueue<Frame> frameQueue = new ConcurrentLinkedQueue<>();
 
+    //protected ConcurrentLinkedQueue<Frame> pickQueue = new ConcurrentLinkedQueue<>();
+
     protected Frame currentFrame;
 
     protected boolean waitingForRedraw;
@@ -100,6 +102,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     });
 
     private Camera scratchCamera = new Camera();
+
+    private Rect scratchViewport = new Rect();
 
     private Matrix4 scratchModelview = new Matrix4();
 
@@ -341,6 +345,39 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.worldWindowController.setWorldWindow(this); // attach the new controller
     }
 
+//    public PickedObjectList pick(float x, float y) {
+//        // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
+//        Frame frame = Frame.obtain(this.framePool);
+//        this.rc.markPickingMode(); // TODO should we modify RenderContext here, or just the frame?
+//        // TODO establish pick point
+//        // TODO modify rendering to adjust behavior for picking mode
+//        this.renderFrame(frame);
+//
+//        // Enqueue the frame for processing on the OpenGL thread as soon as possible, then wake the OpenGL thread.
+//        this.pickQueue.offer(frame);
+//        super.requestRender();
+//
+//        // Reset the render context's state in preparation for another frame (either for picking or for drawing).
+//        this.rc.reset();
+//
+//        // Wait until the OpenGL thread processes the frame.
+//        frame.awaitDone();
+//
+//        // Return the resolved picked objects to the caller and recycle the pick frame back into the pool.
+//        PickedObjectList result = new PickedObjectList(); // TODO copy frame.pickedObjects
+//        frame.recycle();
+//
+//        return result;
+//    }
+//
+//    public PickedObjectList pickTerrain(float x, float y) {
+//        return null; // TODO
+//    }
+//
+//    public PickedObjectList pickShapesInRect(float left, float top, float right, float bottom) {
+//        return null; // TODO
+//    }
+
     /**
      * Transforms a Cartesian coordinate point to Android screen coordinates. The resultant screen point is in Android
      * screen pixels relative to this View.
@@ -365,7 +402,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         }
 
         // Compute the World Window's modelview-projection matrix.
-        this.computeViewingTransform(this.scratchProjection, this.scratchModelview);
+        this.computeViewingTransform(this.scratchViewport, this.scratchProjection, this.scratchModelview);
         this.scratchProjection.multiplyByMatrix(this.scratchModelview);
 
         // Transform the model point from model coordinates to eye coordinates then to clip coordinates. This inverts
@@ -400,8 +437,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         sy = 1 - sy;
 
         // Convert the X and Y coordinates from the range [0, 1] to Android screen coordinates.
-        sx = sx * this.getWidth();
-        sy = sy * this.getHeight();
+        sx = sx * this.scratchViewport.width() + this.scratchViewport.left;
+        sy = sy * this.scratchViewport.height() + this.scratchViewport.top;
 
         // Store the Android screen coordinates in the result argument.
         result.x = (float) sx;
@@ -459,13 +496,13 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         }
 
         // Compute the World Window's inverse modelview-projection matrix.
-        this.computeViewingTransform(this.scratchProjection, this.scratchModelview);
+        this.computeViewingTransform(this.scratchViewport, this.scratchProjection, this.scratchModelview);
         this.scratchProjection.multiplyByMatrix(this.scratchModelview).invert();
 
         // Convert from Android screen coordinates to coordinates in the range [0, 1]. This enables subsequent
         // conversion to clip coordinates.
-        double sx = x / this.getWidth();
-        double sy = y / this.getHeight();
+        double sx = (x - this.scratchViewport.left) / this.scratchViewport.width();
+        double sy = (y - this.scratchViewport.top) / this.scratchViewport.height();
 
         // Convert from Android screen coordinates to OpenGL screen coordinates, both in the range [0, 1].
         sy = 1 - sy;
@@ -653,6 +690,23 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      */
     @Override
     public void onDrawFrame(GL10 unused) {
+//        // Remove the oldest pick frame from the front of the queue and process it. This has no effect on the visible
+//        // framebuffer.
+//        Frame pickFrame = this.pickQueue.poll();
+//        if (pickFrame != null) {
+//            // TODO use a pick framebuffer
+//            // TODO modify drawing to adjust behavior for picking mode
+//            this.drawFrame(pickFrame);
+//            this.dc.reset();
+//            // TODO resolve the pick
+//            // Notify the thread that enqueued the pick frame that it's done processing on the OpenGL thread.
+//            pickFrame.signalDone();
+//
+//            // Continue processing the pick queue on the OpenGL thread until the queue is empty.
+//            // TODO is this necessary here? does it cause duplicate frames when combined with the draw requestRener below?
+//            super.requestRender();
+//        }
+
         // Remove the oldest frame from the front of the queue and recycle the previous frame back into the pool.
         Frame nextFrame = this.frameQueue.poll();
         if (nextFrame != null) {
@@ -747,34 +801,31 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.rc.globe = this.globe;
         this.rc.layers = this.layers;
         this.rc.verticalExaggeration = this.verticalExaggeration;
-        this.rc.eyePosition.set(this.navigator.getLatitude(), this.navigator.getLongitude(), this.navigator.getAltitude());
-        this.rc.heading = this.navigator.getHeading();
-        this.rc.tilt = this.navigator.getTilt();
-        this.rc.roll = this.navigator.getRoll();
         this.rc.fieldOfView = this.fieldOfView;
         this.rc.horizonDistance = this.globe.horizonDistance(this.navigator.getAltitude());
-        this.rc.viewport.set(this.viewport);
-        this.computeViewingTransform(this.rc.projection, this.rc.modelview);
-        this.rc.modelview.extractEyePoint(this.rc.eyePoint); // TODO compute eyePoint using Globe and Navigator
-        this.rc.modelviewProjection.setToMultiply(this.rc.projection, this.rc.modelview);
-        this.rc.frustum.setToProjectionMatrix(this.rc.projection);
-        this.rc.frustum.transformByMatrix(this.scratchModelview.transposeMatrix(this.rc.modelview));
-        this.rc.frustum.normalize();
+        this.rc.camera = this.navigator.getAsCamera(this.globe, this.rc.camera);
+        this.rc.cameraPoint = this.globe.geographicToCartesian(this.rc.camera.latitude, this.rc.camera.longitude, this.rc.camera.altitude, this.rc.cameraPoint);
         this.rc.renderResourceCache = this.renderResourceCache;
         this.rc.renderResourceCache.setResources(this.getContext().getResources());
         this.rc.resources = this.getContext().getResources();
 
+        // Configure the frame's Cartesian modelview matrix and eye coordinate projection matrix.
+        this.computeViewingTransform(frame.viewport, frame.projection, frame.modelview);
+        this.rc.viewport.set(frame.viewport);
+        this.rc.projection.set(frame.projection);
+        this.rc.modelview.set(frame.modelview);
+        this.rc.modelviewProjection.setToMultiply(frame.projection, frame.modelview);
+        this.rc.frustum.setToProjectionMatrix(frame.projection);
+        this.rc.frustum.transformByMatrix(this.scratchModelview.transposeMatrix(frame.modelview));
+        this.rc.frustum.normalize();
+
         // Accumulate the Drawables in the frame's drawable queue and drawable terrain data structures.
         this.rc.drawableQueue = frame.drawableQueue;
         this.rc.drawableTerrain = frame.drawableTerrain;
+        //this.rc.pickedObjects = frame.pickedObjects;
 
         // Let the frame controller render the World Window's current state.
         this.frameController.renderFrame(this.rc);
-
-        // Assign the frame's Cartesian modelview matrix and eye coordinate projection matrix.
-        frame.viewport.set(this.viewport);
-        frame.modelview.set(this.rc.modelview);
-        frame.projection.set(this.rc.projection);
     }
 
     protected void beforeRenderFrame() {
@@ -801,15 +852,16 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected void drawFrame(Frame frame) {
         // Setup the draw context according to the frame's current state.
-        this.dc.modelview.set(frame.modelview);
-        this.dc.modelview.extractEyePoint(this.dc.eyePoint);
+        this.dc.eyePoint = frame.modelview.extractEyePoint(this.dc.eyePoint);
         this.dc.projection.set(frame.projection);
+        this.dc.modelview.set(frame.modelview);
         this.dc.modelviewProjection.setToMultiply(frame.projection, frame.modelview);
         this.dc.screenProjection.setToScreenProjection(frame.viewport.width(), frame.viewport.height());
 
         // Process the drawables in the frame's drawable queue and drawable terrain data structures.
         this.dc.drawableQueue = frame.drawableQueue;
         this.dc.drawableTerrain = frame.drawableTerrain;
+        //this.dc.pickedObjects = frame.pickedObjects;
 
         // Let the frame controller draw the frame's.
         this.frameController.drawFrame(this.dc);
@@ -839,6 +891,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         }
         this.frameQueue.clear();
 
+        // Clear the pick queue and recycle pending pick frames back into the frame pool.
+        // TODO
+
         // Recycle the current frame back into the frame pool.
         if (this.currentFrame != null) {
             this.currentFrame.recycle();
@@ -846,7 +901,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         }
     }
 
-    protected void computeViewingTransform(Matrix4 projection, Matrix4 modelview) {
+    protected void computeViewingTransform(Rect viewport, Matrix4 projection, Matrix4 modelview) {
         // Compute the clip plane distances. The near distance is set to a large value that does not clip the globe's
         // surface. The far distance is set to the smallest value that does not clip the atmosphere.
         // TODO adjust the clip plane distances based on the navigator's orientation - shorter distances when the
@@ -855,13 +910,14 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         double near = this.navigator.getAltitude() * 0.75;
         double far = this.globe.horizonDistance(this.navigator.getAltitude(), 160000);
 
+        // Copy the World Window's viewport to the corresponding out argument.
+        viewport.set(this.viewport);
+
         // Compute a perspective projection matrix given the World Window's viewport, field of view, and clip distances.
-        projection.setToPerspectiveProjection(this.viewport.width(), this.viewport.height(), this.fieldOfView, near, far);
+        projection.setToPerspectiveProjection(viewport.width(), viewport.height(), this.fieldOfView, near, far);
 
-        // Get the Navigator's properties as a Camera.
+        // Compute a Cartesian viewing matrix using this Navigator's properties as a Camera.
         this.navigator.getAsCamera(this.globe, this.scratchCamera);
-
-        // Convert the Camera to a Cartesian viewing matrix, which is inverted.
         this.globe.cameraToCartesianTransform(this.scratchCamera, modelview).invertOrthonormal();
     }
 }

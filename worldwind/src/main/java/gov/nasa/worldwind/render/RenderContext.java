@@ -16,9 +16,9 @@ import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableList;
 import gov.nasa.worldwind.draw.DrawableQueue;
 import gov.nasa.worldwind.draw.DrawableTerrain;
+import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Frustum;
 import gov.nasa.worldwind.geom.Matrix4;
-import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.Terrain;
@@ -31,8 +31,6 @@ import gov.nasa.worldwind.util.WWMath;
 
 public class RenderContext {
 
-    public boolean pickingMode;
-
     public Globe globe;
 
     public Terrain terrain;
@@ -43,27 +41,21 @@ public class RenderContext {
 
     public double verticalExaggeration = 1;
 
-    public Position eyePosition = new Position();
-
-    public double heading;
-
-    public double tilt;
-
-    public double roll;
-
     public double fieldOfView;
 
     public double horizonDistance;
 
-    public Rect viewport = new Rect();
+    public Camera camera = new Camera();
 
-    public Matrix4 modelview = new Matrix4();
+    public Vec3 cameraPoint = new Vec3();
+
+    public Rect viewport = new Rect();
 
     public Matrix4 projection = new Matrix4();
 
-    public Matrix4 modelviewProjection = new Matrix4();
+    public Matrix4 modelview = new Matrix4();
 
-    public Vec3 eyePoint = new Vec3();
+    public Matrix4 modelviewProjection = new Matrix4();
 
     public Frustum frustum = new Frustum();
 
@@ -75,42 +67,44 @@ public class RenderContext {
 
     public DrawableList drawableTerrain;
 
-    protected boolean redrawRequested;
+    //public PickedObjectList pickedObjects;
 
-    protected double pixelSizeFactor;
+    private boolean redrawRequested;
 
-    protected Map<Object, Pool<?>> drawablePools = new HashMap<>();
+    private boolean pickingMode;
 
-    protected Map<Object, Object> userProperties = new HashMap<>();
+    private double pixelSizeFactor;
+
+    private Map<Object, Pool<?>> drawablePools = new HashMap<>();
+
+    private Map<Object, Object> userProperties = new HashMap<>();
 
     public RenderContext() {
     }
 
     public void reset() {
-        this.pickingMode = false;
         this.globe = null;
         this.terrain = null;
         this.layers = null;
         this.currentLayer = null;
         this.verticalExaggeration = 1;
-        this.eyePosition.set(0, 0, 0);
-        this.heading = 0;
-        this.tilt = 0;
-        this.roll = 0;
         this.fieldOfView = 0;
         this.horizonDistance = 0;
+        this.camera.set(0, 0, 0, WorldWind.ABSOLUTE /*lat, lon, alt*/, 0, 0, 0 /*heading, tilt, roll*/);
+        this.cameraPoint.set(0, 0, 0);
         this.viewport.setEmpty();
-        this.modelview.setToIdentity();
         this.projection.setToIdentity();
+        this.modelview.setToIdentity();
         this.modelviewProjection.setToIdentity();
-        this.eyePoint.set(0, 0, 0);
         this.frustum.setToUnitFrustum();
         this.renderResourceCache = null;
         this.resources = null;
         this.redrawRequested = false;
+        //this.pickingMode = false;
         this.pixelSizeFactor = 0;
         this.drawableQueue = null;
         this.drawableTerrain = null;
+        //this.pickedObjects = null;
         this.userProperties.clear();
     }
 
@@ -120,6 +114,14 @@ public class RenderContext {
 
     public void requestRedraw() {
         this.redrawRequested = true;
+    }
+
+    public boolean isPickingMode() {
+        return this.pickingMode;
+    }
+
+    public void enablePickingMode() {
+        this.pickingMode = true;
     }
 
     /**
@@ -346,9 +348,9 @@ public class RenderContext {
         }
     }
 
-    public void offerShapeDrawable(Drawable drawable, double eyeDistance) {
+    public void offerShapeDrawable(Drawable drawable, double cameraDistance) {
         if (this.drawableQueue != null) {
-            this.drawableQueue.offerDrawable(drawable, WorldWind.SHAPE_DRAWABLE, -eyeDistance); // order by descending eye distance
+            this.drawableQueue.offerDrawable(drawable, WorldWind.SHAPE_DRAWABLE, -cameraDistance); // order by descending distance to the viewer
         }
     }
 

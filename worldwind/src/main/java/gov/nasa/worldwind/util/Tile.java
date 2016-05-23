@@ -250,7 +250,7 @@ public class Tile {
      * @return true if the tile should be subdivided, otherwise false
      */
     public boolean mustSubdivide(RenderContext rc, double detailFactor) {
-        double distance = this.getExtent(rc).distanceTo(rc.eyePoint);
+        double distance = this.getExtent(rc).distanceTo(rc.cameraPoint);
         double texelSize = this.level.texelHeight * rc.globe.getEquatorialRadius();
         double pixelSize = rc.pixelSizeAtDistance(distance);
 

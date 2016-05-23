@@ -30,7 +30,8 @@ public class AtmosphereLayer extends AbstractLayer {
     private Sector fullSphereSector = new Sector().setFullSphere();
 
     public AtmosphereLayer() {
-        super("Atmosphere");
+        this.setDisplayName("Atmosphere");
+        this.setPickEnabled(false);
         this.nightImageSource = ImageSource.fromResource(R.drawable.dnb_land_ocean_ice_2012);
     }
 
@@ -68,7 +69,7 @@ public class AtmosphereLayer extends AbstractLayer {
         if (this.lightLocation != null) {
             rc.globe.geographicToCartesianNormal(this.lightLocation.latitude, this.lightLocation.longitude, this.activeLightDirection);
         } else {
-            rc.globe.geographicToCartesianNormal(rc.eyePosition.latitude, rc.eyePosition.longitude, this.activeLightDirection);
+            rc.globe.geographicToCartesianNormal(rc.camera.latitude, rc.camera.longitude, this.activeLightDirection);
         }
     }
 

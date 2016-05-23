@@ -50,15 +50,11 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
 
     public TiledImageLayer() {
         this.setDisplayName("Tiled Image Layer");
-        this.init();
+        this.setPickEnabled(false);
     }
 
     public TiledImageLayer(String displayName) {
         super(displayName);
-        this.init();
-    }
-
-    protected void init() {
         this.setPickEnabled(false);
     }
 

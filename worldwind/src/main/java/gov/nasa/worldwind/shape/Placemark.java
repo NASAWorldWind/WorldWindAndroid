@@ -145,7 +145,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     @WorldWind.OrientationMode
     protected int imageTiltReference;
 
-    private double eyeDistance;
+    private double cameraDistance;
 
     /**
      * Constructs a Placemark that draws its representation at the supplied position using default {@link
@@ -608,13 +608,13 @@ public class Placemark extends AbstractRenderable implements Highlightable {
         rc.globe.geographicToCartesian(this.position.latitude, this.position.longitude, this.position.altitude,
             placePoint);
 
-        // Compute the eye distance to the place point, the value which is used for ordering the placemark drawable and
-        // determining the amount of depth offset to apply.
-        this.eyeDistance = rc.eyePoint.distanceTo(placePoint);
+        // Compute the camera distance to the place point, the value which is used for ordering the placemark drawable
+        // and determining the amount of depth offset to apply.
+        this.cameraDistance = rc.cameraPoint.distanceTo(placePoint);
 
         // Compute a screen depth offset appropriate for the current viewing parameters.
         double depthOffset = 0;
-        if (this.eyeDistance < rc.horizonDistance) {
+        if (this.cameraDistance < rc.horizonDistance) {
             depthOffset = DEFAULT_DEPTH_OFFSET;
         }
 
@@ -635,7 +635,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
                 Pool<DrawableLines> pool = rc.getDrawablePool(DrawableLines.class);
                 DrawableLines drawable = DrawableLines.obtain(pool);
                 this.prepareDrawableLeader(rc, drawable);
-                rc.offerShapeDrawable(drawable, this.eyeDistance);
+                rc.offerShapeDrawable(drawable, this.cameraDistance);
             }
         }
 
@@ -648,7 +648,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
             Pool<DrawableScreenTexture> pool = rc.getDrawablePool(DrawableScreenTexture.class);
             DrawableScreenTexture drawable = DrawableScreenTexture.obtain(pool);
             this.prepareDrawableIcon(rc, drawable);
-            rc.offerShapeDrawable(drawable, this.eyeDistance);
+            rc.offerShapeDrawable(drawable, this.cameraDistance);
         }
 
         // Release references to objects stored in the render resource cache.
@@ -683,10 +683,10 @@ public class Placemark extends AbstractRenderable implements Highlightable {
             this.activeTexture = null; // there is no imageSource; draw a simple colored square
         }
 
-        // Compute an eye-position proximity scaling factor, so that distant placemarks can be scaled smaller than
+        // Compute an camera-position proximity scaling factor, so that distant placemarks can be scaled smaller than
         // nearer placemarks.
         double visibilityScale = this.isEyeDistanceScaling() ?
-            Math.max(this.activeAttributes.minimumImageScale, Math.min(1, this.getEyeDistanceScalingThreshold() / this.eyeDistance)) : 1;
+            Math.max(this.activeAttributes.minimumImageScale, Math.min(1, this.getEyeDistanceScalingThreshold() / this.cameraDistance)) : 1;
 
         // Initialize the unit square transform to the identity matrix.
         unitSquareTransform.setToIdentity();
@@ -723,7 +723,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
         // ... perform image rotation
         if (this.imageRotation != 0) {
             double rotation = this.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
-                rc.heading - this.imageRotation : -this.imageRotation;
+                rc.camera.heading - this.imageRotation : -this.imageRotation;
             unitSquareTransform.multiplyByTranslation(0.5, 0.5, 0);
             unitSquareTransform.multiplyByRotation(0, 0, 1, rotation);
             unitSquareTransform.multiplyByTranslation(-0.5, -0.5, 0);
@@ -732,7 +732,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
         // ... and perform the tilt so that the image tilts back from its base into the view volume.
         if (this.imageTilt != 0) {
             double tilt = this.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
-                rc.tilt + this.imageTilt : this.imageTilt;
+                rc.camera.tilt + this.imageTilt : this.imageTilt;
             unitSquareTransform.multiplyByRotation(-1, 0, 0, tilt);
         }
     }
@@ -816,6 +816,6 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     protected boolean mustDrawLeader(RenderContext rc) {
         return this.activeAttributes.drawLeader
             && this.activeAttributes.leaderAttributes != null
-            && (this.enableLeaderPicking || !rc.pickingMode);
+            && (this.enableLeaderPicking || !rc.isPickingMode());
     }
 }

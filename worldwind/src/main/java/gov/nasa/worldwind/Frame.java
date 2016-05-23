@@ -16,13 +16,21 @@ public class Frame {
 
     public final Rect viewport = new Rect();
 
-    public final Matrix4 modelview = new Matrix4();
-
     public final Matrix4 projection = new Matrix4();
+
+    public final Matrix4 modelview = new Matrix4();
 
     public final DrawableQueue drawableQueue = new DrawableQueue();
 
     public final DrawableList drawableTerrain = new DrawableList();
+
+//    public final PickedObjectList pickedObjects = new PickedObjectList();
+//
+//    private boolean isDone;
+//
+//    private Lock doneLock = new ReentrantLock();
+//
+//    private Condition doneCondition = this.doneLock.newCondition();
 
     private Pool<Frame> pool;
 
@@ -39,12 +47,37 @@ public class Frame {
         return this;
     }
 
+//    public void awaitDone() {
+//        this.doneLock.lock();
+//        try {
+//            while (!this.isDone) {
+//                this.doneCondition.await();
+//            }
+//        } catch (InterruptedException ignored) {
+//            // silently ignore interrupted exceptions, but stop waiting
+//        } finally {
+//            this.doneLock.unlock();
+//        }
+//    }
+//
+//    public void signalDone() {
+//        this.doneLock.lock();
+//        try {
+//            this.isDone = true;
+//            this.doneCondition.signalAll();
+//        } finally {
+//            this.doneLock.unlock();
+//        }
+//    }
+
     public void recycle() {
         this.viewport.setEmpty();
-        this.modelview.setToIdentity();
         this.projection.setToIdentity();
+        this.modelview.setToIdentity();
         this.drawableQueue.clearDrawables();
         this.drawableTerrain.clearDrawables();
+        //this.pickedObjects.clearPickedObjects(); // TODO
+        //this.isDone = false;
 
         if (this.pool != null) { // return this instance to the pool
             this.pool.release(this);
