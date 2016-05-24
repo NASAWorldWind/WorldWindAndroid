@@ -10,8 +10,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.LayoutRes;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -21,10 +19,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.geom.LookAt;
 
 /**
  * This abstract Activity class implements a Navigation Drawer menu shared by all the World Wind Example activities.
@@ -205,7 +201,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity
                 startActivity(new Intent(getApplicationContext(), NavigatorEventActivity.class));
                 break;
             case R.id.nav_placemark_drag_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarkDragActivity.class));
+                startActivity(new Intent(getApplicationContext(), PlacemarksSelectDragActivity.class));
                 break;
             case R.id.nav_placemarks_activity:
                 startActivity(new Intent(getApplicationContext(), PlacemarksActivity.class));

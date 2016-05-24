@@ -65,8 +65,8 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-            android:name=".PlacemarkDragActivity"
-            android:label="@string/title_placemark_drag"
+            android:name=".PlacemarksSelectDragActivity"
+            android:label="@string/title_placemarks_select_drag"
             android:launchMode="singleInstance"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>

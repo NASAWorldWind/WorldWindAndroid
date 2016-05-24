@@ -32,10 +32,6 @@
             android:icon="@android:drawable/ic_menu_compass"
             android:title="@string/title_navigator_event"/>
         <item
-            android:id="@+id/nav_placemark_drag_activity"
-            android:icon="@android:drawable/ic_menu_myplaces"
-            android:title="@string/title_placemark_drag"/>
-        <item
             android:id="@+id/nav_placemarks_activity"
             android:icon="@android:drawable/ic_menu_myplaces"
             android:title="@string/title_placemarks"/>
@@ -43,6 +39,10 @@
             android:id="@+id/nav_placemarks_stress_activity"
             android:icon="@android:drawable/ic_menu_myplaces"
             android:title="@string/title_placemarks_stress_test"/>
+        <item
+            android:id="@+id/nav_placemark_drag_activity"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="@string/title_placemarks_select_drag"/>
         <item
             android:id="@+id/nav_placemarks_milstd2525_activity"
             android:icon="@android:drawable/ic_menu_myplaces"
