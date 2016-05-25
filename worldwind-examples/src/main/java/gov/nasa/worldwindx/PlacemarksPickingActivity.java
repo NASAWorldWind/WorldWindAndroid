@@ -49,19 +49,13 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
         // TODO: Also move above the layer declaration
 
         // Create a few placemarks with highlight attributes and add them to the layer
-        Placemark koxr = createAirportPlacemark(Position.fromDegrees(34.200, -119.207, 0), "Oxnard Airport");
-        Placemark kcma = createAirportPlacemark(Position.fromDegrees(34.2138, -119.0944, 0), "Camarillo Airport");
-        Placemark kntd = createAirportPlacemark(Position.fromDegrees(34.1193, -119.1196, 0), "Pt Mugu Naval Air Station");
-        Placemark plane = createAircraftPlacemark(Position.fromDegrees(34.15, -119.15, 2000));
-        layer.addRenderable(koxr);
-        layer.addRenderable(kcma);
-        layer.addRenderable(kntd);
-        layer.addRenderable(plane);
+        layer.addRenderable(createAirportPlacemark(Position.fromDegrees(34.2000, -119.2070, 0), "Oxnard Airport"));
+        layer.addRenderable(createAirportPlacemark(Position.fromDegrees(34.2138, -119.0944, 0), "Camarillo Airport"));
+        layer.addRenderable(createAirportPlacemark(Position.fromDegrees(34.1193, -119.1196, 0), "Pt Mugu Naval Air Station"));
+        layer.addRenderable(createAircraftPlacemark(Position.fromDegrees(34.15, -119.15, 2000)));
 
-        // And finally, for this demo, position the viewer to look at the aircraft
-        Position pos = plane.getPosition();
-        LookAt lookAt = new LookAt().set(pos.latitude, pos.longitude, 0, WorldWind.ABSOLUTE,
-            2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
+        // Position the viewer to look near the airports
+        LookAt lookAt = new LookAt().set(34.15, -119.15, 0, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
         this.getWorldWindow().getNavigator().setAsLookAt(this.getWorldWindow().getGlobe(), lookAt);
     }
 
