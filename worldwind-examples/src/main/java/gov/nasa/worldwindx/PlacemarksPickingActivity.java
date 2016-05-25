@@ -110,9 +110,9 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
             }
 
             @Override
-            public boolean onSingleTapUp(MotionEvent e) {
+            public boolean onSingleTapConfirmed(MotionEvent e) {
                 toggleSelection();  // Highlight the picked object
-                return false;       // By not consuming this event, we allow the ACTION_UP event to pass on the navigation gestures
+                return true;
             }
         });
 
