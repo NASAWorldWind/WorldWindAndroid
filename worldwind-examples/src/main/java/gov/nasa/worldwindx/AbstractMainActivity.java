@@ -200,9 +200,6 @@ public abstract class AbstractMainActivity extends AppCompatActivity
             case R.id.nav_navigator_event_activity:
                 startActivity(new Intent(getApplicationContext(), NavigatorEventActivity.class));
                 break;
-            case R.id.nav_placemark_drag_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksSelectDragActivity.class));
-                break;
             case R.id.nav_placemarks_activity:
                 startActivity(new Intent(getApplicationContext(), PlacemarksActivity.class));
                 break;
@@ -211,6 +208,12 @@ public abstract class AbstractMainActivity extends AppCompatActivity
                 break;
             case R.id.nav_placemarks_milstd2525_stress_activity:
                 startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525StressActivity.class));
+                break;
+            case R.id.nav_placemarks_picking_activity:
+                startActivity(new Intent(getApplicationContext(), PlacemarksPickingActivity.class));
+                break;
+            case R.id.nav_placemarks_select_drag_activity:
+                startActivity(new Intent(getApplicationContext(), PlacemarksSelectDragActivity.class));
                 break;
             case R.id.nav_placemarks_stress_activity:
                 startActivity(new Intent(getApplicationContext(), PlacemarksStressTestActivity.class));
