@@ -93,7 +93,9 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
             "Single-tap an icon to toggle the highlight attributes.\n" +
             "Double-tap an aircraft icon to open an editor.\n" +
             "Dragging a highlighted aircraft icon moves it.\n" +
-            "Long-press displays some context information.");
+            "Long-press displays some context information.\n\n" +
+            "Aircraft icons are selectable, movable, and editable.\n" +
+            "Aiport icons are only selectable.");
 
         // Initialize the mapping of aircraft types to their icons.
         for (int i = 0; i < aircraftTypes.length; i++) {
