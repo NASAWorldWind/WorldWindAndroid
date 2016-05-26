@@ -7,9 +7,14 @@ package gov.nasa.worldwind;
 
 import android.graphics.Rect;
 
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import gov.nasa.worldwind.draw.DrawableList;
 import gov.nasa.worldwind.draw.DrawableQueue;
 import gov.nasa.worldwind.geom.Matrix4;
+import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.util.Pool;
 
 public class Frame {
@@ -24,13 +29,19 @@ public class Frame {
 
     public final DrawableList drawableTerrain = new DrawableList();
 
-//    public final PickedObjectList pickedObjects = new PickedObjectList();
-//
-//    private boolean isDone;
-//
-//    private Lock doneLock = new ReentrantLock();
-//
-//    private Condition doneCondition = this.doneLock.newCondition();
+    public PickedObjectList pickedObjects;
+
+    public Vec2 pickPoint;
+
+    public boolean pickMode;
+
+    private boolean isDone;
+
+    private boolean isAwaitingDone;
+
+    private final Lock doneLock = new ReentrantLock();
+
+    private final Condition doneCondition = this.doneLock.newCondition();
 
     private Pool<Frame> pool;
 
@@ -39,36 +50,15 @@ public class Frame {
 
     public static Frame obtain(Pool<Frame> pool) {
         Frame instance = pool.acquire(); // get an instance from the pool
-        return (instance != null) ? instance.setPool(pool) : new Frame().setPool(pool);
+        return (instance != null) ? instance.init(pool) : new Frame().init(pool);
     }
 
-    private Frame setPool(Pool<Frame> pool) {
+    private Frame init(Pool<Frame> pool) {
         this.pool = pool;
+        this.isDone = false;
+        this.isAwaitingDone = false;
         return this;
     }
-
-//    public void awaitDone() {
-//        this.doneLock.lock();
-//        try {
-//            while (!this.isDone) {
-//                this.doneCondition.await();
-//            }
-//        } catch (InterruptedException ignored) {
-//            // silently ignore interrupted exceptions, but stop waiting
-//        } finally {
-//            this.doneLock.unlock();
-//        }
-//    }
-//
-//    public void signalDone() {
-//        this.doneLock.lock();
-//        try {
-//            this.isDone = true;
-//            this.doneCondition.signalAll();
-//        } finally {
-//            this.doneLock.unlock();
-//        }
-//    }
 
     public void recycle() {
         this.viewport.setEmpty();
@@ -76,12 +66,39 @@ public class Frame {
         this.modelview.setToIdentity();
         this.drawableQueue.clearDrawables();
         this.drawableTerrain.clearDrawables();
-        //this.pickedObjects.clearPickedObjects(); // TODO
-        //this.isDone = false;
+        this.pickedObjects = null;
+        this.pickPoint = null;
+        this.pickMode = false;
 
         if (this.pool != null) { // return this instance to the pool
             this.pool.release(this);
             this.pool = null;
+        }
+    }
+
+    public void awaitDone() {
+        this.doneLock.lock();
+        try {
+            while (!this.isDone) {
+                this.isAwaitingDone = true;
+                this.doneCondition.await();
+            }
+        } catch (InterruptedException ignored) {
+            // stop waiting, but suppress any exception logging
+        } finally {
+            this.doneLock.unlock();
+        }
+    }
+
+    public void signalDone() {
+        this.doneLock.lock();
+        try {
+            this.isDone = true;
+            if (this.isAwaitingDone) {
+                this.doneCondition.signal();
+            }
+        } finally {
+            this.doneLock.unlock();
         }
     }
 }

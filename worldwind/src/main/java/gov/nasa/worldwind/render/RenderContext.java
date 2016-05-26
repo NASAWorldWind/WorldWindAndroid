@@ -11,6 +11,8 @@ import android.graphics.Rect;
 import java.util.HashMap;
 import java.util.Map;
 
+import gov.nasa.worldwind.PickedObject;
+import gov.nasa.worldwind.PickedObjectList;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableList;
@@ -67,17 +69,21 @@ public class RenderContext {
 
     public DrawableList drawableTerrain;
 
-    //public PickedObjectList pickedObjects;
+    public PickedObjectList pickedObjects;
+
+    private int pickedObjectId;
+
+    public boolean pickMode;
 
     private boolean redrawRequested;
-
-    private boolean pickingMode;
 
     private double pixelSizeFactor;
 
     private Map<Object, Pool<?>> drawablePools = new HashMap<>();
 
     private Map<Object, Object> userProperties = new HashMap<>();
+
+    private static final int MAX_PICKED_OBJECT_ID = 0xFFFFFF;
 
     public RenderContext() {
     }
@@ -99,12 +105,13 @@ public class RenderContext {
         this.frustum.setToUnitFrustum();
         this.renderResourceCache = null;
         this.resources = null;
-        this.redrawRequested = false;
-        //this.pickingMode = false;
-        this.pixelSizeFactor = 0;
         this.drawableQueue = null;
         this.drawableTerrain = null;
-        //this.pickedObjects = null;
+        this.pickedObjects = null;
+        this.pickedObjectId = 0;
+        this.pickMode = false;
+        this.redrawRequested = false;
+        this.pixelSizeFactor = 0;
         this.userProperties.clear();
     }
 
@@ -114,14 +121,6 @@ public class RenderContext {
 
     public void requestRedraw() {
         this.redrawRequested = true;
-    }
-
-    public boolean isPickingMode() {
-        return this.pickingMode;
-    }
-
-    public void enablePickingMode() {
-        this.pickingMode = true;
     }
 
     /**
@@ -366,6 +365,10 @@ public class RenderContext {
         }
     }
 
+    public int drawableCount() {
+        return (this.drawableQueue != null) ? this.drawableQueue.count() : 0;
+    }
+
     @SuppressWarnings("unchecked")
     public <T extends Drawable> Pool<T> getDrawablePool(Class<T> key) {
         Pool<T> pool = (Pool<T>) this.drawablePools.get(key);
@@ -376,6 +379,22 @@ public class RenderContext {
         }
 
         return pool;
+    }
+
+    public void offerPickedObject(PickedObject pickedObject) {
+        if (this.pickedObjects != null) {
+            this.pickedObjects.offerPickedObject(pickedObject);
+        }
+    }
+
+    public int nextPickedObjectId() {
+        this.pickedObjectId++;
+
+        if (this.pickedObjectId > MAX_PICKED_OBJECT_ID) {
+            this.pickedObjectId = 1;
+        }
+
+        return this.pickedObjectId;
     }
 
     public Object getUserProperty(Object key) {

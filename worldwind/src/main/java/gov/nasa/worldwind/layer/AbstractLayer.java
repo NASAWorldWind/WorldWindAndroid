@@ -123,7 +123,7 @@ public abstract class AbstractLayer implements Layer {
             return;
         }
 
-        if (rc.isPickingMode() && !this.pickEnabled) {
+        if (rc.pickMode && !this.pickEnabled) {
             return;
         }
 

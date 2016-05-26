@@ -32,6 +32,7 @@ import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Matrix4;
+import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.GeographicProjection;
 import gov.nasa.worldwind.globe.Globe;
@@ -86,8 +87,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     protected Pool<Frame> framePool = new SynchronizedPool<>();
 
     protected ConcurrentLinkedQueue<Frame> frameQueue = new ConcurrentLinkedQueue<>();
-
-    //protected ConcurrentLinkedQueue<Frame> pickQueue = new ConcurrentLinkedQueue<>();
 
     protected Frame currentFrame;
 
@@ -345,38 +344,32 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.worldWindowController.setWorldWindow(this); // attach the new controller
     }
 
-//    public PickedObjectList pick(float x, float y) {
-//        // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
-//        Frame frame = Frame.obtain(this.framePool);
-//        this.rc.markPickingMode(); // TODO should we modify RenderContext here, or just the frame?
-//        // TODO establish pick point
-//        // TODO modify rendering to adjust behavior for picking mode
-//        this.renderFrame(frame);
-//
-//        // Enqueue the frame for processing on the OpenGL thread as soon as possible, then wake the OpenGL thread.
-//        this.pickQueue.offer(frame);
-//        super.requestRender();
-//
-//        // Reset the render context's state in preparation for another frame (either for picking or for drawing).
-//        this.rc.reset();
-//
-//        // Wait until the OpenGL thread processes the frame.
-//        frame.awaitDone();
-//
-//        // Return the resolved picked objects to the caller and recycle the pick frame back into the pool.
-//        PickedObjectList result = new PickedObjectList(); // TODO copy frame.pickedObjects
-//        frame.recycle();
-//
-//        return result;
-//    }
-//
-//    public PickedObjectList pickTerrain(float x, float y) {
-//        return null; // TODO
-//    }
-//
-//    public PickedObjectList pickShapesInRect(float left, float top, float right, float bottom) {
-//        return null; // TODO
-//    }
+    public PickedObjectList pick(float x, float y) {
+        // Allocate a list in which to collect and return the picked objects, and convert the pick point from Android
+        // screen coordinates to OpenGL screen coordinates.
+        PickedObjectList pickedObjects = new PickedObjectList();
+        Vec2 screenPoint = new Vec2(x, this.viewport.height() - y);
+
+        // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
+        Frame frame = Frame.obtain(this.framePool);
+        frame.pickedObjects = pickedObjects;
+        frame.pickPoint = screenPoint;
+        frame.pickMode = true;
+        this.renderFrame(frame);
+
+        // Wait until the OpenGL thread is done processing the frame and resolving the picked objects.
+        frame.awaitDone();
+
+        return pickedObjects;
+    }
+
+    //public PickedObjectList pickTerrain(float x, float y) {
+    //    return null; // TODO
+    //}
+    //
+    //public PickedObjectList pickShapesInRect(float left, float top, float right, float bottom) {
+    //    return null; // TODO
+    //}
 
     /**
      * Transforms a Cartesian coordinate point to Android screen coordinates. The resultant screen point is in Android
@@ -614,16 +607,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.waitingForRedraw = false;
 
         // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
+        // The frame is recycled by the OpenGL thread.
         Frame frame = Frame.obtain(this.framePool);
-        this.beforeRenderFrame();
         this.renderFrame(frame);
-
-        // Enqueue the frame for processing on the OpenGL thread as soon as possible, then wake the OpenGL thread.
-        this.frameQueue.offer(frame);
-        super.requestRender();
-
-        // Perform any necessary actions after rendering the frame.
-        this.afterRenderFrame();
     }
 
     /**
@@ -665,6 +651,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         GLES20.glEnable(GLES20.GL_CULL_FACE);
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glEnableVertexAttribArray(0);
+        GLES20.glDisable(GLES20.GL_DITHER);
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glDepthFunc(GLES20.GL_LEQUAL);
 
@@ -690,41 +677,32 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      */
     @Override
     public void onDrawFrame(GL10 unused) {
-//        // Remove the oldest pick frame from the front of the queue and process it. This has no effect on the visible
-//        // framebuffer.
-//        Frame pickFrame = this.pickQueue.poll();
-//        if (pickFrame != null) {
-//            // TODO use a pick framebuffer
-//            // TODO modify drawing to adjust behavior for picking mode
-//            this.drawFrame(pickFrame);
-//            this.dc.reset();
-//            // TODO resolve the pick
-//            // Notify the thread that enqueued the pick frame that it's done processing on the OpenGL thread.
-//            pickFrame.signalDone();
-//
-//            // Continue processing the pick queue on the OpenGL thread until the queue is empty.
-//            // TODO is this necessary here? does it cause duplicate frames when combined with the draw requestRener below?
-//            super.requestRender();
-//        }
+        // Remove and process pick frames from the front of the queue, recycling them back into the pool. The oldest
+        // non-pick frame, if any, is stored in nextFrame after this loop exits.
+        Frame nextFrame;
+        while ((nextFrame = this.frameQueue.poll()) != null && nextFrame.pickMode) {
+            this.drawFrame(nextFrame);
+            nextFrame.signalDone();
+            nextFrame.recycle();
+        }
 
-        // Remove the oldest frame from the front of the queue and recycle the previous frame back into the pool.
-        Frame nextFrame = this.frameQueue.poll();
+        // Switch to the frame at the front of the queue and recycle the previous frame back into the pool. Continue
+        // requesting frames on the OpenGL thread until the queue is empty. This is critical for correct operation as
+        // calls to requestRender do not accumulate. Multiple enqueued pick frames may result in a single execution of
+        // onDrawFrame, yet all must be processed or the main thread can deadlock.
         if (nextFrame != null) {
             if (this.currentFrame != null) {
                 this.currentFrame.recycle();
             }
             this.currentFrame = nextFrame;
-
-            // Continue processing the frame queue on the OpenGL thread until the queue is empty. This has the result of
-            // drawing the last frame twice, but improves overall concurrency between render and draw.
             super.requestRender();
         }
 
-        // Process and display the Drawables accumulated during the render phase.
+        // Process and display the Drawables accumulated in the last frame taken from the front of the queue. This frame
+        // may be displayed multiple times if the OpenGL thread runs more often than the World Window enqueues frames.
         if (this.currentFrame != null) {
-            this.beforeDrawFrame();
             this.drawFrame(this.currentFrame);
-            this.afterDrawFrame();
+            this.currentFrame.signalDone();
         }
     }
 
@@ -797,6 +775,12 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     protected void renderFrame(Frame frame) {
+        // Mark the beginning of a frame render.
+        boolean pickMode = frame.pickMode;
+        if (!pickMode) {
+            this.frameMetrics.beginRendering();
+        }
+
         // Setup the render context according to the World Window's current state.
         this.rc.globe = this.globe;
         this.rc.layers = this.layers;
@@ -822,35 +806,43 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // Accumulate the Drawables in the frame's drawable queue and drawable terrain data structures.
         this.rc.drawableQueue = frame.drawableQueue;
         this.rc.drawableTerrain = frame.drawableTerrain;
-        //this.rc.pickedObjects = frame.pickedObjects;
+        this.rc.pickedObjects = frame.pickedObjects;
+        this.rc.pickMode = frame.pickMode;
 
         // Let the frame controller render the World Window's current state.
         this.frameController.renderFrame(this.rc);
-    }
 
-    protected void beforeRenderFrame() {
-        // Mark the beginning of a frame render.
-        this.frameMetrics.beginRendering();
-    }
+        // Enqueue the frame for processing on the OpenGL thread as soon as possible and wake the OpenGL thread.
+        this.frameQueue.offer(frame);
+        super.requestRender();
 
-    protected void afterRenderFrame() {
         // Propagate redraw requests submitted during rendering. The render context provides a layer of indirection that
         // insulates rendering code from establishing a dependency on a specific WorldWindow.
-        if (this.rc.isRedrawRequested()) {
+        if (!pickMode && this.rc.isRedrawRequested()) {
             this.requestRedraw();
         }
 
         // Notify navigator change listeners when the modelview matrix associated with the frame has changed.
-        this.navigatorEvents.onFrameRendered(this.rc);
+        if (!pickMode) {
+            this.navigatorEvents.onFrameRendered(this.rc);
+        }
 
         // Reset the render context's state in preparation for the next frame.
         this.rc.reset();
 
         // Mark the end of a frame render.
-        this.frameMetrics.endRendering();
+        if (!pickMode) {
+            this.frameMetrics.endRendering();
+        }
     }
 
     protected void drawFrame(Frame frame) {
+        // Mark the beginning of a frame draw.
+        boolean pickMode = frame.pickMode;
+        if (!pickMode) {
+            this.frameMetrics.beginDrawing();
+        }
+
         // Setup the draw context according to the frame's current state.
         this.dc.eyePoint = frame.modelview.extractEyePoint(this.dc.eyePoint);
         this.dc.projection.set(frame.projection);
@@ -861,41 +853,41 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // Process the drawables in the frame's drawable queue and drawable terrain data structures.
         this.dc.drawableQueue = frame.drawableQueue;
         this.dc.drawableTerrain = frame.drawableTerrain;
-        //this.dc.pickedObjects = frame.pickedObjects;
+        this.dc.pickedObjects = frame.pickedObjects;
+        this.dc.pickPoint = frame.pickPoint;
+        this.dc.pickMode = frame.pickMode;
 
-        // Let the frame controller draw the frame's.
+        // Let the frame controller draw the frame.
         this.frameController.drawFrame(this.dc);
-    }
 
-    protected void beforeDrawFrame() {
-        // Mark the beginning of a frame draw.
-        this.frameMetrics.beginDrawing();
-    }
-
-    protected void afterDrawFrame() {
         // Release resources evicted during the previous frame.
-        this.renderResourceCache.releaseEvictedResources(this.dc);
+        if (!pickMode) {
+            this.renderResourceCache.releaseEvictedResources(this.dc);
+        }
 
         // Reset the draw context's state in preparation for the next frame.
         this.dc.reset();
 
         // Mark the end of a frame draw.
-        this.frameMetrics.endDrawing();
+        if (!pickMode) {
+            this.frameMetrics.endDrawing();
+        }
     }
 
     protected void clearFrameQueue() {
-        // Clear the frame queue and recycle pending frames back into the frame pool.
+        // Clear the frame queue and recycle pending frames back into the frame pool. Mark the frame as done to ensure
+        // that threads waiting for the frame to finish don't deadlock.
         Frame frame;
         while ((frame = this.frameQueue.poll()) != null) {
+            frame.signalDone();
             frame.recycle();
         }
         this.frameQueue.clear();
 
-        // Clear the pick queue and recycle pending pick frames back into the frame pool.
-        // TODO
-
-        // Recycle the current frame back into the frame pool.
+        // Recycle the current frame back into the frame pool. Mark the frame as done to ensure that threads waiting for
+        // the frame to finish don't deadlock.
         if (this.currentFrame != null) {
+            this.currentFrame.signalDone();
             this.currentFrame.recycle();
             this.currentFrame = null;
         }
