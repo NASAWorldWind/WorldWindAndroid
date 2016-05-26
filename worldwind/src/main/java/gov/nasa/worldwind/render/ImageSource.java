@@ -67,7 +67,6 @@ public class ImageSource {
         imageSource.source = bitmap;
         imageSource.key = nextBitmapKey();
         imageSource.type = TYPE_BITMAP;
-
         return imageSource;
     }
 
@@ -84,7 +83,6 @@ public class ImageSource {
         imageSource.source = id;
         imageSource.key = id;
         imageSource.type = TYPE_RESOURCE;
-
         return imageSource;
     }
 
@@ -107,7 +105,6 @@ public class ImageSource {
         imageSource.source = pathName;
         imageSource.key = pathName;
         imageSource.type = TYPE_FILE_PATH;
-
         return imageSource;
     }
 
@@ -131,7 +128,6 @@ public class ImageSource {
         imageSource.source = urlString;
         imageSource.key = urlString;
         imageSource.type = TYPE_URL;
-
         return imageSource;
     }
 

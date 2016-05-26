@@ -102,7 +102,10 @@ public class Location {
      * @return the new location
      */
     public static Location fromDegrees(double latitudeDegrees, double longitudeDegrees) {
-        return new Location(latitudeDegrees, longitudeDegrees);
+        Location loc = new Location();
+        loc.latitude = latitudeDegrees;
+        loc.longitude = longitudeDegrees;
+        return loc;
     }
 
     /**
@@ -114,7 +117,10 @@ public class Location {
      * @return the new location
      */
     public static Location fromRadians(double latitudeRadians, double longitudeRadians) {
-        return new Location(Math.toDegrees(latitudeRadians), Math.toDegrees(longitudeRadians));
+        Location loc = new Location();
+        loc.latitude = Math.toDegrees(latitudeRadians);
+        loc.longitude = Math.toDegrees(longitudeRadians);
+        return loc;
     }
 
     /**
