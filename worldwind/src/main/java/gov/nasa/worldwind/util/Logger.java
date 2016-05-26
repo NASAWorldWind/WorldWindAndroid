@@ -85,6 +85,7 @@ public class Logger {
         messageTable.put("missingTileUrlFactory", "The tile url factory is null");
         messageTable.put("missingTessellator", "The tessellator is null");
         messageTable.put("missingUrl", "The url is null");
+        messageTable.put("missingViewport", "The viewport is null");
         messageTable.put("missingVector", "The vector is null");
         messageTable.put("missingVersion", "The version is null");
         messageTable.put("missingWorldWindow", "The world window is null");

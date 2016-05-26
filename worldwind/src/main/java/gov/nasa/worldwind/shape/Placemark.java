@@ -5,8 +5,6 @@
 
 package gov.nasa.worldwind.shape;
 
-import android.graphics.Rect;
-
 import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.draw.DrawableLines;
@@ -15,6 +13,7 @@ import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.geom.Viewport;
 import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
@@ -56,7 +55,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
 
     private static Matrix4 unitSquareTransform = new Matrix4();
 
-    private static Rect screenBounds = new Rect();
+    private static Viewport screenBounds = new Viewport();
 
     /**
      * The placemark's geographic position.
@@ -654,7 +653,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
 
         // If the placemark's icon is visible, enqueue a drawable icon for processing on the OpenGL thread.
         WWMath.boundingRectForUnitSquare(unitSquareTransform, screenBounds);
-        if (Rect.intersects(rc.viewport, screenBounds)) {
+        if (rc.viewport.intersects(screenBounds)) {
             Pool<DrawableScreenTexture> pool = rc.getDrawablePool(DrawableScreenTexture.class);
             DrawableScreenTexture drawable = DrawableScreenTexture.obtain(pool);
             this.prepareDrawableIcon(rc, drawable);
