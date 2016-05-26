@@ -11,10 +11,13 @@ import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.globe.Tessellator;
 import gov.nasa.worldwind.layer.LayerList;
+import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Logger;
 
 public class BasicFrameController implements FrameController {
+
+    private Color pickColor;
 
     public BasicFrameController() {
     }
@@ -55,6 +58,10 @@ public class BasicFrameController implements FrameController {
     public void drawFrame(DrawContext dc) {
         this.clearFrame(dc);
         this.drawDrawables(dc);
+
+        if (dc.pickMode) {
+            this.resolvePick(dc);
+        }
     }
 
     protected void clearFrame(DrawContext dc) {
@@ -73,6 +80,31 @@ public class BasicFrameController implements FrameController {
                     "Exception while drawing \'" + next + "\'", e);
                 // Keep going. Draw the remaining drawables.
             }
+        }
+    }
+
+    protected void resolvePick(DrawContext dc) {
+        if (dc.pickedObjects.count() == 0) {
+            return; // no eligible objects; avoid expensive calls to glReadPixels
+        }
+
+        // Read the fragment color at the pick point.
+        this.pickColor = dc.readPixelColor((int) Math.round(dc.pickPoint.x), (int) Math.round(dc.pickPoint.y), this.pickColor);
+
+        // Convert the fragment color to a picked object ID. This returns zero if the color cannot indicate a picked
+        // object ID, in which case no objects have been drawn at the pick point.
+        int topObjectId = PickedObject.uniqueColorToIdentifier(this.pickColor);
+        if (topObjectId != 0) {
+            PickedObject topObject = dc.pickedObjects.pickedObjectWithId(topObjectId);
+            if (topObject != null) {
+                topObject.markOnTop();
+                dc.pickedObjects.clearPickedObjects();
+                dc.pickedObjects.offerPickedObject(topObject);
+            } else {
+                dc.pickedObjects.clearPickedObjects(); // no eligible objects drawn at the pick point
+            }
+        } else {
+            dc.pickedObjects.clearPickedObjects(); // no objects drawn at the pick point
         }
     }
 }

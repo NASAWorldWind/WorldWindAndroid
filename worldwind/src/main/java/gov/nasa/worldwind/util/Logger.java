@@ -54,6 +54,7 @@ public class Logger {
         messageTable.put("missingFrameMetrics", "The frame metrics argument is null");
         messageTable.put("missingGlobe", "The globe is null");
         messageTable.put("missingImageFormat", "The image format is null");
+        messageTable.put("missingIterable", "The iterable is null");
         messageTable.put("missingKey", "The key is null");
         messageTable.put("missingLayer", "The layer is null");
         messageTable.put("missingLayerNames", "The layer names are null");

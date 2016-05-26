@@ -64,7 +64,11 @@ public class Position extends Location {
      * @return the new position
      */
     public static Position fromDegrees(double latitudeDegrees, double longitudeDegrees, double altitude) {
-        return new Position(latitudeDegrees, longitudeDegrees, altitude);
+        Position pos = new Position();
+        pos.latitude = latitudeDegrees;
+        pos.longitude = longitudeDegrees;
+        pos.altitude = altitude;
+        return pos;
     }
 
     /**
@@ -77,7 +81,11 @@ public class Position extends Location {
      * @return the new position
      */
     public static Position fromRadians(double latitudeRadians, double longitudeRadians, double altitude) {
-        return new Position(Math.toDegrees(latitudeRadians), Math.toDegrees(longitudeRadians), altitude);
+        Position pos = new Position();
+        pos.latitude = Math.toDegrees(latitudeRadians);
+        pos.longitude = Math.toDegrees(longitudeRadians);
+        pos.altitude = altitude;
+        return pos;
     }
 
     @Override

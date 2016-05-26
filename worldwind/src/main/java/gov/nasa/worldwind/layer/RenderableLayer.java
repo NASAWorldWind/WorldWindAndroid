@@ -23,6 +23,16 @@ public class RenderableLayer extends AbstractLayer implements Iterable<Renderabl
         super(displayName);
     }
 
+    public RenderableLayer(RenderableLayer layer) {
+        if (layer == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "RenderableLayer", "constructor", "missingLayer"));
+        }
+
+        this.setDisplayName(layer.displayName);
+        this.addAllRenderables(layer);
+    }
+
     public RenderableLayer(Iterable<? extends Renderable> renderables) {
         if (renderables == null) {
             throw new IllegalArgumentException(
@@ -118,13 +128,28 @@ public class RenderableLayer extends AbstractLayer implements Iterable<Renderabl
         this.renderables.add(index, renderable);
     }
 
-    public void addAllRenderables(Iterable<? extends Renderable> renderables) {
-        if (renderables == null) {
+    public void addAllRenderables(RenderableLayer layer) {
+        if (layer == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "RenderableLayer", "addAllRenderables", "missingList"));
+                Logger.logMessage(Logger.ERROR, "RenderableLayer", "addAllRenderables", "missingLayer"));
         }
 
-        for (Renderable renderable : renderables) {
+        ArrayList<Renderable> thisList = this.renderables;
+        ArrayList<Renderable> thatList = layer.renderables;
+        thisList.ensureCapacity(thatList.size());
+
+        for (int idx = 0, len = thatList.size(); idx < len; idx++) {
+            thisList.add(thatList.get(idx)); // we know the contents of layer.renderables is valid
+        }
+    }
+
+    public void addAllRenderables(Iterable<? extends Renderable> iterable) {
+        if (iterable == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "RenderableLayer", "addAllRenderables", "missingIterable"));
+        }
+
+        for (Renderable renderable : iterable) {
             if (renderable == null) {
                 throw new IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "RenderableLayer", "addAllRenderables", "missingRenderable"));

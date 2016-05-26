@@ -19,6 +19,8 @@ public class BasicShaderProgram extends ShaderProgram {
 
     public static final Object KEY = BasicShaderProgram.class;
 
+    protected int enablePickModeId;
+
     protected int enableTextureId;
 
     protected int mvpMatrixId;
@@ -43,6 +45,9 @@ public class BasicShaderProgram extends ShaderProgram {
     }
 
     protected void initProgram(DrawContext dc) {
+        this.enablePickModeId = GLES20.glGetUniformLocation(this.programId, "enablePickMode");
+        GLES20.glUniform1i(this.enablePickModeId, 0); // disable pick mode
+
         this.enableTextureId = GLES20.glGetUniformLocation(this.programId, "enableTexture");
         GLES20.glUniform1i(this.enableTextureId, 0); // disable texture
 
@@ -61,6 +66,10 @@ public class BasicShaderProgram extends ShaderProgram {
         GLES20.glUniform1i(this.texSamplerId, 0); // GL_TEXTURE0
     }
 
+    public void enablePickMode(boolean enable) {
+        GLES20.glUniform1i(this.enablePickModeId, enable ? 1 : 0);
+    }
+
     public void enableTexture(boolean enable) {
         GLES20.glUniform1i(this.enableTextureId, enable ? 1 : 0);
     }
@@ -76,7 +85,7 @@ public class BasicShaderProgram extends ShaderProgram {
     }
 
     public void loadColor(Color color) {
-        loadColor(color.red, color.green, color.blue, color.alpha);
+        this.loadColor(color.red, color.green, color.blue, color.alpha);
     }
 
     public void loadColor(float r, float g, float b, float a) {

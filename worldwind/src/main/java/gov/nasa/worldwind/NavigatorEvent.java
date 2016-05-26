@@ -37,6 +37,16 @@ public class NavigatorEvent {
         return instance;
     }
 
+    /**
+     * Recycle the event, making it available for re-use.
+     */
+    public void recycle() {
+        this.navigator = null;
+        this.action = WorldWind.NAVIGATOR_MOVED;
+        this.lastInputEvent = null;
+        pool.release(this);
+    }
+
     public Navigator getNavigator() {
         return this.navigator;
     }
@@ -49,15 +59,4 @@ public class NavigatorEvent {
     public InputEvent getLastInputEvent() {
         return this.lastInputEvent;
     }
-
-    /**
-     * Recycle the event, making it available to be re-used.
-     */
-    public void recycle() {
-        this.navigator = null;
-        this.action = WorldWind.NAVIGATOR_MOVED;
-        this.lastInputEvent = null;
-        pool.release(this);
-    }
-
 }

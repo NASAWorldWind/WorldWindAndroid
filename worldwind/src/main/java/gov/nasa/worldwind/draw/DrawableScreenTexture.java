@@ -63,7 +63,8 @@ public class DrawableScreenTexture implements Drawable {
             return; // program failed to build
         }
 
-        // Use the drawable's color.
+        // Use the draw context's pick mode state and use the drawable's color.
+        this.program.enablePickMode(dc.pickMode);
         this.program.loadColor(this.color);
 
         // Attempt to bind the icon's texture to multi-texture unit 0, configuring the shader program appropriately

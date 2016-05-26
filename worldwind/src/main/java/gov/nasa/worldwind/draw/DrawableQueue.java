@@ -41,6 +41,10 @@ public class DrawableQueue {
     public DrawableQueue() {
     }
 
+    public int count() {
+        return this.size;
+    }
+
     public void offerDrawable(Drawable drawable, int groupId, double depth) {
         if (drawable != null) {
             int capacity = this.entries.length;

@@ -13,51 +13,67 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import gov.nasa.worldwind.PickedObjectList;
 import gov.nasa.worldwind.geom.Matrix4;
+import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.render.Color;
 
 public class DrawContext {
 
-    public Matrix4 modelview = new Matrix4();
+    public Vec3 eyePoint = new Vec3();
 
     public Matrix4 projection = new Matrix4();
+
+    public Matrix4 modelview = new Matrix4();
 
     public Matrix4 modelviewProjection = new Matrix4();
 
     public Matrix4 screenProjection = new Matrix4();
 
-    public Vec3 eyePoint = new Vec3();
-
     public DrawableQueue drawableQueue;
 
     public DrawableList drawableTerrain;
 
-    protected int programId;
+    public PickedObjectList pickedObjects;
 
-    protected int textureUnit = GLES20.GL_TEXTURE0;
+    public Vec2 pickPoint;
 
-    protected int[] textureId = new int[32];
+    public boolean pickMode;
 
-    protected int arrayBufferId;
+    private int programId;
 
-    protected int elementArrayBufferId;
+    private int textureUnit = GLES20.GL_TEXTURE0;
 
-    protected int unitSquareBufferId;
+    private int[] textureId = new int[32];
 
-    protected ArrayList<Object> scratchList = new ArrayList<>();
+    private int arrayBufferId;
+
+    private int elementArrayBufferId;
+
+    private int unitSquareBufferId;
+
+    private ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder());
+
+    private byte[] pixelArray = new byte[4];
+
+    private ArrayList<Object> scratchList = new ArrayList<>();
 
     public DrawContext() {
     }
 
     public void reset() {
-        this.modelview.setToIdentity();
+        this.eyePoint.set(0, 0, 0);
         this.projection.setToIdentity();
+        this.modelview.setToIdentity();
         this.modelviewProjection.setToIdentity();
         this.screenProjection.setToIdentity();
-        this.eyePoint.set(0, 0, 0);
-        this.scratchList.clear();
         this.drawableQueue = null;
         this.drawableTerrain = null;
+        this.pickedObjects = null;
+        this.pickPoint = null;
+        this.pickMode = false;
+        this.scratchList.clear();
     }
 
     public void contextLost() {
@@ -245,6 +261,33 @@ public class DrawContext {
         }
 
         return this.unitSquareBufferId;
+    }
+
+    /**
+     * Reads the fragment color at a screen point in the currently active OpenGL frame buffer. The X and Y components
+     * indicate OpenGL screen coordinates, which originate in the frame buffer's lower left corner.
+     *
+     * @param x      the screen point's X component
+     * @param y      the screen point's Y component
+     * @param result an optional pre-allocated Color in which to return the fragment color, or null to return a new
+     *               color
+     *
+     * @return the result argument set to the fragment color, or a new color if the result is null
+     */
+    public Color readPixelColor(int x, int y, Color result) {
+        if (result == null) {
+            result = new Color();
+        }
+
+        GLES20.glReadPixels(x, y, 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, this.pixelBuffer.rewind());
+        this.pixelBuffer.get(this.pixelArray);
+
+        result.red = (this.pixelArray[0] & 0xFF) / (float) 0xFF;
+        result.green = (this.pixelArray[1] & 0xFF) / (float) 0xFF;
+        result.blue = (this.pixelArray[2] & 0xFF) / (float) 0xFF;
+        result.alpha = (this.pixelArray[3] & 0xFF) / (float) 0xFF;
+
+        return result;
     }
 
     /**
