@@ -5,9 +5,8 @@
 
 package gov.nasa.worldwind.util;
 
-import android.graphics.Rect;
-
 import gov.nasa.worldwind.geom.Matrix4;
+import gov.nasa.worldwind.geom.Viewport;
 
 /**
  * Collection of static methods for performing common World Wind computations.
@@ -171,11 +170,11 @@ public class WWMath {
      * corners.
      *
      * @param unitSquareTransform the matrix to apply to the unit square
-     * @param result              a pre-allocated Rect in which to return the computed bounding rectangle
+     * @param result              a pre-allocated Viewport in which to return the computed bounding rectangle
      *
      * @return the result argument set to the computed bounding rectangle
      */
-    public static Rect boundingRectForUnitSquare(Matrix4 unitSquareTransform, Rect result) {
+    public static Viewport boundingRectForUnitSquare(Matrix4 unitSquareTransform, Viewport result) {
         if (unitSquareTransform == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "WWMath", "boundingRectForUnitSquare", "missingMatrix"));
@@ -209,8 +208,7 @@ public class WWMath {
         int minY = (int) Math.min(Math.min(y1, y2), Math.min(y3, y4));
         int maxY = (int) Math.max(Math.max(y1, y2), Math.max(y3, y4));
 
-        result.set(minX, minY, maxX - minX, maxY - minY);
-        return result;
+        return result.set(minX, minY, maxX - minX, maxY - minY);
     }
 
     /**

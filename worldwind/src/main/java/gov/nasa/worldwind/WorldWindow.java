@@ -8,7 +8,6 @@ package gov.nasa.worldwind;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.Handler;
@@ -34,6 +33,7 @@ import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.geom.Viewport;
 import gov.nasa.worldwind.globe.GeographicProjection;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.GlobeWgs84;
@@ -82,7 +82,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected DrawContext dc = new DrawContext();
 
-    protected Rect viewport = new Rect();
+    protected Viewport viewport = new Viewport();
 
     protected Pool<Frame> framePool = new SynchronizedPool<>();
 
@@ -101,8 +101,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     });
 
     private Camera scratchCamera = new Camera();
-
-    private Rect scratchViewport = new Rect();
 
     private Matrix4 scratchModelview = new Matrix4();
 
@@ -348,7 +346,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // Allocate a list in which to collect and return the picked objects, and convert the pick point from Android
         // screen coordinates to OpenGL screen coordinates.
         PickedObjectList pickedObjects = new PickedObjectList();
-        Vec2 screenPoint = new Vec2(x, this.viewport.height() - y);
+        Vec2 screenPoint = new Vec2(x, this.getHeight() - y);
 
         // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
         Frame frame = Frame.obtain(this.framePool);
@@ -395,7 +393,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         }
 
         // Compute the World Window's modelview-projection matrix.
-        this.computeViewingTransform(this.scratchViewport, this.scratchProjection, this.scratchModelview);
+        this.computeViewingTransform(this.scratchProjection, this.scratchModelview);
         this.scratchProjection.multiplyByMatrix(this.scratchModelview);
 
         // Transform the model point from model coordinates to eye coordinates then to clip coordinates. This inverts
@@ -430,8 +428,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         sy = 1 - sy;
 
         // Convert the X and Y coordinates from the range [0, 1] to Android screen coordinates.
-        sx = sx * this.scratchViewport.width() + this.scratchViewport.left;
-        sy = sy * this.scratchViewport.height() + this.scratchViewport.top;
+        sx = sx * this.getWidth();
+        sy = sy * this.getHeight();
 
         // Store the Android screen coordinates in the result argument.
         result.x = (float) sx;
@@ -489,13 +487,13 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         }
 
         // Compute the World Window's inverse modelview-projection matrix.
-        this.computeViewingTransform(this.scratchViewport, this.scratchProjection, this.scratchModelview);
+        this.computeViewingTransform(this.scratchProjection, this.scratchModelview);
         this.scratchProjection.multiplyByMatrix(this.scratchModelview).invert();
 
         // Convert from Android screen coordinates to coordinates in the range [0, 1]. This enables subsequent
         // conversion to clip coordinates.
-        double sx = (x - this.scratchViewport.left) / this.scratchViewport.width();
-        double sy = (y - this.scratchViewport.top) / this.scratchViewport.height();
+        double sx = x / this.getWidth();
+        double sy = y / this.getHeight();
 
         // Convert from Android screen coordinates to OpenGL screen coordinates, both in the range [0, 1].
         sy = 1 - sy;
@@ -794,7 +792,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.rc.resources = this.getContext().getResources();
 
         // Configure the frame's Cartesian modelview matrix and eye coordinate projection matrix.
-        this.computeViewingTransform(frame.viewport, frame.projection, frame.modelview);
+        frame.viewport.set(this.viewport);
+        this.computeViewingTransform(frame.projection, frame.modelview);
         this.rc.viewport.set(frame.viewport);
         this.rc.projection.set(frame.projection);
         this.rc.modelview.set(frame.modelview);
@@ -848,7 +847,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.dc.projection.set(frame.projection);
         this.dc.modelview.set(frame.modelview);
         this.dc.modelviewProjection.setToMultiply(frame.projection, frame.modelview);
-        this.dc.screenProjection.setToScreenProjection(frame.viewport.width(), frame.viewport.height());
+        this.dc.screenProjection.setToScreenProjection(frame.viewport.width, frame.viewport.height);
 
         // Process the drawables in the frame's drawable queue and drawable terrain data structures.
         this.dc.drawableQueue = frame.drawableQueue;
@@ -893,7 +892,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         }
     }
 
-    protected void computeViewingTransform(Rect viewport, Matrix4 projection, Matrix4 modelview) {
+    protected void computeViewingTransform(Matrix4 projection, Matrix4 modelview) {
         // Compute the clip plane distances. The near distance is set to a large value that does not clip the globe's
         // surface. The far distance is set to the smallest value that does not clip the atmosphere.
         // TODO adjust the clip plane distances based on the navigator's orientation - shorter distances when the
@@ -902,11 +901,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         double near = this.navigator.getAltitude() * 0.75;
         double far = this.globe.horizonDistance(this.navigator.getAltitude(), 160000);
 
-        // Copy the World Window's viewport to the corresponding out argument.
-        viewport.set(this.viewport);
-
         // Compute a perspective projection matrix given the World Window's viewport, field of view, and clip distances.
-        projection.setToPerspectiveProjection(viewport.width(), viewport.height(), this.fieldOfView, near, far);
+        projection.setToPerspectiveProjection(this.viewport.width, this.viewport.height, this.fieldOfView, near, far);
 
         // Compute a Cartesian viewing matrix using this Navigator's properties as a Camera.
         this.navigator.getAsCamera(this.globe, this.scratchCamera);

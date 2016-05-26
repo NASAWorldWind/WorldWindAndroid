@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.render;
 
 import android.content.res.Resources;
-import android.graphics.Rect;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +21,7 @@ import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Frustum;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.geom.Viewport;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.layer.Layer;
@@ -32,6 +32,8 @@ import gov.nasa.worldwind.util.SynchronizedPool;
 import gov.nasa.worldwind.util.WWMath;
 
 public class RenderContext {
+
+    private static final int MAX_PICKED_OBJECT_ID = 0xFFFFFF;
 
     public Globe globe;
 
@@ -51,7 +53,7 @@ public class RenderContext {
 
     public Vec3 cameraPoint = new Vec3();
 
-    public Rect viewport = new Rect();
+    public Viewport viewport = new Viewport();
 
     public Matrix4 projection = new Matrix4();
 
@@ -71,9 +73,9 @@ public class RenderContext {
 
     public PickedObjectList pickedObjects;
 
-    private int pickedObjectId;
-
     public boolean pickMode;
+
+    private int pickedObjectId;
 
     private boolean redrawRequested;
 
@@ -82,8 +84,6 @@ public class RenderContext {
     private Map<Object, Pool<?>> drawablePools = new HashMap<>();
 
     private Map<Object, Object> userProperties = new HashMap<>();
-
-    private static final int MAX_PICKED_OBJECT_ID = 0xFFFFFF;
 
     public RenderContext() {
     }
@@ -138,7 +138,7 @@ public class RenderContext {
         if (this.pixelSizeFactor == 0) { // cache the scaling factor used to convert distances to pixel sizes
             double fovyDegrees = this.fieldOfView;
             double tanfovy_2 = Math.tan(Math.toRadians(fovyDegrees * 0.5));
-            this.pixelSizeFactor = 2 * tanfovy_2 / this.viewport.height();
+            this.pixelSizeFactor = 2 * tanfovy_2 / this.viewport.height;
         }
 
         return distance * this.pixelSizeFactor;
@@ -203,8 +203,8 @@ public class RenderContext {
         z = z * 0.5 + 0.5;
 
         // Convert the X and Y coordinates from the range [0,1] to screen coordinates.
-        x = x * this.viewport.width() + viewport.left;
-        y = y * this.viewport.height() + viewport.top; // viewport rectangle is inverted in OpenGL coordinates
+        x = x * this.viewport.width + this.viewport.x;
+        y = y * this.viewport.height + this.viewport.y;
 
         result.x = x;
         result.y = y;
@@ -303,8 +303,8 @@ public class RenderContext {
         z = z * 0.5 + 0.5;
 
         // Convert the X and Y coordinates from the range [0,1] to screen coordinates.
-        x = x * viewport.width() + viewport.left;
-        y = y * viewport.height() + viewport.top; // viewport rectangle is inverted in OpenGL coordinates
+        x = x * this.viewport.width + this.viewport.x;
+        y = y * this.viewport.height + this.viewport.y;
 
         result.x = x;
         result.y = y;

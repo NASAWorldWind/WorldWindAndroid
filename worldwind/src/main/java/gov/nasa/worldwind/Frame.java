@@ -5,8 +5,6 @@
 
 package gov.nasa.worldwind;
 
-import android.graphics.Rect;
-
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -15,11 +13,12 @@ import gov.nasa.worldwind.draw.DrawableList;
 import gov.nasa.worldwind.draw.DrawableQueue;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec2;
+import gov.nasa.worldwind.geom.Viewport;
 import gov.nasa.worldwind.util.Pool;
 
 public class Frame {
 
-    public final Rect viewport = new Rect();
+    public final Viewport viewport = new Viewport();
 
     public final Matrix4 projection = new Matrix4();
 
