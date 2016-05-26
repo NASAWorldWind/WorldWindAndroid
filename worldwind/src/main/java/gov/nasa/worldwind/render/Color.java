@@ -63,10 +63,10 @@ public class Color {
      * @param colorInt the color int specifying the components
      */
     public Color(int colorInt) {
-        this.red = android.graphics.Color.red(colorInt) / 255f;
-        this.green = android.graphics.Color.green(colorInt) / 255f;
-        this.blue = android.graphics.Color.blue(colorInt) / 255f;
-        this.alpha = android.graphics.Color.alpha(colorInt) / 255f;
+        this.red = android.graphics.Color.red(colorInt) / (float) 0xFF;
+        this.green = android.graphics.Color.green(colorInt) / (float) 0xFF;
+        this.blue = android.graphics.Color.blue(colorInt) / (float) 0xFF;
+        this.alpha = android.graphics.Color.alpha(colorInt) / (float) 0xFF;
     }
 
     /**
@@ -116,10 +116,10 @@ public class Color {
      * @return this color with its components set to those of the specified color int
      */
     public Color set(int colorInt) {
-        this.red = android.graphics.Color.red(colorInt) / 255f;
-        this.green = android.graphics.Color.green(colorInt) / 255f;
-        this.blue = android.graphics.Color.blue(colorInt) / 255f;
-        this.alpha = android.graphics.Color.alpha(colorInt) / 255f;
+        this.red = android.graphics.Color.red(colorInt) / (float) 0xFF;
+        this.green = android.graphics.Color.green(colorInt) / (float) 0xFF;
+        this.blue = android.graphics.Color.blue(colorInt) / (float) 0xFF;
+        this.alpha = android.graphics.Color.alpha(colorInt) / (float) 0xFF;
         return this;
     }
 
@@ -201,5 +201,21 @@ public class Color {
         result[offset] = this.alpha;
 
         return result;
+    }
+
+    /**
+     * Returns this color's components as a color int. Color ints are stored as packed ints as follows: <code>(alpha <<
+     * 24) | (red << 16) | (green << 8) | (blue)</code>. Each component is an 8 bit number between 0 and 255 with 0
+     * indicating the component's intensity.
+     *
+     * @return this color converted to a color int
+     */
+    public int toColorInt() {
+        int r8 = Math.round(this.red * 0xFF);
+        int g8 = Math.round(this.green * 0xFF);
+        int b8 = Math.round(this.blue * 0xFF);
+        int a8 = Math.round(this.alpha * 0xFF);
+
+        return android.graphics.Color.argb(a8, r8, g8, b8);
     }
 }
