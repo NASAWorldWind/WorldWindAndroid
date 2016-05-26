@@ -13,6 +13,8 @@ import android.view.MotionEvent;
 import java.util.Iterator;
 
 import gov.nasa.worldwind.BasicWorldWindowController;
+import gov.nasa.worldwind.PickedObject;
+import gov.nasa.worldwind.PickedObjectList;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Line;
@@ -40,13 +42,12 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
         // Get a reference to the WorldWindow view
         WorldWindow wwd = this.getWorldWindow();
 
+        // Override the World Window's built-in navigation behavior by adding picking support.
+        wwd.setWorldWindowController(new PickNavigateController());
+
         // Add a layer for placemarks to the WorldWindow
         RenderableLayer layer = new RenderableLayer("Placemarks");
         wwd.getLayers().addLayer(layer);
-
-        // Override the World Window's built-in navigation behavior with picking support.
-        wwd.setWorldWindowController(new PickNavigateController(layer));    // TODO: remove the layer when "real" picking is enabled
-        // TODO: Also move above the layer declaration
 
         // Create a few placemarks with highlight attributes and add them to the layer
         layer.addRenderable(createAirportPlacemark(Position.fromDegrees(34.2000, -119.2070, 0), "Oxnard Airport"));
@@ -87,17 +88,9 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
      */
     public class PickNavigateController extends BasicWorldWindowController {
 
-        public float PIXEL_TOLERANCE = 50;
+        protected Object pickedObject;          // last picked object from onDown events
 
-        protected Renderable pickedObject;      // last picked object from onDown events
-
-        protected Renderable selectedObject;    // last "selected" object from single tap
-
-        private Line ray = new Line();          // pre-allocated to avoid memory allocations
-
-        private Vec3 pickPoint = new Vec3();    // pre-allocated to avoid memory allocations
-
-        private RenderableLayer layer;          // collection of Renderables for simulated picking
+        protected Object selectedObject;        // last "selected" object from single tap
 
         /**
          * Assign a subclassed SimpleOnGestureListener to a GestureDetector to handle the "pick" events.
@@ -115,15 +108,6 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
                 return true;
             }
         });
-
-        /**
-         * Constructor.
-         *
-         * @param layer Contains a collection of Renderables to pick from with our simulated picking mechanism.
-         */
-        public PickNavigateController(RenderableLayer layer) {
-            this.layer = layer;
-        }
 
         /**
          * Delegates events to the pick handler or the native World Wind navigation handlers.
@@ -147,7 +131,11 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
          */
         public void pick(MotionEvent event) {
             // Pick the object at the tap point
-            this.pickedObject = this.simulatedPicking(event.getX(), event.getY());
+            PickedObjectList pickList = getWorldWindow().pick(event.getX(), event.getY());
+            PickedObject pickedObject = pickList.topPickedObject();
+            if (pickedObject != null) {
+                this.pickedObject = pickedObject.getUserObject();
+            }
         }
 
         /**
@@ -174,54 +162,6 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
                 // Track the selected object
                 this.selectedObject = isNewSelection ? pickedObject : null;
             }
-        }
-
-        /**
-         * Simple simulation of picking based on the pick point being close to the placemark's geographic position.
-         * <p/>
-         * TODO: Remove simulatedPicking.
-         */
-        public Renderable simulatedPicking(float pickX, float pickY) {
-            Iterator<Renderable> iterator = this.layer.iterator();
-            while (iterator.hasNext()) {
-                Renderable renderable = iterator.next();
-                if (renderable instanceof Placemark) {
-                    // Get the screen point for this placemark
-                    Placemark placemark = (Placemark) renderable;
-                    Position position = placemark.getPosition();
-                    PointF point = new PointF();
-                    if (this.wwd.geographicToScreenPoint(position.latitude, position.longitude, position.altitude, point)) {
-
-                        // Test if the placemark's screen point is within the tolerance for picking
-                        if (point.x <= pickX + PIXEL_TOLERANCE && point.x >= pickX - PIXEL_TOLERANCE &&
-                            point.y <= pickY + PIXEL_TOLERANCE && point.y >= pickY - PIXEL_TOLERANCE) {
-
-                            return placemark;
-                        }
-                    }
-                }
-            }
-            return null;
-        }
-
-        /**
-         * Converts a screen point to the geographic coordinates on the globe.
-         *
-         * @param screenX X coordinate
-         * @param screenY Y coordinate
-         * @param result  Pre-allocated Position receives the geographic coordinates
-         *
-         * @return true if the screen point could be converted; false if the screen point is not on the globe
-         */
-        public boolean screenPointToGroundPosition(float screenX, float screenY, Position result) {
-            if (this.wwd.rayThroughScreenPoint(screenX, screenY, ray)) {
-                Globe globe = wwd.getGlobe();
-                if (globe.intersect(ray, this.pickPoint)) {
-                    globe.cartesianToGeographic(pickPoint.x, this.pickPoint.y, this.pickPoint.z, result);
-                    return true;
-                }
-            }
-            return false;
         }
     }
 }
