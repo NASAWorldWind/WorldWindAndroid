@@ -20,10 +20,11 @@ import android.widget.Toast;
 import java.util.HashMap;
 
 import gov.nasa.worldwind.BasicWorldWindowController;
+import gov.nasa.worldwind.PickedObject;
+import gov.nasa.worldwind.PickedObjectList;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Line;
-import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.geom.Position;
@@ -102,6 +103,10 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
         // Get a reference to the WorldWindow view
         WorldWindow wwd = this.getWorldWindow();
 
+        // Override the World Window's built-in navigation behavior with conditional dragging support.
+        this.controller = new SelectDragNavigateController();
+        wwd.setWorldWindowController(this.controller);
+
         // Add a layer for placemarks to the WorldWindow
         RenderableLayer layer = new RenderableLayer("Placemarks");
         wwd.getLayers().addLayer(layer);
@@ -113,11 +118,6 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
         layer.addRenderable(createAircraftPlacemark(Position.fromDegrees(34.210, -119.150, 2000), "Military Aircraft", aircraftTypes[3])); // fighter
         layer.addRenderable(createAircraftPlacemark(Position.fromDegrees(34.250, -119.207, 30), "Private Aircraft", aircraftTypes[0])); // small plane
 
-        // Override the World Window's built-in navigation behavior with conditional dragging support.
-        // The layer object provides the collection of Placemarks used for selection and dragging.
-        // TODO: Move this method to immediately follow the wwd var declaration
-        this.controller = new SelectDragNavigateController(layer);
-        wwd.setWorldWindowController(this.controller);
 
         // And finally, for this demo, position the viewer to look near the aircraft
         LookAt lookAt = new LookAt().set(34.210, -119.150, 0, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
@@ -166,21 +166,14 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
      */
     public class SelectDragNavigateController extends BasicWorldWindowController {
 
-        protected float PIXEL_TOLERANCE = 50;
 
-        protected Renderable pickedObject;      // last picked object from onDown events
+        protected Renderable pickedObject;    // last picked object from onDown events
 
-        protected Renderable selectedObject;    // last "selected" object from single tap or double tap
+        protected Renderable selectedObject;  // last "selected" object from single tap or double tap
 
         protected boolean isDragging = false;
 
         protected boolean isDraggingArmed = false;
-
-        private Position dragRefPos = new Position();
-
-        private Position dragStartPos = new Position();
-
-        private Position dragEndPos = new Position();
 
         private PointF dragRefPt = new PointF();
 
@@ -208,9 +201,7 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
 
             @Override
             public boolean onScroll(MotionEvent downEvent, MotionEvent moveEvent, float distanceX, float distanceY) {
-                //simpleDrag(moveEvent);    // Move the selected object
-                //betterDrag(downEvent, moveEvent);    // Move the selected object
-                bestDrag(downEvent, moveEvent, distanceX, distanceY);    // Move the selected object
+                drag(downEvent, moveEvent, distanceX, distanceY);    // Move the selected object
                 return isDragging;  // Consume this event if dragging is active
             }
 
@@ -230,11 +221,6 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
                 contextMenu();
             }
         });
-
-        public SelectDragNavigateController(RenderableLayer layer) {
-            // The layer contains a collection of Renderables to pick from with our simualated picking mechanism.
-            this.layer = layer;
-        }
 
         /**
          * Delegates events to the select/drag handlers or the native World Wind navigation handlers.
@@ -265,14 +251,25 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
          * the next event is an onScroll event.
          */
         public void pick(MotionEvent event) {
-            // Pick the object at the tap point
-            this.pickedObject = this.simulatedPicking(event.getX(), event.getY());
+            // Reset our last picked object
+            this.pickedObject = null;
 
-            // Determine whether the dragging flag should be armed. The prerequisite for dragging that an object must
+            // Perform the pick at the screen x, y
+            PickedObjectList pickList = getWorldWindow().pick(event.getX(), event.getY());
+
+            // Examine the picked objects for Renderables
+            PickedObject topPickedObject = pickList.topPickedObject();
+            if (topPickedObject != null) {
+                if (topPickedObject.getUserObject() instanceof Renderable) {
+                    this.pickedObject = (Renderable) topPickedObject.getUserObject();
+                }
+            }
+
+            // Determine whether the dragging flag should be "armed". The prerequisite for dragging that an object must
             // have been previously selected (via a single tap) and the selected object must manifest a "movable"
             // capability.
-            this.isDraggingArmed = (pickedObject != null)
-                && (this.selectedObject == pickedObject)
+            this.isDraggingArmed = (this.pickedObject != null)
+                && (this.selectedObject == this.pickedObject)
                 && (this.selectedObject.hasUserProperty(MOVABLE));
         }
 
@@ -304,76 +301,9 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
         }
 
         /**
-         * Moves the selected object's position to the event's screen position.
-         */
-        public void simpleDrag(MotionEvent event) {
-
-            if (this.isDraggingArmed && this.selectedObject != null) {
-                if (this.selectedObject instanceof Placemark) {
-                    // Signal that dragging has been initiated
-                    this.isDragging = true;
-
-                    // Move the placemark to new screen position. The screenPointToGeographic returns the ground
-                    // point at the tap point.  For above ground placemarks, we need to set save and restore
-                    // the altitude to ensure an above ground placement after the drab event.
-                    Placemark placemark = (Placemark) this.selectedObject;
-                    double oldAltitude = placemark.getPosition().altitude;
-                    screenPointToGroundPosition(event.getX(), event.getY(), placemark.getPosition());
-                    placemark.getPosition().altitude = oldAltitude;
-                    this.getWorldWindow().requestRedraw();
-                }
-            }
-        }
-
-        /**
          * Moves the selected object to the event's screen position.
          */
-        public void betterDrag(MotionEvent downEvent, MotionEvent moveEvent) {
-            if (this.isDraggingArmed && this.selectedObject != null) {
-                if (this.selectedObject instanceof Placemark) {
-
-                    // First, fire a ray through the initial touch point. If the touch point is above the
-                    // horizon there will be no intersection with the globe, in which case we'll
-                    // simply ignore the drag operation.
-                    if (!screenPointToGroundPosition(downEvent.getX(), downEvent.getY(), dragStartPos)) {
-                        return;
-                    }
-
-                    // Get a reference to the Placemark's current position, which we'll update later
-                    Position position = ((Placemark) this.selectedObject).getPosition();
-
-                    // Start the drag
-                    if (!this.isDragging) {
-                        // Capture a copy of the initial placemark position. Offsets will be applied to this position.
-                        this.dragRefPos.set(position);
-                        // Signal that dragging has been initiated
-                        this.isDragging = true;
-                    }
-
-                    // Now, fire a ray through the current touch point.  If the touch point is above the
-                    // horizon there will be no intersection with the globe, in which case this
-                    // point will be ignored in the drag operation.
-                    if (!screenPointToGroundPosition(moveEvent.getX(), moveEvent.getY(), dragEndPos)) {
-                        return;
-                    }
-
-                    // Compute the geographic offsets between the two touch points...
-                    double dLat = dragEndPos.latitude - dragStartPos.latitude;
-                    double dLon = dragEndPos.longitude - dragStartPos.longitude;
-
-                    // ... and apply the offsets to the placemark's initial position, keeping it at the same altitude
-                    position.latitude = Location.normalizeLatitude(this.dragRefPos.latitude + dLat);
-                    position.longitude = Location.normalizeLongitude(this.dragRefPos.longitude + dLon);
-
-                    getWorldWindow().requestRedraw();
-                }
-            }
-        }
-
-        /**
-         * Moves the selected object to the event's screen position.
-         */
-        public void bestDrag(MotionEvent downEvent, MotionEvent moveEvent, float distanceX, float distanceY) {
+        public void drag(MotionEvent downEvent, MotionEvent moveEvent, float distanceX, float distanceY) {
             if (this.isDraggingArmed && this.selectedObject != null) {
                 if (this.selectedObject instanceof Placemark) {
 
@@ -426,7 +356,6 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
             }
         }
 
-
         /**
          * Shows the context information for the WorldWindow.
          */
@@ -435,30 +364,6 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
                 (this.pickedObject == null ? "Nothing" : this.pickedObject.getDisplayName()) + " picked and "
                     + (this.selectedObject == null ? "nothing" : this.selectedObject.getDisplayName()) + " selected.",
                 Toast.LENGTH_LONG).show();
-        }
-
-        /**
-         * Simple simulation of picking based on the pick point being close to the placemark's geographic position.
-         */
-        public Renderable simulatedPicking(float pickX, float pickY) {
-            for (Renderable renderable : this.layer) {
-                if (renderable instanceof Placemark) {
-                    // Get the screen point for this placemark
-                    Placemark placemark = (Placemark) renderable;
-                    Position position = placemark.getPosition();
-                    PointF point = new PointF();
-                    if (this.wwd.geographicToScreenPoint(position.latitude, position.longitude, position.altitude, point)) {
-
-                        // Test if the placemark's screen point is within the tolerance for picking
-                        if (point.x <= pickX + PIXEL_TOLERANCE && point.x >= pickX - PIXEL_TOLERANCE &&
-                            point.y <= pickY + PIXEL_TOLERANCE && point.y >= pickY - PIXEL_TOLERANCE) {
-
-                            return placemark;
-                        }
-                    }
-                }
-            }
-            return null;
         }
 
         /**
