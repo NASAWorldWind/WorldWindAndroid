@@ -83,6 +83,18 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
+            android:name=".PlacemarksPickingActivity"
+            android:label="@string/title_placemarks_picking"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
+            android:name=".PlacemarksSelectDragActivity"
+            android:label="@string/title_placemarks_select_drag"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
             android:name=".PlacemarksStressTestActivity"
             android:label="@string/title_placemarks_stress_test"
             android:launchMode="singleInstance"
