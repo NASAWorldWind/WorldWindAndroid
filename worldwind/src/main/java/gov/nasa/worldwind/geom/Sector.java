@@ -5,8 +5,6 @@
 
 package gov.nasa.worldwind.geom;
 
-import java.util.Iterator;
-
 import gov.nasa.worldwind.util.Logger;
 
 /**
