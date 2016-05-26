@@ -6,15 +6,17 @@
 package gov.nasa.worldwindx;
 
 import android.os.Bundle;
-import android.os.Handler;
+import android.view.Choreographer;
 
 import gov.nasa.worldwind.Navigator;
 
-public class BasicStressTestActivity extends BasicGlobeActivity implements Runnable {
+public class BasicStressTestActivity extends BasicGlobeActivity implements Choreographer.FrameCallback {
 
-    protected Handler animationHandler = new Handler();
+    protected double cameraDegreesPerSecond = 0.1;
 
-    protected boolean pauseHandler;
+    protected boolean activityPaused;
+
+    protected long lastFrameTimeNanos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,36 +30,44 @@ public class BasicStressTestActivity extends BasicGlobeActivity implements Runna
         navigator.setHeading(90); // looking east
         navigator.setTilt(75); // looking at the horizon
 
-        // Set up an Android Handler to animate the navigator.
-        this.animationHandler.postDelayed(this, 500);
+        // Use this Activity's Choreographer to animate the Navigator.
+        Choreographer.getInstance().postFrameCallback(this);
     }
 
     @Override
-    public void run() {
-        // Move the navigator to continuously bring new tiles into view.
-        Navigator navigator = getWorldWindow().getNavigator();
-        navigator.setLongitude(navigator.getLongitude() + 1.0e-4);
+    public void doFrame(long frameTimeNanos) {
+        if (this.lastFrameTimeNanos != 0) {
+            // Compute the frame duration in seconds.
+            double frameDurationSeconds = (frameTimeNanos - this.lastFrameTimeNanos) * 1.0e-9;
+            double cameraDegrees = (frameDurationSeconds * this.cameraDegreesPerSecond);
 
-        // Redraw the World Window to display the above changes.
-        this.getWorldWindow().requestRedraw();
+            // Move the navigator to continuously bring new tiles into view.
+            Navigator navigator = getWorldWindow().getNavigator();
+            navigator.setLongitude(navigator.getLongitude() + cameraDegrees);
 
-        if (!this.pauseHandler) { // stop running when this activity is paused; the Handler is resumed in onResume
-            this.animationHandler.postDelayed(this, 30);
+            // Redraw the World Window to display the above changes.
+            this.getWorldWindow().requestRedraw();
         }
+
+        if (!this.activityPaused) { // stop animating when this Activity is paused
+            Choreographer.getInstance().postFrameCallback(this);
+        }
+
+        this.lastFrameTimeNanos = frameTimeNanos;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        // Stop running the Handler when this activity is paused.
-        this.pauseHandler = true;
+        // Stop running the animation when this activity is paused.
+        this.activityPaused = true;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Resume the Handler that animates the navigator.
-        this.pauseHandler = false;
-        this.animationHandler.postDelayed(this, 500);
+        // Resume the Navigator animation.
+        this.activityPaused = false;
+        Choreographer.getInstance().postFrameCallback(this);
     }
 }

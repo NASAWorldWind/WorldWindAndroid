@@ -23,7 +23,7 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Choreog
 
     protected double lightDegreesPerSecond = 6.0;
 
-    protected boolean paused;
+    protected boolean activityPaused;
 
     protected long lastFrameTimeNanos;
 
@@ -69,7 +69,7 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Choreog
             this.getWorldWindow().requestRedraw();
         }
 
-        if (!this.paused) { // stop animating when this Activity is paused
+        if (!this.activityPaused) { // stop animating when this Activity is paused
             Choreographer.getInstance().postFrameCallback(this);
         }
 
@@ -80,7 +80,7 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Choreog
     protected void onPause() {
         super.onPause();
         // Stop running the animation when this activity is paused.
-        this.paused = true;
+        this.activityPaused = true;
         this.lastFrameTimeNanos = 0;
     }
 
@@ -88,7 +88,7 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Choreog
     protected void onResume() {
         super.onResume();
         // Resume the day-night cycle animation.
-        this.paused = false;
+        this.activityPaused = false;
         this.lastFrameTimeNanos = 0;
         Choreographer.getInstance().postFrameCallback(this);
     }
