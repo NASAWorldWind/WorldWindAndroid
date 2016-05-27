@@ -756,13 +756,23 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (!super.onTouchEvent(event)) { // give the superclass first opportunity to handle the event
-            if (this.worldWindowController.onTouchEvent(event)) { // let the controller try to handle the event
-                this.navigatorEvents.onTouchEvent(event); // the controller handled the event; notify navigator events
-            }
+        // Give the superclass first opportunity to handle the event.
+        if (super.onTouchEvent(event)) {
+            return true;
         }
 
-        return true; // always return that the event was handled, otherwise Android suppresses subsequent events
+        // Give the World Window's controller an opportunity to handle the event
+        try {
+            if (this.worldWindowController.onTouchEvent(event)) {
+                this.navigatorEvents.onTouchEvent(event);
+            }
+        } catch (Exception e) {
+            Logger.logMessage(Logger.ERROR, "WorldWindow", "onTouchEvent",
+                "Exception while handling touch event \'" + event + "\'", e);
+        }
+
+        // Always return true indicating that the event was handled, otherwise Android suppresses subsequent events.
+        return true;
     }
 
     @Override
