@@ -130,11 +130,16 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
          * Performs a pick at the tap location.
          */
         public void pick(MotionEvent event) {
-            // Pick the object at the tap point
+            // Forget our last picked object
+            this.pickedObject = null;
+
+            // Perform a new pick at the screen x, y
             PickedObjectList pickList = getWorldWindow().pick(event.getX(), event.getY());
-            PickedObject pickedObject = pickList.topPickedObject();
-            if (pickedObject != null) {
-                this.pickedObject = pickedObject.getUserObject();
+
+            // Get the top-most object for our new picked object
+            PickedObject topPickedObject = pickList.topPickedObject();
+            if (topPickedObject != null) {
+                this.pickedObject = topPickedObject.getUserObject();
             }
         }
 
