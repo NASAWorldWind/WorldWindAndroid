@@ -14,6 +14,7 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.geom.Viewport;
+import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
@@ -34,7 +35,7 @@ import gov.nasa.worldwind.util.WWMath;
  * scaled by the image scale attribute. Otherwise, the placemark is drawn as a square with width and height equal to the
  * value of the image scale attribute, in pixels, and color equal to the image color attribute.
  */
-public class Placemark extends AbstractRenderable implements Highlightable {
+public class Placemark extends AbstractRenderable implements Highlightable, Movable {
 
     /**
      * The default eye distance above which to reduce the size of this placemark, in meters. If {@link
@@ -598,6 +599,29 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     }
 
     /**
+     * A position associated with the object that indicates its aggregate geographic position. For a Placemark, this is
+     * simply it's position property.
+     *
+     * @return {@link Placemark#getPosition()}
+     */
+    @Override
+    public Position getReferencePosition() {
+        return getPosition();
+    }
+
+    /**
+     * Moves the shape over the globe's surface. For a Placemark, this simply calls {@link
+     * Placemark#setPosition(Position)}.
+     *
+     * @param globe    not used.
+     * @param position the new position of the shape's reference position.
+     */
+    @Override
+    public void moveTo(Globe globe, Position position) {
+        setPosition(position);
+    }
+
+    /**
      * Performs the rendering; called by the public render method.
      *
      * @param rc the current render context
@@ -852,4 +876,6 @@ public class Placemark extends AbstractRenderable implements Highlightable {
             && this.activeAttributes.leaderAttributes != null
             && (this.enableLeaderPicking || !rc.pickMode);
     }
+
+
 }
