@@ -7,7 +7,6 @@ package gov.nasa.worldwindx;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -31,12 +30,22 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.layer.RenderableLayer;
+import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.shape.Highlightable;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
 
+/**
+ * This Activity demonstrates how to implement a gestures for picking, selecting, dragging and editing.  In this
+ * example, a custom WorldWindowController is created to handle the tap, scroll and long press gestures.  Also, this
+ * example shows how to use a Renderable's "userProperty" to convey capabilities to the controller and exchange
+ * information with the editor.
+ * <p/>
+ * This example displays a scene with three airports, three aircraft and two automobiles.  You can select, move and edit
+ * the vehicles with the single tap, drag, and double-tap gestures accordingly.  The airport icons are not selectable.
+ */
 public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
 
     /**
@@ -55,30 +64,59 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
     public static final String SELECTABLE = "selectable";
 
     /**
-     * Placemark user property key for the type of aircraft
+     * Placemark user property vehicleKey for the type of aircraft
      */
     public static final String AIRCRAFT_TYPE = "aircraft_type";
 
-    // Aircraft types used in the Placemark editing dialog
+    /**
+     * Placemark user property vehicleKey for the type of vehicle
+     */
+    public static final String AUTOMOTIVE_TYPE = "auotomotive_type";
+
+    // Aircraft vehicleTypes used in the Placemark editing dialog
     private static final String[] aircraftTypes = new String[]{
         "Small Plane",
         "Twin Engine",
         "Passenger Jet",
         "Fighter Jet",
+        "Bomber",
         "Helicopter"
     };
 
-    // Resource IDs mapped to the aircraft types
+    // Vehicle vehicleTypes used in the Placemark editing dialog
+    private static final String[] automotiveTypes = new String[]{
+        "Car",
+        "SUV",
+        "4x4",
+        "Truck",
+        "Jeep",
+        "Tank"
+    };
+
+    // Resource IDs for aircraft icons
     private static final int[] aircraftIcons = new int[]{
         R.drawable.aircraft_small,
         R.drawable.aircraft_twin,
         R.drawable.aircraft_jet,
         R.drawable.aircraft_fighter,
-        R.drawable.helicopter,
+        R.drawable.aircraft_bomber,
+        R.drawable.aircraft_rotor,
     };
 
-    // Aircraft types mapped to icons
+    // Resource IDs for vehicle icons
+    private static final int[] automotiveIcons = new int[]{
+        R.drawable.vehicle_car,
+        R.drawable.vehicle_suv,
+        R.drawable.vehicle_4x4,
+        R.drawable.vehicle_truck,
+        R.drawable.vehicle_jeep,
+        R.drawable.vehicle_tank,
+    };
+
+    // Aircraft vehicleTypes mapped to icons
     private static final HashMap<String, Integer> aircraftIconMap = new HashMap<>();
+
+    private static final HashMap<String, Integer> automotiveIconMap = new HashMap<>();
 
     /**
      * A custom WorldWindowController object that handles the select, drag and navigation gestures.
@@ -90,16 +128,19 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
         super.onCreate(savedInstanceState);
         setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks_select_drag));
         setAboutBoxText("Demonstrates how to select and drag Placemarks.\n\n" +
-            "Single-tap an icon to toggle the highlight attributes.\n" +
-            "Double-tap an aircraft icon to open an editor.\n" +
-            "Dragging a highlighted aircraft icon moves it.\n" +
+            "Single-tap an icon to toggle its selection.\n" +
+            "Double-tap a vehicle icon to open an editor.\n" +
+            "Dragging a selected vehicle icon moves it.\n" +
             "Long-press displays some context information.\n\n" +
-            "Aircraft icons are selectable, movable, and editable.\n" +
-            "Aiport icons are only selectable.");
+            "Vehicle icons are selectable, movable, and editable.\n" +
+            "Airport icons are display only.");
 
-        // Initialize the mapping of aircraft types to their icons.
+        // Initialize the mapping of vehicle types to their icons.
         for (int i = 0; i < aircraftTypes.length; i++) {
             aircraftIconMap.put(aircraftTypes[i], aircraftIcons[i]);
+        }
+        for (int i = 0; i < automotiveTypes.length; i++) {
+            automotiveIconMap.put(automotiveTypes[i], automotiveIcons[i]);
         }
 
         // Get a reference to the WorldWindow view
@@ -114,15 +155,18 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
         wwd.getLayers().addLayer(layer);
 
         // Create some placemarks and add them to the layer
-        layer.addRenderable(createAirportPlacemark(Position.fromDegrees(34.200, -119.207, 0), "Oxnard Airport"));
+        layer.addRenderable(createAirportPlacemark(Position.fromDegrees(34.2000, -119.2070, 0), "Oxnard Airport"));
         layer.addRenderable(createAirportPlacemark(Position.fromDegrees(34.2138, -119.0944, 0), "Camarillo Airport"));
+        layer.addRenderable(createAirportPlacemark(Position.fromDegrees(34.1193, -119.1196, 0), "Pt Mugu Naval Air Station"));
+        layer.addRenderable(createAutomobilePlacemark(Position.fromDegrees(34.210, -119.120, 0), "Civilian Vehicle", automotiveTypes[1])); // suv
+        layer.addRenderable(createAutomobilePlacemark(Position.fromDegrees(34.210, -119.160, 0), "Military Vehicle", automotiveTypes[4])); // jeep
         layer.addRenderable(createAircraftPlacemark(Position.fromDegrees(34.200, -119.207, 1000), "Commercial Aircraft", aircraftTypes[1])); // twin
         layer.addRenderable(createAircraftPlacemark(Position.fromDegrees(34.210, -119.150, 2000), "Military Aircraft", aircraftTypes[3])); // fighter
-        layer.addRenderable(createAircraftPlacemark(Position.fromDegrees(34.250, -119.207, 30), "Private Aircraft", aircraftTypes[0])); // small plane
+        layer.addRenderable(createAircraftPlacemark(Position.fromDegrees(34.150, -119.150, 500), "Private Aircraft", aircraftTypes[0])); // small plane
 
 
-        // And finally, for this demo, position the viewer to look near the aircraft
-        LookAt lookAt = new LookAt().set(34.210, -119.150, 0, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
+        // And finally, for this demo, position the viewer to look at the placemarks
+        LookAt lookAt = new LookAt().set(34.150, -119.150, 0, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
         this.getWorldWindow().getNavigator().setAsLookAt(this.getWorldWindow().getGlobe(), lookAt);
     }
 
@@ -132,15 +176,12 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
     protected static Placemark createAirportPlacemark(Position position, String airportName) {
         Placemark placemark = Placemark.createWithImage(position, ImageSource.fromResource(R.drawable.airport_terminal));
         placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(2.0); // set normal attributes to 2x original size
-        placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(3.0)); // set highlight attributes to 4x original size
         placemark.setDisplayName(airportName);
-        // The select/drag controller will examine a placemark's "capabilities" to determine what operations are applicable:
-        placemark.putUserProperty(SELECTABLE, null);
         return placemark;
     }
 
     /**
-     * Helper method to create aircraft placemarks.
+     * Helper method to create aircraft placemarks. The aircraft are selectable, movable, and editable.
      */
     protected static Placemark createAircraftPlacemark(Position position, String aircraftName, String aircraftType) {
         if (!aircraftIconMap.containsKey(aircraftType)) {
@@ -149,7 +190,7 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
         Placemark placemark = Placemark.createWithImage(position, ImageSource.fromResource(aircraftIconMap.get(aircraftType)));
         placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(2.0).setDrawLeader(true); // set normal attributes to 2x original size
         placemark.getAttributes().getLeaderAttributes().setOutlineWidth(4);
-        placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(4.0).setImageColor(new gov.nasa.worldwind.render.Color(Color.YELLOW))); // set highlight attributes to 4x original size
+        placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(3.0).setImageColor(new Color(android.graphics.Color.YELLOW))); // set highlight attributes to 3x original size
         placemark.setDisplayName(aircraftName);
         // The AIRCRAFT_TYPE property is used to exchange the aircraft type with the AirportTypeDialog
         placemark.putUserProperty(AIRCRAFT_TYPE, aircraftType);
@@ -160,6 +201,25 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
         return placemark;
     }
 
+    /**
+     * Helper method to create vehicle placemarks.
+     */
+    protected static Placemark createAutomobilePlacemark(Position position, String name, String automotiveType) {
+        if (!automotiveIconMap.containsKey(automotiveType)) {
+            throw new IllegalArgumentException(automotiveType + " is not valid.");
+        }
+        Placemark placemark = Placemark.createWithImage(position, ImageSource.fromResource(automotiveIconMap.get(automotiveType)));
+        placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(2.0); // set normal attributes to 2x original size
+        placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(3.0).setImageColor(new Color(android.graphics.Color.YELLOW))); // set highlight attributes to 4x original size
+        placemark.setDisplayName(name);
+        // The AUTOMOTIVE_TYPE property is used to exchange the vehicle type with the AirportTypeDialog
+        placemark.putUserProperty(AUTOMOTIVE_TYPE, automotiveType);
+        // The select/drag controller will examine a placemark's "capabilities" to determine what operations are applicable:
+        placemark.putUserProperty(SELECTABLE, null);
+        placemark.putUserProperty(EDITABLE, null);
+        placemark.putUserProperty(MOVABLE, null);
+        return placemark;
+    }
 
     /**
      * This inner class is a custom WorldWindController that handles picking, dragging and globe navigation via a
@@ -211,10 +271,13 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
             public boolean onDoubleTap(MotionEvent event) {
                 // Note that double-tapping should not toggle a "selected" object's selected state
                 if (pickedObject != selectedObject) {
-                    toggleSelection();
+                    toggleSelection();  // deselects a previously selected item
                 }
-                edit(); // Open the placemark editor
-                return true;
+                if (pickedObject == selectedObject) {
+                    edit(); // Open the placemark editor
+                    return true;
+                }
+                return false;
             }
 
             @Override
@@ -341,20 +404,29 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
          */
         public void edit() {
 
-            if (this.selectedObject instanceof Placemark && this.selectedObject.hasUserProperty(EDITABLE)) {
+            if (this.selectedObject instanceof Placemark &&
+                this.selectedObject.hasUserProperty(EDITABLE)) {
                 Placemark placemark = (Placemark) this.selectedObject;
 
                 // Pass the current aircraft type in a Bundle
                 Bundle args = new Bundle();
                 args.putString("title", "Select the " + placemark.getDisplayName() + "'s type");
-                args.putString("type", (String) placemark.getUserProperty(AIRCRAFT_TYPE));
+                if (placemark.hasUserProperty(AIRCRAFT_TYPE)) {
+                    args.putString("vehicleKey", AIRCRAFT_TYPE);
+                    args.putString("vehicleValue", (String) placemark.getUserProperty(AIRCRAFT_TYPE));
+                } else if (placemark.hasUserProperty(AUTOMOTIVE_TYPE)) {
+                    args.putString("vehicleKey", AUTOMOTIVE_TYPE);
+                    args.putString("vehicleValue", (String) placemark.getUserProperty(AUTOMOTIVE_TYPE));
+                }
 
-                // The AircraftTypeDialog calls onFinished
-                AircraftTypeDialog dialog = new AircraftTypeDialog();
+                // The VehicleTypeDialog calls onFinished
+                VehicleTypeDialog dialog = new VehicleTypeDialog();
                 dialog.setArguments(args);
                 dialog.show(getSupportFragmentManager(), "aircraft_type");
             } else {
-                Toast.makeText(getApplicationContext(), this.selectedObject.getDisplayName() + " is not editable.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(),
+                    (this.selectedObject == null ? "Object " : this.selectedObject.getDisplayName()) + " is not editable.",
+                    Toast.LENGTH_LONG).show();
             }
         }
 
@@ -390,31 +462,46 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
     }
 
     /**
-     * This inner class creates a simple Placemark editor for selecting the aircraft's type.
+     * This inner class creates a simple Placemark editor for selecting the vehicle type.
      */
-    public static class AircraftTypeDialog extends DialogFragment {
+    public static class VehicleTypeDialog extends DialogFragment {
 
         private int selectedItem = -1;
+
+        private String vehicleKey;
+
+        private String[] vehicleTypes;
+
+        private HashMap<String, Integer> vehicleIcons;
 
         @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             Bundle args = getArguments();
             String title = args.getString("title", "");
-            String type = args.getString("type", "");
 
+            // Determine type of vehicles displayed in this dialog
+            this.vehicleKey = args.getString("vehicleKey", "");
+            if (this.vehicleKey.equals(AIRCRAFT_TYPE)) {
+                this.vehicleTypes = aircraftTypes;
+                this.vehicleIcons = aircraftIconMap;
+            } else if (this.vehicleKey.equals(AUTOMOTIVE_TYPE)) {
+                this.vehicleTypes = automotiveTypes;
+                this.vehicleIcons = automotiveIconMap;
+            }
             // Determine the initial selection
-            for (int i = 0; i < aircraftTypes.length; i++) {
-                if (type.equals(aircraftTypes[i])) {
+            String type = args.getString("vehicleValue", "");
+            for (int i = 0; i < this.vehicleTypes.length; i++) {
+                if (type.equals(this.vehicleTypes[i])) {
                     this.selectedItem = i;
                     break;
                 }
             }
 
-            // Create "single selection" list of aircraft types
+            // Create "single selection" list of aircraft vehicleTypes
             return new AlertDialog.Builder(getActivity())
                 .setTitle(title)
-                .setSingleChoiceItems(aircraftTypes, this.selectedItem,
+                .setSingleChoiceItems(this.vehicleTypes, this.selectedItem,
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -425,7 +512,7 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        onFinished(aircraftTypes[selectedItem]);
+                        onFinished(vehicleTypes[selectedItem]);
                     }
                 })
                     // A null handler will close the dialog
@@ -433,18 +520,18 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
                 .create();
         }
 
-        public void onFinished(String aircraftType) {
+        public void onFinished(String vehicleType) {
             PlacemarksSelectDragActivity activity = (PlacemarksSelectDragActivity) getActivity();
             if (activity.controller.selectedObject instanceof Placemark) {
 
                 Placemark placemark = (Placemark) activity.controller.selectedObject;
-                String currentType = (String) placemark.getUserProperty(AIRCRAFT_TYPE);
-                if (currentType.equals(aircraftType)) {
+                String currentType = (String) placemark.getUserProperty(this.vehicleKey);
+                if (currentType.equals(vehicleType)) {
                     return;
                 }
-                // Update the placemark's icon and aircraft type property
-                ImageSource imageSource = ImageSource.fromResource(aircraftIconMap.get(aircraftType));
-                placemark.putUserProperty(AIRCRAFT_TYPE, aircraftType);
+                // Update the placemark's icon attributes and vehicle type property.
+                ImageSource imageSource = ImageSource.fromResource(this.vehicleIcons.get(vehicleType));
+                placemark.putUserProperty(this.vehicleKey, vehicleType);
                 placemark.getAttributes().setImageSource(imageSource);
                 placemark.getHighlightAttributes().setImageSource(imageSource);
                 // Show the change
