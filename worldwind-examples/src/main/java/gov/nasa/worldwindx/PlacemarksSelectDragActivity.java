@@ -38,13 +38,14 @@ import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
 
 /**
- * This Activity demonstrates how to implement a gestures for picking, selecting, dragging and editing.  In this
- * example, a custom WorldWindowController is created to handle the tap, scroll and long press gestures.  Also, this
- * example shows how to use a Renderable's "userProperty" to convey capabilities to the controller and exchange
- * information with the editor.
+ * This Activity demonstrates how to implement gesture detectors for picking, selecting, dragging, editing and context.
+ * In this example, a custom WorldWindowController is created to handle the tap, scroll and long press gestures.  Also,
+ * this example shows how to use a Renderable's "userProperty" to convey capabilities to the controller and to exchange
+ * information with an editor.
  * <p/>
  * This example displays a scene with three airports, three aircraft and two automobiles.  You can select, move and edit
- * the vehicles with the single tap, drag, and double-tap gestures accordingly.  The airport icons are not selectable.
+ * the vehicles with the single tap, drag, and double-tap gestures accordingly.  The airport icons are pickable, but
+ * selectable--performing a long-press on an airport will display its name.
  */
 public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
 
@@ -192,7 +193,7 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
         placemark.getAttributes().getLeaderAttributes().setOutlineWidth(4);
         placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(3.0).setImageColor(new Color(android.graphics.Color.YELLOW))); // set highlight attributes to 3x original size
         placemark.setDisplayName(aircraftName);
-        // The AIRCRAFT_TYPE property is used to exchange the aircraft type with the AirportTypeDialog
+        // The AIRCRAFT_TYPE property is used to exchange the vehicle type with the VehicleTypeDialog
         placemark.putUserProperty(AIRCRAFT_TYPE, aircraftType);
         // The select/drag controller will examine a placemark's "capabilities" to determine what operations are applicable:
         placemark.putUserProperty(SELECTABLE, null);
@@ -212,7 +213,7 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
         placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(2.0); // set normal attributes to 2x original size
         placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(3.0).setImageColor(new Color(android.graphics.Color.YELLOW))); // set highlight attributes to 4x original size
         placemark.setDisplayName(name);
-        // The AUTOMOTIVE_TYPE property is used to exchange the vehicle type with the AirportTypeDialog
+        // The AUTOMOTIVE_TYPE property is used to exchange the vehicle type with the VehicleTypeDialog
         placemark.putUserProperty(AUTOMOTIVE_TYPE, automotiveType);
         // The select/drag controller will examine a placemark's "capabilities" to determine what operations are applicable:
         placemark.putUserProperty(SELECTABLE, null);
@@ -227,7 +228,6 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
      * arbitrates between select and drag gestures and globe navigation gestures.
      */
     public class SelectDragNavigateController extends BasicWorldWindowController {
-
 
         protected Renderable pickedObject;    // last picked object from onDown events
 
