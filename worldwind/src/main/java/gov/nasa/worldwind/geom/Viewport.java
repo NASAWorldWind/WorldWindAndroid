@@ -197,4 +197,17 @@ public class Viewport {
             && this.y < that.y + that.height
             && that.y < this.y + this.height;
     }
+
+    /**
+     * Indicates whether this viewport contains a specified point. An empty viewport never contains a point.
+     *
+     * @param x the point's X component
+     * @param y the point's Y component
+     *
+     * @return true if this viewport contains the point, false otherwise
+     */
+    public boolean contains(int x, int y) {
+        return x >= this.x && x < this.x + this.width
+            && y >= this.y && y < this.y + this.height;
+    }
 }

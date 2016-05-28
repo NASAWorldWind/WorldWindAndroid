@@ -11,6 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import gov.nasa.worldwind.draw.DrawableList;
 import gov.nasa.worldwind.draw.DrawableQueue;
+import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Viewport;
@@ -31,6 +32,8 @@ public class Frame {
     public PickedObjectList pickedObjects;
 
     public Vec2 pickPoint;
+
+    public Line pickRay;
 
     public boolean pickMode;
 
@@ -67,6 +70,7 @@ public class Frame {
         this.drawableTerrain.clearDrawables();
         this.pickedObjects = null;
         this.pickPoint = null;
+        this.pickRay = null;
         this.pickMode = false;
 
         if (this.pool != null) { // return this instance to the pool

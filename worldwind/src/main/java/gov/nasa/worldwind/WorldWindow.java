@@ -343,15 +343,27 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     public PickedObjectList pick(float x, float y) {
-        // Allocate a list in which to collect and return the picked objects, and convert the pick point from Android
+        // Allocate a list in which to collect and return the picked objects and convert the pick point from Android
         // screen coordinates to OpenGL screen coordinates.
         PickedObjectList pickedObjects = new PickedObjectList();
-        Vec2 screenPoint = new Vec2(x, this.getHeight() - y);
+        Vec2 pickPoint = new Vec2(x, this.getHeight() - y);
+
+        // Nothing can be picked if the pick point is outside of the World Window's viewport.
+        if (!this.viewport.contains((int) pickPoint.x, (int) pickPoint.y)) {
+            return pickedObjects;
+        }
+
+        // Nothing can be picked if a ray through the pick point cannot be constructed.
+        Line pickRay = new Line();
+        if (!this.rayThroughScreenPoint(x, y, pickRay)) {
+            return pickedObjects;
+        }
 
         // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
         Frame frame = Frame.obtain(this.framePool);
         frame.pickedObjects = pickedObjects;
-        frame.pickPoint = screenPoint;
+        frame.pickPoint = pickPoint;
+        frame.pickRay = pickRay;
         frame.pickMode = true;
         this.renderFrame(frame);
 
@@ -816,6 +828,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.rc.drawableQueue = frame.drawableQueue;
         this.rc.drawableTerrain = frame.drawableTerrain;
         this.rc.pickedObjects = frame.pickedObjects;
+        //this.rc.pickPoint = frame.pickPoint;
+        //this.rc.pickRay = frame.pickRay;
         this.rc.pickMode = frame.pickMode;
 
         // Let the frame controller render the World Window's current state.
