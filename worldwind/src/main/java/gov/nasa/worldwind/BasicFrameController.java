@@ -9,15 +9,24 @@ import android.opengl.GLES20;
 
 import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.draw.Drawable;
+import gov.nasa.worldwind.draw.DrawableSurfaceColor;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.Tessellator;
 import gov.nasa.worldwind.layer.LayerList;
+import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.Pool;
 
 public class BasicFrameController implements FrameController {
 
     private Color pickColor;
+
+    private Vec3 pickPoint = new Vec3();
+
+    private Position pickPos = new Position();
 
     public BasicFrameController() {
     }
@@ -32,6 +41,37 @@ public class BasicFrameController implements FrameController {
     protected void tessellateTerrain(RenderContext rc) {
         Tessellator tess = rc.globe.getTessellator();
         tess.tessellate(rc);
+
+        if (rc.pickMode) {
+            this.renderPickedTerrain(rc);
+        }
+    }
+
+    protected void renderPickedTerrain(RenderContext rc) {
+        if (rc.terrain.getSector().isEmpty()) {
+            return; // no terrain to pick
+        }
+
+        // Acquire a unique picked object ID for the terrain.
+        int pickedObjectId = rc.nextPickedObjectId();
+
+        // Enqueue a drawable for processing on the OpenGL thread that displays the terrain in the unique pick color.
+        Pool<DrawableSurfaceColor> pool = rc.getDrawablePool(DrawableSurfaceColor.class);
+        DrawableSurfaceColor drawable = DrawableSurfaceColor.obtain(pool);
+        drawable.color = PickedObject.identifierToUniqueColor(pickedObjectId, drawable.color);
+        drawable.program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
+        if (drawable.program == null) {
+            drawable.program = (BasicShaderProgram) rc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(rc.resources));
+        }
+        rc.offerSurfaceDrawable(drawable, Double.NEGATIVE_INFINITY /*z-order before all other surface drawables*/);
+
+        // If the pick ray intersects the terrain, enqueue a picked object that associates the terrain drawable with its
+        // picked object ID and the intersection position.
+        if (rc.terrain.intersect(rc.pickRay, this.pickPoint)) {
+            this.pickPos = rc.globe.cartesianToGeographic(this.pickPoint.x, this.pickPoint.y, this.pickPoint.z, this.pickPos);
+            this.pickPos.altitude = 0; // report the actual altitude, which does not always match the surface altitude
+            rc.offerPickedObject(PickedObject.fromTerrain(this.pickPos, pickedObjectId));
+        }
     }
 
     protected void renderLayers(RenderContext rc) {
@@ -95,11 +135,15 @@ public class BasicFrameController implements FrameController {
         // object ID, in which case no objects have been drawn at the pick point.
         int topObjectId = PickedObject.uniqueColorToIdentifier(this.pickColor);
         if (topObjectId != 0) {
+            PickedObject terrainObject = dc.pickedObjects.terrainPickedObject();
             PickedObject topObject = dc.pickedObjects.pickedObjectWithId(topObjectId);
             if (topObject != null) {
                 topObject.markOnTop();
                 dc.pickedObjects.clearPickedObjects();
                 dc.pickedObjects.offerPickedObject(topObject);
+                if (terrainObject != null && terrainObject != topObject) {
+                    dc.pickedObjects.offerPickedObject(terrainObject);
+                }
             } else {
                 dc.pickedObjects.clearPickedObjects(); // no eligible objects drawn at the pick point
             }
