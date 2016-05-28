@@ -7,7 +7,6 @@ package gov.nasa.worldwindx.milstd2525;
 
 import android.content.Context;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.util.SparseArray;
 
@@ -150,11 +149,10 @@ public class MilStd2525 {
 
         // Place the bottom of the image at the specified position and
         // anchor it horizontally at the center of the core symbol.
-        Rect imageBounds = imageInfo.getImageBounds();      // The bounds of the entire image, including text
         Point centerPoint = imageInfo.getCenterPoint();     // The center of the core symbol
         Offset imageOffset = new Offset(
-            WorldWind.OFFSET_FRACTION, ((double) centerPoint.x) / imageBounds.width(), // x offset
-            WorldWind.OFFSET_FRACTION, 0.0); // y offset
+            WorldWind.OFFSET_PIXELS, centerPoint.x, // x offset
+            WorldWind.OFFSET_PIXELS, 0.0); // y offset
 
         return PlacemarkAttributes.createWithImage(ImageSource.fromBitmap(imageInfo.getImage())).setImageOffset(imageOffset);
     }
