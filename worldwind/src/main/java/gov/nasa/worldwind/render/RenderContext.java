@@ -19,7 +19,9 @@ import gov.nasa.worldwind.draw.DrawableQueue;
 import gov.nasa.worldwind.draw.DrawableTerrain;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Frustum;
+import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.Matrix4;
+import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.geom.Viewport;
 import gov.nasa.worldwind.globe.Globe;
@@ -73,6 +75,10 @@ public class RenderContext {
 
     public PickedObjectList pickedObjects;
 
+    public Vec2 pickPoint;
+
+    public Line pickRay;
+
     public boolean pickMode;
 
     private int pickedObjectId;
@@ -108,8 +114,10 @@ public class RenderContext {
         this.drawableQueue = null;
         this.drawableTerrain = null;
         this.pickedObjects = null;
-        this.pickedObjectId = 0;
+        this.pickPoint = null;
+        this.pickRay = null;
         this.pickMode = false;
+        this.pickedObjectId = 0;
         this.redrawRequested = false;
         this.pixelSizeFactor = 0;
         this.userProperties.clear();
@@ -311,6 +319,15 @@ public class RenderContext {
         result.z = z;
 
         return true;
+    }
+
+    public BufferObject getBufferObject(Object key) {
+        return (BufferObject) this.renderResourceCache.get(key);
+    }
+
+    public BufferObject putBufferObject(Object key, BufferObject buffer) {
+        this.renderResourceCache.put(key, buffer, (buffer != null) ? buffer.getBufferByteCount() : 0);
+        return buffer;
     }
 
     public ShaderProgram getShaderProgram(Object key) {

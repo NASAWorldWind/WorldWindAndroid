@@ -828,8 +828,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.rc.drawableQueue = frame.drawableQueue;
         this.rc.drawableTerrain = frame.drawableTerrain;
         this.rc.pickedObjects = frame.pickedObjects;
-        //this.rc.pickPoint = frame.pickPoint;
-        //this.rc.pickRay = frame.pickRay;
+        this.rc.pickPoint = frame.pickPoint;
+        this.rc.pickRay = frame.pickRay;
         this.rc.pickMode = frame.pickMode;
 
         // Let the frame controller render the World Window's current state.
