@@ -84,7 +84,7 @@ public class DrawableScreenTexture implements Drawable {
         }
 
         // Use a 2D unit square as the vertex point and vertex tex coord attributes.
-        dc.bindBuffer(GLES20.GL_ARRAY_BUFFER, dc.unitSquareBuffer());
+        dc.unitSquareBuffer().bindBuffer(dc);
         GLES20.glEnableVertexAttribArray(1); // enable vertex attrib 1; vertex attrib 0 is enabled by default
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 2, GLES20.GL_FLOAT, false, 0, 0);
         GLES20.glVertexAttribPointer(1 /*vertexTexCoord*/, 2, GLES20.GL_FLOAT, false, 0, 0);
@@ -112,15 +112,14 @@ public class DrawableScreenTexture implements Drawable {
         if (!this.enableDepthTest) {
             GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         }
-        dc.bindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
         GLES20.glDisableVertexAttribArray(1);
     }
 
     protected boolean canBatchWith(Drawable that) {
         return this.getClass() == that.getClass()
             && this.program == ((DrawableScreenTexture) that).program
-            && this.color.equals(((DrawableScreenTexture) that).color)
-            && this.texture == ((DrawableScreenTexture) that).texture
+            && this.color.equals(((DrawableScreenTexture) that).color) // TODO expand batching to include color
+            && this.texture == ((DrawableScreenTexture) that).texture // TODO expand batching to include texture
             && this.enableDepthTest == ((DrawableScreenTexture) that).enableDepthTest;
     }
 }

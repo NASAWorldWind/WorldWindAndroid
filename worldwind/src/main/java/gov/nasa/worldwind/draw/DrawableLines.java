@@ -91,6 +91,7 @@ public class DrawableLines implements Drawable {
         GLES20.glLineWidth(this.lineWidth);
 
         // Use the leader line as the vertex point attribute.
+        dc.bindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
         Buffer buffer = getVertexPointBuffer(this.vertexPoints);
         GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, buffer);
 

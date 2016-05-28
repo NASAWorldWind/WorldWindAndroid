@@ -17,6 +17,7 @@ import gov.nasa.worldwind.PickedObjectList;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.Color;
 
 public class DrawContext {
@@ -51,7 +52,7 @@ public class DrawContext {
 
     private int elementArrayBufferId;
 
-    private int unitSquareBufferId;
+    private BufferObject unitSquareBuffer;
 
     private ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder());
 
@@ -82,7 +83,7 @@ public class DrawContext {
         this.textureUnit = GLES20.GL_TEXTURE0;
         this.arrayBufferId = 0;
         this.elementArrayBufferId = 0;
-        this.unitSquareBufferId = 0;
+        this.unitSquareBuffer = null;
         Arrays.fill(this.textureId, 0);
     }
 
@@ -227,40 +228,29 @@ public class DrawContext {
     }
 
     /**
-     * Returns the name of an OpenGL buffer object containing a unit square expressed as four vertices at (0, 1), (0,
-     * 0), (1, 1) and (1, 0). Each vertex is stored as two 32-bit floating point coordinates. The four vertices are in
-     * the order required by a triangle strip.
+     * Returns an OpenGL buffer object containing a unit square expressed as four vertices at (0, 1), (0, 0), (1, 1) and
+     * (1, 0). Each vertex is stored as two 32-bit floating point coordinates. The four vertices are in the order
+     * required by a triangle strip.
      * <p/>
      * The OpenGL buffer object is created on first use and cached. Subsequent calls to this method return the cached
      * buffer object.
      */
-    public int unitSquareBuffer() {
-        if (this.unitSquareBufferId != 0) {
-            return this.unitSquareBufferId;
+    public BufferObject unitSquareBuffer() {
+        if (this.unitSquareBuffer != null) {
+            return this.unitSquareBuffer;
         }
-
-        int[] newBuffer = new int[1];
-        GLES20.glGenBuffers(1, newBuffer, 0);
-        this.unitSquareBufferId = newBuffer[0];
 
         float[] points = new float[]{
             0, 1,   // upper left corner
             0, 0,   // lower left corner
             1, 1,   // upper right corner
             1, 0};  // lower right corner
-        int size = points.length;
-        FloatBuffer quadBuffer = ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        quadBuffer.put(points).rewind();
 
-        int currentBuffer = this.currentBuffer(GLES20.GL_ARRAY_BUFFER);
-        try {
-            this.bindBuffer(GLES20.GL_ARRAY_BUFFER, this.unitSquareBufferId);
-            GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, size * 4, quadBuffer, GLES20.GL_STATIC_DRAW);
-        } finally {
-            this.bindBuffer(GLES20.GL_ARRAY_BUFFER, currentBuffer);
-        }
+        FloatBuffer buffer = ByteBuffer.allocateDirect(points.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        buffer.put(points).rewind();
 
-        return this.unitSquareBufferId;
+        this.unitSquareBuffer = new BufferObject(GLES20.GL_ARRAY_BUFFER, buffer);
+        return this.unitSquareBuffer;
     }
 
     /**

@@ -5,8 +5,11 @@
 
 package gov.nasa.worldwindx.experimental;
 
+import android.opengl.GLES20;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
 
@@ -14,6 +17,7 @@ import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.layer.AbstractLayer;
+import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Pool;
@@ -28,6 +32,10 @@ public class AtmosphereLayer extends AbstractLayer {
     protected Vec3 activeLightDirection = new Vec3();
 
     private Sector fullSphereSector = new Sector().setFullSphere();
+
+    private static final String VERTEX_POINTS_KEY = AtmosphereLayer.class.getName() + ".vertexPoints";
+
+    private static final String TRI_STRIP_ELEMENTS_KEY = AtmosphereLayer.class.getName() + ".triStripElements";
 
     public AtmosphereLayer() {
         this.setDisplayName("Atmosphere");
@@ -76,29 +84,27 @@ public class AtmosphereLayer extends AbstractLayer {
     protected void renderSky(RenderContext rc) {
         Pool<DrawableSkyAtmosphere> pool = rc.getDrawablePool(DrawableSkyAtmosphere.class);
         DrawableSkyAtmosphere drawable = DrawableSkyAtmosphere.obtain(pool);
+        int size = 128;
 
         drawable.program = (SkyProgram) rc.getShaderProgram(SkyProgram.KEY);
         if (drawable.program == null) {
             drawable.program = (SkyProgram) rc.putShaderProgram(SkyProgram.KEY, new SkyProgram(rc.resources));
         }
 
+        drawable.vertexPoints = rc.getBufferObject(VERTEX_POINTS_KEY);
+        if (drawable.vertexPoints == null) {
+            drawable.vertexPoints = rc.putBufferObject(VERTEX_POINTS_KEY,
+                this.assembleVertexPoints(rc, size, size, drawable.program.getAltitude()));
+        }
+
+        drawable.triStripElements = rc.getBufferObject(TRI_STRIP_ELEMENTS_KEY);
+        if (drawable.triStripElements == null) {
+            drawable.triStripElements = rc.putBufferObject(TRI_STRIP_ELEMENTS_KEY,
+                this.assembleTriStripElements(size, size));
+        }
+
         drawable.lightDirection.set(this.activeLightDirection);
         drawable.globeRadius = rc.globe.getEquatorialRadius();
-
-        int size = 128;
-        if (drawable.vertexPoints == null) {
-            int count = size * size;
-            double[] array = new double[count];
-            Arrays.fill(array, drawable.program.getAltitude());
-
-            drawable.vertexPoints = ByteBuffer.allocateDirect(count * 12).order(ByteOrder.nativeOrder()).asFloatBuffer();
-            rc.globe.geographicToCartesianGrid(this.fullSphereSector, size, size, array, null,
-                drawable.vertexPoints, 3).rewind();
-        }
-
-        if (drawable.triStripElements == null) {
-            drawable.triStripElements = assembleTriStripElements(size, size);
-        }
 
         rc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY /*z-order after all other surface drawables*/);
     }
@@ -132,14 +138,25 @@ public class AtmosphereLayer extends AbstractLayer {
         rc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY /*z-order after all other surface drawables*/);
     }
 
+    protected BufferObject assembleVertexPoints(RenderContext rc, int numLat, int numLon, double altitude) {
+        int count = numLat * numLon;
+        double[] array = new double[count];
+        Arrays.fill(array, altitude);
+
+        FloatBuffer buffer = ByteBuffer.allocateDirect(count * 12).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        rc.globe.geographicToCartesianGrid(this.fullSphereSector, numLat, numLon, array, null, buffer, 3).rewind();
+
+        return new BufferObject(GLES20.GL_ARRAY_BUFFER, buffer);
+    }
+
     // TODO move this into a basic tessellator implementation in World Wind
     // TODO tessellator and atmosphere needs the TriStripIndices - could we add these to BasicGlobe (needs to be on a static context)
     // TODO may need to switch the tessellation method anyway - geographic grid may produce artifacts at the poles
-    protected static ShortBuffer assembleTriStripElements(int numLat, int numLon) {
+    protected BufferObject assembleTriStripElements(int numLat, int numLon) {
 
         // Allocate a buffer to hold the indices.
         int count = ((numLat - 1) * numLon + (numLat - 2)) * 2;
-        ShortBuffer result = ByteBuffer.allocateDirect(count * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
+        ShortBuffer buffer = ByteBuffer.allocateDirect(count * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
         short[] index = new short[2];
         int vertex = 0;
 
@@ -151,7 +168,7 @@ public class AtmosphereLayer extends AbstractLayer {
                 vertex = lonIndex + latIndex * numLon;
                 index[0] = (short) (vertex + numLon);
                 index[1] = (short) vertex;
-                result.put(index);
+                buffer.put(index);
             }
 
             // Insert indices to create 2 degenerate triangles:
@@ -160,10 +177,10 @@ public class AtmosphereLayer extends AbstractLayer {
             if (latIndex < numLat - 2) {
                 index[0] = (short) vertex;
                 index[1] = (short) ((latIndex + 2) * numLon);
-                result.put(index);
+                buffer.put(index);
             }
         }
 
-        return (ShortBuffer) result.rewind();
+        return new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, (ShortBuffer) buffer.rewind());
     }
 }

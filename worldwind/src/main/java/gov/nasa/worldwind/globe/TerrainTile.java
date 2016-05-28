@@ -5,10 +5,14 @@
 
 package gov.nasa.worldwind.globe;
 
+import android.opengl.GLES20;
+
 import java.nio.FloatBuffer;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.render.BufferObject;
+import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.Tile;
 
@@ -21,11 +25,14 @@ public class TerrainTile extends Tile {
 
     protected FloatBuffer vertexPoints;
 
+    protected String vertexPointKey;
+
     /**
      * {@inheritDoc}
      */
     public TerrainTile(Sector sector, Level level, int row, int column) {
         super(sector, level, row, column);
+        this.vertexPointKey = this.getClass().getName() + ".vertexPoint." + this.tileKey;
     }
 
     public Vec3 getVertexOrigin() {
@@ -42,5 +49,16 @@ public class TerrainTile extends Tile {
 
     public void setVertexPoints(FloatBuffer vertexPoints) {
         this.vertexPoints = vertexPoints;
+    }
+
+    public BufferObject getVertexPointBuffer(RenderContext rc) {
+        BufferObject buffer = rc.getBufferObject(this.vertexPointKey);
+
+        if (buffer == null) {
+            buffer = rc.putBufferObject(this.vertexPointKey,
+                new BufferObject(GLES20.GL_ARRAY_BUFFER, this.vertexPoints));
+        }
+
+        return buffer;
     }
 }

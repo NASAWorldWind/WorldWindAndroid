@@ -38,7 +38,7 @@ public class BasicTerrain implements Terrain {
         this.sector.union(tile.sector);
     }
 
-    public void clearTiles() {
+    public void clear() {
         this.tiles.clear();
         this.sector.setEmpty();
         this.triStripElements = null;
