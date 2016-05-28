@@ -16,6 +16,21 @@ public class PickedObjectList {
     public PickedObjectList() {
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("PickedObjectList{");
+
+        for (int idx = 0, len = this.entries.size(); idx < len; idx++) {
+            if (idx > 0) {
+                sb.append(", ");
+            }
+            sb.append(this.entries.valueAt(idx).toString());
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
     public int count() {
         return this.entries.size();
     }
