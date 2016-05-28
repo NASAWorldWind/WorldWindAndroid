@@ -103,9 +103,15 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
             }
 
             @Override
-            public boolean onSingleTapConfirmed(MotionEvent e) {
+            public boolean onSingleTapUp(MotionEvent e) {
                 toggleSelection();  // Highlight the picked object
-                return true;
+
+                // By not consuming this event, we allow the "up" event to pass on to the navigation gestures,
+                // which is required for proper zoom gestures.  Consuming this event will cause the first zoom
+                // gesture to be ignored.  As an alternative, you can implement onSingleTapConfirmed and consume
+                // event as you would expect, with the trade-off being a slight delay tap response.
+                return false;
+
             }
         });
 

@@ -251,14 +251,34 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
         protected GestureDetector selectDragDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDown(MotionEvent event) {
-                pick(event);        // Pick the object(s) at the tap location
+                pick(event);    // Pick the object(s) at the tap location
                 return false;   // By not consuming this event, we allow it to pass on to the navigation gesture handlers
             }
 
             @Override
+            public boolean onSingleTapUp(MotionEvent event) {
+                // This single-tap handler has a faster response time than onSingleTapConfirmed.
+                toggleSelection();
+
+                // We do not consume this event; we allow the "up" event to pass on to the navigation gestures,
+                // which is required for proper zoom gestures.  Consuming this event will cause the first zoom
+                // gesture to be ignored.
+                //
+                // A drawback to using this callback is that a the first tap of a double-tapping will temporarily
+                // deselect an item, only to reselected on the second tap.
+                //
+                // As an alternative, you can implement onSingleTapConfirmed and consume event as you would expect,
+                // with the trade-off being a slight delay in the tap response time.
+                return false;
+            }
+
+            @Override
             public boolean onSingleTapConfirmed(MotionEvent event) {
-                toggleSelection();  // Highlight the picked object
-                return true;
+                // The following commented out code is an alternative to using onSingleTapUp
+                //toggleSelection();  // Highlight the picked object
+                //return true;
+
+                return super.onSingleTapConfirmed(event);
             }
 
             @Override
