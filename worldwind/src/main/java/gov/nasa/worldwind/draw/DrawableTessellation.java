@@ -70,7 +70,7 @@ public class DrawableTessellation implements Drawable {
             return; // program failed to build
         }
 
-        // Configure the program to draw opaque white fragments.
+        // Configure the program to draw the specified color.
         this.program.enableTexture(false);
         this.program.loadColor(this.color);
 
