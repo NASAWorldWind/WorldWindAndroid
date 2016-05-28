@@ -19,6 +19,7 @@ public class ShowTessellationLayer extends AbstractLayer {
 
     public ShowTessellationLayer() {
         super("Terrain Tessellation");
+        this.setPickEnabled(false);
     }
 
     public Color getColor() {
