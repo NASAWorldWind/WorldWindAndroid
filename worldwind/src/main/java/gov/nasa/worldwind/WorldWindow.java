@@ -93,7 +93,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected Frame currentFrame;
 
-    protected boolean waitingForRedraw;
+    protected boolean isPaused;
+
+    protected boolean isWaitingForRedraw;
 
     protected Handler redrawHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
         @Override
@@ -196,7 +198,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // Cancel any outstanding request redraw messages.
         Choreographer.getInstance().removeFrameCallback(this);
         this.redrawHandler.removeMessages(0 /*what*/);
-        this.waitingForRedraw = false;
+        this.isWaitingForRedraw = false;
     }
 
     /**
@@ -350,6 +352,11 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // screen coordinates to OpenGL screen coordinates.
         PickedObjectList pickedObjects = new PickedObjectList();
         Vec2 pickPoint = new Vec2(x, this.getHeight() - y);
+
+        // Nothing can be picked if this World Window's OpenGL thread is paused.
+        if (this.isPaused) {
+            return pickedObjects;
+        }
 
         // Nothing can be picked if the pick point is outside of the World Window's viewport.
         if (!this.viewport.contains((int) pickPoint.x, (int) pickPoint.y)) {
@@ -596,10 +603,11 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
             return;
         }
 
-        // Suppress duplicate redraw requests and requests that occur before we have an Android surface to draw to.
-        if (!this.waitingForRedraw && !this.viewport.isEmpty()) {
+        // Suppress duplicate redraw requests, request that occur while the World Window is paused, and requests that
+        // occur before we have an Android surface to draw to.
+        if (!this.isWaitingForRedraw && !this.isPaused && !this.viewport.isEmpty()) {
             Choreographer.getInstance().postFrameCallback(this);
-            this.waitingForRedraw = true;
+            this.isWaitingForRedraw = true;
         }
     }
 
@@ -613,7 +621,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         }
 
         // Allow subsequent redraw requests.
-        this.waitingForRedraw = false;
+        this.isWaitingForRedraw = false;
 
         // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
         // The frame is recycled by the OpenGL thread.
@@ -766,16 +774,32 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     /**
-     * Called when the activity is paused. Calling this method will pause the rendering thread and cause any outstanding
-     * pick operations to return an empty pick list.
+     * Called when the activity is paused. Calling this method will pause the rendering thread, cause any outstanding
+     * pick operations to return an empty pick list, and prevent subsequent calls to pick and requestRedraw to return
+     * without performing any action.
      */
     @Override
     public void onPause() {
         super.onPause();
 
+        // Mark the World Window as paused.
+        this.isPaused = true;
+
         // The OpenGL thread is paused, so frames in the queue will not be processed. Clear the frame queue and recycle
         // pending frames back into the frame pool.
         this.clearFrameQueue();
+    }
+
+    /**
+     * Called when the activity is resumed. Calling this method will resume the rendering thread and enable subsequent
+     * calls to pick and requestRedraw to function normally.
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Mark the World Window as not paused.
+        this.isPaused = false;
     }
 
     @Override
