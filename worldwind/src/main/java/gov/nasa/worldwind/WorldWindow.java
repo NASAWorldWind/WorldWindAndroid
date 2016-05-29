@@ -19,6 +19,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
 import java.util.Map;
+import java.util.Queue;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -86,7 +87,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected Pool<Frame> framePool = new SynchronizedPool<>();
 
-    protected ConcurrentLinkedQueue<Frame> frameQueue = new ConcurrentLinkedQueue<>();
+    protected Queue<Frame> frameQueue = new ConcurrentLinkedQueue<>();
+
+    protected Queue<Frame> pickQueue = new ConcurrentLinkedQueue<>();
 
     protected Frame currentFrame;
 
@@ -374,10 +377,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     //public PickedObjectList pickTerrain(float x, float y) {
-    //    return null; // TODO
-    //}
-    //
-    //public PickedObjectList pickShapesInRect(float left, float top, float right, float bottom) {
     //    return null; // TODO
     //}
 
@@ -687,19 +686,20 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      */
     @Override
     public void onDrawFrame(GL10 unused) {
-        // Remove and process pick frames from the front of the queue, recycling them back into the pool. The oldest
-        // non-pick frame, if any, is stored in nextFrame after this loop exits.
-        Frame nextFrame;
-        while ((nextFrame = this.frameQueue.poll()) != null && nextFrame.pickMode) {
-            this.drawFrame(nextFrame);
-            nextFrame.signalDone();
-            nextFrame.recycle();
+        // Remove and process pick the frame from the front of the pick queue, recycling it back into the pool. Continue
+        // requesting frames on the OpenGL thread until the pick queue is empty. This is critical for correct operation.
+        // All frames must be processed or threads waiting on a frame to finish may block indefinitely.
+        Frame pickFrame = this.pickQueue.poll();
+        if (pickFrame != null) {
+            this.drawFrame(pickFrame);
+            pickFrame.signalDone();
+            pickFrame.recycle();
+            super.requestRender();
         }
 
-        // Switch to the frame at the front of the queue and recycle the previous frame back into the pool. Continue
-        // requesting frames on the OpenGL thread until the queue is empty. This is critical for correct operation as
-        // calls to requestRender do not accumulate. Multiple enqueued pick frames may result in a single execution of
-        // onDrawFrame, yet all must be processed or the main thread can deadlock.
+        // Remove and switch to to the frame at the front of the frame queue, recycling the previous frame back into the
+        // pool. Continue requesting frames on the OpenGL thread until the frame queue is empty.
+        Frame nextFrame = this.frameQueue.poll();
         if (nextFrame != null) {
             if (this.currentFrame != null) {
                 this.currentFrame.recycle();
@@ -709,17 +709,16 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         }
 
         // Process and display the Drawables accumulated in the last frame taken from the front of the queue. This frame
-        // may be displayed multiple times if the OpenGL thread runs more often than the World Window enqueues frames.
+        // may be drawn multiple times if the OpenGL thread executes more often than the World Window enqueues frames.
         if (this.currentFrame != null) {
             this.drawFrame(this.currentFrame);
-            this.currentFrame.signalDone();
         }
     }
 
     /**
-     * This is called immediately after the surface is first created, in which case the WorldWindow instance adds itself
-     * as a listener to the {@link WorldWind#messageService()}. The WorldWind.messageService is a facility for
-     * broadcasting global redraw requests to active WorldWindows.
+     * Called immediately after the surface is first created, in which case the WorldWindow instance adds itself as a
+     * listener to the {@link WorldWind#messageService()}. The WorldWind.messageService is a facility for broadcasting
+     * global redraw requests to active WorldWindows.
      *
      * @param holder the SurfaceHolder whose surface is being created
      */
@@ -732,9 +731,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     /**
-     * This is called immediately before a surface is being destroyed, in which case the WorldWindow instance removes
-     * itself from {@link WorldWind#messageService()}. Failure to do so may result in a memory leak this WorldWindow
-     * instance when its owner is release/collected.
+     * Called immediately before a surface is being destroyed, in which case the WorldWindow instance removes itself
+     * from {@link WorldWind#messageService()}. Failure to do so may result in a memory leak this WorldWindow instance
+     * when its owner is release/collected.
      *
      * @param holder the SurfaceHolder whose surface is being destroyed
      */
@@ -750,8 +749,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     /**
-     * This is called immediately after any structural changes (format or size) have been made to the surface, in which
-     * case the WorldWindow redraws itself.
+     * Called immediately after any structural changes (format or size) have been made to the surface, in which case the
+     * WorldWindow redraws itself.
      *
      * @param holder the SurfaceHolder whose surface is has changed
      * @param format the new PixelFormat of the surface
@@ -764,6 +763,19 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Set the World Window's new viewport dimensions.
         this.viewport.set(0, 0, width, height);
+    }
+
+    /**
+     * Called when the activity is paused. Calling this method will pause the rendering thread and cause any outstanding
+     * pick operations to return an empty pick list.
+     */
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        // The OpenGL thread is paused, so frames in the queue will not be processed. Clear the frame queue and recycle
+        // pending frames back into the frame pool.
+        this.clearFrameQueue();
     }
 
     @Override
@@ -836,8 +848,13 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.frameController.renderFrame(this.rc);
 
         // Enqueue the frame for processing on the OpenGL thread as soon as possible and wake the OpenGL thread.
-        this.frameQueue.offer(frame);
-        super.requestRender();
+        if (pickMode) {
+            this.pickQueue.offer(frame);
+            super.requestRender();
+        } else {
+            this.frameQueue.offer(frame);
+            super.requestRender();
+        }
 
         // Propagate redraw requests submitted during rendering. The render context provides a layer of indirection that
         // insulates rendering code from establishing a dependency on a specific WorldWindow.
@@ -898,19 +915,22 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     protected void clearFrameQueue() {
-        // Clear the frame queue and recycle pending frames back into the frame pool. Mark the frame as done to ensure
-        // that threads waiting for the frame to finish don't deadlock.
+        // Clear the pick queue and recycle pending frames back into the frame pool. Mark the frame as done to ensure
+        // that threads waiting for the frame to finish don't block indefinitely.
+        Frame pickFrame;
+        while ((pickFrame = this.pickQueue.poll()) != null) {
+            pickFrame.signalDone();
+            pickFrame.recycle();
+        }
+
+        // Clear the frame queue and recycle pending frames back into the frame pool.
         Frame frame;
         while ((frame = this.frameQueue.poll()) != null) {
-            frame.signalDone();
             frame.recycle();
         }
-        this.frameQueue.clear();
 
-        // Recycle the current frame back into the frame pool. Mark the frame as done to ensure that threads waiting for
-        // the frame to finish don't deadlock.
+        // Recycle the current frame back into the frame pool.
         if (this.currentFrame != null) {
-            this.currentFrame.signalDone();
             this.currentFrame.recycle();
             this.currentFrame = null;
         }
