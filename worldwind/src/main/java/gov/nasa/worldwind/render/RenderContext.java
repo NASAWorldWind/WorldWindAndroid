@@ -31,7 +31,6 @@ import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.SynchronizedPool;
-import gov.nasa.worldwind.util.WWMath;
 
 public class RenderContext {
 
@@ -302,7 +301,7 @@ public class RenderContext {
         // the clip planes, so we limit its offset z value to the range [-1, 1] in order to ensure it is not clipped
         // by WebGL. In clip coordinates the near and far clip planes are perpendicular to the Z axis and are
         // located at -1 and 1, respectively.
-        z = WWMath.clamp(z, -1, 1);
+        z = (z < -1) ? -1 : (z > 1 ? 1 : z);
 
         // Convert the point from clip coordinates to the range [0, 1]. This enables the XY coordinates to be
         // converted to screen coordinates, and the Z coordinate to represent a depth value in the range [0, 1].
