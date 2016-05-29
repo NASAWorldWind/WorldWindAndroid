@@ -34,6 +34,11 @@ public class BasicFrameController implements FrameController {
     @Override
     public void renderFrame(RenderContext rc) {
         this.tessellateTerrain(rc);
+
+        if (rc.pickMode) {
+            this.renderTerrainPickedObject(rc);
+        }
+
         this.renderLayers(rc);
         this.prepareDrawables(rc);
     }
@@ -41,21 +46,17 @@ public class BasicFrameController implements FrameController {
     protected void tessellateTerrain(RenderContext rc) {
         Tessellator tess = rc.globe.getTessellator();
         tess.tessellate(rc);
-
-        if (rc.pickMode) {
-            this.renderPickedTerrain(rc);
-        }
     }
 
-    protected void renderPickedTerrain(RenderContext rc) {
+    protected void renderTerrainPickedObject(RenderContext rc) {
         if (rc.terrain.getSector().isEmpty()) {
             return; // no terrain to pick
         }
 
-        // Acquire a unique picked object ID for the terrain.
+        // Acquire a unique picked object ID for terrain.
         int pickedObjectId = rc.nextPickedObjectId();
 
-        // Enqueue a drawable for processing on the OpenGL thread that displays the terrain in the unique pick color.
+        // Enqueue a drawable for processing on the OpenGL thread that displays terrain in the unique pick color.
         Pool<DrawableSurfaceColor> pool = rc.getDrawablePool(DrawableSurfaceColor.class);
         DrawableSurfaceColor drawable = DrawableSurfaceColor.obtain(pool);
         drawable.color = PickedObject.identifierToUniqueColor(pickedObjectId, drawable.color);
@@ -67,9 +68,7 @@ public class BasicFrameController implements FrameController {
 
         // If the pick ray intersects the terrain, enqueue a picked object that associates the terrain drawable with its
         // picked object ID and the intersection position.
-        if (rc.terrain.intersect(rc.pickRay, this.pickPoint)) {
-            this.pickPos = rc.globe.cartesianToGeographic(this.pickPoint.x, this.pickPoint.y, this.pickPoint.z, this.pickPos);
-            this.pickPos.altitude = 0; // report the actual altitude, which does not always match the surface altitude
+        if (this.resolveTerrainPickPosition(rc, this.pickPos)) {
             rc.offerPickedObject(PickedObject.fromTerrain(this.pickPos, pickedObjectId));
         }
     }
@@ -141,14 +140,22 @@ public class BasicFrameController implements FrameController {
                 topObject.markOnTop();
                 dc.pickedObjects.clearPickedObjects();
                 dc.pickedObjects.offerPickedObject(topObject);
-                if (terrainObject != null && terrainObject != topObject) {
-                    dc.pickedObjects.offerPickedObject(terrainObject);
-                }
+                dc.pickedObjects.offerPickedObject(terrainObject); // handles null objects and duplicate objects
             } else {
                 dc.pickedObjects.clearPickedObjects(); // no eligible objects drawn at the pick point
             }
         } else {
             dc.pickedObjects.clearPickedObjects(); // no objects drawn at the pick point
         }
+    }
+
+    protected boolean resolveTerrainPickPosition(RenderContext rc, Position result) {
+        if (rc.terrain.intersect(rc.pickRay, this.pickPoint)) {
+            result = rc.globe.cartesianToGeographic(this.pickPoint.x, this.pickPoint.y, this.pickPoint.z, result);
+            result.altitude = 0; // report the actual altitude, which does necessarily match the Cartesian surface
+            return true;
+        }
+
+        return false;
     }
 }
