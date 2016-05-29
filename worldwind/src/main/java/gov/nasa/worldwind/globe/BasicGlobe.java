@@ -5,8 +5,6 @@
 
 package gov.nasa.worldwind.globe;
 
-import java.nio.FloatBuffer;
-
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.LookAt;
@@ -184,8 +182,8 @@ public class BasicGlobe implements Globe {
     }
 
     @Override
-    public FloatBuffer geographicToCartesianGrid(Sector sector, int numLat, int numLon, double[] elevations,
-                                                 Vec3 origin, FloatBuffer result, int stride) {
+    public float[] geographicToCartesianGrid(Sector sector, int numLat, int numLon, double[] elevations,
+                                             Vec3 origin, float[] result, int stride, int pos) {
         if (sector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingSector"));
@@ -202,13 +200,13 @@ public class BasicGlobe implements Globe {
                 "geographicToCartesianGrid", "missingArray"));
         }
 
-        if (result == null || result.remaining() < numPoints * stride) {
+        if (result == null || result.length < numPoints * stride + pos) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingResult"));
         }
 
         return this.projection.geographicToCartesianGrid(this, sector, numLat, numLon, elevations, origin, null,
-            result, stride);
+            result, stride, pos);
     }
 
     @Override

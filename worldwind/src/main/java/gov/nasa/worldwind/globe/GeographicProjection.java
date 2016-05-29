@@ -5,8 +5,6 @@
 
 package gov.nasa.worldwind.globe;
 
-import java.nio.FloatBuffer;
-
 import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
@@ -73,11 +71,13 @@ public interface GeographicProjection {
      * @param origin
      * @param offset
      * @param result
+     * @param stride
+     * @param pos
      *
      * @return
      */
-    FloatBuffer geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon, double[] elevations,
-                                          Vec3 origin, Vec3 offset, FloatBuffer result, int stride);
+    float[] geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon, double[] elevations,
+                                      Vec3 origin, Vec3 offset, float[] result, int stride, int pos);
 
     /**
      * Converts a Cartesian point to a geographic position.

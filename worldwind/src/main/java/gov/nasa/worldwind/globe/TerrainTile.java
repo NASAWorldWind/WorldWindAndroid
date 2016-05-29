@@ -7,6 +7,8 @@ package gov.nasa.worldwind.globe;
 
 import android.opengl.GLES20;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import gov.nasa.worldwind.geom.Sector;
@@ -23,7 +25,7 @@ public class TerrainTile extends Tile {
 
     protected Vec3 vertexOrigin = new Vec3();
 
-    protected FloatBuffer vertexPoints;
+    protected float[] vertexPoints;
 
     protected String vertexPointKey;
 
@@ -43,22 +45,30 @@ public class TerrainTile extends Tile {
         this.vertexOrigin = vertexOrigin;
     }
 
-    public FloatBuffer getVertexPoints() {
+    public float[] getVertexPoints() {
         return this.vertexPoints;
     }
 
-    public void setVertexPoints(FloatBuffer vertexPoints) {
+    public void setVertexPoints(float[] vertexPoints) {
         this.vertexPoints = vertexPoints;
     }
 
     public BufferObject getVertexPointBuffer(RenderContext rc) {
-        BufferObject buffer = rc.getBufferObject(this.vertexPointKey);
-
-        if (buffer == null) {
-            buffer = rc.putBufferObject(this.vertexPointKey,
-                new BufferObject(GLES20.GL_ARRAY_BUFFER, this.vertexPoints));
+        if (this.vertexPoints == null) {
+            return null;
         }
 
-        return buffer;
+        BufferObject bufferObject = rc.getBufferObject(this.vertexPointKey);
+        if (bufferObject != null) {
+            return bufferObject;
+        }
+
+        // TODO consider a pool of terrain tiles
+        // TODO consider a pool of terrain tile vertex buffers
+        int size = this.vertexPoints.length * 4;
+        FloatBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        buffer.put(this.vertexPoints).rewind();
+
+        return rc.putBufferObject(this.vertexPointKey, new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer));
     }
 }

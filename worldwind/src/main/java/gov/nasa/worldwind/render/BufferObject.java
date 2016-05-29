@@ -8,8 +8,6 @@ package gov.nasa.worldwind.render;
 import android.opengl.GLES20;
 
 import java.nio.Buffer;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
 
 import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.util.Logger;
@@ -31,14 +29,6 @@ public class BufferObject implements RenderResource {
         this.bufferLength = (buffer != null) ? buffer.remaining() : 0;
         this.bufferByteCount = size;
         this.buffer = buffer;
-    }
-
-    public BufferObject(int target, ShortBuffer buffer) {
-        this(target, (buffer != null) ? buffer.remaining() * 2 : 0, buffer);
-    }
-
-    public BufferObject(int target, FloatBuffer buffer) {
-        this(target, (buffer != null) ? buffer.remaining() * 4 : 0, buffer);
     }
 
     public int getBufferTarget() {

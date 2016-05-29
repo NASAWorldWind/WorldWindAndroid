@@ -5,9 +5,6 @@
 
 package gov.nasa.worldwind.geom;
 
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -24,11 +21,6 @@ public class Line {
      * This line's direction.
      */
     public final Vec3 direction = new Vec3();
-
-    /**
-     * Scratch array used to retrieve FloatBuffer vertex coordinates in triStripIntersection.
-     */
-    private final float[] vertex = new float[3];
 
     /**
      * Constructs a line with origin and direction both zero.
@@ -185,18 +177,18 @@ public class Line {
      * each index indicates a vertex position rather than an actual index into the points array (e.g. a triangle strip
      * index of 1 indicates the XYZ tuple starting at array index 3).
      *
-     * @param points   a buffer of points containing XYZ tuples
+     * @param points   an array of points containing XYZ tuples
      * @param stride   the number of coordinates between the first coordinate of adjacent points - must be at least 3
-     * @param elements a buffer of indices into the points defining the triangle strip organization
+     * @param elements an array of indices into the points defining the triangle strip organization
      * @param result   a pre-allocated Vec3 in which to return the nearest intersection point, if any
      *
      * @return true if this line intersects the triangle strip, otherwise false
      *
-     * @throws IllegalArgumentException If either buffer is null or empty, if the stride is less than 3, or if the
-     *                                  result argument is null
+     * @throws IllegalArgumentException If either array is null or empty, if the stride is less than 3, or if the result
+     *                                  argument is null
      */
-    public boolean triStripIntersection(FloatBuffer points, int stride, ShortBuffer elements, Vec3 result) {
-        if (points == null || points.remaining() < stride) {
+    public boolean triStripIntersection(float[] points, int stride, short[] elements, Vec3 result) {
+        if (points == null || points.length < stride) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Line", "triStripIntersections", "missingBuffer"));
         }
@@ -206,7 +198,7 @@ public class Line {
                 Logger.logMessage(Logger.ERROR, "Line", "triStripIntersections", "invalidStride"));
         }
 
-        if (elements == null || elements.remaining() == 0) {
+        if (elements == null || elements.length == 0) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Line", "triStripIntersections", "missingBuffer"));
         }
@@ -234,24 +226,20 @@ public class Line {
         double tMin = Double.POSITIVE_INFINITY;
         final double EPSILON = 0.00001;
 
-        points.mark();
-
         // Get the triangle strip's first vertex.
-        points.position(elements.get(0) * stride);
-        points.get(this.vertex);
-        double vert1x = this.vertex[0];
-        double vert1y = this.vertex[1];
-        double vert1z = this.vertex[2];
+        int index = elements[0] * stride;
+        double vert1x = points[index++];
+        double vert1y = points[index++];
+        double vert1z = points[index];
 
         // Get the triangle strip's second vertex.
-        points.position(elements.get(1) * stride);
-        points.get(this.vertex);
-        double vert2x = this.vertex[0];
-        double vert2y = this.vertex[1];
-        double vert2z = this.vertex[2];
+        index = elements[1] * stride;
+        double vert2x = points[index++];
+        double vert2y = points[index++];
+        double vert2z = points[index];
 
         // Compute the intersection of each triangle with the specified ray.
-        for (int i = 2, len = elements.remaining(); i < len; i++) {
+        for (int i = 2, len = elements.length; i < len; i++) {
             // Move the last two vertices into the first two vertices. This takes advantage of the triangle strip's
             // structure and avoids redundant reads from points and elements. During the first iteration this places the
             // triangle strip's first three vertices in vert0, vert1 and vert2, respectively.
@@ -263,11 +251,10 @@ public class Line {
             vert1z = vert2z;
 
             // Get the triangle strip's next vertex.
-            points.position(elements.get(i) * stride);
-            points.get(this.vertex);
-            vert2x = this.vertex[0];
-            vert2y = this.vertex[1];
-            vert2z = this.vertex[2];
+            index = elements[i] * stride;
+            vert2x = points[index++];
+            vert2y = points[index++];
+            vert2z = points[index];
 
             // find vectors for two edges sharing point a: vert1 - vert0 and vert2 - vert0
             double edge1x = vert1x - vert0x;
@@ -318,8 +305,6 @@ public class Line {
                 tMin = t;
             }
         }
-
-        points.reset();
 
         if (tMin != Double.POSITIVE_INFINITY) {
             result.set(sx + vx * tMin, sy + vy * tMin, sz + vz * tMin);

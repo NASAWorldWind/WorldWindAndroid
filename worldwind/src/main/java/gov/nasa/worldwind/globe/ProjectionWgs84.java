@@ -5,8 +5,6 @@
 
 package gov.nasa.worldwind.globe;
 
-import java.nio.FloatBuffer;
-
 import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
@@ -181,9 +179,9 @@ public class ProjectionWgs84 implements GeographicProjection {
     }
 
     @Override
-    public FloatBuffer geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon,
-                                                 double[] elevations, Vec3 origin, Vec3 offset,
-                                                 FloatBuffer result, int stride) {
+    public float[] geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon,
+                                             double[] elevations, Vec3 origin, Vec3 offset,
+                                             float[] result, int stride, int pos) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianGrid", "missingGlobe"));
@@ -205,7 +203,7 @@ public class ProjectionWgs84 implements GeographicProjection {
                 "geographicToCartesianGrid", "missingArray"));
         }
 
-        if (result == null || result.remaining() < numPoints * stride) {
+        if (result == null || result.length < numPoints * stride + pos) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingResult"));
         }
@@ -223,12 +221,11 @@ public class ProjectionWgs84 implements GeographicProjection {
         double[] cosLon = new double[numLon];
         double[] sinLon = new double[numLon];
 
-        int latIndex, lonIndex, elevIndex = 0, pos;
+        int latIndex, lonIndex, elevIndex = 0;
         double lat, lon, elev;
         double xOffset = (origin != null) ? -origin.x : 0;
         double yOffset = (origin != null) ? -origin.y : 0;
         double zOffset = (origin != null) ? -origin.z : 0;
-        float[] xyz = new float[3];
 
         // Compute and save values that are a function of each unique longitude value in the specified sector. This
         // eliminates the need to re-compute these values for each column of constant longitude.
@@ -254,16 +251,11 @@ public class ProjectionWgs84 implements GeographicProjection {
             rpm = eqr / Math.sqrt(1.0 - ec2 * sinLat * sinLat);
 
             for (lonIndex = 0; lonIndex < numLon; lonIndex++) {
-                pos = result.position();
                 elev = (elevations != null) ? elevations[elevIndex++] : 0;
-                xyz[0] = (float) ((elev + rpm) * cosLat * sinLon[lonIndex] + xOffset);
-                xyz[1] = (float) ((elev + rpm * (1.0 - ec2)) * sinLat + yOffset);
-                xyz[2] = (float) ((elev + rpm) * cosLat * cosLon[lonIndex] + zOffset);
-                result.put(xyz, 0, 3);
-
-                if (result.limit() >= pos + stride) {
-                    result.position(pos + stride);
-                }
+                result[pos] = (float) ((elev + rpm) * cosLat * sinLon[lonIndex] + xOffset);
+                result[pos + 1] = (float) ((elev + rpm * (1.0 - ec2)) * sinLat + yOffset);
+                result[pos + 2] = (float) ((elev + rpm) * cosLat * cosLon[lonIndex] + zOffset);
+                pos += stride;
             }
         }
 

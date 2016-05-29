@@ -246,10 +246,11 @@ public class DrawContext {
             1, 1,   // upper right corner
             1, 0};  // lower right corner
 
-        FloatBuffer buffer = ByteBuffer.allocateDirect(points.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        int size = points.length * 4;
+        FloatBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
         buffer.put(points).rewind();
 
-        this.unitSquareBuffer = new BufferObject(GLES20.GL_ARRAY_BUFFER, buffer);
+        this.unitSquareBuffer = new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer);
         return this.unitSquareBuffer;
     }
 

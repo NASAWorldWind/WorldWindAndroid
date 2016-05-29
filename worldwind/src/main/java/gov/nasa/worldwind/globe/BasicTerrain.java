@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwind.globe;
 
-import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,11 +16,11 @@ import gov.nasa.worldwind.util.Logger;
 
 public class BasicTerrain implements Terrain {
 
-    protected ShortBuffer triStripElements;
-
     protected List<TerrainTile> tiles = new ArrayList<>();
 
     protected Sector sector = new Sector();
+
+    protected short[] triStripElements;
 
     private Vec3 intersectPoint = new Vec3();
 
@@ -44,11 +43,11 @@ public class BasicTerrain implements Terrain {
         this.triStripElements = null;
     }
 
-    public ShortBuffer getTriStripElements() {
+    public short[] getTriStripElements() {
         return this.triStripElements;
     }
 
-    public void setTriStripElements(ShortBuffer elements) {
+    public void setTriStripElements(short[] elements) {
         this.triStripElements = elements;
     }
 

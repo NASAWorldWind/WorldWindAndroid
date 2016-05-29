@@ -140,25 +140,27 @@ public class AtmosphereLayer extends AbstractLayer {
 
     protected BufferObject assembleVertexPoints(RenderContext rc, int numLat, int numLon, double altitude) {
         int count = numLat * numLon;
-        double[] array = new double[count];
-        Arrays.fill(array, altitude);
+        double[] altitudes = new double[count];
+        Arrays.fill(altitudes, altitude);
 
-        FloatBuffer buffer = ByteBuffer.allocateDirect(count * 12).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        rc.globe.geographicToCartesianGrid(this.fullSphereSector, numLat, numLon, array, null, buffer, 3).rewind();
+        float[] points = new float[count * 3];
+        rc.globe.geographicToCartesianGrid(this.fullSphereSector, numLat, numLon, altitudes, null, points, 3, 0);
 
-        return new BufferObject(GLES20.GL_ARRAY_BUFFER, buffer);
+        int size = points.length * 4;
+        FloatBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        buffer.put(points).rewind();
+
+        return new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer);
     }
 
     // TODO move this into a basic tessellator implementation in World Wind
     // TODO tessellator and atmosphere needs the TriStripIndices - could we add these to BasicGlobe (needs to be on a static context)
     // TODO may need to switch the tessellation method anyway - geographic grid may produce artifacts at the poles
     protected BufferObject assembleTriStripElements(int numLat, int numLon) {
-
         // Allocate a buffer to hold the indices.
         int count = ((numLat - 1) * numLon + (numLat - 2)) * 2;
-        ShortBuffer buffer = ByteBuffer.allocateDirect(count * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
-        short[] index = new short[2];
-        int vertex = 0;
+        short[] elements = new short[count];
+        int pos = 0, vertex = 0;
 
         for (int latIndex = 0; latIndex < numLat - 1; latIndex++) {
             // Create a triangle strip joining each adjacent column of vertices, starting in the bottom left corner and
@@ -166,21 +168,23 @@ public class AtmosphereLayer extends AbstractLayer {
             // a counterclockwise winding order.
             for (int lonIndex = 0; lonIndex < numLon; lonIndex++) {
                 vertex = lonIndex + latIndex * numLon;
-                index[0] = (short) (vertex + numLon);
-                index[1] = (short) vertex;
-                buffer.put(index);
+                elements[pos++] = (short) (vertex + numLon);
+                elements[pos++] = (short) vertex;
             }
 
             // Insert indices to create 2 degenerate triangles:
             // - one for the end of the current row, and
             // - one for the beginning of the next row
             if (latIndex < numLat - 2) {
-                index[0] = (short) vertex;
-                index[1] = (short) ((latIndex + 2) * numLon);
-                buffer.put(index);
+                elements[pos++] = (short) vertex;
+                elements[pos++] = (short) ((latIndex + 2) * numLon);
             }
         }
 
-        return new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, (ShortBuffer) buffer.rewind());
+        int size = elements.length * 2;
+        ShortBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer();
+        buffer.put(elements).rewind();
+
+        return new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer);
     }
 }

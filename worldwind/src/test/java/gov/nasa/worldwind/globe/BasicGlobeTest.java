@@ -7,17 +7,12 @@ package gov.nasa.worldwind.globe;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
@@ -30,8 +25,10 @@ import static java.lang.Math.pow;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.toRadians;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.verify;
 
 /**
  * Unit tests for the BasicGlobe. Tests ensure the proper calculation of the globe's radius using WGS84 specifications,
@@ -236,12 +233,12 @@ public class BasicGlobeTest {
         double[] elevations = new double[count];
         Sector sector = new Sector();
         Vec3 referencePoint = new Vec3();
-        FloatBuffer result = ByteBuffer.allocateDirect(count * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        float[] result = new float[count];
 
-        globe.geographicToCartesianGrid(sector, numLat, numLon, elevations, referencePoint, result, stride);
+        globe.geographicToCartesianGrid(sector, numLat, numLon, elevations, referencePoint, result, stride, 0);
 
         verify(mockedProjection).geographicToCartesianGrid(globe, sector, numLat, numLon, elevations,
-            referencePoint, null, result, stride);
+            referencePoint, null, result, stride, 0);
     }
 
     /**
