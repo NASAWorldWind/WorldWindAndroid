@@ -363,13 +363,13 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * point, the terrain picked object is marked as 'on top'.
      * <p/>
      * This returns an empty list when nothing in the World Wind scene intersects the screen point, when the screen
-     * point is outside this View's bounds, or if the OpenGL thread displaying the World Window scene is paused (or
+     * point is outside this View's bounds, or if the OpenGL thread displaying the World Window's scene is paused (or
      * becomes paused while this method is executing).
      *
      * @param x the screen point's X coordinate in Android screen pixels
      * @param y the screen point's Y coordinate in Android screen pixels
      *
-     * @return A list of World Wind objects at the screen point
+     * @return a list of World Wind objects at the screen point
      */
     public PickedObjectList pick(float x, float y) {
         // Allocate a list in which to collect and return the picked objects.
