@@ -19,7 +19,7 @@ use to represent information on the globe or in space.
 # Release 0.2.5, May 31, 2016
 
 World Wind Android v0.2.5 provides support for 'picking', a feature that enables applications to determine the World
-Wind objects displayed at a screen point. This capability is accessible via the method [WorldWindow.pick](http://worldwindserver.net/android/0.2.5/doc/gov/nasa/worldwind/WorldWindow.html#pick--).
+Wind objects displayed at a screen point. This capability is accessible via the method [WorldWindow.pick](http://worldwindserver.net/android/0.2.5/doc/gov/nasa/worldwind/WorldWindow.html#pick-float-float-).
 Along with the core capability, two examples demonstrate how developers can use picking in their own apps:
 PlacemarksPickingActivity and PlacemarksSelectDragActivity.
 
