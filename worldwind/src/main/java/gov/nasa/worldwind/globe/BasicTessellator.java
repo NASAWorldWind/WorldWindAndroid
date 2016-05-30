@@ -276,7 +276,7 @@ public class BasicTessellator implements Tessellator, TileFactory {
     protected short[] assembleLineElements(int numLat, int numLon) {
         // Allocate a buffer to hold the indices.
         int count = (numLat * (numLon - 1) + numLon * (numLat - 1)) * 2;
-        short[] result = new short[count * 2];
+        short[] result = new short[count];
         int pos = 0, vertex;
 
         // Add a line between each row to define the horizontal cell outlines.
@@ -303,7 +303,7 @@ public class BasicTessellator implements Tessellator, TileFactory {
     protected short[] assembleTriStripElements(int numLat, int numLon) {
         // Allocate a buffer to hold the indices.
         int count = ((numLat - 1) * numLon + (numLat - 2)) * 2;
-        short[] result = new short[count * 2];
+        short[] result = new short[count];
         int pos = 0, vertex = 0;
 
         for (int latIndex = 0; latIndex < numLat - 1; latIndex++) {
