@@ -19,9 +19,6 @@ public class PickedObject {
 
     protected Position position;
 
-    @WorldWind.AltitudeMode
-    protected int altitudeMode = WorldWind.ABSOLUTE;
-
     protected Layer layer;
 
     protected int identifier;
@@ -29,7 +26,7 @@ public class PickedObject {
     protected PickedObject() {
     }
 
-    public static PickedObject fromRenderable(Renderable renderable, Position position, @WorldWind.AltitudeMode int altitudeMode, Layer layer, int identifier) {
+    public static PickedObject fromRenderable(Renderable renderable, Position position, Layer layer, int identifier) {
         if (renderable == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "PickedObject", "fromRenderable", "missingRenderable"));
@@ -48,7 +45,6 @@ public class PickedObject {
         PickedObject po = new PickedObject();
         po.userObject = (renderable.getPickDelegate() != null) ? renderable.getPickDelegate() : renderable;
         po.position = new Position(position);
-        po.altitudeMode = altitudeMode;
         po.layer = layer;
         po.identifier = identifier;
         return po;
@@ -80,7 +76,6 @@ public class PickedObject {
 
         PickedObject po = new PickedObject();
         po.position = new Position(position);
-        po.altitudeMode = WorldWind.ABSOLUTE;
         po.userObject = po.position;
         po.identifier = identifier;
         return po;
@@ -123,7 +118,6 @@ public class PickedObject {
             "isOnTop=" + this.isOnTop +
             ", userObject=" + this.userObject +
             ", position=" + this.position +
-            ", altitudeMode=" + this.altitudeMode +
             ", layer=" + this.layer +
             ", identifier=" + this.identifier +
             '}';
@@ -147,11 +141,6 @@ public class PickedObject {
 
     public Position getPosition() {
         return this.position;
-    }
-
-    @WorldWind.AltitudeMode
-    public int getAltitudeMode() {
-        return this.altitudeMode;
     }
 
     public Layer getLayer() {

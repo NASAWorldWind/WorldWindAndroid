@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.shape;
 
 import gov.nasa.worldwind.PickedObject;
-import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.draw.DrawableSurfaceTexture;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.AbstractRenderable;
@@ -89,7 +88,7 @@ public class SurfaceImage extends AbstractRenderable {
         if (rc.pickMode) {
             PickedObject terrainObject = rc.pickedObjects.terrainPickedObject();
             PickedObject pickedObject = PickedObject.fromRenderable(this, terrainObject.getPosition(),
-                WorldWind.CLAMP_TO_GROUND, rc.currentLayer, rc.nextPickedObjectId());
+                rc.currentLayer, rc.nextPickedObjectId());
             PickedObject.identifierToUniqueColor(pickedObject.getIdentifier(), drawable.color);
             rc.offerPickedObject(pickedObject);
         }

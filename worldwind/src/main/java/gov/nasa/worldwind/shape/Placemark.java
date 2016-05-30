@@ -689,7 +689,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
 
         // Enqueue a picked object that associates the placemark's icon and leader with its picked object ID.
         if (rc.pickMode && rc.drawableCount() != drawableCount) {
-            rc.offerPickedObject(PickedObject.fromRenderable(this, this.position, this.altitudeMode, rc.currentLayer,
+            rc.offerPickedObject(PickedObject.fromRenderable(this, this.position, rc.currentLayer,
                 this.activePickedObjectId));
         }
     }
