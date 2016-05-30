@@ -47,6 +47,7 @@ public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
 
     public DrawableSurfaceTexture set(SurfaceTextureProgram program, Sector sector, Texture texture, Matrix3 texCoordMatrix) {
         this.program = program;
+        this.color.set(1, 1, 1, 1);
         this.texture = texture;
 
         if (sector != null) {

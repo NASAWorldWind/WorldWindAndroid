@@ -101,6 +101,7 @@ public class SurfaceTextureProgram extends ShaderProgram {
 
     public void loadColor(Color color) {
         if (!this.color.equals(color)) { // suppress unnecessary writes to GLSL uniform variables
+            this.color.set(color);
             float a = color.alpha;
             GLES20.glUniform4f(this.colorId, color.red * a, color.green * a, color.blue * a, a);
         }
