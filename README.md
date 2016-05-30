@@ -16,7 +16,7 @@ use to represent information on the globe or in space.
 - [World Wind Forum](http://forum.worldwindcentral.com) provides help from the World Wind community
 - [Android Studio](http://developer.android.com/sdk/) is used for World Wind Android development
 
-# Release 0.2.5, May 30, 2016
+# Release 0.2.5, May 31, 2016
 
 World Wind Android v0.2.5 provides support for 'picking', a feature that enables applications to determine the World
 Wind objects displayed at a screen point. This capability is accessible via the method [WorldWindow.pick](http://worldwindserver.net/android/0.2.5/doc/gov/nasa/worldwind/WorldWindow.html#pick--).
@@ -27,6 +27,8 @@ PlacemarksPickingActivity and PlacemarksSelectDragActivity.
 - [World Wind Library 0.2.5](http://worldwindserver.net/android/0.2.5/worldwind.aar) - Android Archive (AAR) for 0.2.5
 - [API Docs 0.2.5](http://worldwindserver.net/android/0.2.5/doc) - Developer documentation for 0.2.5
 - [JIRA 0.2.5](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA/fixforversion/10916) - Detailed release notes for 0.2.5
+
+#### Release Notes
 
 ###### Requirement
 - [WWA-16](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-16) - Picking
