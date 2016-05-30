@@ -63,7 +63,7 @@ public class DrawableScreenTexture implements Drawable {
             return; // program failed to build
         }
 
-        // Use the draw context's pick mode state and use the drawable's color.
+        // Use the draw context's pick mode and use the drawable's color.
         this.program.enablePickMode(dc.pickMode);
         this.program.loadColor(this.color);
 

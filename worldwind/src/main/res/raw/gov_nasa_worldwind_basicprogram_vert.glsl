@@ -15,10 +15,10 @@ attribute vec2 vertexTexCoord;
 varying vec2 texCoord;
 
 void main() {
-    /* Transform the vertex position by the modelview-projection matrix */
+    /* Transform the vertex position by the modelview-projection matrix. */
     gl_Position = mvpMatrix * vertexPoint;
 
-    /* Transform the vertex tex coord by the tex coord matrix */
+    /* Transform the vertex tex coord by the tex coord matrix. */
     if (enableTexture) {
         texCoord = (texCoordMatrix * vec3(vertexTexCoord, 1.0)).st;
     }

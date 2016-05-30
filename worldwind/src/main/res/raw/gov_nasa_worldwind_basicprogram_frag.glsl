@@ -14,14 +14,14 @@ varying vec2 texCoord;
 
 void main() {
     if (enablePickMode && enableTexture) {
-        /* Return the specified fragment RGB color with the texture's Alpha component */
+        /* Modulate the RGBA color with the 2D texture's Alpha component (rounded to 0.0 or 1.0). */
         float texMask = floor(texture2D(texSampler, texCoord).a + 0.5);
         gl_FragColor = color * texMask;
     } else if (!enablePickMode && enableTexture) {
-       /* Modulate the specified fragment color by the specified 2D texture's color */
+       /* Modulate the RGBA color with the 2D texture's RGBA color. */
        gl_FragColor = color * texture2D(texSampler, texCoord);
     } else {
-        /* Return the specified fragment color */
+        /* Return the RGBA color as-is. */
         gl_FragColor = color;
     }
 }
