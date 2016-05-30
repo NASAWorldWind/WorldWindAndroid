@@ -677,7 +677,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
 
         // If the placemark's icon is visible, enqueue a drawable icon for processing on the OpenGL thread.
         WWMath.boundingRectForUnitSquare(unitSquareTransform, screenBounds);
-        if (rc.viewport.intersects(screenBounds)) {
+        if (rc.frustum.intersectsViewport(screenBounds)) {
             Pool<DrawableScreenTexture> pool = rc.getDrawablePool(DrawableScreenTexture.class);
             DrawableScreenTexture drawable = DrawableScreenTexture.obtain(pool);
             this.prepareDrawableIcon(rc, drawable);

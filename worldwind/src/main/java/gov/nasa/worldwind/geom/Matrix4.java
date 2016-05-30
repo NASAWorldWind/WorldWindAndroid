@@ -132,10 +132,10 @@ public class Matrix4 {
 
     @Override
     public String toString() {
-        return "[" +this.m[0] + ", " + this.m[1] + ", " + this.m[2] + ", " + this.m[3] + "], " +
-            '[' +this.m[4] + ", " + this.m[5] + ", " + this.m[6] + ", " + this.m[7] + "], " +
-            '[' +this.m[8] + ", " + this.m[9] + ", " + this.m[10] + ", " + this.m[11] + "], " +
-            '[' +this.m[12] + ", " + this.m[13] + ", " + this.m[14] + ", " + this.m[15] + ']';
+        return "[" + this.m[0] + ", " + this.m[1] + ", " + this.m[2] + ", " + this.m[3] + "], " +
+            '[' + this.m[4] + ", " + this.m[5] + ", " + this.m[6] + ", " + this.m[7] + "], " +
+            '[' + this.m[8] + ", " + this.m[9] + ", " + this.m[10] + ", " + this.m[11] + "], " +
+            '[' + this.m[12] + ", " + this.m[13] + ", " + this.m[14] + ", " + this.m[15] + ']';
     }
 
     /**
@@ -1408,6 +1408,158 @@ public class Matrix4 {
         result[2].multiply(m33);
 
         return result;
+    }
+
+    /**
+     * Projects a Cartesian point to screen coordinates. This method assumes this matrix represents an inverse
+     * modelview-projection matrix. The result of this method is undefined if this matrix is not an inverse
+     * modelview-projection matrix.
+     * <p/>
+     * The resultant screen point is in OpenGL screen coordinates, with the origin in the bottom-left corner and axes
+     * that extend up and to the right from the origin.
+     * <p/>
+     * This stores the projected point in the result argument, and returns a boolean value indicating whether or not the
+     * projection is successful. This returns false if the Cartesian point is clipped by the near clipping plane or the
+     * far clipping plane.
+     *
+     * @param x      the Cartesian point's X component
+     * @param y      the Cartesian point's y component
+     * @param z      the Cartesian point's z component
+     * @param viewport   the viewport defining the screen point's coordinate system
+     * @param result a pre-allocated {@link Vec3} in which to return the projected point
+     *
+     * @return true if the transformation is successful, otherwise false
+     *
+     * @throws IllegalArgumentException If any argument is null
+     */
+    public boolean project(double x, double y, double z, Viewport viewport, Vec3 result) {
+        if (viewport == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Matrix4", "project", "missingViewport"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Matrix4", "project", "missingResult"));
+        }
+
+        // Transform the model point from model coordinates to eye coordinates then to clip coordinates. This inverts
+        // the Z axis and stores the negative of the eye coordinate Z value in the W coordinate.
+        double[] m = this.m;
+        double sx = m[0] * x + m[1] * y + m[2] * z + m[3];
+        double sy = m[4] * x + m[5] * y + m[6] * z + m[7];
+        double sz = m[8] * x + m[9] * y + m[10] * z + m[11];
+        double sw = m[12] * x + m[13] * y + m[14] * z + m[15];
+
+        if (sw == 0) {
+            return false;
+        }
+
+        // Complete the conversion from model coordinates to clip coordinates by dividing by W. The resultant X, Y
+        // and Z coordinates are in the range [-1,1].
+        sx /= sw;
+        sy /= sw;
+        sz /= sw;
+
+        // Clip the point against the near and far clip planes.
+        if (sz < -1 || sz > 1) {
+            return false;
+        }
+
+        // Convert the point from clip coordinate to the range [0,1]. This enables the X and Y coordinates to be
+        // converted to screen coordinates, and the Z coordinate to represent a depth value in the range[0,1].
+        sx = sx * 0.5 + 0.5;
+        sy = sy * 0.5 + 0.5;
+        sz = sz * 0.5 + 0.5;
+
+        // Convert the X and Y coordinates from the range [0,1] to screen coordinates.
+        sx = sx * viewport.width + viewport.x;
+        sy = sy * viewport.height + viewport.y;
+
+        result.x = sx;
+        result.y = sy;
+        result.z = sz;
+
+        return true;
+    }
+
+    /**
+     * Un-projects a screen coordinate point to Cartesian coordinates at the near clip plane and the far clip plane.
+     * This method assumes this matrix represents an inverse modelview-projection matrix. The result of this method is
+     * undefined if this matrix is not an inverse modelview-projection matrix.
+     * <p/>
+     * The screen point is understood to be in OpenGL screen coordinates, with the origin in the bottom-left corner and
+     * axes that extend up and to the right from the origin.
+     * <p/>
+     * This function stores the un-projected points in the result argument, and a boolean value indicating whether the
+     * un-projection is successful.
+     *
+     * @param x          the screen point's X component
+     * @param y          the screen point's Y component
+     * @param viewport   the viewport defining the screen point's coordinate system
+     * @param nearResult a pre-allocated {@link Vec3} in which to return the un-projected near clip plane point
+     * @param farResult  a pre-allocated {@link Vec3} in which to return the un-projected far clip plane point
+     *
+     * @return true if the transformation is successful, otherwise false
+     *
+     * @throws IllegalArgumentException If any argument is null
+     */
+    public boolean unProject(double x, double y, Viewport viewport, Vec3 nearResult, Vec3 farResult) {
+        if (viewport == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Matrix4", "unProject", "missingViewport"));
+        }
+
+        if (nearResult == null || farResult == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Matrix4", "unProject", "missingResult"));
+        }
+
+        // Convert the XY screen coordinates to coordinates in the range [0, 1]. This enables the XY coordinates to
+        // be converted to clip coordinates.
+        double sx = (x - viewport.x) / viewport.width;
+        double sy = (y - viewport.y) / viewport.height;
+
+        // Convert from coordinates in the range [0, 1] to clip coordinates in the range [-1, 1].
+        sx = sx * 2 - 1;
+        sy = sy * 2 - 1;
+
+        // Transform the screen point from clip coordinates to model coordinates. This is a partial transformation that
+        // factors out the contribution from the screen point's X and Y components. The contribution from the Z
+        // component, which is both -1 and +1, is included next.
+        double[] m = this.m;
+        double mx = (m[0] * sx) + (m[1] * sy) + m[3];
+        double my = (m[4] * sx) + (m[5] * sy) + m[7];
+        double mz = (m[8] * sx) + (m[9] * sy) + m[11];
+        double mw = (m[12] * sx) + (m[13] * sy) + m[15];
+
+        // Transform the screen point at the near clip plane (z = -1) to model coordinates.
+        double nx = mx - m[2];
+        double ny = my - m[6];
+        double nz = mz - m[10];
+        double nw = mw - m[14];
+
+        // Transform the screen point at the far clip plane (z = +1) to model coordinates.
+        double fx = mx + m[2];
+        double fy = my + m[6];
+        double fz = mz + m[10];
+        double fw = mw + m[14];
+
+        if (nw == 0 || fw == 0) {
+            return false;
+        }
+
+        // Complete the conversion from near clip coordinates to model coordinates by dividing by the W component.
+        nearResult.x = nx / nw;
+        nearResult.y = ny / nw;
+        nearResult.z = nz / nw;
+
+        // Complete the conversion from far clip coordinates to model coordinates by dividing by the W component.
+        farResult.x = fx / fw;
+        farResult.y = fy / fw;
+        farResult.z = fz / fw;
+
+        return true;
     }
 
     /**

@@ -348,31 +348,35 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     public PickedObjectList pick(float x, float y) {
-        // Allocate a list in which to collect and return the picked objects and convert the pick point from Android
-        // screen coordinates to OpenGL screen coordinates.
+        // Allocate a list in which to collect and return the picked objects.
         PickedObjectList pickedObjects = new PickedObjectList();
-        Vec2 pickPoint = new Vec2(x, this.getHeight() - y);
 
-        // Nothing can be picked if this World Window's OpenGL thread is paused.
+        // Nothing can be picked if the World Window's OpenGL thread is paused.
         if (this.isPaused) {
             return pickedObjects;
         }
 
-        // Nothing can be picked if the pick point is outside of the World Window's viewport.
-        if (!this.viewport.contains((int) pickPoint.x, (int) pickPoint.y)) {
+        // Compute the pick point in OpenGL screen coordinates, rounding to the nearest whole pixel. Nothing can be picked
+        // if pick point is outside the World Window's viewport.
+        int px = Math.round(x);
+        int py = Math.round(this.getHeight() - y);
+        if (!this.viewport.contains(px, py)) {
             return pickedObjects;
         }
 
-        // Nothing can be picked if a ray through the pick point cannot be constructed.
+        // Compute the line in Cartesian coordinates that passes through the pick point. Nothing can be picked if the
+        // line cannot be constructed.
         Line pickRay = new Line();
-        if (!this.rayThroughScreenPoint(x, y, pickRay)) {
+        if (!this.rayThroughScreenPoint(x, y, pickRay)) { // use the original XY coordinates for the pick ray
             return pickedObjects;
         }
 
         // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
         Frame frame = Frame.obtain(this.framePool);
         frame.pickedObjects = pickedObjects;
-        frame.pickPoint = pickPoint;
+        frame.pickViewport = new Viewport(px - 1, py - 1, 3, 3); // 3x3 viewport centered on the pick point
+        frame.pickViewport.intersect(this.viewport); // limit the 3x3 viewport to the screen viewport
+        frame.pickPoint = new Vec2(px, py);
         frame.pickRay = pickRay;
         frame.pickMode = true;
         this.renderFrame(frame);
@@ -382,10 +386,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         return pickedObjects;
     }
-
-    //public PickedObjectList pickTerrain(float x, float y) {
-    //    return null; // TODO
-    //}
 
     /**
      * Transforms a Cartesian coordinate point to Android screen coordinates. The resultant screen point is in Android
@@ -414,46 +414,15 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.computeViewingTransform(this.scratchProjection, this.scratchModelview);
         this.scratchProjection.multiplyByMatrix(this.scratchModelview);
 
-        // Transform the model point from model coordinates to eye coordinates then to clip coordinates. This inverts
-        // the Z axis and stores the negative of the eye coordinate Z value in the W coordinate.
-        double[] m = this.scratchProjection.m;
-        double sx = m[0] * x + m[1] * y + m[2] * z + m[3];
-        double sy = m[4] * x + m[5] * y + m[6] * z + m[7];
-        double sz = m[8] * x + m[9] * y + m[10] * z + m[11];
-        double sw = m[12] * x + m[13] * y + m[14] * z + m[15];
-
-        if (sw == 0) {
-            return false;
+        // Transform the Cartesian point to OpenGL screen coordinates. Complete the transformation by converting to
+        // Android screen coordinates and discarding the screen Z component.
+        if (this.scratchProjection.project(x, y, z, this.viewport, this.scratchPoint)) {
+            result.x = (float) this.scratchPoint.x;
+            result.y = (float) (this.getHeight() - this.scratchPoint.y);
+            return true;
         }
 
-        // Complete the conversion from model coordinates to clip coordinates by dividing by W. The resultant X, Y and
-        // Z coordinates are in the range [-1, +1].
-        sx /= sw;
-        sy /= sw;
-        sz /= sw;
-
-        // Clip the point against the near and far clip planes. The result for points outside this range is undefined.
-        if (sz < -1 || sz > 1) {
-            return false;
-        }
-
-        // Convert the point from clip coordinate to the range [0, 1]. This enables the X and Y coordinates to be
-        // converted to screen coordinates, and the Z coordinate to represent a depth value in the range [0, 1].
-        sx = sx * 0.5 + 0.5;
-        sy = sy * 0.5 + 0.5;
-
-        // Convert from OpenGL screen coordinates to Android screen coordinates, both in the range [0, 1].
-        sy = 1 - sy;
-
-        // Convert the X and Y coordinates from the range [0, 1] to Android screen coordinates.
-        sx = sx * this.getWidth();
-        sy = sy * this.getHeight();
-
-        // Store the Android screen coordinates in the result argument.
-        result.x = (float) sx;
-        result.y = (float) sy;
-
-        return true;
+        return false;
     }
 
     /**
@@ -498,68 +467,30 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      *
      * @throws IllegalArgumentException If the result is null
      */
+    @SuppressWarnings("UnnecessaryLocalVariable")
     public boolean rayThroughScreenPoint(float x, float y, Line result) {
         if (result == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "WorldWindow", "rayThroughScreenPoint", "missingResult"));
         }
 
-        // Compute the World Window's inverse modelview-projection matrix.
+        // Convert from Android screen coordinates to OpenGL screen coordinates by inverting the Y axis.
+        double sx = x;
+        double sy = this.getHeight() - y;
+
+        // Compute the inverse modelview-projection matrix corresponding to the World Window's current Navigator state.
         this.computeViewingTransform(this.scratchProjection, this.scratchModelview);
         this.scratchProjection.multiplyByMatrix(this.scratchModelview).invert();
 
-        // Convert from Android screen coordinates to coordinates in the range [0, 1]. This enables subsequent
-        // conversion to clip coordinates.
-        double sx = x / this.getWidth();
-        double sy = y / this.getHeight();
-
-        // Convert from Android screen coordinates to OpenGL screen coordinates, both in the range [0, 1].
-        sy = 1 - sy;
-
-        // Convert from coordinates in the range [0, 1] to clip coordinates in the range [-1, 1].
-        sx = sx * 2 - 1;
-        sy = sy * 2 - 1;
-
-        // Transform the screen point from clip coordinates to model coordinates. This is a partial transformation
-        // that factors out the contribution from the screen point's X and Y components. The contribution from the Z
-        // component, which is both -1 and +1, is included next.
-        double[] m = this.scratchProjection.m;
-        double mx = (m[0] * sx) + (m[1] * sy) + m[3];
-        double my = (m[4] * sx) + (m[5] * sy) + m[7];
-        double mz = (m[8] * sx) + (m[9] * sy) + m[11];
-        double mw = (m[12] * sx) + (m[13] * sy) + m[15];
-
-        // Transform the screen point at the near clip plane (z = -1) to model coordinates.
-        double nx = mx - m[2];
-        double ny = my - m[6];
-        double nz = mz - m[10];
-        double nw = mw - m[14];
-
-        // Transform the screen point at the far clip plane (z = +1) to model coordinates.
-        double fx = mx + m[2];
-        double fy = my + m[6];
-        double fz = mz + m[10];
-        double fw = mw + m[14];
-
-        if (nw == 0 || fw == 0) {
-            return false;
+        // Transform the screen point to Cartesian coordinates at the near and far clip planes, store the result in the
+        // ray's origin and direction, respectively. Complete the ray direction by subtracting the near point from the
+        // far point and normalizing.
+        if (this.scratchProjection.unProject(sx, sy, this.viewport, result.origin /*near*/, result.direction /*far*/)) {
+            result.direction.subtract(result.origin).normalize();
+            return true;
         }
 
-        // Complete the conversion from near clip coordinates to model coordinates by dividing by the W component.
-        nx = nx / nw;
-        ny = ny / nw;
-        nz = nz / nw;
-
-        // Complete the conversion from far clip coordinates to model coordinates by dividing by the W component.
-        fx = fx / fw;
-        fy = fy / fw;
-        fz = fz / fw;
-
-        // Store the ray coordinates in the result argument.
-        result.origin.set(nx, ny, nz);
-        result.direction.set(fx - nx, fy - ny, fz - nz).normalize();
-
-        return true;
+        return false;
     }
 
     /**
@@ -856,9 +787,11 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.rc.projection.set(frame.projection);
         this.rc.modelview.set(frame.modelview);
         this.rc.modelviewProjection.setToMultiply(frame.projection, frame.modelview);
-        this.rc.frustum.setToProjectionMatrix(frame.projection);
-        this.rc.frustum.transformByMatrix(this.scratchModelview.transposeMatrix(frame.modelview));
-        this.rc.frustum.normalize();
+        if (pickMode) {
+            this.rc.frustum.setToModelviewProjection(frame.projection, frame.modelview, frame.viewport, frame.pickViewport);
+        } else {
+            this.rc.frustum.setToModelviewProjection(frame.projection, frame.modelview, frame.viewport);
+        }
 
         // Accumulate the Drawables in the frame's drawable queue and drawable terrain data structures.
         this.rc.drawableQueue = frame.drawableQueue;

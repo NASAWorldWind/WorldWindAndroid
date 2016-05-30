@@ -177,6 +177,7 @@ public class RenderContext {
                 Logger.logMessage(Logger.ERROR, "RenderContext", "project", "missingResult"));
         }
 
+        // TODO consider consolidating this with Matrix4.project and moving projectWithDepth to Matrix4
         // Transform the model point from model coordinates to eye coordinates then to clip coordinates. This
         // inverts the Z axis and stores the negative of the eye coordinate Z value in the W coordinate.
         double mx = modelPoint.x;

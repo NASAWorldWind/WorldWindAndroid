@@ -192,10 +192,57 @@ public class Viewport {
         }
 
         Viewport that = viewport;
-        return this.x < that.x + that.width
-            && that.x < this.x + this.width
-            && this.y < that.y + that.height
-            && that.y < this.y + this.height;
+        return this.x < (that.x + that.width) && that.x < (this.x + this.width)
+            && this.y < (that.y + that.height) && that.y < (this.y + this.height);
+    }
+
+    /**
+     * Computes the intersection of this viewport and a specified viewport, storing the result in this viewport and
+     * returning whether or not the viewport intersect. Two viewport intersect when both overlap by a non-zero amount.
+     * An empty viewport never intersects another viewport.
+     * <p/>
+     * When there is no intersection, this returns false and leaves this viewport unchanged. To test for intersection
+     * without modifying this viewport, use {@link #intersects}.
+     *
+     * @param viewport the viewport to intersect with
+     *
+     * @return this true if this viewport intersects the specified viewport, false otherwise
+     *
+     * @throws IllegalArgumentException If the viewport is null
+     */
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    public boolean intersect(Viewport viewport) {
+        if (viewport == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Viewport", "intersect", "missingViewport"));
+        }
+
+        Viewport that = viewport;
+        if (this.x < (that.x + that.width) && that.x < (this.x + this.width)
+            && this.y < (that.y + that.height) && that.y < (this.y + this.height)) {
+
+            if (this.x < that.x) {
+                this.width -= that.x - this.x;
+                this.x = that.x;
+            }
+
+            if (this.y < that.y) {
+                this.height -= that.y - this.y;
+                this.y = that.y;
+            }
+
+            if ((this.x + this.width) > (that.x + that.width)) {
+                this.width = that.x + that.width - this.x;
+            }
+
+            if ((this.y + this.height) > (that.y + that.height)) {
+                this.height = that.y + that.height - this.y;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

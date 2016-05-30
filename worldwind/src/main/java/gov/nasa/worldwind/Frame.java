@@ -31,6 +31,8 @@ public class Frame {
 
     public PickedObjectList pickedObjects;
 
+    public Viewport pickViewport;
+
     public Vec2 pickPoint;
 
     public Line pickRay;
@@ -69,6 +71,7 @@ public class Frame {
         this.drawableQueue.clearDrawables();
         this.drawableTerrain.clearDrawables();
         this.pickedObjects = null;
+        this.pickViewport = null;
         this.pickPoint = null;
         this.pickRay = null;
         this.pickMode = false;
