@@ -5,7 +5,8 @@
 
 package gov.nasa.worldwind.shape;
 
-import gov.nasa.worldwind.draw.Drawable;
+import gov.nasa.worldwind.PickedObject;
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.draw.DrawableSurfaceTexture;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.AbstractRenderable;
@@ -78,10 +79,20 @@ public class SurfaceImage extends AbstractRenderable {
             return; // no texture to draw
         }
 
+        // Enqueue a drawable surface texture for processing on the OpenGL thread.
         SurfaceTextureProgram program = this.getShaderProgram(rc);
         Pool<DrawableSurfaceTexture> pool = rc.getDrawablePool(DrawableSurfaceTexture.class);
-        Drawable drawable = DrawableSurfaceTexture.obtain(pool).set(program, this.sector, texture, texture.getTexCoordTransform());
+        DrawableSurfaceTexture drawable = DrawableSurfaceTexture.obtain(pool).set(program, this.sector, texture, texture.getTexCoordTransform());
         rc.offerSurfaceDrawable(drawable, 0 /*z-order*/);
+
+        // Enqueue a picked object that associates the drawable surface texture with this surface image.
+        if (rc.pickMode) {
+            PickedObject terrainObject = rc.pickedObjects.terrainPickedObject();
+            PickedObject pickedObject = PickedObject.fromRenderable(this, terrainObject.getPosition(),
+                WorldWind.CLAMP_TO_GROUND, rc.currentLayer, rc.nextPickedObjectId());
+            PickedObject.identifierToUniqueColor(pickedObject.getIdentifier(), drawable.color);
+            rc.offerPickedObject(pickedObject);
+        }
     }
 
     protected SurfaceTextureProgram getShaderProgram(RenderContext rc) {
