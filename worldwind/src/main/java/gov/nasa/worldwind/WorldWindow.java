@@ -347,6 +347,30 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.worldWindowController.setWorldWindow(this); // attach the new controller
     }
 
+    /**
+     * Determines the World Wind objects displayed at a screen point. The screen point is interpreted as coordinates in
+     * Android screen pixels relative to this View.
+     * <p/>
+     * If the screen point intersects any number of World Wind shapes, the returned list contains a picked object
+     * identifying the top shape at the screen point. This picked object includes the shape renderable or its non-null
+     * pick delegate, the shape's geographic position, and the World Wind layer that displayed the shape. Shapes which
+     * are either hidden behind another shape at the screen point or hidden behind terrain at the screen point are
+     * omitted from the returned list. Therefore if the returned list contains a picked object identifying a shape, it
+     * is always marked as 'on top'.
+     * <p/>
+     * If the screen point intersects the World Wind terrain, the returned list contains a picked object identifying the
+     * associated geographic position. If there are no shapes in the World Wind scene between the terrain and the screen
+     * point, the terrain picked object is marked as 'on top'.
+     * <p/>
+     * This returns an empty list when nothing in the World Wind scene intersects the screen point, when the screen
+     * point is outside this View's bounds, or if the OpenGL thread displaying the World Window scene is paused (or
+     * becomes paused while this method is executing).
+     *
+     * @param x the screen point's X coordinate in Android screen pixels
+     * @param y the screen point's Y coordinate in Android screen pixels
+     *
+     * @return A list of World Wind objects at the screen point
+     */
     public PickedObjectList pick(float x, float y) {
         // Allocate a list in which to collect and return the picked objects.
         PickedObjectList pickedObjects = new PickedObjectList();
@@ -456,8 +480,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     /**
-     * Computes a Cartesian coordinate ray that passes through through a screen point. The X and Y components are
-     * interpreted as coordinates in Android screen pixels relative to this View.
+     * Computes a Cartesian coordinate ray that passes through through a screen point. The screen point is interpreted
+     * as coordinates in Android screen pixels relative to this View.
      *
      * @param x      the screen point's X coordinate in Android screen pixels
      * @param y      the screen point's Y coordinate in Android screen pixels
