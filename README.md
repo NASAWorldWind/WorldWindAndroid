@@ -33,6 +33,9 @@ PlacemarksPickingActivity and PlacemarksSelectDragActivity.
 ###### Requirement
 - [WWA-16](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-16) - Picking
 
+###### Bug
+- [WWA-76](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-76) - Blank screen when EGL context lost
+
 # Release 0.2.0, May 13, 2016
 
 World Wind Android v0.2.0 adds support for screen placemarks and navigation events. The World Wind Android v0.2.0
