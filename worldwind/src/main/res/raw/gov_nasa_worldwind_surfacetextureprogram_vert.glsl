@@ -5,20 +5,24 @@
 
 precision mediump float;
 
+uniform bool enableTexture;
 uniform mat4 mvpMatrix;
 uniform mat3 texCoordMatrix[2];
 
 attribute vec4 vertexPoint;
 attribute vec2 vertexTexCoord;
 
-varying vec2 texCoord[2];
+varying vec2 texCoord;
+varying vec2 tileCoord;
 
 void main() {
     /* Transform the vertex position by the modelview-projection matrix. */
     gl_Position = mvpMatrix * vertexPoint;
 
     /* Transform the vertex tex coord by the tex coord matrices. */
-    vec3 texCoord3 = vec3(vertexTexCoord, 1.0);
-    texCoord[0] = (texCoordMatrix[0] * texCoord3).st;
-    texCoord[1] = (texCoordMatrix[1] * texCoord3).st;
+    if (enableTexture) {
+        vec3 texCoord3 = vec3(vertexTexCoord, 1.0);
+        texCoord = (texCoordMatrix[0] * texCoord3).st;
+        tileCoord = (texCoordMatrix[1] * texCoord3).st;
+    }
 }

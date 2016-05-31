@@ -9,61 +9,68 @@ import android.opengl.GLES20;
 
 import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.draw.Drawable;
-import gov.nasa.worldwind.geom.Camera;
-import gov.nasa.worldwind.geom.Matrix4;
+import gov.nasa.worldwind.draw.DrawableSurfaceColor;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.Tessellator;
 import gov.nasa.worldwind.layer.LayerList;
+import gov.nasa.worldwind.render.BasicShaderProgram;
+import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.Pool;
 
 public class BasicFrameController implements FrameController {
 
-    protected Camera camera = new Camera();
+    private Color pickColor;
 
-    protected Matrix4 matrix = new Matrix4();
+    private Vec3 pickPoint = new Vec3();
+
+    private Position pickPos = new Position();
 
     public BasicFrameController() {
     }
 
     @Override
     public void renderFrame(RenderContext rc) {
-        this.prepareViewingState(rc);
         this.tessellateTerrain(rc);
+
+        if (rc.pickMode) {
+            this.renderTerrainPickedObject(rc);
+        }
+
         this.renderLayers(rc);
         this.prepareDrawables(rc);
-    }
-
-    protected void prepareViewingState(RenderContext rc) {
-        // Compute the clip plane distances. The near distance is set to a large value that does not clip the globe's
-        // surface. The far distance is set to the smallest value that does not clip the atmosphere.
-        // TODO adjust the clip plane distances based on the navigator's orientation - shorter distances when the
-        // TODO horizon is not in view
-        // TODO parameterize the object altitude for horizon distance
-        double near = rc.eyePosition.altitude * 0.75;
-        double far = rc.globe.horizonDistance(rc.eyePosition.altitude, 160000);
-
-        // Configure a camera object with the render context's viewing parameters. This is used to compute the draw
-        // context's Cartesian modelview matrix.
-        this.camera.set(rc.eyePosition.latitude, rc.eyePosition.longitude, rc.eyePosition.altitude, WorldWind.ABSOLUTE,
-            rc.heading, rc.tilt, rc.roll);
-
-        // Compute the render context's Cartesian modelview matrix, eye coordinate projection matrix, and the combined
-        // modelview-projection matrix. Extract the Cartesian eye point from the modelview matrix.
-        rc.globe.cameraToCartesianTransform(this.camera, rc.modelview).invertOrthonormal();
-        rc.modelview.extractEyePoint(rc.eyePoint);
-        rc.projection.setToPerspectiveProjection(rc.viewport.width(), rc.viewport.height(), rc.fieldOfView, near, far);
-        rc.modelviewProjection.setToMultiply(rc.projection, rc.modelview);
-
-        // Compute the projection's Cartesian frustum, which must be transformed from eye coordinates to world Cartesian
-        // coordinates.
-        rc.frustum.setToProjectionMatrix(rc.projection);
-        rc.frustum.transformByMatrix(this.matrix.transposeMatrix(rc.modelview));
-        rc.frustum.normalize();
     }
 
     protected void tessellateTerrain(RenderContext rc) {
         Tessellator tess = rc.globe.getTessellator();
         tess.tessellate(rc);
+    }
+
+    protected void renderTerrainPickedObject(RenderContext rc) {
+        if (rc.terrain.getSector().isEmpty()) {
+            return; // no terrain to pick
+        }
+
+        // Acquire a unique picked object ID for terrain.
+        int pickedObjectId = rc.nextPickedObjectId();
+
+        // Enqueue a drawable for processing on the OpenGL thread that displays terrain in the unique pick color.
+        Pool<DrawableSurfaceColor> pool = rc.getDrawablePool(DrawableSurfaceColor.class);
+        DrawableSurfaceColor drawable = DrawableSurfaceColor.obtain(pool);
+        drawable.color = PickedObject.identifierToUniqueColor(pickedObjectId, drawable.color);
+        drawable.program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
+        if (drawable.program == null) {
+            drawable.program = (BasicShaderProgram) rc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(rc.resources));
+        }
+        rc.offerSurfaceDrawable(drawable, Double.NEGATIVE_INFINITY /*z-order before all other surface drawables*/);
+
+        // If the pick ray intersects the terrain, enqueue a picked object that associates the terrain drawable with its
+        // picked object ID and the intersection position.
+        if (this.resolveTerrainPickPosition(rc, this.pickPos)) {
+            rc.offerPickedObject(PickedObject.fromTerrain(this.pickPos, pickedObjectId));
+        }
     }
 
     protected void renderLayers(RenderContext rc) {
@@ -90,6 +97,10 @@ public class BasicFrameController implements FrameController {
     public void drawFrame(DrawContext dc) {
         this.clearFrame(dc);
         this.drawDrawables(dc);
+
+        if (dc.pickMode) {
+            this.resolvePick(dc);
+        }
     }
 
     protected void clearFrame(DrawContext dc) {
@@ -109,5 +120,42 @@ public class BasicFrameController implements FrameController {
                 // Keep going. Draw the remaining drawables.
             }
         }
+    }
+
+    protected void resolvePick(DrawContext dc) {
+        if (dc.pickedObjects.count() == 0) {
+            return; // no eligible objects; avoid expensive calls to glReadPixels
+        }
+
+        // Read the fragment color at the pick point.
+        this.pickColor = dc.readPixelColor((int) Math.round(dc.pickPoint.x), (int) Math.round(dc.pickPoint.y), this.pickColor);
+
+        // Convert the fragment color to a picked object ID. This returns zero if the color cannot indicate a picked
+        // object ID, in which case no objects have been drawn at the pick point.
+        int topObjectId = PickedObject.uniqueColorToIdentifier(this.pickColor);
+        if (topObjectId != 0) {
+            PickedObject terrainObject = dc.pickedObjects.terrainPickedObject();
+            PickedObject topObject = dc.pickedObjects.pickedObjectWithId(topObjectId);
+            if (topObject != null) {
+                topObject.markOnTop();
+                dc.pickedObjects.clearPickedObjects();
+                dc.pickedObjects.offerPickedObject(topObject);
+                dc.pickedObjects.offerPickedObject(terrainObject); // handles null objects and duplicate objects
+            } else {
+                dc.pickedObjects.clearPickedObjects(); // no eligible objects drawn at the pick point
+            }
+        } else {
+            dc.pickedObjects.clearPickedObjects(); // no objects drawn at the pick point
+        }
+    }
+
+    protected boolean resolveTerrainPickPosition(RenderContext rc, Position result) {
+        if (rc.terrain.intersect(rc.pickRay, this.pickPoint)) {
+            result = rc.globe.cartesianToGeographic(this.pickPoint.x, this.pickPoint.y, this.pickPoint.z, result);
+            result.altitude = 0; // report the actual altitude, which does necessarily match the Cartesian surface
+            return true;
+        }
+
+        return false;
     }
 }

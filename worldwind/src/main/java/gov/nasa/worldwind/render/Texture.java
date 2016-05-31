@@ -123,13 +123,13 @@ public class Texture implements RenderResource {
         } catch (Exception e) {
 
             // The bitmap could not be used as image data for an OpenGL texture 2D object. Delete the texture object
-            // to ensure that calls to bindTexture and applyTexCoordTransform fail.
+            // to ensure that calls to bindTexture fail.
             this.deleteTexture(dc);
-            Logger.logMessage(Logger.ERROR, "Texture", "loadTexImage", "Exception attempting to load texture image", e);
+            Logger.logMessage(Logger.ERROR, "Texture", "loadImageBitmap", "Exception attempting to load texture image", e);
 
         } finally {
 
-            // Restore the current OpenGL texture binding.
+            // Restore the current OpenGL texture object binding.
             dc.bindTexture(currentTexture);
         }
     }

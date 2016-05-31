@@ -15,9 +15,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,8 +25,10 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.util.Logger;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.verify;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 @RunWith(PowerMockRunner.class) // Support for mocking static methods
 @PrepareForTest(Logger.class)   // We mock the Logger class to avoid its calls to android.util.log
@@ -188,9 +187,9 @@ public class ProjectionWgs84Test {
         Sector sector = new Sector();
         Vec3 referencePoint = new Vec3();
         Vec3 offset = new Vec3();
-        FloatBuffer result = ByteBuffer.allocateDirect(count * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        float[] result = new float[count];
 
-        wgs84.geographicToCartesianGrid(globe, sector, numLat, numLon, elevations, referencePoint, offset, result, stride);
+        wgs84.geographicToCartesianGrid(globe, sector, numLat, numLon, elevations, referencePoint, offset, result, stride, 0);
 
         fail("The test case is a stub.");
 

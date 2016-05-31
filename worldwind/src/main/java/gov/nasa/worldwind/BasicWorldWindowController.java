@@ -7,6 +7,9 @@ package gov.nasa.worldwind;
 
 import android.view.MotionEvent;
 
+import java.util.Arrays;
+import java.util.List;
+
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.gesture.GestureListener;
@@ -32,45 +35,45 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
 
     protected int activeGestures;
 
-    protected PanRecognizer panRecognizer = new PanRecognizer();
+    protected GestureRecognizer panRecognizer = new PanRecognizer();
 
     protected GestureRecognizer pinchRecognizer = new PinchRecognizer();
 
     protected GestureRecognizer rotationRecognizer = new RotationRecognizer();
 
-    protected PanRecognizer tiltRecognizer = new PanRecognizer();
+    protected GestureRecognizer tiltRecognizer = new PanRecognizer();
+
+    protected List<GestureRecognizer> allRecognizers = Arrays.asList(
+        this.panRecognizer, this.pinchRecognizer, this.rotationRecognizer, this.tiltRecognizer);
 
     public BasicWorldWindowController() {
-        this.panRecognizer.setMaxNumberOfPointers(2);
         this.panRecognizer.addListener(this);
         this.pinchRecognizer.addListener(this);
         this.rotationRecognizer.addListener(this);
-        this.tiltRecognizer.setMinNumberOfPointers(3); // TODO support for two-finger tilt gestures
         this.tiltRecognizer.addListener(this);
+
+        ((PanRecognizer) this.panRecognizer).setMaxNumberOfPointers(2);
+        ((PanRecognizer) this.tiltRecognizer).setMinNumberOfPointers(3); // TODO support for two-finger tilt gestures
     }
 
-    @Override
     public WorldWindow getWorldWindow() {
         return wwd;
     }
 
     @Override
     public void setWorldWindow(WorldWindow wwd) {
-        if (this.wwd != null) {
-            this.wwd.removeGestureRecognizer(this.panRecognizer);
-            this.wwd.removeGestureRecognizer(this.pinchRecognizer);
-            this.wwd.removeGestureRecognizer(this.rotationRecognizer);
-            this.wwd.removeGestureRecognizer(this.tiltRecognizer);
-        }
-
         this.wwd = wwd;
+    }
 
-        if (this.wwd != null) {
-            this.wwd.addGestureRecognizer(this.panRecognizer);
-            this.wwd.addGestureRecognizer(this.pinchRecognizer);
-            this.wwd.addGestureRecognizer(this.rotationRecognizer);
-            this.wwd.addGestureRecognizer(this.tiltRecognizer);
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        boolean handled = false;
+
+        for (int idx = 0, len = this.allRecognizers.size(); idx < len; idx++) {
+            handled = this.allRecognizers.get(idx).onTouchEvent(event);
         }
+
+        return handled;
     }
 
     @Override

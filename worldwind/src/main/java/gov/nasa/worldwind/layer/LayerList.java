@@ -17,6 +17,15 @@ public class LayerList implements Iterable<Layer> {
     public LayerList() {
     }
 
+    public LayerList(LayerList layerList) {
+        if (layerList == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerList", "constructor", "missingList"));
+        }
+
+        this.addAllLayers(layerList);
+    }
+
     public LayerList(Iterable<? extends Layer> layers) {
         if (layers == null) {
             throw new IllegalArgumentException(
@@ -112,34 +121,34 @@ public class LayerList implements Iterable<Layer> {
         this.layers.add(index, layer);
     }
 
-    public void addAllLayers(Iterable<? extends Layer> layers) {
-        if (layers == null) {
+    public void addAllLayers(LayerList list) {
+        if (list == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LayerList", "addAllLayers", "missingList"));
         }
 
-        for (Layer layer : layers) {
+        ArrayList<Layer> thisList = this.layers;
+        ArrayList<Layer> thatList = list.layers;
+        thisList.ensureCapacity(thatList.size());
+
+        for (int idx = 0, len = thatList.size(); idx < len; idx++) {
+            thisList.add(thatList.get(idx)); // we know the contents of layerList.layers is valid
+        }
+    }
+
+    public void addAllLayers(Iterable<? extends Layer> iterable) {
+        if (iterable == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerList", "addAllLayers", "missingIterable"));
+        }
+
+        for (Layer layer : iterable) {
             if (layer == null) {
                 throw new IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "LayerList", "addAllLayers", "missingLayer"));
             }
 
             this.layers.add(layer);
-        }
-    }
-
-    public void addAllLayers(LayerList layerList) {
-        if (layerList == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LayerList", "addAllLayers", "missingList"));
-        }
-
-        ArrayList<Layer> thisList = this.layers;
-        ArrayList<Layer> thatList = layerList.layers;
-        thisList.ensureCapacity(thatList.size());
-
-        for (int idx = 0, len = thatList.size(); idx < len; idx++) {
-            thisList.add(thatList.get(idx)); // we know the contents of layerList.layers is valid
         }
     }
 

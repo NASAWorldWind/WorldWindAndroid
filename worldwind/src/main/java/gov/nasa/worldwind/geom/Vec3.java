@@ -145,8 +145,8 @@ public class Vec3 {
         }
 
         if (result == null || result.length < 3 || result[0] == null || result[1] == null || result[2] == null) {
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Vec3", "principalAxesOfBuffer",
-                "nullResult"));
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Vec3", "principalAxesOfBuffer", "missingResult"));
         }
 
         // Compute the covariance matrix.

@@ -5,6 +5,7 @@
 
 precision mediump float;
 
+uniform bool enablePickMode;
 uniform bool enableTexture;
 uniform vec4 color;
 uniform sampler2D texSampler;
@@ -12,11 +13,15 @@ uniform sampler2D texSampler;
 varying vec2 texCoord;
 
 void main() {
-    if (enableTexture) {
-        /* Modulate the specified fragment color by the specified 2D texture's color */
-        gl_FragColor = color * texture2D(texSampler, texCoord);
+    if (enablePickMode && enableTexture) {
+        /* Modulate the RGBA color with the 2D texture's Alpha component (rounded to 0.0 or 1.0). */
+        float texMask = floor(texture2D(texSampler, texCoord).a + 0.5);
+        gl_FragColor = color * texMask;
+    } else if (!enablePickMode && enableTexture) {
+       /* Modulate the RGBA color with the 2D texture's RGBA color. */
+       gl_FragColor = color * texture2D(texSampler, texCoord);
     } else {
-        /* Return the specified fragment color */
+        /* Return the RGBA color as-is. */
         gl_FragColor = color;
     }
 }

@@ -7,11 +7,9 @@ package gov.nasa.worldwind.draw;
 
 import android.opengl.GLES20;
 
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.util.Pool;
 
 public class BasicDrawableTerrain implements DrawableTerrain {
@@ -20,13 +18,13 @@ public class BasicDrawableTerrain implements DrawableTerrain {
 
     public Vec3 vertexOrigin = new Vec3();
 
-    public FloatBuffer vertexPoints;
+    public BufferObject vertexPoints;
 
-    public FloatBuffer vertexTexCoords;
+    public BufferObject vertexTexCoords;
 
-    public ShortBuffer lineElements;
+    public BufferObject lineElements;
 
-    public ShortBuffer triStripElements;
+    public BufferObject triStripElements;
 
     private Pool<BasicDrawableTerrain> pool;
 
@@ -69,28 +67,32 @@ public class BasicDrawableTerrain implements DrawableTerrain {
     @Override
     public void useVertexPointAttrib(DrawContext dc, int attribLocation) {
         if (this.vertexPoints != null) {
-            GLES20.glVertexAttribPointer(attribLocation, 3, GLES20.GL_FLOAT, false, 0, this.vertexPoints);
+            this.vertexPoints.bindBuffer(dc);
+            GLES20.glVertexAttribPointer(attribLocation, 3, GLES20.GL_FLOAT, false, 0, 0);
         }
     }
 
     @Override
     public void useVertexTexCoordAttrib(DrawContext dc, int attribLocation) {
         if (this.vertexTexCoords != null) {
-            GLES20.glVertexAttribPointer(attribLocation, 2, GLES20.GL_FLOAT, false, 0, this.vertexTexCoords);
+            this.vertexTexCoords.bindBuffer(dc);
+            GLES20.glVertexAttribPointer(attribLocation, 2, GLES20.GL_FLOAT, false, 0, 0);
         }
     }
 
     @Override
     public void drawLines(DrawContext dc) {
         if (this.lineElements != null) {
-            GLES20.glDrawElements(GLES20.GL_LINES, this.lineElements.remaining(), GLES20.GL_UNSIGNED_SHORT, this.lineElements);
+            this.lineElements.bindBuffer(dc);
+            GLES20.glDrawElements(GLES20.GL_LINES, this.lineElements.getBufferLength(), GLES20.GL_UNSIGNED_SHORT, 0);
         }
     }
 
     @Override
     public void drawTriangles(DrawContext dc) {
         if (this.triStripElements != null) {
-            GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, this.triStripElements.remaining(), GLES20.GL_UNSIGNED_SHORT, this.triStripElements);
+            this.triStripElements.bindBuffer(dc);
+            GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, this.triStripElements.getBufferLength(), GLES20.GL_UNSIGNED_SHORT, 0);
         }
     }
 

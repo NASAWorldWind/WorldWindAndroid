@@ -6,7 +6,6 @@
 package gov.nasa.worldwindx;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.Choreographer;
 
 import java.util.Random;
@@ -25,11 +24,7 @@ import static java.lang.Math.toDegrees;
 
 public class PlacemarksStressTestActivity extends BasicGlobeActivity implements Choreographer.FrameCallback {
 
-    static final int DELAY_TIME = 30;
-
-    static final int NUM_PLACEMARKS = 10000;
-
-    protected Handler animationHandler = new Handler();
+    protected static final int NUM_PLACEMARKS = 10000;
 
     protected boolean activityPaused;
 

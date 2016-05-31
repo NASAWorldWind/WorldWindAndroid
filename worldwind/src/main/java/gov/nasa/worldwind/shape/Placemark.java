@@ -5,8 +5,7 @@
 
 package gov.nasa.worldwind.shape;
 
-import android.graphics.Rect;
-
+import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.draw.DrawableLines;
 import gov.nasa.worldwind.draw.DrawableScreenTexture;
@@ -14,6 +13,8 @@ import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.geom.Viewport;
+import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
@@ -25,21 +26,21 @@ import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.WWMath;
 
 /**
- * Represents a Placemark shape. A placemark displays an image, a label and a leader line connecting the placemark's
- * geographic position to the ground. All three of these items are optional. By default, the leader line is not
- * pickable. See {@link Placemark#setEnableLeaderPicking(boolean)}.
+ * Represents a Placemark shape. A placemark displays an image, a label and a leader connecting the placemark's
+ * geographic position to the ground. All three of these items are optional. By default, the leader is not pickable. See
+ * {@link Placemark#setEnableLeaderPicking(boolean)}.
  * <p/>
  * Placemarks may be drawn with either an image or as single-color square with a specified size. When the placemark
  * attributes indicate a valid image, the placemark's image is drawn as a rectangle in the image's original dimensions,
  * scaled by the image scale attribute. Otherwise, the placemark is drawn as a square with width and height equal to the
  * value of the image scale attribute, in pixels, and color equal to the image color attribute.
  */
-public class Placemark extends AbstractRenderable implements Highlightable {
+public class Placemark extends AbstractRenderable implements Highlightable, Movable {
 
     /**
      * The default eye distance above which to reduce the size of this placemark, in meters. If {@link
-     * Placemark#setEyeDistanceScaling(boolean)} is true, this placemark's image, label and leader line sizes are
-     * reduced as the eye distance increases beyond this threshold.
+     * Placemark#setEyeDistanceScaling(boolean)} is true, this placemark's image, label and leader sizes are reduced as
+     * the eye distance increases beyond this threshold.
      */
     protected static final double DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD = 1e6;
 
@@ -55,7 +56,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
 
     private static Matrix4 unitSquareTransform = new Matrix4();
 
-    private static Rect screenBounds = new Rect();
+    private static Viewport screenBounds = new Viewport();
 
     /**
      * The placemark's geographic position.
@@ -89,6 +90,11 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     protected Texture activeTexture;
 
     /**
+     * The picked object ID associated with the placemark during the current render pass.
+     */
+    protected int activePickedObjectId;
+
+    /**
      * The label text to draw near the placemark.
      */
     // TODO: implement label property
@@ -115,7 +121,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     protected double eyeDistanceScalingLabelThreshold;
 
     /**
-     * Indicates whether this placemark's leader line, if any, is pickable.
+     * Indicates whether this placemark's leader, if any, is pickable.
      */
     protected boolean enableLeaderPicking;
 
@@ -145,7 +151,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     @WorldWind.OrientationMode
     protected int imageTiltReference;
 
-    private double eyeDistance;
+    private double cameraDistance;
 
     /**
      * Constructs a Placemark that draws its representation at the supplied position using default {@link
@@ -386,8 +392,8 @@ public class Placemark extends AbstractRenderable implements Highlightable {
 
     /**
      * Gets the eye distance above which to reduce the size of this placemark, in meters. If {@link
-     * Placemark#isEyeDistanceScaling()} is true, this placemark's image, label and leader line sizes are reduced as the
-     * eye distance increases beyond this threshold.
+     * Placemark#isEyeDistanceScaling()} is true, this placemark's image, label and leader sizes are reduced as the eye
+     * distance increases beyond this threshold.
      *
      * @return The current threshold value, in meters.
      */
@@ -397,8 +403,8 @@ public class Placemark extends AbstractRenderable implements Highlightable {
 
     /**
      * Sets the eye distance above which to reduce the size of this placemark, in meters. If {@link
-     * Placemark#isEyeDistanceScaling()} is true, this placemark's image, label and leader line sizes are reduced as the
-     * eye distance increases beyond this threshold.
+     * Placemark#isEyeDistanceScaling()} is true, this placemark's image, label and leader sizes are reduced as the eye
+     * distance increases beyond this threshold.
      *
      * @param eyeDistanceScalingThreshold The new threshold value, in meters, used to determine if eye distance scaling
      *                                    should be applied.
@@ -551,18 +557,18 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     }
 
     /**
-     * Indicates if picking is allowed on this placemark's (optional) leader line.
+     * Indicates if picking is allowed on this placemark's (optional) leader.
      *
-     * @return true if leader line picking is enabled, otherwise false
+     * @return true if leader picking is enabled, otherwise false
      */
     public boolean isEnableLeaderPicking() {
         return this.enableLeaderPicking;
     }
 
     /**
-     * Sets whether picking is allowed on this placemark's (optional) leader line.
+     * Sets whether picking is allowed on this placemark's (optional) leader.
      *
-     * @param enableLeaderPicking true if leader line picking should be enabled, otherwise false
+     * @param enableLeaderPicking true if leader picking should be enabled, otherwise false
      *
      * @return this placemark
      */
@@ -593,28 +599,46 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     }
 
     /**
+     * A position associated with the object that indicates its aggregate geographic position. For a Placemark, this is
+     * simply it's position property.
+     *
+     * @return {@link Placemark#getPosition()}
+     */
+    @Override
+    public Position getReferencePosition() {
+        return getPosition();
+    }
+
+    /**
+     * Moves the shape over the globe's surface. For a Placemark, this simply calls {@link
+     * Placemark#setPosition(Position)}.
+     *
+     * @param globe    not used.
+     * @param position the new position of the shape's reference position.
+     */
+    @Override
+    public void moveTo(Globe globe, Position position) {
+        setPosition(position);
+    }
+
+    /**
      * Performs the rendering; called by the public render method.
      *
      * @param rc the current render context
      */
     @Override
     protected void doRender(RenderContext rc) {
-        this.determineActiveAttributes(rc);
-        if (this.activeAttributes == null) {
-            return;
-        }
-
         // Compute the placemark's Cartesian model point. TODO: dc.surfacePointForMode
         rc.globe.geographicToCartesian(this.position.latitude, this.position.longitude, this.position.altitude,
             placePoint);
 
-        // Compute the eye distance to the place point, the value which is used for ordering the placemark drawable and
-        // determining the amount of depth offset to apply.
-        this.eyeDistance = rc.eyePoint.distanceTo(placePoint);
+        // Compute the camera distance to the place point, the value which is used for ordering the placemark drawable
+        // and determining the amount of depth offset to apply.
+        this.cameraDistance = rc.cameraPoint.distanceTo(placePoint);
 
         // Compute a screen depth offset appropriate for the current viewing parameters.
         double depthOffset = 0;
-        if (this.eyeDistance < rc.horizonDistance) {
+        if (this.cameraDistance < rc.horizonDistance) {
             depthOffset = DEFAULT_DEPTH_OFFSET;
         }
 
@@ -624,18 +648,27 @@ public class Placemark extends AbstractRenderable implements Highlightable {
             return; // clipped by the near plane or the far plane
         }
 
-        // Prepare a drawable for the placemark's leader line, if requested. Enqueue the leader line drawable before the
-        // icon drawable in order to give the icon visual priority over the leader line.
+        // Determine the attributes to use for the current render pass.
+        this.determineActiveAttributes(rc);
+        if (this.activeAttributes == null) {
+            return;
+        }
+
+        // Keep track of the drawable count to determine whether or not this placemark has enqueued drawables.
+        int drawableCount = rc.drawableCount();
+
+        // Prepare a drawable for the placemark's leader, if requested. Enqueue the leader drawable before the icon
+        // drawable in order to give the icon visual priority over the leader.
         if (this.mustDrawLeader(rc)) {
             // Compute the placemark's Cartesian ground point. TODO: use dc.surfacePointForMode
             rc.globe.geographicToCartesian(this.position.latitude, this.position.longitude, 0, groundPoint);
 
-            // If the leader line is visible, enqueue a drawable leader line for processing on the OpenGL thread.
+            // If the leader is visible, enqueue a drawable leader for processing on the OpenGL thread.
             if (rc.frustum.intersectsSegment(groundPoint, placePoint)) {
                 Pool<DrawableLines> pool = rc.getDrawablePool(DrawableLines.class);
                 DrawableLines drawable = DrawableLines.obtain(pool);
                 this.prepareDrawableLeader(rc, drawable);
-                rc.offerShapeDrawable(drawable, this.eyeDistance);
+                rc.offerShapeDrawable(drawable, this.cameraDistance);
             }
         }
 
@@ -644,15 +677,21 @@ public class Placemark extends AbstractRenderable implements Highlightable {
 
         // If the placemark's icon is visible, enqueue a drawable icon for processing on the OpenGL thread.
         WWMath.boundingRectForUnitSquare(unitSquareTransform, screenBounds);
-        if (Rect.intersects(rc.viewport, screenBounds)) {
+        if (rc.frustum.intersectsViewport(screenBounds)) {
             Pool<DrawableScreenTexture> pool = rc.getDrawablePool(DrawableScreenTexture.class);
             DrawableScreenTexture drawable = DrawableScreenTexture.obtain(pool);
             this.prepareDrawableIcon(rc, drawable);
-            rc.offerShapeDrawable(drawable, this.eyeDistance);
+            rc.offerShapeDrawable(drawable, this.cameraDistance);
         }
 
         // Release references to objects stored in the render resource cache.
         this.activeTexture = null;
+
+        // Enqueue a picked object that associates the placemark's icon and leader with its picked object ID.
+        if (rc.pickMode && rc.drawableCount() != drawableCount) {
+            rc.offerPickedObject(PickedObject.fromRenderable(this, this.position, rc.currentLayer,
+                this.activePickedObjectId));
+        }
     }
 
     /**
@@ -665,6 +704,10 @@ public class Placemark extends AbstractRenderable implements Highlightable {
             this.activeAttributes = this.highlightAttributes;
         } else {
             this.activeAttributes = this.attributes;
+        }
+
+        if (rc.pickMode) {
+            this.activePickedObjectId = rc.nextPickedObjectId();
         }
     }
 
@@ -683,10 +726,10 @@ public class Placemark extends AbstractRenderable implements Highlightable {
             this.activeTexture = null; // there is no imageSource; draw a simple colored square
         }
 
-        // Compute an eye-position proximity scaling factor, so that distant placemarks can be scaled smaller than
+        // Compute an camera-position proximity scaling factor, so that distant placemarks can be scaled smaller than
         // nearer placemarks.
         double visibilityScale = this.isEyeDistanceScaling() ?
-            Math.max(this.activeAttributes.minimumImageScale, Math.min(1, this.getEyeDistanceScalingThreshold() / this.eyeDistance)) : 1;
+            Math.max(this.activeAttributes.minimumImageScale, Math.min(1, this.getEyeDistanceScalingThreshold() / this.cameraDistance)) : 1;
 
         // Initialize the unit square transform to the identity matrix.
         unitSquareTransform.setToIdentity();
@@ -723,7 +766,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
         // ... perform image rotation
         if (this.imageRotation != 0) {
             double rotation = this.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
-                rc.heading - this.imageRotation : -this.imageRotation;
+                rc.camera.heading - this.imageRotation : -this.imageRotation;
             unitSquareTransform.multiplyByTranslation(0.5, 0.5, 0);
             unitSquareTransform.multiplyByRotation(0, 0, 1, rotation);
             unitSquareTransform.multiplyByTranslation(-0.5, -0.5, 0);
@@ -732,7 +775,7 @@ public class Placemark extends AbstractRenderable implements Highlightable {
         // ... and perform the tilt so that the image tilts back from its base into the view volume.
         if (this.imageTilt != 0) {
             double tilt = this.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
-                rc.tilt + this.imageTilt : this.imageTilt;
+                rc.camera.tilt + this.imageTilt : this.imageTilt;
             unitSquareTransform.multiplyByRotation(-1, 0, 0, tilt);
         }
     }
@@ -757,20 +800,27 @@ public class Placemark extends AbstractRenderable implements Highlightable {
         // Configure the drawable according to the placemark's active attributes. Use the texture associated with the
         // active attributes' image source and its associated tex coord transform. If the texture is not specified or
         // not available, draw a simple colored square.
-        drawable.color.set(this.activeAttributes.imageColor);
         drawable.texture = this.activeTexture;
         drawable.enableDepthTest = this.activeAttributes.depthTest;
+
+        // Configure the drawable to display a color appropriate for the current pick mode. During picking we display
+        // the icon in a unique color associated with the picked object ID.
+        if (rc.pickMode) {
+            drawable.color = PickedObject.identifierToUniqueColor(this.activePickedObjectId, drawable.color);
+        } else {
+            drawable.color.set(this.activeAttributes.imageColor);
+        }
     }
 
     /**
-     * Prepares this placemark's leader line to for drawing in a subsequent drawing pass. Implementations must be
-     * careful not to leak resources from Placemark into the Drawable.
+     * Prepares this placemark's leader for drawing in a subsequent drawing pass. Implementations must be careful not to
+     * leak resources from Placemark into the Drawable.
      *
      * @param rc       the current render context
      * @param drawable the Drawable to be prepared
      */
     protected void prepareDrawableLeader(RenderContext rc, DrawableLines drawable) {
-        // Use the basic GLSL program to draw the placemark's leader line.
+        // Use the basic GLSL program to draw the placemark's leader.
         drawable.program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
         if (drawable.program == null) {
             drawable.program = (BasicShaderProgram) rc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(rc.resources));
@@ -788,10 +838,18 @@ public class Placemark extends AbstractRenderable implements Highlightable {
         drawable.mvpMatrix.set(rc.modelviewProjection);
         drawable.mvpMatrix.multiplyByTranslation(groundPoint.x, groundPoint.y, groundPoint.z);
 
-        // Configure the drawable according to the placemark's active leader line attributes.
+        // Configure the drawable according to the placemark's active leader attributes.
         drawable.color.set(this.activeAttributes.leaderAttributes.outlineColor);
         drawable.lineWidth = this.activeAttributes.leaderAttributes.outlineWidth;
         drawable.enableDepthTest = this.activeAttributes.leaderAttributes.depthTest;
+
+        // Configure the drawable to display a color appropriate for the current pick mode. During picking we display
+        // the leader in a unique color associated with the picked object ID.
+        if (rc.pickMode) {
+            drawable.color = PickedObject.identifierToUniqueColor(this.activePickedObjectId, drawable.color);
+        } else {
+            drawable.color.set(this.activeAttributes.leaderAttributes.outlineColor);
+        }
     }
 
     /**
@@ -816,6 +874,8 @@ public class Placemark extends AbstractRenderable implements Highlightable {
     protected boolean mustDrawLeader(RenderContext rc) {
         return this.activeAttributes.drawLeader
             && this.activeAttributes.leaderAttributes != null
-            && (this.enableLeaderPicking || !rc.pickingMode);
+            && (this.enableLeaderPicking || !rc.pickMode);
     }
+
+
 }

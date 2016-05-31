@@ -16,6 +16,26 @@ use to represent information on the globe or in space.
 - [World Wind Forum](http://forum.worldwindcentral.com) provides help from the World Wind community
 - [Android Studio](http://developer.android.com/sdk/) is used for World Wind Android development
 
+# Release 0.2.5, May 31, 2016
+
+World Wind Android v0.2.5 provides support for 'picking', a feature that enables applications to determine the World
+Wind objects displayed at a screen point. This capability is accessible via the method [WorldWindow.pick](http://worldwindserver.net/android/0.2.5/doc/gov/nasa/worldwind/WorldWindow.html#pick-float-float-).
+Along with the core capability, two examples demonstrate how developers can use picking in their own apps:
+PlacemarksPickingActivity and PlacemarksSelectDragActivity.
+
+- [World Wind Examples 0.2.5](http://worldwindserver.net/android/0.2.5/worldwind-examples.apk) - Example App for 0.2.5; runs on Android 4.4 and newer
+- [World Wind Library 0.2.5](http://worldwindserver.net/android/0.2.5/worldwind.aar) - Android Archive (AAR) for 0.2.5
+- [API Docs 0.2.5](http://worldwindserver.net/android/0.2.5/doc) - Developer documentation for 0.2.5
+- [JIRA 0.2.5](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA/fixforversion/10916) - Detailed release notes for 0.2.5
+
+#### Release Notes
+
+###### Requirement
+- [WWA-16](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-16) - Picking
+
+###### Bug
+- [WWA-76](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-76) - Blank screen when EGL context lost
+
 # Release 0.2.0, May 13, 2016
 
 World Wind Android v0.2.0 adds support for screen placemarks and navigation events. The World Wind Android v0.2.0

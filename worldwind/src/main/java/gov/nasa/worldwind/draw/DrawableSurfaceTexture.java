@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.SurfaceTexture;
 import gov.nasa.worldwind.render.SurfaceTextureProgram;
 import gov.nasa.worldwind.render.Texture;
@@ -22,6 +23,8 @@ public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
     public SurfaceTextureProgram program;
 
     public Sector sector = new Sector();
+
+    public Color color = new Color();
 
     public Texture texture;
 
@@ -44,6 +47,7 @@ public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
 
     public DrawableSurfaceTexture set(SurfaceTextureProgram program, Sector sector, Texture texture, Matrix3 texCoordMatrix) {
         this.program = program;
+        this.color.set(1, 1, 1, 1);
         this.texture = texture;
 
         if (sector != null) {
@@ -104,11 +108,15 @@ public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
     }
 
     protected void drawSurfaceTextures(DrawContext dc) {
+        // Use the draw context's pick mode.
+        this.program.enablePickMode(dc.pickMode);
+
+        // Enable the program to display surface textures from multitexture unit 0.
+        this.program.enableTexture(true);
+        dc.activeTextureUnit(GLES20.GL_TEXTURE0);
+
         // Set up to use vertex tex coord attributes.
         GLES20.glEnableVertexAttribArray(1);
-
-        // Make multitexture unit 0 active.
-        dc.activeTextureUnit(GLES20.GL_TEXTURE0);
 
         // Surface textures have been accumulated in the draw context's scratch list.
         ArrayList<Object> scratchList = dc.scratchList();
@@ -124,8 +132,8 @@ public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
 
             for (int jidx = 0, jlen = scratchList.size(); jidx < jlen; jidx++) {
                 // Get the surface texture and its sector.
-                SurfaceTexture texture = (SurfaceTexture) scratchList.get(jidx);
-                Sector textureSector = texture.getSector();
+                DrawableSurfaceTexture texture = (DrawableSurfaceTexture) scratchList.get(jidx);
+                Sector textureSector = texture.sector;
 
                 if (!textureSector.intersects(terrainSector)) {
                     continue; // texture does not intersect the terrain
@@ -147,12 +155,15 @@ public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
                     usingTerrainAttrs = true;
                 }
 
-                // Use tex coord matrices that registers the surface texture correctly and mask terrain fragments that
+                // Use tex coord matrices that register the surface texture correctly and mask terrain fragments that
                 // fall outside the surface texture's sector.
                 this.program.texCoordMatrix[0].set(texture.getTexCoordTransform());
                 this.program.texCoordMatrix[0].multiplyByTileTransform(terrainSector, textureSector);
                 this.program.texCoordMatrix[1].setToTileTransform(terrainSector, textureSector);
                 this.program.loadTexCoordMatrix();
+
+                // Use the surface texture's RGBA color.
+                this.program.loadColor(texture.color);
 
                 // Draw the terrain as triangles.
                 terrain.drawTriangles(dc);

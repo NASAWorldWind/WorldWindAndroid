@@ -5,9 +5,6 @@
 
 package gov.nasa.worldwind.geom;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 import java.util.Arrays;
 
 import gov.nasa.worldwind.globe.Globe;
@@ -110,9 +107,8 @@ public class BoundingBox {
         Arrays.fill(elevations, maxElevation);
         elevations[0] = elevations[2] = elevations[6] = elevations[8] = minElevation;
 
-        FloatBuffer points = ByteBuffer.allocateDirect(count * stride * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        globe.geographicToCartesianGrid(sector, numLat, numLon, elevations, null, points, stride);
-        points.rewind();
+        float[] points = new float[count * stride];
+        globe.geographicToCartesianGrid(sector, numLat, numLon, elevations, null, points, stride, 0);
 
         // Compute the local coordinate axes. Since we know this box is bounding a geographic sector, we use the
         // local coordinate axes at its centroid as the box axes. Using these axes results in a box that has +-10%
@@ -131,10 +127,8 @@ public class BoundingBox {
         double sExtremes[] = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
         double tExtremes[] = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
         Vec3 u = new Vec3();
-        float[] coords = new float[stride];
-        for (int i = 0; i < count; i++) {
-            points.get(coords, 0, stride);
-            u.set(coords[0], coords[1], coords[2]);
+        for (int idx = 0, len = points.length; idx < len; idx += stride) {
+            u.set(points[idx], points[idx + 1], points[idx + 2]);
             adjustExtremes(this.r, rExtremes, this.s, sExtremes, this.t, tExtremes, u);
         }
 

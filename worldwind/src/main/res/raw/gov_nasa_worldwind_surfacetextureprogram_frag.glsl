@@ -5,18 +5,32 @@
 
 precision mediump float;
 
+uniform bool enablePickMode;
+uniform bool enableTexture;
+uniform vec4 color;
 uniform sampler2D texSampler;
 
-varying vec2 texCoord[2];
+varying vec2 texCoord;
+varying vec2 tileCoord;
 
 void main() {
     /* Using the second texture coordinate, compute a mask that's 1.0 when the fragment is inside the surface tile, and
        0.0 otherwise. */
-    float sMask = step(0.0, texCoord[1].s) * (1.0 - step(1.0, texCoord[1].s));
-    float tMask = step(0.0, texCoord[1].t) * (1.0 - step(1.0, texCoord[1].t));
+    float sMask = step(0.0, tileCoord.s) * (1.0 - step(1.0, tileCoord.s));
+    float tMask = step(0.0, tileCoord.t) * (1.0 - step(1.0, tileCoord.t));
     float tileMask = sMask * tMask;
 
-    /* Return the surface tile's 2D texture color using the first texture coordinate. Modulate by the mask to suppress
-       fragments outside the surface tile. */
-    gl_FragColor = texture2D(texSampler, texCoord[0]) * tileMask;
+    if (enablePickMode && enableTexture) {
+        /* Using the first texture coordinate, modulate the RGBA color with the 2D texture's Alpha component (rounded to
+           0.0 or 1.0). Finally, modulate the result by the tile mask to suppress fragments outside the surface tile. */
+        float texMask = floor(texture2D(texSampler, texCoord).a + 0.5);
+        gl_FragColor = color * texMask * tileMask;
+    } else if (!enablePickMode && enableTexture) {
+        /* Using the first texture coordinate, modulate the RGBA color with the 2D texture's RGBA color. Finally,
+           modulate by the tile mask to suppress fragments outside the surface tile. */
+        gl_FragColor = color * texture2D(texSampler, texCoord) * tileMask;
+    } else {
+        /* Modulate the RGBA color by the tile mask to suppress fragments outside the surface tile. */
+        gl_FragColor = color * tileMask;
+    }
 }

@@ -167,4 +167,149 @@ public class Line {
 
         return result;
     }
+
+    /**
+     * Computes the first intersection of a triangle strip with this line. This line is interpreted as a ray;
+     * intersection points behind the line's origin are ignored.
+     * <p/>
+     * The triangle strip is specified by a list of vertex points and a list of elements indicating the triangle strip
+     * tessellation of those vertices. The triangle strip elements are interpreted in the same manner as OpenGL, where
+     * each index indicates a vertex position rather than an actual index into the points array (e.g. a triangle strip
+     * index of 1 indicates the XYZ tuple starting at array index 3).
+     *
+     * @param points   an array of points containing XYZ tuples
+     * @param stride   the number of coordinates between the first coordinate of adjacent points - must be at least 3
+     * @param elements an array of indices into the points defining the triangle strip organization
+     * @param result   a pre-allocated Vec3 in which to return the nearest intersection point, if any
+     *
+     * @return true if this line intersects the triangle strip, otherwise false
+     *
+     * @throws IllegalArgumentException If either array is null or empty, if the stride is less than 3, or if the result
+     *                                  argument is null
+     */
+    public boolean triStripIntersection(float[] points, int stride, short[] elements, Vec3 result) {
+        if (points == null || points.length < stride) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Line", "triStripIntersections", "missingBuffer"));
+        }
+
+        if (stride < 3) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Line", "triStripIntersections", "invalidStride"));
+        }
+
+        if (elements == null || elements.length == 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Line", "triStripIntersections", "missingBuffer"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Line", "triStripIntersections", "missingResult"));
+        }
+
+        // Taken from Moller and Trumbore
+        // http://www.cs.virginia.edu/~gfx/Courses/2003/ImageSynthesis/papers/Acceleration/Fast%20MinimumStorage%20RayTriangle%20Intersection.pdf
+
+        // Adapted from the original ray-triangle intersection algorithm to optimize for ray-triangle strip
+        // intersection. We optimize by reusing constant terms, replacing use of Vec3 with inline primitives, and
+        // exploiting the triangle strip organization to reuse computations common to adjacent triangles. These
+        // optimizations reduced worst-case terrain picking performance for Web World Wind by approximately 50% in
+        // Chrome on a 2010 iMac and a Nexus 9.
+
+        double vx = this.direction.x;
+        double vy = this.direction.y;
+        double vz = this.direction.z;
+        double sx = this.origin.x;
+        double sy = this.origin.y;
+        double sz = this.origin.z;
+        double tMin = Double.POSITIVE_INFINITY;
+        final double EPSILON = 0.00001;
+
+        // Get the triangle strip's first vertex.
+        int index = elements[0] * stride;
+        double vert1x = points[index++];
+        double vert1y = points[index++];
+        double vert1z = points[index];
+
+        // Get the triangle strip's second vertex.
+        index = elements[1] * stride;
+        double vert2x = points[index++];
+        double vert2y = points[index++];
+        double vert2z = points[index];
+
+        // Compute the intersection of each triangle with the specified ray.
+        for (int i = 2, len = elements.length; i < len; i++) {
+            // Move the last two vertices into the first two vertices. This takes advantage of the triangle strip's
+            // structure and avoids redundant reads from points and elements. During the first iteration this places the
+            // triangle strip's first three vertices in vert0, vert1 and vert2, respectively.
+            double vert0x = vert1x;
+            double vert0y = vert1y;
+            double vert0z = vert1z;
+            vert1x = vert2x;
+            vert1y = vert2y;
+            vert1z = vert2z;
+
+            // Get the triangle strip's next vertex.
+            index = elements[i] * stride;
+            vert2x = points[index++];
+            vert2y = points[index++];
+            vert2z = points[index];
+
+            // find vectors for two edges sharing point a: vert1 - vert0 and vert2 - vert0
+            double edge1x = vert1x - vert0x;
+            double edge1y = vert1y - vert0y;
+            double edge1z = vert1z - vert0z;
+            double edge2x = vert2x - vert0x;
+            double edge2y = vert2y - vert0y;
+            double edge2z = vert2z - vert0z;
+
+            // Compute cross product of line direction and edge2
+            double px = (vy * edge2z) - (vz * edge2y);
+            double py = (vz * edge2x) - (vx * edge2z);
+            double pz = (vx * edge2y) - (vy * edge2x);
+
+            // Get determinant
+            double det = edge1x * px + edge1y * py + edge1z * pz; // edge1 dot p
+            if (det > -EPSILON && det < EPSILON) { // if det is near zero then ray lies in plane of triangle
+                continue;
+            }
+
+            double inv_det = 1.0 / det;
+
+            // Compute distance for vertex A to ray origin: origin - vert0
+            double tx = sx - vert0x;
+            double ty = sy - vert0y;
+            double tz = sz - vert0z;
+
+            // Calculate u parameter and test bounds: 1/det * t dot p
+            double u = inv_det * (tx * px + ty * py + tz * pz);
+            if (u < -EPSILON || u > 1 + EPSILON) {
+                continue;
+            }
+
+            // Prepare to test v parameter: tvec cross edge1
+            double qx = (ty * edge1z) - (tz * edge1y);
+            double qy = (tz * edge1x) - (tx * edge1z);
+            double qz = (tx * edge1y) - (ty * edge1x);
+
+            // Calculate v parameter and test bounds: 1/det * dir dot q
+            double v = inv_det * (vx * qx + vy * qy + vz * qz);
+            if (v < -EPSILON || u + v > 1 + EPSILON) {
+                continue;
+            }
+
+            // Calculate the point of intersection on the line: t = 1/det * edge2 dot q
+            double t = inv_det * (edge2x * qx + edge2y * qy + edge2z * qz);
+            if (t >= 0 && t < tMin) {
+                tMin = t;
+            }
+        }
+
+        if (tMin != Double.POSITIVE_INFINITY) {
+            result.set(sx + vx * tMin, sy + vy * tMin, sz + vz * tMin);
+        }
+
+        return tMin != Double.POSITIVE_INFINITY;
+    }
 }

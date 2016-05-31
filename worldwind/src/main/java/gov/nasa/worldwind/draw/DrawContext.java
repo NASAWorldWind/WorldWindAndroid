@@ -13,51 +13,68 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import gov.nasa.worldwind.PickedObjectList;
 import gov.nasa.worldwind.geom.Matrix4;
+import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.render.BufferObject;
+import gov.nasa.worldwind.render.Color;
 
 public class DrawContext {
 
-    public Matrix4 modelview = new Matrix4();
+    public Vec3 eyePoint = new Vec3();
 
     public Matrix4 projection = new Matrix4();
+
+    public Matrix4 modelview = new Matrix4();
 
     public Matrix4 modelviewProjection = new Matrix4();
 
     public Matrix4 screenProjection = new Matrix4();
 
-    public Vec3 eyePoint = new Vec3();
-
     public DrawableQueue drawableQueue;
 
     public DrawableList drawableTerrain;
 
-    protected int programId;
+    public PickedObjectList pickedObjects;
 
-    protected int textureUnit = GLES20.GL_TEXTURE0;
+    public Vec2 pickPoint;
 
-    protected int[] textureId = new int[32];
+    public boolean pickMode;
 
-    protected int arrayBufferId;
+    private int programId;
 
-    protected int elementArrayBufferId;
+    private int textureUnit = GLES20.GL_TEXTURE0;
 
-    protected int unitSquareBufferId;
+    private int[] textureId = new int[32];
 
-    protected ArrayList<Object> scratchList = new ArrayList<>();
+    private int arrayBufferId;
+
+    private int elementArrayBufferId;
+
+    private BufferObject unitSquareBuffer;
+
+    private ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder());
+
+    private byte[] pixelArray = new byte[4];
+
+    private ArrayList<Object> scratchList = new ArrayList<>();
 
     public DrawContext() {
     }
 
     public void reset() {
-        this.modelview.setToIdentity();
+        this.eyePoint.set(0, 0, 0);
         this.projection.setToIdentity();
+        this.modelview.setToIdentity();
         this.modelviewProjection.setToIdentity();
         this.screenProjection.setToIdentity();
-        this.eyePoint.set(0, 0, 0);
-        this.scratchList.clear();
         this.drawableQueue = null;
         this.drawableTerrain = null;
+        this.pickedObjects = null;
+        this.pickPoint = null;
+        this.pickMode = false;
+        this.scratchList.clear();
     }
 
     public void contextLost() {
@@ -66,7 +83,7 @@ public class DrawContext {
         this.textureUnit = GLES20.GL_TEXTURE0;
         this.arrayBufferId = 0;
         this.elementArrayBufferId = 0;
-        this.unitSquareBufferId = 0;
+        this.unitSquareBuffer = null;
         Arrays.fill(this.textureId, 0);
     }
 
@@ -211,40 +228,57 @@ public class DrawContext {
     }
 
     /**
-     * Returns the name of an OpenGL buffer object containing a unit square expressed as four vertices at (0, 1), (0,
-     * 0), (1, 1) and (1, 0). Each vertex is stored as two 32-bit floating point coordinates. The four vertices are in
-     * the order required by a triangle strip.
+     * Returns an OpenGL buffer object containing a unit square expressed as four vertices at (0, 1), (0, 0), (1, 1) and
+     * (1, 0). Each vertex is stored as two 32-bit floating point coordinates. The four vertices are in the order
+     * required by a triangle strip.
      * <p/>
      * The OpenGL buffer object is created on first use and cached. Subsequent calls to this method return the cached
      * buffer object.
      */
-    public int unitSquareBuffer() {
-        if (this.unitSquareBufferId != 0) {
-            return this.unitSquareBufferId;
+    public BufferObject unitSquareBuffer() {
+        if (this.unitSquareBuffer != null) {
+            return this.unitSquareBuffer;
         }
-
-        int[] newBuffer = new int[1];
-        GLES20.glGenBuffers(1, newBuffer, 0);
-        this.unitSquareBufferId = newBuffer[0];
 
         float[] points = new float[]{
             0, 1,   // upper left corner
             0, 0,   // lower left corner
             1, 1,   // upper right corner
             1, 0};  // lower right corner
-        int size = points.length;
-        FloatBuffer quadBuffer = ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        quadBuffer.put(points).rewind();
 
-        int currentBuffer = this.currentBuffer(GLES20.GL_ARRAY_BUFFER);
-        try {
-            this.bindBuffer(GLES20.GL_ARRAY_BUFFER, this.unitSquareBufferId);
-            GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, size * 4, quadBuffer, GLES20.GL_STATIC_DRAW);
-        } finally {
-            this.bindBuffer(GLES20.GL_ARRAY_BUFFER, currentBuffer);
+        int size = points.length * 4;
+        FloatBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        buffer.put(points).rewind();
+
+        this.unitSquareBuffer = new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer);
+        return this.unitSquareBuffer;
+    }
+
+    /**
+     * Reads the fragment color at a screen point in the currently active OpenGL frame buffer. The X and Y components
+     * indicate OpenGL screen coordinates, which originate in the frame buffer's lower left corner.
+     *
+     * @param x      the screen point's X component
+     * @param y      the screen point's Y component
+     * @param result an optional pre-allocated Color in which to return the fragment color, or null to return a new
+     *               color
+     *
+     * @return the result argument set to the fragment color, or a new color if the result is null
+     */
+    public Color readPixelColor(int x, int y, Color result) {
+        if (result == null) {
+            result = new Color();
         }
 
-        return this.unitSquareBufferId;
+        GLES20.glReadPixels(x, y, 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, this.pixelBuffer.rewind());
+        this.pixelBuffer.get(this.pixelArray);
+
+        result.red = (this.pixelArray[0] & 0xFF) / (float) 0xFF;
+        result.green = (this.pixelArray[1] & 0xFF) / (float) 0xFF;
+        result.blue = (this.pixelArray[2] & 0xFF) / (float) 0xFF;
+        result.alpha = (this.pixelArray[3] & 0xFF) / (float) 0xFF;
+
+        return result;
     }
 
     /**

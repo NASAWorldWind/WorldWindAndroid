@@ -6,20 +6,24 @@
 package gov.nasa.worldwind.render;
 
 import android.content.res.Resources;
-import android.graphics.Rect;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import gov.nasa.worldwind.PickedObject;
+import gov.nasa.worldwind.PickedObjectList;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableList;
 import gov.nasa.worldwind.draw.DrawableQueue;
 import gov.nasa.worldwind.draw.DrawableTerrain;
+import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Frustum;
+import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.Matrix4;
-import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.geom.Viewport;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.layer.Layer;
@@ -27,43 +31,36 @@ import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.SynchronizedPool;
-import gov.nasa.worldwind.util.WWMath;
 
 public class RenderContext {
 
-    public boolean pickingMode;
+    private static final int MAX_PICKED_OBJECT_ID = 0xFFFFFF;
 
     public Globe globe;
 
     public Terrain terrain;
 
-    public LayerList layers = new LayerList();
+    public LayerList layers;
 
     public Layer currentLayer;
 
     public double verticalExaggeration = 1;
 
-    public Position eyePosition = new Position();
-
-    public double heading;
-
-    public double tilt;
-
-    public double roll;
-
     public double fieldOfView;
 
     public double horizonDistance;
 
-    public Rect viewport = new Rect();
+    public Camera camera = new Camera();
 
-    public Matrix4 modelview = new Matrix4();
+    public Vec3 cameraPoint = new Vec3();
+
+    public Viewport viewport = new Viewport();
 
     public Matrix4 projection = new Matrix4();
 
-    public Matrix4 modelviewProjection = new Matrix4();
+    public Matrix4 modelview = new Matrix4();
 
-    public Vec3 eyePoint = new Vec3();
+    public Matrix4 modelviewProjection = new Matrix4();
 
     public Frustum frustum = new Frustum();
 
@@ -75,42 +72,53 @@ public class RenderContext {
 
     public DrawableList drawableTerrain;
 
-    protected boolean redrawRequested;
+    public PickedObjectList pickedObjects;
 
-    protected double pixelSizeFactor;
+    public Vec2 pickPoint;
 
-    protected Map<Object, Pool<?>> drawablePools = new HashMap<>();
+    public Line pickRay;
 
-    protected Map<Object, Object> userProperties = new HashMap<>();
+    public boolean pickMode;
+
+    private int pickedObjectId;
+
+    private boolean redrawRequested;
+
+    private double pixelSizeFactor;
+
+    private Map<Object, Pool<?>> drawablePools = new HashMap<>();
+
+    private Map<Object, Object> userProperties = new HashMap<>();
 
     public RenderContext() {
     }
 
     public void reset() {
-        this.pickingMode = false;
         this.globe = null;
         this.terrain = null;
-        this.layers.clearLayers();
+        this.layers = null;
         this.currentLayer = null;
         this.verticalExaggeration = 1;
-        this.eyePosition.set(0, 0, 0);
-        this.heading = 0;
-        this.tilt = 0;
-        this.roll = 0;
         this.fieldOfView = 0;
         this.horizonDistance = 0;
+        this.camera.set(0, 0, 0, WorldWind.ABSOLUTE /*lat, lon, alt*/, 0, 0, 0 /*heading, tilt, roll*/);
+        this.cameraPoint.set(0, 0, 0);
         this.viewport.setEmpty();
-        this.modelview.setToIdentity();
         this.projection.setToIdentity();
+        this.modelview.setToIdentity();
         this.modelviewProjection.setToIdentity();
-        this.eyePoint.set(0, 0, 0);
         this.frustum.setToUnitFrustum();
         this.renderResourceCache = null;
         this.resources = null;
-        this.redrawRequested = false;
-        this.pixelSizeFactor = 0;
         this.drawableQueue = null;
         this.drawableTerrain = null;
+        this.pickedObjects = null;
+        this.pickPoint = null;
+        this.pickRay = null;
+        this.pickMode = false;
+        this.pickedObjectId = 0;
+        this.redrawRequested = false;
+        this.pixelSizeFactor = 0;
         this.userProperties.clear();
     }
 
@@ -137,7 +145,7 @@ public class RenderContext {
         if (this.pixelSizeFactor == 0) { // cache the scaling factor used to convert distances to pixel sizes
             double fovyDegrees = this.fieldOfView;
             double tanfovy_2 = Math.tan(Math.toRadians(fovyDegrees * 0.5));
-            this.pixelSizeFactor = 2 * tanfovy_2 / this.viewport.height();
+            this.pixelSizeFactor = 2 * tanfovy_2 / this.viewport.height;
         }
 
         return distance * this.pixelSizeFactor;
@@ -169,6 +177,7 @@ public class RenderContext {
                 Logger.logMessage(Logger.ERROR, "RenderContext", "project", "missingResult"));
         }
 
+        // TODO consider consolidating this with Matrix4.project and moving projectWithDepth to Matrix4
         // Transform the model point from model coordinates to eye coordinates then to clip coordinates. This
         // inverts the Z axis and stores the negative of the eye coordinate Z value in the W coordinate.
         double mx = modelPoint.x;
@@ -202,8 +211,8 @@ public class RenderContext {
         z = z * 0.5 + 0.5;
 
         // Convert the X and Y coordinates from the range [0,1] to screen coordinates.
-        x = x * this.viewport.width() + viewport.left;
-        y = y * this.viewport.height() + viewport.top; // viewport rectangle is inverted in OpenGL coordinates
+        x = x * this.viewport.width + this.viewport.x;
+        y = y * this.viewport.height + this.viewport.y;
 
         result.x = x;
         result.y = y;
@@ -293,7 +302,7 @@ public class RenderContext {
         // the clip planes, so we limit its offset z value to the range [-1, 1] in order to ensure it is not clipped
         // by WebGL. In clip coordinates the near and far clip planes are perpendicular to the Z axis and are
         // located at -1 and 1, respectively.
-        z = WWMath.clamp(z, -1, 1);
+        z = (z < -1) ? -1 : (z > 1 ? 1 : z);
 
         // Convert the point from clip coordinates to the range [0, 1]. This enables the XY coordinates to be
         // converted to screen coordinates, and the Z coordinate to represent a depth value in the range [0, 1].
@@ -302,14 +311,23 @@ public class RenderContext {
         z = z * 0.5 + 0.5;
 
         // Convert the X and Y coordinates from the range [0,1] to screen coordinates.
-        x = x * viewport.width() + viewport.left;
-        y = y * viewport.height() + viewport.top; // viewport rectangle is inverted in OpenGL coordinates
+        x = x * this.viewport.width + this.viewport.x;
+        y = y * this.viewport.height + this.viewport.y;
 
         result.x = x;
         result.y = y;
         result.z = z;
 
         return true;
+    }
+
+    public BufferObject getBufferObject(Object key) {
+        return (BufferObject) this.renderResourceCache.get(key);
+    }
+
+    public BufferObject putBufferObject(Object key, BufferObject buffer) {
+        this.renderResourceCache.put(key, buffer, (buffer != null) ? buffer.getBufferByteCount() : 0);
+        return buffer;
     }
 
     public ShaderProgram getShaderProgram(Object key) {
@@ -346,9 +364,9 @@ public class RenderContext {
         }
     }
 
-    public void offerShapeDrawable(Drawable drawable, double eyeDistance) {
+    public void offerShapeDrawable(Drawable drawable, double cameraDistance) {
         if (this.drawableQueue != null) {
-            this.drawableQueue.offerDrawable(drawable, WorldWind.SHAPE_DRAWABLE, -eyeDistance); // order by descending eye distance
+            this.drawableQueue.offerDrawable(drawable, WorldWind.SHAPE_DRAWABLE, -cameraDistance); // order by descending distance to the viewer
         }
     }
 
@@ -364,6 +382,10 @@ public class RenderContext {
         }
     }
 
+    public int drawableCount() {
+        return (this.drawableQueue != null) ? this.drawableQueue.count() : 0;
+    }
+
     @SuppressWarnings("unchecked")
     public <T extends Drawable> Pool<T> getDrawablePool(Class<T> key) {
         Pool<T> pool = (Pool<T>) this.drawablePools.get(key);
@@ -374,6 +396,22 @@ public class RenderContext {
         }
 
         return pool;
+    }
+
+    public void offerPickedObject(PickedObject pickedObject) {
+        if (this.pickedObjects != null) {
+            this.pickedObjects.offerPickedObject(pickedObject);
+        }
+    }
+
+    public int nextPickedObjectId() {
+        this.pickedObjectId++;
+
+        if (this.pickedObjectId > MAX_PICKED_OBJECT_ID) {
+            this.pickedObjectId = 1;
+        }
+
+        return this.pickedObjectId;
     }
 
     public Object getUserProperty(Object key) {
