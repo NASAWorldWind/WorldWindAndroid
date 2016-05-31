@@ -61,6 +61,7 @@ public class BasicStressTestActivity extends BasicGlobeActivity implements Chore
         super.onPause();
         // Stop running the animation when this activity is paused.
         this.activityPaused = true;
+        this.lastFrameTimeNanos = 0;
     }
 
     @Override
@@ -68,6 +69,7 @@ public class BasicStressTestActivity extends BasicGlobeActivity implements Chore
         super.onResume();
         // Resume the Navigator animation.
         this.activityPaused = false;
+        this.lastFrameTimeNanos = 0;
         Choreographer.getInstance().postFrameCallback(this);
     }
 }
