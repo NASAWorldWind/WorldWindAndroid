@@ -56,6 +56,12 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected static final int MAX_FRAME_QUEUE_SIZE = 2;
 
+    protected static final int MSG_ID_CLEAR_CACHE = 1;
+
+    protected static final int MSG_ID_REQUEST_REDRAW = 2;
+
+    protected static final int MSG_ID_SET_VIEWPORT = 3;
+
     /**
      * Indicates the planet or celestial object displayed by this World Window.
      */
@@ -97,10 +103,16 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected boolean isWaitingForRedraw;
 
-    protected Handler redrawHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
+    protected Handler mainThreadHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
-            requestRedraw();
+            if (msg.what == MSG_ID_CLEAR_CACHE) {
+                renderResourceCache.clear();
+            } else if (msg.what == MSG_ID_REQUEST_REDRAW) {
+                requestRedraw();
+            } else if (msg.what == MSG_ID_SET_VIEWPORT) {
+                viewport.set((Viewport) msg.obj);
+            }
             return false;
         }
     });
@@ -197,7 +209,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Cancel any outstanding request redraw messages.
         Choreographer.getInstance().removeFrameCallback(this);
-        this.redrawHandler.removeMessages(0 /*what*/);
+        this.mainThreadHandler.removeMessages(MSG_ID_REQUEST_REDRAW /*msg.what*/);
         this.isWaitingForRedraw = false;
     }
 
@@ -554,7 +566,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     public void requestRedraw() {
         // Forward calls to requestRedraw to the main thread.
         if (Thread.currentThread() != Looper.getMainLooper().getThread()) {
-            this.redrawHandler.sendEmptyMessage(0 /*what*/);
+            this.mainThreadHandler.sendEmptyMessage(MSG_ID_REQUEST_REDRAW /*what*/);
             return;
         }
 
@@ -629,6 +641,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Clear any cached OpenGL resources and state, which are now invalid.
         this.dc.contextLost();
+
+        // Clear the render resource cache on the main thread.
+        this.mainThreadHandler.sendEmptyMessage(MSG_ID_CLEAR_CACHE /*msg.what*/);
     }
 
     /**
@@ -639,8 +654,13 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     public void onSurfaceChanged(GL10 unused, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
 
-        // Redraw this World Window with the new viewport; may be called on any thread.
-        this.requestRedraw();
+        // Set the World Window's new viewport dimensions.
+        Viewport newViewport = new Viewport(0, 0, width, height);
+        this.mainThreadHandler.sendMessage(
+            Message.obtain(this.mainThreadHandler, MSG_ID_SET_VIEWPORT /*msg.what*/, newViewport /*msg.obj*/));
+
+        // Redraw this World Window with the new viewport.
+        this.mainThreadHandler.sendEmptyMessage(MSG_ID_REQUEST_REDRAW /*msg.what*/);
     }
 
     /**
@@ -712,23 +732,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     /**
-     * Called immediately after any structural changes (format or size) have been made to the surface, in which case the
-     * WorldWindow redraws itself.
-     *
-     * @param holder the SurfaceHolder whose surface is has changed
-     * @param format the new PixelFormat of the surface
-     * @param width  the new width of the surface
-     * @param height the new height of the surface
-     */
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        super.surfaceChanged(holder, format, width, height);
-
-        // Set the World Window's new viewport dimensions.
-        this.viewport.set(0, 0, width, height);
-    }
-
-    /**
      * Called when the activity is paused. Calling this method will pause the rendering thread, cause any outstanding
      * pick operations to return an empty pick list, and prevent subsequent calls to pick and requestRedraw to return
      * without performing any action.
@@ -755,6 +758,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Mark the World Window as not paused.
         this.isPaused = false;
+
+        // Redraw the World Window.
+        this.requestRedraw();
     }
 
     @Override
