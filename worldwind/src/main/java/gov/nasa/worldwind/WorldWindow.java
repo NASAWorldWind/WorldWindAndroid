@@ -727,7 +727,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // Release this WorldWindow reference from World Wind's global message service.
         WorldWind.messageService().removeListener(this);
 
-        // Reset this WorldWindow's internal state.
+        // Reset the World Window's internal state.
         this.reset();
     }
 
@@ -743,9 +743,11 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // Mark the World Window as paused.
         this.isPaused = true;
 
-        // The OpenGL thread is paused, so frames in the queue will not be processed. Clear the frame queue and recycle
-        // pending frames back into the frame pool.
-        this.clearFrameQueue();
+        // Reset the World Window's internal state. The OpenGL thread is paused, so frames in the queue will not be
+        // processed. Clear the frame queue and recycle pending frames back into the frame pool. We also don't know
+        // whether or not the render resources are valid, so we reset and let the GLSurfaceView establish the new
+        // EGL context and viewport.
+        this.reset();
     }
 
     /**
@@ -758,9 +760,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Mark the World Window as not paused.
         this.isPaused = false;
-
-        // Redraw the World Window.
-        this.requestRedraw();
     }
 
     @Override
