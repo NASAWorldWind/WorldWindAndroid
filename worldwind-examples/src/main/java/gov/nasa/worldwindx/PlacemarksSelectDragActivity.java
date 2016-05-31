@@ -114,6 +114,10 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
         R.drawable.vehicle_tank,
     };
 
+    private static final double NORMAL_IMAGE_SCALE = 3.0;
+
+    private static final double HIGHLIGHTED_IMAGE_SCALE = 4.0;
+
     // Aircraft vehicleTypes mapped to icons
     private static final HashMap<String, Integer> aircraftIconMap = new HashMap<>();
 
@@ -176,7 +180,7 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
      */
     protected static Placemark createAirportPlacemark(Position position, String airportName) {
         Placemark placemark = Placemark.createWithImage(position, ImageSource.fromResource(R.drawable.airport_terminal));
-        placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(2.0); // set normal attributes to 2x original size
+        placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(NORMAL_IMAGE_SCALE);
         placemark.setDisplayName(airportName);
         return placemark;
     }
@@ -189,9 +193,9 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
             throw new IllegalArgumentException(aircraftType + " is not valid.");
         }
         Placemark placemark = Placemark.createWithImage(position, ImageSource.fromResource(aircraftIconMap.get(aircraftType)));
-        placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(2.0).setDrawLeader(true); // set normal attributes to 2x original size
+        placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(NORMAL_IMAGE_SCALE).setDrawLeader(true);
         placemark.getAttributes().getLeaderAttributes().setOutlineWidth(4);
-        placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(3.0).setImageColor(new Color(android.graphics.Color.YELLOW))); // set highlight attributes to 3x original size
+        placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(HIGHLIGHTED_IMAGE_SCALE).setImageColor(new Color(android.graphics.Color.YELLOW)));
         placemark.setDisplayName(aircraftName);
         // The AIRCRAFT_TYPE property is used to exchange the vehicle type with the VehicleTypeDialog
         placemark.putUserProperty(AIRCRAFT_TYPE, aircraftType);
@@ -210,8 +214,8 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
             throw new IllegalArgumentException(automotiveType + " is not valid.");
         }
         Placemark placemark = Placemark.createWithImage(position, ImageSource.fromResource(automotiveIconMap.get(automotiveType)));
-        placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(2.0); // set normal attributes to 2x original size
-        placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(3.0).setImageColor(new Color(android.graphics.Color.YELLOW))); // set highlight attributes to 4x original size
+        placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(NORMAL_IMAGE_SCALE);
+        placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(HIGHLIGHTED_IMAGE_SCALE).setImageColor(new Color(android.graphics.Color.YELLOW)));
         placemark.setDisplayName(name);
         // The AUTOMOTIVE_TYPE property is used to exchange the vehicle type with the VehicleTypeDialog
         placemark.putUserProperty(AUTOMOTIVE_TYPE, automotiveType);
@@ -273,18 +277,11 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
             }
 
             @Override
-            public boolean onSingleTapConfirmed(MotionEvent event) {
-                // The following commented out code is an alternative to using onSingleTapUp
-                //toggleSelection();  // Highlight the picked object
-                //return true;
-
-                return super.onSingleTapConfirmed(event);
-            }
-
-            @Override
             public boolean onScroll(MotionEvent downEvent, MotionEvent moveEvent, float distanceX, float distanceY) {
-                drag(downEvent, moveEvent, distanceX, distanceY);    // Move the selected object
-                return isDragging;  // Consume this event if dragging is active
+                if (isDraggingArmed) {
+                    return drag(downEvent, moveEvent, distanceX, distanceY);    // Move the selected object
+                }
+                return false;
             }
 
             @Override
@@ -312,21 +309,21 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
          */
         @Override
         public boolean onTouchEvent(MotionEvent event) {
-
             // Allow our select and drag handlers to process the event first. They'll set the state flags which will
             // either preempt or allow the event to be subsequently processed by the globe's navigation event handlers.
             boolean consumed = this.selectDragDetector.onTouchEvent(event);
 
-            // Is a dragging operation started or in progress?
-            // Any ACTION_UP event cancels a drag operation.
-            if (this.isDraggingArmed && event.getAction() == MotionEvent.ACTION_UP) {
-                this.isDraggingArmed = false;
+            // Is a dragging operation started or in progress? Any ACTION_UP event cancels a drag operation.
+            if (this.isDragging && event.getAction() == MotionEvent.ACTION_UP) {
                 this.isDragging = false;
+                this.isDraggingArmed = false;
             }
+            // Preempt the globe's pan navigation recognizer if we're dragging
+            super.panRecognizer.setEnabled(!isDragging);
 
-            // If we're not dragging pass on the event on to the default globe navigation handlers
-            if (!consumed && !this.isDragging) {
-                return super.onTouchEvent(event);
+            // Pass on the event on to the default globe navigation handlers
+            if (!consumed) {
+                consumed = super.onTouchEvent(event);
             }
             return consumed;
         }
@@ -387,38 +384,42 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
 
         /**
          * Moves the selected object to the event's screen position.
+         *
+         * @return true if the event was consumed
          */
-        public void drag(MotionEvent downEvent, MotionEvent moveEvent, float distanceX, float distanceY) {
+        public boolean drag(MotionEvent downEvent, MotionEvent moveEvent, float distanceX, float distanceY) {
             if (this.isDraggingArmed && this.selectedObject != null) {
                 if (this.selectedObject instanceof Placemark) {
-
-                    // Signal to other event handlers that dragging is in progress
+                    // Signal that dragging is in progress
                     this.isDragging = true;
 
-                    // First we compute the screen coordinates of the position's ground point.  We'll apply the
+                    // First we compute the screen coordinates of the position's "ground" point.  We'll apply the
                     // screen X and Y drag distances to this point, from which we'll compute a new position,
                     // wherein we restore the original position's altitude.
                     Position position = ((Placemark) this.selectedObject).getPosition();
                     double altitude = position.altitude;
-                    if (!getWorldWindow().geographicToScreenPoint(position.latitude, position.longitude, 0 /*altitude*/, this.dragRefPt)) {
-                        // Probably clipped by near/far clipping plane.
-                        this.isDragging = false;
-                        return;
+                    if (getWorldWindow().geographicToScreenPoint(position.latitude, position.longitude, 0 /*altitude*/, this.dragRefPt)) {
+                        // Update the placemark's ground position
+                        if (screenPointToGroundPosition(this.dragRefPt.x - distanceX, this.dragRefPt.y - distanceY, position)) {
+                            // Restore the placemark's original altitude
+                            position.altitude = altitude;
+                            // Reflect the change in position on the globe.
+                            getWorldWindow().requestRedraw();
+                            return true;
+                        }
                     }
-                    // Update the placemark's ground position...
-                    if (!screenPointToGroundPosition(this.dragRefPt.x - distanceX, this.dragRefPt.y - distanceY, position)) {
-                        // Probably off the globe, so cancel the drag.
-                        this.isDragging = false;
-                        return;
-                    }
-                    // ... and restore the altitude
-                    position.altitude = altitude;
-
-                    getWorldWindow().requestRedraw();
+                    // Probably clipped by near/far clipping plane or off the globe. The position was not updated. Stop the drag.
+                    this.isDraggingArmed = false;
+                    return true; // We consumed this event, even if dragging has been stopped.
                 }
             }
+            return false;
         }
 
+        public void cancelDragging() {
+            this.isDragging = false;
+            this.isDraggingArmed = false;
+        }
         /**
          * Edits the currently selected object.
          */
