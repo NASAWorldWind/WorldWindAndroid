@@ -362,23 +362,27 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
             // Test if last picked object is "selectable".  If not, retain the
             // currently selected object. To discard the current selection,
             // the user must pick another selectable object or the current object.
-            if (pickedObject != null && pickedObject.hasUserProperty(SELECTABLE)) {
+            if (pickedObject != null) {
+                if (pickedObject.hasUserProperty(SELECTABLE)) {
 
-                boolean isNewSelection = pickedObject != this.selectedObject;
+                    boolean isNewSelection = pickedObject != this.selectedObject;
 
-                // Display the highlight or normal attributes to indicate the
-                // selected or unselected state respectively.
-                if (pickedObject instanceof Highlightable) {
+                    // Display the highlight or normal attributes to indicate the
+                    // selected or unselected state respectively.
+                    if (pickedObject instanceof Highlightable) {
 
-                    // Only one object can be selected at time, deselect any previously selected object
-                    if (isNewSelection && this.selectedObject instanceof Highlightable) {
-                        ((Highlightable) this.selectedObject).setHighlighted(false);
+                        // Only one object can be selected at time, deselect any previously selected object
+                        if (isNewSelection && this.selectedObject instanceof Highlightable) {
+                            ((Highlightable) this.selectedObject).setHighlighted(false);
+                        }
+                        ((Highlightable) pickedObject).setHighlighted(isNewSelection);
+                        this.getWorldWindow().requestRedraw();
                     }
-                    ((Highlightable) pickedObject).setHighlighted(isNewSelection);
-                    this.getWorldWindow().requestRedraw();
+                    // Track the selected object
+                    this.selectedObject = isNewSelection ? pickedObject : null;
+                } else {
+                    Toast.makeText(getApplicationContext(), "The picked object is not selectable.", Toast.LENGTH_SHORT).show();
                 }
-                // Track the selected object
-                this.selectedObject = isNewSelection ? pickedObject : null;
             }
         }
 
@@ -420,6 +424,7 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
             this.isDragging = false;
             this.isDraggingArmed = false;
         }
+
         /**
          * Edits the currently selected object.
          */
