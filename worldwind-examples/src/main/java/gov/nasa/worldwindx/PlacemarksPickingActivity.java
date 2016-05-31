@@ -5,32 +5,30 @@
 
 package gov.nasa.worldwindx;
 
-import android.graphics.PointF;
 import android.os.Bundle;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-
-import java.util.Iterator;
 
 import gov.nasa.worldwind.BasicWorldWindowController;
 import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.PickedObjectList;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.geom.Vec3;
-import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.render.ImageSource;
-import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.shape.Highlightable;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
 
 public class PlacemarksPickingActivity extends BasicGlobeActivity {
+
+    private static final double NORMAL_IMAGE_SCALE = 3.0;
+
+    private static final double HIGHLIGHTED_IMAGE_SCALE = 4.0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,8 +63,8 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
      */
     private static Placemark createAircraftPlacemark(Position position) {
         Placemark placemark = Placemark.createWithImage(position, ImageSource.fromResource(R.drawable.aircraft_fighter));
-        placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(2.0).setDrawLeader(true); // set normal attributes to 2x original size
-        placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(3.0)); // set highlight attributes to 3x original size
+        placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(NORMAL_IMAGE_SCALE).setDrawLeader(true);
+        placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(HIGHLIGHTED_IMAGE_SCALE));
         return placemark;
     }
 
@@ -75,8 +73,8 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
      */
     private static Placemark createAirportPlacemark(Position position, String airportName) {
         Placemark placemark = Placemark.createWithImage(position, ImageSource.fromResource(R.drawable.airport_terminal));
-        placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(2.0); // set normal attributes to 2x original size
-        placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(3.0)); // set highlight attributes to 3x original size
+        placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(NORMAL_IMAGE_SCALE);
+        placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(HIGHLIGHTED_IMAGE_SCALE));
         placemark.setDisplayName(airportName);
         return placemark;
     }
@@ -111,7 +109,6 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
                 // gesture to be ignored.  As an alternative, you can implement onSingleTapConfirmed and consume
                 // event as you would expect, with the trade-off being a slight delay tap response.
                 return false;
-
             }
         });
 
