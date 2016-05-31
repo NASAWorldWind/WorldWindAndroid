@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import gov.nasa.worldwind.WorldWind;
@@ -193,11 +194,12 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
 
     protected static final int FRAME_INTERVAL = 67; // 67 millis; 15 frames per second
 
-    protected static Executor commandExecutor = Executors.newSingleThreadExecutor();
-
     protected static Handler activityHandler = new Handler(Looper.getMainLooper());
 
-    public static Executor getCommandExecutor() {
+    protected static ExecutorService commandExecutor;
+
+    public static ExecutorService getNewCommandExecutor() {
+        commandExecutor = Executors.newSingleThreadExecutor();
         return commandExecutor;
     }
 
@@ -228,6 +230,11 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
 
         // Add a layer containing a large number of placemarks.
         this.getWorldWindow().getLayers().addLayer(this.createPlacemarksLayer());
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
 
         // Create location objects for the places used in this test.
         Location arc = new Location(37.415229, -122.06265);
@@ -235,7 +242,7 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
         Location esrin = new Location(41.826947, 12.674122);
 
         // After a 1 second initial delay, clear the frame statistics associated with this test.
-        Executor exec = getCommandExecutor();
+        Executor exec = getNewCommandExecutor();   // gets a new instance
         exec.execute(new SleepCommand(1000));
         exec.execute(new ClearFrameMetricsCommand(wwd));
 
@@ -282,6 +289,13 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
         exec.execute(new LogFrameMetricsCommand(wwd));
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        commandExecutor.shutdownNow();
+    }
+
+
     protected Layer createPlacemarksLayer() {
 
         RenderableLayer layer = new RenderableLayer("Placemarks");
@@ -312,4 +326,5 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
 
         return layer;
     }
+
 }
