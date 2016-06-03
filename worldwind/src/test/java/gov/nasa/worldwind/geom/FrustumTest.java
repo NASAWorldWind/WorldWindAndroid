@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.geom;
 
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,6 +14,10 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import gov.nasa.worldwind.Navigator;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.globe.Globe;
+import gov.nasa.worldwind.globe.GlobeWgs84;
 import gov.nasa.worldwind.util.Logger;
 
 import static org.junit.Assert.assertEquals;
@@ -24,12 +30,18 @@ import static org.junit.Assert.assertTrue;
 
 public class FrustumTest {
 
+    private Globe globe;
+
     @Before
     public void setUp() throws Exception {
         // To accommodate WorldWind exception handling, we must mock all
         // the static methods in Logger to avoid calls to android.util.log
         PowerMockito.mockStatic(Logger.class);
+
+        // Create a globe with a WGS84 definition.
+        this.globe = new GlobeWgs84();
     }
+
 
     @Test
     public void testConstructor_Default() throws Exception {
@@ -62,8 +74,9 @@ public class FrustumTest {
         Plane top = new Plane(0, 0, -1, 2);
         Plane near = new Plane(1, 0, 0, 0);
         Plane far = new Plane(-1, 0, 0, 1.5);
+        Viewport viewport = new Viewport(1, 2, 3, 4);
 
-        Frustum frustum = new Frustum(left, right, bottom, top, near, far);
+        Frustum frustum = new Frustum(left, right, bottom, top, near, far, viewport);
 
         assertNotNull(frustum);
         assertEquals("left", left, frustum.left);
@@ -72,6 +85,7 @@ public class FrustumTest {
         assertEquals("top", top, frustum.top);
         assertEquals("near", near, frustum.near);
         assertEquals("far", far, frustum.far);
+        assertEquals("viewport", viewport, frustum.viewport);
     }
 
     @Test
@@ -82,7 +96,8 @@ public class FrustumTest {
         Plane top = new Plane(0, 0, -1, 2);
         Plane near = new Plane(1, 0, 0, 0);
         Plane far = new Plane(-1, 0, 0, 1.5);
-        Frustum frustum = new Frustum(left, right, bottom, top, near, far);
+        Viewport viewport = new Viewport(1, 2, 3, 4);
+        Frustum frustum = new Frustum(left, right, bottom, top, near, far, viewport);
 
         frustum.setToUnitFrustum();
 
@@ -92,97 +107,7 @@ public class FrustumTest {
         assertEquals("top", new Plane(0, -1, 0, 1), frustum.top);
         assertEquals("near", new Plane(0, 0, -1, 1), frustum.near);
         assertEquals("far", new Plane(0, 0, 1, 1), frustum.far);
-    }
-
-    @Test
-    public void testSetToProjectionMatrix() throws Exception {
-        Frustum f = new Frustum();
-        Matrix4 m = new Matrix4().setToPerspectiveProjection(1000, 1000, 60d, 10, 100);  // arbitrary perspective
-
-        f.setToProjectionMatrix(m);
-
-        // Assert that the planes are oriented like a projection matrix
-        assertTrue(f.left.normal.x > 0);
-        assertTrue(f.left.normal.y == 0);
-        assertTrue(f.left.normal.z < 0);
-        assertTrue(f.right.normal.x < 0);
-        assertTrue(f.right.normal.y == 0);
-        assertTrue(f.right.normal.z < 0);
-        assertTrue(f.bottom.normal.x == 0);
-        assertTrue(f.bottom.normal.y > 0);
-        assertTrue(f.bottom.normal.z < 0);
-        assertTrue(f.top.normal.x == 0);
-        assertTrue(f.top.normal.y < 0);
-        assertTrue(f.top.normal.z < 0);
-        assertTrue(f.near.normal.x == 0);
-        assertTrue(f.near.normal.y == 0);
-        assertTrue(f.near.normal.z == -1);
-        assertTrue(f.far.normal.x == 0);
-        assertTrue(f.far.normal.y == 0);
-        assertTrue(f.far.normal.z == 1);
-
-        // Assert sides go through origin
-        assertTrue(f.left.distance == 0);
-        assertTrue(f.right.distance == 0);
-        assertTrue(f.right.distance == 0);
-        assertTrue(f.right.distance == 0);
-
-        // Assert near and far are away from origin
-        assertTrue(f.near.distance < 0);
-        assertTrue(f.far.distance > 0);
-    }
-
-    @Test
-    public void testTransformByMatrix() throws Exception {
-
-        // An arbitrary transformation matrix
-        double theta = 30d;
-        double c = Math.cos(Math.toRadians(theta));
-        double s = Math.sin(Math.toRadians(theta));
-        double x = 3;
-        Matrix4 m = new Matrix4().multiplyByRotation(1, 0, 0, theta).multiplyByTranslation(x, 0, 0);
-        Frustum f = new Frustum();
-
-        f.transformByMatrix(m);
-
-        assertEquals(x + 1, f.left.normal.x, 0);
-        assertEquals(0, f.left.normal.y, 0);
-        assertEquals(0, f.left.normal.z, 0);
-        assertEquals(x - 1, f.right.normal.x, 0);
-        assertEquals(0, f.right.normal.y, 0);
-        assertEquals(0, f.right.normal.z, 0);
-        assertEquals(x, f.bottom.normal.x, 0);
-        assertEquals(c, f.bottom.normal.y, 0);
-        assertEquals(s, f.bottom.normal.z, 0);
-        assertEquals(x, f.top.normal.x, 0);
-        assertEquals(-c, f.top.normal.y, 0);
-        assertEquals(-s, f.top.normal.z, 0);
-        assertEquals(x, f.near.normal.x, 0);
-        assertEquals(s, f.near.normal.y, 0);
-        assertEquals(-c, f.near.normal.z, -1);
-        assertEquals(x, f.far.normal.x, 0);
-        assertEquals(-s, f.far.normal.y, 0);
-        assertEquals(c, f.far.normal.z, 1);
-    }
-
-    @Test
-    public void testNormalize() throws Exception {
-        Plane left = new Plane(0, 2, 0, 2);
-        Plane right = new Plane(0, -2, 0, 2);
-        Plane bottom = new Plane(0, 0, 2, 2);
-        Plane top = new Plane(0, 0, -2, 2);
-        Plane near = new Plane(2, 0, 0, 0);
-        Plane far = new Plane(-2, 0, 0, 1.5);
-        Frustum frustum = new Frustum(left, right, bottom, top, near, far);
-
-        frustum.normalize();
-
-        assertEquals("left", new Plane(0, 1, 0, 1), frustum.left);
-        assertEquals("right", new Plane(0, -1, 0, 1), frustum.right);
-        assertEquals("bottom", new Plane(0, 0, 1, 1), frustum.bottom);
-        assertEquals("top", new Plane(0, 0, -1, 1), frustum.top);
-        assertEquals("near", new Plane(1, 0, 0, 0), frustum.near);
-        assertEquals("far", new Plane(-1, 0, 0, 0.75), frustum.far);
+        assertEquals("viewport", new Viewport(0, 0, 1, 1), frustum.viewport);
     }
 
     @Test
@@ -250,4 +175,127 @@ public class FrustumTest {
         assertFalse("outside far", frustum.intersectsSegment(new Vec3(0, 0, 2), new Vec3(0, 0, 1.0000001)));
 
     }
+
+    @Test
+    public void testSetToModelviewProjection() throws Exception {
+        // The expected test values were obtained via SystemOut on Frustum object
+        // at a time in the development cycle when the setToModelviewProjection
+        // was known to be working correctly (via observed runtime behavior).
+        // This unit test simply tests for changes in the behavior since that time.
+
+        // Create a Frustum similar to the way the WorldWindow does it.
+
+        // Setup a Navigator, looking near Oxnard Airport.
+        LookAt lookAt = new LookAt().set(34.15, -119.15, 0, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
+        Navigator navigator = new Navigator();
+        navigator.setAsLookAt(this.globe, lookAt);
+
+        // Compute a perspective projection matrix given the viewport, field of view, and clip distances.
+        Viewport viewport = new Viewport(0, 0, 100, 100);  // screen coordinates
+        double nearDistance = navigator.getAltitude() * 0.75;
+        double farDistance = this.globe.horizonDistance(navigator.getAltitude(), 160000);
+        Matrix4 projection = new Matrix4();
+        projection.setToPerspectiveProjection(viewport.width, viewport.height, 45d /*fovy*/, nearDistance, farDistance);
+
+        // Compute a Cartesian viewing matrix using this Navigator's properties as a Camera.
+        Matrix4 modelview = new Matrix4();
+        Camera scratchCamera = new Camera();
+        navigator.getAsCamera(this.globe, scratchCamera);
+        this.globe.cameraToCartesianTransform(scratchCamera, modelview).invertOrthonormal();
+
+        // Compute the Frustum
+        Frustum frustum = new Frustum();
+        frustum.setToModelviewProjection(projection, modelview, viewport);
+
+        // Evaluate the results with known values captured on 06/03/2016
+        //System.out.println(frustumToString(frustum));
+        Plane bottom = new Plane(0.17635740224291638, 0.9793994030381801, 0.09836094754823524, -2412232.453445458);
+        Plane left = new Plane(-0.12177864151960983, 0.07203573632653167, 0.989939803807046, 1737116.8972521015);
+        Plane right = new Plane(0.7782605589154529, 0.07203573632653174, -0.6237959242640989, 1737116.8972521003);
+        Plane top = new Plane(0.4801245151529267, -0.8353279303851168, 0.267782931994712, 5886466.247949661);
+        Plane near = new Plane(0.8577349603804412, 0.1882384504636923, 0.4783900328269719, 4528686.830908618);
+        Plane far = new Plane(-0.8577349603804412, -0.1882384504636923, -0.4783900328269719, -2676528.6881595235);
+
+        assertEquals("left", left, frustum.left);
+        assertEquals("right", right, frustum.right);
+        assertEquals("bottom", bottom, frustum.bottom);
+        assertEquals("top", top, frustum.top);
+        assertEquals("near", near, frustum.near);
+        assertEquals("far", far, frustum.far);
+        assertEquals("viewport", viewport, frustum.viewport);
+    }
+
+    @Test
+    public void testSetToModelviewProjection_SubViewport() throws Exception {
+        // The expected test values were obtained via SystemOut on Frustum object
+        // at a time in the development cycle when the setToModelviewProjection
+        // was known to be working correctly (via observed runtime behavior).
+        // This unit test simply tests for changes in the behavior since that time.
+
+        // Create a Frustum similar to the way the WorldWindow does it when picking
+
+        // Setup a Navigator, looking near Oxnard Airport.
+        LookAt lookAt = new LookAt().set(34.15, -119.15, 0, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
+        Navigator navigator = new Navigator();
+        navigator.setAsLookAt(this.globe, lookAt);
+
+        // Compute a perspective projection matrix given the viewport, field of view, and clip distances.
+        Viewport viewport = new Viewport(0, 0, 100, 100);  // screen coordinates
+        Viewport pickViewport = new Viewport(49, 49, 3, 3); // 3x3 viewport centered on a pick point
+        double nearDistance = navigator.getAltitude() * 0.75;
+        double farDistance = this.globe.horizonDistance(navigator.getAltitude(), 160000);
+        Matrix4 projection = new Matrix4();
+        projection.setToPerspectiveProjection(viewport.width, viewport.height, 45d /*fovy*/, nearDistance, farDistance);
+
+        // Compute a Cartesian viewing matrix using this Navigator's properties as a Camera.
+        Matrix4 modelview = new Matrix4();
+        Camera scratchCamera = new Camera();
+        navigator.getAsCamera(this.globe, scratchCamera);
+        this.globe.cameraToCartesianTransform(scratchCamera, modelview).invertOrthonormal();
+
+        // Compute the Frustum
+        Frustum frustum = new Frustum();
+        frustum.setToModelviewProjection(projection, modelview, viewport, pickViewport);
+
+        // Evaluate the results with known values captured on 06/03/2016
+        //System.out.println(frustumToString(frustum));
+        Plane bottom = new Plane(-0.15728647066358287, 0.9836490211411795, -0.0877243942936819, -4453465.7217097925);
+        Plane left = new Plane(-0.4799755263103557, 0.001559364875310035, 0.8772804925018466, 37603.54528193692);
+        Plane right = new Plane(0.5012403287200531, 0.003118408767628064, -0.8653024953109584, 75199.35019616158);
+        Plane top = new Plane(0.17858448447919384, -0.9788701700756626, 0.09960307243927863, 4565806.392885632);
+        Plane near = new Plane(0.8577349603809148, 0.18823845046641746, 0.4783900328250505, 4528686.830896157);
+        Plane far = new Plane(-0.8577349603804465, -0.1882384504638284, -0.4783900328269087, -2676528.6881588553);
+
+        assertEquals("left", left, frustum.left);
+        assertEquals("right", right, frustum.right);
+        assertEquals("bottom", bottom, frustum.bottom);
+        assertEquals("top", top, frustum.top);
+        assertEquals("near", near, frustum.near);
+        assertEquals("far", far, frustum.far);
+        assertEquals("viewport", pickViewport, frustum.viewport);
+    }
+
+    @Test
+    public void testIntersectsViewport() throws Exception {
+        Plane plane = new Plane(0, 0, 0, 0);
+        Viewport viewport1 = new Viewport(1, 2, 3, 4);
+        Viewport viewport2 = new Viewport(2, 3, 4, 5);
+
+        Frustum frustum1 = new Frustum(plane, plane, plane, plane, plane, plane, viewport1);
+
+        Assert.assertTrue(frustum1.intersectsViewport(viewport2));
+    }
+
+    public static String frustumToString(Frustum frustum) {
+        return "Frustum{" +
+            "bottom=" + frustum.bottom +
+            ", left=" + frustum.left +
+            ", right=" + frustum.right +
+            ", top=" + frustum.top +
+            ", near=" + frustum.near +
+            ", far=" + frustum.far +
+            ", viewport=" + frustum.viewport +
+            '}';
+    }
+
 }
