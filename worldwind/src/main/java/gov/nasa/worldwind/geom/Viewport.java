@@ -190,8 +190,10 @@ public class Viewport {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Viewport", "intersects", "missingViewport"));
         }
-
         Viewport that = viewport;
+        if (this.isEmpty() || that.isEmpty()) {
+            return false;
+        }
         return this.x < (that.x + that.width) && that.x < (this.x + this.width)
             && this.y < (that.y + that.height) && that.y < (this.y + this.height);
     }
