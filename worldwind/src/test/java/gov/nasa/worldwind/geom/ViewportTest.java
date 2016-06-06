@@ -164,6 +164,18 @@ public class ViewportTest {
     }
 
     @Test
+    public void testIntersect_Empty() throws Exception {
+        Viewport a = new Viewport(30, 100, 2, 2);
+        Viewport b = new Viewport(31, 101, 0, 0);
+
+        boolean aIntersectedB = a.intersect(b);
+        boolean bIntersectedA = b.intersect(a);
+
+        assertFalse("a intersecting b", aIntersectedB);
+        assertFalse("b intersecting a", bIntersectedA);
+    }
+
+    @Test
     public void testIntersect_Inside() throws Exception {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport inside = new Viewport(31, 101, 1, 1);
