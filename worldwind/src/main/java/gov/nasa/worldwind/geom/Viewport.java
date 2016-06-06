@@ -191,7 +191,7 @@ public class Viewport {
                 Logger.logMessage(Logger.ERROR, "Viewport", "intersects", "missingViewport"));
         }
         Viewport that = viewport;
-        if (this.isEmpty() || that.isEmpty()) {
+        if (this.width <= 0 || this.height <= 0 || that.width <= 0 || that.height <= 0) {
             return false;
         }
         return this.x < (that.x + that.width) && that.x < (this.x + this.width)
@@ -220,6 +220,9 @@ public class Viewport {
         }
 
         Viewport that = viewport;
+        if (this.width <= 0 || this.height <= 0 || that.width <= 0 || that.height <= 0) {
+            return false;
+        }
         if (this.x < (that.x + that.width) && that.x < (this.x + this.width)
             && this.y < (that.y + that.height) && that.y < (this.y + this.height)) {
 
