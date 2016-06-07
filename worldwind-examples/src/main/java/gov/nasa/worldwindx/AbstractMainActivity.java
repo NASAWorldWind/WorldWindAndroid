@@ -208,6 +208,9 @@ public abstract class AbstractMainActivity extends AppCompatActivity
                 break;
             case R.id.nav_placemarks_milstd2525_stress_activity:
                 startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525StressActivity.class));
+            break;
+            case R.id.nav_placemarks_dragger_activity:
+                startActivity(new Intent(getApplicationContext(), PlacemarksDraggerActivity.class));
                 break;
             case R.id.nav_placemarks_picking_activity:
                 startActivity(new Intent(getApplicationContext(), PlacemarksPickingActivity.class));

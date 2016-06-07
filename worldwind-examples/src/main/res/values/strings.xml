@@ -19,6 +19,7 @@
     <string name="title_placemarks_milstd2525">MIL-STD-2525 Placemarks</string>
     <string name="title_placemarks_milstd2525_stress_test">MIL-STD-2525 Stress Test</string>
     <string name="title_placemarks_picking">Placemark Picking</string>
+    <string name="title_placemarks_dragger">Placemark Dragger</string>
     <string name="title_placemarks_select_drag">Placemark Select and Drag</string>
     <string name="title_placemarks_stress_test">Placemarks Stress Test</string>
     <string name="title_show_tessellation">Show Tessellation</string>

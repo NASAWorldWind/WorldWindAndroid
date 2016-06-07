@@ -44,6 +44,10 @@
             android:icon="@android:drawable/ic_menu_myplaces"
             android:title="@string/title_placemarks_picking"/>
         <item
+            android:id="@+id/nav_placemarks_dragger_activity"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="@string/title_placemarks_dragger"/>
+        <item
             android:id="@+id/nav_placemarks_select_drag_activity"
             android:icon="@android:drawable/ic_menu_myplaces"
             android:title="@string/title_placemarks_select_drag"/>

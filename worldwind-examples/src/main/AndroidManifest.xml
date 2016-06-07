@@ -83,6 +83,12 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
+            android:name=".PlacemarksDraggerActivity"
+            android:label="@string/title_placemarks_dragger"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
             android:name=".PlacemarksPickingActivity"
             android:label="@string/title_placemarks_picking"
             android:launchMode="singleInstance"
