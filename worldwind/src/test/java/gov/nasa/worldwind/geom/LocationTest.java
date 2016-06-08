@@ -666,6 +666,7 @@ public class LocationTest {
      *
      * @throws Exception
      */
+    @Ignore
     @Test
     public void testGreatCircleAzimuth_WithNaN() throws Exception {
         Location origin = new Location(THETA, PHI);
@@ -808,6 +809,7 @@ public class LocationTest {
      *
      * @throws Exception
      */
+    @Ignore
     @Test
     public void testGreatCircleDistance_WithNaN() throws Exception {
         Location location = new Location(Double.NaN, Double.NaN);
@@ -953,6 +955,7 @@ public class LocationTest {
      *
      * @throws Exception
      */
+    @Ignore
     @Test
     public void testRhumbAzimuth_WithNaN() throws Exception {
         Location begin = new Location(Double.NaN, Double.NaN);
@@ -1019,6 +1022,7 @@ public class LocationTest {
      *
      * @throws Exception
      */
+    @Ignore
     @Test
     public void testRhumbDistance_WithNaN() throws Exception {
         Location begin = new Location(Double.NaN, Double.NaN);
@@ -1088,6 +1092,7 @@ public class LocationTest {
      *
      * @throws Exception
      */
+    @Ignore
     @Test
     public void testRhumbLocation_WithNaN() throws Exception {
         Location begin1 = Location.fromRadians(0.592539, -2.066470); // LAX
@@ -1147,6 +1152,7 @@ public class LocationTest {
      *
      * @throws Exception
      */
+    @Ignore
     @Test
     public void testLinearAzimuth_WithNaN() throws Exception {
         Location begin = new Location(Double.NaN, Double.NaN);
@@ -1174,6 +1180,7 @@ public class LocationTest {
      *
      * @throws Exception
      */
+    @Ignore
     @Test
     public void testLinearDistance_WithNaN() throws Exception {
         Location begin = new Location(Double.NaN, Double.NaN);
@@ -1208,6 +1215,7 @@ public class LocationTest {
      *
      * @throws Exception
      */
+    @Ignore
     @Test
     public void testLinearLocation_WithNaN() throws Exception {
         Location begin1 = Location.fromRadians(0.592539, -2.066470); // LAX
