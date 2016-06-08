@@ -1352,4 +1352,51 @@ public class LocationTest {
         assertEquals("Problem points A", 0.8090134466773318, distance, TOLERANCE);
     }
 
+    @Test
+    public void testRhumbLocation_ProblemPointsA() {
+        // Compute location along/near equator
+        double azimuth = 90.0;
+        double distance = 0.08472006153859046;
+        Location begin = Location.fromDegrees(2.892251645338908, -100.43740218868658);
+        Location end = begin.rhumbLocation(azimuth, distance, new Location());
+
+        // delta longitude
+        double result = end.longitude - begin.longitude;
+        double expected = 4.860293056378467;
+
+        assertEquals("Delta Longitude", expected, result, 1e-15);
+
+//        // This loop was used to test and identify the tolerance used in rhumbLocation.
+//        double startLat =  2.892251645338908;
+//        double latitude = startLat;
+//        double longitude = -100.0;
+//        double distance = 0.08472006153859046;
+//        double azimuth = 90.0;
+//        Location begin = new Location();
+//        Location end = new Location();
+//
+//        while (latitude > startLat - 1e-16) {
+//            begin.set(latitude, longitude);
+//            begin.rhumbLocation(azimuth, distance, end);
+//            double dLon = end.longitude - begin.longitude;
+//
+//            assertTrue("Delta Longitude @ [" + latitude + "] (" + dLon + ") < 10", dLon < 10);
+//
+//            latitude -= 1e-18;
+//        }
+    }
+
+    @Test
+    public void testRhumbDistance_ProblemPointsA() {
+        // Compute location along/near equator
+        Location begin = Location.fromDegrees(2.892251645338908, -100.43740218868658);
+        Location end = Location.fromDegrees(2.892251645338908 + 1e-15, -95.57710913230811);
+
+        double result = begin.rhumbDistance(end);
+        double expected = 0.08472006153859046;
+
+        assertEquals("Rhumb distance", expected, result, 1e-15);
+
+    }
+
 }
