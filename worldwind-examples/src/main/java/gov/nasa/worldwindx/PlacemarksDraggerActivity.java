@@ -289,24 +289,42 @@ public class PlacemarksDraggerActivity extends BasicGlobeActivity {
             Location nwCorner = new Location(sector.maxLatitude(), sector.minLongitude());
             Location seCorner = new Location(sector.minLatitude(), sector.maxLongitude());
 
+            final double EAST = 90;
+            final double WEST = 270;
+            final double NORTH = 0;
             double distanceRadians = oldRef.greatCircleDistance(swCorner);
             double azimuthDegrees = oldRef.greatCircleAzimuth(swCorner);
             double widthRadians = swCorner.rhumbDistance(seCorner);
             double heightRadians = swCorner.rhumbDistance(nwCorner);
 
-            // No support for SurfaceImages crossing the Anti-meridian
-            // TODO: create issue regarding Sector Antimeridian limitation
-            if (Location.locationsCrossAntimeridian(Arrays.asList(new Location[]{swCorner, seCorner}))) {
-                return;
-            }
-            // Compute a new position for the SW corner (minLat, minLon)
+            // Compute a new positions for the SW corner
             position.greatCircleLocation(azimuthDegrees, distanceRadians, swCorner);
 
+            // Compute the SE corner, using the original width
+            swCorner.rhumbLocation(EAST, widthRadians, seCorner);
+            if (Location.locationsCrossAntimeridian(Arrays.asList(new Location[]{swCorner, seCorner}))) {
+                // TODO: create issue regarding Sector Antimeridian limitation
+                // There's presently no support for placing SurfaceImages crossing the Anti-meridian
+                // Snap the image to the other side of the date line
+                double dragAzimuth = oldRef.greatCircleAzimuth(position);
+                if (dragAzimuth < 0) {
+                    // Set the East edge of the sector to the dateline
+                    seCorner.set(seCorner.latitude, 180);
+                    seCorner.rhumbLocation(WEST, widthRadians, swCorner);
+                } else {
+                    // Set the West edge of the sector to the dateline
+                    swCorner.set(swCorner.latitude, -180);
+                    swCorner.rhumbLocation(EAST, widthRadians, seCorner);
+                }
+            }
+            // Compute the NW corner with the original height
+            swCorner.rhumbLocation(NORTH, heightRadians, nwCorner);
+
             // Compute the delta lat and delta lon values from the new SW position
-            swCorner.rhumbLocation(0, heightRadians, nwCorner);
-            swCorner.rhumbLocation(90, widthRadians, seCorner);
             double dLat = nwCorner.latitude - swCorner.latitude;
             double dLon = seCorner.longitude - swCorner.longitude;
+
+            // Update the image's sector
             super.sector.set(swCorner.latitude, swCorner.longitude, dLat, dLon);
         }
     }
