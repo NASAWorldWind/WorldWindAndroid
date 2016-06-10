@@ -32,6 +32,7 @@ import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Matrix4;
+import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.geom.Viewport;
@@ -124,6 +125,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     private Matrix4 scratchProjection = new Matrix4();
 
     private Vec3 scratchPoint = new Vec3();
+
+    private Line scratchRay = new Line();
 
     /**
      * Constructs a WorldWindow associated with the specified application context. This is the constructor to use when
@@ -489,6 +492,28 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Convert the position from Cartesian coordinates to screen coordinates.
         return this.cartesianToScreenPoint(this.scratchPoint.x, this.scratchPoint.y, this.scratchPoint.z, result);
+    }
+
+    /**
+     * Converts a screen point to the geographic coordinates on the globe.
+     *
+     * @param screenX X coordinate in Android screen coordinates
+     * @param screenY Y coordinate in Android screen coordinates
+     * @param result  Pre-allocated Position receives the geographic coordinates
+     *
+     * @return true if the screen point could be converted; false if the screen point is not on the globe
+     */
+    public boolean screenPointToGeographic(float screenX, float screenY, Position result) {
+        Line ray = new Line();
+        Vec3 intersection = new Vec3();
+
+        if (this.rayThroughScreenPoint(screenX, screenY, this.scratchRay)) {
+            if (this.globe.intersect(this.scratchRay, scratchPoint)) {
+                this.globe.cartesianToGeographic(this.scratchPoint.x, this.scratchPoint.y, this.scratchPoint.z, result);
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
