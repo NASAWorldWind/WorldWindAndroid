@@ -140,6 +140,9 @@ public class GestureRecognizer {
 
     protected void transitionToState(MotionEvent event, @WorldWind.GestureState int newState) {
         switch (newState) {
+            case WorldWind.POSSIBLE:
+                this.state = newState;
+                break;
             case WorldWind.FAILED:
                 this.state = newState;
                 break;
@@ -255,7 +258,9 @@ public class GestureRecognizer {
         this.actionCancel(event);
 
         int state = this.getState();
-        if (state == WorldWind.POSSIBLE || state == WorldWind.BEGAN || state == WorldWind.CHANGED) {
+        if (state == WorldWind.POSSIBLE) {
+            this.transitionToState(event, WorldWind.FAILED);
+        } else if (state == WorldWind.BEGAN || state == WorldWind.CHANGED) {
             this.transitionToState(event, WorldWind.CANCELLED);
         }
 
