@@ -16,6 +16,22 @@ use to represent information on the globe or in space.
 - [World Wind Forum](http://forum.worldwindcentral.com) provides help from the World Wind community
 - [Android Studio](http://developer.android.com/sdk/) is used for World Wind Android development
 
+# Hotfix 0.2.6, June 16, 2016
+
+World Wind Android v0.2.6 contains critical bug fixes for v0.2.5. See the release notes for details.
+
+- [World Wind Examples 0.2.6](http://worldwindserver.net/android/0.2.6/worldwind-examples.apk) - Example App for 0.2.6; runs on Android 4.4 and newer
+- [World Wind Library 0.2.6](http://worldwindserver.net/android/0.2.6/worldwind.aar) - Android Archive (AAR) for 0.2.6
+- [API Docs 0.2.6](http://worldwindserver.net/android/0.2.6/doc) - Developer documentation for 0.2.6
+- [JIRA 0.2.6](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA/fixforversion/10917) - Detailed release notes for 0.2.6
+
+#### Release Notes
+
+###### Bug
+- [WWA-82](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-82) - Cancelled MotionEvents cause erratic navigation and exceptions
+- [WWA-83](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-83) - FrustumTest unit test fails to compile
+- [WWA-84](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-84) - Rhumb line distance and location calculations occasionally wrong on E/W courses
+
 # Release 0.2.5, May 31, 2016
 
 World Wind Android v0.2.5 provides support for 'picking', a feature that enables applications to determine the World
