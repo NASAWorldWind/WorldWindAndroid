@@ -31,6 +31,7 @@ World Wind Android v0.2.6 contains critical bug fixes for v0.2.5. See the releas
 - [WWA-82](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-82) - Cancelled MotionEvents cause erratic navigation and exceptions
 - [WWA-83](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-83) - FrustumTest unit test fails to compile
 - [WWA-84](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-84) - Rhumb line distance and location calculations occasionally wrong on E/W courses
+- [WWA-85](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-85) - NavigatorEvents are not detectable for all gestures
 
 # Release 0.2.5, May 31, 2016
 
