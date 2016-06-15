@@ -230,6 +230,8 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
     }
 
     protected void gestureDidEnd() {
-        this.activeGestures--;
+        if (this.activeGestures > 0) { // this should always be the case, but we check anyway
+            this.activeGestures--;
+        }
     }
 }
