@@ -10,6 +10,7 @@ import android.graphics.Point;
 import android.graphics.Typeface;
 import android.util.SparseArray;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
 import armyc2.c2sd.renderer.MilStdIconRenderer;
@@ -18,6 +19,7 @@ import armyc2.c2sd.renderer.utilities.RendererSettings;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.render.ImageSource;
+import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
 import gov.nasa.worldwind.util.Logger;
 
@@ -37,11 +39,16 @@ public class MilStd2525 {
      * A (simple) cache of PlacemarkAttribute bundles containing MIL-STD-2525 symbols. Using a cache is essential for
      * memory management--we want to reuse the bitmap textures for identical symbols.
      */
-    private static HashMap<String, PlacemarkAttributes> symbolCache = new HashMap<>();
+    private static HashMap<String, WeakReference<PlacemarkAttributes>> symbolCache = new HashMap<>();
 
     private static SparseArray<String> emptyArray = new SparseArray<>();    // may be used in a cache key
 
     private static boolean initialized = false;
+
+    private final static int DEFAULT_PIXEL_SIZE = 100;
+    private final static int DEFAULT_FONT_SIZE = 18;
+    private final static int TEXT_OUTLINE_WIDTH = 4;
+    private final static double MINIMUM_IMAGE_SCALE = 0.25;
 
 
     /**
@@ -62,15 +69,15 @@ public class MilStd2525 {
         // See: https://github.com/missioncommand/mil-sym-android/blob/master/Renderer/src/main/java/armyc2/c2sd/renderer/utilities/RendererSettings.java
         RendererSettings rs = RendererSettings.getInstance();
         rs.setSymbologyStandard(RendererSettings.Symbology_2525C);
-        rs.setDefaultPixelSize(100);
+        rs.setDefaultPixelSize(DEFAULT_PIXEL_SIZE);
 
         // Depending on screen size and DPI you may want to change the font size.
-        rs.setModifierFont("Arial", Typeface.BOLD, 18);
-        rs.setMPModifierFont("Arial", Typeface.BOLD, 18);
+        rs.setModifierFont("Arial", Typeface.BOLD, DEFAULT_FONT_SIZE);
+        rs.setMPModifierFont("Arial", Typeface.BOLD, DEFAULT_FONT_SIZE);
 
         // Configure modifier text output
         rs.setTextBackgroundMethod(RendererSettings.TextBackgroundMethod_OUTLINE);
-        rs.setTextOutlineWidth(4);  // 4 is the default
+        rs.setTextOutlineWidth(TEXT_OUTLINE_WIDTH);  // 4 is the factory default
 
         initialized = true;
     }
@@ -100,21 +107,24 @@ public class MilStd2525 {
     public static PlacemarkAttributes getPlacemarkAttributes(String symbolCode, SparseArray<String> modifiers, SparseArray<String> attributes) {
 
         // Generate a cache key for the symbol
-        String key = symbolCode
+        String symbolKey = symbolCode
             + (modifiers == null ? emptyArray.toString() : modifiers.toString())
             + (attributes == null ? emptyArray.toString() : attributes.toString());
 
         // Get the attribute bundle from the cache
-        PlacemarkAttributes placemarkAttributes = symbolCache.get(key);
+        WeakReference<PlacemarkAttributes> reference = symbolCache.get(symbolKey);
+        PlacemarkAttributes placemarkAttributes = (reference == null ? null : reference.get());
 
         if (placemarkAttributes == null) {
-
             // Create the attributes bundle and add it to the cache.
             placemarkAttributes = MilStd2525.createPlacemarkAttributes(symbolCode, modifiers, attributes);
             if (placemarkAttributes == null) {
-                throw new IllegalArgumentException("Cannot generate a symbol for: " + key);
+                throw new IllegalArgumentException("Cannot generate a symbol for: " + symbolKey);
             }
-            symbolCache.put(key, placemarkAttributes);
+            symbolCache.put(symbolKey, new WeakReference<>(placemarkAttributes));
+
+
+            placemarkAttributes.setMinimumImageScale(MINIMUM_IMAGE_SCALE);
         }
 
         return placemarkAttributes;
@@ -154,6 +164,7 @@ public class MilStd2525 {
             WorldWind.OFFSET_PIXELS, centerPoint.x, // x offset
             WorldWind.OFFSET_PIXELS, 0.0); // y offset
 
+        // TODO: Prototype the ImageSource.ImageFactory interface.
         return PlacemarkAttributes.createWithImage(ImageSource.fromBitmap(imageInfo.getImage())).setImageOffset(imageOffset);
     }
 
