@@ -151,7 +151,10 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
     @WorldWind.OrientationMode
     protected int imageTiltReference;
 
-    private double cameraDistance;
+    /**
+     * The distance from the camera to the placemark in meters.
+     */
+    protected double cameraDistance;
 
     /**
      * Constructs a Placemark that draws its representation at the supplied position using default {@link
