@@ -21,6 +21,8 @@ public class Location {
 
     protected static SparseIntArray timeZoneLatitudes = new SparseIntArray();
 
+    protected final static double NEAR_ZERO_THRESHOLD = 1e-15;
+
     static {
         timeZoneLatitudes.put(-12, -45);// GMT-12
         timeZoneLatitudes.put(-11, -30);// GMT-11
@@ -539,12 +541,15 @@ public class Location {
 
         double dLat = lat2 - lat1;
         double dLon = lon2 - lon1;
-        double dPhi = Math.log(Math.tan(lat2 / 2.0 + Math.PI / 4) /
-            Math.tan(lat1 / 2.0 + Math.PI / 4));
-        double q = dLat / dPhi;
 
-        if (Double.isNaN(dPhi) || Double.isNaN(q)) {
+        double q;
+        if (Math.abs(dLat) < NEAR_ZERO_THRESHOLD) {
+            // Avoid indeterminates along E/W courses when lat end points are "nearly" identical
             q = Math.cos(lat1);
+        } else {
+            double dPhi = Math.log(Math.tan(lat2 / 2.0 + Math.PI / 4) /
+                Math.tan(lat1 / 2.0 + Math.PI / 4));
+            q = dLat / dPhi;
         }
 
         // If lonChange over 180 take shorter rhumb across 180 meridian.
@@ -586,12 +591,15 @@ public class Location {
         double azimuthRadians = Math.toRadians(azimuthDegrees);
         double endLatRadians = latRadians + distanceRadians * Math.cos(azimuthRadians);
         double endLonRadians;
-        double dPhi = Math.log(Math.tan(endLatRadians / 2 + Math.PI / 4) /
-            Math.tan(latRadians / 2 + Math.PI / 4));
-        double q = (endLatRadians - latRadians) / dPhi;
-
-        if (Double.isNaN(dPhi) || Double.isNaN(q) || Double.isInfinite(q)) {
+        double dLat = endLatRadians - latRadians;
+        double q;
+        if (Math.abs(dLat) < NEAR_ZERO_THRESHOLD) {
+            // Avoid indeterminates along E/W courses when lat end points are "nearly" identical
             q = Math.cos(latRadians);
+        } else {
+            double dPhi = Math.log(Math.tan(endLatRadians / 2 + Math.PI / 4) /
+                Math.tan(latRadians / 2 + Math.PI / 4));
+            q = dLat / dPhi;
         }
 
         double dLon = distanceRadians * Math.sin(azimuthRadians) / q;

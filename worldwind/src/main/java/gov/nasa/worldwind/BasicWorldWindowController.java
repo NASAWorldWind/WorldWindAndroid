@@ -70,7 +70,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
         boolean handled = false;
 
         for (int idx = 0, len = this.allRecognizers.size(); idx < len; idx++) {
-            handled = this.allRecognizers.get(idx).onTouchEvent(event);
+            handled |= this.allRecognizers.get(idx).onTouchEvent(event); // use or-assignment to indicate if any recognizer handled the event
         }
 
         return handled;
