@@ -16,40 +16,58 @@ import gov.nasa.worldwind.util.WWUtil;
  * associated type on behalf of the caller, making this information available to World Wind components that load images
  * on the caller's behalf.
  * <p/>
- * ImageSource supports four common source types used on the Android platform: <ul> <li>Android {@link
- * android.graphics.Bitmap}</li> <li>Android resource identifier</li> <li>File path</li> <li>Uniform Resource Locator
+ * ImageSource supports four source types: <ul> <li>Android {@link android.graphics.Bitmap}</li> <li>World Wind {@link
+ * ImageSource.BitmapFactory}</li> <li>Android resource identifier</li> <li>File path</li> <li>Uniform Resource Locator
  * (URL)</li> </ul>
  * <p/>
  * ImageSource instances are intended to be used as a key into a cache or other data structure that enables sharing of
- * loaded images. Android resource identifiers with equivalent IDs are considered equivalent, as are file paths and URLs
- * with the same string representation. However, a Bitmap image source instance is considered unique, and is therefore
- * only equivalent to itself.
+ * loaded images.  Android bitmaps and World Wind bitmap factories are compared by reference: two image sources are
+ * equivalent if they reference the same bitmap or the same bitmap factory. Android resource identifiers with equivalent
+ * IDs are considered equivalent, as are file paths and URLs with the same string representation.
  */
 public class ImageSource {
 
+    /**
+     * Factory for delegating construction of bitmap images. Bitmap factory provides a mechanism for World Wind
+     * components to manage bitmap memory by specifying bitmaps indirectly, rather than specifying a reference to a
+     * Bitmap object. The factory controls the bitmap contents, while World Wind controls the bitmap's lifecycle. This
+     * enables World Wind to lazily construct bitmaps only when needed, cache those bitmaps, then release them from
+     * memory when they're no longer needed. Additionally, bitmap factory enables World Wind to re-create bitmaps as
+     * needed.
+     */
+    public interface BitmapFactory {
+
+        /**
+         * TODO convey that this is called lazily Returns the bitmap associated with this factory. The returned bitmap
+         * is owned and managed by World Wind. The factory must not retain a reference to the bitmap and must not
+         * recycle the bitmap.
+         *
+         * @return the bitmap
+         */
+        Bitmap createBitmap();
+    }
+
+    protected static final int TYPE_UNRECOGNIZED = 0;
+
     protected static final int TYPE_BITMAP = 1;
 
-    protected static final int TYPE_RESOURCE = 2;
+    protected static final int TYPE_BITMAP_FACTORY = 2;
 
-    protected static final int TYPE_FILE_PATH = 3;
+    protected static final int TYPE_RESOURCE = 3;
 
-    protected static final int TYPE_URL = 4;
+    protected static final int TYPE_FILE_PATH = 4;
 
-    protected static final int TYPE_UNKNOWN = 5;
+    protected static final int TYPE_URL = 5;
 
-    protected static long bitmapKeyPool = 0;
+    protected int type = TYPE_UNRECOGNIZED;
 
     protected Object source;
-
-    protected Object key;
-
-    protected int type;
 
     protected ImageSource() {
     }
 
     /**
-     * Constructs an image source with a Bitmap. The Bitmap's dimensions should be no greater than 2048 x 2048.
+     * Constructs an image source with a bitmap. The bitmap's dimensions should be no greater than 2048 x 2048.
      *
      * @param bitmap the bitmap to use as an image source
      *
@@ -64,9 +82,30 @@ public class ImageSource {
         }
 
         ImageSource imageSource = new ImageSource();
-        imageSource.source = bitmap;
-        imageSource.key = nextBitmapKey();
         imageSource.type = TYPE_BITMAP;
+        imageSource.source = bitmap;
+        return imageSource;
+    }
+
+    /**
+     * Constructs an image source with a bitmap factory. The factory must create images with dimensions to no greater
+     * than 2048 x 2048.
+     *
+     * @param factory the bitmap factory to use as an image source
+     *
+     * @return the new image source
+     *
+     * @throws IllegalArgumentException If the factory is null
+     */
+    public static ImageSource fromBitmapFactory(ImageSource.BitmapFactory factory) {
+        if (factory == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ImageSource", "fromBitmapFactory", "missingFactory"));
+        }
+
+        ImageSource imageSource = new ImageSource();
+        imageSource.type = TYPE_BITMAP_FACTORY;
+        imageSource.source = factory;
         return imageSource;
     }
 
@@ -80,9 +119,8 @@ public class ImageSource {
      */
     public static ImageSource fromResource(@DrawableRes int id) {
         ImageSource imageSource = new ImageSource();
-        imageSource.source = id;
-        imageSource.key = id;
         imageSource.type = TYPE_RESOURCE;
+        imageSource.source = id;
         return imageSource;
     }
 
@@ -102,9 +140,8 @@ public class ImageSource {
         }
 
         ImageSource imageSource = new ImageSource();
-        imageSource.source = pathName;
-        imageSource.key = pathName;
         imageSource.type = TYPE_FILE_PATH;
+        imageSource.source = pathName;
         return imageSource;
     }
 
@@ -125,16 +162,15 @@ public class ImageSource {
         }
 
         ImageSource imageSource = new ImageSource();
-        imageSource.source = urlString;
-        imageSource.key = urlString;
         imageSource.type = TYPE_URL;
+        imageSource.source = urlString;
         return imageSource;
     }
 
     /**
      * Constructs an image source with a generic Object instance. The source may be any non-null Object. This is
      * equivalent to calling one of ImageSource's type-specific factory methods when the source is a recognized type:
-     * Bitmap; integer resource ID; file path; URL string.
+     * bitmap; bitmap factory; integer resource ID; file path; URL string.
      *
      * @param source the generic source
      *
@@ -150,6 +186,8 @@ public class ImageSource {
 
         if (source instanceof Bitmap) {
             return fromBitmap((Bitmap) source);
+        } else if (source instanceof ImageSource.BitmapFactory) {
+            return fromBitmapFactory((ImageSource.BitmapFactory) source);
         } else if (source instanceof Integer) { // Android resource identifier, as generated by the aapt tool
             return fromResource((Integer) source);
         } else if (source instanceof String && WWUtil.isUrlString((String) source)) {
@@ -158,9 +196,8 @@ public class ImageSource {
             return fromFilePath((String) source);
         } else {
             ImageSource imageSource = new ImageSource();
+            imageSource.type = TYPE_UNRECOGNIZED;
             imageSource.source = source;
-            imageSource.key = source;
-            imageSource.type = TYPE_UNKNOWN;
             return imageSource;
         }
     }
@@ -176,18 +213,26 @@ public class ImageSource {
         }
 
         ImageSource that = (ImageSource) o;
-        return this.key.equals(that.key) && this.type == that.type;
+        return this.type == that.type && this.source.equals(that.source);
     }
 
     @Override
     public int hashCode() {
-        return 31 * this.key.hashCode() + this.type;
+        return this.type + 31 * this.source.hashCode();
     }
 
     @Override
     public String toString() {
-        if (this.type == TYPE_RESOURCE) {
+        if (this.type == TYPE_BITMAP) {
+            return "Bitmap " + this.source.toString();
+        } else if (this.type == TYPE_BITMAP_FACTORY) {
+            return "BitmapFactory " + this.source.toString();
+        } else if (this.type == TYPE_RESOURCE) {
             return "Resource " + this.source.toString();
+        } else if (this.type == TYPE_FILE_PATH) {
+            return this.source.toString();
+        } else if (this.type == TYPE_URL) {
+            return this.source.toString();
         } else {
             return this.source.toString();
         }
@@ -200,6 +245,15 @@ public class ImageSource {
      */
     public boolean isBitmap() {
         return this.type == TYPE_BITMAP;
+    }
+
+    /**
+     * Indicates whether this image source is a bitmap factory.
+     *
+     * @return true if the source is a bitmap factory, otherwise false
+     */
+    public boolean isBitmapFactory() {
+        return this.type == TYPE_BITMAP_FACTORY;
     }
 
     /**
@@ -230,12 +284,22 @@ public class ImageSource {
     }
 
     /**
-     * Returns the source Bitmap. Call isBitmap to determine whether or not the source is a Bitmap.
+     * Returns the source bitmap. Call isBitmap to determine whether or not the source is a bitmap.
      *
-     * @return the Bitmap, or null if the source is not a Bitmap
+     * @return the bitmap, or null if the source is not a bitmap
      */
     public Bitmap asBitmap() {
         return (this.type == TYPE_BITMAP) ? (Bitmap) this.source : null;
+    }
+
+    /**
+     * Returns the source bitmap factory. Call isBitmapFactory to determine whether or not the source is a bitmap
+     * factory.
+     *
+     * @return the bitmap factory, or null if the source is not a bitmap factory
+     */
+    public ImageSource.BitmapFactory asBitmapFactory() {
+        return (this.type == TYPE_BITMAP_FACTORY) ? (ImageSource.BitmapFactory) this.source : null;
     }
 
     /**
@@ -268,15 +332,11 @@ public class ImageSource {
     }
 
     /**
-     * Returns the image source as a generic Object instance.
+     * Returns the image source associated with an unrecognized type.
      *
      * @return the source object
      */
     public Object asObject() {
         return this.source;
-    }
-
-    protected static String nextBitmapKey() {
-        return "ImageSource " + (++bitmapKeyPool);
     }
 }
