@@ -52,9 +52,15 @@ public class ImageRetriever extends AbstractRetriever<ImageSource, Bitmap> {
         }
     }
 
+    // TODO can we explicitly recycle bitmaps from image sources other than direct Bitmap references?
+    // TODO does explicit recycling help?
     protected Bitmap decodeImage(ImageSource imageSource) throws IOException {
+        if (imageSource.isImageFactory()) {
+            return this.decodeImageFactory(imageSource.asImageFactory().first /*factory*/, imageSource.asImageFactory().second /*factorySource*/);
+        }
+
         if (imageSource.isBitmap()) {
-            return imageSource.asBitmap();
+            return this.decodeBitmap(imageSource.asBitmap());
         }
 
         if (imageSource.isResource()) {
@@ -70,6 +76,14 @@ public class ImageRetriever extends AbstractRetriever<ImageSource, Bitmap> {
         }
 
         return this.decodeUnrecognized(imageSource);
+    }
+
+    protected Bitmap decodeImageFactory(ImageFactory factory, Object factorySource) {
+        return factory.createBitmap(factorySource);
+    }
+
+    protected Bitmap decodeBitmap(Bitmap bitmap) {
+        return bitmap;
     }
 
     protected Bitmap decodeResource(int id) {

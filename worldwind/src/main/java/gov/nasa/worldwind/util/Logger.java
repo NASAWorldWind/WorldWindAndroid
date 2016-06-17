@@ -50,6 +50,7 @@ public class Logger {
         messageTable.put("missingColor", "The color is null");
         messageTable.put("missingConfig", "The configuration is null");
         messageTable.put("missingCoordinateSystem", "The coordinate system is null");
+        messageTable.put("missingFactory", "The factory is null");
         messageTable.put("missingFormat", "The format is null");
         messageTable.put("missingFrameMetrics", "The frame metrics argument is null");
         messageTable.put("missingGlobe", "The globe is null");
