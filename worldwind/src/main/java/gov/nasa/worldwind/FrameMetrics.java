@@ -5,13 +5,21 @@
 
 package gov.nasa.worldwind;
 
+import java.util.Locale;
+
+import gov.nasa.worldwind.draw.DrawContext;
+import gov.nasa.worldwind.render.RenderContext;
+import gov.nasa.worldwind.util.LruMemoryCache;
+
 public class FrameMetrics {
 
     private final Object drawLock = new Object();
 
-    protected Metrics renderMetrics = new Metrics();
+    protected TimeMetrics renderMetrics = new TimeMetrics();
 
-    protected Metrics drawMetrics = new Metrics();
+    protected TimeMetrics drawMetrics = new TimeMetrics();
+
+    protected CacheMetrics renderResourceCacheMetrics = new CacheMetrics();
 
     public FrameMetrics() {
     }
@@ -66,42 +74,45 @@ public class FrameMetrics {
         }
     }
 
+    public int getRenderResourceCacheCapacity() {
+        return this.renderResourceCacheMetrics.capacity;
+    }
+
+    public int getRenderResourceCacheUsedCapacity() {
+        return this.renderResourceCacheMetrics.usedCapacity;
+    }
+
+    public int getRenderResourceCacheEntryCount() {
+        return this.renderResourceCacheMetrics.entryCount;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("FrameMetrics");
-        sb.append("{\n");
-        sb.append("renderTime=").append(this.renderMetrics.time);
-        sb.append(", renderTimeTotal=").append(this.renderMetrics.timeSum);
-        sb.append(", renderCount=").append(this.renderMetrics.count);
-        sb.append(", renderTimeAvg=").append(String.format("%.1f", this.computeTimeAverage(this.renderMetrics)));
-        sb.append(", renderTimeStdDev=").append(String.format("%.1f", this.computeTimeStdDev(this.renderMetrics)));
-        sb.append("\n");
-
-        synchronized (this.drawLock) {
-            sb.append("drawTime=").append(this.drawMetrics.time);
-            sb.append(", drawTimeTotal=").append(this.drawMetrics.timeSum);
-            sb.append(", drawCount=").append(this.drawMetrics.count);
-            sb.append(", drawTimeAvg=").append(String.format("%.1f", this.computeTimeAverage(this.drawMetrics)));
-            sb.append(", drawTimeStdDev=").append(String.format("%.1f", this.computeTimeStdDev(this.drawMetrics)));
-        }
-
-        sb.append("\n}");
+        sb.append("{renderMetrics={");
+        this.printTimeMetrics(this.renderMetrics, sb);
+        sb.append("}, drawMetrics={");
+        this.printTimeMetrics(this.drawMetrics, sb);
+        sb.append("}, renderResourceCacheMetrics={");
+        this.printCacheMetrics(this.renderResourceCacheMetrics, sb);
+        sb.append("}");
 
         return sb.toString();
     }
 
-    public void beginRendering() {
+    public void beginRendering(RenderContext rc) {
         long now = System.currentTimeMillis();
 
         this.markBegin(this.renderMetrics, now);
     }
 
-    public void endRendering() {
+    public void endRendering(RenderContext rc) {
         long now = System.currentTimeMillis();
         this.markEnd(this.renderMetrics, now);
+        this.assembleCacheMetrics(this.renderResourceCacheMetrics, rc.renderResourceCache);
     }
 
-    public void beginDrawing() {
+    public void beginDrawing(DrawContext dc) {
         long now = System.currentTimeMillis();
 
         synchronized (this.drawLock) {
@@ -109,7 +120,7 @@ public class FrameMetrics {
         }
     }
 
-    public void endDrawing() {
+    public void endDrawing(DrawContext dc) {
         long now = System.currentTimeMillis();
 
         synchronized (this.drawLock) {
@@ -118,42 +129,71 @@ public class FrameMetrics {
     }
 
     public void reset() {
-        this.resetMetrics(this.renderMetrics);
+        this.resetTimeMetrics(this.renderMetrics);
 
         synchronized (this.drawLock) {
-            this.resetMetrics(this.drawMetrics);
+            this.resetTimeMetrics(this.drawMetrics);
         }
     }
 
-    protected void markBegin(Metrics metrics, long timeMillis) {
+    protected void markBegin(TimeMetrics metrics, long timeMillis) {
         metrics.begin = timeMillis;
     }
 
-    protected void markEnd(Metrics metrics, long timeMillis) {
+    protected void markEnd(TimeMetrics metrics, long timeMillis) {
         metrics.time = timeMillis - metrics.begin;
         metrics.timeSum += metrics.time;
         metrics.timeSumOfSquares += (metrics.time * metrics.time);
         metrics.count++;
     }
 
-    protected void resetMetrics(Metrics metrics) {
+    protected void resetTimeMetrics(TimeMetrics metrics) {
         // reset the metrics collected across multiple frames
         metrics.timeSum = 0;
         metrics.timeSumOfSquares = 0;
         metrics.count = 0;
     }
 
-    protected double computeTimeAverage(Metrics metrics) {
+    protected double computeTimeAverage(TimeMetrics metrics) {
         return metrics.timeSum / (double) metrics.count;
     }
 
-    protected double computeTimeStdDev(Metrics metrics) {
+    protected double computeTimeStdDev(TimeMetrics metrics) {
         double avg = (double) metrics.timeSum / (double) metrics.count;
         double var = ((double) metrics.timeSumOfSquares / (double) metrics.count) - (avg * avg);
         return Math.sqrt(var);
     }
 
-    protected static class Metrics {
+    protected void assembleCacheMetrics(CacheMetrics metrics, LruMemoryCache cache) {
+        metrics.capacity = cache.getCapacity();
+        metrics.usedCapacity = cache.getUsedCapacity();
+        metrics.entryCount = cache.getEntryCount();
+    }
+
+    protected void printCacheMetrics(CacheMetrics metrics, StringBuilder out) {
+        out.append("capacity=").append(String.format(Locale.US, "%,.0f", metrics.capacity / 1024.0)).append("KB");
+        out.append(", usedCapacity=").append(String.format(Locale.US, "%,.0f", metrics.usedCapacity / 1024.0)).append("KB");
+        out.append(", entryCount=").append(metrics.entryCount);
+    }
+
+    protected void printTimeMetrics(TimeMetrics metrics, StringBuilder out) {
+        out.append("lastTime=").append(metrics.time).append("ms");
+        out.append(", totalTime=").append(metrics.timeSum).append("ms");
+        out.append(", count=").append(metrics.count);
+        out.append(", avg=").append(String.format(Locale.US, "%.1f", this.computeTimeAverage(metrics))).append("ms");
+        out.append(", stdDev=").append(String.format(Locale.US, "%.1f", this.computeTimeStdDev(metrics))).append("ms");
+    }
+
+    protected static class CacheMetrics {
+
+        public int capacity;
+
+        public int usedCapacity;
+
+        public int entryCount;
+    }
+
+    protected static class TimeMetrics {
 
         public long begin;
 

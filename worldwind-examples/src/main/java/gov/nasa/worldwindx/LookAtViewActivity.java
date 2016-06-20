@@ -17,7 +17,7 @@ public class LookAtViewActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + getResources().getText(R.string.title_look_at_view));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_look_at_view));
         setAboutBoxText("Demonstrates how to use LookAt to view a position.\n" +
             "This example simulates a view from an aircraft above Santa Monica, CA looking at the LAX airport.");
 

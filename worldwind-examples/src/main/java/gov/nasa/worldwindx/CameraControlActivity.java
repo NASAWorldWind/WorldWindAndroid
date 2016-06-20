@@ -19,11 +19,10 @@ import gov.nasa.worldwind.util.WWMath;
 
 public class CameraControlActivity extends BasicGlobeActivity {
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + getResources().getText(R.string.title_camera_controls));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_camera_controls));
         setAboutBoxText("Demonstrates how to override the WorldWindowController gesture controller.\n" +
             "This example uses the Navigator's setAsCamera interface " +
             "instead of setAsLookAt.\n" +
@@ -48,7 +47,6 @@ public class CameraControlActivity extends BasicGlobeActivity {
         Globe globe = this.getWorldWindow().getGlobe();
         this.getWorldWindow().getNavigator().setAsCamera(globe, camera);
     }
-
 
     /**
      * A custom WorldWindController that uses gestures to control the camera directly via the setAsCamera interface

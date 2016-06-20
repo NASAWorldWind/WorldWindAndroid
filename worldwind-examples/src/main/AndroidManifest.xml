@@ -113,6 +113,12 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
+            android:name=".TextureStressTestActivity"
+            android:label="@string/title_texture_stress_test"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
             android:name=".WmsLayerActivity"
             android:label="@string/title_wms_layer"
             android:launchMode="singleInstance"

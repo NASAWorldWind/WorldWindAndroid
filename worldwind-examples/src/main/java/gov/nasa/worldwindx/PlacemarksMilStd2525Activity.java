@@ -26,7 +26,7 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks_milstd2525));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_placemarks_milstd2525));
         setAboutBoxText("Demonstrates how to add MilStd2525C Symbols to a RenderableLayer.");
 
         // Create a TextView to show the MIL-STD-2525 renderer's initialization status
@@ -119,5 +119,7 @@ public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
             // Clear the status message set in onPreExecute
             statusText.setText("");
         }
+
     }
+
 }

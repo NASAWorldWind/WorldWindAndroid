@@ -52,7 +52,15 @@ public class LruMemoryCache<K, V> {
         this.lowWater = lowWater;
     }
 
-    public int count() {
+    public int getCapacity() {
+        return this.capacity;
+    }
+
+    public int getUsedCapacity() {
+        return this.usedCapacity;
+    }
+
+    public int getEntryCount() {
         return this.entries.size();
     }
 

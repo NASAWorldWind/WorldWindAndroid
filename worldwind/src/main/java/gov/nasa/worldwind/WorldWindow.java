@@ -359,6 +359,20 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.worldWindowController.setWorldWindow(this); // attach the new controller
     }
 
+    public RenderResourceCache getRenderResourceCache() {
+        return this.renderResourceCache;
+    }
+
+    public void setRenderResourceCache(RenderResourceCache cache) {
+        if (cache == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "setRenderResourceCache", "missingCache"));
+        }
+
+        // TODO provide a mechanism for the old cache to evict its entries
+        this.renderResourceCache = cache;
+    }
+
     /**
      * Determines the World Wind objects displayed at a screen point. The screen point is interpreted as coordinates in
      * Android screen pixels relative to this View.
@@ -794,7 +808,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // Mark the beginning of a frame render.
         boolean pickMode = frame.pickMode;
         if (!pickMode) {
-            this.frameMetrics.beginRendering();
+            this.frameMetrics.beginRendering(this.rc);
         }
 
         // Setup the render context according to the World Window's current state.
@@ -853,20 +867,20 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
             this.navigatorEvents.onFrameRendered(this.rc);
         }
 
-        // Reset the render context's state in preparation for the next frame.
-        this.rc.reset();
-
         // Mark the end of a frame render.
         if (!pickMode) {
-            this.frameMetrics.endRendering();
+            this.frameMetrics.endRendering(this.rc);
         }
+
+        // Reset the render context's state in preparation for the next frame.
+        this.rc.reset();
     }
 
     protected void drawFrame(Frame frame) {
         // Mark the beginning of a frame draw.
         boolean pickMode = frame.pickMode;
         if (!pickMode) {
-            this.frameMetrics.beginDrawing();
+            this.frameMetrics.beginDrawing(this.dc);
         }
 
         // Setup the draw context according to the frame's current state.
@@ -891,13 +905,13 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
             this.renderResourceCache.releaseEvictedResources(this.dc);
         }
 
-        // Reset the draw context's state in preparation for the next frame.
-        this.dc.reset();
-
         // Mark the end of a frame draw.
         if (!pickMode) {
-            this.frameMetrics.endDrawing();
+            this.frameMetrics.endDrawing(this.dc);
         }
+
+        // Reset the draw context's state in preparation for the next frame.
+        this.dc.reset();
     }
 
     protected void clearFrameQueue() {

@@ -17,7 +17,7 @@ public class SurfaceImageActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + getResources().getText(R.string.title_surface_image));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_surface_image));
         setAboutBoxText("Demonstrates how to add SurfaceImages to a RenderableLayer.\n" +
             "This example adds two surface images to the basic globe:\n" +
             "1. A remote image showing Mount Etna erupting on July 13th, 2001.\n" +
@@ -45,4 +45,5 @@ public class SurfaceImageActivity extends BasicGlobeActivity {
         this.getWorldWindow().getNavigator().setLongitude(14.97980511744455);
         this.getWorldWindow().getNavigator().setAltitude(4.0e5);
     }
+
 }

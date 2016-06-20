@@ -75,6 +75,10 @@
             android:id="@+id/nav_basic_performance_benchmark_activity"
             android:icon="@android:drawable/ic_menu_preferences"
             android:title="@string/title_basic_performance_benchmark"/>
+        <item
+            android:id="@+id/nav_texture_stress_test_activity"
+            android:icon="@android:drawable/ic_menu_preferences"
+            android:title="@string/title_texture_stress_test"/>
     </group>
 
 </menu>

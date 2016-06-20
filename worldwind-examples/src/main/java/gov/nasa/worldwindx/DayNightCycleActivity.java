@@ -30,7 +30,7 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Choreog
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + getResources().getText(R.string.title_day_night_cycle));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_day_night_cycle));
         setAboutBoxText("Demonstrates how to display a continuous day-night cycle on the World Wind globe.\n" +
             "This gradually changes both the Navigator's location and the AtmosphereLayer's light location.");
 
