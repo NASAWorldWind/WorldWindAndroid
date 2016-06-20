@@ -224,6 +224,9 @@ public abstract class AbstractMainActivity extends AppCompatActivity
             case R.id.nav_surface_image_activity:
                 startActivity(new Intent(getApplicationContext(), SurfaceImageActivity.class));
                 break;
+            case R.id.nav_texture_stress_test_activity:
+                startActivity(new Intent(getApplicationContext(), TextureStressTestActivity.class));
+                break;
             case R.id.nav_wms_layer_activity:
                 startActivity(new Intent(getApplicationContext(), WmsLayerActivity.class));
                 break;
