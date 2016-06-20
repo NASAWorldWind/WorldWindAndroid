@@ -17,7 +17,7 @@ public class CameraViewActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + getResources().getText(R.string.title_camera_view));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_camera_view));
         setAboutBoxText("Demonstrates how to use a Camera to view a position.\n" +
             "This example simulates a view from an aircraft above Oxnard, CA looking at the Point Mugu Naval Air Station.");
 

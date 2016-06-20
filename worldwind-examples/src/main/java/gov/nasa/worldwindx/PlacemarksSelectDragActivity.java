@@ -131,7 +131,7 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks_select_drag));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_placemarks_select_drag));
         setAboutBoxText("Demonstrates how to select and drag Placemarks.\n\n" +
             "Single-tap an icon to toggle its selection.\n" +
             "Double-tap a vehicle icon to open an editor.\n" +
@@ -485,6 +485,7 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
             }
             return false;
         }
+
     }
 
     /**
@@ -564,5 +565,7 @@ public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
                 activity.getWorldWindow().requestRedraw();
             }
         }
+
     }
+
 }

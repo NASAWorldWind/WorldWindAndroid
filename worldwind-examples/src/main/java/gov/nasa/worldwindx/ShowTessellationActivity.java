@@ -14,7 +14,7 @@ public class ShowTessellationActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + getResources().getText(R.string.title_show_tessellation));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_show_tessellation));
         setAboutBoxText("Demonstrates the globe's Tessellator.\n" +
             "This example adds a layer to the basic globe that shows the tessellation.");
 
@@ -22,4 +22,5 @@ public class ShowTessellationActivity extends BasicGlobeActivity {
         ShowTessellationLayer layer = new ShowTessellationLayer();
         this.getWorldWindow().getLayers().addLayer(layer);
     }
+
 }

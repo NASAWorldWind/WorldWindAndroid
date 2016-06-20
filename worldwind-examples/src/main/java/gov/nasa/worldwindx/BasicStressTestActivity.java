@@ -76,4 +76,5 @@ public class BasicStressTestActivity extends BasicGlobeActivity implements Chore
         this.lastFrameTimeNanos = 0;
         Choreographer.getInstance().postFrameCallback(this);
     }
+
 }

@@ -13,7 +13,6 @@ import gov.nasa.worldwind.layer.BackgroundLayer;
 import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
 import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 
-
 /**
  * Creates a simple view of a globe with touch navigation and a few layers.
  */
@@ -32,7 +31,7 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         super.onCreate(savedInstanceState);
         // Establish the activity content
         setContentView(this.layoutResourceId);
-        setAboutBoxTitle("About the " + getResources().getText(R.string.title_basic_globe));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_basic_globe));
         setAboutBoxText("Demonstrates how to construct a WorldWindow with a few layers.\n" +
             "The globe uses the default navigation gestures: \n" +
             " - one-finger pan moves the camera,\n" +
@@ -69,6 +68,5 @@ public class BasicGlobeActivity extends AbstractMainActivity {
     public WorldWindow getWorldWindow() {
         return this.wwd;
     }
+
 }
-
-

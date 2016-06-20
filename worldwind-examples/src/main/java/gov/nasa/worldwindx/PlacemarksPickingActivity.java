@@ -29,11 +29,10 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
 
     private static final double HIGHLIGHTED_IMAGE_SCALE = 4.0;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks_picking));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_placemarks_picking));
         setAboutBoxText("Demonstrates how to pick and highlight Placemarks.\n\n" +
             "Tapping a placemark will toggle its highlighted state.");
 
@@ -171,5 +170,7 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
                 this.selectedObject = isNewSelection ? pickedObject : null;
             }
         }
+
     }
+
 }

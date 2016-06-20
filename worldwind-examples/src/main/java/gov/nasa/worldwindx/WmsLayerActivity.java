@@ -16,7 +16,7 @@ public class WmsLayerActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + getResources().getText(R.string.title_wms_layer));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_wms_layer));
         setAboutBoxText("Demonstrates how to construct a WmsLayer with a WmsLayerConfig.\n" +
             "This example adds a Sea Surface Temperature WMS layer to a the basic globe example.");
 
@@ -31,4 +31,5 @@ public class WmsLayerActivity extends BasicGlobeActivity {
         // Add the WMS layer to the World Window.
         this.getWorldWindow().getLayers().addLayer(layer);
     }
+
 }

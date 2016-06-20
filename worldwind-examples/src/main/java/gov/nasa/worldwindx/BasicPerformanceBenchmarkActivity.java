@@ -295,7 +295,6 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
         commandExecutor.shutdownNow();
     }
 
-
     protected Layer createPlacemarksLayer() {
 
         RenderableLayer layer = new RenderableLayer("Placemarks");

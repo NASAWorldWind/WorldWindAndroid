@@ -19,9 +19,6 @@ import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
 
-import static java.lang.Math.asin;
-import static java.lang.Math.toDegrees;
-
 public class PlacemarksStressTestActivity extends BasicGlobeActivity implements Choreographer.FrameCallback {
 
     protected static final int NUM_PLACEMARKS = 10000;
@@ -35,7 +32,7 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks_stress_test));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_placemarks_stress_test));
         setAboutBoxText("Demonstrates a LOT of Placemarks.");
 
         // Turn off all layers while debugging/profiling memory allocations...
@@ -68,7 +65,6 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
         placemarksLayer.addRenderable(southPole);
         placemarksLayer.addRenderable(antiMeridian);
 
-
         // Create a random number generator with an arbitrary seed
         // that will generate the same numbers between runs.
         Random random = new Random(123);
@@ -79,7 +75,7 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
         for (int i = 0; i < NUM_PLACEMARKS; i++) {
             // Create an even distribution of latitude and longitudes across the globe.
             // Use a random sin value to generate latitudes without clustering at the poles.
-            double lat = toDegrees(asin(random.nextDouble())) * (random.nextBoolean() ? 1 : -1);
+            double lat = Math.toDegrees(Math.asin(random.nextDouble())) * (random.nextBoolean() ? 1 : -1);
             double lon = 180d - (random.nextDouble() * 360);
             Position pos = Position.fromDegrees(lat, lon, 0);
 
@@ -90,7 +86,6 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
             placemarksLayer.addRenderable(placemark);
         }
     }
-
 
     @Override
     public void doFrame(long frameTimeNanos) {
@@ -130,5 +125,4 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
         this.lastFrameTimeNanos = 0;
         Choreographer.getInstance().postFrameCallback(this);
     }
-
 }

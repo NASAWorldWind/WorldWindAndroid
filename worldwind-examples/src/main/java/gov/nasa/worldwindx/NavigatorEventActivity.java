@@ -9,20 +9,16 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.view.Choreographer;
-import android.view.InputEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import gov.nasa.worldwind.Navigator;
 import gov.nasa.worldwind.NavigatorEvent;
 import gov.nasa.worldwind.NavigatorListener;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Camera;
-import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.LookAt;
 
 public class NavigatorEventActivity extends BasicGlobeActivity {
@@ -55,7 +51,7 @@ public class NavigatorEventActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + getResources().getText(R.string.title_navigator_event));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_navigator_event));
         setAboutBoxText("Demonstrates how to receive and consume navigator events.\n\n"
             + "The crosshairs and overlays react to the user input");
 
@@ -76,7 +72,6 @@ public class NavigatorEventActivity extends BasicGlobeActivity {
         NavigatorListener listener = new NavigatorListener() {
             @Override
             public void onNavigatorEvent(WorldWindow wwd, NavigatorEvent event) {
-
                 long currentTime = System.currentTimeMillis();
                 long elapsedTime = currentTime - lastEventTime;
                 int eventAction = event.getAction();
@@ -172,4 +167,5 @@ public class NavigatorEventActivity extends BasicGlobeActivity {
             (altitude < 100000 ? altitude : altitude / 1000),
             (altitude < 100000 ? "m" : "km"));
     }
+
 }

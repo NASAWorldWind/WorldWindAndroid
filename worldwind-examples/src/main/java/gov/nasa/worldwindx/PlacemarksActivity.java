@@ -24,7 +24,7 @@ public class PlacemarksActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_placemarks));
         setAboutBoxText("Demonstrates how to add Placemarks to a RenderableLayer.");
 
         ///////////////////////////////////////////////////////////////////////////
@@ -67,7 +67,6 @@ public class PlacemarksActivity extends BasicGlobeActivity {
             Position.fromDegrees(34.300, -119.25, 0),
             PlacemarkAttributes.createWithImage(ImageSource.fromBitmap(bitmap)).setImageOffset(Offset.bottomCenter()));
 
-
         /////////////////////////////////////////////////////
         // Third, add the placemarks to the renderable layer
         /////////////////////////////////////////////////////
@@ -85,4 +84,5 @@ public class PlacemarksActivity extends BasicGlobeActivity {
             1e5 /*range*/, 0 /*heading*/, 80 /*tilt*/, 0 /*roll*/);
         this.getWorldWindow().getNavigator().setAsLookAt(this.getWorldWindow().getGlobe(), lookAt);
     }
+
 }

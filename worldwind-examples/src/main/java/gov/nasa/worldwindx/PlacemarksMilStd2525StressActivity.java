@@ -85,7 +85,7 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + getResources().getText(R.string.title_placemarks_milstd2525_stress_test));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_placemarks_milstd2525_stress_test));
         setAboutBoxText("Demonstrates a LOT of MIL-STD-2525 Placemarks.\n"
             + "There are " + NUM_AIRPORTS + " airports and " + NUM_AIRCRAFT + " aircraft symbols in this example.");
 
@@ -448,7 +448,6 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         }
     }
 
-
     /**
      * AnimateAircraftTask is an AsyncTask that computes and updates the aircraft positions. It must be created and
      * executed on the UI Thread.
@@ -500,5 +499,7 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
                 handler.postDelayed(PlacemarksMilStd2525StressActivity.this, DELAY_TIME);
             }
         }
+
     }
+
 }
