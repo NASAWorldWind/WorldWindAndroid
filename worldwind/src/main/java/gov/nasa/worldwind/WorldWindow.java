@@ -359,6 +359,20 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.worldWindowController.setWorldWindow(this); // attach the new controller
     }
 
+    public RenderResourceCache getRenderResourceCache() {
+        return this.renderResourceCache;
+    }
+
+    public void setRenderResourceCache(RenderResourceCache cache) {
+        if (cache == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "setRenderResourceCache", "missingCache"));
+        }
+
+        // TODO provide a mechanism for the old cache to evict its entries
+        this.renderResourceCache = cache;
+    }
+
     /**
      * Determines the World Wind objects displayed at a screen point. The screen point is interpreted as coordinates in
      * Android screen pixels relative to this View.

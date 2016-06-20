@@ -45,6 +45,7 @@ public class Logger {
         messageTable.put("invalidWidthOrHeight", "The width or the height is invalid");
         messageTable.put("missingArray", "The array is null or insufficient length");
         messageTable.put("missingBuffer", "The buffer is null or insufficient length");
+        messageTable.put("missingCache", "The cache is null");
         messageTable.put("missingCallback", "The callback is null");
         messageTable.put("missingCamera", "The camera is null");
         messageTable.put("missingColor", "The color is null");
