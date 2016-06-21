@@ -77,6 +77,12 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
+            android:name=".PlacemarksMilStd2525DemoActivity"
+            android:label="@string/title_placemarks_milstd2525_demo"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
             android:name=".PlacemarksMilStd2525StressActivity"
             android:label="@string/title_placemarks_milstd2525_stress_test"
             android:launchMode="singleInstance"
