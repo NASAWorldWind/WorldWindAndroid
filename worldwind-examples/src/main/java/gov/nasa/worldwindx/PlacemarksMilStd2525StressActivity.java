@@ -9,14 +9,18 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.SparseArray;
 import android.view.Choreographer;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
 
+import armyc2.c2sd.renderer.utilities.ModifiersUnits;
 import gov.nasa.worldwind.Navigator;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
@@ -1461,8 +1465,12 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
             RenderableLayer symbolLayer = new RenderableLayer("MIL-STD-2525 Symbols");
             getWorldWindow().getLayers().addLayer(symbolLayer);
 
-            SparseArray<String> unitModifiers = null;
-            SparseArray<String> renderAttributes = null;
+            SparseArray<String> unitModifiers = new SparseArray<>();
+            SparseArray<String> renderAttributes = new SparseArray<>();
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+            unitModifiers.put(ModifiersUnits.G_STAFF_COMMENTS, dateFormat.format(new Date()));
+
             for (String s : WarfightingUnknownFunctionIDs) {
                 symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SUZP" + s + "*****", unitModifiers, renderAttributes)));
                 symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SFZP" + s + "*****", unitModifiers, renderAttributes)));
