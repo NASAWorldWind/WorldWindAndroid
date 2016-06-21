@@ -15,8 +15,6 @@ public class BasicStressTestActivity extends BasicGlobeActivity implements Chore
 
     protected double cameraDegreesPerSecond = 0.1;
 
-    protected boolean activityPaused;
-
     protected long lastFrameTimeNanos;
 
     @Override
@@ -33,9 +31,6 @@ public class BasicStressTestActivity extends BasicGlobeActivity implements Chore
         navigator.setAltitude(1e3); // 1 km
         navigator.setHeading(90); // looking east
         navigator.setTilt(75); // looking at the horizon
-
-        // Use this Activity's Choreographer to animate the Navigator.
-        Choreographer.getInstance().postFrameCallback(this);
     }
 
     @Override
@@ -53,10 +48,7 @@ public class BasicStressTestActivity extends BasicGlobeActivity implements Chore
             this.getWorldWindow().requestRedraw();
         }
 
-        if (!this.activityPaused) { // stop animating when this Activity is paused
-            Choreographer.getInstance().postFrameCallback(this);
-        }
-
+        Choreographer.getInstance().postFrameCallback(this);
         this.lastFrameTimeNanos = frameTimeNanos;
     }
 
@@ -64,17 +56,15 @@ public class BasicStressTestActivity extends BasicGlobeActivity implements Chore
     protected void onPause() {
         super.onPause();
         // Stop running the animation when this activity is paused.
-        this.activityPaused = true;
+        Choreographer.getInstance().removeFrameCallback(this);
         this.lastFrameTimeNanos = 0;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Resume the Navigator animation.
-        this.activityPaused = false;
-        this.lastFrameTimeNanos = 0;
+        // Use this Activity's Choreographer to animate the Navigator.
         Choreographer.getInstance().postFrameCallback(this);
+        this.lastFrameTimeNanos = 0;
     }
-
 }
