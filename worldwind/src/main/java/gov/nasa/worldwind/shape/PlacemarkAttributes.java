@@ -117,7 +117,6 @@ public class PlacemarkAttributes {
         return new PlacemarkAttributes().setImageSource(imageSource).setDrawLeader(true);
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -180,22 +179,24 @@ public class PlacemarkAttributes {
 
 
     /**
-     * Returns the location within the placemark's image to align with the placemark's geographic position. May be null,
-     * in which case the image's bottom-left corner is placed at the geographic position. The default value centers the
-     * image at the geographic position.
+     * Returns the location within the placemark's image to align with the placemark's geographic position. The default
+     * value centers the image at the geographic position.
      */
     public Offset getImageOffset() {
         return imageOffset;
     }
 
     /**
-     * Sets the location within the placemark's image to align with the placemark's geographic position. May be null, in
-     * which case the image's bottom-left corner is placed at the geographic position.
+     * Sets the location within the placemark's image to align with the placemark's geographic position.
      *
      * @param imageOffset The new location used to align the placemark's image.
      */
     public PlacemarkAttributes setImageOffset(Offset imageOffset) {
-        this.imageOffset = imageOffset;
+        if (imageOffset == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "PlacemarkAttributes", "setImageOffset", "missingOffset"));
+        }
+        this.imageOffset.set(imageOffset);
         return this;
     }
 
