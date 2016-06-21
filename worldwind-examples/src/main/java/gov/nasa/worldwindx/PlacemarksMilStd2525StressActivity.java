@@ -1424,16 +1424,6 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         Choreographer.getInstance().postFrameCallback(this);
     }
 
-    protected void printMemoryMetrics() {
-        ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
-        ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
-        RenderResourceCache cache = this.getWorldWindow().getRenderResourceCache();
-        am.getMemoryInfo(mi);
-
-        Logger.log(Logger.INFO, String.format(Locale.US, "totalMem=%,.0fKB availMem=%,.0fKB cacheCapacity=%,.0fKB cacheUsedCapacity=%,.0fKB",
-            mi.totalMem / 1024.0, mi.availMem / 1024.0, cache.getCapacity() / 1024.0, cache.getUsedCapacity() / 1024.0));
-    }
-
     /**
      * InitializeSymbolsTask is an AsyncTask that initializes the MIL-STD-2525 symbol renderer on a background thread
      * and then loads the symbols after the initialization is complete. This task must be instantiated and executed on
