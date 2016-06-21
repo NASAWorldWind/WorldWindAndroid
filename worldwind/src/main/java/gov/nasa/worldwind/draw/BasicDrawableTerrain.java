@@ -65,35 +65,43 @@ public class BasicDrawableTerrain implements DrawableTerrain {
     }
 
     @Override
-    public void useVertexPointAttrib(DrawContext dc, int attribLocation) {
-        if (this.vertexPoints != null) {
-            this.vertexPoints.bindBuffer(dc);
+    public boolean useVertexPointAttrib(DrawContext dc, int attribLocation) {
+        boolean bufferBound = (this.vertexPoints != null && this.vertexPoints.bindBuffer(dc));
+        if (bufferBound) {
             GLES20.glVertexAttribPointer(attribLocation, 3, GLES20.GL_FLOAT, false, 0, 0);
         }
+
+        return bufferBound;
     }
 
     @Override
-    public void useVertexTexCoordAttrib(DrawContext dc, int attribLocation) {
-        if (this.vertexTexCoords != null) {
-            this.vertexTexCoords.bindBuffer(dc);
+    public boolean useVertexTexCoordAttrib(DrawContext dc, int attribLocation) {
+        boolean bufferBound = (this.vertexTexCoords != null && this.vertexTexCoords.bindBuffer(dc));
+        if (bufferBound){
             GLES20.glVertexAttribPointer(attribLocation, 2, GLES20.GL_FLOAT, false, 0, 0);
         }
+
+        return bufferBound;
     }
 
     @Override
-    public void drawLines(DrawContext dc) {
-        if (this.lineElements != null) {
-            this.lineElements.bindBuffer(dc);
+    public boolean drawLines(DrawContext dc) {
+        boolean bufferBound = (this.lineElements != null && this.lineElements.bindBuffer(dc));
+        if (bufferBound) {
             GLES20.glDrawElements(GLES20.GL_LINES, this.lineElements.getBufferLength(), GLES20.GL_UNSIGNED_SHORT, 0);
         }
+
+        return bufferBound;
     }
 
     @Override
-    public void drawTriangles(DrawContext dc) {
-        if (this.triStripElements != null) {
-            this.triStripElements.bindBuffer(dc);
+    public boolean drawTriangles(DrawContext dc) {
+        boolean bufferBound = (this.triStripElements != null && this.triStripElements.bindBuffer(dc));
+        if (bufferBound) {
             GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, this.triStripElements.getBufferLength(), GLES20.GL_UNSIGNED_SHORT, 0);
         }
+
+        return bufferBound;
     }
 
     @Override

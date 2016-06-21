@@ -14,11 +14,11 @@ public interface DrawableTerrain extends Drawable {
 
     Vec3 getVertexOrigin();
 
-    void useVertexPointAttrib(DrawContext dc, int attribLocation);
+    boolean useVertexPointAttrib(DrawContext dc, int attribLocation);
 
-    void useVertexTexCoordAttrib(DrawContext dc, int attribLocation);
+    boolean useVertexTexCoordAttrib(DrawContext dc, int attribLocation);
 
-    void drawLines(DrawContext dc);
+    boolean drawLines(DrawContext dc);
 
-    void drawTriangles(DrawContext dc);
+    boolean drawTriangles(DrawContext dc);
 }

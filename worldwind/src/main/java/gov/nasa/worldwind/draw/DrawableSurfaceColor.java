@@ -46,12 +46,8 @@ public class DrawableSurfaceColor implements Drawable {
 
     @Override
     public void draw(DrawContext dc) {
-        if (this.program == null) {
-            return; // program unspecified
-        }
-
-        if (!this.program.useProgram(dc)) {
-            return; // program failed to build
+        if (this.program == null || !this.program.useProgram(dc)) {
+            return; // program unspecified or failed to build
         }
 
         // Configure the program to draw the specified color.
@@ -62,14 +58,16 @@ public class DrawableSurfaceColor implements Drawable {
             // Get the drawable terrain associated with the draw context.
             DrawableTerrain terrain = dc.getDrawableTerrain(idx);
 
+            // Use the terrain's vertex point attribute.
+            if (!terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/)) {
+                continue; // vertex buffer failed to bind
+            }
+
             // Use the draw context's modelview projection matrix, transformed to terrain local coordinates.
             Vec3 terrainOrigin = terrain.getVertexOrigin();
             this.mvpMatrix.set(dc.modelviewProjection);
             this.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
             this.program.loadModelviewProjection(this.mvpMatrix);
-
-            // Use the terrain's vertex point attribute.
-            terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/);
 
             // Draw the terrain as triangles.
             terrain.drawTriangles(dc);

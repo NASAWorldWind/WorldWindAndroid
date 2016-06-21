@@ -65,12 +65,8 @@ public class DrawableLines implements Drawable {
      */
     @Override
     public void draw(DrawContext dc) {
-        if (this.program == null) {
-            return; // program unspecified
-        }
-
-        if (!this.program.useProgram(dc)) {
-            return; // program failed to build
+        if (this.program == null || !this.program.useProgram(dc)) {
+            return; // program unspecified or failed to build
         }
 
         // Disable texturing.

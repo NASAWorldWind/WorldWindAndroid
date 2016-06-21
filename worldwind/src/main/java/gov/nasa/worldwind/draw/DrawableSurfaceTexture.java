@@ -78,12 +78,8 @@ public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
 
     @Override
     public void draw(DrawContext dc) {
-        if (this.program == null) {
-            return; // program unspecified
-        }
-
-        if (!this.program.useProgram(dc)) {
-            return; // program failed to build
+        if (this.program == null || !this.program.useProgram(dc)) {
+            return; // program unspecified or failed to build
         }
 
         // Accumulate surface textures in the draw context's scratch list.
@@ -143,16 +139,20 @@ public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
                     continue; // texture failed to bind
                 }
 
-                if (!usingTerrainAttrs) {
+                // Use the terrain's vertex point attribute and vertex tex coord attribute.
+                if (!usingTerrainAttrs &&
+                    terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/) &&
+                    terrain.useVertexTexCoordAttrib(dc, 1 /*vertexTexCoord*/)) {
+                    // Suppress subsequent tile state application until the next terrain.
+                    usingTerrainAttrs = true;
                     // Use the draw context's modelview projection matrix, transformed to terrain local coordinates.
                     this.program.mvpMatrix.set(dc.modelviewProjection);
                     this.program.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
                     this.program.loadModelviewProjection();
-                    // Use the terrain's vertex point attribute and vertex tex coord attribute.
-                    terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/);
-                    terrain.useVertexTexCoordAttrib(dc, 1 /*vertexTexCoord*/);
-                    // Suppress subsequent tile state application until the next terrain.
-                    usingTerrainAttrs = true;
+                }
+
+                if (!usingTerrainAttrs) {
+                    continue; // terrain vertex attribute failed to bind
                 }
 
                 // Use tex coord matrices that register the surface texture correctly and mask terrain fragments that

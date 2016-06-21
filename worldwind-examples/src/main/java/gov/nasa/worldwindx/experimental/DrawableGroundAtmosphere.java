@@ -61,12 +61,8 @@ public class DrawableGroundAtmosphere implements Drawable {
 
     @Override
     public void draw(DrawContext dc) {
-        if (this.program == null) {
-            return; // program unspecified
-        }
-
-        if (!this.program.useProgram(dc)) {
-            return; // program failed to build
+        if (this.program == null || !this.program.useProgram(dc)) {
+            return; // program unspecified or failed to build
         }
 
         // Use the draw context's globe.
@@ -89,6 +85,12 @@ public class DrawableGroundAtmosphere implements Drawable {
             // Get the drawable terrain associated with the draw context.
             DrawableTerrain terrain = dc.getDrawableTerrain(idx);
 
+            // Use the terrain's vertex point attribute and vertex tex coord attribute.
+            if (!terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/) ||
+                !terrain.useVertexTexCoordAttrib(dc, 1 /*vertexTexCoord*/)) {
+                continue; // vertex buffer failed to bind
+            }
+
             // Use the vertex origin for the terrain.
             Vec3 terrainOrigin = terrain.getVertexOrigin();
             this.program.loadVertexOrigin(terrainOrigin);
@@ -104,10 +106,6 @@ public class DrawableGroundAtmosphere implements Drawable {
                 this.texCoordMatrix.multiplyByTileTransform(terrain.getSector(), this.fullSphereSector);
                 this.program.loadTexCoordMatrix(this.texCoordMatrix);
             }
-
-            // Use the terrain's vertex point attribute and vertex tex coord attribute.
-            terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/);
-            terrain.useVertexTexCoordAttrib(dc, 1 /*vertexTexCoord*/);
 
             // Draw the terrain as triangles, multiplying the current fragment color by the program's secondary color.
             this.program.loadFragMode(AtmosphereProgram.FRAGMODE_GROUND_SECONDARY);

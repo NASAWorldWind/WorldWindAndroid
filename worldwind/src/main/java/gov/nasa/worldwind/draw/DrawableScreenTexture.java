@@ -55,12 +55,12 @@ public class DrawableScreenTexture implements Drawable {
 
     @Override
     public void draw(DrawContext dc) {
-        if (this.program == null) {
-            return; // program unspecified
+        if (this.program == null || !this.program.useProgram(dc)) {
+            return; // program unspecified or failed to build
         }
 
-        if (!this.program.useProgram(dc)) {
-            return; // program failed to build
+        if (!dc.unitSquareBuffer().bindBuffer(dc)) {
+            return; // vertex buffer failed to bind
         }
 
         // Use the draw context's pick mode and use the drawable's color.
@@ -84,7 +84,6 @@ public class DrawableScreenTexture implements Drawable {
         }
 
         // Use a 2D unit square as the vertex point and vertex tex coord attributes.
-        dc.unitSquareBuffer().bindBuffer(dc);
         GLES20.glEnableVertexAttribArray(1); // enable vertex attrib 1; vertex attrib 0 is enabled by default
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 2, GLES20.GL_FLOAT, false, 0, 0);
         GLES20.glVertexAttribPointer(1 /*vertexTexCoord*/, 2, GLES20.GL_FLOAT, false, 0, 0);

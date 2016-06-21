@@ -54,16 +54,16 @@ public class DrawableSkyAtmosphere implements Drawable {
 
     @Override
     public void draw(DrawContext dc) {
-        if (this.program == null) {
-            return; // program unspecified
+        if (this.program == null || !this.program.useProgram(dc)) {
+            return; // program unspecified or failed to build
         }
 
-        if (!this.program.useProgram(dc)) {
-            return; // program failed to build
+        if (this.vertexPoints == null || !this.vertexPoints.bindBuffer(dc)) {
+            return; // vertex buffer unspecified or failed to bind
         }
 
-        if (this.vertexPoints == null || this.triStripElements == null) {
-            return; // vertex buffer or element buffer unspecified
+        if (this.triStripElements == null || !this.triStripElements.bindBuffer(dc)) {
+            return; // element buffer unspecified or failed to bind
         }
 
         // Use the draw context's globe.
@@ -85,11 +85,9 @@ public class DrawableSkyAtmosphere implements Drawable {
         this.program.loadFragMode(AtmosphereProgram.FRAGMODE_SKY);
 
         // Use the sky's vertex point attribute.
-        this.vertexPoints.bindBuffer(dc);
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 3, GLES20.GL_FLOAT, false, 0, 0);
 
         // Draw the inside of the sky without writing to the depth buffer.
-        this.triStripElements.bindBuffer(dc);
         GLES20.glDepthMask(false);
         GLES20.glFrontFace(GLES20.GL_CW);
         GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, this.triStripElements.getBufferLength(), GLES20.GL_UNSIGNED_SHORT, 0);
