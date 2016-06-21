@@ -155,13 +155,21 @@ public class FrameMetrics {
     }
 
     protected double computeTimeAverage(TimeMetrics metrics) {
-        return metrics.timeSum / (double) metrics.count;
+        if (metrics.count > 0) {
+            return metrics.timeSum / (double) metrics.count;
+        } else {
+            return 0;
+        }
     }
 
     protected double computeTimeStdDev(TimeMetrics metrics) {
-        double avg = (double) metrics.timeSum / (double) metrics.count;
-        double var = ((double) metrics.timeSumOfSquares / (double) metrics.count) - (avg * avg);
-        return Math.sqrt(var);
+        if (metrics.count > 0) {
+            double avg = (double) metrics.timeSum / (double) metrics.count;
+            double var = ((double) metrics.timeSumOfSquares / (double) metrics.count) - (avg * avg);
+            return Math.sqrt(var);
+        } else {
+            return 0;
+        }
     }
 
     protected void assembleCacheMetrics(CacheMetrics metrics, LruMemoryCache cache) {
