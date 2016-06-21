@@ -5,90 +5,1371 @@
 
 package gov.nasa.worldwindx;
 
+import android.app.ActivityManager;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.SparseArray;
+import android.view.Choreographer;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
-import armyc2.c2sd.renderer.utilities.Color;
-import armyc2.c2sd.renderer.utilities.MilStdAttributes;
-import armyc2.c2sd.renderer.utilities.ModifiersUnits;
-import armyc2.c2sd.renderer.utilities.SymbolUtilities;
 import gov.nasa.worldwind.Navigator;
-import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
+import gov.nasa.worldwind.layer.ShowTessellationLayer;
+import gov.nasa.worldwind.render.RenderResourceCache;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.util.Logger;
-import gov.nasa.worldwind.util.WWUtil;
 import gov.nasa.worldwindx.milstd2525.MilStd2525;
-import gov.nasa.worldwindx.milstd2525.MilStd2525Placemark;
 
-public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity implements Runnable {
+public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity implements Choreographer.FrameCallback {
 
-    // The delay in milliseconds between aircraft animation frames
-    protected static final int DELAY_TIME = 100;
+    protected static final int NUM_PLACEMARKS = 10000;
 
-    // The number of frames for the aircraft animation
-    protected static final int ANIMATION_FRAMES = 1000;
+    private final static String[] WarfightingUnknownFunctionIDs = {
+        "------"};
 
-    // There are 9,809 airports in the world airports database.
-    protected static final int NUM_AIRPORTS = 9809;
+    private final static String[] WarfightingSpaceFunctionIDs = {
+        "------",
+        "S-----",
+        "V-----",
+        "T-----",
+        "L-----"};
 
-    // The number of aircraft in the animation
-    protected static final int NUM_AIRCRAFT = 5000;
+    private final static String[] WarfightingAirFunctionIDs = {
+        "------",
+        "C-----",
+        "M-----",
+        "MF----",
+        "MFB---",
+        "MFF---", "MFFI--",
+        "MFT---",
+        "MFA---",
+        "MFL---",
+        "MFK---", "MFKB--", "MFKD--",
+        "MFC---", "MFCL--", "MFCM--", "MFCH--",
+        "MFJ---",
+        "MFO---",
+        "MFR---", "MFRW--", "MFRZ--", "MFRX--",
+        "MFP---", "MFPN--", "MFPM--",
+        "MFU---", "MFUL--", "MFUM--", "MFUH--",
+        "MFY---",
+        "MFH---",
+        "MFD---",
+        "MFQ---",
+        "MFQA--",
+        "MFQB--",
+        "MFQC--",
+        "MFQD--",
+        "MFQF--",
+        "MFQH--",
+        "MFQJ--",
+        "MFQK--",
+        "MFQL--",
+        "MFQM--",
+        "MFQI--",
+        "MFQN--",
+        "MFQP--",
+        "MFQR--",
+        "MFQRW-", "MFQRZ-", "MFQRX-",
+        "MFQS--",
+        "MFQT--",
+        "MFQU--",
+        "MFQY--",
+        "MFQO--",
+        "MFS---",
+        "MFM---",
+        "MH----",
+        "MHA---",
+        "MHS---",
+        "MHU---", "MHUL--", "MHUM--", "MHUH--",
+        "MHI---",
+        "MHH---",
+        "MHR---",
+        "MHQ---",
+        "MHC---",
+        "MHCL--",
+        "MHCM--",
+        "MHCH--",
+        "MHT---",
+        "MHO---",
+        "MHM---",
+        "MHD---",
+        "MHK---",
+        "MHJ---",
+        "ML----",
+        "MV----",
+        "ME----",
+        "W-----",
+        "WM----",
+        "WMS---",
+        "WMSS--",
+        "WMSA--",
+        "WMSU--",
+        "WMSB--",
+        "WMA---",
+        "WMAS--",
+        "WMAA--",
+        "WMAP--",
+        "WMU---",
+        "WMCM--",
+        "WMB---",
+        "WB----",
+        "WD----",
+        "C-----",
+        "CF----",
+        "CH----",
+        "CL----"};
 
-    protected static final double AIRCRAFT_ALT = 10000; // meters
+    private final static String[] WarfightingGroundFunctionIDs = {
+        "------",
+        "U-----",
+        "UC----",
+        "UCD---",
+        "UCDS--",
+        "UCDSC-",
+        "UCDSS-",
+        "UCDSV-",
+        "UCDM--",
+        "UCDML-",
+        "UCDMLA",
+        "UCDMM-",
+        "UCDMH-",
+        "UCDH--",
 
-    // NATO countries
-    protected static final List<String> friends = Arrays.asList(
-        "US", "CA", "UK", "DA", "FR", "IT", "IC", "NL", "NO", "PO",
-        "GR", "TU",
-        "GM",
-        "SP",
-        "EZ", "PL", "HU",
-        "SI", "RO", "BU", "LO", "LH", "LG", "EN",
-        "AL", "HR");
+        "UCDHH-",
+        "UCDHP-",
+        "UCDG--",
+        "UCDC--",
+        "UCDT--",
+        "UCDO--",
+        "UCA---",
+        "UCAT--",
+        "UCATA-",
+        "UCATW-",
+        "UCATWR",
+        "UCATL-",
+        "UCATM-",
+        "UCATH-",
+        "UCATR-",
+        "UCAW--",
+        "UCAWS-",
+        "UCAWA-",
+        "UCAWW-",
+        "UCAWWR",
+        "UCAWL-",
+        "UCAWM-",
+        "UCAWH-",
+        "UCAWR-",
+        "UCAA--",
 
-    // A few neutral countries
-    protected static final List<String> neutrals = Arrays.asList("AU", "MX", "SW", "SZ");
+        "UCAAD-",
+        "UCAAL-",
+        "UCAAM-",
+        "UCAAS-",
+        "UCAAU-",
+        "UCAAC-",
+        "UCAAA-",
+        "UCAAAT",
+        "UCAAAW",
+        "UCAAAS",
+        "UCAAO-",
+        "UCAAOS",
+        "UCV---",
+        "UCVF--",
+        "UCVFU-",
+        "UCVFA-",
+        "UCVFR-",
+        "UCVR--",
+        "UCVRA-",
+        "UCVRS-",
+        "UCVRW-",
+        "UCVRU-",
+        "UCVRUL",
+        "UCVRUM",
+        "UCVRUH",
 
-    // A few hostile countries
-    protected static final List<String> hostiles = Arrays.asList("RS", "IR");
+        "UCVRUC",
+        "UCVRUE",
+        "UCVRM-",
+        "UCVS--",
+        "UCVC--",
+        "UCVV--",
+        "UCVU--",
+        "UCVUF-",
+        "UCVUR-",
+        "UCI---",
+        "UCIL--",
+        "UCIM--",
+        "UCIO--",
+        "UCIA--",
+        "UCIS--",
+        "UCIZ--",
+        "UCIN--",
+        "UCII--",
+        "UCIC--",
+        "UCE---",
+        "UCEC--",
+        "UCECS-",
+        "UCECA-",
+        "UCECC-",
 
-    // The handler for the aircraft animation
-    protected Handler handler = new Handler();
+        "UCECL-",
+        "UCECM-",
+        "UCECH-",
+        "UCECT-",
+        "UCECW-",
+        "UCECO-",
+        "UCECR-",
+        "UCEN--",
+        "UCENN-",
+        "UCF---",
+        "UCFH--",
+        "UCFHE-",
+        "UCFHS-",
+        "UCFHA-",
+        "UCFHC-",
+        "UCFHO-",
+        "UCFHL-",
+        "UCFHM-",
+        "UCFHH-",
+        "UCFHX-",
+        "UCFR--",
+        "UCFRS-",
+        "UCFRSS",
+        "UCFRSR",
+        "UCFRST",
 
-    protected boolean animationStared = false;
+        "UCFRM-",
+        "UCFRMS",
+        "UCFRMR",
+        "UCFRMT",
+        "UCFT--",
+        "UCFTR-",
+        "UCFTS-",
+        "UCFTF-",
+        "UCFTC-",
+        "UCFTCD",
+        "UCFTCM",
+        "UCFTA-",
+        "UCFM--",
+        "UCFMS-",
+        "UCFMW-",
+        "UCFMT-",
+        "UCFMTA",
+        "UCFMTS",
+        "UCFMTC",
+        "UCFMTO",
+        "UCFML-",
+        "UCFS--",
+        "UCFSS-",
+        "UCFSA-",
+        "UCFSL-",
 
-    protected boolean pauseAnimation = false;
+        "UCFSO-",
+        "UCFO--",
+        "UCFOS-",
+        "UCFOA-",
+        "UCFOL-",
+        "UCFOO-",
+        "UCR---",
+        "UCRH--",
+        "UCRV--",
+        "UCRVA-",
+        "UCRVM-",
+        "UCRVG-",
+        "UCRVO-",
+        "UCRC--",
+        "UCRS--",
+        "UCRA--",
+        "UCRO--",
+        "UCRL--",
+        "UCRR--",
+        "UCRRD-",
+        "UCRRF-",
+        "UCRRL-",
+        "UCRX--",
+        "UCM---",
 
-    protected int frameCount = 0;
+        "UCMT--",
+        "UCMS--",
+        "UCS---",
+        "UCSW--",
+        "UCSG--",
+        "UCSGD-",
+        "UCSGM-",
+        "UCSGA-",
+        "UCSM--",
+        "UCSR--",
+        "UCSA--",
+        "UU----",
+        "UUA---",
+        "UUAC--",
+        "UUACC-",
+        "UUACCK",
+        "UUACCM",
+        "UUACS-",
+        "UUACSM",
+        "UUACSA",
+        "UUACR-",
+        "UUACRW",
+        "UUACRS",
+        "UUAN--",
+
+        "UUAB--",
+        "UUABR-",
+        "UUAD--",
+        "UUM---",
+        "UUMA--",
+        "UUMS--",
+        "UUMSE-",
+        "UUMSEA",
+        "UUMSED",
+        "UUMSEI",
+        "UUMSEJ",
+        "UUMSET",
+        "UUMSEC",
+        "UUMC--",
+        "UUMR--",
+        "UUMRG-",
+        "UUMRS-",
+        "UUMRSS",
+        "UUMRX-",
+        "UUMMO-",
+        "UUMO--",
+        "UUMT--",
+        "UUMQ--",
+        "UUMJ--",
+        "UUL---",
+
+        "UULS--",
+        "UULM--",
+        "UULC--",
+        "UULF--",
+        "UULD--",
+        "UUS---",
+        "UUSA--",
+        "UUSC--",
+        "UUSCL-",
+        "UUSO--",
+        "UUSF--",
+        "UUSM--",
+        "UUSMS-",
+        "UUSML-",
+        "UUSMN-",
+        "UUSR--",
+        "UUSRS-",
+        "UUSRT-",
+        "UUSRW-",
+        "UUSS--",
+        "UUSW--",
+        "UUSX--",
+        "UUI---",
+        "UUP---",
+        "UUE---",
+
+        "US----",
+        "USA---",
+        "USAT--",
+        "USAC--",
+        "USAJ--",
+        "USAJT-",
+        "USAJC-",
+        "USAO--",
+        "USAOT-",
+        "USAOC-",
+        "USAF--",
+        "USAFT-",
+        "USAFC-",
+        "USAS--",
+        "USAST-",
+        "USASC-",
+        "USAM--",
+        "USAMT-",
+        "USAMC-",
+        "USAR--",
+        "USART-",
+        "USARC-",
+        "USAP--",
+        "USAPT-",
+        "USAPC-",
+
+        "USAPB-",
+        "USAPBT",
+        "USAPBC",
+        "USAPM-",
+        "USAPMT",
+        "USAPMC",
+        "USAX--",
+        "USAXT-",
+        "USAXC-",
+        "USAL--",
+        "USALT-",
+        "USALC-",
+        "USAW--",
+        "USAWT-",
+        "USAWC-",
+        "USAQ--",
+        "USAQT-",
+        "USAQC-",
+        "USM---",
+        "USMT--",
+        "USMC--",
+        "USMM--",
+        "USMMT-",
+        "USMMC-",
+        "USMV--",
+
+        "USMVT-",
+        "USMVC-",
+        "USMD--",
+        "USMDT-",
+        "USMDC-",
+        "USMP--",
+        "USMPT-",
+        "USMPC-",
+        "USS---",
+        "USST--",
+        "USSC--",
+        "USS1--",
+        "USS1T-",
+        "USS1C-",
+        "USS2--",
+        "USS2T-",
+        "USS2C-",
+        "USS3--",
+        "USS3T-",
+        "USS3C-",
+        "USS3A-",
+        "USS3AT",
+        "USS3AC",
+        "USS4--",
+        "USS4T-",
+
+        "USS4C-",
+        "USS5--",
+        "USS5T-",
+        "USS5C-",
+        "USS6--",
+        "USS6T-",
+        "USS6C-",
+        "USS7--",
+        "USS7T-",
+        "USS7C-",
+        "USS8--",
+        "USS8T-",
+        "USS8C-",
+        "USS9--",
+        "USS9T-",
+        "USS9C-",
+        "USSX--",
+        "USSXT-",
+        "USSXC-",
+        "USSL--",
+        "USSLT-",
+        "USSLC-",
+        "USSW--",
+        "USSWT-",
+        "USSWC-",
+
+        "USSWP-",
+        "USSWPT",
+        "USSWPC",
+        "UST---",
+        "USTT--",
+        "USTC--",
+        "USTM--",
+        "USTMT-",
+        "USTMC-",
+        "USTR--",
+        "USTRT-",
+        "USTRC-",
+        "USTS--",
+        "USTST-",
+        "USTSC-",
+        "USTA--",
+        "USTAT-",
+        "USTAC-",
+        "USTI--",
+        "USTIT-",
+        "USTIC-",
+        "USX---",
+        "USXT--",
+        "USXC--",
+        "USXH--",
+
+        "USXHT-",
+        "USXHC-",
+        "USXR--",
+        "USXRT-",
+        "USXRC-",
+        "USXO--",
+        "USXOT-",
+        "USXOC-",
+        "USXOM-",
+        "USXOMT",
+        "USXOMC",
+        "USXE--",
+        "USXET-",
+        "USXEC-",
+        "UH----",
+        "E-----",
+        //"EW----",         // icon not used
+        "EWM---",
+        "EWMA--",
+        "EWMAS-",
+        "EWMASR",
+        "EWMAI-",
+        "EWMAIR",
+        "EWMAIE",
+
+        "EWMAL-",
+        "EWMALR",
+        "EWMALE",
+        "EWMAT-",
+        "EWMATR",
+        "EWMATE",
+        "EWMS--",
+        "EWMSS-",
+        "EWMSI-",
+        "EWMSL-",
+        "EWMT--",
+        "EWMTL-",
+        "EWMTM-",
+        "EWMTH-",
+        "EWS---",
+        "EWSL--",
+        "EWSM--",
+        "EWSH--",
+        "EWX---",
+        "EWXL--",
+        "EWXM--",
+        "EWXH--",
+        "EWT---",
+        "EWTL--",
+        "EWTM--",
+
+        "EWTH--",
+        "EWR---",
+        "EWRR--",
+        "EWRL--",
+        "EWRH--",
+        "EWZ---",
+        "EWZL--",
+        "EWZM--",
+        "EWZH--",
+        "EWO---",
+        "EWOL--",
+        "EWOM--",
+        "EWOH--",
+        "EWH---",
+        "EWHL--",
+        "EWHLS-",
+        "EWHM--",
+        "EWHMS-",
+        "EWHH--",
+        "EWHHS-",
+        "EWG---",
+        "EWGL--",
+        "EWGM--",
+        "EWGH--",
+        "EWGR--",
+
+        "EWD---",
+        "EWDL--",
+        "EWDLS-",
+        "EWDM--",
+        "EWDMS-",
+        "EWDH--",
+        "EWDHS-",
+        "EWA---",
+        "EWAL--",
+        "EWAM--",
+        "EWAH--",
+        "EV----",
+        "EVA---",
+        "EVAT--",
+        "EVATL-",
+        "EVATLR",
+        "EVATM-",
+        "EVATMR",
+        "EVATH-",
+        "EVATHR",
+        "EVAA--",
+        "EVAAR-",
+        "EVAI--",
+        "EVAC--",
+        "EVAS--",
+
+        "EVAL--",
+        "EVU---",
+        "EVUB--",
+        "EVUS--",
+        "EVUSL-",
+        "EVUSM-",
+        "EVUSH-",
+        "EVUL--",
+        "EVUX--",
+        "EVUR--",
+        "EVUT--",
+        "EVUTL-",
+        "EVUTH-",
+        "EVUA--",
+        "EVUAA-",
+        "EVE---",
+        "EVEB--",
+        "EVEE--",
+        "EVEC--",
+        "EVEM--",
+        "EVEMV-",
+        "EVEML-",
+        "EVEA--",
+        "EVEAA-",
+        "EVEAT-",
+
+        "EVED--",
+        "EVEDA-",
+        "EVES--",
+        "EVER--",
+        "EVEH--",
+        "EVEF--",
+        "EVT---",
+        "EVC---",
+        "EVCA--",
+        "EVCAL-",
+        "EVCAM-",
+        "EVCAH-",
+        "EVCO--",
+        "EVCOL-",
+        "EVCOM-",
+        "EVCOH-",
+        "EVCM--",
+        "EVCML-",
+        "EVCMM-",
+        "EVCMH-",
+        "EVCU--",
+        "EVCUL-",
+        "EVCUM-",
+        "EVCUH-",
+        "EVCJ--",
+
+        "EVCJL-",
+        "EVCJM-",
+        "EVCJH-",
+        "EVCT--",
+        "EVCTL-",
+        "EVCTM-",
+        "EVCTH-",
+        "EVCF--",
+        "EVCFL-",
+        "EVCFM-",
+        "EVCFH-",
+        "EVM---",
+        "EVS---",
+        "EVST--",
+        "EVSR--",
+        "EVSC--",
+        "EVSP--",
+        "EVSW--",
+        "ES----",
+        "ESR---",
+        "ESE---",
+        //"EX----",         // icon not used
+        "EXI---",
+        "EXL---",
+        "EXN---",
+
+        "EXF---",
+        "EXM---",
+        "EXMC--",
+        "EXML--",
+        "I-----",
+        "IR----",
+        "IRM---",
+        "IRP---",
+        "IRN---",
+        "IRNB--",
+        "IRNC--",
+        "IRNN--",
+        "IP----",
+        "IPD---",
+        "IE----",
+        "IU----",
+        "IUR---",
+        "IUT---",
+        "IUE---",
+        "IUEN--",
+        "IUED--",
+        "IUEF--",
+        "IUP---",
+        //"IM----",         // icon not used
+        "IMF---",
+
+        "IMFA--",
+        "IMFP--",
+        "IMFPW-",
+        "IMFS--",
+        "IMA---",
+        "IME---",
+        "IMG---",
+        "IMV---",
+        "IMN---",
+        "IMNB--",
+        "IMC---",
+        "IMS---",
+        "IMM---",
+        "IG----",
+        "IB----",
+        "IBA---",
+        "IBN---",
+        "IT----",
+        "IX----",
+        "IXH---"};
+
+    private final static String[] WarfightingSeaSurfaceFunctionIDs = {
+        "------",
+        "C-----",
+        "CL----",
+        "CLCV--",
+        "CLBB--",
+
+        "CLCC--",
+        "CLDD--",
+        "CLFF--",
+        "CLLL--",
+        "CLLLAS",
+        "CLLLMI",
+        "CLLLSU",
+        "CA----",
+        "CALA--",
+        "CALS--",
+        "CALSM-",
+        "CALST-",
+        "CALC--",
+        "CM----",
+        "CMML--",
+        "CMMS--",
+        "CMMH--",
+        "CMMA--",
+        "CP----",
+        "CPSB--",
+        "CPSU--",
+        "CPSUM-",
+        "CPSUT-",
+        "CPSUG-",
+        "CH----",
+
+        "G-----",
+        "GT----",
+        "GG----",
+        "GU----",
+        "GC----",
+        "CD----",
+        "CU----",
+        "CUM---",
+        "CUS---",
+        "CUN---",
+        "CUR---",
+        "N-----",
+        "NR----",
+        "NF----",
+        "NI----",
+        "NS----",
+        "NM----",
+        "NH----",
+        //"X-----",     // icon not used
+        "XM----",
+        "XMC---",
+        "XMR---",
+        "XMO---",
+        "XMTU--",
+        "XMF---",
+
+        "XMP---",
+        "XMH---",
+        "XMTO--",
+        "XF----",
+        "XFDF--",
+        "XFDR--",
+        "XFTR--",
+        "XR----",
+        "XL----",
+        "XH----",
+        "XA----",
+        "XAR---",
+        "XAS---",
+        "XP----",
+        "O-----"};
+
+    private final static String[] WarfightingSubsurfaceFunctionIDs = {
+        "------",
+        "S-----",
+        "SF----",
+        "SB----",
+        "SR----",
+        "SX----",
+        "SN----",
+        "SNF---",
+        "SNA---",
+        "SNM---",
+
+        "SNG---",
+        "SNB---",
+        "SC----",
+        "SCF---",
+        "SCA---",
+        "SCM---",
+        "SCG---",
+        "SCB---",
+        "SO----",
+        "SOF---",
+        "SU----",
+        "SUM---",
+        "SUS---",
+        "SUN---",
+        "S1----",
+        "S2----",
+        "S3----",
+        "S4----",
+        "SL----",
+        "SK----",
+        "W-----",
+        "WT----",
+        "WM----",
+        "WMD---",
+        "WMG---",
+
+        "WMGD--",
+        "WMGX--",
+        "WMGE--",
+        "WMGC--",
+        "WMGR--",
+        "WMGO--",
+        "WMM---",
+        "WMMD--",
+        "WMMX--",
+        "WMME--",
+        "WMMC--",
+        "WMMR--",
+        "WMMO--",
+        "WMF---",
+        "WMFD--",
+        "WMFX--",
+        "WMFE--",
+        "WMFC--",
+        "WMFR--",
+        "WMFO--",
+        "WMO---",
+        "WMOD--",
+        "WMX---",
+        "WME---",
+        "WMA---",
+
+        "WMC---",
+        "WMR---",
+        "WMB---",
+        "WMBD--",
+        "WMN---",
+        "WMS---",
+        "WMSX--",
+        "WMSD--",
+        "WD----",
+        "WDM---",
+        "WDMG--",
+        "WDMM--",
+        //"N-----",         // icon not used
+        "ND----",
+        "E-----",
+        "V-----",
+        "X-----"};
+
+    private final static String[] WarfightingSOFFunctionIDs = {
+        "------",
+        "A-----",
+        "AF----",
+        "AFA---",
+        "AFK---",
+        "AFU---",
+        "AFUL--",
+        "AFUM--",
+
+        "AFUH--",
+        "AV----",
+        "AH----",
+        "AHH---",
+        "AHA---",
+        "AHU---",
+        "AHUL--",
+        "AHUM--",
+        "AHUH--",
+        "N-----",
+        "NS----",
+        "NU----",
+        "NB----",
+        "NN----",
+        "G-----",
+        "GS----",
+        "GR----",
+        "GP----",
+        "GPA---",
+        "GC----",
+        "B-----"};
+
+    public static String[] SignalsIntelligenceSpaceFunctionIDs = {
+        //"------",
+        //"S-----",
+        //"SC----",     // icons not used
+        "SCD---",
+        //"SR----",     // icon not used
+        "SRD---",
+        "SRE---",
+        "SRI---",
+        "SRM---",
+        "SRT---",
+        "SRS---",
+        "SRU---"};
+
+    public static String[] SignalsIntelligenceAirFunctionIDs = {
+        //"------",
+        //"S-----",
+        //"SC----",     // icons not used
+        "SCC---",
+        "SCO---",
+        "SCP---",
+        "SCS---",
+        //"SR----",     // icon not used
+        "SRAI--",
+
+        "SRAS--",
+        "SRC---",
+        "SRD---",
+        "SRE---",
+        "SRF---",
+        "SRI---",
+        "SRMA--",
+        "SRMD--",
+        "SRMG--",
+        "SRMT--",
+        "SRMF--",
+        "SRTI--",
+        "SRTA--",
+        "SRTT--",
+        "SRU---"};
+
+    public static String[] SignalsIntelligenceGroundFunctionIDs = {
+        //"------",
+        //"S-----",
+        //"SC----",     // icons not used
+        "SCC---",
+        "SCO---",
+        "SCP---",
+        "SCS---",
+        "SCT---",
+        //"SR----",     // icon not used
+        "SRAT--",
+
+        "SRAA--",
+        "SRB---",
+        "SRCS--",
+        "SRCA--",
+        "SRD---",
+        "SRE---",
+        "SRF---",
+        "SRH---",
+        "SRI---",
+        "SRMM--",
+        "SRMA--",
+        "SRMG--",
+        "SRMT--",
+        "SRMF--",
+        "SRS---",
+        "SRTA--",
+        "SRTI--",
+        "SRTT--",
+        "SRU---"};
+
+    //////////////////////////////////////////////////////////
+
+    //////////////////////
+    // Warfighting
+
+    public static String[] SignalsIntelligenceSeaSurfaceFunctionIDs = {
+        //"------",
+        //"S-----",
+        //"SC----",     // icons not used
+        "SCC---",
+        "SCO---",
+        "SCP---",
+
+        "SCS---",
+        //"SR----",     // icon not used
+        "SRAT--",
+        "SRAA--",
+        "SRCA--",
+        "SRCI--",
+        "SRD---",
+        "SRE---",
+        "SRF---",
+        "SRH---",
+        "SRI---",
+        "SRMM--",
+        "SRMA--",
+        "SRMG--",
+        "SRMT--",
+        "SRMF--",
+        "SRS---",
+        "SRTA--",
+        "SRTI--",
+        "SRTT--",
+        "SRU---"};
+
+    public static String[] SignalsIntelligenceSubsurfaceFunctionIDs = {
+        //"------",
+        //"S-----",
+        //"SC----",     // icons not used
+        "SCO---",
+
+        "SCP---",
+        "SCS---",
+        //"SR----",     // icon not used
+        "SRD---",
+        "SRE---",
+        "SRM---",
+        "SRS---",
+        "SRT---",
+        "SRU---"};
+
+    public static String[] StabilityOperationsViolentActivitiesFunctionIDs = {
+        //"------",
+        "A-----",
+        "M-----",
+        "MA----",
+        "MB----",
+        "MC----",
+        "B-----",
+        "Y-----",
+        "D-----",
+        "S-----",
+        "P-----",
+        "E-----",
+        "EI----"};
+
+    public static String[] StabilityOperationsLocationsFunctionIDs = {
+        //"------",
+        "B-----",
+        "G-----",
+        "W-----",
+        "M-----"};
+
+    public static String[] StabilityOperationsOperationsFunctionIDs = {
+        //"------",
+        "P-----",
+        //"R-----",     // icon not used
+        "RW----",
+        "RC----",
+        "D-----",
+        "M-----",
+        "Y-----",
+        "YT----",
+        "YW----",
+        "YH----",
+        "F-----",
+        "S-----",
+        "O-----",
+        "E-----",
+        //"H-----",     // icon not used
+        "HT----",
+        "HA----",
+        "HV----",
+        "K-----",
+        "KA----",
+        "A-----",
+        "U-----",
+        "C-----",
+        "CA----",
+        "CB----",
+        "CC----"};
+
+    public static String[] StabilityOperationsItemsFunctionIDs = {
+        //"------",
+        "R-----",
+        "S-----",
+        "G-----",
+        "V-----",
+        "I-----",
+        "D-----",
+        "F-----"};
+
+    public static String[] StabilityOperationsIndividualFunctionIDs = {
+        "------",
+        "A-----",
+        "B-----",
+        "C-----"};
+
+    //////////////////////
+    //  Signals Intelligence
+
+    public static String[] StabilityOperationsNonmilitaryFunctionIDs = {
+        "------",
+        "A-----",
+        "B-----",
+        "C-----",
+        "D-----",
+        "E-----",
+        "F-----"};
+
+    public static String[] StabilityOperationsRapeFunctionIDs = {
+        "------",
+        "A-----"};
+
+    public static String[] EmergencyManagementIncidentsFunctionIDs = {
+        //"------",
+        "A-----",
+        "AC----",
+        "B-----",
+        "BA----",
+        "BC----",
+        "BD----",
+        "BF----",
+        "C-----",
+        "CA----",
+        "CB----",
+        "CC----",
+        "CD----",
+        "CE----",
+        "CF----",
+        "CG----",
+        "CH----",
+        "D-----",
+        "DA----",
+        "DB----",
+        "DC----",
+        "DE----",
+        "DF----",
+        "DG----",
+        "DH----",
+        "DI----",
+        "DJ----",
+        "DK----",
+        "DL----",
+        "DM----",
+        "DN----",
+        "DO----",
+        "E-----",
+        "EA----",
+        "F-----",
+        "FA----",
+        "G-----",
+        "GA----",
+        "GB----",
+        "H-----",
+        "HA----"};
+
+    public static String[] EmergencyManagementNaturalEventsFunctionIDs = {
+        //"------",
+        //"A-----",     // icon not used
+        "AA----",
+        "AB----",
+        "AC----",
+        "AD----",
+        "AE----",
+        "AG----",
+        //"B-----",     // icon not used
+        "BB----",
+        "BC----",
+        "BF----",
+        "BM----",
+        //"C-----",     // icon not used
+        "CA----",
+        "CB----",
+        "CC----",
+        "CD----",
+        "CE----"};
+
+    public static String[] EmergencyManagementOperationsFunctionIDs = {
+        //"-----------",
+        "A-----H----",
+        "AA---------",
+        "AB---------",
+        "AC----H----",
+        "AD----H----",
+        "AE---------",
+        "AF---------",
+        "AG----H----",
+        "AJ----H----",
+        "AK----H----",
+        "AL----H----",
+        "AM----H----",
+        "B----------",
+        "BA---------",
+        "BB---------",
+        "BC----H----",
+        "BD---------",
+        "BE----H----",
+
+        "BF----H----",
+        "BG----H----",
+        "BH----H----",
+        "BI----H----",
+        "BJ---------",
+        "BK----H----",
+        "BL----H----",
+        "C----------",
+        "CA---------",
+        "CB---------",
+        "CC---------",
+        "CD----H----",
+        "CE----H----",
+        "D----------",      // Friend Standard Identity only
+        "DA---------",      //
+        "DB---------",      //
+        "DC----H----",      //
+        "DD---------",
+        "DDA--------",
+        "DDB--------",
+        "DDC---H----",
+        "DE---------",
+        "DEA--------",
+        "DEB--------",
+        "DEC---H----",
+
+        "DF---------",
+        "DFA--------",
+        "DFB--------",
+        "DFC---H----",
+        "DG---------",        // Friend Standard Identity only
+        "DGA--------",        //
+        "DGB--------",        //
+        "DGC---H----",        //
+        "DH---------",        //
+        "DHA--------",        //
+        "DHB--------",        //
+        "DHC---H----",        //
+        "DI---------",        //
+        "DIA--------",        //
+        "DIB--------",        //
+        "DIC---H----",        //
+        "DJ---------",
+        "DJB--------",
+        "DJC---H----",
+        "DK---------",
+        "DL---------",        // Friend Standard Identity only
+        "DLA--------",        //
+        "DLB--------",        //
+        "DLC---H----",        //
+
+        "DM---------",        //
+        "DMA--------",        //
+        "DMB--------",        //
+        "DMC---H----",        //
+        "DN---------",
+        "DNA--------",
+        "DNC---H----",
+        "DO---------",        // Friend Standard Identity only
+        "DOA--------",        //
+        "DOB--------",        //
+        "DOC---H----",        //
+        "EA---------",
+        "EB---------",
+        "EC---------",
+        "ED---------",
+        "EE---------"};
+
+    ///////////////////////////////
+    //  Stability Operations
+
+    public static String[] EmergencyManagementInfrastructureFunctionIDs = {
+        //"------",
+        "A----------",
+        "AA----H----",
+        "AB----H----",
+        "AC----H----",
+        "AD----H----",
+        "AE----H----",
+
+        "AF----H----",
+        "AG----H----",
+        "B-----H----",
+        "BA---------",
+        "BB----H----",
+        "BC----H----",
+        "BD----H----",
+        "BE----H----",
+        "BF----H----",
+        "C-----H----",
+        "CA----H----",
+        "CB----H----",
+        "CC----H----",
+        "CD----H----",
+        "CE----H----",
+        "CF----H----",
+        "CG----H----",
+        "CH----H----",
+        "CI----H----",
+        "CJ----H----",
+        "D-----H----",
+        "DA----H----",
+        "DB----H----",
+        "EA----H----",
+
+        "EB----H----",
+        "EE----H----",
+        "F-----H----",
+        "G-----H----",
+        "GA----H----",
+        "H-----H----",
+        "HA----H----",
+        "HB----H----",
+        "I-----H----",
+        "IA----H----",
+        "IB----H----",
+        "IC----H----",
+        "ID----H----",
+        "J-----H----",
+        "JA----H----",
+        "JB----H----",
+        "JC----H----",
+        "K-----H----",
+        "KB----H----",
+        "LA----H----",
+
+        "LD----H----",
+        "LE----H----",
+        "LF----H----",
+        "LH----H----",
+        "LJ----H----",
+        "LK----H----",
+        "LM----H----",
+        "LO----H----",
+        "LP----H----",
+        "MA---------",
+        "MB----H----",
+        "MC---------",
+        "MD----H----",
+        "ME----H----",
+        "MF----H----",
+        "MG----H----",
+        "MH----H----",
+        "MI----H----"};
+
+    protected boolean activityPaused;
+
+    protected double cameraDegreesPerSecond = 2.0;
+
+    protected long lastFrameTimeNanos;
 
     // A component for displaying the status of this activity
     protected TextView statusText = null;
-
-    // A collection of aircraft to be animated
-    protected HashMap<Placemark, Position> aircraftPositions = new HashMap<>(NUM_AIRCRAFT);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_placemarks_milstd2525_stress_test));
-        setAboutBoxText("Demonstrates a LOT of MIL-STD-2525 Placemarks.\n"
-            + "There are " + NUM_AIRPORTS + " airports and " + NUM_AIRCRAFT + " aircraft symbols in this example.");
+        setAboutBoxText("Demonstrates a LOT of different MIL-STD-2525 symbols.");
 
         // Add a TextView on top of the globe to convey the status of this activity
         this.statusText = new TextView(this);
@@ -96,406 +1377,159 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
         FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
         globeLayout.addView(this.statusText);
 
-        // Initialize MIL-STD-2525 rendering library and symbols on background threads. AsyncTask tasks
-        // are executed serially, ensuring the renderer is initialized before we create symbols.
-        new InitializeRendererTask().execute();
-        new CreateSymbolsTask().execute();
+        this.getWorldWindow().getLayers().clearLayers();
+        this.getWorldWindow().getLayers().addLayer(new ShowTessellationLayer());
+
+        // The MIL-STD-2525 rendering library takes time initialize, we'll perform this task via the
+        // AsyncTask's background thread and then load the symbols in its post execute handler.
+        new InitializeSymbolsTask().execute();
+    }
+
+    @Override
+    public void doFrame(long frameTimeNanos) {
+        if (this.lastFrameTimeNanos != 0) {
+            // Compute the frame duration in seconds.
+            double frameDurationSeconds = (frameTimeNanos - this.lastFrameTimeNanos) * 1.0e-9;
+            double cameraDegrees = (frameDurationSeconds * this.cameraDegreesPerSecond);
+
+            // Move the navigator to simulate the Earth's rotation about its axis.
+            Navigator navigator = getWorldWindow().getNavigator();
+            navigator.setLongitude(navigator.getLongitude() - cameraDegrees);
+
+            // Redraw the World Window to display the above changes.
+            this.getWorldWindow().requestRedraw();
+        }
+
+        if (!this.activityPaused) { // stop animating when this Activity is paused
+            Choreographer.getInstance().postFrameCallback(this);
+        }
+
+        this.lastFrameTimeNanos = frameTimeNanos;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         // Stop running the animation when this activity is paused.
-        this.pauseAnimation = true;
+        this.activityPaused = true;
+        this.lastFrameTimeNanos = 0;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Resume the Handler that animates the aircraft
-        if (animationStared) {
-            pauseAnimation = false;
-            this.handler.postDelayed(this, DELAY_TIME);
-        }
+        // Resume the earth rotation animation
+        this.activityPaused = false;
+        this.lastFrameTimeNanos = 0;
+        Choreographer.getInstance().postFrameCallback(this);
     }
 
-    @Override
-    protected void onDestroy() {
-        // Release the cached MIL-STD-2525 PlacemarkAttributes
-        MilStd2525.clearSymbolCache();
-        super.onDestroy();
-    }
+    protected void printMemoryMetrics() {
+        ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
+        RenderResourceCache cache = this.getWorldWindow().getRenderResourceCache();
+        am.getMemoryInfo(mi);
 
-    /**
-     * Initiates the aircraft animation.
-     */
-    protected void startAnimation() {
-        this.statusText.setText("Starting the animation...");
-        this.animationStared = true;
-        this.pauseAnimation = false;
-
-        // Post this Runnable on the main thread to start the animation
-        handler.post(this);
-
-        // Clear the "Starting..." status text after a few seconds
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                statusText.setText("");
-            }
-        }, 3000);
+        Logger.log(Logger.INFO, String.format(Locale.US, "totalMem=%,.0fKB availMem=%,.0fKB cacheCapacity=%,.0fKB cacheUsedCapacity=%,.0fKB",
+            mi.totalMem / 1024.0, mi.availMem / 1024.0, cache.getCapacity() / 1024.0, cache.getUsedCapacity() / 1024.0));
     }
 
     /**
-     * Animates the aircraft symbols. Each execution of this method is an "animation frame" that updates the aircraft
-     * positions on the UI Thread.
+     * InitializeSymbolsTask is an AsyncTask that initializes the MIL-STD-2525 symbol renderer on a background thread
+     * and then loads the symbols after the initialization is complete. This task must be instantiated and executed on
+     * the UI Thread.
      */
-    @Override
-    public void run() {
-        new AnimateAircraftTask().execute();
-    }
+    protected class InitializeSymbolsTask extends AsyncTask<Void, Void, Void> {
 
-    /**
-     * The Airport class ia a simple POD (plain old data) structure representing an airport from VMAP0 data.
-     */
-    protected static class Airport {
+        // Create a random number generator with an arbitrary seed
+        // that will generate the same numbers between runs.
+        protected Random random = new Random(123);
 
-        static final String MILITARY = "8"; //"Military" USE code
-
-        static final String CIVILIAN = "49";//"Civilian/Public" USE code;
-
-        static final String JOINT = "22";   //"Joint Military/Civilian" USE code;
-
-        static final String OTHER = "999";  //"Other" USE code;
-
-        final Position position;
-
-        final String name;
-
-        final String use;
-
-        final String country;
-
-        Airport(Position position, String name, String use, String country) {
-            this.position = position;
-            this.name = name;
-            this.use = use;
-            this.country = country;
-        }
-
-        @Override
-        public String toString() {
-            return "Airport{" +
-                "position=" + position +
-                ", name='" + name + '\'' +
-                ", use='" + use + '\'' +
-                ", country='" + country + '\'' +
-                '}';
-        }
-    }
-
-    /**
-     * InitializeRendererTask is an AsyncTask that initializes the MIL-STD-2525 Rendering Library on a background
-     * thread. It must be created and executed on the UI Thread.
-     */
-    protected class InitializeRendererTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            statusText.setText("Initializing the MIL-STD-2525 Library...");
+            statusText.setText("Initializing the MIL-STD-2525 Library and symbols...");
         }
 
         /**
-         * Initialize the MIL-STD-2525 Rendering Library.
+         * Initialize the MIL-STD-2525 Rendering Library on a background thread.
          */
         @Override
         protected Void doInBackground(Void... notUsed) {
-            // Time consuming . . .
+            // Time consuming operation . . .
             MilStd2525.initializeRenderer(getApplicationContext());
             return null;
         }
 
-        @Override
-        protected void onPostExecute(Void notUsed) {
-            super.onPostExecute(notUsed);
-            statusText.setText("");
-        }
-    }
-
-    /**
-     * CreateSymbolsTask is an AsyncTask that initializes the aircraft and airport symbols on a background thread. It
-     * must be created and executed on the UI Thread.
-     */
-    protected class CreateSymbolsTask extends AsyncTask<Void, String, Void> {
-
-        private ArrayList<Airport> airports = new ArrayList<>(NUM_AIRPORTS);
-
-        private RenderableLayer airportLayer = new RenderableLayer();
-
-        private RenderableLayer aircraftLayer = new RenderableLayer();
-
         /**
-         * Loads the aircraft database and creates the placemarks on a background thread. The {@link RenderableLayer}
-         * objects for the airport and aircraft symbols have not been attached to the WorldWind at this stage, so its
-         * safe to perform this operation on a background thread.  The layers will be added to the WorldWindow in
-         * onPostExecute.
-         */
-        @Override
-        protected Void doInBackground(Void... notUsed) {
-            loadAirportDatabase();
-            createAirportSymbols();
-            createAircraftSymbols();
-            return null;
-        }
-
-        /**
-         * Updates the statusText TextView on the UI Thread.
-         *
-         * @param strings An array of status messages.
-         */
-        @Override
-        protected void onProgressUpdate(String... strings) {
-            super.onProgressUpdate(strings);
-            statusText.setText(strings[0]);
-        }
-
-        /**
-         * Updates the WorldWindow layer list on the UI Thread and starts the animation.
+         * Update the symbol layer on the UI Thread.
          */
         @Override
         protected void onPostExecute(Void notUsed) {
             super.onPostExecute(notUsed);
 
-            getWorldWindow().getLayers().addLayer(this.airportLayer);
-            getWorldWindow().getLayers().addLayer(this.aircraftLayer);
+            // Create a Renderable layer for the placemarks and add it to the WorldWindow
+            RenderableLayer symbolLayer = new RenderableLayer("MIL-STD-2525 Symbols");
+            getWorldWindow().getLayers().addLayer(symbolLayer);
 
-            statusText.setText("");
-            PlacemarksMilStd2525StressActivity.this.startAnimation();
-        }
-
-        /**
-         * Loads the VMAP0 world airport data.
-         */
-        private void loadAirportDatabase() {
-
-            publishProgress("Loading world airports database...");
-
-            BufferedReader reader = null;
-            try {
-                InputStream in = getResources().openRawResource(R.raw.world_apts);
-                reader = new BufferedReader(new InputStreamReader(in));
-
-                // The first line is the CSV header:
-                //  LAT,LON,ALT,NAM,IKO,NA3,USE,USEdesc
-                String line = reader.readLine();
-                List<String> headers = Arrays.asList(line.split(","));
-                final int LAT = headers.indexOf("LAT");
-                final int LON = headers.indexOf("LON");
-                final int NAM = headers.indexOf("NAM");
-                final int NA3 = headers.indexOf("NA3");
-                final int USE = headers.indexOf("USE");
-
-                // Read the remaining lines
-                while ((line = reader.readLine()) != null) {
-                    String[] fields = line.split(",");
-                    Airport airport = new Airport(
-                        Position.fromDegrees(Double.parseDouble(fields[LAT]), Double.parseDouble(fields[LON]), 0),
-                        fields[NAM],
-                        fields[USE],
-                        fields[NA3].substring(0, 2));
-                    this.airports.add(airport);
-                }
-            } catch (IOException e) {
-                Logger.log(Logger.ERROR, "Exception attempting to read Airports database");
-            } finally {
-                WWUtil.closeSilently(reader);
+            SparseArray<String> unitModifiers = null;
+            SparseArray<String> renderAttributes = null;
+            for (String s : WarfightingUnknownFunctionIDs) {
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SUZP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SFZP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SNZP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SHZP" + s + "*****", unitModifiers, renderAttributes)));
             }
-        }
-
-        /**
-         * Creates airport symbols from the airports collection and adds them to the airports layer.
-         */
-        private void createAirportSymbols() {
-
-            publishProgress("Creating airport symbols...");
-
-            // Shared rendering attributes
-            SparseArray<String> milStdAttributes = new SparseArray<>();
-            SparseArray<String> civilianColorAttributes = new SparseArray<>();
-            civilianColorAttributes.put(MilStdAttributes.FillColor, SymbolUtilities.colorToHexString(Color.magenta, false));
-
-            Placemark placemark;
-            for (Airport airport : this.airports) {
-                SparseArray<String> unitModifiers = new SparseArray<>();
-                unitModifiers.put(ModifiersUnits.T_UNIQUE_DESIGNATION_1, airport.name);
-                if (friends.contains(airport.country)) {
-                    switch (airport.use) {
-                        case Airport.MILITARY:
-                        case Airport.JOINT:
-                            placemark = new MilStd2525Placemark(airport.position, "SFGPIBA---H****", unitModifiers, milStdAttributes);
-                            break;
-                        case Airport.CIVILIAN:
-                        case Airport.OTHER:
-                            placemark = new MilStd2525Placemark(airport.position, "SFGPIBA---H****", unitModifiers, civilianColorAttributes);
-                            break;
-                        default:
-                            placemark = new MilStd2525Placemark(airport.position, "SUGPIBA---H****", unitModifiers, milStdAttributes);
-                    }
-                } else if (neutrals.contains(airport.country)) {
-                    placemark = new MilStd2525Placemark(airport.position, "SNGPIBA---H****", unitModifiers, milStdAttributes);
-                } else if (hostiles.contains(airport.country)) {
-                    placemark = new MilStd2525Placemark(airport.position, "SHGPIBA---H****", unitModifiers, milStdAttributes);
-                } else {
-                    placemark = new MilStd2525Placemark(airport.position, "SUGPIBA---H****", unitModifiers, milStdAttributes);
-                }
-
-                // Eye scaling is essential for a reasonable display with a high density of airports
-                placemark.setEyeDistanceScalingThreshold(400000);
-                placemark.setEyeDistanceScaling(true);
-
-                this.airportLayer.addRenderable(placemark);
+            for (String s : WarfightingSpaceFunctionIDs) {
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SUPP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SFPP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SNPP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SHPP" + s + "*****", unitModifiers, renderAttributes)));
             }
-        }
-
-        /**
-         * Creates aircraft symbols with randomly assigned origin and destination positions, and adds symbols to the
-         * aircraft layer.
-         */
-        private void createAircraftSymbols() {
-
-            publishProgress("Creating aircraft symbols...");
-
-            Random random = new Random(123);
-            for (int i = 0; i < NUM_AIRCRAFT; i++) {
-
-                // Randomly assign departure and arrival airports to each aircraft
-                Airport departure = this.airports.get(random.nextInt(NUM_AIRPORTS - 1));
-                Airport arrival = this.airports.get(random.nextInt(NUM_AIRPORTS - 1));
-
-                // Allocate the end points of the aircraft's flight path.
-                Position origin = Position.fromDegrees(departure.position.latitude, departure.position.longitude, AIRCRAFT_ALT);
-                Position destination = Position.fromDegrees(arrival.position.latitude, arrival.position.longitude, AIRCRAFT_ALT);
-
-                // Create a MIL-STD-2525 symbol based on the departure airport
-                String symbolCode = createAircraftSymbolCode(departure.country, departure.use);
-                SparseArray<String> unitModifiers = new SparseArray<>();
-                unitModifiers.put(ModifiersUnits.H_ADDITIONAL_INFO_1, "ORIG: " + departure.name);
-                unitModifiers.put(ModifiersUnits.G_STAFF_COMMENTS, "DEST: " + arrival.name);
-
-                Placemark placemark = new MilStd2525Placemark(origin, symbolCode, unitModifiers, null);
-                placemark.setEyeDistanceScalingThreshold(400000);
-                placemark.setEyeDistanceScaling(true);
-
-                // Store these flight path end points in the user properties for the computation of the flight path
-                // during the animation frame. The animation will move the aircraft along the great circle route
-                // between these two points.
-                placemark.putUserProperty("origin", origin);
-                placemark.putUserProperty("destination", destination);
-
-                // Add the placemark to the layer that will render it.
-                this.aircraftLayer.addRenderable(placemark);
-
-                // Add the aircraft the collection of aircraft positions to be animated. The position in this HashMap
-                // is the current position of the aircraft.  It is computed and updated in-place by the
-                // AnimateAircraftTask.doInBackground() method, and subsequently the placemark's position is set
-                // to this value in the AnimateAircraftTask.onPostExecute() method.
-                PlacemarksMilStd2525StressActivity.this.aircraftPositions.put(placemark, new Position());
+            for (String s : WarfightingAirFunctionIDs) {
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SUAP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SFAP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SNAP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SHAP" + s + "*****", unitModifiers, renderAttributes)));
             }
-        }
-
-        /**
-         * Generates a SIDC (symbol identification coding scheme) for an aircraft originating the given county and
-         * departure airport use type.
-         *
-         * @param country    A country code as defined in the airports database.
-         * @param airportUse The use code for the departure airport.
-         *
-         * @return A 15-character alphanumeric identifier.
-         */
-        private String createAircraftSymbolCode(String country, String airportUse) {
-
-            String identity;
-            if (friends.contains(country)) {
-                identity = "F";
-            } else if (neutrals.contains(country)) {
-                identity = "N";
-            } else if (hostiles.contains(country)) {
-                identity = "H";
-            } else {
-                identity = "U";
+            for (String s : WarfightingGroundFunctionIDs) {
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SUGP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SFGP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SNGP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SHGP" + s + "*****", unitModifiers, renderAttributes)));
             }
-            String type;
-            switch (airportUse) {
-                case Airport.MILITARY:
-                case Airport.JOINT:
-                    type = "MF";    // Military fixed wing
-                    break;
-                case Airport.CIVILIAN:
-                case Airport.OTHER:
-                    type = "CF";    // Civilian fixed wing
-                    break;
-                default:
-                    type = "--";
+            for (String s : WarfightingSeaSurfaceFunctionIDs) {
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SUSP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SFSP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SNSP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SHSP" + s + "*****", unitModifiers, renderAttributes)));
+            }
+            for (String s : WarfightingSubsurfaceFunctionIDs) {
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SUUP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SFUP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SNUP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SHUP" + s + "*****", unitModifiers, renderAttributes)));
+            }
+            for (String s : WarfightingSOFFunctionIDs) {
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SUFP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SFFP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SNFP" + s + "*****", unitModifiers, renderAttributes)));
+                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SHFP" + s + "*****", unitModifiers, renderAttributes)));
             }
 
-            // Adding the country code the the symbol creates more and larger images, but it adds a useful bit
-            // of context to the aircraft as they fly across the globe.  Replace country with "**" to reduce the
-            // the memory footprint of the image textures.
-            return "S" + identity + "AP" + type + "----**" + country + "*";
-        }
-    }
-
-    /**
-     * AnimateAircraftTask is an AsyncTask that computes and updates the aircraft positions. It must be created and
-     * executed on the UI Thread.
-     */
-    protected class AnimateAircraftTask extends AsyncTask<Void, Void, Void> {
-
-        /**
-         * Computes the aircraft positions on a background thread.
-         */
-        @Override
-        protected Void doInBackground(Void... params) {
-            double amount = (double) frameCount++ / ANIMATION_FRAMES; // fractional amount along path
-
-            for (Placemark aircraft : aircraftPositions.keySet()) {
-
-                // Move the aircraft placemark along its great circle flight path.
-                Position origin = (Position) aircraft.getUserProperty("origin");
-                Position destination = (Position) aircraft.getUserProperty("destination");
-                Position currentPosition = aircraftPositions.get(aircraft);
-
-                // Update the currentPosition members (in-place)
-                origin.interpolateAlongPath(destination, WorldWind.GREAT_CIRCLE, amount, currentPosition);
-            }
-            return null;
-        }
-
-        /**
-         * Updates the aircraft placemark positions on the UI Thread.
-         */
-        @Override
-        protected void onPostExecute(Void notUsed) {
-            super.onPostExecute(notUsed);
-
-            // Update the aircraft placemark positions with the positions computed on the background thread.
-            for (Placemark aircraft : aircraftPositions.keySet()) {
-                aircraft.setPosition(aircraftPositions.get(aircraft));
-            }
+            // Signal a change in the WorldWind scene
+            // requestRedraw() is callable from any thread.
             getWorldWindow().requestRedraw();
 
-            // Determine if the animation is done
-            if (frameCount > ANIMATION_FRAMES) {
-                // All the aircraft have arrived at their destinations; pause the animation
-                pauseAnimation = true;
-                statusText.setText("Animation complete");
-            }
+            // Clear the status message set in onPreExecute
+            statusText.setText("");
+        }
 
-            // Re-execute the animation after the prescribed delay
-            if (!pauseAnimation) {
-                handler.postDelayed(PlacemarksMilStd2525StressActivity.this, DELAY_TIME);
-            }
+        protected Position getRandomPosition() {
+            // Create an even distribution of latitude and longitudes across the globe.
+            // Use a random sin value to generate latitudes without clustering at the poles.
+            double lat = Math.toDegrees(Math.asin(random.nextDouble())) * (random.nextBoolean() ? 1 : -1);
+            double lon = 180d - (random.nextDouble() * 360);
+            return Position.fromDegrees(lat, lon, 0);
         }
     }
 }
