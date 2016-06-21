@@ -151,7 +151,10 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
     @WorldWind.OrientationMode
     protected int imageTiltReference;
 
-    private double cameraDistance;
+    /**
+     * The distance from the camera to the placemark in meters.
+     */
+    protected double cameraDistance;
 
     /**
      * Constructs a Placemark that draws its representation at the supplied position using default {@link
@@ -672,7 +675,24 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
             }
         }
 
-        // Compute the placemark icon's active texture and unit square transform.
+        // Perform point based culling for placemarks who's textures haven't been loaded yet.
+        // If the texture hasn't been loaded yet, then perform point-based culling to avoid
+        // loading textures for placemarks that are 'probably' outside the viewing frustum.
+        // There are cases where a placemark's texture would be partially visible if it at the
+        // edge of the screen were loaded. In these cases the placemark will "pop" into view when
+        // the placePoint enters the view frustum.
+        if (this.activeAttributes.imageSource != null) {
+            this.activeTexture = rc.getTexture(this.activeAttributes.imageSource); // try to get the texture from the cache
+            // If we don't have a texture, then perform point-based culling here,
+            // otherwise we'll perform a "frustum intersects screenBounds" test later on.
+            if (this.activeTexture == null) {
+                if (!rc.frustum.containsPoint(placePoint)) {
+                    return;
+                }
+            }
+        }
+
+        // Compute the placemark icon's active texture.
         this.determineActiveTexture(rc);
 
         // If the placemark's icon is visible, enqueue a drawable icon for processing on the OpenGL thread.
@@ -718,7 +738,8 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
      */
     protected void determineActiveTexture(RenderContext rc) {
         if (this.activeAttributes.imageSource != null) {
-            this.activeTexture = rc.getTexture(this.activeAttributes.imageSource); // try to get the texture from the cache
+            // Earlier in doRender(), an attempt was made to 'get' the activeTexture from the cache.
+            // If was not found in the cache we need to retrieve a texture from the image source.
             if (this.activeTexture == null) {
                 this.activeTexture = rc.retrieveTexture(this.activeAttributes.imageSource); // puts retrieved textures in the cache
             }
@@ -876,6 +897,4 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
             && this.activeAttributes.leaderAttributes != null
             && (this.enableLeaderPicking || !rc.pickMode);
     }
-
-
 }

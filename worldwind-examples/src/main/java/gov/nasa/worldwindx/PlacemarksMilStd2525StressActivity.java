@@ -24,15 +24,17 @@ import java.util.Random;
 
 import armyc2.c2sd.renderer.utilities.Color;
 import armyc2.c2sd.renderer.utilities.MilStdAttributes;
+import armyc2.c2sd.renderer.utilities.ModifiersUnits;
 import armyc2.c2sd.renderer.utilities.SymbolUtilities;
+import gov.nasa.worldwind.Navigator;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.shape.Placemark;
-import gov.nasa.worldwind.shape.PlacemarkAttributes;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
 import gov.nasa.worldwindx.milstd2525.MilStd2525;
+import gov.nasa.worldwindx.milstd2525.MilStd2525Placemark;
 
 public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity implements Runnable {
 
@@ -80,7 +82,6 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
     // A collection of aircraft to be animated
     protected HashMap<Placemark, Position> aircraftPositions = new HashMap<>(NUM_AIRCRAFT);
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -319,43 +320,38 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
             publishProgress("Creating airport symbols...");
 
-            SparseArray<String> unitModifiers = new SparseArray<>();
+            // Shared rendering attributes
             SparseArray<String> milStdAttributes = new SparseArray<>();
             SparseArray<String> civilianColorAttributes = new SparseArray<>();
             civilianColorAttributes.put(MilStdAttributes.FillColor, SymbolUtilities.colorToHexString(Color.magenta, false));
 
-            PlacemarkAttributes friendAttributes = MilStd2525.getPlacemarkAttributes("SFGPIBA---H****", unitModifiers, milStdAttributes);
-            PlacemarkAttributes hostileAttributes = MilStd2525.getPlacemarkAttributes("SHGPIBA---H****", unitModifiers, milStdAttributes);
-            PlacemarkAttributes neutralAttributes = MilStd2525.getPlacemarkAttributes("SNGPIBA---H****", unitModifiers, milStdAttributes);
-            PlacemarkAttributes unknownAttributes = MilStd2525.getPlacemarkAttributes("SUGPIBA---H****", unitModifiers, milStdAttributes);
-            PlacemarkAttributes civilianAttributes = MilStd2525.getPlacemarkAttributes("SFGPIBA---H****", unitModifiers, civilianColorAttributes);
-
+            Placemark placemark;
             for (Airport airport : this.airports) {
-                PlacemarkAttributes placemarkAttributes;
+                SparseArray<String> unitModifiers = new SparseArray<>();
+                unitModifiers.put(ModifiersUnits.T_UNIQUE_DESIGNATION_1, airport.name);
                 if (friends.contains(airport.country)) {
                     switch (airport.use) {
                         case Airport.MILITARY:
                         case Airport.JOINT:
-                            placemarkAttributes = friendAttributes;
+                            placemark = new MilStd2525Placemark(airport.position, "SFGPIBA---H****", unitModifiers, milStdAttributes);
                             break;
                         case Airport.CIVILIAN:
                         case Airport.OTHER:
-                            placemarkAttributes = civilianAttributes;
+                            placemark = new MilStd2525Placemark(airport.position, "SFGPIBA---H****", unitModifiers, civilianColorAttributes);
                             break;
                         default:
-                            placemarkAttributes = unknownAttributes;
+                            placemark = new MilStd2525Placemark(airport.position, "SUGPIBA---H****", unitModifiers, milStdAttributes);
                     }
                 } else if (neutrals.contains(airport.country)) {
-                    placemarkAttributes = neutralAttributes;
+                    placemark = new MilStd2525Placemark(airport.position, "SNGPIBA---H****", unitModifiers, milStdAttributes);
                 } else if (hostiles.contains(airport.country)) {
-                    placemarkAttributes = hostileAttributes;
+                    placemark = new MilStd2525Placemark(airport.position, "SHGPIBA---H****", unitModifiers, milStdAttributes);
                 } else {
-                    placemarkAttributes = unknownAttributes;
+                    placemark = new MilStd2525Placemark(airport.position, "SUGPIBA---H****", unitModifiers, milStdAttributes);
                 }
 
-                Placemark placemark = new Placemark(airport.position, placemarkAttributes);
-
                 // Eye scaling is essential for a reasonable display with a high density of airports
+                placemark.setEyeDistanceScalingThreshold(400000);
                 placemark.setEyeDistanceScaling(true);
 
                 this.airportLayer.addRenderable(placemark);
@@ -383,9 +379,12 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
 
                 // Create a MIL-STD-2525 symbol based on the departure airport
                 String symbolCode = createAircraftSymbolCode(departure.country, departure.use);
-                PlacemarkAttributes attributes = MilStd2525.getPlacemarkAttributes(symbolCode, null, null);
+                SparseArray<String> unitModifiers = new SparseArray<>();
+                unitModifiers.put(ModifiersUnits.H_ADDITIONAL_INFO_1, "ORIG: " + departure.name);
+                unitModifiers.put(ModifiersUnits.G_STAFF_COMMENTS, "DEST: " + arrival.name);
 
-                Placemark placemark = new Placemark(origin, attributes);
+                Placemark placemark = new MilStd2525Placemark(origin, symbolCode, unitModifiers, null);
+                placemark.setEyeDistanceScalingThreshold(400000);
                 placemark.setEyeDistanceScaling(true);
 
                 // Store these flight path end points in the user properties for the computation of the flight path
@@ -426,7 +425,6 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
             } else {
                 identity = "U";
             }
-
             String type;
             switch (airportUse) {
                 case Airport.MILITARY:
@@ -441,7 +439,7 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
                     type = "--";
             }
 
-            // Adding the country code the the symboel creates more and larger images, but it adds a useful bit
+            // Adding the country code the the symbol creates more and larger images, but it adds a useful bit
             // of context to the aircraft as they fly across the globe.  Replace country with "**" to reduce the
             // the memory footprint of the image textures.
             return "S" + identity + "AP" + type + "----**" + country + "*";
@@ -499,7 +497,5 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
                 handler.postDelayed(PlacemarksMilStd2525StressActivity.this, DELAY_TIME);
             }
         }
-
     }
-
 }

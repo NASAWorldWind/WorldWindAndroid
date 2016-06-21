@@ -6,10 +6,12 @@
 package gov.nasa.worldwindx.milstd2525;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.util.SparseArray;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
 import armyc2.c2sd.renderer.MilStdIconRenderer;
@@ -34,15 +36,24 @@ public class MilStd2525 {
     private static MilStdIconRenderer renderer = MilStdIconRenderer.getInstance();
 
     /**
-     * A (simple) cache of PlacemarkAttribute bundles containing MIL-STD-2525 symbols. Using a cache is essential for
-     * memory management--we want to reuse the bitmap textures for identical symbols.
+     * A cache of PlacemarkAttribute bundles containing MIL-STD-2525 symbols. Using a cache is essential for memory
+     * management: we want to share the bitmap textures for identical symbols.  The cache maintains weak references to
+     * the attribute bundles so that the garbage collector can reclaim the memory when a Placemark releases an attribute
+     * bundle, for instance when it changes its level-of-detail.
      */
-    private static HashMap<String, PlacemarkAttributes> symbolCache = new HashMap<>();
+    private static HashMap<String, WeakReference<PlacemarkAttributes>> symbolCache = new HashMap<>();
 
     private static SparseArray<String> emptyArray = new SparseArray<>();    // may be used in a cache key
 
     private static boolean initialized = false;
 
+    private final static int DEFAULT_PIXEL_SIZE = 100;
+
+    private final static int DEFAULT_FONT_SIZE = 18;
+
+    private final static int TEXT_OUTLINE_WIDTH = 4;
+
+    private final static double MINIMUM_IMAGE_SCALE = 0.25;
 
     /**
      * Initializes the static MIL-STD-2525 symbol renderer.  This method must be called one time before calling
@@ -62,15 +73,15 @@ public class MilStd2525 {
         // See: https://github.com/missioncommand/mil-sym-android/blob/master/Renderer/src/main/java/armyc2/c2sd/renderer/utilities/RendererSettings.java
         RendererSettings rs = RendererSettings.getInstance();
         rs.setSymbologyStandard(RendererSettings.Symbology_2525C);
-        rs.setDefaultPixelSize(100);
+        rs.setDefaultPixelSize(DEFAULT_PIXEL_SIZE);
 
         // Depending on screen size and DPI you may want to change the font size.
-        rs.setModifierFont("Arial", Typeface.BOLD, 18);
-        rs.setMPModifierFont("Arial", Typeface.BOLD, 18);
+        rs.setModifierFont("Arial", Typeface.BOLD, DEFAULT_FONT_SIZE);
+        rs.setMPModifierFont("Arial", Typeface.BOLD, DEFAULT_FONT_SIZE);
 
         // Configure modifier text output
         rs.setTextBackgroundMethod(RendererSettings.TextBackgroundMethod_OUTLINE);
-        rs.setTextOutlineWidth(4);  // 4 is the default
+        rs.setTextOutlineWidth(TEXT_OUTLINE_WIDTH);  // 4 is the factory default
 
         initialized = true;
     }
@@ -99,31 +110,39 @@ public class MilStd2525 {
      */
     public static PlacemarkAttributes getPlacemarkAttributes(String symbolCode, SparseArray<String> modifiers, SparseArray<String> attributes) {
 
-        // Generate a cache key for the symbol
-        String key = symbolCode
+        // Generate a cache key for this symbol
+        String symbolKey = symbolCode
             + (modifiers == null ? emptyArray.toString() : modifiers.toString())
             + (attributes == null ? emptyArray.toString() : attributes.toString());
 
-        // Get the attribute bundle from the cache
-        PlacemarkAttributes placemarkAttributes = symbolCache.get(key);
+        // Look for an attribute bundle in our cache and determine if the cached reference is valid
+        WeakReference<PlacemarkAttributes> reference = symbolCache.get(symbolKey);
+        PlacemarkAttributes placemarkAttributes = (reference == null ? null : reference.get());
 
+        // Create the attributes if they haven't been created yet or if they've been released
         if (placemarkAttributes == null) {
 
             // Create the attributes bundle and add it to the cache.
+            // The actual bitmap will be lazily (re)created using a factory.
             placemarkAttributes = MilStd2525.createPlacemarkAttributes(symbolCode, modifiers, attributes);
             if (placemarkAttributes == null) {
-                throw new IllegalArgumentException("Cannot generate a symbol for: " + key);
+                throw new IllegalArgumentException("Cannot generate a symbol for: " + symbolKey);
             }
-            symbolCache.put(key, placemarkAttributes);
+            // Add a weak reference to the attribute bundle to our cache
+            symbolCache.put(symbolKey, new WeakReference<>(placemarkAttributes));
+
+            // Perform some initialization of the bundle conducive to eye distance scaling
+            placemarkAttributes.setMinimumImageScale(MINIMUM_IMAGE_SCALE);
         }
 
         return placemarkAttributes;
     }
 
-
     /**
      * Creates a placemark attributes bundle containing a MIL-STD-2525 symbol using the specified modifiers and
-     * attributes.
+     * attributes.  The ImageSource bitmap is lazily created via an ImageSource.Bitmap factory. The call to the
+     * factory's createBitmap method made when Placemark comes into view; it's also used to recreate the bitmap if the
+     * resource was evicted from the World Wind render resource cache.
      *
      * @param symbolCode The 15-character SIDC (symbol identification coding scheme) code.
      * @param modifiers  The ModifierUnit (unit) or ModifierTG (tactical graphic) modifiers collection. May be null.
@@ -132,29 +151,13 @@ public class MilStd2525 {
      * @return A new PlacemarkAttributes bundle representing the MIL-STD-2525 symbol.
      */
     public static PlacemarkAttributes createPlacemarkAttributes(String symbolCode, SparseArray<String> modifiers, SparseArray<String> attributes) {
+        PlacemarkAttributes placemarkAttributes = new PlacemarkAttributes();
 
-        ImageInfo imageInfo = MilStd2525.renderImage(symbolCode, modifiers, attributes);
+        // Create a BitmapFactory instance with the values needed to create and recreate the symbol's bitmap
+        SymbolBitmapFactory factory = new SymbolBitmapFactory(symbolCode, modifiers, attributes, placemarkAttributes);
+        placemarkAttributes.setImageSource(ImageSource.fromBitmapFactory(factory));
 
-        return createPlacemarkAttributesFromSymbol(imageInfo);
-    }
-
-    /**
-     * Creates a placemark attributes bundle containing the supplied MilStd2525C symbol.
-     *
-     * @param imageInfo An image and meta data object created by the symbol renderer.
-     *
-     * @return A new PlacemarkAttributes bundle referencing the bitmap in the imageInfo parameter.
-     */
-    public static PlacemarkAttributes createPlacemarkAttributesFromSymbol(ImageInfo imageInfo) {
-
-        // Place the bottom of the image at the specified position and
-        // anchor it horizontally at the center of the core symbol.
-        Point centerPoint = imageInfo.getCenterPoint();     // The center of the core symbol
-        Offset imageOffset = new Offset(
-            WorldWind.OFFSET_PIXELS, centerPoint.x, // x offset
-            WorldWind.OFFSET_PIXELS, 0.0); // y offset
-
-        return PlacemarkAttributes.createWithImage(ImageSource.fromBitmap(imageInfo.getImage())).setImageOffset(imageOffset);
+        return placemarkAttributes;
     }
 
     /**
@@ -164,7 +167,7 @@ public class MilStd2525 {
      * @param modifiers  The MIL-STD-2525 modifiers. If null, a default (empty) modifier list will be used.
      * @param attributes The MIL-STD-2525 attributes. If null, a default (empty) attribute list will be used.
      *
-     * @return An ImageInfo object containing the symbol's bitmap and meta data.
+     * @return An ImageInfo object containing the symbol's bitmap and meta data; may be null
      */
     public static ImageInfo renderImage(String symbolCode, SparseArray<String> modifiers, SparseArray<String> attributes) {
         if (!initialized) {
@@ -174,5 +177,65 @@ public class MilStd2525 {
         return renderer.RenderIcon(symbolCode,
             modifiers == null ? new SparseArray<String>() : modifiers,
             attributes == null ? new SparseArray<String>() : attributes);
+    }
+
+    /**
+     * This ImageSource.BitmapFactory implementation creates MIL-STD-2525
+     */
+    protected static class SymbolBitmapFactory implements ImageSource.BitmapFactory {
+
+        private final String symbolCode;
+
+        private final SparseArray<String> modifiers;
+
+        private final SparseArray<String> attributes;
+
+        private final PlacemarkAttributes placemarkAttributes;
+
+        /**
+         * Constructs a SymbolBitmapFactory instance capable of creating a bitmap with the given code, modifiers and
+         * attributes. The createBitmap() method will return a new instance of a bitmap and will also update the
+         * associated placemarkAttributes bundle's imageOffset property based on the size of the new bitmap.
+         *
+         * @param symbolCode          SIDC code
+         * @param modifiers           Unit modifiers
+         * @param attributes          Rendering attributes
+         * @param placemarkAttributes Placemark attribute bundle associated with this factory
+         */
+        public SymbolBitmapFactory(String symbolCode, SparseArray<String> modifiers, SparseArray<String> attributes, PlacemarkAttributes placemarkAttributes) {
+            // Capture the values needed to (re)create the symbol bitmap
+            this.symbolCode = symbolCode;
+            this.modifiers = modifiers;
+            this.attributes = attributes;
+            // The MilStd2525.symbolCache maintains a WeakReference to the placemark attributes. The finalizer is able to
+            // resolve the circular dependency between the PlacemarkAttributes->ImageSource->Factory->PlacemarkAttributes
+            // and garbage collect the attributes a Placemark releases its attribute bundle (e.g., when switching
+            // between levels-of-detail)
+            this.placemarkAttributes = placemarkAttributes;
+        }
+
+        /**
+         * Returns the MIL-STD-2525 bitmap and updates the PlacemarkAttributes associated with this factory instance.
+         *
+         * @return a ne bitmap rendered from the parameters given in the constructor; may be null
+         */
+        @Override
+        public Bitmap createBitmap() {
+            // Create the symbol's bitmap
+            ImageInfo imageInfo = MilStd2525.renderImage(symbolCode, modifiers, attributes);
+            if (imageInfo == null) {
+                return null;
+            }
+            // Apply the computed image offset after the renderer has created the image.
+            // This is essential for proper placement as the offset may change depending
+            // on the level of detail, for instance, the absence or presence of text modifiers.
+            Point centerPoint = imageInfo.getCenterPoint();     // The center of the core symbol
+            this.placemarkAttributes.setImageOffset(new Offset(
+                WorldWind.OFFSET_PIXELS, centerPoint.x, // x offset
+                WorldWind.OFFSET_PIXELS, centerPoint.y)); // y offset);
+
+            // Return the bitmap
+            return imageInfo.getImage();
+        }
     }
 }

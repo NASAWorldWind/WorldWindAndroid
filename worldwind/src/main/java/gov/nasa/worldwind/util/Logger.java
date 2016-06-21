@@ -69,6 +69,7 @@ public class Logger {
         messageTable.put("missingLookAt", "The look-at is null");
         messageTable.put("missingMatrix", "The matrix is null");
         messageTable.put("missingName", "The name is null");
+        messageTable.put("missingOffset", "The offset name is null");
         messageTable.put("missingPathName", "The path name is null");
         messageTable.put("missingPoint", "The point is null");
         messageTable.put("missingPlane", "The plane is null");
