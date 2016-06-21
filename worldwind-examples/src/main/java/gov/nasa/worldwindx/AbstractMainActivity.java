@@ -5,11 +5,15 @@
 
 package gov.nasa.worldwindx;
 
+import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.LayoutRes;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -20,15 +24,19 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.Locale;
+
+import gov.nasa.worldwind.FrameMetrics;
 import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.util.Logger;
 
 /**
  * This abstract Activity class implements a Navigation Drawer menu shared by all the World Wind Example activities.
  */
 public abstract class AbstractMainActivity extends AppCompatActivity
-    implements NavigationView.OnNavigationItemSelectedListener {
+    implements NavigationView.OnNavigationItemSelectedListener, Handler.Callback {
 
-    static private int selectedItemId = R.id.nav_basic_globe_activity;
+    private static int selectedItemId = R.id.nav_basic_globe_activity;
 
     private ActionBarDrawerToggle drawerToggle;
 
@@ -37,6 +45,12 @@ public abstract class AbstractMainActivity extends AppCompatActivity
     private String aboutBoxTitle = "Title goes here";
 
     private String aboutBoxText = "Description goes here;";
+
+    private Handler handler = new Handler(this);
+
+    private static final int PRINT_METRICS = 1;
+
+    private static final int PRINT_METRICS_INTERVAL = 3000;
 
     /**
      * Returns a reference to the WorldWindow.
@@ -47,7 +61,6 @@ public abstract class AbstractMainActivity extends AppCompatActivity
      */
     abstract public WorldWindow getWorldWindow();
 
-
     /**
      * This method should be called by derived classes in their onCreate method.
      *
@@ -56,8 +69,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity
     @Override
     public void setContentView(@LayoutRes int layoutResID) {
         super.setContentView(layoutResID);
-        onCreateDrawer();
-        onCreateStatusBar();
+        this.onCreateDrawer();
     }
 
     protected void onCreateDrawer() {
@@ -77,21 +89,20 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         this.navigationView.setCheckedItem(selectedItemId);
     }
 
-    protected void onCreateStatusBar() {
-        // Create a task used for polling the globe.
-        // TODO: replace the polling implementation with an event driven implementation.
-        //this.statusTask = new StatusTask(this); // the task is invoked in onResume()
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Stop printing frame metrics when this activity is paused.
+        this.handler.removeMessages(PRINT_METRICS);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
         // Update the menu by highlighting the last selected menu item
         this.navigationView.setCheckedItem(selectedItemId);
-
-        // Start our status information handler
-        //this.statusTask.run();
+        // Use this Activity's Handler to periodically print the FrameMetrics.
+        this.handler.sendEmptyMessageDelayed(PRINT_METRICS, PRINT_METRICS_INTERVAL);
     }
 
     @Override
@@ -128,7 +139,6 @@ public abstract class AbstractMainActivity extends AppCompatActivity
      * This method is invoked when the About button is selected in the Options menu.
      */
     protected void showAboutBox() {
-
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle(this.aboutBoxTitle);
         alertDialogBuilder
@@ -144,6 +154,35 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        if (msg.what == PRINT_METRICS) {
+            this.printMetrics();
+            return msg.getTarget().sendEmptyMessageDelayed(PRINT_METRICS, PRINT_METRICS_INTERVAL);
+        } else {
+            return false;
+        }
+    }
+
+    protected void printMetrics() {
+        // Assemble the current system memory info.
+        ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
+        am.getMemoryInfo(mi);
+
+        // Assemble the current World Wind frame metrics.
+        FrameMetrics fm = this.getWorldWindow().getFrameMetrics();
+
+        // Print a log message with the system memory, World Wind cache usage, and World Wind average frame time.
+        Logger.log(Logger.INFO, String.format(Locale.US, "System memory %,.0f / %,.0f KB    World Wind cache %,.0f / %,.0f KB    World Wind frame time %.1f ms + %.1f ms",
+            mi.availMem / 1024.0, mi.totalMem / 1024.0,
+            fm.getRenderResourceCacheUsedCapacity() / 1024.0, fm.getRenderResourceCacheCapacity() / 1024.0,
+            fm.getRenderTimeAverage(), fm.getDrawTimeAverage()));
+
+        // Reset the accumulated World Wind frame metrics.
+        fm.reset();
     }
 
     @Override
@@ -239,6 +278,4 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
 }
-

@@ -5,23 +5,18 @@
 
 package gov.nasa.worldwindx;
 
-import android.app.ActivityManager;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
 import java.util.Arrays;
-import java.util.Locale;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.layer.ShowTessellationLayer;
 import gov.nasa.worldwind.render.ImageSource;
-import gov.nasa.worldwind.render.RenderResourceCache;
 import gov.nasa.worldwind.shape.SurfaceImage;
-import gov.nasa.worldwind.util.Logger;
 
 public class TextureStressTestActivity extends BasicGlobeActivity implements Handler.Callback {
 
@@ -31,13 +26,13 @@ public class TextureStressTestActivity extends BasicGlobeActivity implements Han
 
     protected Sector sector = new Sector();
 
-    protected Handler handler = new Handler(this);
-
     protected Bitmap bitmap;
+
+    protected Handler handler = new Handler(this);
 
     protected static final int ADD_IMAGE = 1;
 
-    protected static final int PRINT_METRICS = 2;
+    protected static final int ADD_IMAGE_INTERVAL = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,20 +57,13 @@ public class TextureStressTestActivity extends BasicGlobeActivity implements Han
         int[] colors = new int[1024 * 1024];
         Arrays.fill(colors, 0xFF00FF00);
         this.bitmap = Bitmap.createBitmap(colors, 1024, 1024, Bitmap.Config.ARGB_8888);
-
-        // Start the process of adding images and printing memory metrics.
-        this.handler.sendEmptyMessageDelayed(ADD_IMAGE /*what*/, 3000);
-        this.handler.sendEmptyMessageDelayed(PRINT_METRICS /*what*/, 500);
     }
 
     @Override
     public boolean handleMessage(Message msg) {
         if (msg.what == ADD_IMAGE) {
             this.addImage();
-            return this.handler.sendEmptyMessageDelayed(msg.what, 1000);
-        } else if (msg.what == PRINT_METRICS) {
-            this.printMemoryMetrics();
-            return this.handler.sendEmptyMessageDelayed(msg.what, 500);
+            return msg.getTarget().sendEmptyMessageDelayed(ADD_IMAGE, ADD_IMAGE_INTERVAL);
         } else {
             return false;
         }
@@ -107,14 +95,17 @@ public class TextureStressTestActivity extends BasicGlobeActivity implements Han
         }
     }
 
-    protected void printMemoryMetrics() {
-        ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
-        ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
-        RenderResourceCache cache = this.getWorldWindow().getRenderResourceCache();
-        am.getMemoryInfo(mi);
-
-        Logger.log(Logger.INFO, String.format(Locale.US, "totalMem=%,.0fKB availMem=%,.0fKB cacheCapacity=%,.0fKB cacheUsedCapacity=%,.0fKB",
-            mi.totalMem / 1024.0, mi.availMem / 1024.0, cache.getCapacity() / 1024.0, cache.getUsedCapacity() / 1024.0));
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Stop adding images when this Activity is paused.
+        this.handler.removeMessages(ADD_IMAGE);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Add images to the World Window at a regular interval.
+        this.handler.sendEmptyMessageDelayed(ADD_IMAGE, ADD_IMAGE_INTERVAL);
+    }
 }
