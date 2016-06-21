@@ -198,15 +198,15 @@ public class MilStd2525 {
          * associated placemarkAttributes bundle's imageOffset property based on the size of the new bitmap.
          *
          * @param symbolCode          SIDC code
-         * @param modifiers           Unit modifiers
-         * @param attributes          Rendering attributes
+         * @param modifiers           Unit modifiers to be copied; null is permitted
+         * @param attributes          Rendering attributes to be copied; null is permitted
          * @param placemarkAttributes Placemark attribute bundle associated with this factory
          */
         public SymbolBitmapFactory(String symbolCode, SparseArray<String> modifiers, SparseArray<String> attributes, PlacemarkAttributes placemarkAttributes) {
             // Capture the values needed to (re)create the symbol bitmap
             this.symbolCode = symbolCode;
-            this.modifiers = modifiers;
-            this.attributes = attributes;
+            this.modifiers = modifiers != null ? modifiers.clone() : null;
+            this.attributes = attributes != null ? attributes.clone() : null;
             // The MilStd2525.symbolCache maintains a WeakReference to the placemark attributes. The finalizer is able to
             // resolve the circular dependency between the PlacemarkAttributes->ImageSource->Factory->PlacemarkAttributes
             // and garbage collect the attributes a Placemark releases its attribute bundle (e.g., when switching
