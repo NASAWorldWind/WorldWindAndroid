@@ -6,7 +6,9 @@
 package gov.nasa.worldwindx.milstd2525;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.util.SparseArray;
@@ -29,6 +31,11 @@ import gov.nasa.worldwind.util.Logger;
  * contained in the mil-sym-android module.
  */
 public class MilStd2525 {
+
+    /**
+     * The image to use when the renderer cannot render an image.
+     */
+    private static Bitmap defaultImage = BitmapFactory.decodeResource(Resources.getSystem(), android.R.drawable.ic_dialog_alert); // Warning triangle
 
     /**
      * The actual rendering engine for the MIL-STD-2525 graphics.
@@ -54,6 +61,19 @@ public class MilStd2525 {
     private final static int TEXT_OUTLINE_WIDTH = 4;
 
     private final static double MINIMUM_IMAGE_SCALE = 0.25;
+
+    /**
+     * Sets and overrides the default "missing image" icon.
+     *
+     * @param bitmap The image to display when the renderer cannot render the given symbol code.
+     */
+    public static void setDefaultImage(Bitmap bitmap) {
+        if (bitmap == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "MilStd2525", "setDefaultImage", "missingBitmap"));
+        }
+        defaultImage = bitmap;
+    }
 
     /**
      * Initializes the static MIL-STD-2525 symbol renderer.  This method must be called one time before calling
@@ -174,9 +194,12 @@ public class MilStd2525 {
             throw new IllegalStateException(
                 Logger.logMessage(Logger.ERROR, "MilStd2525", "renderImage", "renderer has not been initialized."));
         }
-        return renderer.RenderIcon(symbolCode,
-            modifiers == null ? new SparseArray<String>() : modifiers,
-            attributes == null ? new SparseArray<String>() : attributes);
+        SparseArray<String> unitModifiers = modifiers == null ? new SparseArray<String>() : modifiers;
+        SparseArray<String> renderAttributes = attributes == null ? new SparseArray<String>() : attributes;
+        if (!renderer.CanRender(symbolCode, unitModifiers, renderAttributes)) {
+            return null;
+        }
+        return renderer.RenderIcon(symbolCode, unitModifiers, renderAttributes);
     }
 
     /**
@@ -217,14 +240,16 @@ public class MilStd2525 {
         /**
          * Returns the MIL-STD-2525 bitmap and updates the PlacemarkAttributes associated with this factory instance.
          *
-         * @return a ne bitmap rendered from the parameters given in the constructor; may be null
+         * @return a new bitmap rendered from the parameters given in the constructor; may be null
          */
         @Override
         public Bitmap createBitmap() {
             // Create the symbol's bitmap
             ImageInfo imageInfo = MilStd2525.renderImage(symbolCode, modifiers, attributes);
             if (imageInfo == null) {
-                return null;
+                Logger.logMessage(Logger.ERROR, "MilStd2525", "createBitmap", "Failed to render image for " + symbolCode);
+                // TODO: File JIRA issue - must return a valid bitmap, else the ImageRetriever repeatedly attempts to create the bitmap.
+                return defaultImage;
             }
             // Apply the computed image offset after the renderer has created the image.
             // This is essential for proper placement as the offset may change depending
