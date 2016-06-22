@@ -5,11 +5,8 @@
 
 package gov.nasa.worldwindx;
 
-import android.app.ActivityManager;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.SparseArray;
 import android.view.Choreographer;
 import android.widget.FrameLayout;
@@ -25,14 +22,38 @@ import gov.nasa.worldwind.Navigator;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.layer.ShowTessellationLayer;
-import gov.nasa.worldwind.render.RenderResourceCache;
 import gov.nasa.worldwind.shape.Placemark;
-import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwindx.milstd2525.MilStd2525;
 
 public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity implements Choreographer.FrameCallback {
 
     protected static final int NUM_PLACEMARKS = 10000;
+
+    private final static String[] StandardIdentities = {
+        "P",    // Pending
+        "U",    // Unknown
+        "F",    // Friend
+        "N",    // Neutral
+        "H",    // Hostile
+        "A",    // Assumed Friend
+        "S"};   // Suspect
+
+    private final static String[] BattleDimensions = {
+        "Z",    // Unknown
+        "P",    // Space
+        "A",    // Air
+        "G",    // Ground
+        "S",    // Sea surface
+        "U",    // Subsurface
+        "F"};   // SOF
+
+    private final static String[] StatusCodes = {
+        "A",    // Anticipated
+        "P",    // Present
+        "C",    // Present/Fully Capable
+        "D",    // Present/Damaged
+        "X",    // Present/Destroyed
+        "F"};   // Present/Full to Capacity
 
     private final static String[] WarfightingUnknownFunctionIDs = {
         "------"};
@@ -1435,6 +1456,8 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
      */
     protected class InitializeSymbolsTask extends AsyncTask<Void, Void, Void> {
 
+        private final SimpleDateFormat dateTimeGroup = new SimpleDateFormat("ddHHmmss'Z'MMMyyyy");
+
         // Create a random number generator with an arbitrary seed
         // that will generate the same numbers between runs.
         protected Random random = new Random(123);
@@ -1468,50 +1491,51 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
             SparseArray<String> unitModifiers = new SparseArray<>();
             SparseArray<String> renderAttributes = new SparseArray<>();
 
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            unitModifiers.put(ModifiersUnits.G_STAFF_COMMENTS, dateFormat.format(new Date()));
+            String codeScheme = "S";    // Warfighting
+            String sizeMobility = "*";
+            String countryCode = "**";
+            String orderOfBattle = "**";
 
-            for (String s : WarfightingUnknownFunctionIDs) {
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SUZP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SFZP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SNZP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SHZP" + s + "*****", unitModifiers, renderAttributes)));
-            }
-            for (String s : WarfightingSpaceFunctionIDs) {
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SUPP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SFPP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SNPP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SHPP" + s + "*****", unitModifiers, renderAttributes)));
-            }
-            for (String s : WarfightingAirFunctionIDs) {
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SUAP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SFAP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SNAP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SHAP" + s + "*****", unitModifiers, renderAttributes)));
-            }
-            for (String s : WarfightingGroundFunctionIDs) {
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SUGP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SFGP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SNGP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SHGP" + s + "*****", unitModifiers, renderAttributes)));
-            }
-            for (String s : WarfightingSeaSurfaceFunctionIDs) {
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SUSP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SFSP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SNSP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SHSP" + s + "*****", unitModifiers, renderAttributes)));
-            }
-            for (String s : WarfightingSubsurfaceFunctionIDs) {
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SUUP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SFUP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SNUP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SHUP" + s + "*****", unitModifiers, renderAttributes)));
-            }
-            for (String s : WarfightingSOFFunctionIDs) {
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SUFP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SFFP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SNFP" + s + "*****", unitModifiers, renderAttributes)));
-                symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes("SHFP" + s + "*****", unitModifiers, renderAttributes)));
+            for (String standardId : StandardIdentities) {
+                for (String battleDimension : BattleDimensions) {
+                    for (String status : StatusCodes) {
+                        for (String functionId : WarfightingUnknownFunctionIDs) {
+                            String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
+                            Position position = getRandomPosition();
+                            unitModifiers.put(ModifiersUnits.W_DTG_1, getDateTimeGroup(new Date()));
+                            unitModifiers.put(ModifiersUnits.Y_LOCATION, getLocation(position));
+                            symbolLayer.addRenderable(new Placemark(position, MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
+                        }
+
+                        unitModifiers.clear();
+                        for (String functionId : WarfightingSpaceFunctionIDs) {
+                            String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
+                            symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
+                        }
+
+                        // TODO: Progressively uncomment the following blocks to add more symbols to the globe
+//                        for (String functionId : WarfightingAirFunctionIDs) {
+//                            String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
+//                            symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
+//                        }
+//                        for (String functionId : WarfightingGroundFunctionIDs) {
+//                            String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
+//                            symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
+//                        }
+//                        for (String functionId : WarfightingSeaSurfaceFunctionIDs) {
+//                            String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
+//                            symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
+//                        }
+//                        for (String functionId : WarfightingSubsurfaceFunctionIDs) {
+//                            String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
+//                            symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
+//                        }
+//                        for (String functionId : WarfightingSOFFunctionIDs) {
+//                            String sidc = codeScheme + standardId + battleDimension + standardId + functionId + sizeMobility + countryCode + orderOfBattle;
+//                            symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
+//                        }
+                    }
+                }
             }
 
             // Signal a change in the WorldWind scene
@@ -1528,6 +1552,18 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
             double lat = Math.toDegrees(Math.asin(random.nextDouble())) * (random.nextBoolean() ? 1 : -1);
             double lon = 180d - (random.nextDouble() * 360);
             return Position.fromDegrees(lat, lon, 0);
+        }
+
+        protected String getDateTimeGroup(Date date) {
+            return dateTimeGroup.format(date).toUpperCase();
+        }
+
+        protected String getLocation(Position position) {
+            return String.format(Locale.US, "%02.5f%s%03.5f%s",
+                Math.abs(position.latitude),
+                position.latitude > 0 ? "N" : "S",
+                Math.abs(position.longitude),
+                position.longitude > 0 ? "E" : "W");
         }
     }
 }
