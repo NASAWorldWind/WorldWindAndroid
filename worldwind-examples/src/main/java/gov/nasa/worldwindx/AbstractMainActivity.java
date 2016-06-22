@@ -34,7 +34,7 @@ import gov.nasa.worldwind.util.Logger;
  * This abstract Activity class implements a Navigation Drawer menu shared by all the World Wind Example activities.
  */
 public abstract class AbstractMainActivity extends AppCompatActivity
-    implements NavigationView.OnNavigationItemSelectedListener, Handler.Callback {
+    implements NavigationView.OnNavigationItemSelectedListener {
 
     private static int selectedItemId = R.id.nav_basic_globe_activity;
 
@@ -46,11 +46,20 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
     private String aboutBoxText = "Description goes here;";
 
-    private Handler handler = new Handler(this);
+    private Handler handler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            if (msg.what == PRINT_METRICS) {
+                return printMetrics();
+            } else {
+                return false;
+            }
+        }
+    });
 
     private static final int PRINT_METRICS = 1;
 
-    private static final int PRINT_METRICS_INTERVAL = 3000;
+    private static final int PRINT_METRICS_DELAY = 3000;
 
     /**
      * Returns a reference to the WorldWindow.
@@ -102,7 +111,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         // Update the menu by highlighting the last selected menu item
         this.navigationView.setCheckedItem(selectedItemId);
         // Use this Activity's Handler to periodically print the FrameMetrics.
-        this.handler.sendEmptyMessageDelayed(PRINT_METRICS, PRINT_METRICS_INTERVAL);
+        this.handler.sendEmptyMessageDelayed(PRINT_METRICS, PRINT_METRICS_DELAY);
     }
 
     @Override
@@ -156,17 +165,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         alertDialog.show();
     }
 
-    @Override
-    public boolean handleMessage(Message msg) {
-        if (msg.what == PRINT_METRICS) {
-            this.printMetrics();
-            return msg.getTarget().sendEmptyMessageDelayed(PRINT_METRICS, PRINT_METRICS_INTERVAL);
-        } else {
-            return false;
-        }
-    }
-
-    protected void printMetrics() {
+    protected boolean printMetrics() {
         // Assemble the current system memory info.
         ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
         ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
@@ -183,6 +182,9 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
         // Reset the accumulated World Wind frame metrics.
         fm.reset();
+
+        // Print the frame metrics again after the configured delay.
+        return this.handler.sendEmptyMessageDelayed(PRINT_METRICS, PRINT_METRICS_DELAY);
     }
 
     @Override

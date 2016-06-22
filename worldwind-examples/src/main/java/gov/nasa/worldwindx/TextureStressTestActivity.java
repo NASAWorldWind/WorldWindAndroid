@@ -18,7 +18,7 @@ import gov.nasa.worldwind.layer.ShowTessellationLayer;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.shape.SurfaceImage;
 
-public class TextureStressTestActivity extends BasicGlobeActivity implements Handler.Callback {
+public class TextureStressTestActivity extends BasicGlobeActivity {
 
     protected RenderableLayer layer = new RenderableLayer();
 
@@ -28,11 +28,20 @@ public class TextureStressTestActivity extends BasicGlobeActivity implements Han
 
     protected Bitmap bitmap;
 
-    protected Handler handler = new Handler(this);
+    protected Handler handler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            if (msg.what == ADD_IMAGE) {
+                return addImage();
+            } else {
+                return false;
+            }
+        }
+    });
 
-    protected static final int ADD_IMAGE = 1;
+    protected static final int ADD_IMAGE = 0;
 
-    protected static final int ADD_IMAGE_INTERVAL = 1000;
+    protected static final int ADD_IMAGE_DELAY = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,17 +68,7 @@ public class TextureStressTestActivity extends BasicGlobeActivity implements Han
         this.bitmap = Bitmap.createBitmap(colors, 1024, 1024, Bitmap.Config.ARGB_8888);
     }
 
-    @Override
-    public boolean handleMessage(Message msg) {
-        if (msg.what == ADD_IMAGE) {
-            this.addImage();
-            return msg.getTarget().sendEmptyMessageDelayed(ADD_IMAGE, ADD_IMAGE_INTERVAL);
-        } else {
-            return false;
-        }
-    }
-
-    protected void addImage() {
+    protected boolean addImage() {
         // Create an image source with a unique factory instance. This pattern is used in order to force World Wind to
         // allocate a new OpenGL texture object for each surface image from a single bitmap instance.
         ImageSource imageSource = ImageSource.fromBitmapFactory(new ImageSource.BitmapFactory() {
@@ -93,6 +92,9 @@ public class TextureStressTestActivity extends BasicGlobeActivity implements Han
                 this.sector.minLatitude() + this.sector.deltaLatitude() + 0.1, this.firstSector.minLongitude(),
                 this.sector.deltaLatitude(), this.sector.deltaLongitude());
         }
+
+        // Add another image after the configured delay.
+        return this.handler.sendEmptyMessageDelayed(ADD_IMAGE, ADD_IMAGE_DELAY);
     }
 
     @Override
@@ -106,6 +108,6 @@ public class TextureStressTestActivity extends BasicGlobeActivity implements Han
     protected void onResume() {
         super.onResume();
         // Add images to the World Window at a regular interval.
-        this.handler.sendEmptyMessageDelayed(ADD_IMAGE, ADD_IMAGE_INTERVAL);
+        this.handler.sendEmptyMessageDelayed(ADD_IMAGE, ADD_IMAGE_DELAY);
     }
 }
