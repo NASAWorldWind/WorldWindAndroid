@@ -23,6 +23,7 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.layer.ShowTessellationLayer;
 import gov.nasa.worldwind.shape.Placemark;
+import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwindx.milstd2525.MilStd2525;
 
 public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity implements Choreographer.FrameCallback {
@@ -1496,47 +1497,71 @@ public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity imple
             String countryCode = "**";
             String orderOfBattle = "**";
 
+            int numSymbolsCreated = 0;
             for (String standardId : StandardIdentities) {
                 for (String battleDimension : BattleDimensions) {
                     for (String status : StatusCodes) {
-                        for (String functionId : WarfightingUnknownFunctionIDs) {
-                            String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
-                            Position position = getRandomPosition();
-                            unitModifiers.put(ModifiersUnits.W_DTG_1, getDateTimeGroup(new Date()));
-                            unitModifiers.put(ModifiersUnits.Y_LOCATION, getLocation(position));
-                            symbolLayer.addRenderable(new Placemark(position, MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
+                        switch (battleDimension) {
+                            case "Z": // Unknown
+                                for (String functionId : WarfightingUnknownFunctionIDs) {
+                                    String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
+                                    Position position = getRandomPosition();
+                                    unitModifiers.put(ModifiersUnits.W_DTG_1, getDateTimeGroup(new Date()));
+                                    unitModifiers.put(ModifiersUnits.Y_LOCATION, getLocation(position));
+                                    symbolLayer.addRenderable(new Placemark(position, MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
+                                    numSymbolsCreated++;
+                                }
+                                break;
+                            case "P": // Space
+                                unitModifiers.clear();
+                                for (String functionId : WarfightingSpaceFunctionIDs) {
+                                    String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
+                                    symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
+                                    numSymbolsCreated++;
+                                }
+                                break;
+                            case "A": // Air
+                                for (String functionId : WarfightingAirFunctionIDs) {
+                                    String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
+                                    symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
+                                    numSymbolsCreated++;
+                                }
+                                break;
+//                            case "G": // Ground
+//                                for (String functionId : WarfightingGroundFunctionIDs) {
+//                                    String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
+//                                    symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
+//                                    numSymbolsCreated++;
+//                                }
+//                                break;
+//                            case "S": // Sea surface
+//                                for (String functionId : WarfightingSeaSurfaceFunctionIDs) {
+//                                    String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
+//                                    symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
+//                                    numSymbolsCreated++;
+//                                }
+//                                break;
+//                            case "U": // Subsurface
+//                                for (String functionId : WarfightingSubsurfaceFunctionIDs) {
+//                                    String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
+//                                    symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
+//                                    numSymbolsCreated++;
+//                                }
+//                                break;
+//                            case "F": // SOF
+//                                for (String functionId : WarfightingSOFFunctionIDs) {
+//                                    String sidc = codeScheme + standardId + battleDimension + standardId + functionId + sizeMobility + countryCode + orderOfBattle;
+//                                    symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
+//                                    numSymbolsCreated++;
+//                                }
+//                                break;
                         }
-
-                        unitModifiers.clear();
-                        for (String functionId : WarfightingSpaceFunctionIDs) {
-                            String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
-                            symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
-                        }
-
-                        // TODO: Progressively uncomment the following blocks to add more symbols to the globe
-//                        for (String functionId : WarfightingAirFunctionIDs) {
-//                            String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
-//                            symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
-//                        }
-//                        for (String functionId : WarfightingGroundFunctionIDs) {
-//                            String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
-//                            symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
-//                        }
-//                        for (String functionId : WarfightingSeaSurfaceFunctionIDs) {
-//                            String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
-//                            symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
-//                        }
-//                        for (String functionId : WarfightingSubsurfaceFunctionIDs) {
-//                            String sidc = codeScheme + standardId + battleDimension + status + functionId + sizeMobility + countryCode + orderOfBattle;
-//                            symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
-//                        }
-//                        for (String functionId : WarfightingSOFFunctionIDs) {
-//                            String sidc = codeScheme + standardId + battleDimension + standardId + functionId + sizeMobility + countryCode + orderOfBattle;
-//                            symbolLayer.addRenderable(new Placemark(getRandomPosition(), MilStd2525.getPlacemarkAttributes(sidc, unitModifiers, renderAttributes)));
-//                        }
                     }
                 }
             }
+            Logger.log(Logger.INFO, String.format(Locale.US, "%s: %,d Symbols Created",
+                getResources().getText(R.string.title_placemarks_milstd2525_stress_test),
+                numSymbolsCreated));
 
             // Signal a change in the WorldWind scene
             // requestRedraw() is callable from any thread.
