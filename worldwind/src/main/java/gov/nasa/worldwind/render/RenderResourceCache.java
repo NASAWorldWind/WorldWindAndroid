@@ -33,7 +33,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource> 
         @Override
         public void retrievalSucceeded(Retriever<ImageSource, Bitmap> retriever, ImageSource key, Bitmap value) {
             Texture texture = new Texture(value);
-            Entry<Object, RenderResource> entry = new Entry<Object, RenderResource>(key, texture, texture.getImageByteCount());
+            Entry<Object, RenderResource> entry = new Entry<Object, RenderResource>(key, texture, texture.getTextureByteCount());
             retrievalQueue.offer(entry);
             WorldWind.requestRedraw();
 
@@ -107,6 +107,13 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource> 
         }
     }
 
+    @Override
+    protected void entryReplaced(Entry<Object, RenderResource> oldEntry, Entry<Object, RenderResource> newEntry) {
+        if (oldEntry != null) {
+            this.evictionQueue.offer(oldEntry);
+        }
+    }
+
     public Texture retrieveTexture(ImageSource imageSource) {
         if (imageSource == null) {
             return null;
@@ -114,7 +121,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource> 
 
         if (imageSource.isBitmap()) {
             Texture texture = new Texture(imageSource.asBitmap());
-            this.put(imageSource, texture, texture.getImageByteCount());
+            this.put(imageSource, texture, texture.getTextureByteCount());
             return texture;
         }
 
@@ -124,7 +131,6 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource> 
         }
 
         this.imageRetriever.retrieve(imageSource, this.imageRetrieverCallback); // adds entries to retrievalQueue
-
         return null;
     }
 

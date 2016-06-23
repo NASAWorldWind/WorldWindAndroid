@@ -24,17 +24,17 @@ public class Texture implements RenderResource {
 
     protected int textureFormat;
 
+    protected int textureByteCount;
+
+    protected Matrix3 texCoordTransform = new Matrix3();
+
     protected int imageWidth;
 
     protected int imageHeight;
 
     protected int imageFormat;
 
-    protected int imageByteCount;
-
     protected Bitmap imageBitmap;
-
-    protected Matrix3 texCoordTransform = new Matrix3();
 
     public Texture() {
     }
@@ -56,6 +56,14 @@ public class Texture implements RenderResource {
         return this.textureHeight;
     }
 
+    public int getTextureByteCount() {
+        return this.textureByteCount;
+    }
+
+    public Matrix3 getTexCoordTransform() {
+        return this.texCoordTransform;
+    }
+
     public int getImageWidth() {
         return this.imageWidth;
     }
@@ -64,26 +72,18 @@ public class Texture implements RenderResource {
         return this.imageHeight;
     }
 
-    public int getImageByteCount() {
-        return this.imageByteCount;
-    }
-
     public void setImage(Bitmap bitmap) {
         if (bitmap == null || bitmap.isRecycled()) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Texture", "setImage", "invalidBitmap"));
         }
 
+        this.textureByteCount = estimateTexImageByteCount(bitmap);
+        this.texCoordTransform.setToVerticalFlip();
         this.imageWidth = bitmap.getWidth();
         this.imageHeight = bitmap.getHeight();
         this.imageFormat = GLUtils.getInternalFormat(bitmap);
-        this.imageByteCount = bitmap.getByteCount();
         this.imageBitmap = bitmap;
-        this.texCoordTransform.setToVerticalFlip();
-    }
-
-    public Matrix3 getTexCoordTransform() {
-        return this.texCoordTransform;
     }
 
     @Override
@@ -107,9 +107,7 @@ public class Texture implements RenderResource {
 
     protected void loadImageBitmap(DrawContext dc) {
         int currentTexture = dc.currentTexture();
-
         try {
-
             // Create the OpenGL texture 2D object.
             if (this.textureId[0] == 0) {
                 this.createTexture(dc);
@@ -119,16 +117,12 @@ public class Texture implements RenderResource {
             dc.bindTexture(this.textureId[0]);
             // Load the current imageBitmap as the OpenGL texture 2D object's image data.
             this.loadTexImage(dc);
-
         } catch (Exception e) {
-
             // The bitmap could not be used as image data for an OpenGL texture 2D object. Delete the texture object
             // to ensure that calls to bindTexture fail.
             this.deleteTexture(dc);
             Logger.logMessage(Logger.ERROR, "Texture", "loadImageBitmap", "Exception attempting to load texture image", e);
-
         } finally {
-
             // Restore the current OpenGL texture object binding.
             dc.bindTexture(currentTexture);
         }
@@ -170,5 +164,49 @@ public class Texture implements RenderResource {
         if (isPowerOfTwo) {
             GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
         }
+    }
+
+    protected static int estimateTexImageByteCount(Bitmap bitmap) {
+        int byteCount = bitmap.getWidth() * bitmap.getHeight();
+
+        int type = GLUtils.getType(bitmap);
+        switch (type) {
+            case GLES20.GL_UNSIGNED_BYTE:
+                int format = GLUtils.getInternalFormat(bitmap);
+                switch (format) {
+                    case GLES20.GL_ALPHA:
+                        byteCount *= 1;
+                        break;
+                    case GLES20.GL_RGB:
+                        byteCount *= 3;
+                        break;
+                    case GLES20.GL_RGBA:
+                        byteCount *= 4;
+                        break;
+                    case GLES20.GL_LUMINANCE:
+                        byteCount *= 1;
+                        break;
+                    case GLES20.GL_LUMINANCE_ALPHA:
+                        byteCount *= 2;
+                        break;
+                }
+                break;
+            case GLES20.GL_UNSIGNED_SHORT_5_6_5:
+                byteCount *= 2;
+                break;
+            case GLES20.GL_UNSIGNED_SHORT_4_4_4_4:
+                byteCount *= 2;
+                break;
+            case GLES20.GL_UNSIGNED_SHORT_5_5_5_1:
+                byteCount *= 2;
+                break;
+        }
+
+        boolean isPowerOfTwo = WWMath.isPowerOfTwo(bitmap.getWidth()) && WWMath.isPowerOfTwo(bitmap.getHeight());
+        if (isPowerOfTwo) {
+            byteCount += byteCount / 3; // add 1/3 for the mipmap texture images
+        }
+
+        return byteCount;
     }
 }
