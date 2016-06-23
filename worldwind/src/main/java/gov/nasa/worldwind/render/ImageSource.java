@@ -78,7 +78,7 @@ public class ImageSource {
     public static ImageSource fromBitmap(Bitmap bitmap) {
         if (bitmap == null || bitmap.isRecycled()) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "ImageSource", "fromBitmap", "invalidBitmap"));
+                Logger.logMessage(Logger.ERROR, "ImageSource", "fromBitmap", (bitmap == null) ? "missingBitmap" : "invalidBitmap"));
         }
 
         ImageSource imageSource = new ImageSource();

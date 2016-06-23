@@ -42,7 +42,7 @@ public class Texture implements RenderResource {
     public Texture(Bitmap bitmap) {
         if (bitmap == null || bitmap.isRecycled()) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Texture", "constructor", "invalidBitmap"));
+                Logger.logMessage(Logger.ERROR, "Texture", "constructor", (bitmap == null) ? "missingBitmap" : "invalidBitmap"));
         }
 
         this.setImage(bitmap);
@@ -75,7 +75,7 @@ public class Texture implements RenderResource {
     public void setImage(Bitmap bitmap) {
         if (bitmap == null || bitmap.isRecycled()) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Texture", "setImage", "invalidBitmap"));
+                Logger.logMessage(Logger.ERROR, "Texture", "setImage", (bitmap == null) ? "missingBitmap" : "invalidBitmap"));
         }
 
         this.textureByteCount = estimateTexImageByteCount(bitmap);
@@ -166,45 +166,48 @@ public class Texture implements RenderResource {
         }
     }
 
+    @SuppressWarnings("UnnecessaryLocalVariable")
     protected static int estimateTexImageByteCount(Bitmap bitmap) {
-        int byteCount = bitmap.getWidth() * bitmap.getHeight();
-
+        // Compute the number of bytes per row of texture image level 0. Use a default of 32 bits per pixel when either
+        // of the bitmap's type or internal format are unrecognized.
+        int bytesPerRow = bitmap.getWidth() * 4;
         int type = GLUtils.getType(bitmap);
         switch (type) {
             case GLES20.GL_UNSIGNED_BYTE:
                 int format = GLUtils.getInternalFormat(bitmap);
                 switch (format) {
                     case GLES20.GL_ALPHA:
-                        byteCount *= 1;
+                        bytesPerRow = bitmap.getWidth(); // 8 bits per pixel
                         break;
                     case GLES20.GL_RGB:
-                        byteCount *= 3;
+                        bytesPerRow = bitmap.getWidth() * 3; // 24 bits per pixel
                         break;
                     case GLES20.GL_RGBA:
-                        byteCount *= 4;
+                        bytesPerRow = bitmap.getWidth() * 4; // 32 bits per pixel
                         break;
                     case GLES20.GL_LUMINANCE:
-                        byteCount *= 1;
+                        bytesPerRow = bitmap.getWidth(); // 8 bits per pixel
                         break;
                     case GLES20.GL_LUMINANCE_ALPHA:
-                        byteCount *= 2;
+                        bytesPerRow = bitmap.getWidth() * 2; // 16 bits per pixel
                         break;
                 }
                 break;
             case GLES20.GL_UNSIGNED_SHORT_5_6_5:
-                byteCount *= 2;
-                break;
             case GLES20.GL_UNSIGNED_SHORT_4_4_4_4:
-                byteCount *= 2;
-                break;
             case GLES20.GL_UNSIGNED_SHORT_5_5_5_1:
-                byteCount *= 2;
+                bytesPerRow = bitmap.getWidth() * 2; // 16 bits per pixel
                 break;
         }
 
+        // Compute the number of bytes for the entire texture image level 0 (i.e. bytePerRow * numRows).
+        int byteCount = bytesPerRow * bitmap.getHeight();
+
+        // If the texture will have mipmaps, add 1/3 to account for the bytes used by texture image level 1 through
+        // texture image level N.
         boolean isPowerOfTwo = WWMath.isPowerOfTwo(bitmap.getWidth()) && WWMath.isPowerOfTwo(bitmap.getHeight());
         if (isPowerOfTwo) {
-            byteCount += byteCount / 3; // add 1/3 for the mipmap texture images
+            byteCount += byteCount / 3;
         }
 
         return byteCount;
