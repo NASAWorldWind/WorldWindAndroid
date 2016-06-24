@@ -142,7 +142,7 @@ public class LruMemoryCache<K, V> {
             this.usedCapacity -= oldEntry.size;
 
             if (newEntry.value != oldEntry.value) {
-                this.entryRemoved(oldEntry);
+                this.entryReplaced(oldEntry, newEntry);
                 return oldEntry;
             }
         }
@@ -151,6 +151,10 @@ public class LruMemoryCache<K, V> {
     }
 
     protected void entryRemoved(Entry<K, V> entry) {
+    }
+
+    protected void entryReplaced(Entry<K, V> oldEntry, Entry<K, V> newEntry) {
+
     }
 
     protected static class Entry<K, V> {

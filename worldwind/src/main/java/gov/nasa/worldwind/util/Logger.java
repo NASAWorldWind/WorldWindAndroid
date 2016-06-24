@@ -27,8 +27,7 @@ public class Logger {
     static {
         messageTable = new HashMap<>();
         messageTable.put("errorReadingProgramSource", "Error reading program sources");
-        messageTable.put("invalidBitmap", "The bitmap is null or recycled");
-        messageTable.put("invalidCache", "The cache is null");
+        messageTable.put("invalidBitmap", "The bitmap is recycled");
         messageTable.put("invalidCapacity", "The capacity is less than 1");
         messageTable.put("invalidClass", "The class is null or cannot be found");
         messageTable.put("invalidClipDistance", "The clip distance is invalid");
@@ -44,6 +43,7 @@ public class Logger {
         messageTable.put("invalidWidth", "The width is invalid");
         messageTable.put("invalidWidthOrHeight", "The width or the height is invalid");
         messageTable.put("missingArray", "The array is null or insufficient length");
+        messageTable.put("missingBitmap", "The bitmap is null");
         messageTable.put("missingBuffer", "The buffer is null or insufficient length");
         messageTable.put("missingCache", "The cache is null");
         messageTable.put("missingCallback", "The callback is null");

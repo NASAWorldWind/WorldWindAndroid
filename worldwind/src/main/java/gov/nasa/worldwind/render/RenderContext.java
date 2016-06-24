@@ -344,7 +344,7 @@ public class RenderContext {
     }
 
     public Texture putTexture(ImageSource imageSource, Texture texture) {
-        this.renderResourceCache.put(imageSource, texture, (texture != null) ? texture.getImageByteCount() : 0);
+        this.renderResourceCache.put(imageSource, texture, (texture != null) ? texture.getTextureByteCount() : 0);
         return texture;
     }
 

@@ -39,7 +39,13 @@ public class BasicTessellator implements Tessellator, TileFactory {
 
     protected BasicTerrain currentTerrain = new BasicTerrain();
 
-    protected LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(300); // capacity for 300 tiles
+    /**
+     * Memory cache for this tessellator's subdivision tiles. Each entry contains an array of four terrain tiles
+     * corresponding to the subdivision of the group's common parent tile. The cache is configured to hold 200 groups, a
+     * number tuned to store the tiles needed to navigate a small region, given the tessellator's first level tile delta
+     * of 90 degrees, tile dimensions of 32x32 and detail control of 80.
+     */
+    protected LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(200);
 
     protected float[] levelSetVertexTexCoords;
 

@@ -38,7 +38,12 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
 
     protected List<Tile> topLevelTiles = new ArrayList<>();
 
-    protected LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(600); // capacity for 600 tiles
+    /**
+     * Memory cache for this layer's subdivision tiles. Each entry contains an array of four image tiles corresponding
+     * to the subdivision of the group's common parent tile. The cache is configured to hold 500 groups, a number
+     * empirically determined to be sufficient for storing the tiles needed to navigate a small region.
+     */
+    protected LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(500);
 
     protected SurfaceTextureProgram activeProgram;
 

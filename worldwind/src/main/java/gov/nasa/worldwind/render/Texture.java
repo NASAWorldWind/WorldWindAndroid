@@ -24,17 +24,17 @@ public class Texture implements RenderResource {
 
     protected int textureFormat;
 
+    protected int textureByteCount;
+
+    protected Matrix3 texCoordTransform = new Matrix3();
+
     protected int imageWidth;
 
     protected int imageHeight;
 
     protected int imageFormat;
 
-    protected int imageByteCount;
-
     protected Bitmap imageBitmap;
-
-    protected Matrix3 texCoordTransform = new Matrix3();
 
     public Texture() {
     }
@@ -42,7 +42,7 @@ public class Texture implements RenderResource {
     public Texture(Bitmap bitmap) {
         if (bitmap == null || bitmap.isRecycled()) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Texture", "constructor", "invalidBitmap"));
+                Logger.logMessage(Logger.ERROR, "Texture", "constructor", (bitmap == null) ? "missingBitmap" : "invalidBitmap"));
         }
 
         this.setImage(bitmap);
@@ -56,6 +56,14 @@ public class Texture implements RenderResource {
         return this.textureHeight;
     }
 
+    public int getTextureByteCount() {
+        return this.textureByteCount;
+    }
+
+    public Matrix3 getTexCoordTransform() {
+        return this.texCoordTransform;
+    }
+
     public int getImageWidth() {
         return this.imageWidth;
     }
@@ -64,26 +72,18 @@ public class Texture implements RenderResource {
         return this.imageHeight;
     }
 
-    public int getImageByteCount() {
-        return this.imageByteCount;
-    }
-
     public void setImage(Bitmap bitmap) {
         if (bitmap == null || bitmap.isRecycled()) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Texture", "setImage", "invalidBitmap"));
+                Logger.logMessage(Logger.ERROR, "Texture", "setImage", (bitmap == null) ? "missingBitmap" : "invalidBitmap"));
         }
 
+        this.textureByteCount = estimateTexImageByteCount(bitmap);
+        this.texCoordTransform.setToVerticalFlip();
         this.imageWidth = bitmap.getWidth();
         this.imageHeight = bitmap.getHeight();
         this.imageFormat = GLUtils.getInternalFormat(bitmap);
-        this.imageByteCount = bitmap.getByteCount();
         this.imageBitmap = bitmap;
-        this.texCoordTransform.setToVerticalFlip();
-    }
-
-    public Matrix3 getTexCoordTransform() {
-        return this.texCoordTransform;
     }
 
     @Override
@@ -107,9 +107,7 @@ public class Texture implements RenderResource {
 
     protected void loadImageBitmap(DrawContext dc) {
         int currentTexture = dc.currentTexture();
-
         try {
-
             // Create the OpenGL texture 2D object.
             if (this.textureId[0] == 0) {
                 this.createTexture(dc);
@@ -119,16 +117,12 @@ public class Texture implements RenderResource {
             dc.bindTexture(this.textureId[0]);
             // Load the current imageBitmap as the OpenGL texture 2D object's image data.
             this.loadTexImage(dc);
-
         } catch (Exception e) {
-
             // The bitmap could not be used as image data for an OpenGL texture 2D object. Delete the texture object
             // to ensure that calls to bindTexture fail.
             this.deleteTexture(dc);
             Logger.logMessage(Logger.ERROR, "Texture", "loadImageBitmap", "Exception attempting to load texture image", e);
-
         } finally {
-
             // Restore the current OpenGL texture object binding.
             dc.bindTexture(currentTexture);
         }
@@ -170,5 +164,52 @@ public class Texture implements RenderResource {
         if (isPowerOfTwo) {
             GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
         }
+    }
+
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    protected static int estimateTexImageByteCount(Bitmap bitmap) {
+        // Compute the number of bytes per row of texture image level 0. Use a default of 32 bits per pixel when either
+        // of the bitmap's type or internal format are unrecognized.
+        int bytesPerRow = bitmap.getWidth() * 4;
+        int type = GLUtils.getType(bitmap);
+        switch (type) {
+            case GLES20.GL_UNSIGNED_BYTE:
+                int format = GLUtils.getInternalFormat(bitmap);
+                switch (format) {
+                    case GLES20.GL_ALPHA:
+                        bytesPerRow = bitmap.getWidth(); // 8 bits per pixel
+                        break;
+                    case GLES20.GL_RGB:
+                        bytesPerRow = bitmap.getWidth() * 3; // 24 bits per pixel
+                        break;
+                    case GLES20.GL_RGBA:
+                        bytesPerRow = bitmap.getWidth() * 4; // 32 bits per pixel
+                        break;
+                    case GLES20.GL_LUMINANCE:
+                        bytesPerRow = bitmap.getWidth(); // 8 bits per pixel
+                        break;
+                    case GLES20.GL_LUMINANCE_ALPHA:
+                        bytesPerRow = bitmap.getWidth() * 2; // 16 bits per pixel
+                        break;
+                }
+                break;
+            case GLES20.GL_UNSIGNED_SHORT_5_6_5:
+            case GLES20.GL_UNSIGNED_SHORT_4_4_4_4:
+            case GLES20.GL_UNSIGNED_SHORT_5_5_5_1:
+                bytesPerRow = bitmap.getWidth() * 2; // 16 bits per pixel
+                break;
+        }
+
+        // Compute the number of bytes for the entire texture image level 0 (i.e. bytePerRow * numRows).
+        int byteCount = bytesPerRow * bitmap.getHeight();
+
+        // If the texture will have mipmaps, add 1/3 to account for the bytes used by texture image level 1 through
+        // texture image level N.
+        boolean isPowerOfTwo = WWMath.isPowerOfTwo(bitmap.getWidth()) && WWMath.isPowerOfTwo(bitmap.getHeight());
+        if (isPowerOfTwo) {
+            byteCount += byteCount / 3;
+        }
+
+        return byteCount;
     }
 }
