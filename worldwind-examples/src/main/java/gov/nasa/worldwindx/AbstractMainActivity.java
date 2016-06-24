@@ -36,17 +36,17 @@ import gov.nasa.worldwind.util.Logger;
 public abstract class AbstractMainActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
 
-    private static int selectedItemId = R.id.nav_basic_globe_activity;
+    protected static int selectedItemId = R.id.nav_basic_globe_activity;
 
-    private ActionBarDrawerToggle drawerToggle;
+    protected ActionBarDrawerToggle drawerToggle;
 
-    private NavigationView navigationView;
+    protected NavigationView navigationView;
 
-    private String aboutBoxTitle = "Title goes here";
+    protected String aboutBoxTitle = "Title goes here";
 
-    private String aboutBoxText = "Description goes here;";
+    protected String aboutBoxText = "Description goes here;";
 
-    private Handler handler = new Handler(new Handler.Callback() {
+    protected Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.what == PRINT_METRICS) {
@@ -57,9 +57,9 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         }
     });
 
-    private static final int PRINT_METRICS = 1;
+    protected static final int PRINT_METRICS = 1;
 
-    private static final int PRINT_METRICS_DELAY = 3000;
+    protected static final int PRINT_METRICS_DELAY = 3000;
 
     /**
      * Returns a reference to the WorldWindow.
@@ -175,10 +175,12 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         FrameMetrics fm = this.getWorldWindow().getFrameMetrics();
 
         // Print a log message with the system memory, World Wind cache usage, and World Wind average frame time.
-        Logger.log(Logger.INFO, String.format(Locale.US, "System memory %,.0f / %,.0f KB    World Wind cache %,.0f / %,.0f KB    World Wind frame time %.1f ms + %.1f ms",
-            mi.availMem / 1024.0, mi.totalMem / 1024.0,
-            fm.getRenderResourceCacheUsedCapacity() / 1024.0, fm.getRenderResourceCacheCapacity() / 1024.0,
-            fm.getRenderTimeAverage(), fm.getDrawTimeAverage()));
+        Logger.log(Logger.INFO, String.format(Locale.US, "System memory %,.0f KB    Heap memory %,.0f KB    Render cache %,.0f KB    Frame time %.1f ms + %.1f ms",
+            (mi.totalMem - mi.availMem) / 1024.0,
+            (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024.0,
+            fm.getRenderResourceCacheUsedCapacity() / 1024.0,
+            fm.getRenderTimeAverage(),
+            fm.getDrawTimeAverage()));
 
         // Reset the accumulated World Wind frame metrics.
         fm.reset();
