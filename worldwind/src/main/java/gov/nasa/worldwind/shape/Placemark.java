@@ -38,6 +38,21 @@ import gov.nasa.worldwind.util.WWMath;
 public class Placemark extends AbstractRenderable implements Highlightable, Movable {
 
     /**
+     * Presents an interfaced for dynamically determining the PlacemarkAttributes based on the distance between the
+     * placemark and the camera.
+     */
+    public interface LevelOfDetailSelector {
+
+        /**
+         * Gets the active attributes for the current distance to the camera and highlighted state.
+         *
+         * @param placemark      The placemark needing a level of detail selection
+         * @param cameraDistance The distance from the placemark to the camera (meters)
+         */
+        void selectLevelOfDetail(Placemark placemark, double cameraDistance);
+    }
+
+    /**
      * The default eye distance above which to reduce the size of this placemark, in meters. If {@link
      * Placemark#setEyeDistanceScaling(boolean)} is true, this placemark's image, label and leader sizes are reduced as
      * the eye distance increases beyond this threshold.
@@ -155,6 +170,8 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
      * The distance from the camera to the placemark in meters.
      */
     protected double cameraDistance;
+
+    protected LevelOfDetailSelector levelOfDetailSelector;
 
     /**
      * Constructs a Placemark that draws its representation at the supplied position using default {@link
@@ -342,6 +359,29 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         return this;
     }
 
+    /**
+     * gets the current level-of-detail selector used to inject logic for selecting PlacemarkAttributes based on the the
+     * camera distance and highlighted attribute.
+     *
+     * @return The current level-of-detail selector; may be null
+     */
+    public LevelOfDetailSelector getLevelOfDetailSelector() {
+        return this.levelOfDetailSelector;
+    }
+
+    /**
+     * Sets the optional level-of-detail selector used to inject logic for selecting PlacemarkAttributes based on the
+     * the camera distance and highlighted attribute.  If set to null, the normal and highlight attribute bundles used
+     * respectfully for the normal and highlighted states.
+     *
+     * @param levelOfDetailSelector The new level-of-detail selected; may be null
+     *
+     * @return This placemark
+     */
+    public Placemark setLevelOfDetailSelector(LevelOfDetailSelector levelOfDetailSelector) {
+        this.levelOfDetailSelector = levelOfDetailSelector;
+        return this;
+    }
     /**
      * Gets the text used to label this placemark on the globe.
      *
@@ -651,6 +691,11 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
             return; // clipped by the near plane or the far plane
         }
 
+        // Allow the placemark to adjust the level of detail based on distance to the camera
+        if (this.levelOfDetailSelector != null) {
+            this.levelOfDetailSelector.selectLevelOfDetail(this, this.cameraDistance);
+        }
+
         // Determine the attributes to use for the current render pass.
         this.determineActiveAttributes(rc);
         if (this.activeAttributes == null) {
@@ -771,7 +816,6 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
                 screenPlacePoint.z);
 
             unitSquareTransform.multiplyByScale(w * s, h * s, 1);
-
         } else {
             double size = this.activeAttributes.imageScale * visibilityScale;
             this.activeAttributes.imageOffset.offsetForSize(size, size, offset);
