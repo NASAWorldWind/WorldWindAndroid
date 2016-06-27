@@ -23,7 +23,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
 
     protected Resources resources;
 
-    protected Queue<Entry<Object, RenderResource>> evictionQueue = new ConcurrentLinkedQueue<>();
+    protected Queue<RenderResource> evictionQueue = new ConcurrentLinkedQueue<>();
 
     protected Queue<Entry<Object, RenderResource>> retrievalQueue = new ConcurrentLinkedQueue<>();
 
@@ -53,16 +53,16 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
     }
 
     public void releaseEvictedResources(DrawContext dc) {
-        Entry<Object, RenderResource> evicted;
+        RenderResource evicted;
         while ((evicted = this.evictionQueue.poll()) != null) {
             try {
-                if (Logger.isLoggable(Logger.DEBUG)) {
-                    Logger.log(Logger.DEBUG, "Released render resource \'" + evicted.key + "\'");
+                evicted.release(dc);
+                if (Logger.isLoggable(Logger.INFO)) {
+                    Logger.log(Logger.INFO, "Released render resource \'" + evicted + "\'");
                 }
-                evicted.value.release(dc);
             } catch (Exception ignored) {
-                if (Logger.isLoggable(Logger.DEBUG)) {
-                    Logger.log(Logger.DEBUG, "Exception releasing render resource \'" + evicted.key + "\'", ignored);
+                if (Logger.isLoggable(Logger.INFO)) {
+                    Logger.log(Logger.INFO, "Exception releasing render resource \'" + evicted + "\'", ignored);
                 }
             }
         }
@@ -71,14 +71,14 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
     @Override
     protected void entryRemoved(Entry<Object, RenderResource> entry) {
         if (entry != null) {
-            this.evictionQueue.offer(entry);
+            this.evictionQueue.offer(entry.value);
         }
     }
 
     @Override
     protected void entryReplaced(Entry<Object, RenderResource> oldEntry, Entry<Object, RenderResource> newEntry) {
         if (oldEntry != null) {
-            this.evictionQueue.offer(oldEntry);
+            this.evictionQueue.offer(oldEntry.value);
         }
     }
 
