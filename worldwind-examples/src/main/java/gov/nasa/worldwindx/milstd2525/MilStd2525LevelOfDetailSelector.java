@@ -5,6 +5,7 @@
 
 package gov.nasa.worldwindx.milstd2525;
 
+import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
 import gov.nasa.worldwind.util.Logger;
@@ -12,7 +13,7 @@ import gov.nasa.worldwind.util.Logger;
 /**
  * The MilStd2525LevelOfDetailSelector determines which set of PlacemarkAttributes to use for a MilStd2525Placemark. A
  * {@link MilStd2525Placemark} creates an instance of this class in its constructor, and calls
- * {@link MilStd2525LevelOfDetailSelector#selectLevelOfDetail(Placemark, double)} in its doRender() method.
+ * {@link Placemark.LevelOfDetailSelector#selectLevelOfDetail(RenderContext, Placemark, double)} in its doRender() method.
  */
 public class MilStd2525LevelOfDetailSelector implements Placemark.LevelOfDetailSelector {
 
@@ -55,11 +56,12 @@ public class MilStd2525LevelOfDetailSelector implements Placemark.LevelOfDetailS
     /**
      * Gets the active attributes for the current distance to the camera and highlighted state.
      *
+     * @param rc             The current render contents
      * @param placemark      The placemark needing a level of detail selection
      * @param cameraDistance The distance from the placemark to the camera (meters)
      */
     @Override
-    public void selectLevelOfDetail(Placemark placemark, double cameraDistance) {
+    public void selectLevelOfDetail(RenderContext rc, Placemark placemark, double cameraDistance) {
         if (!(placemark instanceof MilStd2525Placemark)) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "MilStd2525LevelOfDetailSelector", "selectLevelOfDetail",

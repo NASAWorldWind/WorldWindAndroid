@@ -46,10 +46,11 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         /**
          * Gets the active attributes for the current distance to the camera and highlighted state.
          *
+         * @param rc             The current render context
          * @param placemark      The placemark needing a level of detail selection
          * @param cameraDistance The distance from the placemark to the camera (meters)
          */
-        void selectLevelOfDetail(Placemark placemark, double cameraDistance);
+        void selectLevelOfDetail(RenderContext rc, Placemark placemark, double cameraDistance);
     }
 
     /**
@@ -693,7 +694,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
 
         // Allow the placemark to adjust the level of detail based on distance to the camera
         if (this.levelOfDetailSelector != null) {
-            this.levelOfDetailSelector.selectLevelOfDetail(this, this.cameraDistance);
+            this.levelOfDetailSelector.selectLevelOfDetail(rc, this, this.cameraDistance);
         }
 
         // Determine the attributes to use for the current render pass.
@@ -782,6 +783,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
      * @param rc the current render context
      */
     protected void determineActiveTexture(RenderContext rc) {
+        // TODO: Refactor!
         if (this.activeAttributes.imageSource != null) {
             // Earlier in doRender(), an attempt was made to 'get' the activeTexture from the cache.
             // If was not found in the cache we need to retrieve a texture from the image source.
