@@ -18,7 +18,8 @@ import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.LruMemoryCache;
 import gov.nasa.worldwind.util.Retriever;
 
-public class RenderResourceCache extends LruMemoryCache<Object, RenderResource> {
+public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
+    implements Retriever.Callback<ImageSource, Bitmap> {
 
     protected Resources resources;
 
@@ -26,40 +27,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource> 
 
     protected Queue<Entry<Object, RenderResource>> retrievalQueue = new ConcurrentLinkedQueue<>();
 
-    protected Retriever<ImageSource, Bitmap> imageRetriever = new ImageRetriever();
-
-    protected Retriever.Callback<ImageSource, Bitmap> imageRetrieverCallback = new Retriever.Callback<ImageSource, Bitmap>() {
-
-        @Override
-        public void retrievalSucceeded(Retriever<ImageSource, Bitmap> retriever, ImageSource key, Bitmap value) {
-            Texture texture = new Texture(value);
-            Entry<Object, RenderResource> entry = new Entry<Object, RenderResource>(key, texture, texture.getTextureByteCount());
-            retrievalQueue.offer(entry);
-            WorldWind.requestRedraw();
-
-            if (Logger.isLoggable(Logger.DEBUG)) {
-                Logger.log(Logger.DEBUG, "Image retrieval succeeded \'" + key + "\'");
-            }
-        }
-
-        @Override
-        public void retrievalFailed(Retriever<ImageSource, Bitmap> retriever, ImageSource key, Throwable ex) {
-            if (ex instanceof SocketTimeoutException) { // log socket timeout exceptions while suppressing the stack trace
-                Logger.log(Logger.ERROR, "Socket timeout retrieving image \'" + key + "\'");
-            } else if (ex != null) { // log checked exceptions with the entire stack trace
-                Logger.log(Logger.ERROR, "Image retrieval failed with exception \'" + key + "\'", ex);
-            } else {
-                Logger.log(Logger.ERROR, "Image retrieval failed \'" + key + "\'");
-            }
-        }
-
-        @Override
-        public void retrievalRejected(Retriever<ImageSource, Bitmap> retriever, ImageSource key) {
-            if (Logger.isLoggable(Logger.DEBUG)) {
-                Logger.log(Logger.DEBUG, "Image retrieval rejected \'" + key + "\'");
-            }
-        }
-    };
+    protected Retriever<ImageSource, Bitmap> imageRetriever = new ImageRetriever(8);
 
     public RenderResourceCache(int capacity) {
         super(capacity);
@@ -130,7 +98,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource> 
             return texture;
         }
 
-        this.imageRetriever.retrieve(imageSource, this.imageRetrieverCallback); // adds entries to retrievalQueue
+        this.imageRetriever.retrieve(imageSource, this); // adds entries to retrievalQueue
         return null;
     }
 
@@ -145,5 +113,35 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource> 
         }
 
         return (match != null) ? match.value : null;
+    }
+
+    @Override
+    public void retrievalSucceeded(Retriever<ImageSource, Bitmap> retriever, ImageSource key, Bitmap value) {
+        Texture texture = new Texture(value);
+        Entry<Object, RenderResource> entry = new Entry<Object, RenderResource>(key, texture, texture.getTextureByteCount());
+        retrievalQueue.offer(entry);
+        WorldWind.requestRedraw();
+
+        if (Logger.isLoggable(Logger.DEBUG)) {
+            Logger.log(Logger.DEBUG, "Image retrieval succeeded \'" + key + "\'");
+        }
+    }
+
+    @Override
+    public void retrievalFailed(Retriever<ImageSource, Bitmap> retriever, ImageSource key, Throwable ex) {
+        if (ex instanceof SocketTimeoutException) { // log socket timeout exceptions while suppressing the stack trace
+            Logger.log(Logger.ERROR, "Socket timeout retrieving image \'" + key + "\'");
+        } else if (ex != null) { // log checked exceptions with the entire stack trace
+            Logger.log(Logger.ERROR, "Image retrieval failed with exception \'" + key + "\'", ex);
+        } else {
+            Logger.log(Logger.ERROR, "Image retrieval failed \'" + key + "\'");
+        }
+    }
+
+    @Override
+    public void retrievalRejected(Retriever<ImageSource, Bitmap> retriever, ImageSource key) {
+        if (Logger.isLoggable(Logger.DEBUG)) {
+            Logger.log(Logger.DEBUG, "Image retrieval rejected \'" + key + "\'");
+        }
     }
 }

@@ -21,12 +21,10 @@ import gov.nasa.worldwind.util.WWUtil;
 
 public class ImageRetriever extends AbstractRetriever<ImageSource, Bitmap> {
 
-    protected static final int MAX_SIMULTANEOUS_RETRIEVALS = 8;
-
     protected Resources resources;
 
-    public ImageRetriever() {
-        super(MAX_SIMULTANEOUS_RETRIEVALS);
+    public ImageRetriever(int maxSimultaneousRetrievals) {
+        super(maxSimultaneousRetrievals);
     }
 
     public Resources getResources() {
