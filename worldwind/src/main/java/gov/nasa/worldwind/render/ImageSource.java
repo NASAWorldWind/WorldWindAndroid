@@ -28,21 +28,20 @@ import gov.nasa.worldwind.util.WWUtil;
 public class ImageSource {
 
     /**
-     * Factory for delegating construction of bitmap images. Bitmap factory provides a mechanism for World Wind
-     * components to manage bitmap memory by specifying bitmaps indirectly, rather than specifying a reference to a
-     * Bitmap object. The factory controls the bitmap contents, while World Wind controls the bitmap's lifecycle. This
-     * enables World Wind to lazily construct bitmaps only when needed, cache those bitmaps, then release them from
-     * memory when they're no longer needed. Additionally, bitmap factory enables World Wind to re-create bitmaps as
-     * needed.
+     * Factory for delegating construction of bitmap images. World Wind shapes configured with a BitmapFactory construct
+     * their bitmaps lazily, typically when the shape becomes visible on screen.
      */
     public interface BitmapFactory {
 
         /**
-         * TODO convey that this is called lazily Returns the bitmap associated with this factory. The returned bitmap
-         * is owned and managed by World Wind. The factory must not retain a reference to the bitmap and must not
-         * recycle the bitmap.
+         * Returns the bitmap associated with this factory. This method may be called more than once and may be called
+         * from a non-UI thread. Each invocation must return a bitmap with equivalent content, dimensions and
+         * configuration. Any side effects applied to the World Wind scene by the factory must be executed on the main
+         * thread.
+         * <p/>
+         * The factory must not retain any reference to the returned bitmap and must not attempt to recycle the bitmap.
          *
-         * @return the bitmap
+         * @return the bitmap associated with this factory
          */
         Bitmap createBitmap();
     }
@@ -88,8 +87,9 @@ public class ImageSource {
     }
 
     /**
-     * Constructs an image source with a bitmap factory. The factory must create images with dimensions to no greater
-     * than 2048 x 2048.
+     * Constructs an image source with a bitmap factory. World Wind shapes configured with a bitmap factory image source
+     * construct their bitmaps lazily, typically when the shape becomes visible on screen. The factory must create
+     * images with dimensions to no greater than 2048 x 2048.
      *
      * @param factory the bitmap factory to use as an image source
      *
