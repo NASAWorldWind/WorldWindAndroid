@@ -819,7 +819,10 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
 
             unitSquareTransform.multiplyByScale(w * s, h * s, 1);
         } else {
-            double size = this.activeAttributes.imageScale * visibilityScale;
+            // This branch serves both non-textured attributes and also textures that haven't been loaded yet.
+            // We set the size for non-loaded textures to the typical size of a contemporary "small" icon (24px)
+            double size = this.activeAttributes.imageSource != null ? 24 : this.activeAttributes.imageScale;
+            size *= visibilityScale;
             this.activeAttributes.imageOffset.offsetForSize(size, size, offset);
 
             unitSquareTransform.multiplyByTranslation(
