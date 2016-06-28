@@ -10,6 +10,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.Looper;
@@ -212,7 +213,7 @@ public class MilStd2525 {
     /**
      * This ImageSource.BitmapFactory implementation creates MIL-STD-2525 bitmaps for use with MilStd2525Placemark.
      */
-    protected static class SymbolBitmapFactory implements ImageSource.BitmapFactory, Runnable {
+    protected static class SymbolBitmapFactory implements ImageSource.BitmapFactory {
 
         private final String symbolCode;
 
@@ -265,25 +266,23 @@ public class MilStd2525 {
             // placement as the offset may change depending on the level of detail, for instance, the absence or
             // presence of text modifiers.
             Point centerPoint = imageInfo.getCenterPoint(); // The center of the core symbol
+            Rect bounds = imageInfo.getImageBounds();       // The extents of the image, including text modifiers
             this.placemarkOffset = new Offset(
                 WorldWind.OFFSET_PIXELS, centerPoint.x, // x offset
-                WorldWind.OFFSET_PIXELS, centerPoint.y); // y offset
+                WorldWind.OFFSET_PIXELS, bounds.height() - centerPoint.y); // y offset converted to lower-left origin
 
             // Apply the placemark offset to the attributes on the main thread. This is necessary to synchronize write
             // access to placemarkAttributes from the thread that invokes this BitmapFactory and read access from the
             // main thread.
-            mainLoopHandler.post(this);
+            mainLoopHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    placemarkAttributes.setImageOffset(placemarkOffset);
+                }
+            });
 
             // Return the bitmap
             return imageInfo.getImage();
-        }
-
-        /**
-         * Applies changes to the factory's placemarkAttributes as a result of creating the bitmap.
-         */
-        @Override
-        public void run() {
-            this.placemarkAttributes.setImageOffset(this.placemarkOffset);
         }
     }
 }
