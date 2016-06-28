@@ -606,8 +606,13 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
         // The frame is recycled by the OpenGL thread.
-        Frame frame = Frame.obtain(this.framePool);
-        this.renderFrame(frame);
+        try {
+            Frame frame = Frame.obtain(this.framePool);
+            this.renderFrame(frame);
+        } catch (Exception e) {
+            Logger.logMessage(Logger.ERROR, "WorldWindow", "doFrame",
+                "Exception while rendering frame in Choreographer callback \'" + frameTimeNanos + "\'", e);
+        }
     }
 
     /**
@@ -688,10 +693,16 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // All frames must be processed or threads waiting on a frame to finish may block indefinitely.
         Frame pickFrame = this.pickQueue.poll();
         if (pickFrame != null) {
-            this.drawFrame(pickFrame);
-            pickFrame.signalDone();
-            pickFrame.recycle();
-            super.requestRender();
+            try {
+                this.drawFrame(pickFrame);
+            } catch (Exception e) {
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "onDrawFrame",
+                    "Exception while processing pick in OpenGL thread", e);
+            } finally {
+                pickFrame.signalDone();
+                pickFrame.recycle();
+                super.requestRender();
+            }
         }
 
         // Remove and switch to to the frame at the front of the frame queue, recycling the previous frame back into the
@@ -707,8 +718,13 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Process and display the Drawables accumulated in the last frame taken from the front of the queue. This frame
         // may be drawn multiple times if the OpenGL thread executes more often than the World Window enqueues frames.
-        if (this.currentFrame != null) {
-            this.drawFrame(this.currentFrame);
+        try {
+            if (this.currentFrame != null) {
+                this.drawFrame(this.currentFrame);
+            }
+        } catch (Exception e) {
+            Logger.logMessage(Logger.ERROR, "WorldWindow", "onDrawFrame",
+                "Exception while drawing frame in OpenGL thread", e);
         }
     }
 
