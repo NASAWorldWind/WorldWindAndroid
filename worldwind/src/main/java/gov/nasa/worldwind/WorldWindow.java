@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwind;
 
-import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.PointF;
 import android.opengl.GLES20;
@@ -51,8 +50,6 @@ import gov.nasa.worldwind.util.SynchronizedPool;
  * Window is configured to display an ellipsoidal globe using the WGS 84 reference values.
  */
 public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCallback, GLSurfaceView.Renderer, MessageListener {
-
-    protected static final int DEFAULT_MEMORY_CLASS = 16;
 
     protected static final int MAX_FRAME_QUEUE_SIZE = 2;
 
@@ -165,7 +162,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     protected void init(EGLConfigChooser configChooser) {
         // Initialize the World Window's navigator.
         Location initLocation = Location.fromTimeZone(TimeZone.getDefault());
-        double initAltitude = this.distanceToViewGlobeExtents() * 1.1; // add to the minimum distance 10%
+        double initAltitude = this.distanceToViewGlobeExtents() * 1.1; // add 10% to the minimum distance to allow for space around the screen edges
         this.navigator.setLatitude(initLocation.latitude);
         this.navigator.setLongitude(initLocation.longitude);
         this.navigator.setAltitude(initAltitude);
@@ -173,11 +170,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // Initialize the World Window's controller.
         this.worldWindowController.setWorldWindow(this);
 
-        // Initialize the World Window's global caches. Use 50% of the approximate per-application memory class.
-        ActivityManager am = (ActivityManager) this.getContext().getSystemService(Context.ACTIVITY_SERVICE);
-        int memoryClass = (am != null) ? am.getMemoryClass() : DEFAULT_MEMORY_CLASS; // default to 16 MB class
-        int rrCacheSize = (memoryClass / 2) * 1024 * 1024;
-        this.renderResourceCache = new RenderResourceCache(rrCacheSize);
+        // Initialize the World Window's render resource cache.
+        int cacheCapacity = RenderResourceCache.recommendedCapacity(this.getContext());
+        this.renderResourceCache = new RenderResourceCache(cacheCapacity);
 
         // Set up to render on demand to an OpenGL ES 2.x context
         // TODO Investigate and use the EGL chooser submitted by jgiovino
@@ -187,8 +182,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY); // must be called after setRenderer
 
         // Log a message with some basic information about the world window's configuration.
-        int rrCacheSizeMB = Math.round(rrCacheSize / 1024 / 1024);
-        Logger.log(Logger.INFO, "World Window initialized {RenderResourceCache=" + rrCacheSizeMB + " MB}");
+        Logger.log(Logger.INFO, "World Window initialized");
     }
 
     /**
@@ -917,9 +911,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.frameController.drawFrame(this.dc);
 
         // Release resources evicted during the previous frame.
-        if (!pickMode) {
-            this.renderResourceCache.releaseEvictedResources(this.dc);
-        }
+        this.renderResourceCache.releaseEvictedResources(this.dc);
 
         // Mark the end of a frame draw.
         if (!pickMode) {

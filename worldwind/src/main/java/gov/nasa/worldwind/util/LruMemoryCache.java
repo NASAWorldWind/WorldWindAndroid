@@ -75,22 +75,58 @@ public class LruMemoryCache<K, V> {
     }
 
     public V put(K key, V value, int size) {
-        // TODO can we reuse the same entry when only the size has changed?
-        // TODO use case is high frequency texture updates, where size may or may not change
+        if (this.usedCapacity + size > this.capacity) {
+            this.makeSpace(size);
+        }
+
         Entry<K, V> newEntry = new Entry<>(key, value, size);
-        Entry<K, V> oldEntry = this.putEntry(newEntry);
-        return (oldEntry != null) ? oldEntry.value : null;
+        newEntry.lastUsed = System.currentTimeMillis();
+        this.usedCapacity += newEntry.size;
+
+        Entry<K, V> oldEntry = this.entries.put(key, newEntry);
+        if (oldEntry != null) {
+            this.usedCapacity -= oldEntry.size;
+
+            if (newEntry.value != oldEntry.value) {
+                this.entryRemoved(oldEntry.key, oldEntry.value, newEntry.value, false);
+                return oldEntry.value;
+            }
+        }
+
+        return null;
     }
 
     public V remove(K key) {
         Entry<K, V> entry = this.entries.remove(key);
         if (entry != null) {
             this.usedCapacity -= entry.size;
-            this.entryRemoved(entry);
+            this.entryRemoved(entry.key, entry.value, null, false);
             return entry.value;
         } else {
             return null;
         }
+    }
+
+    public int trimToAge(long maxAgeMillis) {
+        int trimmedCapacity = 0;
+
+        // Sort the entries from least recently used to most recently used.
+        ArrayList<Entry<K, V>> sortedEntries = this.assembleSortedEntries();
+
+        // Remove the least recently used entries until the entry's age is within the specified maximum age.
+        for (int idx = 0, len = sortedEntries.size(); idx < len; idx++) {
+            Entry<K, V> entry = sortedEntries.get(idx);
+            if (entry.lastUsed < maxAgeMillis) {
+                this.entries.remove(entry.key);
+                this.usedCapacity -= entry.size;
+                trimmedCapacity += entry.size;
+                this.entryRemoved(entry.key, entry.value, null, false);
+            } else {
+                break;
+            }
+        }
+
+        return trimmedCapacity;
     }
 
     public boolean containsKey(K key) {
@@ -99,7 +135,7 @@ public class LruMemoryCache<K, V> {
 
     public void clear() {
         for (Entry<K, V> entry : this.entries.values()) {
-            this.entryRemoved(entry);
+            this.entryRemoved(entry.key, entry.value, null, false);
         }
 
         this.entries.clear();
@@ -107,54 +143,37 @@ public class LruMemoryCache<K, V> {
     }
 
     protected void makeSpace(int spaceRequired) {
-        // Sort the entries from least recently used to most recently used, then remove the least recently used entries
-        // until the cache capacity reaches the low water and the cache has enough free capacity for the required space.
+        // Sort the entries from least recently used to most recently used.
+        ArrayList<Entry<K, V>> sortedEntries = this.assembleSortedEntries();
 
-        ArrayList<Entry<K, V>> sortedEntries = new ArrayList<>(this.entries.size());
-
-        for (Entry<K, V> entry : this.entries.values()) {
-            sortedEntries.add(entry);
-        }
-
-        Collections.sort(sortedEntries, this.lruComparator);
-
-        for (Entry<K, V> entry : sortedEntries) {
+        // Remove the least recently used entries until the cache capacity reaches the low water and the cache has
+        // enough free capacity for the required space.
+        for (int idx = 0, len = sortedEntries.size(); idx < len; idx++) {
+            Entry<K, V> entry = sortedEntries.get(idx);
             if (this.usedCapacity > this.lowWater || (this.capacity - this.usedCapacity) < spaceRequired) {
                 this.entries.remove(entry.key);
                 this.usedCapacity -= entry.size;
-                this.entryRemoved(entry);
+                this.entryRemoved(entry.key, entry.value, null, true);
             } else {
                 break;
             }
         }
     }
 
-    protected Entry<K, V> putEntry(Entry<K, V> newEntry) {
-        if (this.usedCapacity + newEntry.size > this.capacity) {
-            this.makeSpace(newEntry.size);
+    protected ArrayList<Entry<K, V>> assembleSortedEntries() {
+        // Gather the cache entries into a data structure that's efficiently sortable.
+        ArrayList<Entry<K, V>> sortedEntries = new ArrayList<>(this.entries.size());
+        for (Entry<K, V> entry : this.entries.values()) {
+            sortedEntries.add(entry);
         }
 
-        newEntry.lastUsed = System.currentTimeMillis();
-        this.usedCapacity += newEntry.size;
+        // Sort the entries from least recently used to most recently used.
+        Collections.sort(sortedEntries, this.lruComparator);
 
-        Entry<K, V> oldEntry = this.entries.put(newEntry.key, newEntry);
-        if (oldEntry != null) {
-            this.usedCapacity -= oldEntry.size;
-
-            if (newEntry.value != oldEntry.value) {
-                this.entryReplaced(oldEntry, newEntry);
-                return oldEntry;
-            }
-        }
-
-        return null;
+        return sortedEntries;
     }
 
-    protected void entryRemoved(Entry<K, V> entry) {
-    }
-
-    protected void entryReplaced(Entry<K, V> oldEntry, Entry<K, V> newEntry) {
-
+    protected void entryRemoved(K key, V oldValue, V newValue, boolean evicted) {
     }
 
     protected static class Entry<K, V> {

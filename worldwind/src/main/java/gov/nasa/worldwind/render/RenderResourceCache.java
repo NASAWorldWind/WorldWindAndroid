@@ -5,10 +5,15 @@
 
 package gov.nasa.worldwind.render;
 
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.os.Handler;
+import android.os.Message;
 
 import java.net.SocketTimeoutException;
+import java.util.Locale;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -17,24 +22,69 @@ import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.LruMemoryCache;
 import gov.nasa.worldwind.util.Retriever;
+import gov.nasa.worldwind.util.SynchronizedMemoryCache;
 
 public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
-    implements Retriever.Callback<ImageSource, Bitmap> {
+    implements Retriever.Callback<ImageSource, Bitmap>, Handler.Callback {
 
     protected Resources resources;
 
-    protected Queue<RenderResource> evictionQueue = new ConcurrentLinkedQueue<>();
+    protected Handler handler;
 
-    protected Queue<Entry<Object, RenderResource>> retrievalQueue = new ConcurrentLinkedQueue<>();
+    protected Queue<RenderResource> evictionQueue;
 
-    protected Retriever<ImageSource, Bitmap> imageRetriever = new ImageRetriever(8);
+    protected Retriever<ImageSource, Bitmap> imageRetriever;
+
+    protected Retriever<ImageSource, Bitmap> urlImageRetriever;
+
+    protected LruMemoryCache<ImageSource, Bitmap> imageRetrieverCache;
+
+    protected static final int STALE_RETRIEVAL_AGE = 3000;
+
+    protected static final int TRIM_STALE_RETRIEVALS = 1;
+
+    protected static final int TRIM_STALE_RETRIEVALS_DELAY = 6000;
 
     public RenderResourceCache(int capacity) {
         super(capacity);
+        this.init();
     }
 
     public RenderResourceCache(int capacity, int lowWater) {
         super(capacity, lowWater);
+        this.init();
+    }
+
+    protected void init() {
+        this.handler = new Handler(this);
+        this.evictionQueue = new ConcurrentLinkedQueue<>();
+        this.imageRetriever = new ImageRetriever(2);
+        this.urlImageRetriever = new ImageRetriever(8);
+        this.imageRetrieverCache = new SynchronizedMemoryCache<>(this.getCapacity() / 8);
+
+        Logger.log(Logger.INFO, String.format(Locale.US, "RenderResourceCache initialized  %,.0f KB  (%,.0f KB retrieval cache)",
+            this.getCapacity() / 1024.0, this.imageRetrieverCache.getCapacity() / 1024.0));
+    }
+
+    public static int recommendedCapacity(Context context) {
+        ActivityManager am = (context != null) ? (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE) : null;
+        if (am != null) {
+            ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
+            am.getMemoryInfo(mi);
+            if (mi.totalMem >= 1024 * 1024 * 2048L) { // use 384 MB on machines with 1536 MB or more
+                return 1024 * 1024 * 384;
+            } else if (mi.totalMem >= 1024 * 1024 * 1536) { // use 256 MB on machines with 1536 MB or more
+                return 1024 * 1024 * 256;
+            } else if (mi.totalMem >= 1024 * 1024 * 1024) { // use 192 MB on machines with 1024 MB or more
+                return 1024 * 1024 * 192;
+            } else if (mi.totalMem >= 1024 * 1024 * 512) { // use 96 MB on machines with 512 MB or more
+                return 1024 * 1024 * 96;
+            } else { // use 64 MB on machines with less than 512 MB
+                return 1024 * 1024 * 64;
+            }
+        } else { // use 64 MB by default
+            return 1024 * 1024 * 64;
+        }
     }
 
     public Resources getResources() {
@@ -46,9 +96,11 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
         ((ImageRetriever) this.imageRetriever).setResources(res);
     }
 
-    public void clear() {
+    public void clear() { // TODO rename as contextLost to clarify this method's purpose for RenderResourceCache
+        this.handler.removeMessages(TRIM_STALE_RETRIEVALS);
         this.entries.clear(); // the cache entries are invalid; clear but don't call entryRemoved
         this.evictionQueue.clear(); // the eviction queue no longer needs to be processed
+        this.imageRetrieverCache.clear(); // the retrieval queue should be cleared to make room
         this.usedCapacity = 0;
     }
 
@@ -57,70 +109,65 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
         while ((evicted = this.evictionQueue.poll()) != null) {
             try {
                 evicted.release(dc);
-                if (Logger.isLoggable(Logger.INFO)) {
-                    Logger.log(Logger.INFO, "Released render resource \'" + evicted + "\'");
+                if (Logger.isLoggable(Logger.DEBUG)) {
+                    Logger.log(Logger.DEBUG, "Released render resource \'" + evicted + "\'");
                 }
             } catch (Exception ignored) {
-                if (Logger.isLoggable(Logger.INFO)) {
-                    Logger.log(Logger.INFO, "Exception releasing render resource \'" + evicted + "\'", ignored);
+                if (Logger.isLoggable(Logger.ERROR)) {
+                    Logger.log(Logger.ERROR, "Exception releasing render resource \'" + evicted + "\'", ignored);
                 }
             }
         }
     }
 
     @Override
-    protected void entryRemoved(Entry<Object, RenderResource> entry) {
-        if (entry != null) {
-            this.evictionQueue.offer(entry.value);
-        }
-    }
-
-    @Override
-    protected void entryReplaced(Entry<Object, RenderResource> oldEntry, Entry<Object, RenderResource> newEntry) {
-        if (oldEntry != null) {
-            this.evictionQueue.offer(oldEntry.value);
-        }
+    protected void entryRemoved(Object key, RenderResource oldValue, RenderResource newValue, boolean evicted) {
+        this.evictionQueue.offer(oldValue);
     }
 
     public Texture retrieveTexture(ImageSource imageSource) {
         if (imageSource == null) {
-            return null;
+            return null; // a null image source corresponds to a null texture
         }
 
+        // Bitmap image sources are already in memory, so a texture may be created and put into the cache immediately.
         if (imageSource.isBitmap()) {
             Texture texture = new Texture(imageSource.asBitmap());
             this.put(imageSource, texture, texture.getTextureByteCount());
             return texture;
         }
 
-        Texture texture = (Texture) this.putRetrievedResources(imageSource);
-        if (texture != null) {
+        // All other image sources must be retrieved from disk or network and must be retrieved on a separate thread.
+        // This includes bitmap factory image sources, since we cannot make any guarantees about what a bitmap factory
+        // implementation may do. First look for the image in the image retrieval cache, removing it and creating a
+        // corresponding texture if found.
+        Bitmap bitmap = this.imageRetrieverCache.remove(imageSource);
+        if (bitmap != null) {
+            Texture texture = new Texture(bitmap);
+            this.put(imageSource, texture, texture.getTextureByteCount());
             return texture;
         }
 
-        this.imageRetriever.retrieve(imageSource, this); // adds entries to retrievalQueue
-        return null;
-    }
-
-    protected RenderResource putRetrievedResources(Object key) {
-        Entry<Object, RenderResource> match = null;
-        Entry<Object, RenderResource> pending;
-        while ((pending = this.retrievalQueue.poll()) != null) {
-            if (match == null && pending.key.equals(key)) {
-                match = pending;
-            }
-            this.putEntry(pending);
+        // The image must be retrieved on a separate thread. Request the image source and return null to indicate that
+        // the texture is not in memory. The image is added to the image retrieval cache upon successful retrieval. It's
+        // then expected that a subsequent render frame will result in another call to retrieveTexture, in which case
+        // the image will be found in the image retrieval cache.
+        if (imageSource.isUrl()) {
+            this.urlImageRetriever.retrieve(imageSource, this);
+        } else {
+            this.imageRetriever.retrieve(imageSource, this);
         }
-
-        return (match != null) ? match.value : null;
+        return null;
     }
 
     @Override
     public void retrievalSucceeded(Retriever<ImageSource, Bitmap> retriever, ImageSource key, Bitmap value) {
-        Texture texture = new Texture(value);
-        Entry<Object, RenderResource> entry = new Entry<Object, RenderResource>(key, texture, texture.getTextureByteCount());
-        retrievalQueue.offer(entry);
+        this.imageRetrieverCache.put(key, value, value.getByteCount());
         WorldWind.requestRedraw();
+
+        if (!this.handler.hasMessages(TRIM_STALE_RETRIEVALS)) {
+            this.handler.sendEmptyMessageDelayed(TRIM_STALE_RETRIEVALS, TRIM_STALE_RETRIEVALS_DELAY);
+        }
 
         if (Logger.isLoggable(Logger.DEBUG)) {
             Logger.log(Logger.DEBUG, "Image retrieval succeeded \'" + key + "\'");
@@ -142,6 +189,28 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
     public void retrievalRejected(Retriever<ImageSource, Bitmap> retriever, ImageSource key) {
         if (Logger.isLoggable(Logger.DEBUG)) {
             Logger.log(Logger.DEBUG, "Image retrieval rejected \'" + key + "\'");
+        }
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        if (msg.what == TRIM_STALE_RETRIEVALS) {
+            this.trimStaleRetrievals();
+        }
+        return false;
+    }
+
+    protected void trimStaleRetrievals() {
+        long now = System.currentTimeMillis();
+        int trimmedCapacity = this.imageRetrieverCache.trimToAge(now - STALE_RETRIEVAL_AGE);
+
+        if (!this.handler.hasMessages(TRIM_STALE_RETRIEVALS) && this.imageRetrieverCache.getUsedCapacity() != 0) {
+            this.handler.sendEmptyMessageDelayed(TRIM_STALE_RETRIEVALS, TRIM_STALE_RETRIEVALS_DELAY);
+        }
+
+        if (Logger.isLoggable(Logger.DEBUG)) {
+            Logger.log(Logger.DEBUG, String.format(Locale.US, "Trimmed stale image retrievals %,.0f KB",
+                trimmedCapacity / 1024.0));
         }
     }
 }
