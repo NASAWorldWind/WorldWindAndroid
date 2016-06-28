@@ -36,6 +36,10 @@
             android:icon="@android:drawable/ic_menu_myplaces"
             android:title="@string/title_placemarks"/>
         <item
+            android:id="@+id/nav_placemarks_demo_activity"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="@string/title_placemarks_demo"/>
+        <item
             android:id="@+id/nav_placemarks_picking_activity"
             android:icon="@android:drawable/ic_menu_myplaces"
             android:title="@string/title_placemarks_picking"/>

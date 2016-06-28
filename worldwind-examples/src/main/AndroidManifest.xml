@@ -71,6 +71,12 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
+            android:name=".PlacemarksDemoActivity"
+            android:label="@string/title_placemarks_demo"
+            android:launchMode="singleInstance"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
             android:name=".PlacemarksMilStd2525Activity"
             android:label="@string/title_placemarks_milstd2525"
             android:launchMode="singleInstance"

@@ -16,6 +16,7 @@
     <string name="title_look_at_view">Look At View</string>
     <string name="title_navigator_event">Navigator Events</string>
     <string name="title_placemarks">Placemarks</string>
+    <string name="title_placemarks_demo">Placemarks Demonstration</string>
     <string name="title_placemarks_milstd2525">MIL-STD-2525 Placemarks</string>
     <string name="title_placemarks_milstd2525_demo">MIL-STD-2525 Demonstration</string>
     <string name="title_placemarks_milstd2525_stress_test">MIL-STD-2525 Stress Test</string>

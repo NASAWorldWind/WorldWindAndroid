@@ -246,6 +246,9 @@ public abstract class AbstractMainActivity extends AppCompatActivity
             case R.id.nav_placemarks_activity:
                 startActivity(new Intent(getApplicationContext(), PlacemarksActivity.class));
                 break;
+            case R.id.nav_placemarks_demo_activity:
+                startActivity(new Intent(getApplicationContext(), PlacemarksDemoActivity.class));
+                break;
             case R.id.nav_placemarks_milstd2525_activity:
                 startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525Activity.class));
                 break;
