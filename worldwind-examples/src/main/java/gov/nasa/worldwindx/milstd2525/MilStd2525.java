@@ -11,6 +11,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.Typeface;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.SparseArray;
 
 import java.lang.ref.WeakReference;
@@ -41,6 +43,11 @@ public class MilStd2525 {
      * The actual rendering engine for the MIL-STD-2525 graphics.
      */
     private static MilStdIconRenderer renderer = MilStdIconRenderer.getInstance();
+
+    /**
+     * The handler used to schedule runnable to be executed on the main thread.
+     */
+    private static Handler mainLoopHandler = new Handler(Looper.getMainLooper());
 
     /**
      * A cache of PlacemarkAttribute bundles containing MIL-STD-2525 symbols. Using a cache is essential for memory
@@ -203,9 +210,9 @@ public class MilStd2525 {
     }
 
     /**
-     * This ImageSource.BitmapFactory implementation creates MIL-STD-2525
+     * This ImageSource.BitmapFactory implementation creates MIL-STD-2525 bitmaps for use with MilStd2525Placemark.
      */
-    protected static class SymbolBitmapFactory implements ImageSource.BitmapFactory {
+    protected static class SymbolBitmapFactory implements ImageSource.BitmapFactory, Runnable {
 
         private final String symbolCode;
 
@@ -214,6 +221,8 @@ public class MilStd2525 {
         private final SparseArray<String> attributes;
 
         private final PlacemarkAttributes placemarkAttributes;
+
+        private Offset placemarkOffset;
 
         /**
          * Constructs a SymbolBitmapFactory instance capable of creating a bitmap with the given code, modifiers and
@@ -245,22 +254,36 @@ public class MilStd2525 {
         @Override
         public Bitmap createBitmap() {
             // Create the symbol's bitmap
-            ImageInfo imageInfo = MilStd2525.renderImage(symbolCode, modifiers, attributes);
+            ImageInfo imageInfo = MilStd2525.renderImage(this.symbolCode, this.modifiers, this.attributes);
             if (imageInfo == null) {
-                Logger.logMessage(Logger.ERROR, "MilStd2525", "createBitmap", "Failed to render image for " + symbolCode);
+                Logger.logMessage(Logger.ERROR, "MilStd2525", "createBitmap", "Failed to render image for " + this.symbolCode);
                 // TODO: File JIRA issue - must return a valid bitmap, else the ImageRetriever repeatedly attempts to create the bitmap.
                 return defaultImage;
             }
-            // Apply the computed image offset after the renderer has created the image.
-            // This is essential for proper placement as the offset may change depending
-            // on the level of detail, for instance, the absence or presence of text modifiers.
-            Point centerPoint = imageInfo.getCenterPoint();     // The center of the core symbol
-            this.placemarkAttributes.setImageOffset(new Offset(
+
+            // Apply the computed image offset after the renderer has created the image. This is essential for proper
+            // placement as the offset may change depending on the level of detail, for instance, the absence or
+            // presence of text modifiers.
+            Point centerPoint = imageInfo.getCenterPoint(); // The center of the core symbol
+            this.placemarkOffset = new Offset(
                 WorldWind.OFFSET_PIXELS, centerPoint.x, // x offset
-                WorldWind.OFFSET_PIXELS, centerPoint.y)); // y offset);
+                WorldWind.OFFSET_PIXELS, centerPoint.y); // y offset
+
+            // Apply the placemark offset to the attributes on the main thread. This is necessary to synchronize write
+            // access to placemarkAttributes from the thread that invokes this BitmapFactory and read access from the
+            // main thread.
+            mainLoopHandler.post(this);
 
             // Return the bitmap
             return imageInfo.getImage();
+        }
+
+        /**
+         * Applies changes to the factory's placemarkAttributes as a result of creating the bitmap.
+         */
+        @Override
+        public void run() {
+            this.placemarkAttributes.setImageOffset(this.placemarkOffset);
         }
     }
 }
