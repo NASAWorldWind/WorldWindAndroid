@@ -14,10 +14,11 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".BasicGlobeActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_basic_globe"
             android:launchMode="singleInstance"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:configChanges="orientation|screenSize">
+            android:noHistory="true"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter android:label="@string/app_name">
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -27,114 +28,133 @@
             android:name=".BasicPerformanceBenchmarkActivity"
             android:label="@string/title_basic_performance_benchmark"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".BasicStressTestActivity"
             android:label="@string/title_basic_stress_test"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".CameraControlActivity"
             android:label="@string/title_camera_controls"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".CameraViewActivity"
             android:label="@string/title_camera_view"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".DayNightCycleActivity"
             android:label="@string/title_day_night_cycle"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".LookAtViewActivity"
             android:label="@string/title_look_at_view"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".NavigatorEventActivity"
             android:label="@string/title_navigator_event"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".PlacemarksActivity"
             android:label="@string/title_placemarks"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".PlacemarksDemoActivity"
             android:label="@string/title_placemarks_demo"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".PlacemarksMilStd2525Activity"
             android:label="@string/title_placemarks_milstd2525"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".PlacemarksMilStd2525DemoActivity"
             android:label="@string/title_placemarks_milstd2525_demo"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".PlacemarksMilStd2525StressActivity"
             android:label="@string/title_placemarks_milstd2525_stress_test"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".PlacemarksPickingActivity"
             android:label="@string/title_placemarks_picking"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".PlacemarksSelectDragActivity"
             android:label="@string/title_placemarks_select_drag"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".PlacemarksStressTestActivity"
             android:label="@string/title_placemarks_stress_test"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".ShowTessellationActivity"
             android:label="@string/title_show_tessellation"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".SurfaceImageActivity"
             android:label="@string/title_surface_image"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".TextureStressTestActivity"
             android:label="@string/title_texture_stress_test"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
             android:name=".WmsLayerActivity"
             android:label="@string/title_wms_layer"
             android:launchMode="singleInstance"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
     </application>
