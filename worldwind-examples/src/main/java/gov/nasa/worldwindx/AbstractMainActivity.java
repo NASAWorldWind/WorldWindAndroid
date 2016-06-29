@@ -10,11 +10,13 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.LayoutRes;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -27,7 +29,9 @@ import android.view.MenuItem;
 import java.util.Locale;
 
 import gov.nasa.worldwind.FrameMetrics;
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -35,6 +39,26 @@ import gov.nasa.worldwind.util.Logger;
  */
 public abstract class AbstractMainActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
+
+    protected final static String PROCESS_ID = "pid";
+
+    protected final static String CAMERA_LATITUDE = "latitude";
+
+    protected final static String CAMERA_LONGITUDE = "longitude";
+
+    protected final static String CAMERA_ALTITUDE = "altitude";
+
+    protected final static String CAMERA_ALTITUDE_MODE = "altitude_mode";
+
+    protected final static String CAMERA_HEADING = "heading";
+
+    protected final static String CAMERA_TILT = "tilt";
+
+    protected final static String CAMERA_ROLL = "roll";
+
+    protected static final int PRINT_METRICS = 1;
+
+    protected static final int PRINT_METRICS_DELAY = 3000;
 
     protected static int selectedItemId = R.id.nav_basic_globe_activity;
 
@@ -46,6 +70,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
     protected String aboutBoxText = "Description goes here;";
 
+
     protected Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -56,10 +81,6 @@ public abstract class AbstractMainActivity extends AppCompatActivity
             }
         }
     });
-
-    protected static final int PRINT_METRICS = 1;
-
-    protected static final int PRINT_METRICS_DELAY = 3000;
 
     /**
      * Returns a reference to the WorldWindow.
@@ -99,19 +120,23 @@ public abstract class AbstractMainActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        // Stop printing frame metrics when this activity is paused.
-        this.handler.removeMessages(PRINT_METRICS);
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
         // Update the menu by highlighting the last selected menu item
         this.navigationView.setCheckedItem(selectedItemId);
         // Use this Activity's Handler to periodically print the FrameMetrics.
         this.handler.sendEmptyMessageDelayed(PRINT_METRICS, PRINT_METRICS_DELAY);
+        // Restore the navigator's camera state from previously saved session data
+        restoreNavigatorState();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Stop printing frame metrics when this activity is paused.
+        this.handler.removeMessages(PRINT_METRICS);
+        // Save the navigator's camera state.
+        saveNavigatorState();
     }
 
     @Override
@@ -134,6 +159,64 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Saves the Navigator's camera data to a SharedPreferences object.
+     */
+    protected void saveNavigatorState() {
+        WorldWindow wwd = getWorldWindow();
+        if (wwd != null) {
+            SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+            SharedPreferences.Editor editor = preferences.edit();
+
+            // Write an identifier to the preferences for this session;
+            // we only want to restore preferences from the same session.
+            int pid = android.os.Process.myPid();
+            editor.putInt(PROCESS_ID, pid);
+
+            // Write the camera data
+            Camera camera = wwd.getNavigator().getAsCamera(wwd.getGlobe(), new Camera());
+            editor.putFloat(CAMERA_LATITUDE, (float) camera.latitude);
+            editor.putFloat(CAMERA_LONGITUDE, (float) camera.longitude);
+            editor.putFloat(CAMERA_ALTITUDE, (float) camera.altitude);
+            editor.putFloat(CAMERA_HEADING, (float) camera.heading);
+            editor.putFloat(CAMERA_TILT, (float) camera.tilt);
+            editor.putFloat(CAMERA_ROLL, (float) camera.roll);
+            editor.putInt(CAMERA_ALTITUDE_MODE, camera.altitudeMode);
+
+            editor.apply();
+        }
+    }
+
+    /**
+     * Restores the Navigator's camera state from a SharedPreferences object.
+     */
+    protected void restoreNavigatorState() {
+        WorldWindow wwd = getWorldWindow();
+        if (wwd != null) {
+            SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+            if (preferences.getInt(PROCESS_ID, -1) != android.os.Process.myPid()) {
+                return;
+            }
+            // Read the camera data
+            float lat = preferences.getFloat(CAMERA_LATITUDE, Float.MAX_VALUE);
+            float lon = preferences.getFloat(CAMERA_LONGITUDE, Float.MAX_VALUE);
+            float alt = preferences.getFloat(CAMERA_ALTITUDE, Float.MAX_VALUE);
+            float heading = preferences.getFloat(CAMERA_HEADING, Float.MAX_VALUE);
+            float tilt = preferences.getFloat(CAMERA_TILT, Float.MAX_VALUE);
+            float roll = preferences.getFloat(CAMERA_ROLL, Float.MAX_VALUE);
+            @WorldWind.AltitudeMode int altMode = preferences.getInt(CAMERA_ALTITUDE_MODE, WorldWind.ABSOLUTE);
+
+            if (lat == Float.MAX_VALUE || lon == Float.MAX_VALUE || alt == Float.MAX_VALUE ||
+                heading == Float.MAX_VALUE || tilt == Float.MAX_VALUE || roll == Float.MAX_VALUE) {
+                return;
+            }
+
+            // Restore the camera state.
+            Camera camera = new Camera(lat, lon, alt, altMode, heading, tilt, roll);
+            wwd.getNavigator().setAsCamera(wwd.getGlobe(), camera);
+        }
     }
 
     protected void setAboutBoxTitle(String title) {
