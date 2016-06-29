@@ -11,15 +11,15 @@ import java.util.concurrent.RejectedExecutionException;
 
 import gov.nasa.worldwind.WorldWind;
 
-public abstract class Retriever<K, V> {
+public abstract class Retriever<K, O, V> {
 
-    public interface Callback<K, V> {
+    public interface Callback<K, O, V> {
 
-        void retrievalSucceeded(Retriever<K, V> retriever, K key, V value);
+        void retrievalSucceeded(Retriever<K, O, V> retriever, K key, O options, V value);
 
-        void retrievalFailed(Retriever<K, V> retriever, K key, Throwable ex);
+        void retrievalFailed(Retriever<K, O, V> retriever, K key, Throwable ex);
 
-        void retrievalRejected(Retriever<K, V> retriever, K key);
+        void retrievalRejected(Retriever<K, O, V> retriever, K key);
     }
 
     protected final Object lock = new Object();
@@ -28,7 +28,7 @@ public abstract class Retriever<K, V> {
 
     protected Set<K> asyncTaskSet;
 
-    protected Pool<AsyncTask<K, V>> asyncTaskPool;
+    protected Pool<AsyncTask<K, O, V>> asyncTaskPool;
 
     public Retriever(int maxSimultaneousRetrievals) {
         this.maxAsyncTasks = maxSimultaneousRetrievals;
@@ -36,7 +36,7 @@ public abstract class Retriever<K, V> {
         this.asyncTaskPool = new BasicPool<>();
     }
 
-    public void retrieve(K key, Callback<K, V> callback) {
+    public void retrieve(K key, O options, Callback<K, O, V> callback) {
         if (key == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Retriever", "retrieve", "missingKey"));
@@ -47,7 +47,7 @@ public abstract class Retriever<K, V> {
                 Logger.logMessage(Logger.ERROR, "Retriever", "retrieve", "missingCallback"));
         }
 
-        AsyncTask<K, V> task = this.obtainAsyncTask(key, callback);
+        AsyncTask<K, O, V> task = this.obtainAsyncTask(key, options, callback);
         if (task == null) { // too many async tasks running, or a task for 'key' is already running
             callback.retrievalRejected(this, key);
             return;
@@ -61,9 +61,9 @@ public abstract class Retriever<K, V> {
         }
     }
 
-    protected abstract void retrieveAsync(K key, Callback<K, V> callback);
+    protected abstract void retrieveAsync(K key, O options, Callback<K, O, V> callback);
 
-    protected AsyncTask<K, V> obtainAsyncTask(K key, Callback<K, V> callback) {
+    protected AsyncTask<K, O, V> obtainAsyncTask(K key, O options, Callback<K, O, V> callback) {
         synchronized (this.lock) {
             if (this.asyncTaskSet.size() >= this.maxAsyncTasks || this.asyncTaskSet.contains(key)) {
                 return null;
@@ -71,36 +71,40 @@ public abstract class Retriever<K, V> {
 
             this.asyncTaskSet.add(key);
 
-            AsyncTask<K, V> instance = this.asyncTaskPool.acquire();
-            return (instance != null ? instance : new AsyncTask<K, V>()).set(this, key, callback);
+            AsyncTask<K, O, V> instance = this.asyncTaskPool.acquire();
+            return (instance != null ? instance : new AsyncTask<K, O, V>()).set(this, key, options, callback);
         }
     }
 
-    protected void recycleAsyncTask(AsyncTask<K, V> instance) {
+    protected void recycleAsyncTask(AsyncTask<K, O, V> instance) {
         synchronized (this.lock) {
             this.asyncTaskSet.remove(instance.key);
             this.asyncTaskPool.release(instance.reset());
         }
     }
 
-    protected static class AsyncTask<K, V> implements Runnable {
+    protected static class AsyncTask<K, O, V> implements Runnable {
 
-        protected Retriever<K, V> retriever;
+        protected Retriever<K, O, V> retriever;
 
         protected K key;
 
-        protected Callback<K, V> callback;
+        protected O options;
 
-        public AsyncTask<K, V> set(Retriever<K, V> retriever, K key, Callback<K, V> callback) {
+        protected Callback<K, O, V> callback;
+
+        public AsyncTask<K, O, V> set(Retriever<K, O, V> retriever, K key, O options, Callback<K, O, V> callback) {
             this.retriever = retriever;
             this.key = key;
+            this.options = options;
             this.callback = callback;
             return this;
         }
 
-        public AsyncTask<K, V> reset() {
+        public AsyncTask<K, O, V> reset() {
             this.retriever = null;
             this.key = null;
+            this.options = null;
             this.callback = null;
             return this;
         }
@@ -108,7 +112,7 @@ public abstract class Retriever<K, V> {
         @Override
         public void run() {
             try {
-                this.retriever.retrieveAsync(this.key, this.callback);
+                this.retriever.retrieveAsync(this.key, this.options, this.callback);
             } catch (Throwable ex) {
                 this.callback.retrievalFailed(this.retriever, this.key, ex);
             } finally {

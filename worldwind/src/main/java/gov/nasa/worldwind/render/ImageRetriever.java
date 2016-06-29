@@ -19,7 +19,7 @@ import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Retriever;
 import gov.nasa.worldwind.util.WWUtil;
 
-public class ImageRetriever extends Retriever<ImageSource, Bitmap> {
+public class ImageRetriever extends Retriever<ImageSource, ImageOptions, Bitmap> {
 
     protected Resources resources;
 
@@ -36,12 +36,13 @@ public class ImageRetriever extends Retriever<ImageSource, Bitmap> {
     }
 
     @Override
-    protected void retrieveAsync(ImageSource imageSource, Callback<ImageSource, Bitmap> callback) {
+    protected void retrieveAsync(ImageSource imageSource, ImageOptions options,
+                                 Callback<ImageSource, ImageOptions, Bitmap> callback) {
         try {
             Bitmap bitmap = this.decodeImage(imageSource);
 
             if (bitmap != null) {
-                callback.retrievalSucceeded(this, imageSource, bitmap);
+                callback.retrievalSucceeded(this, imageSource, options, bitmap);
             } else {
                 callback.retrievalFailed(this, imageSource, null); // failed but no exception
             }
