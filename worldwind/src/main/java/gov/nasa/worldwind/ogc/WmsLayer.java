@@ -102,7 +102,7 @@ public class WmsLayer extends TiledImageLayer {
         }
 
         this.init();
-        this.setConfiguration(sector, metersPerPixel, config);
+        this.setConfiguration(sector, globe, metersPerPixel, config);
     }
 
     protected void init() {
