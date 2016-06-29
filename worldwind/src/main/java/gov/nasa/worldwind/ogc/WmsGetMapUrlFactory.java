@@ -299,7 +299,7 @@ public class WmsGetMapUrlFactory implements TileUrlFactory {
         int index = url.indexOf("?");
         if (index < 0) { // if service address contains no query delimiter
             url.append("?"); // add one
-        } else if (index != url.length()) { // else if query delimiter not at end of string
+        } else if (index != url.length() - 1) { // else if query delimiter not at end of string
             index = url.lastIndexOf("&");
             if (index != url.length() - 1) {
                 url.append("&"); // add a parameter delimiter
@@ -326,7 +326,6 @@ public class WmsGetMapUrlFactory implements TileUrlFactory {
             } else {
                 url.append(sector.minLatitude()).append(",").append(sector.minLongitude()).append(",");
                 url.append(sector.maxLatitude()).append(",").append(sector.maxLongitude());
-
             }
         } else {
             url.append("&SRS=").append(this.coordinateSystem);
