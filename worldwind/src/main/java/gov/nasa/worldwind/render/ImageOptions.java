@@ -6,8 +6,6 @@
 package gov.nasa.worldwind.render;
 
 import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.util.Pool;
-import gov.nasa.worldwind.util.SynchronizedPool;
 
 /**
  * Options for images displayed by World Wind components.
@@ -23,26 +21,9 @@ public class ImageOptions {
     @WorldWind.ImageFormat
     public int imageFormat = WorldWind.IMAGE_FORMAT_RGBA_8888;
 
-    private static Pool<ImageOptions> pool = new SynchronizedPool<>();
-
-    private ImageOptions() {
-    }
-
     /**
-     * Obtains a new image options instance from a global pool.
-     *
-     * @return the new instance
+     * Constructs an image options with default values.
      */
-    public static ImageOptions obtain() {
-        ImageOptions instance = pool.acquire();
-        return (instance != null) ? instance : new ImageOptions();
-    }
-
-    /**
-     * Recycles this image options instance into the global pool.
-     */
-    public void recycle() {
-        this.imageFormat = WorldWind.IMAGE_FORMAT_RGBA_8888;
-        pool.release(this);
+    public ImageOptions() {
     }
 }
