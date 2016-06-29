@@ -348,8 +348,8 @@ public class RenderContext {
         return texture;
     }
 
-    public Texture retrieveTexture(ImageSource imageSource) {
-        return this.renderResourceCache.retrieveTexture(imageSource);
+    public Texture retrieveTexture(ImageSource imageSource, ImageOptions imageOptions) {
+        return this.renderResourceCache.retrieveTexture(imageSource, imageOptions);
     }
 
     public void offerDrawable(Drawable drawable, int groupId, double order) {

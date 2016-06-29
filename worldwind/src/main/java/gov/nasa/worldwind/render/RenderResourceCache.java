@@ -125,7 +125,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
         this.evictionQueue.offer(oldValue);
     }
 
-    public Texture retrieveTexture(ImageSource imageSource) {
+    public Texture retrieveTexture(ImageSource imageSource, ImageOptions options) {
         if (imageSource == null) {
             return null; // a null image source corresponds to a null texture
         }
@@ -153,9 +153,9 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
         // then expected that a subsequent render frame will result in another call to retrieveTexture, in which case
         // the image will be found in the image retrieval cache.
         if (imageSource.isUrl()) {
-            this.urlImageRetriever.retrieve(imageSource, null, this);
+            this.urlImageRetriever.retrieve(imageSource, options, this);
         } else {
-            this.imageRetriever.retrieve(imageSource, null, this);
+            this.imageRetriever.retrieve(imageSource, options, this);
         }
         return null;
     }

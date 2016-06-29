@@ -788,7 +788,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
             // Earlier in doRender(), an attempt was made to 'get' the activeTexture from the cache.
             // If was not found in the cache we need to retrieve a texture from the image source.
             if (this.activeTexture == null) {
-                this.activeTexture = rc.retrieveTexture(this.activeAttributes.imageSource); // puts retrieved textures in the cache
+                this.activeTexture = rc.retrieveTexture(this.activeAttributes.imageSource, null); // puts retrieved textures in the cache
             }
         } else {
             this.activeTexture = null; // there is no imageSource; draw a simple colored square

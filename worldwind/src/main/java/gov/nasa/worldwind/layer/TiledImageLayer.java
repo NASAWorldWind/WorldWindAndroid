@@ -184,7 +184,7 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
     protected void addTile(RenderContext rc, ImageTile tile) {
         Texture texture = rc.getTexture(tile.getImageSource()); // try to get the texture from the cache
         if (texture == null) {
-            texture = rc.retrieveTexture(tile.getImageSource()); // puts retrieved textures in the cache
+            texture = rc.retrieveTexture(tile.getImageSource(), null); // puts retrieved textures in the cache
         }
 
         if (texture != null) { // use the tile's own texture

@@ -129,7 +129,7 @@ public class AtmosphereLayer extends AbstractLayer {
         if (this.nightImageSource != null && this.lightLocation != null) {
             drawable.nightTexture = rc.getTexture(this.nightImageSource);
             if (drawable.nightTexture == null) {
-                drawable.nightTexture = rc.retrieveTexture(this.nightImageSource);
+                drawable.nightTexture = rc.retrieveTexture(this.nightImageSource, null);
             }
         } else {
             drawable.nightTexture = null;

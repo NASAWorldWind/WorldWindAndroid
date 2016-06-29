@@ -71,7 +71,7 @@ public class SurfaceImage extends AbstractRenderable {
 
         Texture texture = rc.getTexture(this.imageSource); // try to get the texture from the cache
         if (texture == null) {
-            texture = rc.retrieveTexture(this.imageSource); // puts retrieved textures in the cache
+            texture = rc.retrieveTexture(this.imageSource, null); // puts retrieved textures in the cache
         }
 
         if (texture == null) {
