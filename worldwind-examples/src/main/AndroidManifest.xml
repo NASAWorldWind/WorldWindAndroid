@@ -26,6 +26,7 @@
         </activity>
         <activity
             android:name=".BasicPerformanceBenchmarkActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_basic_performance_benchmark"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -33,6 +34,7 @@
         </activity>
         <activity
             android:name=".BasicStressTestActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_basic_stress_test"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -40,6 +42,7 @@
         </activity>
         <activity
             android:name=".CameraControlActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_camera_controls"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -47,6 +50,7 @@
         </activity>
         <activity
             android:name=".CameraViewActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_camera_view"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -54,6 +58,7 @@
         </activity>
         <activity
             android:name=".DayNightCycleActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_day_night_cycle"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -61,6 +66,7 @@
         </activity>
         <activity
             android:name=".LookAtViewActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_look_at_view"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -68,6 +74,7 @@
         </activity>
         <activity
             android:name=".NavigatorEventActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_navigator_event"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -75,6 +82,7 @@
         </activity>
         <activity
             android:name=".PlacemarksActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_placemarks"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -82,6 +90,7 @@
         </activity>
         <activity
             android:name=".PlacemarksDemoActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_placemarks_demo"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -89,6 +98,7 @@
         </activity>
         <activity
             android:name=".PlacemarksMilStd2525Activity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_placemarks_milstd2525"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -96,6 +106,7 @@
         </activity>
         <activity
             android:name=".PlacemarksMilStd2525DemoActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_placemarks_milstd2525_demo"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -103,6 +114,7 @@
         </activity>
         <activity
             android:name=".PlacemarksMilStd2525StressActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_placemarks_milstd2525_stress_test"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -110,6 +122,7 @@
         </activity>
         <activity
             android:name=".PlacemarksPickingActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_placemarks_picking"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -117,6 +130,7 @@
         </activity>
         <activity
             android:name=".PlacemarksSelectDragActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_placemarks_select_drag"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -124,6 +138,7 @@
         </activity>
         <activity
             android:name=".PlacemarksStressTestActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_placemarks_stress_test"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -131,6 +146,7 @@
         </activity>
         <activity
             android:name=".ShowTessellationActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_show_tessellation"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -138,6 +154,7 @@
         </activity>
         <activity
             android:name=".SurfaceImageActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_surface_image"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -145,6 +162,7 @@
         </activity>
         <activity
             android:name=".TextureStressTestActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_texture_stress_test"
             android:launchMode="singleInstance"
             android:noHistory="true"
@@ -152,6 +170,7 @@
         </activity>
         <activity
             android:name=".WmsLayerActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_wms_layer"
             android:launchMode="singleInstance"
             android:noHistory="true"
