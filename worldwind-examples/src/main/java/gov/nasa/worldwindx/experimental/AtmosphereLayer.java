@@ -13,11 +13,13 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.layer.AbstractLayer;
 import gov.nasa.worldwind.render.BufferObject;
+import gov.nasa.worldwind.render.ImageOptions;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Pool;
@@ -26,6 +28,8 @@ import gov.nasa.worldwindx.R;
 public class AtmosphereLayer extends AbstractLayer {
 
     protected ImageSource nightImageSource;
+
+    protected ImageOptions nightImageOptions;
 
     protected Location lightLocation;
 
@@ -41,18 +45,27 @@ public class AtmosphereLayer extends AbstractLayer {
         this.setDisplayName("Atmosphere");
         this.setPickEnabled(false);
         this.nightImageSource = ImageSource.fromResource(R.drawable.dnb_land_ocean_ice_2012);
+        this.nightImageOptions = ImageOptions.fromImageFormat(WorldWind.IMAGE_FORMAT_RGB_565);
     }
 
     public ImageSource getNightImageSource() {
-        return nightImageSource;
+        return this.nightImageSource;
     }
 
     public void setNightImageSource(ImageSource nightImageSource) {
         this.nightImageSource = nightImageSource;
     }
 
+    public ImageOptions getNightImageOptions() {
+        return this.nightImageOptions;
+    }
+
+    public void setNightImageOptions(ImageOptions nightImageOptions) {
+        this.nightImageOptions = nightImageOptions;
+    }
+
     public Location getLightLocation() {
-        return lightLocation;
+        return this.lightLocation;
     }
 
     public void setLightLocation(Location location) {
@@ -129,7 +142,7 @@ public class AtmosphereLayer extends AbstractLayer {
         if (this.nightImageSource != null && this.lightLocation != null) {
             drawable.nightTexture = rc.getTexture(this.nightImageSource);
             if (drawable.nightTexture == null) {
-                drawable.nightTexture = rc.retrieveTexture(this.nightImageSource, null);
+                drawable.nightTexture = rc.retrieveTexture(this.nightImageSource, this.nightImageOptions);
             }
         } else {
             drawable.nightTexture = null;

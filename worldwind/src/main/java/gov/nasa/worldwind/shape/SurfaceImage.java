@@ -9,6 +9,7 @@ import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.draw.DrawableSurfaceTexture;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.AbstractRenderable;
+import gov.nasa.worldwind.render.ImageOptions;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.render.SurfaceTextureProgram;
@@ -21,6 +22,8 @@ public class SurfaceImage extends AbstractRenderable {
     protected final Sector sector = new Sector();
 
     protected ImageSource imageSource;
+
+    protected ImageOptions imageOptions;
 
     public SurfaceImage() {
         super("Surface Image");
@@ -52,11 +55,19 @@ public class SurfaceImage extends AbstractRenderable {
     }
 
     public ImageSource getImageSource() {
-        return imageSource;
+        return this.imageSource;
     }
 
     public void setImageSource(ImageSource imageSource) {
         this.imageSource = imageSource;
+    }
+
+    public ImageOptions getImageOptions() {
+        return this.imageOptions;
+    }
+
+    public void setImageOptions(ImageOptions imageOptions) {
+        this.imageOptions = imageOptions;
     }
 
     @Override
@@ -71,7 +82,7 @@ public class SurfaceImage extends AbstractRenderable {
 
         Texture texture = rc.getTexture(this.imageSource); // try to get the texture from the cache
         if (texture == null) {
-            texture = rc.retrieveTexture(this.imageSource, null); // puts retrieved textures in the cache
+            texture = rc.retrieveTexture(this.imageSource, this.imageOptions); // puts retrieved textures in the cache
         }
 
         if (texture == null) {

@@ -26,4 +26,18 @@ public class ImageOptions {
      */
     public ImageOptions() {
     }
+
+    /**
+     * Constructs an image options with an image format.
+     *
+     * @param imageFormat the image format to use. Accepted values are {@link WorldWind#IMAGE_FORMAT_RGBA_8888} and
+     *                    {@link WorldWind#IMAGE_FORMAT_RGB_565}.
+     *
+     * @return the new image options
+     */
+    public static ImageOptions fromImageFormat(@WorldWind.ImageFormat int imageFormat) {
+        ImageOptions imageOptions = new ImageOptions();
+        imageOptions.imageFormat = imageFormat;
+        return imageOptions;
+    }
 }

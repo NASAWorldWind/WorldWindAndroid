@@ -8,6 +8,7 @@ package gov.nasa.worldwind.layer;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.ogc.WmsGetMapUrlFactory;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
+import gov.nasa.worldwind.render.ImageOptions;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.LevelSetConfig;
 import gov.nasa.worldwind.util.Logger;
@@ -63,6 +64,10 @@ public class BlueMarbleLandsatLayer extends TiledImageLayer implements TileUrlFa
         landsatConfig.transparent = false; // combining BlueMarble and esat layers results in opaque images
         this.landsatUrlFactory = new WmsGetMapUrlFactory(landsatConfig);
 
+        // Configure this layer's image options to reduce memory usage by using a 16-bit format with no alpha.
+        ImageOptions imageOptions = new ImageOptions();
+        imageOptions.imageFormat = WorldWind.IMAGE_FORMAT_RGB_565;
+
         // Configure this layer's level set to capture the entire globe at 15m resolution.
         double metersPerPixel = 15;
         double radiansPerPixel = metersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS;
@@ -73,6 +78,7 @@ public class BlueMarbleLandsatLayer extends TiledImageLayer implements TileUrlFa
         this.setLevelSet(new LevelSet(levelsConfig));
         this.setTileUrlFactory(this);
         this.setImageFormat("image/png");
+        this.setImageOptions(imageOptions);
     }
 
     @Override
