@@ -15,11 +15,11 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-import gov.nasa.worldwind.util.AbstractRetriever;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.Retriever;
 import gov.nasa.worldwind.util.WWUtil;
 
-public class ImageRetriever extends AbstractRetriever<ImageSource, Bitmap> {
+public class ImageRetriever extends Retriever<ImageSource, Bitmap> {
 
     protected Resources resources;
 
