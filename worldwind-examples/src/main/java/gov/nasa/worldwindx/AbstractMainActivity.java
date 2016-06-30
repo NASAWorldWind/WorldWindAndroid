@@ -16,7 +16,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.LayoutRes;
-import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -26,6 +25,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.Date;
 import java.util.Locale;
 
 import gov.nasa.worldwind.FrameMetrics;
@@ -40,7 +40,7 @@ import gov.nasa.worldwind.util.Logger;
 public abstract class AbstractMainActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
 
-    protected final static String PROCESS_ID = "pid";
+    protected final static String SESSION_TIMESTAMP = "session_timestamp";
 
     protected final static String CAMERA_LATITUDE = "latitude";
 
@@ -60,6 +60,8 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
     protected static final int PRINT_METRICS_DELAY = 3000;
 
+    protected static final Date sessionTimestamp = new Date();
+
     protected static int selectedItemId = R.id.nav_basic_globe_activity;
 
     protected ActionBarDrawerToggle drawerToggle;
@@ -69,7 +71,6 @@ public abstract class AbstractMainActivity extends AppCompatActivity
     protected String aboutBoxTitle = "Title goes here";
 
     protected String aboutBoxText = "Description goes here;";
-
 
     protected Handler handler = new Handler(new Handler.Callback() {
         @Override
@@ -127,7 +128,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         // Use this Activity's Handler to periodically print the FrameMetrics.
         this.handler.sendEmptyMessageDelayed(PRINT_METRICS, PRINT_METRICS_DELAY);
         // Restore the navigator's camera state from previously saved session data
-        restoreNavigatorState();
+        this.restoreNavigatorState();
     }
 
     @Override
@@ -136,7 +137,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         // Stop printing frame metrics when this activity is paused.
         this.handler.removeMessages(PRINT_METRICS);
         // Save the navigator's camera state.
-        saveNavigatorState();
+        this.saveNavigatorState();
     }
 
     @Override
@@ -165,15 +166,13 @@ public abstract class AbstractMainActivity extends AppCompatActivity
      * Saves the Navigator's camera data to a SharedPreferences object.
      */
     protected void saveNavigatorState() {
-        WorldWindow wwd = getWorldWindow();
+        WorldWindow wwd = this.getWorldWindow();
         if (wwd != null) {
-            SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+            SharedPreferences preferences = this.getPreferences(MODE_PRIVATE);
             SharedPreferences.Editor editor = preferences.edit();
 
             // Write an identifier to the preferences for this session;
-            // we only want to restore preferences from the same session.
-            int pid = android.os.Process.myPid();
-            editor.putInt(PROCESS_ID, pid);
+            editor.putLong(SESSION_TIMESTAMP, getSessionTimestamp());
 
             // Write the camera data
             Camera camera = wwd.getNavigator().getAsCamera(wwd.getGlobe(), new Camera());
@@ -193,10 +192,12 @@ public abstract class AbstractMainActivity extends AppCompatActivity
      * Restores the Navigator's camera state from a SharedPreferences object.
      */
     protected void restoreNavigatorState() {
-        WorldWindow wwd = getWorldWindow();
+        WorldWindow wwd = this.getWorldWindow();
         if (wwd != null) {
-            SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-            if (preferences.getInt(PROCESS_ID, -1) != android.os.Process.myPid()) {
+            SharedPreferences preferences = this.getPreferences(MODE_PRIVATE);
+
+            // We only want to restore preferences from the same session.
+            if (preferences.getLong(SESSION_TIMESTAMP, -1) != getSessionTimestamp()) {
                 return;
             }
             // Read the camera data
@@ -367,5 +368,9 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    protected static long getSessionTimestamp() {
+        return sessionTimestamp.getTime();
     }
 }
