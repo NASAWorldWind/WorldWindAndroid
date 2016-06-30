@@ -134,24 +134,24 @@ public class WorldWind {
     }
 
     /**
-     * {@link ImageFormat} constant indicating 32-bit RGBA_8888 image format.
+     * {@link ImageConfig} constant indicating 32-bit RGBA_8888 image configuration.
      */
-    public static final int IMAGE_FORMAT_RGBA_8888 = 0;
+    public static final int RGBA_8888 = 0;
 
     /**
-     * {@link ImageFormat} constant indicating 16-bit RGBA_565 image format.
+     * {@link ImageConfig} constant indicating 16-bit RGBA_565 image configuration.
      */
-    public static final int IMAGE_FORMAT_RGB_565 = 1;
+    public static final int RGB_565 = 1;
 
     /**
-     * Image format indicates the in-memory representation for images displayed by World Wind components. Images are
-     * typically represented in the 32-bit RGBA_8888 format, the highest quality available. Components that do not
-     * require an alpha channel and want to conserve memory may use the 16-bit RGBA_565 format. Accepted values are
-     * {@link #IMAGE_FORMAT_RGBA_8888} and {@link #IMAGE_FORMAT_RGB_565}.
+     * Image config indicates the in-memory representation for images displayed by World Wind components. Images are
+     * typically represented in the 32-bit RGBA_8888 configuration, the highest quality available. Components that do
+     * not require an alpha channel and want to conserve memory may use the 16-bit RGBA_565 configuration. Accepted
+     * values are {@link #RGBA_8888} and {@link #RGB_565}.
      */
-    @IntDef({IMAGE_FORMAT_RGBA_8888, IMAGE_FORMAT_RGB_565})
+    @IntDef({RGBA_8888, RGB_565})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface ImageFormat {
+    public @interface ImageConfig {
 
     }
 

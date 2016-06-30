@@ -118,11 +118,11 @@ public class ImageRetriever extends Retriever<ImageSource, ImageOptions, Bitmap>
         factoryOptions.inScaled = false; // suppress default image scaling; load the image in its native dimensions
 
         if (imageOptions != null) {
-            switch (imageOptions.imageFormat) {
-                case WorldWind.IMAGE_FORMAT_RGBA_8888:
+            switch (imageOptions.imageConfig) {
+                case WorldWind.RGBA_8888:
                     factoryOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;
                     break;
-                case WorldWind.IMAGE_FORMAT_RGB_565:
+                case WorldWind.RGB_565:
                     factoryOptions.inPreferredConfig = Bitmap.Config.RGB_565;
                     break;
             }

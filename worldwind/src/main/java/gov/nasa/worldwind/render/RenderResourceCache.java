@@ -71,7 +71,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
         if (am != null) {
             ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
             am.getMemoryInfo(mi);
-            if (mi.totalMem >= 1024 * 1024 * 2048L) { // use 384 MB on machines with 1536 MB or more
+            if (mi.totalMem >= 1024 * 1024 * 2048L) { // use 384 MB on machines with 2048 MB or more
                 return 1024 * 1024 * 384;
             } else if (mi.totalMem >= 1024 * 1024 * 1536) { // use 256 MB on machines with 1536 MB or more
                 return 1024 * 1024 * 256;

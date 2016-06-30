@@ -26,7 +26,7 @@ public class BackgroundLayer extends RenderableLayer {
      * associated with the World Window.
      */
     public BackgroundLayer() {
-        this(ImageSource.fromResource(R.drawable.gov_nasa_worldwind_worldtopobathy2004053), ImageOptions.fromImageFormat(WorldWind.IMAGE_FORMAT_RGB_565));
+        this(ImageSource.fromResource(R.drawable.gov_nasa_worldwind_worldtopobathy2004053), new ImageOptions(WorldWind.RGB_565));
     }
 
     /**

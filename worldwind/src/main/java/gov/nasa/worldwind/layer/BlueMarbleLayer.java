@@ -48,11 +48,8 @@ public class BlueMarbleLayer extends WmsLayer {
         config.coordinateSystem = "EPSG:4326";
         config.transparent = false; // the BlueMarble layer is opaque
 
-        ImageOptions imageOptions = new ImageOptions();
-        imageOptions.imageFormat = WorldWind.IMAGE_FORMAT_RGB_565; // exploit opaque imagery to reduce memory usage
-
         this.setDisplayName("Blue Marble");
         this.setConfiguration(new Sector().setFullSphere(), 500, config); // 500m resolution on Earth
-        this.setImageOptions(imageOptions);
+        this.setImageOptions(new ImageOptions(WorldWind.RGB_565));  // exploit opaque imagery to reduce memory usage
     }
 }

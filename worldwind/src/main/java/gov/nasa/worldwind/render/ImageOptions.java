@@ -13,13 +13,13 @@ import gov.nasa.worldwind.WorldWind;
 public class ImageOptions {
 
     /**
-     * Indicates the in-memory representation for images displayed by World Wind components. By default, images are
-     * represented in the 32-bit RGBA_8888 format, the highest quality available. Components that do not require an
-     * alpha channel and want to conserve memory may use the 16-bit RGBA_565 format. Accepted values are {@link
-     * WorldWind#IMAGE_FORMAT_RGBA_8888} and {@link WorldWind#IMAGE_FORMAT_RGB_565}.
+     * Indicates the in-memory configuration for images displayed by World Wind components. By default, images are
+     * represented in the 32-bit RGBA_8888 configuration, the highest quality available. Components that do not require
+     * an alpha channel and want to conserve memory may use the 16-bit RGBA_565 configuration. Accepted values are
+     * {@link WorldWind#RGBA_8888} and {@link WorldWind#RGB_565}.
      */
-    @WorldWind.ImageFormat
-    public int imageFormat = WorldWind.IMAGE_FORMAT_RGBA_8888;
+    @WorldWind.ImageConfig
+    public int imageConfig = WorldWind.RGBA_8888;
 
     /**
      * Constructs an image options with default values.
@@ -28,16 +28,12 @@ public class ImageOptions {
     }
 
     /**
-     * Constructs an image options with an image format.
+     * Constructs an image options with an image configuration.
      *
-     * @param imageFormat the image format to use. Accepted values are {@link WorldWind#IMAGE_FORMAT_RGBA_8888} and
-     *                    {@link WorldWind#IMAGE_FORMAT_RGB_565}.
-     *
-     * @return the new image options
+     * @param imageConfig the image configuration to use. Accepted values are {@link WorldWind#RGBA_8888} and {@link
+     *                    WorldWind#RGB_565}.
      */
-    public static ImageOptions fromImageFormat(@WorldWind.ImageFormat int imageFormat) {
-        ImageOptions imageOptions = new ImageOptions();
-        imageOptions.imageFormat = imageFormat;
-        return imageOptions;
+    public ImageOptions(@WorldWind.ImageConfig int imageConfig) {
+        this.imageConfig = imageConfig;
     }
 }
