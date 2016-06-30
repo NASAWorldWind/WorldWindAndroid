@@ -18,7 +18,7 @@ use to represent information on the globe or in space.
 
 # Release 0.3.0, June 30, 2016
 
-World Wind Android v0.3.0 adds new functionality and improvements designed to support large numbers placemarks.
+World Wind Android v0.3.0 adds new functionality and improvements designed to support large quantities of placemarks.
 Additionally, this release increases the memory available to application-defined placemark images, and reduces the
 memory used by World Wind's built-in map background layers and WMS layers.
 
@@ -34,18 +34,18 @@ memory used by World Wind's built-in map background layers and WMS layers.
 - [WWA-22](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-22) - Android x86 support
 
 ###### Task
-[WWA-78](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-78) - MIL-STD-2525 level of detail example
-[WWA-88](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-88) - Update to Android Studio 2.x
-[WWA-89](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-89) - Bitmap factory image source
-[WWA-92](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-92) - Placemark level of detail selector
-[WWA-93](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-93) - Example for placemark shared attributes and resource managment
-[WWA-97](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-97) - Increase memory available to bitmap image sources
-[WWA-98](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-98) - Reduce memory used by background images and WMS layer images
+- [WWA-78](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-78) - MIL-STD-2525 level of detail example
+- [WWA-88](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-88) - Update to Android Studio 2.x
+- [WWA-89](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-89) - Bitmap factory image source
+- [WWA-92](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-92) - Placemark level of detail selector
+- [WWA-93](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-93) - Example for placemark shared attributes and resource managment
+- [WWA-97](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-97) - Increase memory available to bitmap image sources
+- [WWA-98](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-98) - Reduce memory used by background images and WMS layer images
 
 ###### Bug
-[WWA-90](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-90) - Crash on Nexus 9 when GL buffer object evicted from render cache
-[WWA-95](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-95) - WmsGetMapUrlFactory URL query delimiter
-[WWA-96](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-96) - WmsLayer ignores Globe object argument
+- [WWA-90](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-90) - Crash on Nexus 9 when GL buffer object evicted from render cache
+- [WWA-95](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-95) - WmsGetMapUrlFactory URL query delimiter
+- [WWA-96](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-96) - WmsLayer ignores Globe object argument
 
 # Hotfix 0.2.6, June 16, 2016
 
