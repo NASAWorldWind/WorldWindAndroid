@@ -25,7 +25,7 @@ import gov.nasa.worldwind.util.Retriever;
 import gov.nasa.worldwind.util.SynchronizedMemoryCache;
 
 public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
-    implements Retriever.Callback<ImageSource, Bitmap>, Handler.Callback {
+    implements Retriever.Callback<ImageSource, ImageOptions, Bitmap>, Handler.Callback {
 
     protected Resources resources;
 
@@ -33,9 +33,9 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
 
     protected Queue<RenderResource> evictionQueue;
 
-    protected Retriever<ImageSource, Bitmap> imageRetriever;
+    protected Retriever<ImageSource, ImageOptions, Bitmap> imageRetriever;
 
-    protected Retriever<ImageSource, Bitmap> urlImageRetriever;
+    protected Retriever<ImageSource, ImageOptions, Bitmap> urlImageRetriever;
 
     protected LruMemoryCache<ImageSource, Bitmap> imageRetrieverCache;
 
@@ -125,7 +125,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
         this.evictionQueue.offer(oldValue);
     }
 
-    public Texture retrieveTexture(ImageSource imageSource) {
+    public Texture retrieveTexture(ImageSource imageSource, ImageOptions options) {
         if (imageSource == null) {
             return null; // a null image source corresponds to a null texture
         }
@@ -153,15 +153,15 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
         // then expected that a subsequent render frame will result in another call to retrieveTexture, in which case
         // the image will be found in the image retrieval cache.
         if (imageSource.isUrl()) {
-            this.urlImageRetriever.retrieve(imageSource, this);
+            this.urlImageRetriever.retrieve(imageSource, options, this);
         } else {
-            this.imageRetriever.retrieve(imageSource, this);
+            this.imageRetriever.retrieve(imageSource, options, this);
         }
         return null;
     }
 
     @Override
-    public void retrievalSucceeded(Retriever<ImageSource, Bitmap> retriever, ImageSource key, Bitmap value) {
+    public void retrievalSucceeded(Retriever<ImageSource, ImageOptions, Bitmap> retriever, ImageSource key, ImageOptions options, Bitmap value) {
         this.imageRetrieverCache.put(key, value, value.getByteCount());
         WorldWind.requestRedraw();
 
@@ -175,7 +175,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
     }
 
     @Override
-    public void retrievalFailed(Retriever<ImageSource, Bitmap> retriever, ImageSource key, Throwable ex) {
+    public void retrievalFailed(Retriever<ImageSource, ImageOptions, Bitmap> retriever, ImageSource key, Throwable ex) {
         if (ex instanceof SocketTimeoutException) { // log socket timeout exceptions while suppressing the stack trace
             Logger.log(Logger.ERROR, "Socket timeout retrieving image \'" + key + "\'");
         } else if (ex != null) { // log checked exceptions with the entire stack trace
@@ -186,7 +186,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
     }
 
     @Override
-    public void retrievalRejected(Retriever<ImageSource, Bitmap> retriever, ImageSource key) {
+    public void retrievalRejected(Retriever<ImageSource, ImageOptions, Bitmap> retriever, ImageSource key) {
         if (Logger.isLoggable(Logger.DEBUG)) {
             Logger.log(Logger.DEBUG, "Image retrieval rejected \'" + key + "\'");
         }

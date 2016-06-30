@@ -134,6 +134,28 @@ public class WorldWind {
     }
 
     /**
+     * {@link ImageFormat} constant indicating 32-bit RGBA_8888 image format.
+     */
+    public static final int IMAGE_FORMAT_RGBA_8888 = 0;
+
+    /**
+     * {@link ImageFormat} constant indicating 16-bit RGBA_565 image format.
+     */
+    public static final int IMAGE_FORMAT_RGB_565 = 1;
+
+    /**
+     * Image format indicates the in-memory representation for images displayed by World Wind components. Images are
+     * typically represented in the 32-bit RGBA_8888 format, the highest quality available. Components that do not
+     * require an alpha channel and want to conserve memory may use the 16-bit RGBA_565 format. Accepted values are
+     * {@link #IMAGE_FORMAT_RGBA_8888} and {@link #IMAGE_FORMAT_RGB_565}.
+     */
+    @IntDef({IMAGE_FORMAT_RGBA_8888, IMAGE_FORMAT_RGB_565})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ImageFormat {
+
+    }
+
+    /**
      * {@link NavigatorAction} constant indicating that the navigator has moved.
      */
     public static final int NAVIGATOR_MOVED = 0;

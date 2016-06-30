@@ -15,11 +15,12 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-import gov.nasa.worldwind.util.AbstractRetriever;
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.Retriever;
 import gov.nasa.worldwind.util.WWUtil;
 
-public class ImageRetriever extends AbstractRetriever<ImageSource, Bitmap> {
+public class ImageRetriever extends Retriever<ImageSource, ImageOptions, Bitmap> {
 
     protected Resources resources;
 
@@ -36,12 +37,13 @@ public class ImageRetriever extends AbstractRetriever<ImageSource, Bitmap> {
     }
 
     @Override
-    protected void retrieveAsync(ImageSource imageSource, Callback<ImageSource, Bitmap> callback) {
+    protected void retrieveAsync(ImageSource imageSource, ImageOptions imageOptions,
+                                 Callback<ImageSource, ImageOptions, Bitmap> callback) {
         try {
-            Bitmap bitmap = this.decodeImage(imageSource);
+            Bitmap bitmap = this.decodeImage(imageSource, imageOptions);
 
             if (bitmap != null) {
-                callback.retrievalSucceeded(this, imageSource, bitmap);
+                callback.retrievalSucceeded(this, imageSource, imageOptions, bitmap);
             } else {
                 callback.retrievalFailed(this, imageSource, null); // failed but no exception
             }
@@ -52,7 +54,7 @@ public class ImageRetriever extends AbstractRetriever<ImageSource, Bitmap> {
 
     // TODO can we explicitly recycle bitmaps from image sources other than direct Bitmap references?
     // TODO does explicit recycling help?
-    protected Bitmap decodeImage(ImageSource imageSource) throws IOException {
+    protected Bitmap decodeImage(ImageSource imageSource, ImageOptions imageOptions) throws IOException {
         if (imageSource.isBitmap()) {
             return imageSource.asBitmap();
         }
@@ -62,31 +64,31 @@ public class ImageRetriever extends AbstractRetriever<ImageSource, Bitmap> {
         }
 
         if (imageSource.isResource()) {
-            return this.decodeResource(imageSource.asResource());
+            return this.decodeResource(imageSource.asResource(), imageOptions);
         }
 
         if (imageSource.isFilePath()) {
-            return this.decodeFilePath(imageSource.asFilePath());
+            return this.decodeFilePath(imageSource.asFilePath(), imageOptions);
         }
 
         if (imageSource.isUrl()) {
-            return this.decodeUrl(imageSource.asUrl());
+            return this.decodeUrl(imageSource.asUrl(), imageOptions);
         }
 
         return this.decodeUnrecognized(imageSource);
     }
 
-    protected Bitmap decodeResource(int id) {
-        BitmapFactory.Options options = this.defaultBitmapFactoryOptions();
-        return (this.resources != null) ? BitmapFactory.decodeResource(this.resources, id, options) : null;
+    protected Bitmap decodeResource(int id, ImageOptions imageOptions) {
+        BitmapFactory.Options factoryOptions = this.bitmapFactoryOptions(imageOptions);
+        return (this.resources != null) ? BitmapFactory.decodeResource(this.resources, id, factoryOptions) : null;
     }
 
-    protected Bitmap decodeFilePath(String pathName) {
-        BitmapFactory.Options options = this.defaultBitmapFactoryOptions();
-        return BitmapFactory.decodeFile(pathName, options);
+    protected Bitmap decodeFilePath(String pathName, ImageOptions imageOptions) {
+        BitmapFactory.Options factoryOptions = this.bitmapFactoryOptions(imageOptions);
+        return BitmapFactory.decodeFile(pathName, factoryOptions);
     }
 
-    protected Bitmap decodeUrl(String urlString) throws IOException {
+    protected Bitmap decodeUrl(String urlString, ImageOptions imageOptions) throws IOException {
         // TODO establish a file caching service for remote resources
         // TODO retry absent resources, they are currently handled but suppressed entirely after the first failure
         // TODO configurable connect and read timeouts
@@ -99,8 +101,8 @@ public class ImageRetriever extends AbstractRetriever<ImageSource, Bitmap> {
 
             stream = new BufferedInputStream(conn.getInputStream());
 
-            BitmapFactory.Options options = this.defaultBitmapFactoryOptions();
-            return BitmapFactory.decodeStream(stream, null, options);
+            BitmapFactory.Options factoryOptions = this.bitmapFactoryOptions(imageOptions);
+            return BitmapFactory.decodeStream(stream, null, factoryOptions);
         } finally {
             WWUtil.closeSilently(stream);
         }
@@ -111,10 +113,21 @@ public class ImageRetriever extends AbstractRetriever<ImageSource, Bitmap> {
         return null;
     }
 
-    protected BitmapFactory.Options defaultBitmapFactoryOptions() {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false; // suppress default image scaling; load the image in its native dimensions
+    protected BitmapFactory.Options bitmapFactoryOptions(ImageOptions imageOptions) {
+        BitmapFactory.Options factoryOptions = new BitmapFactory.Options();
+        factoryOptions.inScaled = false; // suppress default image scaling; load the image in its native dimensions
 
-        return options;
+        if (imageOptions != null) {
+            switch (imageOptions.imageFormat) {
+                case WorldWind.IMAGE_FORMAT_RGBA_8888:
+                    factoryOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                    break;
+                case WorldWind.IMAGE_FORMAT_RGB_565:
+                    factoryOptions.inPreferredConfig = Bitmap.Config.RGB_565;
+                    break;
+            }
+        }
+
+        return factoryOptions;
     }
 }

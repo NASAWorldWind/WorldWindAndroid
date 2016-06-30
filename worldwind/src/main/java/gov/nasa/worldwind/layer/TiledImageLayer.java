@@ -12,6 +12,7 @@ import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableSurfaceTexture;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.render.ImageOptions;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.ImageTile;
 import gov.nasa.worldwind.render.RenderContext;
@@ -33,6 +34,8 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
     protected TileUrlFactory tileUrlFactory;
 
     protected String imageFormat;
+
+    protected ImageOptions imageOptions;
 
     protected double detailControl = 4;
 
@@ -78,7 +81,7 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
     }
 
     protected TileUrlFactory getTileUrlFactory() {
-        return tileUrlFactory;
+        return this.tileUrlFactory;
     }
 
     protected void setTileUrlFactory(TileUrlFactory tileUrlFactory) {
@@ -87,7 +90,7 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
     }
 
     protected String getImageFormat() {
-        return imageFormat;
+        return this.imageFormat;
     }
 
     protected void setImageFormat(String imageFormat) {
@@ -95,8 +98,17 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
         this.invalidateTiles();
     }
 
+    public ImageOptions getImageOptions() {
+        return this.imageOptions;
+    }
+
+    public void setImageOptions(ImageOptions imageOptions) {
+        this.imageOptions = imageOptions;
+        this.invalidateTiles();
+    }
+
     public double getDetailControl() {
-        return detailControl;
+        return this.detailControl;
     }
 
     public void setDetailControl(double detailControl) {
@@ -184,7 +196,7 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
     protected void addTile(RenderContext rc, ImageTile tile) {
         Texture texture = rc.getTexture(tile.getImageSource()); // try to get the texture from the cache
         if (texture == null) {
-            texture = rc.retrieveTexture(tile.getImageSource()); // puts retrieved textures in the cache
+            texture = rc.retrieveTexture(tile.getImageSource(), this.imageOptions); // puts retrieved textures in the cache
         }
 
         if (texture != null) { // use the tile's own texture

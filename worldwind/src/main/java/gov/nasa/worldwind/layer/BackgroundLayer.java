@@ -6,7 +6,9 @@
 package gov.nasa.worldwind.layer;
 
 import gov.nasa.worldwind.R;
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.render.ImageOptions;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.shape.SurfaceImage;
 import gov.nasa.worldwind.util.Logger;
@@ -24,18 +26,19 @@ public class BackgroundLayer extends RenderableLayer {
      * associated with the World Window.
      */
     public BackgroundLayer() {
-        this(ImageSource.fromResource(R.drawable.gov_nasa_worldwind_worldtopobathy2004053));
+        this(ImageSource.fromResource(R.drawable.gov_nasa_worldwind_worldtopobathy2004053), ImageOptions.fromImageFormat(WorldWind.IMAGE_FORMAT_RGB_565));
     }
 
     /**
      * Constructs a background image layer with an image source. The image's dimensions must be no greater than 2048 x
      * 2048.
      *
-     * @param imageSource the image source
+     * @param imageSource  the image source
+     * @param imageOptions the image options, or null to use the default options
      *
      * @throws IllegalArgumentException If the image source is null
      */
-    public BackgroundLayer(ImageSource imageSource) {
+    public BackgroundLayer(ImageSource imageSource, ImageOptions imageOptions) {
         if (imageSource == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BackgroundLayer", "constructor", "missingSource"));
@@ -47,6 +50,8 @@ public class BackgroundLayer extends RenderableLayer {
         this.setPickEnabled(false);
 
         // Delegate display to the SurfaceImage shape.
-        this.addRenderable(new SurfaceImage(new Sector().setFullSphere(), imageSource));
+        SurfaceImage surfaceImage = new SurfaceImage(new Sector().setFullSphere(), imageSource);
+        surfaceImage.setImageOptions(imageOptions);
+        this.addRenderable(surfaceImage);
     }
 }
