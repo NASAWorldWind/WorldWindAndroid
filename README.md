@@ -16,6 +16,37 @@ use to represent information on the globe or in space.
 - [World Wind Forum](http://forum.worldwindcentral.com) provides help from the World Wind community
 - [Android Studio](http://developer.android.com/sdk/) is used for World Wind Android development
 
+# Release 0.3.0, June 30, 2016
+
+World Wind Android v0.3.0 adds new functionality and improvements designed to support large numbers placemarks.
+Additionally, this release increases the memory available to application-defined placemark images, and reduces the
+memory used by World Wind's built-in map background layers and WMS layers.
+
+- [World Wind Examples 0.3.0](http://worldwindserver.net/android/0.3.0/worldwind-examples.apk) - Example App for 0.3.0; runs on Android 4.4 and newer
+- [World Wind Library 0.3.0](http://worldwindserver.net/android/0.3.0/worldwind.aar) - Android Archive (AAR) for 0.3.0
+- [API Docs 0.3.0](http://worldwindserver.net/android/0.3.0/doc) - Developer documentation for 0.3.0
+- [JIRA 0.3.0](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA/fixforversion/10913) - Detailed release notes for 0.3.0
+
+#### Release Notes
+
+###### Requirement
+- [WWA-8](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-8) - Atom WMS server testing and support
+- [WWA-22](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-22) - Android x86 support
+
+###### Task
+[WWA-78](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-78) - MIL-STD-2525 level of detail example
+[WWA-88](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-88) - Update to Android Studio 2.x
+[WWA-89](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-89) - Bitmap factory image source
+[WWA-92](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-92) - Placemark level of detail selector
+[WWA-93](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-93) - Example for placemark shared attributes and resource managment
+[WWA-97](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-97) - Increase memory available to bitmap image sources
+[WWA-98](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-98) - Reduce memory used by background images and WMS layer images
+
+###### Bug
+[WWA-90](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-90) - Crash on Nexus 9 when GL buffer object evicted from render cache
+[WWA-95](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-95) - WmsGetMapUrlFactory URL query delimiter
+[WWA-96](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-96) - WmsLayer ignores Globe object argument
+
 # Hotfix 0.2.6, June 16, 2016
 
 World Wind Android v0.2.6 contains critical bug fixes for v0.2.5. See the release notes for details.
