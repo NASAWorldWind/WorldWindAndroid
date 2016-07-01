@@ -17,6 +17,7 @@ import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.util.Logger;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.fail;
 
@@ -31,6 +32,56 @@ public class WmsLayerTest {
         PowerMockito.mockStatic(Logger.class);
     }
 
+    /**
+     * Test default constructor of {@link WmsLayer}.
+     */
+    @Test
+    public void testConstructor() {
+        assertNotNull("assure WmsLayer creation", new WmsLayer());
+    }
+
+    /**
+     * Test the three parameter constructor including throwing of {@link IllegalArgumentException} when null is provided
+     * for required parameters.
+     */
+    @Test
+    public void testConstructor_ThreeParameter() {
+
+        // Create mock objects for testing
+        Sector sector = PowerMockito.mock(Sector.class);
+        double metersPerPixel = 0.5; // notional value
+        WmsLayerConfig wmsLayerConfig = new WmsLayerConfig("testServiceAddress", "testLayerList");
+
+        // Test null/invalid submissions throw exceptions
+        try {
+            WmsLayer wmsLayer = new WmsLayer(null, metersPerPixel, null);
+            fail("submitted null parameters");
+        } catch (IllegalArgumentException ex) {
+            assertNotNull(ex);
+        }
+
+        try {
+            WmsLayer wmsLayer = new WmsLayer(sector, -metersPerPixel, null);
+            fail("submitted illegal parameters");
+        } catch (IllegalArgumentException ex) {
+            assertNotNull(ex);
+        }
+
+        try {
+            WmsLayer wmsLayer = new WmsLayer(sector, metersPerPixel, null);
+            fail("submitted null parameter");
+        } catch (IllegalArgumentException ex) {
+            assertNotNull(ex);
+        }
+
+        WmsLayer wmsLayer = new WmsLayer(sector, metersPerPixel, wmsLayerConfig);
+        assertNotNull("assure object WmsLayer creation", wmsLayer);
+    }
+
+    /**
+     * Test the four parameter constructor including throwing of {@link IllegalArgumentException} when null is provided
+     * for required parameters.
+     */
     @Test
     public void testConstructor_FourParameter() {
 
@@ -47,7 +98,7 @@ public class WmsLayerTest {
         PowerMockito.when(globe.getEquatorialRadius()).thenReturn(mockRadius);
         WmsLayerConfig wmsLayerConfig = new WmsLayerConfig("testServiceAddress", "testLayerList");
 
-        // Test null submissions throw exceptions
+        // Test null/invalid submissions throw exceptions
         try {
             WmsLayer wmsLayer = new WmsLayer(null, null, metersPerPixel, null);
             fail("provided null parameters");
@@ -58,6 +109,13 @@ public class WmsLayerTest {
         try {
             WmsLayer wmsLayer = new WmsLayer(sector, null, metersPerPixel, null);
             fail("provided null parameters");
+        } catch (IllegalArgumentException ex) {
+            assertNotNull(ex);
+        }
+
+        try {
+            WmsLayer wmsLayer = new WmsLayer(sector, globe, -metersPerPixel, null);
+            fail("provided illegal parameters");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
         }
@@ -76,5 +134,150 @@ public class WmsLayerTest {
 
         // check the mock radius is providing the resolution level
         assertEquals("detail levels", anticipatedLevels, wmsLayer.getLevelSet().numLevels());
+    }
+
+    /**
+     * Test the three parameter setConfiguration method including throwing of {@link IllegalArgumentException} when null
+     * is provided for required parameters.
+     */
+    @Test
+    public void testSetConfiguration_ThreeParameter() {
+
+        // Mocked objects facilitating testing
+        double minLat = 10.0;
+        double deltaLat = 1.0;
+        double minLon = -95.0;
+        double deltaLon = 2.0;
+        Sector initialSector = new Sector(minLat, minLon, deltaLat, deltaLon);
+        String initialNotionalServiceAddress = "notionalServiceAddress";
+        String initialNotionalLayerList = "notionalLayerList";
+        WmsLayerConfig initialWmsLayerConfig
+            = new WmsLayerConfig(initialNotionalServiceAddress, initialNotionalLayerList);
+        double metersPerPixel = 0.5;
+
+        // inital object for testing method
+        WmsLayer wmsLayer = new WmsLayer(initialSector, metersPerPixel, initialWmsLayerConfig);
+
+        // test null/invalid submissions throw exceptions
+        try {
+            wmsLayer.setConfiguration(null, metersPerPixel, null);
+            fail("provided null arguments");
+        } catch (IllegalArgumentException ex) {
+            assertNotNull(ex);
+        }
+
+        try {
+            wmsLayer.setConfiguration(initialSector, -metersPerPixel, null);
+            fail("provided invalid argument");
+        } catch (IllegalArgumentException ex) {
+            assertNotNull(ex);
+        }
+
+        try {
+            wmsLayer.setConfiguration(initialSector, metersPerPixel, null);
+            fail("provided null arguments");
+        } catch (IllegalArgumentException ex) {
+            assertNotNull(ex);
+        }
+
+        // test data change when using method correctly
+        wmsLayer = new WmsLayer(initialSector, metersPerPixel, initialWmsLayerConfig);
+        double alternativeLatMin = -45.0;
+        double alternativeLonMin = 50.0;
+        double alternativeDeltaLat = 5.0;
+        double alternativeDeltaLon = 2.0;
+        Sector alternativeSector
+            = new Sector(alternativeLatMin, alternativeLonMin, alternativeDeltaLat, alternativeDeltaLon);
+        wmsLayer.setConfiguration(alternativeSector, metersPerPixel, initialWmsLayerConfig);
+        assertEquals("sector updated", alternativeSector, wmsLayer.getLevelSet().sector);
+
+        // test metersPerPixel set
+        wmsLayer = new WmsLayer(initialSector, metersPerPixel, initialWmsLayerConfig);
+        double alternativeMetersPerPixel = 10.0;
+        int originalNumberOfLevels = wmsLayer.getLevelSet().numLevels();
+        wmsLayer.setConfiguration(initialSector, alternativeMetersPerPixel, initialWmsLayerConfig);
+        // assertEquals is not used as the determination of the number of levels is a function of LevelSetConfig
+        assertFalse("levels updated", originalNumberOfLevels == wmsLayer.getLevelSet().numLevels());
+    }
+
+    /**
+     * Test the four parameter setConfiguration method including throwing of {@link IllegalArgumentException} when null
+     * is provided for required parameters.
+     */
+    @Test
+    public void testSetConfiguration_FourParameter() {
+
+        // Mocked objects facilitating testing
+        double minLat = 10.0;
+        double deltaLat = 1.0;
+        double minLon = -95.0;
+        double deltaLon = 2.0;
+        double notionalGlobeRadius = 3000000.0;
+        Sector initialSector = new Sector(minLat, minLon, deltaLat, deltaLon);
+        Globe initialGlobe = PowerMockito.mock(Globe.class);
+        PowerMockito.when(initialGlobe.getEquatorialRadius()).thenReturn(notionalGlobeRadius);
+        String initialNotionalServiceAddress = "notionalServiceAddress";
+        String initialNotionalLayerList = "notionalLayerList";
+        WmsLayerConfig initialWmsLayerConfig = new WmsLayerConfig(initialNotionalServiceAddress, initialNotionalLayerList);
+        double metersPerPixel = 0.5;
+
+        // initial object for testing method
+        WmsLayer wmsLayer = new WmsLayer(initialSector, initialGlobe, metersPerPixel, initialWmsLayerConfig);
+
+        // test null/invalid submissions throw exceptions
+        try {
+            wmsLayer.setConfiguration(null, null, metersPerPixel, null);
+            fail("provided null arguments");
+        } catch (IllegalArgumentException ex) {
+            assertNotNull(ex);
+        }
+
+        try {
+            wmsLayer.setConfiguration(initialSector, null, metersPerPixel, null);
+            fail("provided null arguments");
+        } catch (IllegalArgumentException ex) {
+            assertNotNull(ex);
+        }
+
+        try {
+            wmsLayer.setConfiguration(initialSector, initialGlobe, -metersPerPixel, null);
+            fail("provided invalid argument");
+        } catch (IllegalArgumentException ex) {
+            assertNotNull(ex);
+        }
+
+        try {
+            wmsLayer.setConfiguration(initialSector, initialGlobe, metersPerPixel, null);
+            fail("provided null arguments");
+        } catch (IllegalArgumentException ex) {
+            assertNotNull(ex);
+        }
+
+        // test data change when using method correctly
+        wmsLayer = new WmsLayer(initialSector, initialGlobe, metersPerPixel, initialWmsLayerConfig);
+        double alternativeLatMin = -45.0;
+        double alternativeLonMin = 50.0;
+        double alternativeDeltaLat = 5.0;
+        double alternativeDeltaLon = 2.0;
+        Sector alternativeSector = new Sector(alternativeLatMin, alternativeLonMin, alternativeDeltaLat, alternativeDeltaLon);
+
+        // test sector updated
+        wmsLayer.setConfiguration(alternativeSector, initialGlobe, metersPerPixel, initialWmsLayerConfig);
+        assertEquals("sector updated", alternativeSector, wmsLayer.getLevelSet().sector);
+
+        // test globe updated
+        wmsLayer = new WmsLayer(initialSector, initialGlobe, metersPerPixel, initialWmsLayerConfig);
+        int initialLayers = wmsLayer.getLevelSet().numLevels();
+        Globe alternativeGlobe = PowerMockito.mock(Globe.class);
+        PowerMockito.when(alternativeGlobe.getEquatorialRadius()).thenReturn(2 * notionalGlobeRadius);
+        wmsLayer.setConfiguration(initialSector, alternativeGlobe, metersPerPixel, initialWmsLayerConfig);
+        assertFalse("layer levels updated by globe object change", initialLayers == wmsLayer.getLevelSet().numLevels());
+
+        // test metersPerPixel updated
+        wmsLayer = new WmsLayer(initialSector, initialGlobe, metersPerPixel, initialWmsLayerConfig);
+        double alternativeMetersPerPixel = 10.0;
+        int originalNumberOfLevels = wmsLayer.getLevelSet().numLevels();
+        wmsLayer.setConfiguration(initialSector, initialGlobe, alternativeMetersPerPixel, initialWmsLayerConfig);
+        assertFalse("levels updated", originalNumberOfLevels == wmsLayer.getLevelSet().numLevels());
     }
 }
