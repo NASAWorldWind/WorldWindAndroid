@@ -13,9 +13,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".GeneralGlobeActivity"
+            android:name=".BasicGlobeActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_general_globe"
+            android:label="@string/title_basic_globe"
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
@@ -25,86 +25,77 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".BasicPerformanceBenchmarkActivity"
+            android:name=".CameraControlActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_basic_performance_benchmark"
+            android:label="@string/title_camera_controls"
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-            android:name=".BasicStressTestActivity"
+            android:name=".CameraViewActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_basic_stress_test"
+            android:label="@string/title_camera_view"
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-            android:name=".DayNightCycleActivity"
+            android:name=".LookAtViewActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_day_night_cycle"
+            android:label="@string/title_look_at_view"
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-            android:name=".PlacemarksDemoActivity"
+            android:name=".NavigatorEventActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_placemarks_demo"
+            android:label="@string/title_navigator_event"
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-            android:name=".PlacemarksMilStd2525Activity"
+            android:name=".PlacemarksActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_placemarks_milstd2525"
+            android:label="@string/title_placemarks"
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-            android:name=".PlacemarksMilStd2525DemoActivity"
+            android:name=".PlacemarksPickingActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_placemarks_milstd2525_demo"
+            android:label="@string/title_placemarks_picking"
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-            android:name=".PlacemarksMilStd2525StressActivity"
+            android:name=".ShowTessellationActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_placemarks_milstd2525_stress_test"
+            android:label="@string/title_show_tessellation"
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-            android:name=".PlacemarksSelectDragActivity"
+            android:name=".SurfaceImageActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_placemarks_select_drag"
+            android:label="@string/title_surface_image"
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-            android:name=".PlacemarksStressTestActivity"
+            android:name=".WmsLayerActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_placemarks_stress_test"
+            android:label="@string/title_wms_layer"
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
-        <activity
-            android:name=".TextureStressTestActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_texture_stress_test"
-            android:launchMode="singleInstance"
-            android:noHistory="true"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-
     </application>
 
 </manifest>

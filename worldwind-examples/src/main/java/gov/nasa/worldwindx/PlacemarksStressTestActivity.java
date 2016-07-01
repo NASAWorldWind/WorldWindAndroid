@@ -19,7 +19,7 @@ import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
 
-public class PlacemarksStressTestActivity extends BasicGlobeActivity implements Choreographer.FrameCallback {
+public class PlacemarksStressTestActivity extends GeneralGlobeActivity implements Choreographer.FrameCallback {
 
     protected static final int NUM_PLACEMARKS = 10000;
 
@@ -70,7 +70,7 @@ public class PlacemarksStressTestActivity extends BasicGlobeActivity implements 
         Random random = new Random(123);
 
         // Create pushpins anchored at the "pinpoints" with eye distance scaling
-        PlacemarkAttributes attributes = PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.air_fixwing));
+        PlacemarkAttributes attributes = PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.aircraft_fixwing));
 
         for (int i = 0; i < NUM_PLACEMARKS; i++) {
             // Create an even distribution of latitude and longitudes across the globe.

@@ -35,7 +35,7 @@ import gov.nasa.worldwind.util.WWUtil;
 import gov.nasa.worldwindx.milstd2525.MilStd2525;
 import gov.nasa.worldwindx.milstd2525.MilStd2525Placemark;
 
-public class PlacemarksMilStd2525DemoActivity extends BasicGlobeActivity implements Runnable {
+public class PlacemarksMilStd2525DemoActivity extends GeneralGlobeActivity implements Runnable {
 
     // The delay in milliseconds between aircraft animation frames
     protected static final int DELAY_TIME = 100;

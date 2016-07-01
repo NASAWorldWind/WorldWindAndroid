@@ -10,7 +10,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
@@ -29,9 +28,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import gov.nasa.worldwind.FrameMetrics;
-import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -40,29 +37,13 @@ import gov.nasa.worldwind.util.Logger;
 public abstract class AbstractMainActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
 
-    protected final static String SESSION_TIMESTAMP = "session_timestamp";
-
-    protected final static String CAMERA_LATITUDE = "latitude";
-
-    protected final static String CAMERA_LONGITUDE = "longitude";
-
-    protected final static String CAMERA_ALTITUDE = "altitude";
-
-    protected final static String CAMERA_ALTITUDE_MODE = "altitude_mode";
-
-    protected final static String CAMERA_HEADING = "heading";
-
-    protected final static String CAMERA_TILT = "tilt";
-
-    protected final static String CAMERA_ROLL = "roll";
-
     protected static final int PRINT_METRICS = 1;
 
     protected static final int PRINT_METRICS_DELAY = 3000;
 
     protected static final Date sessionTimestamp = new Date();
 
-    protected static int selectedItemId = R.id.nav_general_globe_activity;
+    protected static int selectedItemId = R.id.nav_basic_globe_activity;
 
     protected ActionBarDrawerToggle drawerToggle;
 
@@ -127,8 +108,6 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         this.navigationView.setCheckedItem(selectedItemId);
         // Use this Activity's Handler to periodically print the FrameMetrics.
         this.handler.sendEmptyMessageDelayed(PRINT_METRICS, PRINT_METRICS_DELAY);
-        // Restore the navigator's camera state from previously saved session data
-        this.restoreNavigatorState();
     }
 
     @Override
@@ -136,8 +115,6 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         super.onPause();
         // Stop printing frame metrics when this activity is paused.
         this.handler.removeMessages(PRINT_METRICS);
-        // Save the navigator's camera state.
-        this.saveNavigatorState();
     }
 
     @Override
@@ -160,64 +137,6 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * Saves the Navigator's camera data to a SharedPreferences object.
-     */
-    protected void saveNavigatorState() {
-        WorldWindow wwd = this.getWorldWindow();
-        if (wwd != null) {
-            SharedPreferences preferences = this.getPreferences(MODE_PRIVATE);
-            SharedPreferences.Editor editor = preferences.edit();
-
-            // Write an identifier to the preferences for this session;
-            editor.putLong(SESSION_TIMESTAMP, getSessionTimestamp());
-
-            // Write the camera data
-            Camera camera = wwd.getNavigator().getAsCamera(wwd.getGlobe(), new Camera());
-            editor.putFloat(CAMERA_LATITUDE, (float) camera.latitude);
-            editor.putFloat(CAMERA_LONGITUDE, (float) camera.longitude);
-            editor.putFloat(CAMERA_ALTITUDE, (float) camera.altitude);
-            editor.putFloat(CAMERA_HEADING, (float) camera.heading);
-            editor.putFloat(CAMERA_TILT, (float) camera.tilt);
-            editor.putFloat(CAMERA_ROLL, (float) camera.roll);
-            editor.putInt(CAMERA_ALTITUDE_MODE, camera.altitudeMode);
-
-            editor.apply();
-        }
-    }
-
-    /**
-     * Restores the Navigator's camera state from a SharedPreferences object.
-     */
-    protected void restoreNavigatorState() {
-        WorldWindow wwd = this.getWorldWindow();
-        if (wwd != null) {
-            SharedPreferences preferences = this.getPreferences(MODE_PRIVATE);
-
-            // We only want to restore preferences from the same session.
-            if (preferences.getLong(SESSION_TIMESTAMP, -1) != getSessionTimestamp()) {
-                return;
-            }
-            // Read the camera data
-            float lat = preferences.getFloat(CAMERA_LATITUDE, Float.MAX_VALUE);
-            float lon = preferences.getFloat(CAMERA_LONGITUDE, Float.MAX_VALUE);
-            float alt = preferences.getFloat(CAMERA_ALTITUDE, Float.MAX_VALUE);
-            float heading = preferences.getFloat(CAMERA_HEADING, Float.MAX_VALUE);
-            float tilt = preferences.getFloat(CAMERA_TILT, Float.MAX_VALUE);
-            float roll = preferences.getFloat(CAMERA_ROLL, Float.MAX_VALUE);
-            @WorldWind.AltitudeMode int altMode = preferences.getInt(CAMERA_ALTITUDE_MODE, WorldWind.ABSOLUTE);
-
-            if (lat == Float.MAX_VALUE || lon == Float.MAX_VALUE || alt == Float.MAX_VALUE ||
-                heading == Float.MAX_VALUE || tilt == Float.MAX_VALUE || roll == Float.MAX_VALUE) {
-                return;
-            }
-
-            // Restore the camera state.
-            Camera camera = new Camera(lat, lon, alt, altMode, heading, tilt, roll);
-            wwd.getNavigator().setAsCamera(wwd.getGlobe(), camera);
-        }
     }
 
     protected void setAboutBoxTitle(String title) {
@@ -303,38 +222,35 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         switch (selectedItemId) {
 
-            case R.id.nav_basic_performance_benchmark_activity:
-                startActivity(new Intent(getApplicationContext(), BasicPerformanceBenchmarkActivity.class));
+            case R.id.nav_basic_globe_activity:
+                startActivity(new Intent(getApplicationContext(), BasicGlobeActivity.class));
                 break;
-            case R.id.nav_basic_stress_test_activity:
-                startActivity(new Intent(getApplicationContext(), BasicStressTestActivity.class));
+            case R.id.nav_camera_view_activity:
+                startActivity(new Intent(getApplicationContext(), CameraViewActivity.class));
                 break;
-            case R.id.nav_day_night_cycle_activity:
-                startActivity(new Intent(getApplicationContext(), DayNightCycleActivity.class));
+            case R.id.nav_camera_control_activity:
+                startActivity(new Intent(getApplicationContext(), CameraControlActivity.class));
                 break;
-            case R.id.nav_general_globe_activity:
-                startActivity(new Intent(getApplicationContext(), GeneralGlobeActivity.class));
+            case R.id.nav_look_at_view_activity:
+                startActivity(new Intent(getApplicationContext(), LookAtViewActivity.class));
                 break;
-            case R.id.nav_placemarks_demo_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksDemoActivity.class));
+            case R.id.nav_navigator_event_activity:
+                startActivity(new Intent(getApplicationContext(), NavigatorEventActivity.class));
                 break;
-            case R.id.nav_placemarks_milstd2525_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525Activity.class));
+            case R.id.nav_placemarks_activity:
+                startActivity(new Intent(getApplicationContext(), PlacemarksActivity.class));
                 break;
-            case R.id.nav_placemarks_milstd2525_demo_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525DemoActivity.class));
+            case R.id.nav_placemarks_picking_activity:
+                startActivity(new Intent(getApplicationContext(), PlacemarksPickingActivity.class));
                 break;
-            case R.id.nav_placemarks_milstd2525_stress_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525StressActivity.class));
+            case R.id.nav_show_tessellation_activity:
+                startActivity(new Intent(getApplicationContext(), ShowTessellationActivity.class));
                 break;
-            case R.id.nav_placemarks_select_drag_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksSelectDragActivity.class));
+            case R.id.nav_surface_image_activity:
+                startActivity(new Intent(getApplicationContext(), SurfaceImageActivity.class));
                 break;
-            case R.id.nav_placemarks_stress_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksStressTestActivity.class));
-                break;
-            case R.id.nav_texture_stress_test_activity:
-                startActivity(new Intent(getApplicationContext(), TextureStressTestActivity.class));
+            case R.id.nav_wms_layer_activity:
+                startActivity(new Intent(getApplicationContext(), WmsLayerActivity.class));
                 break;
         }
 

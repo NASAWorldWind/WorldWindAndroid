@@ -44,7 +44,7 @@ import gov.nasa.worldwind.util.WWUtil;
 /**
  * This Activity
  */
-public class PlacemarksDemoActivity extends BasicGlobeActivity {
+public class PlacemarksDemoActivity extends GeneralGlobeActivity {
 
     // A component for displaying the status of this activity
     protected TextView statusText = null;

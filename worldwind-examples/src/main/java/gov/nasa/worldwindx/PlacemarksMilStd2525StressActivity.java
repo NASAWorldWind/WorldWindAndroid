@@ -27,7 +27,7 @@ import gov.nasa.worldwindx.milstd2525.MilStd2525;
 import gov.nasa.worldwindx.milstd2525.MilStd2525LevelOfDetailSelector;
 import gov.nasa.worldwindx.milstd2525.MilStd2525Placemark;
 
-public class PlacemarksMilStd2525StressActivity extends BasicGlobeActivity implements Choreographer.FrameCallback {
+public class PlacemarksMilStd2525StressActivity extends GeneralGlobeActivity implements Choreographer.FrameCallback {
 
     protected static final int NUM_PLACEMARKS = 10000;
 
