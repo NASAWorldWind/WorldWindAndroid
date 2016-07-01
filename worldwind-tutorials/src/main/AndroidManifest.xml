@@ -73,14 +73,6 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-            android:name=".PlacemarksSelectDragActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_placemarks_select_drag"
-            android:launchMode="singleInstance"
-            android:noHistory="true"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-        <activity
             android:name=".ShowTessellationActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_show_tessellation"
