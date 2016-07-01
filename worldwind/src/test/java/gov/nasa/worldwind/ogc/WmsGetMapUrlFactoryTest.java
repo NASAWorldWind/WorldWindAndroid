@@ -44,11 +44,6 @@ public class WmsGetMapUrlFactoryTest {
     public static final String SYSTEM_EPSG4326 = "EPSG:4326";
 
     /**
-     * Test Object used by the test classes.
-     */
-    private WmsGetMapUrlFactory standardWmsMapFactory;
-
-    /**
      * Notional values used for testing.
      */
     private static final double DELTA = 1e-6;
@@ -65,10 +60,6 @@ public class WmsGetMapUrlFactoryTest {
         // To accommodate WorldWind exception handling, we must mock all
         // the static methods in Logger to avoid calls to android.util.log
         PowerMockito.mockStatic(Logger.class);
-
-        // Utilize a "standard" map factory for testing the setters
-        WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        this.standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
     }
 
     /**
@@ -180,12 +171,14 @@ public class WmsGetMapUrlFactoryTest {
     public void testSetServiceAddress() {
 
         String alteredServiceAddress = "testAddress"; // notional address
-        this.standardWmsMapFactory.setServiceAddress(alteredServiceAddress);
-        assertEquals("Update Service Address", alteredServiceAddress, this.standardWmsMapFactory.getServiceAddress());
+        WmsGetMapUrlFactory standardWmsMapFactory = getDefaultMapFactory();
+        standardWmsMapFactory.setServiceAddress(alteredServiceAddress);
+        assertEquals("Update Service Address", alteredServiceAddress, standardWmsMapFactory.getServiceAddress());
 
         // Check the setter prevents null submissions
+        standardWmsMapFactory = getDefaultMapFactory();
         try {
-            this.standardWmsMapFactory.setServiceAddress(null);
+            standardWmsMapFactory.setServiceAddress(null);
             fail("null Submission Allowed for Service Address");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
@@ -200,12 +193,14 @@ public class WmsGetMapUrlFactoryTest {
     public void testSetWmsVersion() {
 
         String updatedWmsVersion = "1.4.0"; // notional versioning
-        this.standardWmsMapFactory.setWmsVersion(updatedWmsVersion);
-        assertEquals("Update WMS Version", updatedWmsVersion, this.standardWmsMapFactory.getWmsVersion());
+        WmsGetMapUrlFactory standardWmsMapFactory = getDefaultMapFactory();
+        standardWmsMapFactory.setWmsVersion(updatedWmsVersion);
+        assertEquals("Update WMS Version", updatedWmsVersion, standardWmsMapFactory.getWmsVersion());
 
         // Check the setter prevents null submissions
+        standardWmsMapFactory = getDefaultMapFactory();
         try {
-            this.standardWmsMapFactory.setWmsVersion(null);
+            standardWmsMapFactory.setWmsVersion(null);
             fail("null Submission Allowed for WMS Version");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
@@ -220,12 +215,14 @@ public class WmsGetMapUrlFactoryTest {
     public void testSetLayerNames() {
 
         String updatedLayerNames = "layer1,layer2"; // notional
-        this.standardWmsMapFactory.setLayerNames(updatedLayerNames);
-        assertEquals("Update Layer Names", updatedLayerNames, this.standardWmsMapFactory.getLayerNames());
+        WmsGetMapUrlFactory standardWmsMapFactory = getDefaultMapFactory();
+        standardWmsMapFactory.setLayerNames(updatedLayerNames);
+        assertEquals("Update Layer Names", updatedLayerNames, standardWmsMapFactory.getLayerNames());
 
         // Check the setter prevents null submissions
+        standardWmsMapFactory = getDefaultMapFactory();
         try {
-            this.standardWmsMapFactory.setLayerNames(null);
+            standardWmsMapFactory.setLayerNames(null);
             fail("null Submission Allowed for Layer Names");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
@@ -239,8 +236,9 @@ public class WmsGetMapUrlFactoryTest {
     public void testSetStyleNames() {
 
         String updatedStyleNames = "style1,style2"; // notional
-        this.standardWmsMapFactory.setStyleNames(updatedStyleNames);
-        assertEquals("Update Style Names", updatedStyleNames, this.standardWmsMapFactory.getStyleNames());
+        WmsGetMapUrlFactory standardWmsMapFactory = getDefaultMapFactory();
+        standardWmsMapFactory.setStyleNames(updatedStyleNames);
+        assertEquals("Update Style Names", updatedStyleNames, standardWmsMapFactory.getStyleNames());
     }
 
     /**
@@ -251,14 +249,16 @@ public class WmsGetMapUrlFactoryTest {
     public void testSetCoordinateSystem() {
 
         String updatedCoordinateSystem = "system"; // notional
-        this.standardWmsMapFactory.setCoordinateSystem(updatedCoordinateSystem);
+        WmsGetMapUrlFactory standardWmsMapFactory = getDefaultMapFactory();
+        standardWmsMapFactory.setCoordinateSystem(updatedCoordinateSystem);
         assertEquals(
             "Update Coordinate System", updatedCoordinateSystem,
-        this.standardWmsMapFactory.getCoordinateSystem());
+            standardWmsMapFactory.getCoordinateSystem());
 
         // Check the setter prevents null submissions
+        standardWmsMapFactory = getDefaultMapFactory();
         try {
-            this.standardWmsMapFactory.setCoordinateSystem(null);
+            standardWmsMapFactory.setCoordinateSystem(null);
             fail("null Submission Allowed for Coordinate System");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
@@ -270,9 +270,10 @@ public class WmsGetMapUrlFactoryTest {
      */
     @Test
     public void testSetTransparency() {
-        boolean previousSetting = this.standardWmsMapFactory.isTransparent();
-        this.standardWmsMapFactory.setTransparent(!previousSetting);
-        assertFalse("Ensure Transparency Change", previousSetting == this.standardWmsMapFactory.isTransparent());
+        WmsGetMapUrlFactory standardWmsMapFactory = getDefaultMapFactory();
+        boolean previousSetting = standardWmsMapFactory.isTransparent();
+        standardWmsMapFactory.setTransparent(!previousSetting);
+        assertFalse("Ensure Transparency Change", previousSetting == standardWmsMapFactory.isTransparent());
     }
 
     /**
@@ -281,8 +282,9 @@ public class WmsGetMapUrlFactoryTest {
     @Test
     public void testSetTimeString() {
         String updatedTimeString = "time"; // notional
-        this.standardWmsMapFactory.setTimeString(updatedTimeString);
-        assertEquals("Update Time String", updatedTimeString, this.standardWmsMapFactory.getTimeString());
+        WmsGetMapUrlFactory standardWmsMapFactory = getDefaultMapFactory();
+        standardWmsMapFactory.setTimeString(updatedTimeString);
+        assertEquals("Update Time String", updatedTimeString, standardWmsMapFactory.getTimeString());
     }
 
     /**
@@ -292,15 +294,17 @@ public class WmsGetMapUrlFactoryTest {
     public void testUrlForTile_ParameterCheck() {
 
         // check null's are not permitted
+        WmsGetMapUrlFactory standardWmsMapFactory = getDefaultMapFactory();
         try {
-            this.standardWmsMapFactory.urlForTile(null, null);
+            standardWmsMapFactory.urlForTile(null, null);
             fail("null Parameters Pushed to urlForTile");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
         }
         Tile tile = PowerMockito.mock(Tile.class);
+        standardWmsMapFactory = getDefaultMapFactory();
         try {
-            this.standardWmsMapFactory.urlForTile(tile, null);
+            standardWmsMapFactory.urlForTile(tile, null);
             fail("null Parameters Pushed to urlForTile");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
@@ -375,54 +379,54 @@ public class WmsGetMapUrlFactoryTest {
         LevelSet levelSet = new LevelSet();
         Level tileLevel = new Level(levelSet, 0, 0.1);
 
+        WmsGetMapUrlFactory standardWmsMapFactory = getDefaultMapFactory();
 
         // A Standard Tile to use for generating URLs
         Tile tile = new Tile(sector, tileLevel, NOTIONAL_ROW, NOTIONAL_COLUMN);
 
         // Set the Service Address
-        this.standardWmsMapFactory.setServiceAddress(COMMON_SERVICE_ADDRESS);
+        standardWmsMapFactory.setServiceAddress(COMMON_SERVICE_ADDRESS);
 
         // Settings for test one
-        this.standardWmsMapFactory.setWmsVersion(COMMON_WMS_VERSION);
-        this.standardWmsMapFactory.setCoordinateSystem(SYSTEM_EPSG4326);
+        standardWmsMapFactory.setWmsVersion(COMMON_WMS_VERSION);
+        standardWmsMapFactory.setCoordinateSystem(SYSTEM_EPSG4326);
 
         // Test 1
-        String url = this.standardWmsMapFactory.urlForTile(tile, COMMON_IMAGE_FORMAT);
-        UrlTestCase testCaseOne = new UrlTestCase(this.standardWmsMapFactory, tile);
+        String url = standardWmsMapFactory.urlForTile(tile, COMMON_IMAGE_FORMAT);
+        UrlTestCase testCaseOne = new UrlTestCase(standardWmsMapFactory, tile);
         testCaseOne.testUrl(url);
 
         // Settings for test two
-        this.standardWmsMapFactory.setCoordinateSystem(SYSTEM_CRS84);
+        standardWmsMapFactory.setCoordinateSystem(SYSTEM_CRS84);
 
         // Test 2
-        url = this.standardWmsMapFactory.urlForTile(tile, COMMON_IMAGE_FORMAT);
-        UrlTestCase testCaseTwo = new UrlTestCase(this.standardWmsMapFactory, tile);
+        url = standardWmsMapFactory.urlForTile(tile, COMMON_IMAGE_FORMAT);
+        UrlTestCase testCaseTwo = new UrlTestCase(standardWmsMapFactory, tile);
         testCaseTwo.testUrl(url);
 
         // Settings for test three
-        this.standardWmsMapFactory.setWmsVersion(NOTIONAL_WMS_VERSION);
+        standardWmsMapFactory.setWmsVersion(NOTIONAL_WMS_VERSION);
 
         // Test 3
-        url = this.standardWmsMapFactory.urlForTile(tile, COMMON_IMAGE_FORMAT);
-        UrlTestCase testCaseThree = new UrlTestCase(this.standardWmsMapFactory, tile);
+        url = standardWmsMapFactory.urlForTile(tile, COMMON_IMAGE_FORMAT);
+        UrlTestCase testCaseThree = new UrlTestCase(standardWmsMapFactory, tile);
         testCaseThree.testUrl(url);
 
         // Settings for test four
-        this.standardWmsMapFactory.setStyleNames("notionalstyle1,notionalstyle2");
+        standardWmsMapFactory.setStyleNames("notionalstyle1,notionalstyle2");
 
         // Test 4
-        url = this.standardWmsMapFactory.urlForTile(tile, COMMON_IMAGE_FORMAT);
-        UrlTestCase testCaseFour = new UrlTestCase(this.standardWmsMapFactory, tile);
+        url = standardWmsMapFactory.urlForTile(tile, COMMON_IMAGE_FORMAT);
+        UrlTestCase testCaseFour = new UrlTestCase(standardWmsMapFactory, tile);
         testCaseFour.testUrl(url);
 
         // Settings for test five
-        this.standardWmsMapFactory.setTimeString("1800-ZULU-NOTIONAL");
+        standardWmsMapFactory.setTimeString("1800-ZULU-NOTIONAL");
 
         // Test 5
-        url = this.standardWmsMapFactory.urlForTile(tile, COMMON_IMAGE_FORMAT);
-        UrlTestCase testCaseFive = new UrlTestCase(this.standardWmsMapFactory, tile);
+        url = standardWmsMapFactory.urlForTile(tile, COMMON_IMAGE_FORMAT);
+        UrlTestCase testCaseFive = new UrlTestCase(standardWmsMapFactory, tile);
         testCaseFive.testUrl(url);
-
     }
 
     /**
@@ -666,6 +670,17 @@ public class WmsGetMapUrlFactoryTest {
         // check trailing character isn't an ampersand
         assertFalse("ampersand trailing", url.charAt(index + 1) == '&');
 
+    }
+
+    /**
+     * Generates a new {@link WmsGetMapUrlFactory} using the {@code COMMON_SERVICE ADDRESS} and {@code
+     * COMMON_LAYER_NAMES} parameters.
+     *
+     * @return a new {@link WmsGetMapUrlFactory} object populated with the service address and layer names of this class
+     */
+    private static WmsGetMapUrlFactory getDefaultMapFactory() {
+        WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
+        return new WmsGetMapUrlFactory(layerConfig);
     }
 
 }
