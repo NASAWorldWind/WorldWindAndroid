@@ -28,28 +28,18 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
 
     // UI elements
     protected TextView latView;
-
     protected TextView lonView;
-
     protected TextView altView;
-
     protected ImageView crosshairs;
-
     protected ViewGroup overlay;
-
     // Use pre-allocated navigator state objects to avoid per-event memory allocations
     private LookAt lookAt = new LookAt();
-
     private Camera camera = new Camera();
-
     // Track the navigation event time so the overlay refresh rate can be throttled
     private long lastEventTime;
-
     // Animation object used to fade the overlays
     private AnimatorSet animatorSet;
-
     private boolean crosshairsActive;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,10 +47,10 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
         setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_general_globe));
         setAboutBoxText("Demonstrates a WorldWindow globe with a few layers.\n" +
             "The globe uses the default navigation gestures: \n" +
-                " - one-finger pan moves the camera,\n" +
-                " - two-finger pinch-zoom adjusts the range to the look at position, \n" +
-                " - two-finger rotate arcs the camera horizontally around the look at position,\n" +
-                " - three-finger tilt arcs the camera vertically around the look at position.\n\n"
+            " - one-finger pan moves the camera,\n" +
+            " - two-finger pinch-zoom adjusts the range to the look at position, \n" +
+            " - two-finger rotate arcs the camera horizontally around the look at position,\n" +
+            " - three-finger tilt arcs the camera vertically around the look at position.\n\n"
             + "The cross-hairs and overlays react to the user input");
 
         // Initialize the UI elements that we'll update upon the navigation events
@@ -175,5 +165,4 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
             (altitude < 100000 ? altitude : altitude / 1000),
             (altitude < 100000 ? "m" : "km"));
     }
-
 }
