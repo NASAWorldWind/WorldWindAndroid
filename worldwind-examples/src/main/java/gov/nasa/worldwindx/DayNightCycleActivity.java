@@ -13,7 +13,7 @@ import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 
-public class DayNightCycleActivity extends BasicGlobeActivity implements Choreographer.FrameCallback {
+public class DayNightCycleActivity extends GeneralGlobeActivity implements Choreographer.FrameCallback {
 
     protected Location sunLocation = new Location(0, -100);
 

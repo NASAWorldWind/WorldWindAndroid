@@ -8,41 +8,13 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_basic_globe_activity"
-            android:icon="@drawable/ic_menu_home"
-            android:title="@string/title_basic_globe"/>
-        <item
-            android:id="@+id/nav_wms_layer_activity"
-            android:icon="@android:drawable/ic_menu_mapmode"
-            android:title="@string/title_wms_layer"/>
-        <item
-            android:id="@+id/nav_surface_image_activity"
-            android:icon="@android:drawable/ic_menu_mapmode"
-            android:title="@string/title_surface_image"/>
-        <item
-            android:id="@+id/nav_camera_view_activity"
+            android:id="@+id/nav_general_globe_activity"
             android:icon="@android:drawable/ic_menu_compass"
-            android:title="@string/title_camera_view"/>
-        <item
-            android:id="@+id/nav_look_at_view_activity"
-            android:icon="@android:drawable/ic_menu_compass"
-            android:title="@string/title_look_at_view"/>
-        <item
-            android:id="@+id/nav_navigator_event_activity"
-            android:icon="@android:drawable/ic_menu_compass"
-            android:title="@string/title_navigator_event"/>
-        <item
-            android:id="@+id/nav_placemarks_activity"
-            android:icon="@android:drawable/ic_menu_myplaces"
-            android:title="@string/title_placemarks"/>
+            android:title="@string/title_general_globe"/>
         <item
             android:id="@+id/nav_placemarks_demo_activity"
             android:icon="@android:drawable/ic_menu_myplaces"
             android:title="@string/title_placemarks_demo"/>
-        <item
-            android:id="@+id/nav_placemarks_picking_activity"
-            android:icon="@android:drawable/ic_menu_myplaces"
-            android:title="@string/title_placemarks_picking"/>
         <item
             android:id="@+id/nav_placemarks_select_drag_activity"
             android:icon="@android:drawable/ic_menu_myplaces"
@@ -60,14 +32,6 @@
             android:icon="@android:drawable/ic_menu_recent_history"
             android:title="@string/title_day_night_cycle"/>
         <item
-            android:id="@+id/nav_camera_control_activity"
-            android:icon="@android:drawable/ic_menu_camera"
-            android:title="@string/title_camera_controls"/>
-        <item
-            android:id="@+id/nav_show_tessellation_activity"
-            android:icon="@android:drawable/ic_menu_manage"
-            android:title="@string/title_show_tessellation"/>
-        <item
             android:id="@+id/nav_basic_stress_test_activity"
             android:icon="@android:drawable/ic_menu_preferences"
             android:title="@string/title_basic_stress_test"/>
@@ -76,10 +40,6 @@
             android:icon="@android:drawable/ic_menu_preferences"
             android:title="@string/title_basic_performance_benchmark"/>
         <item
-            android:id="@+id/nav_texture_stress_test_activity"
-            android:icon="@android:drawable/ic_menu_preferences"
-            android:title="@string/title_texture_stress_test"/>
-        <item
             android:id="@+id/nav_placemarks_stress_activity"
             android:icon="@android:drawable/ic_menu_preferences"
             android:title="@string/title_placemarks_stress_test"/>
@@ -87,6 +47,10 @@
             android:id="@+id/nav_placemarks_milstd2525_stress_activity"
             android:icon="@android:drawable/ic_menu_preferences"
             android:title="@string/title_placemarks_milstd2525_stress_test"/>
+        <item
+            android:id="@+id/nav_texture_stress_test_activity"
+            android:icon="@android:drawable/ic_menu_preferences"
+            android:title="@string/title_texture_stress_test"/>
     </group>
 
 </menu>

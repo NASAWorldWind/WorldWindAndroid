@@ -47,7 +47,7 @@ import gov.nasa.worldwind.shape.PlacemarkAttributes;
  * the vehicles with the single tap, drag, and double-tap gestures accordingly.  The airport icons are pickable, but
  * selectable--performing a long-press on an airport will display its name.
  */
-public class PlacemarksSelectDragActivity extends BasicGlobeActivity {
+public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
 
     /**
      * The EDITABLE capability, if it exists in a Placemark's user properties, allows editing with a double-tap

@@ -11,7 +11,7 @@ import android.view.Choreographer;
 import gov.nasa.worldwind.Navigator;
 import gov.nasa.worldwind.layer.ShowTessellationLayer;
 
-public class BasicStressTestActivity extends BasicGlobeActivity implements Choreographer.FrameCallback {
+public class BasicStressTestActivity extends GeneralGlobeActivity implements Choreographer.FrameCallback {
 
     protected double cameraDegreesPerSecond = 0.1;
 

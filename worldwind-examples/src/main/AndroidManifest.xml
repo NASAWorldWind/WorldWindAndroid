@@ -13,9 +13,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".BasicGlobeActivity"
+            android:name=".GeneralGlobeActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_basic_globe"
+            android:label="@string/title_general_globe"
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
@@ -41,49 +41,9 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-            android:name=".CameraControlActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_camera_controls"
-            android:launchMode="singleInstance"
-            android:noHistory="true"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-        <activity
-            android:name=".CameraViewActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_camera_view"
-            android:launchMode="singleInstance"
-            android:noHistory="true"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-        <activity
             android:name=".DayNightCycleActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_day_night_cycle"
-            android:launchMode="singleInstance"
-            android:noHistory="true"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-        <activity
-            android:name=".LookAtViewActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_look_at_view"
-            android:launchMode="singleInstance"
-            android:noHistory="true"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-        <activity
-            android:name=".NavigatorEventActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_navigator_event"
-            android:launchMode="singleInstance"
-            android:noHistory="true"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-        <activity
-            android:name=".PlacemarksActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_placemarks"
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
@@ -121,14 +81,6 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-            android:name=".PlacemarksPickingActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_placemarks_picking"
-            android:launchMode="singleInstance"
-            android:noHistory="true"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-        <activity
             android:name=".PlacemarksSelectDragActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_placemarks_select_drag"
@@ -145,22 +97,6 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-            android:name=".ShowTessellationActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_show_tessellation"
-            android:launchMode="singleInstance"
-            android:noHistory="true"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-        <activity
-            android:name=".SurfaceImageActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_surface_image"
-            android:launchMode="singleInstance"
-            android:noHistory="true"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-        <activity
             android:name=".TextureStressTestActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_texture_stress_test"
@@ -168,14 +104,7 @@
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
-        <activity
-            android:name=".WmsLayerActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_wms_layer"
-            android:launchMode="singleInstance"
-            android:noHistory="true"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+
     </application>
 
 </manifest>

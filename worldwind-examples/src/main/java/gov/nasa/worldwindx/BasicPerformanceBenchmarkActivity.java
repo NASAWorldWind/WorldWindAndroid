@@ -35,7 +35,7 @@ import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWMath;
 import gov.nasa.worldwind.util.WWUtil;
 
-public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
+public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
 
     public static class NoOpWorldWindowController implements WorldWindowController {
 
@@ -299,7 +299,7 @@ public class BasicPerformanceBenchmarkActivity extends BasicGlobeActivity {
 
         RenderableLayer layer = new RenderableLayer("Placemarks");
         PlacemarkAttributes[] attrs = {
-            PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.air_fixwing)),
+            PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.aircraft_fixwing)),
             PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.airplane)),
             PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.airport)),
             PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.airport_terminal))};

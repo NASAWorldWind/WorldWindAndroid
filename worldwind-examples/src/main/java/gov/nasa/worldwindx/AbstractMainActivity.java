@@ -62,7 +62,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
     protected static final Date sessionTimestamp = new Date();
 
-    protected static int selectedItemId = R.id.nav_basic_globe_activity;
+    protected static int selectedItemId = R.id.nav_general_globe_activity;
 
     protected ActionBarDrawerToggle drawerToggle;
 
@@ -303,32 +303,17 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         switch (selectedItemId) {
 
-            case R.id.nav_basic_globe_activity:
-                startActivity(new Intent(getApplicationContext(), BasicGlobeActivity.class));
-                break;
             case R.id.nav_basic_performance_benchmark_activity:
                 startActivity(new Intent(getApplicationContext(), BasicPerformanceBenchmarkActivity.class));
                 break;
             case R.id.nav_basic_stress_test_activity:
                 startActivity(new Intent(getApplicationContext(), BasicStressTestActivity.class));
                 break;
-            case R.id.nav_camera_view_activity:
-                startActivity(new Intent(getApplicationContext(), CameraViewActivity.class));
-                break;
-            case R.id.nav_camera_control_activity:
-                startActivity(new Intent(getApplicationContext(), CameraControlActivity.class));
-                break;
             case R.id.nav_day_night_cycle_activity:
                 startActivity(new Intent(getApplicationContext(), DayNightCycleActivity.class));
                 break;
-            case R.id.nav_look_at_view_activity:
-                startActivity(new Intent(getApplicationContext(), LookAtViewActivity.class));
-                break;
-            case R.id.nav_navigator_event_activity:
-                startActivity(new Intent(getApplicationContext(), NavigatorEventActivity.class));
-                break;
-            case R.id.nav_placemarks_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksActivity.class));
+            case R.id.nav_general_globe_activity:
+                startActivity(new Intent(getApplicationContext(), GeneralGlobeActivity.class));
                 break;
             case R.id.nav_placemarks_demo_activity:
                 startActivity(new Intent(getApplicationContext(), PlacemarksDemoActivity.class));
@@ -342,26 +327,14 @@ public abstract class AbstractMainActivity extends AppCompatActivity
             case R.id.nav_placemarks_milstd2525_stress_activity:
                 startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525StressActivity.class));
                 break;
-            case R.id.nav_placemarks_picking_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksPickingActivity.class));
-                break;
             case R.id.nav_placemarks_select_drag_activity:
                 startActivity(new Intent(getApplicationContext(), PlacemarksSelectDragActivity.class));
                 break;
             case R.id.nav_placemarks_stress_activity:
                 startActivity(new Intent(getApplicationContext(), PlacemarksStressTestActivity.class));
                 break;
-            case R.id.nav_show_tessellation_activity:
-                startActivity(new Intent(getApplicationContext(), ShowTessellationActivity.class));
-                break;
-            case R.id.nav_surface_image_activity:
-                startActivity(new Intent(getApplicationContext(), SurfaceImageActivity.class));
-                break;
             case R.id.nav_texture_stress_test_activity:
                 startActivity(new Intent(getApplicationContext(), TextureStressTestActivity.class));
-                break;
-            case R.id.nav_wms_layer_activity:
-                startActivity(new Intent(getApplicationContext(), WmsLayerActivity.class));
                 break;
         }
 

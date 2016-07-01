@@ -10,23 +10,16 @@
     <string name="title_basic_globe">Basic Globe</string>
     <string name="title_basic_performance_benchmark">Basic Performance Benchmark</string>
     <string name="title_basic_stress_test">Basic Stress Test</string>
-    <string name="title_camera_controls">Camera Controls</string>
-    <string name="title_camera_view">Camera View</string>
     <string name="title_day_night_cycle">Day and Night Cycle</string>
-    <string name="title_look_at_view">Look At View</string>
-    <string name="title_navigator_event">Navigator Events</string>
-    <string name="title_placemarks">Placemarks</string>
+    <string name="title_general_globe">General Purpose Globe</string>
     <string name="title_placemarks_demo">Placemarks Demonstration</string>
     <string name="title_placemarks_milstd2525">MIL-STD-2525 Placemarks</string>
     <string name="title_placemarks_milstd2525_demo">MIL-STD-2525 Demonstration</string>
     <string name="title_placemarks_milstd2525_stress_test">MIL-STD-2525 Stress Test</string>
-    <string name="title_placemarks_picking">Placemark Picking</string>
     <string name="title_placemarks_select_drag">Placemark Select and Drag</string>
     <string name="title_placemarks_stress_test">Placemarks Stress Test</string>
     <string name="title_show_tessellation">Show Tessellation</string>
-    <string name="title_surface_image">Surface Image</string>
     <string name="title_texture_stress_test">Texture Stress Test</string>
-    <string name="title_wms_layer">WMS Layer</string>
 
     <string name="latitude">Latitude:</string>
     <string name="longitude">Longitude:</string>

@@ -19,7 +19,7 @@ import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwindx.milstd2525.MilStd2525;
 
-public class PlacemarksMilStd2525Activity extends BasicGlobeActivity {
+public class PlacemarksMilStd2525Activity extends GeneralGlobeActivity {
 
     protected TextView statusText = null;
 
