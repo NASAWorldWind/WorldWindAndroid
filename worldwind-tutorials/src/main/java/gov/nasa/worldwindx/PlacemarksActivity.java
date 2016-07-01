@@ -48,7 +48,7 @@ public class PlacemarksActivity extends BasicGlobeActivity {
         // The image is scaled to 1.5 times its original size.
         Placemark airplane = new Placemark(
             Position.fromDegrees(34.260, -119.2, 5000),
-            PlacemarkAttributes.createWithImageAndLeader(ImageSource.fromResource(R.drawable.air_fixwing)).setImageScale(1.5));
+            PlacemarkAttributes.createWithImageAndLeader(ImageSource.fromResource(R.drawable.aircraft_fixwing)).setImageScale(1.5));
 
         // Create an image-based placemark with a label at Oxnard Airport, CA. This placemark demonstrates creation
         // with a constructor and a convenient PlacemarkAttributes factory method. The image is scaled to 2x
