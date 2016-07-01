@@ -218,7 +218,8 @@ public class WmsLayerTest {
         PowerMockito.when(initialGlobe.getEquatorialRadius()).thenReturn(notionalGlobeRadius);
         String initialNotionalServiceAddress = "notionalServiceAddress";
         String initialNotionalLayerList = "notionalLayerList";
-        WmsLayerConfig initialWmsLayerConfig = new WmsLayerConfig(initialNotionalServiceAddress, initialNotionalLayerList);
+        WmsLayerConfig initialWmsLayerConfig
+            = new WmsLayerConfig(initialNotionalServiceAddress, initialNotionalLayerList);
         double metersPerPixel = 0.5;
 
         // initial object for testing method
@@ -259,7 +260,8 @@ public class WmsLayerTest {
         double alternativeLonMin = 50.0;
         double alternativeDeltaLat = 5.0;
         double alternativeDeltaLon = 2.0;
-        Sector alternativeSector = new Sector(alternativeLatMin, alternativeLonMin, alternativeDeltaLat, alternativeDeltaLon);
+        Sector alternativeSector
+            = new Sector(alternativeLatMin, alternativeLonMin, alternativeDeltaLat, alternativeDeltaLon);
 
         // test sector updated
         wmsLayer.setConfiguration(alternativeSector, initialGlobe, metersPerPixel, initialWmsLayerConfig);
