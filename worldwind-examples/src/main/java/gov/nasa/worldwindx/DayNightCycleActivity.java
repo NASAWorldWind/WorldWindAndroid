@@ -13,19 +13,21 @@ import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 
-public class DayNightCycleActivity extends GeneralGlobeActivity implements Choreographer.FrameCallback {
+public class DayNightCycleActivity extends BasicGlobeActivity implements Choreographer.FrameCallback {
 
     protected Location sunLocation = new Location(0, -100);
 
     protected AtmosphereLayer atmosphereLayer;
 
+    // Animation settings
+
     protected double cameraDegreesPerSecond = 2.0;
 
     protected double lightDegreesPerSecond = 6.0;
 
-    protected boolean activityPaused;
-
     protected long lastFrameTimeNanos;
+
+    protected boolean activityPaused;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
