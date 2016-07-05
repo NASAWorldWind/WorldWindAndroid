@@ -36,46 +36,72 @@ public class WmsGetMapUrlFactoryTest {
      * Common parameters used when creating a WMS request URL.
      */
     public static final String COMMON_SERVICE_ADDRESS = "http://worldwind25.arc.nasa.gov/wms";
+
     public static final String COMMON_SERVICE_WMS = "WMS";
+
     public static final String COMMON_WMS_VERSION = "1.3.0";
+
     public static final String COMMON_LAYER_NAMES = "BlueMarble-200405,esat";
+
     public static final String COMMON_IMAGE_FORMAT = "image/png";
+
     public static final String SYSTEM_CRS84 = "CRS:84";
+
     public static final String SYSTEM_EPSG4326 = "EPSG:4326";
 
     /**
      * Notional values used for testing.
      */
     private static final double DELTA = 1e-6;
+
     private static final double NOTIONAL_MIN_LAT = -90.0;
+
     private static final double NOTIONAL_MAX_LAT = 0.0;
+
     private static final double NOTIONAL_MIN_LON = -180.0;
+
     private static final double NOTIONAL_MAX_LON = -90.0;
+
     private static final int NOTIONAL_ROW = 3;
+
     private static final int NOTIONAL_COLUMN = 2;
+
     private static final String NOTIONAL_WMS_VERSION = "1.23";
 
     /**
      * Enumerations of a double array used internally for storing parsed values of the latitude and longitude.
      */
     public static final int LAT_MIN = 0;
+
     public static final int LAT_MAX = 1;
+
     public static final int LON_MIN = 2;
+
     public static final int LON_MAX = 3;
 
     /**
      * Patterns for checking the generated URL parameters.
      */
     private static final Pattern SERVICE_P = Pattern.compile("SERVICE=(.*?)(&|\\z)");
+
     private static final Pattern VERSION_P = Pattern.compile("VERSION=(.*?)(&|\\z)");
+
     private static final Pattern LAYERS_P = Pattern.compile("LAYERS=(.*?)(&|\\z)");
+
     private static final Pattern STYLES_P = Pattern.compile("STYLES=(.*?)(&|\\z)");
+
     private static final Pattern CRS_P = Pattern.compile("[CS]RS=(.*?)(&|\\z)");
+
     private static final Pattern BBOX_P = Pattern.compile("BBOX=(.*?)(&|\\z)");
+
     private static final Pattern WIDTH_P = Pattern.compile("WIDTH=(.*?)(&|\\z)");
+
     private static final Pattern HEIGHT_P = Pattern.compile("HEIGHT=(.*?)(&|\\z)");
+
     private static final Pattern FORMAT_P = Pattern.compile("FORMAT=(.*?)(&|\\z)");
+
     private static final Pattern TRANSPARENT_P = Pattern.compile("TRANSPARENT=(.*?)(&|\\z)");
+
     private static final Pattern TIME_P = Pattern.compile("TIME=(.*?)(&|\\z)");
 
     @Before
