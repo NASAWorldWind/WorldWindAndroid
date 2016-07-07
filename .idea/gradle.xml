@@ -9,7 +9,6 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/mil-sym-android" />
             <option value="$PROJECT_DIR$/worldwind" />
             <option value="$PROJECT_DIR$/worldwind-examples" />
             <option value="$PROJECT_DIR$/worldwind-tutorials" />
@@ -18,7 +17,6 @@
         <option name="myModules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/mil-sym-android" />
             <option value="$PROJECT_DIR$/worldwind" />
             <option value="$PROJECT_DIR$/worldwind-examples" />
             <option value="$PROJECT_DIR$/worldwind-tutorials" />
