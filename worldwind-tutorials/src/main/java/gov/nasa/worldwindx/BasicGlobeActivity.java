@@ -20,7 +20,7 @@ public class BasicGlobeActivity extends AbstractMainActivity {
     /**
      * This protected member allows derived classes to override the resource used in setContentView.
      */
-    protected int layoutResourceId = R.layout.activity_globe;
+    protected int layoutResourceId = R.layout.activity_main;
 
     /**
      * The WorldWindow (GLSurfaceView) maintained by this activity
