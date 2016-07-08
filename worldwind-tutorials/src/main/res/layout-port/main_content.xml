@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2016 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration. All Rights Reserved.
+  -->
+
+<LinearLayout
+    android:id="@+id/globe_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="left|top"
+    android:divider="?android:attr/dividerHorizontal"
+    android:orientation="vertical"
+    android:showDividers="middle"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".MainActivity"
+    >
+    <!--
+   This layout is a two-pane layout for the globe and code snippet views.
+   -->
+    <FrameLayout
+        android:id="@+id/globe_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.5"
+        />
+
+    <!--Code snippet panel-->
+    <FrameLayout
+        android:id="@+id/code_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.5"
+        />
+
+</LinearLayout>
