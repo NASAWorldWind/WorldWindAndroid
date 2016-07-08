@@ -1,0 +1,93 @@
+<!--
+  ~ Copyright (c) 2016 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration. All Rights Reserved.
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Camera View Tutorial</title>
+    <script src="file:///android_asset/codemirror-5.16.0/lib/codemirror.js" type="text/javascript"></script>
+    <script src="file:///android_asset/codemirror-5.16.0/mode/clike/clike.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/codemirror-5.16.0/lib/codemirror.css"/>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/override.css"/>
+</head>
+<body>
+<h1>Camera View Tutorial</h1>
+<p>
+    Demonstrates how to use a Camera to view a position. It shows how to configure the WorldWindow's camera to point a
+    particular direction from a specific position. This example also shows how to compute great circle distance and
+    azimuth between two positions.
+</p>
+<p>
+    This example simulates a view from an aircraft above Oxnard, CA looking at the Point Mugu Naval Air Station.
+</p>
+<h2>Example</h2>
+<h3>CameraViewFragment.java</h3>
+<p>
+    The CameraViewFragment class extends the BasicGlobeFragment and overrides the createWorldWindow method.
+    Here we position the Navigator's camera at an aircraft's location and point the camera at a nearby airport.
+</p>
+<div style="border-top: 1px solid black; border-bottom: 1px solid black;">
+    <textarea id="java-code">
+package gov.nasa.worldwindx;
+...
+public class CameraViewFragment extends BasicGlobeFragment {
+
+    /**
+     * Creates a new WorldWindow with its camera positioned at a given location and configured to point in a given
+     * direction.
+     */
+    @Override
+    public WorldWindow createWorldWindow() {
+        // Let the super class (BasicGlobeFragment) do the creation
+        WorldWindow wwd = super.createWorldWindow();
+
+        // Create a view of Point Mugu airport as seen from an aircraft above Oxnard, CA.
+        Position aircraft = new Position(34.2, -119.2, 3000);           // Above Oxnard CA, altitude in meters
+        Position airport = new Position(34.1192744, -119.1195850, 4.0); // KNTD airport, Point Mugu CA, altitude MSL
+
+        // Compute heading and tilt angles from aircraft to airport
+        Globe globe = wwd.getGlobe();
+        double heading = aircraft.greatCircleAzimuth(airport);
+        double distanceRadians = aircraft.greatCircleDistance(airport);
+        double distance = distanceRadians * globe.getRadiusAt(aircraft.latitude, aircraft.longitude);
+        double tilt = Math.toDegrees(Math.atan(distance / aircraft.altitude));
+
+        // Create the new camera view
+        Camera camera = new Camera();
+        camera.set(aircraft.latitude, aircraft.longitude, aircraft.altitude, WorldWind.ABSOLUTE, heading, tilt, 0); // No roll
+
+        // Apply the view
+        wwd.getNavigator().setAsCamera(globe, camera);
+
+        // This works too!  Using the fluid api to manipulate the Navigator's camera:
+//        wwd.getNavigator()
+//            .setLatitude(aircraft.latitude)
+//            .setLongitude(aircraft.longitude)
+//            .setAltitude(aircraft.altitude)
+//            .setHeading(heading)
+//            .setTilt(tilt);
+
+        return wwd;
+    }
+}
+
+    </textarea>
+</div>
+
+<script type="text/javascript">
+      var javaEditor = CodeMirror.fromTextArea(document.getElementById("java-code"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        mode: "text/x-java",
+        readOnly: true
+      });
+
+
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!--
+  ~ Copyright (c) 2016 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration. All Rights Reserved.
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Surface Image Tutorial</title>
+    <script src="file:///android_asset/codemirror-5.16.0/lib/codemirror.js" type="text/javascript"></script>
+    <script src="file:///android_asset/codemirror-5.16.0/mode/clike/clike.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/codemirror-5.16.0/lib/codemirror.css"/>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/override.css"/>
+</head>
+<body>
+<h1>Surface Image Tutorial</h1>
+<p>
+    Demonstrates how to add SurfaceImages to a RenderableLayer
+</p>
+<p>
+    This example adds two surface images to the basic globe:
+    <ul>
+    <li>A remote image showing Mount Etna erupting on July 13th, 2001.</li>
+    <li>The NASA 'Meatball' logo.</li>
+</ul>
+</p>
+
+<h2>Example</h2>
+<h3>SurfaceImageFragment.java</h3>
+<p>
+    The SurfaceImageFragment class extends the BasicGlobeFragment and overrides the createWorldWindow method.
+    Here we create two SurfaceImage objects and add them to a RenderableLayer, and then we add the layer to the globe.
+</p>
+<div style="border-top: 1px solid black; border-bottom: 1px solid black;">
+    <textarea id="java-code">
+package gov.nasa.worldwindx;
+...
+public class SurfaceImageFragment extends BasicGlobeFragment {
+
+    /**
+     * Creates a new WorldWindow with an additional RenderableLayer containing two SurfaceImages.
+     */
+    @Override
+    public WorldWindow createWorldWindow() {
+        // Let the super class (BasicGlobeFragment) do the creation
+        WorldWindow wwd = super.createWorldWindow();
+
+        // Configure a Surface Image to display an Android resource showing the NASA logo.
+        Sector sector = new Sector(37.46, 15.5, 0.5, 0.6);
+        int resourceId = R.drawable.nasa_logo;
+        SurfaceImage surfaceImageResource = new SurfaceImage(sector, ImageSource.fromResource(resourceId));
+
+        // Configure a Surface Image to display a remote image showing Mount Etna erupting on July 13th, 2001.
+        sector = new Sector(37.46543388598137, 14.60128369746704, 0.45360804083528, 0.75704283995502);
+        String urlString = "http://worldwindserver.net/android/images/etna.jpg";
+        SurfaceImage surfaceImageUrl = new SurfaceImage(sector, ImageSource.fromUrl(urlString));
+
+        // Add a World Window layer that displays the Surface Image, just before the Atmosphere layer.
+        RenderableLayer layer = new RenderableLayer("Surface Image");
+        layer.addRenderable(surfaceImageResource);
+        layer.addRenderable(surfaceImageUrl);
+        wwd.getLayers().addLayer(layer);
+
+        // Position the viewer so that the Surface Images are visible when the activity is created.
+        wwd.getNavigator().setLatitude(37.46543388598137);
+        wwd.getNavigator().setLongitude(14.97980511744455);
+        wwd.getNavigator().setAltitude(4.0e5);
+
+        return wwd;
+    }
+}
+
+    </textarea>
+</div>
+
+<script type="text/javascript">
+      var javaEditor = CodeMirror.fromTextArea(document.getElementById("java-code"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        mode: "text/x-java",
+        readOnly: true
+      });
+
+
+</script>
+</body>
+</html>
