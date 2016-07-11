@@ -9,11 +9,12 @@ import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.LayoutRes;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
@@ -23,6 +24,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import java.util.Date;
 import java.util.Locale;
@@ -48,9 +50,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     protected NavigationView navigationView;
 
-    protected String aboutBoxTitle = "Title goes here";
+    protected boolean twoPaneView;
 
-    protected String aboutBoxText = "Description goes here;";
+    protected String tutorialUrl;
+
+    protected String aboutBoxTitle = "World Wind Tutorials";        // TODO: use a string resource, e.g., app name
+
+    protected String aboutBoxText = "A collection of tutorials";    // TODO: make this a string resource
 
     protected Handler handler = new Handler(new Handler.Callback() {
         @Override
@@ -65,54 +71,55 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     /**
      * Returns a reference to the WorldWindow.
-     * <p/>
+     * <p>
      * Derived classes must implement this method.
      *
      * @return The WorldWindow GLSurfaceView object
      */
     public WorldWindow getWorldWindow() {
-        // TODO: Implement
+        // TODO: Implement via Fragment Manager and findFragmentById
         return null;
-    }
-
-    /**
-     * This method should be called by derived classes in their onCreate method.
-     *
-     * @param layoutResID
-     */
-    @Override
-    public void setContentView(@LayoutRes int layoutResID) {
-        super.setContentView(layoutResID);
-        this.onCreateDrawer();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Establish the activity content
         setContentView(R.layout.activity_main);
+        onCreateDrawer();
 
-// TODO: Load from resources
-//        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_basic_globe));
-//        setAboutBoxText("Demonstrates how to construct a WorldWindow with a few layers.\n" +
-//            "The globe uses the default navigation gestures: \n" +
-//            " - one-finger pan moves the camera,\n" +
-//            " - two-finger pinch-zoom adjusts the range to the look at position, \n" +
-//            " - two-finger rotate arcs the camera horizontally around the look at position,\n" +
-//            " - three-finger tilt arcs the camera vertically around the look at position."
+        if (findViewById(R.id.code_container) != null) {
+            // The code container view will be present only in the
+            // large-screen layouts (res/values-w900dp).
+            // If this view is present, then the
+            // activity should be in two-pane mode.
+            twoPaneView = true;
+        }
 
-
-        // savedInstanceState is non-null when there is fragment state
-        // saved from previous configurations of this activity
-        // (e.g. when rotating the screen from portrait to landscape).
-        // In this case, the fragment will automatically be re-added
-        // to its container so we don't need to manually add it.
-        // For more information, see the Fragments API guide at:
-        //
-        // http://developer.android.com/guide/components/fragments.html
-        //
+        if (!twoPaneView) {
+            FloatingActionButton codeViewButton = (FloatingActionButton) findViewById(R.id.fab);
+            codeViewButton.setVisibility(View.VISIBLE);    // is set to GONE in layout
+            codeViewButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Context context = view.getContext();
+                    Intent intent = new Intent(context, CodeActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("url", tutorialUrl);
+                    intent.putExtra("arguments", bundle);
+                    context.startActivity(intent);
+                }
+            });
+        }
         if (savedInstanceState == null) {
+            // savedInstanceState is non-null when there is fragment state
+            // saved from previous configurations of this activity
+            // (e.g. when rotating the screen from portrait to landscape).
+            // In this case, the fragment will automatically be re-added
+            // to its container so we don't need to manually add it.
+            // For more information, see the Fragments API guide at:
+            //
+            // http://developer.android.com/guide/components/fragments.html
+            //
             loadTutorial(BasicGlobeFragment.class, "file:///android_asset/basic_globe_tutorial.html");
         }
     }
@@ -170,14 +177,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    protected void setAboutBoxTitle(String title) {
-        this.aboutBoxTitle = title;
-    }
-
-    protected void setAboutBoxText(String text) {
-        this.aboutBoxText = text;
     }
 
     /**
@@ -298,25 +297,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
-    protected void loadTutorial(Class<? extends Fragment> globeFragment, String tutorialUrl) {
+    protected void loadTutorial(Class<? extends Fragment> globeFragment, String url) {
         try {
             Fragment globe = globeFragment.newInstance();
-            Fragment code = new CodeFragment();
-
-            Bundle arguments = new Bundle();
-            arguments.putString("url", tutorialUrl);
-            code.setArguments(arguments);
-
             getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.globe_container, globe)    // replace (destroy) existing fragment (if any)
                 .commit();
 
-            getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.code_container, code)
-                .commit();
+            if (this.twoPaneView) {
+                Bundle bundle = new Bundle();
+                bundle.putString("url", url);
 
+                Fragment code = new CodeFragment();
+                code.setArguments(bundle);
+                getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.code_container, code)
+                    .commit();
+            } else {
+                this.tutorialUrl = url;
+            }
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
