@@ -12,12 +12,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="left|top"
+    android:baselineAligned="false"
     android:divider="?android:attr/dividerVertical"
     android:orientation="horizontal"
     android:showDividers="middle"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".MainActivity"
-    android:baselineAligned="false">
+    tools:context=".MainActivity">
 
     <!--
     This layout is a two-pane layout for the globe and code snippet views.
