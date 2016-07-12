@@ -30,6 +30,8 @@ public class DrawContext {
 
     public Matrix4 modelviewProjection = new Matrix4();
 
+    public Matrix4 infiniteProjection = new Matrix4();
+
     public Matrix4 screenProjection = new Matrix4();
 
     public DrawableQueue drawableQueue;
@@ -69,6 +71,7 @@ public class DrawContext {
         this.modelview.setToIdentity();
         this.modelviewProjection.setToIdentity();
         this.screenProjection.setToIdentity();
+        this.infiniteProjection.setToIdentity();
         this.drawableQueue = null;
         this.drawableTerrain = null;
         this.pickedObjects = null;

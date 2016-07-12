@@ -25,6 +25,8 @@ public class Frame {
 
     public final Matrix4 modelview = new Matrix4();
 
+    public final Matrix4 infiniteProjection = new Matrix4();
+
     public final DrawableQueue drawableQueue = new DrawableQueue();
 
     public final DrawableList drawableTerrain = new DrawableList();
