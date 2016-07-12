@@ -31,7 +31,7 @@ public class BasicShaderProgram extends ShaderProgram {
 
     protected int colorId;
 
-    protected float[] array = new float[16];
+    private float[] array = new float[16];
 
     public BasicShaderProgram(Resources resources) {
         try {

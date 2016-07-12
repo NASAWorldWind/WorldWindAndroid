@@ -89,7 +89,7 @@ public class AtmosphereProgram extends ShaderProgram {
 
     protected int exposureId;
 
-    protected float[] array = new float[16];
+    private float[] array = new float[16];
 
     public AtmosphereProgram() {
     }
