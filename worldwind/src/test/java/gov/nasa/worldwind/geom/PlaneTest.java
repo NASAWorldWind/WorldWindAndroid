@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.geom;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
@@ -15,7 +14,13 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import gov.nasa.worldwind.util.Logger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(PowerMockRunner.class) // Support for mocking static methods
 @PrepareForTest(Logger.class)   // We mock the Logger class to avoid its calls to android.util.log
@@ -30,22 +35,41 @@ public class PlaneTest {
     }
 
     @Test
-    public void testConstructor_Doubles() {
-        Vec3 n = new Vec3(3, 4, 5).normalize();
-
-        Plane plane = new Plane(n.x, n.y, n.z, 10);
+    public void testConstructor_Default() {
+        Plane plane = new Plane();
 
         assertNotNull(plane);
+        assertEquals("normal x", plane.normal.x, 0, 0);
+        assertEquals("normal y", plane.normal.y, 0, 0);
+        assertEquals("normal z", plane.normal.z, 1, 0);
+        assertEquals("distance", plane.distance, 0, 0);
     }
 
     @Test
-    public void testConstructor_Vector() {
-        Vec3 normal = new Vec3(3, 4, 5).normalize();
+    public void testConstructor_Doubles() {
+        Vec3 n = new Vec3(3, 4, 5).normalize();
         double distance = 6;
-
-        Plane plane = new Plane(normal, distance);
+        Plane plane = new Plane(n.x, n.y, n.z, distance);
 
         assertNotNull(plane);
+        assertEquals("normal x", plane.normal.x, n.x, 0);
+        assertEquals("normal y", plane.normal.y, n.y, 0);
+        assertEquals("normal z", plane.normal.z, n.z, 0);
+        assertEquals("distance", plane.distance, distance, 0);
+    }
+
+    @Test
+    public void testConstructor_NotNormalized() {
+        Vec3 n = new Vec3(3, 4, 5);
+        Vec3 nExpected = new Vec3(n).normalize();
+        double distance = 6;
+        double distanceExpected = distance / n.magnitude();
+        Plane plane = new Plane(n.x, n.y, n.z, distance);
+
+        assertEquals("normal x", plane.normal.x, nExpected.x, 0);
+        assertEquals("normal y", plane.normal.y, nExpected.y, 0);
+        assertEquals("normal z", plane.normal.z, nExpected.z, 0);
+        assertEquals("distance", plane.distance, distanceExpected, 0);
     }
 
     @Test
@@ -58,6 +82,7 @@ public class PlaneTest {
         assertEquals("copy equal to original", plane, copy);
     }
 
+    @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_NullArgument() throws Exception {
         Plane copy = new Plane(null);
@@ -92,14 +117,16 @@ public class PlaneTest {
         assertFalse("not equals", plane1.equals(plane3));
     }
 
+    @SuppressWarnings("ObjectEqualsNull")
     @Test
     public void testEquals_Null() throws Exception {
         Vec3 n = new Vec3(3, 4, 5).normalize();
         double distance = 10;
-
         Plane plane1 = new Plane(n.x, n.y, n.z, distance);
 
-        assertFalse("not equals", plane1.equals(null));
+        boolean result = plane1.equals(null);
+
+        assertFalse("not equals", result);
     }
 
     @Test
@@ -137,7 +164,7 @@ public class PlaneTest {
     public void testDistanceToPoint() throws Exception {
         Vec3 normal = new Vec3(3, 4, 5).normalize();// arbitrary orientation
         double distance = 10;                       // arbitrary distance
-        Plane plane = new Plane(normal, distance);
+        Plane plane = new Plane(normal.x, normal.y, normal.z, distance);
         // The plane's normal points towards the origin, so use the normal's
         // reversed direction to create a point on the plane
         Vec3 point = new Vec3(normal).negate().multiply(distance);
@@ -149,7 +176,6 @@ public class PlaneTest {
         assertEquals("distance to origin", distance, distanceToOrigin, 0);
         assertEquals("distance to point on plane", 0, distanceToPoint, 0);
     }
-
 
     @Test
     public void testSet() throws Exception {
@@ -164,15 +190,19 @@ public class PlaneTest {
     }
 
     @Test
-    public void testSet_Vector() throws Exception {
-        Vec3 n = new Vec3(3, 4, 5).normalize();
+    public void testSet_NotNormalized() {
+        Vec3 n = new Vec3(3, 4, 5);
+        Vec3 nExpected = new Vec3(n).normalize();
         double distance = 6;
+        double distanceExpected = distance / n.magnitude();
         Plane plane = new Plane(0, 0, 1, 10);
 
-        plane.set(n, distance);
+        plane.set(n.x, n.y, n.z, distance);
 
-        assertEquals("normal", n, plane.normal);
-        assertEquals("distance", distance, plane.distance, 0);
+        assertEquals("normal x", plane.normal.x, nExpected.x, 0);
+        assertEquals("normal y", plane.normal.y, nExpected.y, 0);
+        assertEquals("normal z", plane.normal.z, nExpected.z, 0);
+        assertEquals("distance", plane.distance, distanceExpected, 0);
     }
 
     @Test
@@ -180,7 +210,7 @@ public class PlaneTest {
         Vec3 n = new Vec3(3, 4, 5).normalize();
         double distance = 6;
         Plane plane1 = new Plane(0, 0, 1, 10);
-        Plane plane2 = new Plane(n, distance);
+        Plane plane2 = new Plane(n.x, n.y, n.z, distance);
 
         plane1.set(plane2);
 
@@ -190,34 +220,25 @@ public class PlaneTest {
 
     @Test
     public void testTransformByMatrix() throws Exception {
-        Plane p = new Plane(new Vec3(0, 0, -1), 10);
-        // An arbitrary transformation matrix
-        double theta = 30d;
-        double x = 0;
-        double y = 0;
-        double z = 5;
-        Matrix4 m = new Matrix4().multiplyByRotation(1, 0, 0, theta).setTranslation(x, y, z);
-        System.out.println(p);
+        Plane p = new Plane(0, 0, -1, 10);
+        // An arbitrary transformation matrix. Note that planes are transformed by the inverse transpose 4x4 matrix.
+        final double theta = 30.0;
+        final double c = Math.cos(Math.toRadians(theta));
+        final double s = Math.sin(Math.toRadians(theta));
+        final double x = 0;
+        final double y = 0;
+        final double z = 3;
+        Matrix4 m = new Matrix4();
+        m.multiplyByRotation(1, 0, 0, theta);
+        m.multiplyByTranslation(x, y, z);
+        m.invertOrthonormal().transpose();
 
         p.transformByMatrix(m);
-        System.out.println(p);
 
-        p.normalize();
-        System.out.println(p);
-
-        fail("Shouldn't the output of transformByMatrix be normalized?");
-    }
-
-    @Test
-    public void testNormalize() throws Exception {
-        Vec3 u = new Vec3(3, 4, 5);
-        double distance = 5;
-        Plane plane = new Plane(u, distance);
-
-        plane.normalize();
-
-        assertEquals("Normal magnitude", 1.0, plane.normal.magnitude(), 1e-10);
-        assertEquals("distance", distance / u.magnitude(), plane.distance, 1e-10);
+        assertEquals("normal x", p.normal.x, 0, 0);
+        assertEquals("normal y", p.normal.y, s, 0);
+        assertEquals("normal z", p.normal.z, -c, 0);
+        assertEquals("distance", p.distance, 13.0, 0);
     }
 
     @Test
@@ -235,8 +256,8 @@ public class PlaneTest {
 
     @Test
     public void testIntersectsSegment() throws Exception {
-        Plane p = new Plane(new Vec3(0, 0, -1), 0);
-        boolean result = false;
+        Plane p = new Plane(0, 0, -1, 0);
+        boolean result;
 
         // These tests were adapted from WorldWindJava PlaneTest
         result = p.intersectsSegment(new Vec3(), new Vec3(0, 0, -1));
@@ -262,13 +283,12 @@ public class PlaneTest {
 
         result = p.intersectsSegment(new Vec3(1, 0, 1), new Vec3(2, 0, 1));
         assertFalse("Parallel, integer end points off origin, should produce no intersection", result);
-
     }
 
     @Test
     public void testOnSameSide() throws Exception {
-        Plane p = new Plane(new Vec3(0, 0, -1), 0); // a plane at the origin
-        int result = 0;
+        Plane p = new Plane(0, 0, -1, 0); // a plane at the origin
+        int result;
 
         result = p.onSameSide(new Vec3(1, 2, -1), new Vec3(3, 4, -1));
         assertEquals("Different points on positive side of the plane (with respect to normal vector)", 1, result);
@@ -294,7 +314,7 @@ public class PlaneTest {
 
     @Test
     public void testClip() throws Exception {
-        Plane p = new Plane(new Vec3(0, 0, -1), 0); // a plane at the origin
+        Plane p = new Plane(0, 0, -1, 0); // a plane at the origin
         Vec3[] result;
         Vec3 a = new Vec3(1, 2, 0);
         Vec3 b = new Vec3(3, 4, 0);
@@ -309,7 +329,7 @@ public class PlaneTest {
 
     @Test
     public void testClip_NonIntersecting() throws Exception {
-        Plane p = new Plane(new Vec3(0, 0, -1), 0); // a plane at the origin
+        Plane p = new Plane(0, 0, -1, 0); // a plane at the origin
         Vec3[] result;
         Vec3 a = new Vec3(1, 2, -1);
         Vec3 b = new Vec3(3, 4, -1);
@@ -318,7 +338,6 @@ public class PlaneTest {
         result = p.clip(a, b);
 
         assertNull("Non-intersecting points", result);
-
     }
 
     @Test
@@ -326,7 +345,7 @@ public class PlaneTest {
         // If the direction of the line formed by the two points is positive with respect to this plane's normal vector,
         // the first point in the array will be the intersection point on the plane, and the second point will be the
         // original segment end point.
-        Plane p = new Plane(new Vec3(0, 0, -1), 0); // a plane at the origin
+        Plane p = new Plane(0, 0, -1, 0); // a plane at the origin
         Vec3[] result;
         Vec3 a = new Vec3(1, 2, 1);
         Vec3 b = new Vec3(3, 4, -1);
@@ -345,7 +364,7 @@ public class PlaneTest {
         // If the direction of the line is negative with respect to this plane's normal vector, the first point in the
         // array will be the original segment's begin point, and the second point will be the intersection point on the
         // plane.
-        Plane p = new Plane(new Vec3(0, 0, -1), 0); // a plane at the origin
+        Plane p = new Plane(0, 0, -1, 0); // a plane at the origin
         Vec3[] result;
         Vec3 a = new Vec3(1, 2, -1);
         Vec3 b = new Vec3(3, 4, 1);
@@ -357,8 +376,5 @@ public class PlaneTest {
         assertNotNull("Negative direction with respect normal, intersecting the plane", result);
         assertEquals("Negative direction, the start point is the segment's original begin point", expected0, result[0]);
         assertEquals("Negative direction, the end point is the segment's intersection with the plane", expected1, result[1]);
-
     }
-
-
 }

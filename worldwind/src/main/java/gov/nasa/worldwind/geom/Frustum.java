@@ -121,61 +121,55 @@ public class Frustum {
 
         // Get the components of the projection matrix.
         double[] m = projection.m;
-        double x, y, z, w, d;
+        double x, y, z, w;
 
         // Left Plane = row 4 + row 1:
         x = m[12] + m[0];
         y = m[13] + m[1];
         z = m[14] + m[2];
         w = m[15] + m[3];
-        d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-        this.left.set(x / d, y / d, z / d, w / d);
-        this.left.transformByMatrix(this.scratchMatrix).normalize();
+        this.left.set(x, y, z, w); // normalizes the plane's coordinates
+        this.left.transformByMatrix(this.scratchMatrix);
 
         // Right Plane = row 4 - row 1:
         x = m[12] - m[0];
         y = m[13] - m[1];
         z = m[14] - m[2];
         w = m[15] - m[3];
-        d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-        this.right.set(x / d, y / d, z / d, w / d);
-        this.right.transformByMatrix(this.scratchMatrix).normalize();
+        this.right.set(x, y, z, w); // normalizes the plane's coordinates
+        this.right.transformByMatrix(this.scratchMatrix);
 
         // Bottom Plane = row 4 + row 2:
         x = m[12] + m[4];
         y = m[13] + m[5];
         z = m[14] + m[6];
         w = m[15] + m[7];
-        d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-        this.bottom.set(x / d, y / d, z / d, w / d);
-        this.bottom.transformByMatrix(this.scratchMatrix).normalize();
+        this.bottom.set(x, y, z, w); // normalizes the plane's coordinates
+        this.bottom.transformByMatrix(this.scratchMatrix);
 
         // Top Plane = row 4 - row 2:
         x = m[12] - m[4];
         y = m[13] - m[5];
         z = m[14] - m[6];
         w = m[15] - m[7];
-        d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-        this.top.set(x / d, y / d, z / d, w / d);
-        this.top.transformByMatrix(this.scratchMatrix).normalize();
+        this.top.set(x, y, z, w); // normalizes the plane's coordinates
+        this.top.transformByMatrix(this.scratchMatrix);
 
         // Near Plane = row 4 + row 3:
         x = m[12] + m[8];
         y = m[13] + m[9];
         z = m[14] + m[10];
         w = m[15] + m[11];
-        d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-        this.near.set(x / d, y / d, z / d, w / d);
-        this.near.transformByMatrix(this.scratchMatrix).normalize();
+        this.near.set(x, y, z, w); // normalizes the plane's coordinates
+        this.near.transformByMatrix(this.scratchMatrix);
 
         // Far Plane = row 4 - row 3:
         x = m[12] - m[8];
         y = m[13] - m[9];
         z = m[14] - m[10];
         w = m[15] - m[11];
-        d = Math.sqrt(x * x + y * y + z * z); // for normalizing the coordinates
-        this.far.set(x / d, y / d, z / d, w / d);
-        this.far.transformByMatrix(this.scratchMatrix).normalize();
+        this.far.set(x, y, z, w); // normalizes the plane's coordinates
+        this.far.transformByMatrix(this.scratchMatrix);
 
         // Copy the specified viewport.
         this.viewport.set(viewport);
@@ -231,37 +225,31 @@ public class Frustum {
         Vec3 vb = new Vec3(tln.x - blf.x, tln.y - blf.y, tln.z - blf.z);
         Vec3 nl = va.cross(vb);
         this.left.set(nl.x, nl.y, nl.z, -nl.dot(bln));
-        this.left.normalize();
 
         va.set(trn.x - brf.x, trn.y - brf.y, trn.z - brf.z);
         vb.set(trf.x - brn.x, trf.y - brn.y, trf.z - brn.z);
         Vec3 nr = va.cross(vb);
         this.right.set(nr.x, nr.y, nr.z, -nr.dot(brn));
-        this.right.normalize();
 
         va.set(brf.x - bln.x, brf.y - bln.y, brf.z - bln.z);
         vb.set(blf.x - brn.x, blf.y - brn.y, blf.z - brn.z);
         Vec3 nb = va.cross(vb);
         this.bottom.set(nb.x, nb.y, nb.z, -nb.dot(brn));
-        this.bottom.normalize();
 
         va.set(tlf.x - trn.x, tlf.y - trn.y, tlf.z - trn.z);
         vb.set(trf.x - tln.x, trf.y - tln.y, trf.z - tln.z);
         Vec3 nt = va.cross(vb);
         this.top.set(nt.x, nt.y, nt.z, -nt.dot(tln));
-        this.top.normalize();
 
         va.set(tln.x - brn.x, tln.y - brn.y, tln.z - brn.z);
         vb.set(trn.x - bln.x, trn.y - bln.y, trn.z - bln.z);
         Vec3 nn = va.cross(vb);
         this.near.set(nn.x, nn.y, nn.z, -nn.dot(bln));
-        this.near.normalize();
 
         va.set(trf.x - blf.x, trf.y - blf.y, trf.z - blf.z);
         vb.set(tlf.x - brf.x, tlf.y - brf.y, tlf.z - brf.z);
         Vec3 nf = va.cross(vb);
         this.far.set(nf.x, nf.y, nf.z, -nf.dot(blf));
-        this.far.normalize();
 
         // Copy the specified sub-viewport.
         this.viewport.set(subViewport);
