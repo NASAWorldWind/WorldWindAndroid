@@ -12,10 +12,10 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import gov.nasa.worldwind.draw.BasicDrawableTerrain;
+import gov.nasa.worldwind.geom.Range;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BufferObject;
@@ -53,12 +53,17 @@ public class BasicTessellator implements Tessellator, TileFactory {
 
     protected short[] levelSetTriStripElements;
 
-    protected BufferObject[] levelSetBufferObjects = new BufferObject[3];
+    protected Range levelSetLineElementRange = new Range();
 
-    protected String[] levelSetBufferKeys = {
-        this.getClass().getName() + ".levelSetBuffer[0]",
-        this.getClass().getName() + ".levelSetBuffer[1]",
-        this.getClass().getName() + ".levelSetBuffer[2]"};
+    protected Range levelSetTriStripElementRange = new Range();
+
+    protected BufferObject levelSetVertexTexCoordBuffer;
+
+    protected BufferObject levelSetElementBuffer;
+
+    protected String levelSetVertexTexCoordKey = this.getClass().getName() + ".vertexTexCoordKey";
+
+    protected String levelSetElementKey = this.getClass().getName() + ".elementKey";
 
     public BasicTessellator() {
     }
@@ -78,7 +83,7 @@ public class BasicTessellator implements Tessellator, TileFactory {
     }
 
     public double getDetailControl() {
-        return detailControl;
+        return this.detailControl;
     }
 
     public void setDetailControl(double detailControl) {
@@ -113,7 +118,8 @@ public class BasicTessellator implements Tessellator, TileFactory {
         }
 
         // Release references to render resources acquired while assembling tiles.
-        Arrays.fill(this.levelSetBufferObjects, null);
+        this.levelSetVertexTexCoordBuffer = null;
+        this.levelSetElementBuffer = null;
     }
 
     protected void createTopLevelTiles() {
@@ -168,11 +174,14 @@ public class BasicTessellator implements Tessellator, TileFactory {
         drawable.sector.set(tile.sector);
         drawable.vertexOrigin.set(tile.vertexOrigin);
 
+        // Assemble the drawable's element buffer ranges.
+        drawable.lineElementRange.set(this.levelSetLineElementRange);
+        drawable.triStripElementRange.set(this.levelSetTriStripElementRange);
+
         // Assemble the drawable's OpenGL buffer objects.
         drawable.vertexPoints = tile.getVertexPointBuffer(rc);
-        drawable.vertexTexCoords = this.levelSetBufferObjects[0];
-        drawable.lineElements = this.levelSetBufferObjects[1];
-        drawable.triStripElements = this.levelSetBufferObjects[2];
+        drawable.vertexTexCoords = this.levelSetVertexTexCoordBuffer;
+        drawable.elements = this.levelSetElementBuffer;
     }
 
     public boolean mustAssembleTilePoints(RenderContext rc, TerrainTile tile) {
@@ -221,33 +230,27 @@ public class BasicTessellator implements Tessellator, TileFactory {
         }
 
         // Retrieve or create the level set's OpenGL vertex tex coord buffer object.
-        this.levelSetBufferObjects[0] = rc.getBufferObject(this.levelSetBufferKeys[0]);
-        if (this.levelSetBufferObjects[0] == null) {
+        this.levelSetVertexTexCoordBuffer = rc.getBufferObject(this.levelSetVertexTexCoordKey);
+        if (this.levelSetVertexTexCoordBuffer == null) {
             int size = this.levelSetVertexTexCoords.length * 4;
             FloatBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
             buffer.put(this.levelSetVertexTexCoords).rewind();
-            this.levelSetBufferObjects[0] = rc.putBufferObject(this.levelSetBufferKeys[0],
+            this.levelSetVertexTexCoordBuffer = rc.putBufferObject(this.levelSetVertexTexCoordKey,
                 new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer));
         }
 
-        // Retrieve or create the level set's OpenGL line element buffer object.
-        // TODO put line and tri-strip elements in a single buffer, use a range to identify the parts
-        this.levelSetBufferObjects[1] = rc.getBufferObject(this.levelSetBufferKeys[1]);
-        if (this.levelSetBufferObjects[1] == null) {
-            int size = this.levelSetLineElements.length * 2;
+        // Retrieve or create the level set's OpenGL element buffer object.
+        this.levelSetElementBuffer = rc.getBufferObject(this.levelSetElementKey);
+        if (this.levelSetElementBuffer == null) {
+            int size = (this.levelSetLineElements.length + this.levelSetTriStripElements.length) * 2;
             ShortBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer();
-            buffer.put(this.levelSetLineElements).rewind();
-            this.levelSetBufferObjects[1] = rc.putBufferObject(this.levelSetBufferKeys[1],
-                new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer));
-        }
-
-        // Retrieve or create the level set's OpenGL tri-strip element buffer object.
-        this.levelSetBufferObjects[2] = rc.getBufferObject(this.levelSetBufferKeys[2]);
-        if (this.levelSetBufferObjects[2] == null) {
-            int size = this.levelSetTriStripElements.length * 2;
-            ShortBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer();
-            buffer.put(this.levelSetTriStripElements).rewind();
-            this.levelSetBufferObjects[2] = rc.putBufferObject(this.levelSetBufferKeys[2],
+            buffer.put(this.levelSetLineElements);
+            this.levelSetLineElementRange.upper = buffer.position();
+            this.levelSetTriStripElementRange.lower = buffer.position();
+            buffer.put(this.levelSetTriStripElements);
+            this.levelSetTriStripElementRange.upper = buffer.position();
+            buffer.rewind();
+            this.levelSetElementBuffer = rc.putBufferObject(this.levelSetElementKey,
                 new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer));
         }
     }

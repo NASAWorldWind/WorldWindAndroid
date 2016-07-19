@@ -7,6 +7,7 @@ package gov.nasa.worldwind.draw;
 
 import android.opengl.GLES20;
 
+import gov.nasa.worldwind.geom.Range;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BufferObject;
@@ -18,13 +19,15 @@ public class BasicDrawableTerrain implements DrawableTerrain {
 
     public Vec3 vertexOrigin = new Vec3();
 
+    public Range lineElementRange = new Range();
+
+    public Range triStripElementRange = new Range();
+
     public BufferObject vertexPoints;
 
     public BufferObject vertexTexCoords;
 
-    public BufferObject lineElements;
-
-    public BufferObject triStripElements;
+    public BufferObject elements;
 
     private Pool<BasicDrawableTerrain> pool;
 
@@ -45,8 +48,7 @@ public class BasicDrawableTerrain implements DrawableTerrain {
     public void recycle() {
         this.vertexPoints = null;
         this.vertexTexCoords = null;
-        this.lineElements = null;
-        this.triStripElements = null;
+        this.elements = null;
 
         if (this.pool != null) { // return this instance to the pool
             this.pool.release(this);
@@ -86,9 +88,10 @@ public class BasicDrawableTerrain implements DrawableTerrain {
 
     @Override
     public boolean drawLines(DrawContext dc) {
-        boolean bufferBound = (this.lineElements != null && this.lineElements.bindBuffer(dc));
+        boolean bufferBound = (this.elements != null && this.elements.bindBuffer(dc));
         if (bufferBound) {
-            GLES20.glDrawElements(GLES20.GL_LINES, this.lineElements.getBufferLength(), GLES20.GL_UNSIGNED_SHORT, 0);
+            GLES20.glDrawElements(GLES20.GL_LINES, this.lineElementRange.length(), GLES20.GL_UNSIGNED_SHORT,
+                this.lineElementRange.lower * 2);
         }
 
         return bufferBound;
@@ -96,9 +99,10 @@ public class BasicDrawableTerrain implements DrawableTerrain {
 
     @Override
     public boolean drawTriangles(DrawContext dc) {
-        boolean bufferBound = (this.triStripElements != null && this.triStripElements.bindBuffer(dc));
+        boolean bufferBound = (this.elements != null && this.elements.bindBuffer(dc));
         if (bufferBound) {
-            GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, this.triStripElements.getBufferLength(), GLES20.GL_UNSIGNED_SHORT, 0);
+            GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, this.triStripElementRange.length(), GLES20.GL_UNSIGNED_SHORT,
+                this.triStripElementRange.lower * 2);
         }
 
         return bufferBound;
