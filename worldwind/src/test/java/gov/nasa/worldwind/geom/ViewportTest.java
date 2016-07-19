@@ -5,10 +5,13 @@
 
 package gov.nasa.worldwind.geom;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class ViewportTest {
 
@@ -29,10 +32,10 @@ public class ViewportTest {
         Viewport viewport = new Viewport(original);
 
         assertNotNull(viewport);
-        assertEquals("x", 1, viewport.x, 0);
-        assertEquals("y", 2, viewport.y, 0);
-        assertEquals("width", 3, viewport.width, 0);
-        assertEquals("height", 4, viewport.height, 0);
+        assertEquals("x", 1, viewport.x);
+        assertEquals("y", 2, viewport.y);
+        assertEquals("width", 3, viewport.width);
+        assertEquals("height", 4, viewport.height);
     }
 
     @Test
@@ -93,7 +96,6 @@ public class ViewportTest {
         assertTrue("y", string.contains(Integer.toString(viewport.y)));
         assertTrue("width", string.contains(Integer.toString(viewport.width)));
         assertTrue("height", string.contains(Integer.toString(viewport.height)));
-
     }
 
     @Test
@@ -123,11 +125,12 @@ public class ViewportTest {
     @Test
     public void testSetEmpty() throws Exception {
         Viewport viewport = new Viewport(1, 2, 3, 4);
+        viewport.setEmpty();
 
         assertEquals("x", 1, viewport.x);
         assertEquals("y", 2, viewport.y);
-        assertEquals("width", 3, viewport.width);
-        assertEquals("height", 4, viewport.height);
+        assertEquals("width", 0, viewport.width);
+        assertEquals("height", 0, viewport.height);
     }
 
     @Test
@@ -137,18 +140,28 @@ public class ViewportTest {
 
         assertTrue("viewport is empty", viewport1.isEmpty());
         assertFalse("viewport is not empty", viewport2.isEmpty());
-
     }
 
     @Test
     public void testContains() throws Exception {
-
         Viewport viewport = new Viewport(1, 2, 3, 4);
+
         assertTrue("contains x, y", viewport.contains(viewport.x, viewport.y));
         assertTrue("contains x+width-1, y+height-1", viewport.contains(viewport.x + viewport.width - 1, viewport.y + viewport.height - 1));
         assertFalse("does not contain x+width, y+height", viewport.contains(viewport.x + viewport.width, viewport.y + viewport.height));
         assertFalse("does not contain x-1, y", viewport.contains(viewport.x - 1, viewport.y));
         assertFalse("does not contain x, y-1", viewport.contains(viewport.x, viewport.y - 1));
+    }
+
+    @Test
+    public void testContains_Empty() throws Exception {
+        Viewport empty = new Viewport(1, 2, 0, 0);
+        Viewport emptyWidth = new Viewport(1, 2, 3, 0);
+        Viewport emptyHeight = new Viewport(1, 2, 0, 3);
+
+        assertFalse("empty does not contain x, y", empty.contains(empty.x, empty.y));
+        assertFalse("empty width not contain x, y", emptyWidth.contains(emptyWidth.x, emptyWidth.y));
+        assertFalse("empty width not contain x, y", emptyHeight.contains(emptyHeight.x, emptyHeight.y));
     }
 
     @Test
@@ -234,7 +247,6 @@ public class ViewportTest {
         assertEquals("intersection", a, expected);
     }
 
-
     @Test
     public void testIntersect_AdjacentEast() throws Exception {
         Viewport a = new Viewport(30, 100, 3, 3);
@@ -294,7 +306,6 @@ public class ViewportTest {
         assertTrue("overlap north", a.intersects(new Viewport(32, 101, 2, 1)));
         assertTrue("overlap south", a.intersects(new Viewport(29, 101, 2, 1)));
         assertEquals("no mutation", copy, a);
-
     }
 
     @Test
@@ -305,7 +316,6 @@ public class ViewportTest {
         assertFalse("no dimension", a.intersects(new Viewport(31, 101, 0, 0)));
         assertFalse("no width", a.intersects(new Viewport(31, 101, 5, 0)));
         assertFalse("no height", a.intersects(new Viewport(31, 101, 0, 5)));
-
     }
 
     @Test
@@ -322,7 +332,5 @@ public class ViewportTest {
         assertFalse("coincident nw point", a.intersects(new Viewport(31, 99, 1, 1)));
         assertFalse("coincident sw point", a.intersects(new Viewport(29, 99, 1, 1)));
     }
-
-
 }
 

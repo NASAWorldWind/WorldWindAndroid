@@ -134,7 +134,7 @@ public class Viewport {
     /**
      * Sets this viewport to the origin and dimensions of a specified viewport.
      *
-     * @param viewport the viewport specifying the new value
+     * @param viewport the viewport specifying the new values
      *
      * @return this viewport with its origin and dimensions set to that of the specified viewport
      *
@@ -190,11 +190,11 @@ public class Viewport {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Viewport", "intersects", "missingViewport"));
         }
+
         Viewport that = viewport;
-        if (this.width <= 0 || this.height <= 0 || that.width <= 0 || that.height <= 0) {
-            return false;
-        }
-        return this.x < (that.x + that.width) && that.x < (this.x + this.width)
+        return this.width > 0 && this.height > 0
+            && that.width > 0 && that.height > 0
+            && this.x < (that.x + that.width) && that.x < (this.x + this.width)
             && this.y < (that.y + that.height) && that.y < (this.y + this.height);
     }
 
@@ -220,10 +220,9 @@ public class Viewport {
         }
 
         Viewport that = viewport;
-        if (this.width <= 0 || this.height <= 0 || that.width <= 0 || that.height <= 0) {
-            return false;
-        }
-        if (this.x < (that.x + that.width) && that.x < (this.x + this.width)
+        if (this.width > 0 && this.height > 0
+            && that.width > 0 && that.height > 0
+            && this.x < (that.x + that.width) && that.x < (this.x + this.width)
             && this.y < (that.y + that.height) && that.y < (this.y + this.height)) {
 
             if (this.x < that.x) {
