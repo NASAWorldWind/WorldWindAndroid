@@ -207,12 +207,12 @@ public class FrustumTest {
         Frustum frustum = new Frustum();
         frustum.setToModelviewProjection(projection, modelview, viewport);
 
-        // Evaluate the results with known values captured on 06/03/2016
+        // Evaluate the results with known values captured on 07/19/2016
         //System.out.println(frustumToString(frustum));
         Plane bottom = new Plane(0.17635740224291638, 0.9793994030381801, 0.09836094754823524, -2412232.453445458);
-        Plane left = new Plane(-0.12177864151960983, 0.07203573632653167, 0.989939803807046, 1737116.8972521015);
+        Plane left = new Plane(-0.12177864151960982, 0.07203573632653165, 0.9899398038070459, 1737116.8972521012);
         Plane right = new Plane(0.7782605589154529, 0.07203573632653174, -0.6237959242640989, 1737116.8972521003);
-        Plane top = new Plane(0.4801245151529267, -0.8353279303851168, 0.267782931994712, 5886466.247949661);
+        Plane top = new Plane(0.48012451515292665, -0.8353279303851167, 0.2677829319947119, 5886466.24794966);
         Plane near = new Plane(0.8577349603804412, 0.1882384504636923, 0.4783900328269719, 4528686.830908618);
         Plane far = new Plane(-0.8577349603804412, -0.1882384504636923, -0.4783900328269719, -2676528.6881595235);
 
