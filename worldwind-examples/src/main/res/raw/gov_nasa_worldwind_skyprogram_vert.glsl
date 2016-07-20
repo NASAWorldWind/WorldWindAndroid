@@ -47,7 +47,7 @@ float scaleFunc(float cos) {
 	return scaleDepth * exp(-0.00287 + x*(0.459 + x*(3.83 + x*(-6.80 + x*5.25))));
 }
 
-void sampleSky() {
+void main() {
     /* Get the ray from the camera to the vertex and its length (which is the far point of the ray passing through the
     atmosphere) */
     vec3 point = vertexPoint.xyz + vertexOrigin;
@@ -105,10 +105,6 @@ void sampleSky() {
     primaryColor = frontColor * (invWavelength * KrESun);
     secondaryColor = frontColor * KmESun;
     direction = eyePoint - point;
-}
-
-void main() {
-    sampleSky();
 
     /* Transform the vertex point by the modelview-projection matrix */
     gl_Position = mvpMatrix * vertexPoint;

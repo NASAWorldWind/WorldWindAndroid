@@ -18,7 +18,7 @@ public class SkyProgram extends AtmosphereProgram {
     public SkyProgram(Resources resources) {
         try {
             String vs = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_skyprogram_vert);
-            String fs = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_atmosphereprogram_frag);
+            String fs = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_skyprogram_frag);
             this.setProgramSources(vs, fs);
             this.setAttribBindings("vertexPoint");
         } catch (Exception logged) {

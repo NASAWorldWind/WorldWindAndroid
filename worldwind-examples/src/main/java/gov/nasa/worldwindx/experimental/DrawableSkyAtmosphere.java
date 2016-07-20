@@ -81,9 +81,6 @@ public class DrawableSkyAtmosphere implements Drawable {
         // Use the draw context's modelview projection matrix.
         this.program.loadModelviewProjection(dc.modelviewProjection);
 
-        // Use the sky fragment mode, which assumes the standard premultiplied alpha blending mode.
-        this.program.loadFragMode(AtmosphereProgram.FRAGMODE_SKY);
-
         // Use the sky's vertex point attribute.
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 3, GLES20.GL_FLOAT, false, 0, 0);
 

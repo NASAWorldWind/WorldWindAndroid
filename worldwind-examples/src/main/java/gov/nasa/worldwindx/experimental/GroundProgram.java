@@ -18,7 +18,7 @@ public class GroundProgram extends AtmosphereProgram {
     public GroundProgram(Resources resources) {
         try {
             String vs = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_groundprogram_vert);
-            String fs = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_atmosphereprogram_frag);
+            String fs = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_groundprogram_frag);
             this.setProgramSources(vs, fs);
             this.setAttribBindings("vertexPoint", "vertexTexCoord");
         } catch (Exception logged) {

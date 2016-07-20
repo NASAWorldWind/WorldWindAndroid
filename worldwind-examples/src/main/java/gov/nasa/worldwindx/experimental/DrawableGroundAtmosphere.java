@@ -108,13 +108,13 @@ public class DrawableGroundAtmosphere implements Drawable {
             }
 
             // Draw the terrain as triangles, multiplying the current fragment color by the program's secondary color.
-            this.program.loadFragMode(AtmosphereProgram.FRAGMODE_GROUND_SECONDARY);
+            this.program.loadFragMode(AtmosphereProgram.FRAGMODE_SECONDARY);
             GLES20.glBlendFunc(GLES20.GL_DST_COLOR, GLES20.GL_ZERO);
             terrain.drawTriangles(dc);
 
             // Draw the terrain as triangles, adding the current fragment color to the program's primary color.
             this.program.loadFragMode(textureBound ?
-                AtmosphereProgram.FRAGMODE_GROUND_PRIMARY_TEX_BLEND : AtmosphereProgram.FRAGMODE_GROUND_PRIMARY);
+                AtmosphereProgram.FRAGMODE_PRIMARY_TEX_BLEND : AtmosphereProgram.FRAGMODE_PRIMARY);
             GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE);
             terrain.drawTriangles(dc);
         }
