@@ -13,6 +13,8 @@ import gov.nasa.worldwind.util.Logger;
  */
 public class Plane {
 
+    protected final static double NEAR_ZERO_THRESHOLD = 1e-10;
+
     /**
      * The normal vector to the plane.
      */
@@ -44,7 +46,7 @@ public class Plane {
         this.normal.y = y;
         this.normal.z = z;
         this.distance = distance;
-        this.normalize();
+        this.normalizeIfNeeded();
     }
 
     /**
@@ -121,7 +123,7 @@ public class Plane {
         this.normal.y = y;
         this.normal.z = z;
         this.distance = distance;
-        this.normalize();
+        this.normalizeIfNeeded();
         return this;
     }
 
@@ -170,7 +172,7 @@ public class Plane {
         this.normal.y = y;
         this.normal.z = z;
         this.distance = distance;
-        this.normalize();
+        this.normalizeIfNeeded();
 
         return this;
     }
@@ -295,18 +297,26 @@ public class Plane {
         }
     }
 
-    protected void normalize() {
-        double x = this.normal.x;
-        double y = this.normal.y;
-        double z = this.normal.z;
-        double len = Math.sqrt(x * x + y * y + z * z);
-        double EPSILON = 1.0e-10;
+    protected void normalizeIfNeeded() {
+        // Compute the plane normal's magnitude in order to determine whether or not the plane needs normalization.
+        double magnitude = this.normal.magnitude();
 
-        if (len != 0 && Math.abs(1.0 - len) > EPSILON) { // normalize when the length is non-zero and not close enough to 1.0
-            this.normal.x = x / len;
-            this.normal.y = y / len;
-            this.normal.z = z / len;
-            this.distance = this.distance / len;
+        // Don't normalize a zero vector; the result is NaN when it should be 0.0.
+        if (magnitude == 0) {
+            return;
         }
+
+        // Don't normalize a unit vector, this indicates that the caller has already normalized the vector, but floating
+        // point roundoff results in a length not exactly 1.0. Since we're normalizing on the caller's behalf, we want
+        // to avoid unnecessary any normalization that modifies the specified values.
+        if (magnitude >= 1 - NEAR_ZERO_THRESHOLD && magnitude <= 1 + NEAR_ZERO_THRESHOLD) {
+            return;
+        }
+
+        // Normalize the caller-specified plane coordinates.
+        this.normal.x /= magnitude;
+        this.normal.y /= magnitude;
+        this.normal.z /= magnitude;
+        this.distance /= magnitude;
     }
 }

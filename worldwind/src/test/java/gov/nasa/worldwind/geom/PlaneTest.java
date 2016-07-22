@@ -46,7 +46,7 @@ public class PlaneTest {
     }
 
     @Test
-    public void testConstructor_Doubles() {
+    public void testConstructor_Values() {
         Vec3 n = new Vec3(3, 4, 5).normalize();
         double distance = 6;
         Plane plane = new Plane(n.x, n.y, n.z, distance);
@@ -59,7 +59,7 @@ public class PlaneTest {
     }
 
     @Test
-    public void testConstructor_NotNormalized() {
+    public void testConstructor_NotNormalizedValues() {
         Vec3 n = new Vec3(3, 4, 5);
         Vec3 nExpected = new Vec3(n).normalize();
         double distance = 6;
@@ -73,6 +73,16 @@ public class PlaneTest {
     }
 
     @Test
+    public void testConstructor_ZeroValues() {
+        Plane plane = new Plane(0, 0, 0, 0);
+
+        assertEquals("normal x", plane.normal.x, 0, 0);
+        assertEquals("normal y", plane.normal.y, 0, 0);
+        assertEquals("normal z", plane.normal.z, 0, 0);
+        assertEquals("distance", plane.distance, 0, 0);
+    }
+
+    @Test
     public void testConstructor_Copy() {
         Plane plane = new Plane(0, 0, 1, 10);
 
@@ -82,10 +92,9 @@ public class PlaneTest {
         assertEquals("copy equal to original", plane, copy);
     }
 
-    @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_NullArgument() throws Exception {
-        Plane copy = new Plane(null);
+        new Plane(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -190,7 +199,7 @@ public class PlaneTest {
     }
 
     @Test
-    public void testSet_NotNormalized() {
+    public void testSet_NotNormalizedValues() {
         Vec3 n = new Vec3(3, 4, 5);
         Vec3 nExpected = new Vec3(n).normalize();
         double distance = 6;
@@ -203,6 +212,18 @@ public class PlaneTest {
         assertEquals("normal y", plane.normal.y, nExpected.y, 0);
         assertEquals("normal z", plane.normal.z, nExpected.z, 0);
         assertEquals("distance", plane.distance, distanceExpected, 0);
+    }
+
+    @Test
+    public void testSet_ZeroValues() {
+        Plane plane = new Plane(0, 0, 1, 10);
+
+        plane.set(0, 0, 0, 0);
+
+        assertEquals("normal x", plane.normal.x, 0, 0);
+        assertEquals("normal y", plane.normal.y, 0, 0);
+        assertEquals("normal z", plane.normal.z, 0, 0);
+        assertEquals("distance", plane.distance, 0, 0);
     }
 
     @Test
