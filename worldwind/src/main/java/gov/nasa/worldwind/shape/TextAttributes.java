@@ -12,7 +12,7 @@ import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.render.Color;
 
 /**
- * Holds attributes applied to [Text]{@link Text} shapes and [Placemark]{@link Placemark} labels.
+ * Holds attributes applied to shapes text and {@link Placemark} labels.
  */
 public class TextAttributes {
 
@@ -37,15 +37,15 @@ public class TextAttributes {
     /**
      * Constructs a text attributes bundle.
      *
-     * @param {TextAttributes} attributes Attributes to initialize this attributes instance to. May be null, in which
+     * @param attributes Attributes to initialize this attributes instance to. May be null, in which
      *                         case the new instance contains default attributes.
      */
-    public TextAttributes(TextAttributes copy) {
-        this.color = new Color(copy.color);
-        this.font = copy.font;
-        this.offset = new Offset(copy.offset);
-        this.scale = copy.scale;
-        this.depthTest = copy.depthTest;
+    public TextAttributes(TextAttributes attributes) {
+        this.color = new Color(attributes.color);
+        this.font = attributes.font;
+        this.offset = new Offset(attributes.offset);
+        this.scale = attributes.scale;
+        this.depthTest = attributes.depthTest;
     }
 
     public TextAttributes set(TextAttributes attributes) {
