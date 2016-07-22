@@ -6,10 +6,9 @@
 precision mediump float;
 precision mediump int;
 
-const int FRAGMODE_SKY = 1;
-const int FRAGMODE_GROUND_PRIMARY = 2;
-const int FRAGMODE_GROUND_SECONDARY = 3;
-const int FRAGMODE_GROUND_PRIMARY_TEX_BLEND = 4;
+const int FRAGMODE_PRIMARY = 1;
+const int FRAGMODE_SECONDARY = 2;
+const int FRAGMODE_PRIMARY_TEX_BLEND = 3;
 
 const int SAMPLE_COUNT = 2;
 const float SAMPLES = 2.0;
@@ -104,7 +103,7 @@ void main() {
     /* Transform the vertex point by the modelview-projection matrix */
     gl_Position = mvpMatrix * vertexPoint;
 
-    if (fragMode == FRAGMODE_GROUND_PRIMARY_TEX_BLEND) {
+    if (fragMode == FRAGMODE_PRIMARY_TEX_BLEND) {
         /* Transform the vertex texture coordinate by the tex coord matrix */
         texCoord = (texCoordMatrix * vec3(vertexTexCoord, 1.0)).st;
     }

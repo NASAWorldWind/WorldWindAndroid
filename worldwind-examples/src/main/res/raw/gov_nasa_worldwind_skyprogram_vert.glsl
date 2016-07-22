@@ -6,11 +6,6 @@
 precision mediump float;
 precision mediump int;
 
-const int FRAGMODE_SKY = 1;
-const int FRAGMODE_GROUND_PRIMARY = 2;
-const int FRAGMODE_GROUND_SECONDARY = 3;
-const int FRAGMODE_GROUND_PRIMARY_TEX_BLEND = 4;
-
 const int SAMPLE_COUNT = 2;
 const float SAMPLES = 2.0;
 
