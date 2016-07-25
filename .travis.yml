@@ -1,5 +1,6 @@
+# Set up to run the an Android build script per the Travis CI documentation
+# Runs the script ./gradlew build connectedCheck
 language: android
-
 android:
   components:
   # Use the latest revision of the Android SDK Tools
@@ -11,14 +12,16 @@ android:
   # Make the android and google extras available
   - extra-android-support
   - extra-android-m2repository
-  - extra-google-m2repository
 
+# Reduce the maximum JVM memory used by gradle to avoid termination by the Travis CI container
+# during the gradle lint task
 env:
 - GRADLE_OPTS="-Xmx512m -XX:MaxPermSize=512m"
 
+# Use the caching configuration per the Travis CI documentation
+# See https://docs.travis-ci.com/user/languages/android#Caching
 before_cache:
 - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
-
 cache:
   directories:
    - $HOME/.gradle/caches/
