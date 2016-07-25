@@ -441,6 +441,80 @@ public class Matrix4 {
     }
 
     /**
+     * Sets this matrix to an infinite perspective projection matrix for the specified viewport dimensions, vertical
+     * field of view and near clip distance.
+     * <p/>
+     * An infinite perspective projection matrix maps points in a manner similar to a standard projection matrix, but is
+     * not bounded by depth. Objects at any depth greater than or equal to the near distance may be rendered. In
+     * addition, this matrix interprets vertices with a w-coordinate of 0 as infinitely far from the camera in the
+     * direction indicated by the point's coordinates.
+     * <p/>
+     * The field of view must be positive and less than 180. The near distance must be positive.
+     *
+     * @param viewportWidth  the viewport width in screen coordinates
+     * @param viewportHeight the viewport height in screen coordinates
+     * @param fovyDegrees    the vertical field of view in degrees
+     * @param nearDistance   the near clip plane distance in model coordinates
+     *
+     * @throws IllegalArgumentException If either the width or the height is less than or equal to zero, if the field of
+     *                                  view is less than or equal to zero or greater than 180, if the near distance is
+     *                                  less than or equal to zero
+     */
+    public Matrix4 setToInfiniteProjection(double viewportWidth, double viewportHeight, double fovyDegrees,
+                                           double nearDistance) {
+        if (viewportWidth <= 0) {
+            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Matrix4", "setToInfiniteProjection",
+                "invalidWidth"));
+        }
+
+        if (viewportHeight <= 0) {
+            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Matrix4", "setToInfiniteProjection",
+                "invalidHeight"));
+        }
+
+        if (fovyDegrees <= 0 || fovyDegrees >= 180) {
+            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Matrix4", "setToInfiniteProjection",
+                "invalidFieldOfView"));
+        }
+
+        if (nearDistance <= 0) {
+            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Matrix4", "setToInfiniteProjection",
+                "invalidClipDistance"));
+        }
+
+        // Compute the dimensions of the near rectangle given the specified parameters.
+        double aspect = viewportWidth / viewportHeight;
+        double tanfovy_2 = Math.tan(Math.toRadians(fovyDegrees * 0.5));
+        double nearHeight = 2 * nearDistance * tanfovy_2;
+        double nearWidth = nearHeight * aspect;
+        double near = nearDistance;
+
+        // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, equation 4.52.
+
+        this.m[0] = (2 * near) / nearWidth;
+        this.m[1] = 0;
+        this.m[2] = 0;
+        this.m[3] = 0;
+
+        this.m[4] = 0;
+        this.m[5] = (2 * near) / nearHeight;
+        this.m[6] = 0;
+        this.m[7] = 0;
+
+        this.m[8] = 0;
+        this.m[9] = 0;
+        this.m[10] = -1;
+        this.m[11] = -2 * near;
+
+        this.m[12] = 0;
+        this.m[13] = 0;
+        this.m[14] = -1;
+        this.m[15] = 0;
+
+        return this;
+    }
+
+    /**
      * Sets this matrix to a perspective projection matrix for the specified viewport dimensions, vertical field of view
      * and clip distances.
      * <p/>
@@ -1422,11 +1496,11 @@ public class Matrix4 {
      * projection is successful. This returns false if the Cartesian point is clipped by the near clipping plane or the
      * far clipping plane.
      *
-     * @param x      the Cartesian point's X component
-     * @param y      the Cartesian point's y component
-     * @param z      the Cartesian point's z component
-     * @param viewport   the viewport defining the screen point's coordinate system
-     * @param result a pre-allocated {@link Vec3} in which to return the projected point
+     * @param x        the Cartesian point's X component
+     * @param y        the Cartesian point's y component
+     * @param z        the Cartesian point's z component
+     * @param viewport the viewport defining the screen point's coordinate system
+     * @param result   a pre-allocated {@link Vec3} in which to return the projected point
      *
      * @return true if the transformation is successful, otherwise false
      *
@@ -1764,5 +1838,4 @@ public class Matrix4 {
             b[i] = sum / A[i][i];
         }
     }
-
 }

@@ -19,7 +19,12 @@ import java.util.List;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.util.Logger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Unit tests for the Location class.
@@ -38,7 +43,6 @@ public class LocationTest {
     public void setup() {
         PowerMockito.mockStatic(Logger.class);
     }
-
 
     /**
      * Tests default constructor's member initialization.
@@ -70,7 +74,6 @@ public class LocationTest {
         assertEquals("longitude", PHI, location.longitude, 0);
     }
 
-
     /**
      * Tests the copy constructor.
      *
@@ -98,7 +101,7 @@ public class LocationTest {
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_WithNull() throws Exception {
 
-        Location location = new Location(null);
+        new Location(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -117,7 +120,6 @@ public class LocationTest {
         assertEquals("longitude", PHI, location.longitude, Double.MIN_VALUE);
     }
 
-
     /**
      * Test factory method's member initialization from radians
      *
@@ -131,7 +133,6 @@ public class LocationTest {
         assertEquals("latitude", Math.toDegrees(THETA), location.latitude, Double.MIN_VALUE);
         assertEquals("longitude", Math.toDegrees(PHI), location.longitude, Double.MIN_VALUE);
     }
-
 
     /**
      * Ensures normalizeLatitude returns a correct value within the range of +/- 90 degrees. A typical use case is to
@@ -186,7 +187,6 @@ public class LocationTest {
         // NaN is propagated.
         assertTrue("NaN", Double.isNaN(Location.normalizeLatitude(Double.NaN)));
     }
-
 
     /**
      * Ensures normalizeLongitude returns a correct value within the range of +/- 180 degrees. A typical use case is to
@@ -304,7 +304,6 @@ public class LocationTest {
         assertNotEquals("inequality", a, null);
     }
 
-
     /**
      * Ensures hash codes are unique.
      *
@@ -320,7 +319,6 @@ public class LocationTest {
 
         assertNotEquals("jfk hash vs lax hash", jfkHash, laxHash);
     }
-
 
     /**
      * Ensures string output contains member representations.
@@ -340,7 +338,6 @@ public class LocationTest {
         assertTrue("lon", string.contains(Double.toString(lon)));
     }
 
-
     /**
      * @throws Exception
      */
@@ -356,17 +353,6 @@ public class LocationTest {
     }
 
     @Test
-    public void testLocationsCrossAntimeridian_OutsideNormalRange() throws Exception {
-        List<Location> locations = new ArrayList<>();
-        locations.add(new Location(0d, 181d));
-        locations.add(new Location(0d, -181d));
-
-        boolean isCrossed = Location.locationsCrossAntimeridian(locations);
-
-        assertTrue("181(-179) to -181(179) expected to cross", isCrossed);
-    }
-
-    @Test
     public void testLocationsCrossAntimeridian_Antipodal() throws Exception {
         List<Location> locations = new ArrayList<>();
         locations.add(new Location(0d, -90d));
@@ -378,7 +364,7 @@ public class LocationTest {
     }
 
     @Test
-    public void testLocationsCrossAntimeridian_AlmostAntipodal() throws Exception {
+    public void testLocationsCrossAntimeridian_AlmostAntipodal_DoesCross() throws Exception {
         List<Location> locations = new ArrayList<>();
         locations.add(new Location(0d, -90.0000001d));
         locations.add(new Location(0d, 90d));
@@ -389,14 +375,80 @@ public class LocationTest {
     }
 
     @Test
-    public void testLocationsCrossAntimeridian_OnDateline() throws Exception {
+    public void testLocationsCrossAntimeridian_AlmostAntipodal_DoesNotCross() throws Exception {
+        List<Location> locations = new ArrayList<>();
+        locations.add(new Location(0d, -89.9999999d));
+        locations.add(new Location(0d, 90d));
+
+        boolean isCrossed = Location.locationsCrossAntimeridian(locations);
+
+        assertFalse("nearly antipodal", isCrossed);
+    }
+
+    @Test
+    public void testLocationsCrossAntimeridian_OnAntimeridian_SameSideWest() throws Exception {
+        List<Location> locations = new ArrayList<>();
+        locations.add(new Location(90d, -180d));
+        locations.add(new Location(-90d, -180d));
+
+        boolean isCrossed = Location.locationsCrossAntimeridian(locations);
+
+        assertFalse("coincident with antimerdian, west side", isCrossed);
+    }
+
+    @Test
+    public void testLocationsCrossAntimeridian_OnAntimeridian_SameSideEast() throws Exception {
         List<Location> locations = new ArrayList<>();
         locations.add(new Location(90d, 180d));
         locations.add(new Location(-90d, 180d));
 
         boolean isCrossed = Location.locationsCrossAntimeridian(locations);
 
-        assertFalse("coincident with dateline", isCrossed);
+        assertFalse("coincident with antimerdian, east side", isCrossed);
+    }
+
+    @Test
+    public void testLocationsCrossAntimeridian_OnAntimeridian_OppositeSides() throws Exception {
+        List<Location> locations = new ArrayList<>();
+        locations.add(new Location(0d, -180d));
+        locations.add(new Location(0d, 180d));
+
+        boolean isCrossed = Location.locationsCrossAntimeridian(locations);
+
+        assertFalse("coincident with antimerdian, opposite sides", isCrossed);
+    }
+
+    @Test
+    public void testLocationsCrossAntimeridian_OutsideNormalRange() throws Exception {
+        List<Location> locations = new ArrayList<>();
+        locations.add(new Location(0d, -181d));
+        locations.add(new Location(0d, 181d));
+
+        boolean isCrossed = Location.locationsCrossAntimeridian(locations);
+
+        assertTrue("181(-179) to -181(179) expected to cross", isCrossed);
+    }
+
+    @Test
+    public void testLocationsCrossAntimeridian_OutsideNormalRangeWest() throws Exception {
+        List<Location> locations = new ArrayList<>();
+        locations.add(new Location(0d, -179d));
+        locations.add(new Location(0d, -181d));
+
+        boolean isCrossed = Location.locationsCrossAntimeridian(locations);
+
+        assertTrue("-179 to -181(179) expected to cross", isCrossed);
+    }
+
+    @Test
+    public void testLocationsCrossAntimeridian_OutsideNormalRangeEast() throws Exception {
+        List<Location> locations = new ArrayList<>();
+        locations.add(new Location(0d, 179d));
+        locations.add(new Location(0d, 181d));
+
+        boolean isCrossed = Location.locationsCrossAntimeridian(locations);
+
+        assertTrue("179 to 181(-179) expected to cross", isCrossed);
     }
 
     @Test
@@ -410,6 +462,25 @@ public class LocationTest {
         assertFalse("NaN", isCrossed);
     }
 
+    @Test
+    public void testLocationsCrossAntimeridian_OneLocation() throws Exception {
+        List<Location> locations = new ArrayList<>();
+        locations.add(new Location(0d, 165d));
+
+        boolean isCrossed = Location.locationsCrossAntimeridian(locations);
+
+        assertFalse("list of one location is not expected to cross", isCrossed);
+    }
+
+    @Test
+    public void testLocationsCrossAntimeridian_NoLocations() throws Exception {
+        List<Location> locations = new ArrayList<>();
+
+        boolean isCrossed = Location.locationsCrossAntimeridian(locations);
+
+        assertFalse("empty list of locations is not expected to cross", isCrossed);
+    }
+
     /**
      * Ensures null argument is handled correctly.
      *
@@ -419,7 +490,7 @@ public class LocationTest {
     public void testLocationsCrossAntimeridian_WithNull() throws Exception {
         PowerMockito.mockStatic(Logger.class);
 
-        boolean isCrossed = Location.locationsCrossAntimeridian(null);
+        Location.locationsCrossAntimeridian(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -660,7 +731,6 @@ public class LocationTest {
         assertEquals("west to dateline", Location.normalizeLongitude(270), azimuth, TOLERANCE);
     }
 
-
     /**
      * Ensures azimuth is NaN with NaN arguments.
      *
@@ -689,7 +759,7 @@ public class LocationTest {
         PowerMockito.mockStatic(Logger.class);
         Location begin = new Location(34.2, -119.2); // KOXR
 
-        double azimuth = begin.greatCircleAzimuth(null);
+        begin.greatCircleAzimuth(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -799,7 +869,7 @@ public class LocationTest {
         PowerMockito.mockStatic(Logger.class);
         Location begin = new Location(34.2, -119.2); // KOXR
 
-        double distance = begin.greatCircleDistance(null);
+        begin.greatCircleDistance(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -918,7 +988,6 @@ public class LocationTest {
         assertEquals("expecting 180", 180d, azimuthSouth, 0);
     }
 
-
     /**
      * Ensures the correct azimuth (shortest distance) across the +/-180 meridian.
      *
@@ -976,7 +1045,7 @@ public class LocationTest {
         PowerMockito.mockStatic(Logger.class);
         Location begin = new Location(34.2, -119.2); // KOXR
 
-        double azimuth = begin.rhumbAzimuth(null);
+        begin.rhumbAzimuth(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -1043,7 +1112,7 @@ public class LocationTest {
         PowerMockito.mockStatic(Logger.class);
         Location begin = new Location(34.2, -119.2); // KOXR
 
-        double distance = begin.rhumbDistance(null);
+        begin.rhumbDistance(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -1172,7 +1241,6 @@ public class LocationTest {
         double distance = begin.linearDistance(end);
 
         assertEquals("linear distance", 2d, Math.toDegrees(distance), TOLERANCE);
-
     }
 
     /**
@@ -1404,7 +1472,5 @@ public class LocationTest {
         double expected = 0.08472006153859046;
 
         assertEquals("Rhumb distance", expected, result, 1e-15);
-
     }
-
 }

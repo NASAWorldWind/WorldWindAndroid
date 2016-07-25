@@ -834,8 +834,10 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.rc.resources = this.getContext().getResources();
 
         // Configure the frame's Cartesian modelview matrix and eye coordinate projection matrix.
-        frame.viewport.set(this.viewport);
         this.computeViewingTransform(frame.projection, frame.modelview);
+        frame.viewport.set(this.viewport);
+        frame.infiniteProjection.setToInfiniteProjection(this.viewport.width, this.viewport.height, this.fieldOfView, 1.0);
+        frame.infiniteProjection.multiplyByMatrix(frame.modelview);
         this.rc.viewport.set(frame.viewport);
         this.rc.projection.set(frame.projection);
         this.rc.modelview.set(frame.modelview);
@@ -898,6 +900,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.dc.projection.set(frame.projection);
         this.dc.modelview.set(frame.modelview);
         this.dc.modelviewProjection.setToMultiply(frame.projection, frame.modelview);
+        this.dc.infiniteProjection.set(frame.infiniteProjection);
         this.dc.screenProjection.setToScreenProjection(frame.viewport.width, frame.viewport.height);
 
         // Process the drawables in the frame's drawable queue and drawable terrain data structures.

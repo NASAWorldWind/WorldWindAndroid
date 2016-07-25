@@ -92,7 +92,7 @@ public class DrawableLines implements Drawable {
         GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, buffer);
 
         // Draw the leader line.
-        GLES20.glDrawArrays(GLES20.GL_LINES, 0 /*first*/, this.vertexPoints.length / 3 /*count*/);
+        GLES20.glDrawArrays(GLES20.GL_LINES, 0 /*first*/, (buffer.remaining() / 3) /*count*/);
 
         // Restore the default World Wind OpenGL state.
         if (!this.enableDepthTest) {

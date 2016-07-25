@@ -24,22 +24,19 @@ public class AtmosphereProgram extends ShaderProgram {
 
     /**
      * Frag color indicates the atmospheric scattering color components written to the fragment color. Accepted values
-     * are {@link #FRAGMODE_SKY}, {@link #FRAGMODE_GROUND_PRIMARY}, {@link #FRAGMODE_GROUND_SECONDARY} and {@link
-     * #FRAGMODE_GROUND_PRIMARY_TEX_BLEND}.
+     * are {@link #FRAGMODE_PRIMARY}, {@link #FRAGMODE_SECONDARY} and {@link #FRAGMODE_PRIMARY_TEX_BLEND}.
      */
-    @IntDef({FRAGMODE_SKY, FRAGMODE_GROUND_PRIMARY, FRAGMODE_GROUND_SECONDARY, FRAGMODE_GROUND_PRIMARY_TEX_BLEND})
+    @IntDef({FRAGMODE_PRIMARY, FRAGMODE_SECONDARY, FRAGMODE_PRIMARY_TEX_BLEND})
     @Retention(RetentionPolicy.SOURCE)
     public @interface FragMode {
 
     }
 
-    public static final int FRAGMODE_SKY = 1;
+    public static final int FRAGMODE_PRIMARY = 1;
 
-    public static final int FRAGMODE_GROUND_PRIMARY = 2;
+    public static final int FRAGMODE_SECONDARY = 2;
 
-    public static final int FRAGMODE_GROUND_SECONDARY = 3;
-
-    public static final int FRAGMODE_GROUND_PRIMARY_TEX_BLEND = 4;
+    public static final int FRAGMODE_PRIMARY_TEX_BLEND = 3;
 
     protected double altitude = 160000;
 
@@ -89,7 +86,7 @@ public class AtmosphereProgram extends ShaderProgram {
 
     protected int exposureId;
 
-    protected float[] array = new float[16];
+    private float[] array = new float[16];
 
     public AtmosphereProgram() {
     }
@@ -107,7 +104,7 @@ public class AtmosphereProgram extends ShaderProgram {
         double exposure = 2;
 
         this.fragModeId = GLES20.glGetUniformLocation(this.programId, "fragMode");
-        GLES20.glUniform1i(this.fragModeId, FRAGMODE_SKY);
+        GLES20.glUniform1i(this.fragModeId, FRAGMODE_PRIMARY);
 
         this.mvpMatrixId = GLES20.glGetUniformLocation(this.programId, "mvpMatrix");
         new Matrix4().transposeToArray(this.array, 0); // 4 x 4 identity matrix

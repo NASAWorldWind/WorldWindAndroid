@@ -7,6 +7,7 @@ package gov.nasa.worldwind.geom;
 
 import android.util.SparseIntArray;
 
+import java.util.List;
 import java.util.TimeZone;
 
 import gov.nasa.worldwind.WorldWind;
@@ -214,24 +215,37 @@ public class Location {
      *
      * @throws IllegalArgumentException If the locations list is null
      */
-    public static boolean locationsCrossAntimeridian(Iterable<? extends Location> locations) {
+    public static boolean locationsCrossAntimeridian(List<? extends Location> locations) {
         if (locations == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Location", "locationsCrossAntimeridian", "missingList"));
         }
 
-        Location prev = null;
-        for (Location cur : locations) {
-            if (prev != null) {
-                // A segment crosses the antimeridian if the endpoint longitudes have different signs and are more than
-                // 180 degrees apart
-                if (Math.signum(prev.longitude) != Math.signum(cur.longitude)) {
-                    double delta = Math.abs(prev.longitude - cur.longitude);
-                    if (delta > 180 && delta < 360)
-                        return true;
+        // Check the list's length. A list with fewer than two locations does not cross the antimeridan.
+        int len = locations.size();
+        if (len < 2) {
+            return false;
+        }
+
+        // Compute the longitude attributes associated with the first location.
+        double lon1 = normalizeLongitude(locations.get(0).longitude);
+        double sig1 = Math.signum(lon1);
+
+        // Iterate over the segments in the list. A segment crosses the antimeridian if its endpoint longitudes have
+        // different signs and are more than 180 degrees apart (but not 360, which indicates the longitudes are the same).
+        for (int idx = 1; idx < len; idx++) {
+            double lon2 = normalizeLongitude(locations.get(idx).longitude);
+            double sig2 = Math.signum(lon2);
+
+            if (sig1 != sig2) {
+                double delta = Math.abs(lon1 - lon2);
+                if (delta > 180 && delta < 360) {
+                    return true;
                 }
             }
-            prev = cur;
+
+            lon1 = lon2;
+            sig1 = sig2;
         }
 
         return false;

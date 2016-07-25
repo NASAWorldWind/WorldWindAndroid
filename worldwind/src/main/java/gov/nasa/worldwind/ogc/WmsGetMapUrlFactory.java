@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.ogc;
 
+import java.util.Locale;
+
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Tile;
@@ -306,7 +308,7 @@ public class WmsGetMapUrlFactory implements TileUrlFactory {
             }
         }
 
-        index = this.serviceAddress.toUpperCase().indexOf("SERVICE=WMS");
+        index = this.serviceAddress.toUpperCase(Locale.US).indexOf("SERVICE=WMS");
         if (index < 0) {
             url.append("SERVICE=WMS");
         }

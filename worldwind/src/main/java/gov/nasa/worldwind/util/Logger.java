@@ -75,6 +75,7 @@ public class Logger {
         messageTable.put("missingPlane", "The plane is null");
         messageTable.put("missingPosition", "The position is null");
         messageTable.put("missingProjection", "The projection is null");
+        messageTable.put("missingRange", "The range is null");
         messageTable.put("missingRecognizer", "The recognizer is null");
         messageTable.put("missingRenderable", "The renderable is null");
         messageTable.put("missingResources", "The resources argument is null");

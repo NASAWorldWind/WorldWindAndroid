@@ -9,10 +9,11 @@ import gov.nasa.worldwind.util.Logger;
 
 /**
  * Represents a plane in Cartesian coordinates. The plane's X, Y and Z components indicate the plane's normal vector.
- * The distance component indicates the plane's distance from the origin relative to its unit normal. Plane's components
- * are expected to be normalized.
+ * The distance component indicates the plane's distance from the origin relative to its unit normal.
  */
 public class Plane {
+
+    protected final static double NEAR_ZERO_THRESHOLD = 1e-10;
 
     /**
      * The normal vector to the plane.
@@ -24,34 +25,28 @@ public class Plane {
      */
     protected double distance;
 
-
     /**
-     * Constructs a plane with specified normal vector components and distance from the origin. This constructor does
-     * not normalize the components, it assumes that a unit normal vector is provided.
-     *
-     * @param x        the X component of the plane's unit normal vector
-     * @param y        the Y component of the plane's unit normal vector
-     * @param z        the Z component of the plane's unit normal vector
-     * @param distance the plane's distance from the origin
+     * Constructs a plane in the X-Y plane with its unit normal pointing along the Z axis.
      */
-    public Plane(double x, double y, double z, double distance) {
-        this.normal.set(x, y, z);
-        this.distance = distance;
+    public Plane() {
+        this.normal.z = 1.0;
     }
 
     /**
-     * Constructs a plane with specified the normal vector and distance from the origin. This constructor does not
-     * normalize the components, it assumes that a unit normal vector is provided.
+     * Constructs a plane with specified normal vector components and distance from the origin. This constructor
+     * normalizes the components, ensuring that the plane has a unit normal vector.
      *
-     * @param normal   the plane's unit normal vector
+     * @param x        the X component of the plane's normal vector
+     * @param y        the Y component of the plane's normal vector
+     * @param z        the Z component of the plane's normal vector
      * @param distance the plane's distance from the origin
      */
-    public Plane(Vec3 normal, double distance) {
-        if (normal == null) {
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Plane", "constructor", "missingVector"));
-        }
-        this.normal.set(normal);
+    public Plane(double x, double y, double z, double distance) {
+        this.normal.x = x;
+        this.normal.y = y;
+        this.normal.z = z;
         this.distance = distance;
+        this.normalizeIfNeeded();
     }
 
     /**
@@ -66,35 +61,37 @@ public class Plane {
             throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Plane", "constructor", "missingPlane"));
         }
 
+        // Assumes the specified plane's parameters are normalized.
         this.normal.set(plane.normal);
         this.distance = plane.distance;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
 
-        Plane plane = (Plane) o;
-
-        if (Double.compare(plane.distance, distance) != 0) return false;
-        return normal.equals(plane.normal);
-
+        Plane that = (Plane) o;
+        return this.normal.equals(that.normal) && this.distance == that.distance;
     }
 
     @Override
     public int hashCode() {
         int result;
         long temp;
-        result = normal.hashCode();
-        temp = Double.doubleToLongBits(distance);
+        result = this.normal.hashCode();
+        temp = Double.doubleToLongBits(this.distance);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
     }
 
     @Override
     public String toString() {
-        return "normal=[" + normal + "], distance=" + distance;
+        return "normal=[" + this.normal + "], distance=" + this.distance;
     }
 
     /**
@@ -111,41 +108,27 @@ public class Plane {
     }
 
     /**
-     * Sets this plane's specified normal vector and distance to specified values. This does not normalize the
-     * components, it assumes that a unit normal vector is provided.
+     * Sets this plane's specified normal vector and distance to specified values. This normalizes the components,
+     * ensuring that the plane has a unit normal vector.
      *
-     * @param x        the X component of the plane's unit normal vector
-     * @param y        the Y component of the plane's unit normal vector
-     * @param z        the Z component of the plane's unit normal vector
+     * @param x        the X component of the plane's normal vector
+     * @param y        the Y component of the plane's normal vector
+     * @param z        the Z component of the plane's normal vector
      * @param distance the plane's distance from the origin
+     *
+     * @return this plane with its normal vector and distance set to specified values
      */
     public Plane set(double x, double y, double z, double distance) {
-        this.normal.set(x, y, z);
+        this.normal.x = x;
+        this.normal.y = y;
+        this.normal.z = z;
         this.distance = distance;
-
+        this.normalizeIfNeeded();
         return this;
     }
 
     /**
-     * Sets this plane's specified normal vector and distance to specified values. This does not normalize the
-     * components, it assumes that a unit normal vector is provided.
-     *
-     * @param normal   the plane's unit normal vector
-     * @param distance the plane's distance from the origin
-     */
-    public Plane set(Vec3 normal, double distance) {
-        if (normal == null) {
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Plane", "set", "missingVector"));
-        }
-        this.normal.set(normal);
-        this.distance = distance;
-
-        return this;
-    }
-
-    /**
-     * Sets this plane's normal vector and distance to that of a specified plane. This constructor does not normalize
-     * the components, it assumes that a unit normal vector is provided.
+     * Sets this plane's normal vector and distance to that of a specified plane.
      *
      * @param plane the plane specifying the normal vector and distance
      *
@@ -158,9 +141,9 @@ public class Plane {
             throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Plane", "set", "missingPlane"));
         }
 
+        // Assumes the specified plane's parameters are normalized.
         this.normal.set(plane.normal);
         this.distance = plane.distance;
-
         return this;
     }
 
@@ -189,23 +172,7 @@ public class Plane {
         this.normal.y = y;
         this.normal.z = z;
         this.distance = distance;
-
-        return this;
-    }
-
-    /**
-     * Normalizes the components of this plane.
-     *
-     * @return this plane with its components normalized
-     */
-    public Plane normalize() {
-        double magnitude = this.normal.magnitude();
-        if (magnitude == 0) {
-            return this;
-        }
-
-        this.normal.divide(magnitude);
-        this.distance /= magnitude;
+        this.normalizeIfNeeded();
 
         return this;
     }
@@ -237,6 +204,10 @@ public class Plane {
      * @return true if the line segment intersects this plane, otherwise false
      */
     public boolean intersectsSegment(Vec3 endPoint1, Vec3 endPoint2) {
+        if (endPoint1 == null || endPoint2 == null) {
+            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Plane", "intersectsSegment", "missingPoint"));
+        }
+
         double distance1 = this.dot(endPoint1);
         double distance2 = this.dot(endPoint2);
 
@@ -324,5 +295,28 @@ public class Plane {
         } else {
             return new Vec3[]{pointA, p};
         }
+    }
+
+    protected void normalizeIfNeeded() {
+        // Compute the plane normal's magnitude in order to determine whether or not the plane needs normalization.
+        double magnitude = this.normal.magnitude();
+
+        // Don't normalize a zero vector; the result is NaN when it should be 0.0.
+        if (magnitude == 0) {
+            return;
+        }
+
+        // Don't normalize a unit vector, this indicates that the caller has already normalized the vector, but floating
+        // point roundoff results in a length not exactly 1.0. Since we're normalizing on the caller's behalf, we want
+        // to avoid unnecessary any normalization that modifies the specified values.
+        if (magnitude >= 1 - NEAR_ZERO_THRESHOLD && magnitude <= 1 + NEAR_ZERO_THRESHOLD) {
+            return;
+        }
+
+        // Normalize the caller-specified plane coordinates.
+        this.normal.x /= magnitude;
+        this.normal.y /= magnitude;
+        this.normal.z /= magnitude;
+        this.distance /= magnitude;
     }
 }

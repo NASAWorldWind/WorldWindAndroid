@@ -24,6 +24,9 @@ android {
     }
     productFlavors {
     }
+    lintOptions {
+        disable 'GradleDependency'
+    }
 }
 
 dependencies {
