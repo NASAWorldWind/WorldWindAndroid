@@ -13,11 +13,12 @@ android:
     - extra-android-support
     - extra-android-m2repository
 
+# Notify the World Wind team mailing list when the build fails and when the build is fixed.
 notifications:
   email:
     recipients:
-      secure: Ek1HaRWSRbELijWzErKqwxhiqHoPdGwtDtk1AthZuyCKt/+w7rjiwaCpB+7t6b9GlJEs9aOxY4mCxzxVpWo51VLLJ6uruiB7omj9c7bh+bfWTqIF+2Rwbs+BSEkPfVTbAQ8rMrAgQt6u7cNqqa30+1/x1XcQsTuwY6Bqs16U2EcZM/F8cDZqIosfq/SpjxV7ZaP6tNscDlCqiG8MitwW+dmhOAXsqf2elwiLh6xek1gQ9tP+p1QrnOZ4mpCL2k2yFcGRvEVjS8H2Ne4Wwls6wlBD32Nychbya4PKLdjMFNX09ROuRVpuemz/lJZ223Dfh4qJ8HBf/eYEiWNxpezlOL5Bzp6uGPKfZastwZpri7XIQT5Kx9+WjE/93GkvFxKSsq7LOmtxuZ3jlQhUODZXA++R5pW3ffWsgD1UPZIRFdUzYETh7EePswUtszTU/uW9y7zTH16mfCXN56jWmMM8aqT4docnOZZzGcrRyGZQw2PK/MaUfDPBUP0D94HuiMWNqUQaXL2oP+59y8HCzNiOoX7onELvuDofx525rTxJNU/qtOirD3GtoJpx0+1KaoyCsfvcaNkc40OVLrsTY8azChMaUwWV+fffa2ViRs3w2AX0dhhCYQ951uydmOmpbbeuM0sDnmyb9gwUZEl7jYhnNBGr2FycmoBVwAO/h5PWtL4=
-    on_success: always
+      secure: bP6S183XGhm8CuClFO6MEnjUreksvFqtwvaR/17n/iyhsFSFnxHOrEOMa8Zvg6lQKGHGn3IEw6z0y8xrgbOBNA+B4Te/LXTft65mhL/H16WbSWuIKC3RZR8aRN+cPZaUhYHT7+Q2xQclVra4h01AUw1Q97wIHNojV1pryEGo7wgjJguEKb36bbapOQ61/+695FSMDLmysUaOx8NdevzKiKKiVKp4nWGHQOcBRh3R1t7dSI4OBI7rHcwRhqoavv4N6IuLctCC9BcELGfPX2vC/JRlSMGsIE1wViG+jT/kk1lQzvzjh1o5yttm/V6BV8xykMRizGr/h3Luyf4jSDCsQijxcHQDVA/Nnq4AKtxyx5ibZRitrCEJex2LB0QZ6ItSJnbPNUv4QqQerYcsDolS+GUn0iSpy/ENXf2X/Zh+qWSMqR0aploz18pVGCpotjpMm2V156JetTBIhdNtIhdjHJkPh+T/D31Rk4X6ZAuq6azOETj6uzAp43qspXs6hVfhj9U8bJCIM6Gt+el7WejighABxEXVPP7PvqQDzbw7LOnKZmS2vQ6Cdwf+L8hLoe66rahOWMtC+jQVCVaqmWe8w/4jGGMeo3RSoCL1oyi5RzOJ3zwz46YyyQAIDqijsgHWTCmlye4Yo9pSoFKpFK02QDZKU/7u38awgHzYfqFd6BY=
+    on_success: change
     on_failure: always
 
 # Reduce the maximum JVM memory used by gradle to avoid termination by the Travis CI container
