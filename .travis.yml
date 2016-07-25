@@ -2,10 +2,9 @@ language: android
 
 android:
   components:
-    - platform-tools
-    - tools
     - build-tools-23.0.3
     - android-23
+    - extra-android-support
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
