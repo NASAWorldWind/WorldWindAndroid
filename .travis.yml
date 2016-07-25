@@ -2,15 +2,24 @@ language: android
 
 android:
   components:
-    - platform-tools
-    - tools
-    - build-tools-23.0.3
-    - android-23
+  # Use the latest revision of the Android SDK Tools
+  - platform-tools
+  - tools
+  # Use the Android build tools and Android SDK specified in build.gradle
+  - build-tools-23.0.3
+  - android-23
+  # Make the android and google extras available
+  - extra-android-support
+  - extra-android-m2repository
+  - extra-google-m2repository
+
+env:
+- GRADLE_OPTS="-Xmx512m -XX:MaxPermSize=512m"
 
 before_cache:
-  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 
 cache:
   directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
+   - $HOME/.gradle/caches/
+   - $HOME/.gradle/wrapper/
