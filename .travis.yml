@@ -13,10 +13,13 @@ android:
   - extra-android-m2repository
   - extra-google-m2repository
 
+env:
+- GRADLE_OPTS="-Xmx512m -XX:MaxPermSize=512m"
+
 before_cache:
-  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 
 cache:
   directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
+   - $HOME/.gradle/caches/
+   - $HOME/.gradle/wrapper/
