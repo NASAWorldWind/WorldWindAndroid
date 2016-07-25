@@ -3,26 +3,33 @@
 language: android
 android:
   components:
-  # Use the latest revision of the Android SDK Tools
-  - platform-tools
-  - tools
-  # Use the Android build tools and Android SDK specified in build.gradle
-  - build-tools-23.0.3
-  - android-23
-  # Make the android and google extras available
-  - extra-android-support
-  - extra-android-m2repository
+    # Use the latest revision of the Android SDK Tools
+    - platform-tools
+    - tools
+    # Use the Android build tools and Android SDK specified in build.gradle
+    - build-tools-23.0.3
+    - android-23
+    # Make the android and google extras available
+    - extra-android-support
+    - extra-android-m2repository
+
+notifications:
+  email:
+    recipients:
+      secure: Ek1HaRWSRbELijWzErKqwxhiqHoPdGwtDtk1AthZuyCKt/+w7rjiwaCpB+7t6b9GlJEs9aOxY4mCxzxVpWo51VLLJ6uruiB7omj9c7bh+bfWTqIF+2Rwbs+BSEkPfVTbAQ8rMrAgQt6u7cNqqa30+1/x1XcQsTuwY6Bqs16U2EcZM/F8cDZqIosfq/SpjxV7ZaP6tNscDlCqiG8MitwW+dmhOAXsqf2elwiLh6xek1gQ9tP+p1QrnOZ4mpCL2k2yFcGRvEVjS8H2Ne4Wwls6wlBD32Nychbya4PKLdjMFNX09ROuRVpuemz/lJZ223Dfh4qJ8HBf/eYEiWNxpezlOL5Bzp6uGPKfZastwZpri7XIQT5Kx9+WjE/93GkvFxKSsq7LOmtxuZ3jlQhUODZXA++R5pW3ffWsgD1UPZIRFdUzYETh7EePswUtszTU/uW9y7zTH16mfCXN56jWmMM8aqT4docnOZZzGcrRyGZQw2PK/MaUfDPBUP0D94HuiMWNqUQaXL2oP+59y8HCzNiOoX7onELvuDofx525rTxJNU/qtOirD3GtoJpx0+1KaoyCsfvcaNkc40OVLrsTY8azChMaUwWV+fffa2ViRs3w2AX0dhhCYQ951uydmOmpbbeuM0sDnmyb9gwUZEl7jYhnNBGr2FycmoBVwAO/h5PWtL4=
+    on_success: always
+    on_failure: always
 
 # Reduce the maximum JVM memory used by gradle to avoid termination by the Travis CI container
 # during the gradle lint task
 env:
-- GRADLE_OPTS="-Xmx512m -XX:MaxPermSize=512m"
+  - GRADLE_OPTS="-Xmx512m -XX:MaxPermSize=512m"
 
 # Use the caching configuration per the Travis CI documentation
 # See https://docs.travis-ci.com/user/languages/android#Caching
 before_cache:
-- rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 cache:
   directories:
-   - $HOME/.gradle/caches/
-   - $HOME/.gradle/wrapper/
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
