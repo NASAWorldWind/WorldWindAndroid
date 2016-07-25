@@ -13,7 +13,7 @@ android:
     - extra-android-support
     - extra-android-m2repository
 
-# Notify the World Wind team mailing list when the build fails and when the build is fixed.
+# Notify the World Wind team mailing list when the build fails and when the build subsequently fixed
 notifications:
   email:
     recipients:
