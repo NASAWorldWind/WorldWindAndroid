@@ -13,12 +13,12 @@ android:
     - extra-android-support
     - extra-android-m2repository
 
-# Notify the World Wind services mailing list when the build fails and when the build subsequently fixed
+# Notify the World Wind services mailing list on every build
 notifications:
   email:
     recipients:
       secure: SheoPrZZHX1c70JTwoRULza5XobdTPisIgQSfpFBSjolS/Z+qJBIZkyQNKRPfzvs5FEZNBHlaXnvAEX8sUHAJtvp5A9P/c0jaZ3dA0IQ1TJCNg3XT2ZLz4R5JOQclYbgBIqr27MSmx9vvnfGUDCSKaRXdLxmB0Hun7zlkR79IEQ6lLeeB9pu7N/4vuzdmMGKU1lOWs3tmDpdeNOdgSYhKW81eX0FHrgWTXeXcv/3hhtn87XogwKdVKeYFKY+1wHUV3j+dnqeN7yMhqlpljHkOpQ5YqG7nDnPbSJZJ2NINTB/+Mus57eq67FnNl4CDAsWue97wrY8u/+mtGP0boyhXUlBaKJdJpENnuSbxLZtMzvrI5JucxgGXiKei+q84DAh1BbN0+205kBfQgh24GF68bMuKFSpJDobN6usLXVnfjnTrlrMkJQ9wGY/m8g9P9IhJpguJuhYocB6ByMOCkkeSEXdVN6Wb7MGXcfSWdnasVhqAX4yYUt34WUO+vWf842atzXWMZDyStjUe/hWQactB2FhyZBt9kIjMBMWodEhAlDPgFSzwz4huiDkAjeQSszqDQQVOXGFG+f64HhnhYElkY7F08/Yy/sI5HlQ0C0nlNXVsFZ5oHRWwyw02tVVdzNo3ho2h1NSW935S0z3rWRlNOxxKisBON0OBGgZdWJRLYc=
-    on_success: change
+    on_success: always
     on_failure: always
 
 # Reduce the maximum JVM memory used by gradle to avoid termination by the Travis CI container
