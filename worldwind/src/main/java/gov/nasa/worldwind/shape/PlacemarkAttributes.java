@@ -25,13 +25,13 @@ public class PlacemarkAttributes {
 
     protected double minimumImageScale;
 
+    protected boolean drawLeader;
+
     protected boolean depthTest;
 
     protected TextAttributes labelAttributes;
 
     protected ShapeAttributes leaderAttributes;
-
-    protected boolean drawLeader;
 
     /**
      * Constructs a placemark attributes bundle. The defaults indicate a placemark displayed as a white 1x1 pixel square
@@ -43,36 +43,35 @@ public class PlacemarkAttributes {
         this.imageOffset = Offset.center();
         this.imageScale = 1;
         this.minimumImageScale = 0;
-        this.labelAttributes = new TextAttributes();
-        this.leaderAttributes = new ShapeAttributes();
         this.drawLeader = false;
         this.depthTest = true;
+        this.labelAttributes = new TextAttributes();
+        this.leaderAttributes = new ShapeAttributes();
     }
-
 
     /**
      * Constructs a placemark attribute bundle from the specified attributes. Performs a deep copy of the color, offset,
      * label attributes and leader-line attributes.
      *
-     * @param copy The attributes to be copied.
+     * @param attributes The attributes to be copied.
      *
      * @throws IllegalArgumentException If the location is null
      */
-    public PlacemarkAttributes(PlacemarkAttributes copy) {
-        if (copy == null) {
+    public PlacemarkAttributes(PlacemarkAttributes attributes) {
+        if (attributes == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "PlacemarkAttributes", "constructor", "missingAttributes"));
         }
 
-        this.imageSource = copy.imageSource;
-        this.imageColor = new Color(copy.imageColor);
-        this.imageOffset = new Offset(copy.imageOffset);
-        this.imageScale = copy.imageScale;
-        this.minimumImageScale = copy.minimumImageScale;
-        this.depthTest = copy.depthTest;
-        this.labelAttributes = copy.labelAttributes != null ? new TextAttributes(copy.labelAttributes) : null;
-        this.drawLeader = copy.drawLeader;
-        this.leaderAttributes = copy.leaderAttributes != null ? new ShapeAttributes(copy.leaderAttributes) : null;
+        this.imageSource = attributes.imageSource;
+        this.imageColor = new Color(attributes.imageColor);
+        this.imageOffset = new Offset(attributes.imageOffset);
+        this.imageScale = attributes.imageScale;
+        this.minimumImageScale = attributes.minimumImageScale;
+        this.drawLeader = attributes.drawLeader;
+        this.depthTest = attributes.depthTest;
+        this.labelAttributes = attributes.labelAttributes != null ? new TextAttributes(attributes.labelAttributes) : null;
+        this.leaderAttributes = attributes.leaderAttributes != null ? new ShapeAttributes(attributes.leaderAttributes) : null;
     }
 
     public PlacemarkAttributes set(PlacemarkAttributes attributes) {
@@ -86,7 +85,9 @@ public class PlacemarkAttributes {
         this.imageOffset.set(attributes.imageOffset);
         this.imageScale = attributes.imageScale;
         this.minimumImageScale = attributes.minimumImageScale;
+        this.drawLeader = attributes.drawLeader;
         this.depthTest = attributes.depthTest;
+
         if (attributes.labelAttributes != null) {
             if (this.labelAttributes == null) {
                 this.labelAttributes = new TextAttributes(attributes.labelAttributes);
@@ -96,7 +97,7 @@ public class PlacemarkAttributes {
         } else {
             this.labelAttributes = null;
         }
-        this.drawLeader = attributes.drawLeader;
+
         if (attributes.leaderAttributes != null) {
             if (this.leaderAttributes == null) {
                 this.leaderAttributes = new ShapeAttributes(attributes.leaderAttributes);
@@ -106,6 +107,7 @@ public class PlacemarkAttributes {
         } else {
             this.leaderAttributes = null;
         }
+
         return this;
     }
 
@@ -119,37 +121,55 @@ public class PlacemarkAttributes {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
 
         PlacemarkAttributes that = (PlacemarkAttributes) o;
-
-        if (Double.compare(that.imageScale, imageScale) != 0) return false;
-        if (depthTest != that.depthTest) return false;
-        if (drawLeader != that.drawLeader) return false;
-        if (imageColor != null ? !imageColor.equals(that.imageColor) : that.imageColor != null) return false;
-        if (imageOffset != null ? !imageOffset.equals(that.imageOffset) : that.imageOffset != null) return false;
-        if (imageSource != null ? !imageSource.equals(that.imageSource) : that.imageSource != null) return false;
-        if (labelAttributes != null ? !labelAttributes.equals(that.labelAttributes) : that.labelAttributes != null)
-            return false;
-        return !(leaderAttributes != null ? !leaderAttributes.equals(that.leaderAttributes) : that.leaderAttributes != null);
-
+        return (this.imageSource == null) ? (that.imageSource == null) : this.imageSource.equals(that.imageSource)
+            && this.imageColor.equals(that.imageColor)
+            && this.imageOffset.equals(that.imageOffset)
+            && this.imageScale == that.imageScale
+            && this.minimumImageScale == that.minimumImageScale
+            && this.drawLeader == that.drawLeader
+            && this.depthTest == that.depthTest
+            && (this.labelAttributes == null) ? (that.labelAttributes == null) : this.labelAttributes.equals(that.labelAttributes)
+            && (this.leaderAttributes == null) ? (that.leaderAttributes == null) : this.leaderAttributes.equals(that.leaderAttributes);
     }
 
     @Override
     public int hashCode() {
         int result;
         long temp;
-        result = imageColor != null ? imageColor.hashCode() : 0;
-        result = 31 * result + (imageOffset != null ? imageOffset.hashCode() : 0);
-        temp = Double.doubleToLongBits(imageScale);
+        result = (this.imageSource != null) ? this.imageSource.hashCode() : 0;
+        result = 31 * result + this.imageColor.hashCode();
+        result = 31 * result + this.imageOffset.hashCode();
+        temp = Double.doubleToLongBits(this.imageScale);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
-        result = 31 * result + (imageSource != null ? imageSource.hashCode() : 0);
-        result = 31 * result + (depthTest ? 1 : 0);
-        result = 31 * result + (labelAttributes != null ? labelAttributes.hashCode() : 0);
-        result = 31 * result + (drawLeader ? 1 : 0);
-        result = 31 * result + (leaderAttributes != null ? leaderAttributes.hashCode() : 0);
+        temp = Double.doubleToLongBits(this.minimumImageScale);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + (this.drawLeader ? 1 : 0);
+        result = 31 * result + (this.depthTest ? 1 : 0);
+        result = 31 * result + (this.labelAttributes != null ? this.labelAttributes.hashCode() : 0);
+        result = 31 * result + (this.leaderAttributes != null ? this.leaderAttributes.hashCode() : 0);
         return result;
+    }
+
+    /**
+     * Returns the source of the placemark's image. If null, the placemark is drawn as a square whose width and height
+     * are the value of this attribute object's [imageScale]{@link PlacemarkAttributes#getImageScale} property.
+     */
+    public ImageSource getImageSource() {
+        return imageSource;
+    }
+
+    public PlacemarkAttributes setImageSource(ImageSource imageSource) {
+        this.imageSource = imageSource;
+        return this;
     }
 
     /**
@@ -173,10 +193,10 @@ public class PlacemarkAttributes {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "PlacemarkAttributes", "setImageColor", "missingColor"));
         }
+
         this.imageColor = imageColor;
         return this;
     }
-
 
     /**
      * Returns the location within the placemark's image to align with the placemark's geographic position. The default
@@ -196,6 +216,7 @@ public class PlacemarkAttributes {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "PlacemarkAttributes", "setImageOffset", "missingOffset"));
         }
+
         this.imageOffset.set(imageOffset);
         return this;
     }
@@ -243,15 +264,19 @@ public class PlacemarkAttributes {
     }
 
     /**
-     * Returns the source of the placemark's image. If null, the placemark is drawn as a square whose width and height
-     * are the value of this attribute object's [imageScale]{@link PlacemarkAttributes#getImageScale} property.
+     * Returns whether to draw a line from the placemark's geographic position to the ground.
      */
-    public ImageSource getImageSource() {
-        return imageSource;
+    public boolean isDrawLeader() {
+        return drawLeader;
     }
 
-    public PlacemarkAttributes setImageSource(ImageSource imageSource) {
-        this.imageSource = imageSource;
+    /**
+     * Sets whether to draw a line from the placemark's geographic position to the ground.
+     *
+     * @param drawLeader The new draw leader-line setting.
+     */
+    public PlacemarkAttributes setDrawLeader(boolean drawLeader) {
+        this.drawLeader = drawLeader;
         return this;
     }
 
@@ -292,23 +317,6 @@ public class PlacemarkAttributes {
      */
     public PlacemarkAttributes setLabelAttributes(TextAttributes labelAttributes) {
         this.labelAttributes = labelAttributes;
-        return this;
-    }
-
-    /**
-     * Returns whether to draw a line from the placemark's geographic position to the ground.
-     */
-    public boolean isDrawLeader() {
-        return drawLeader;
-    }
-
-    /**
-     * Sets whether to draw a line from the placemark's geographic position to the ground.
-     *
-     * @param drawLeader The new draw leader-line setting.
-     */
-    public PlacemarkAttributes setDrawLeader(boolean drawLeader) {
-        this.drawLeader = drawLeader;
         return this;
     }
 
