@@ -83,7 +83,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
      * The placemark's altitude mode. See {@link gov.nasa.worldwind.WorldWind.AltitudeMode}
      */
     @WorldWind.AltitudeMode
-    protected int altitudeMode;
+    protected int altitudeMode = WorldWind.ABSOLUTE;
 
     /**
      * The placemark's normal attributes.
@@ -672,9 +672,9 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
      */
     @Override
     protected void doRender(RenderContext rc) {
-        // Compute the placemark's Cartesian model point. TODO: dc.surfacePointForMode
-        rc.globe.geographicToCartesian(this.position.latitude, this.position.longitude, this.position.altitude,
-            placePoint);
+        // Compute the placemark's Cartesian model point.
+        rc.geographicToCartesian(this.position.latitude, this.position.longitude, this.position.altitude,
+            this.altitudeMode, placePoint);
 
         // Compute the camera distance to the place point, the value which is used for ordering the placemark drawable
         // and determining the amount of depth offset to apply.
@@ -709,8 +709,9 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         // Prepare a drawable for the placemark's leader, if requested. Enqueue the leader drawable before the icon
         // drawable in order to give the icon visual priority over the leader.
         if (this.mustDrawLeader(rc)) {
-            // Compute the placemark's Cartesian ground point. TODO: use dc.surfacePointForMode
-            rc.globe.geographicToCartesian(this.position.latitude, this.position.longitude, 0, groundPoint);
+            // Compute the placemark's Cartesian ground point.
+            rc.geographicToCartesian(this.position.latitude, this.position.longitude, 0, WorldWind.CLAMP_TO_GROUND,
+                groundPoint);
 
             // If the leader is visible, enqueue a drawable leader for processing on the OpenGL thread.
             if (rc.frustum.intersectsSegment(groundPoint, placePoint)) {
@@ -917,8 +918,6 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         // the leader in a unique color associated with the picked object ID.
         if (rc.pickMode) {
             drawable.color = PickedObject.identifierToUniqueColor(this.activePickedObjectId, drawable.color);
-        } else {
-            drawable.color.set(this.activeAttributes.leaderAttributes.outlineColor);
         }
     }
 
