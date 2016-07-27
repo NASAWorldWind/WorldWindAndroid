@@ -321,6 +321,53 @@ public class RenderContext {
         return true;
     }
 
+    /**
+     * Converts a geographic position to Cartesian coordinates according to an {@link
+     * gov.nasa.worldwind.WorldWind.AltitudeMode}. The Cartesian coordinate system is a function of this render
+     * context's current globe and its the terrain surface, depending on the altitude mode. In general, it is not safe
+     * to cache the Cartesian coordinates, as many factors contribute to the value returned, and may change from one
+     * frame to the next.
+     *
+     * @param latitude     the position's latitude in degrees
+     * @param longitude    the position's longitude in degrees
+     * @param altitude     the position's altitude in meters
+     * @param altitudeMode an altitude mode indicating how to interpret the position's altitude component
+     * @param result       a pre-allocated {@link Vec3} in which to store the computed X, Y and Z Cartesian coordinates
+     *
+     * @return the result argument, set to the computed Cartesian coordinates
+     *
+     * @throws IllegalArgumentException if the result is null
+     */
+    public Vec3 geographicToCartesian(double latitude, double longitude, double altitude,
+                                      @WorldWind.AltitudeMode int altitudeMode, Vec3 result) {
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "RenderContext", "geographicToCartesian", "missingResult"));
+        }
+
+        switch (altitudeMode) {
+            case WorldWind.ABSOLUTE:
+                if (this.globe != null) {
+                    return this.globe.geographicToCartesian(latitude, longitude, altitude * this.verticalExaggeration, result);
+                }
+            case WorldWind.CLAMP_TO_GROUND:
+                if (this.terrain != null && this.terrain.surfacePoint(latitude, longitude, 0, result)) {
+                    return result; // found a point on the terrain
+                } else if (this.globe != null) {
+                    return this.globe.geographicToCartesian(latitude, longitude, 0, result);
+                }
+            case WorldWind.RELATIVE_TO_GROUND:
+                if (this.terrain != null && this.terrain.surfacePoint(latitude, longitude, altitude, result)) {
+                    return result; // found a point relative to the terrain
+                } else if (this.globe != null) {
+                    // TODO use elevation model height as a fallback
+                    return this.globe.geographicToCartesian(latitude, longitude, altitude, result);
+                }
+        }
+
+        return result;
+    }
+
     public BufferObject getBufferObject(Object key) {
         return (BufferObject) this.renderResourceCache.get(key);
     }
