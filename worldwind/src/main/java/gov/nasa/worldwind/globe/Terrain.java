@@ -47,7 +47,7 @@ public interface Terrain {
     /**
      * Computes the first intersection of this terrain with a specified line in Cartesian coordinates. The line is
      * interpreted as a ray; intersection points behind the line's origin are ignored. If the line does not intersect
-     * this terrain's geometric surface, this returns false and does not modify the result argument.
+     * the geometric surface modeled by this terrain, this returns false and does not modify the result argument.
      *
      * @param line   the line to intersect with this terrain
      * @param result a pre-allocated {@link Vec3} in which to return the intersection point
@@ -59,12 +59,13 @@ public interface Terrain {
     boolean intersect(Line line, Vec3 result);
 
     /**
-     * Computes the Cartesian coordinates of a geographic location on the terrain surface. If the location is not on
-     * this terrain's geometric surface, this returns false and does not modify the result argument.
+     * Computes the Cartesian coordinates of a geographic location on the terrain surface. If the latitude and longitude
+     * are outside the geometric surface modeled by this terrain, this returns false and does not modify the result
+     * argument.
      *
      * @param latitude  the location's latitude in degrees
      * @param longitude the location's longitude in degrees
-     * @param offset    the vertical offset relative to the surface in meters
+     * @param offset    a vertical offset in meters applied to the terrain height
      * @param result    a pre-allocated {@link Vec3} in which to store the computed X, Y and Z Cartesian coordinates
      *
      * @return true if the geographic location is on the terrain surface, otherwise false
