@@ -138,8 +138,8 @@ public class BasicTerrain implements Terrain {
                 double t = (latitude - sector.minLatitude()) / sector.deltaLatitude() * (tileHeight - 1);
                 double sf = (s < tileWidth - 1) ? (s - (int) s) : 1;
                 double tf = (t < tileHeight - 1) ? (t - (int) t) : 1;
-                int si = (s < tileWidth - 1) ? (int) s : (tileWidth - 1);
-                int ti = (t < tileHeight - 1) ? (int) t : (tileHeight - 1);
+                int si = (s < tileWidth - 1) ? (int) s : (tileWidth - 2);
+                int ti = (t < tileHeight - 1) ? (int) t : (tileHeight - 2);
 
                 // Compute the location in the tile's local coordinate system. Perform a bilinear interpolation of
                 // the cell's four points based on the fractional portion of the location's parameterized coordinates.
