@@ -102,7 +102,7 @@ public class BasicTerrain implements Terrain {
             // Compute the first intersection of the terrain tile with the line. The line is interpreted as a ray;
             // intersection points behind the line's origin are ignored. Store the nearest intersection found so far
             // in the result argument.
-            if (line.triStripIntersection(tile.vertexPoints, 3, this.triStripElements, this.intersectPoint)) {
+            if (line.triStripIntersection(tile.vertexPoints, 3, this.triStripElements, this.triStripElements.length, this.intersectPoint)) {
                 double dist2 = line.origin.distanceToSquared(this.intersectPoint);
                 if (minDist2 > dist2) {
                     minDist2 = dist2;

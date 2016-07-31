@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwind.geom;
 
-import java.nio.FloatBuffer;
 import java.util.Arrays;
 
 import gov.nasa.worldwind.util.Logger;
@@ -668,7 +667,7 @@ public class Matrix4 {
     }
 
     /**
-     * Sets this matrix to the symmetric covariance Matrix computed from an array of points packed into an NIO buffer.
+     * Sets this matrix to the symmetric covariance Matrix computed from an array of points.
      * <p/>
      * The computed covariance matrix represents the correlation between each pair of x-, y-, and z-coordinates as
      * they're distributed about the point array's arithmetic mean. Its layout is as follows:
@@ -680,39 +679,51 @@ public class Matrix4 {
      * returned matrix is diagonal, then all three coordinates are uncorrelated, and the specified point is distributed
      * evenly about its mean point.
      *
-     * @param points the buffer of points to consider
+     * @param array  the array of points to consider
+     * @param count  the number of array elements to consider
      * @param stride the number of coordinates between the first coordinate of adjacent points - must be at least 3
      *
-     * @return this matrix set to the covariance matrix for the specified buffer of points
+     * @return this matrix set to the covariance matrix for the specified array of points
      *
-     * @throws IllegalArgumentException If the buffer of points is null or empty or if the stride is less than 3
+     * @throws IllegalArgumentException If the array is null or empty, if the count is less than 0, or if the stride is
+     *                                  less than 3
      */
-    public Matrix4 setToCovarianceOfBuffer(FloatBuffer points, int stride) {
-        if (points == null || points.remaining() < stride) {
+    public Matrix4 setToCovarianceOfPoints(float[] array, int count, int stride) {
+        if (array == null || array.length < stride) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Vec3", "setToCovarianceOfBuffer", "missingBuffer"));
+                Logger.logMessage(Logger.ERROR, "Matrix4", "setToCovarianceOfPoints", "missingArray"));
+        }
+
+        if (count < 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Matrix4", "setToCovarianceOfPoints", "invalidCount"));
         }
 
         if (stride < 3) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Vec3", "setToCovarianceOfBuffer", "invalidStride"));
+                Logger.logMessage(Logger.ERROR, "Matrix4", "setToCovarianceOfPoints", "invalidStride"));
         }
 
-        Vec3 mean = Vec3.averageOfBuffer(points, stride, new Vec3());
-
         double dx, dy, dz;
+        double mx = 0, my = 0, mz = 0;
         double c11 = 0, c22 = 0, c33 = 0, c12 = 0, c13 = 0, c23 = 0;
+        double numPoints = 0;
 
-        int count = points.remaining() / stride;
-        float[] coords = new float[stride];
+        for (int idx = 0; idx < count; idx += stride) {
+            mx += array[idx];
+            my += array[idx + 1];
+            mz += array[idx + 2];
+            numPoints++;
+        }
 
-        points.mark();
+        mx /= numPoints;
+        my /= numPoints;
+        mz /= numPoints;
 
-        for (int i = 0; i < count; i++) {
-            points.get(coords, 0, stride); // get the entire coordinate to advance the buffer position
-            dx = coords[0] - mean.x;
-            dy = coords[1] - mean.y;
-            dz = coords[2] - mean.z;
+        for (int idx = 0; idx < count; idx += stride) {
+            dx = array[idx] - mx;
+            dy = array[idx + 1] - my;
+            dz = array[idx + 2] - mz;
 
             c11 += dx * dx;
             c22 += dy * dy;
@@ -722,21 +733,19 @@ public class Matrix4 {
             c23 += dy * dz; // c23 = c32
         }
 
-        points.reset();
-
-        this.m[0] = c11 / count;
-        this.m[1] = c12 / count;
-        this.m[2] = c13 / count;
+        this.m[0] = c11 / numPoints;
+        this.m[1] = c12 / numPoints;
+        this.m[2] = c13 / numPoints;
         this.m[3] = 0;
 
-        this.m[4] = c12 / count;
-        this.m[5] = c22 / count;
-        this.m[6] = c23 / count;
+        this.m[4] = c12 / numPoints;
+        this.m[5] = c22 / numPoints;
+        this.m[6] = c23 / numPoints;
         this.m[7] = 0;
 
-        this.m[8] = c13 / count;
-        this.m[9] = c23 / count;
-        this.m[10] = c33 / count;
+        this.m[8] = c13 / numPoints;
+        this.m[9] = c23 / numPoints;
+        this.m[10] = c33 / numPoints;
         this.m[11] = 0;
 
         this.m[12] = 0;
@@ -1316,22 +1325,28 @@ public class Matrix4 {
     }
 
     /**
-     * Computes the eigenvectors of this matrix. The eigenvectors are returned sorted in order of descending magnitude
-     * (most prominent to least prominent). Each eigenvector has length equal to its corresponding eigenvalue.
+     * Returns this symmetric matrix's eigenvectors. The eigenvectors are returned in the specified result arguments in
+     * order of descending magnitude (most prominent to least prominent). Each eigenvector has length equal to its
+     * corresponding eigenvalue.
+     * <p/>
+     * This method returns false if this matrix is not a symmetric matrix.
      *
-     * @param result a pre-allocated Vec3 array of length 3 in which to return the computed eigenvectors
+     * @param result1 a pre-allocated Vec3 in which to return the most prominent eigenvector
+     * @param result2 a pre-allocated Vec3 in which to return the second most prominent eigenvector
+     * @param result3 a pre-allocated Vec3 in which to return the least prominent eigenvector
+     *
+     * @return true if this matrix is symmetric and its eigenvectors can be determined, otherwise false
      *
      * @throws IllegalArgumentException If any argument is null or if this matrix is not symmetric
      */
-    public Vec3[] eigensystemFromSymmetricMatrix(Vec3[] result) {
-        if (result == null || result.length < 3) {
+    public boolean extractEigenvectors(Vec3 result1, Vec3 result2, Vec3 result3) {
+        if (result1 == null || result2 == null || result3 == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Matrix4", "eigensystemFromSymmetricMatrix", "An axis argument is null"));
+                Logger.logMessage(Logger.ERROR, "Matrix4", "extractEigenvectors", "missingResult"));
         }
 
         if (this.m[1] != this.m[4] || this.m[2] != this.m[8] || this.m[6] != this.m[9]) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Matrix4", "eigensystemFromSymmetricMatrix", "Matrix is not symmetric"));
+            return false; // matrix is not symmetric
         }
 
         // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition,
@@ -1469,19 +1484,19 @@ public class Matrix4 {
             i2 = itemp;
         }
 
-        result[0].set(r[0][i1], r[1][i1], r[2][i1]);
-        result[1].set(r[0][i2], r[1][i2], r[2][i2]);
-        result[2].set(r[0][i3], r[1][i3], r[2][i3]);
+        result1.set(r[0][i1], r[1][i1], r[2][i1]);
+        result2.set(r[0][i2], r[1][i2], r[2][i2]);
+        result3.set(r[0][i3], r[1][i3], r[2][i3]);
 
-        result[0].normalize();
-        result[1].normalize();
-        result[2].normalize();
+        result1.normalize();
+        result2.normalize();
+        result3.normalize();
 
-        result[0].multiply(m11);
-        result[1].multiply(m22);
-        result[2].multiply(m33);
+        result1.multiply(m11);
+        result2.multiply(m22);
+        result3.multiply(m33);
 
-        return result;
+        return true;
     }
 
     /**

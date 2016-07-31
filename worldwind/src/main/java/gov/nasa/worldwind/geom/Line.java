@@ -80,7 +80,6 @@ public class Line {
 
         Line that = (Line) o;
         return this.origin.equals(that.origin) && this.direction.equals(that.direction);
-
     }
 
     @Override
@@ -180,32 +179,38 @@ public class Line {
      * @param points   an array of points containing XYZ tuples
      * @param stride   the number of coordinates between the first coordinate of adjacent points - must be at least 3
      * @param elements an array of indices into the points defining the triangle strip organization
+     * @param count    the number of indices to consider
      * @param result   a pre-allocated Vec3 in which to return the nearest intersection point, if any
      *
      * @return true if this line intersects the triangle strip, otherwise false
      *
-     * @throws IllegalArgumentException If either array is null or empty, if the stride is less than 3, or if the result
-     *                                  argument is null
+     * @throws IllegalArgumentException If either array is null or empty, if the stride is less than 3, if the count is
+     *                                  less than 0, or if the result argument is null
      */
-    public boolean triStripIntersection(float[] points, int stride, short[] elements, Vec3 result) {
+    public boolean triStripIntersection(float[] points, int stride, short[] elements, int count, Vec3 result) {
         if (points == null || points.length < stride) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Line", "triStripIntersections", "missingBuffer"));
+                Logger.logMessage(Logger.ERROR, "Line", "triStripIntersection", "missingArray"));
         }
 
         if (stride < 3) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Line", "triStripIntersections", "invalidStride"));
+                Logger.logMessage(Logger.ERROR, "Line", "triStripIntersection", "invalidStride"));
         }
 
         if (elements == null || elements.length == 0) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Line", "triStripIntersections", "missingBuffer"));
+                Logger.logMessage(Logger.ERROR, "Line", "triStripIntersection", "missingArray"));
+        }
+
+        if (count < 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Line", "triStripIntersection", "invalidCount"));
         }
 
         if (result == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Line", "triStripIntersections", "missingResult"));
+                Logger.logMessage(Logger.ERROR, "Line", "triStripIntersection", "missingResult"));
         }
 
         // Taken from Moller and Trumbore
@@ -227,19 +232,19 @@ public class Line {
         final double EPSILON = 0.00001;
 
         // Get the triangle strip's first vertex.
-        int index = elements[0] * stride;
-        double vert1x = points[index++];
-        double vert1y = points[index++];
-        double vert1z = points[index];
+        int vertex = elements[0] * stride;
+        double vert1x = points[vertex++];
+        double vert1y = points[vertex++];
+        double vert1z = points[vertex];
 
         // Get the triangle strip's second vertex.
-        index = elements[1] * stride;
-        double vert2x = points[index++];
-        double vert2y = points[index++];
-        double vert2z = points[index];
+        vertex = elements[1] * stride;
+        double vert2x = points[vertex++];
+        double vert2y = points[vertex++];
+        double vert2z = points[vertex];
 
         // Compute the intersection of each triangle with the specified ray.
-        for (int i = 2, len = elements.length; i < len; i++) {
+        for (int idx = 2; idx < count; idx++) {
             // Move the last two vertices into the first two vertices. This takes advantage of the triangle strip's
             // structure and avoids redundant reads from points and elements. During the first iteration this places the
             // triangle strip's first three vertices in vert0, vert1 and vert2, respectively.
@@ -251,10 +256,10 @@ public class Line {
             vert1z = vert2z;
 
             // Get the triangle strip's next vertex.
-            index = elements[i] * stride;
-            vert2x = points[index++];
-            vert2y = points[index++];
-            vert2z = points[index];
+            vertex = elements[idx] * stride;
+            vert2x = points[vertex++];
+            vert2y = points[vertex++];
+            vert2z = points[vertex];
 
             // find vectors for two edges sharing point a: vert1 - vert0 and vert2 - vert0
             double edge1x = vert1x - vert0x;

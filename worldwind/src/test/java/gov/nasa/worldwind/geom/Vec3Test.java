@@ -5,19 +5,20 @@
 
 package gov.nasa.worldwind.geom;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import gov.nasa.worldwind.util.Logger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Unit tests for Vec3, a three-component vector.
@@ -27,7 +28,6 @@ import static org.junit.Assert.*;
 public class Vec3Test {
 
     final static double TOLERANCE = 1e-10;
-
 
     /**
      * Tests default constructor member initialization.
@@ -44,7 +44,6 @@ public class Vec3Test {
         assertEquals("y", 0d, u.y, 0d);
         assertEquals("z", 0d, u.z, 0d);
     }
-
 
     /**
      * Tests constructor member initialization from doubles.
@@ -158,7 +157,6 @@ public class Vec3Test {
 
         assertEquals("magnitude", Math.sqrt(x1 * x1 + y1 * y1 + z1 * z1), magnitude, Double.MIN_VALUE);
     }
-
 
     /**
      * Ensures a zero length vector from default constructor.
@@ -392,7 +390,6 @@ public class Vec3Test {
         fail("Expected an IllegalArgumentException to be thrown.");
     }
 
-
     /**
      * Ensures the correct subtraction of two vectors, arguments are not mutated, and the proper fluent API result.
      *
@@ -459,7 +456,6 @@ public class Vec3Test {
         assertSame("v == u", u, v);
     }
 
-
     @Test
     public void testMultiplyByMatrix() throws Exception {
         double theta = 30d;
@@ -516,7 +512,6 @@ public class Vec3Test {
         assertEquals("u.z", -z1, u.z, 0d);
         // Assert fluent API returns u
         assertSame("v == u", u, v);
-
     }
 
     /**
@@ -639,7 +634,6 @@ public class Vec3Test {
         fail("Expected an IllegalArgumentException to be thrown.");
     }
 
-
     /**
      * Ensures the correct interpolation between two vectors, arguments are not mutated, and the proper fluent API
      * result.
@@ -685,79 +679,6 @@ public class Vec3Test {
         u.mix(null, weight);
 
         fail("Expected an IllegalArgumentException to be thrown.");
-    }
-
-
-    @Ignore("not implemented")
-    @Test
-    public void testAverageOfBuffer() throws Exception {
-
-        fail("The test case is a stub.");
-
-    }
-
-    @Ignore("not implemented")
-    @Test
-    public void testPrincipalAxesOfBuffer() throws Exception {
-
-        fail("The test case is a stub.");
-
-    }
-
-    @Test
-    public void testAverageOfList() throws Exception {
-        List<Vec3> list = new ArrayList<>();
-        list.add(new Vec3(1, 2, 3));
-        list.add(new Vec3(7, 8, 9));
-        list.add(new Vec3(7, 8, 9));
-        Vec3 r = new Vec3(5, 6, 7); // result: simple avg of components
-
-        Vec3 u = new Vec3();
-        Vec3 w = u.averageOfList(list);
-
-        assertEquals("u.x", r.x, u.x, 0);
-        assertEquals("u.y", r.y, u.y, 0);
-        assertEquals("u.z", r.z, u.z, 0);
-        // Assert fluent API returns u
-        assertSame("w == u", u, w);
-    }
-
-    /**
-     * Ensures averageOfList handles a null list correctly.
-     *
-     * @throws Exception
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void testAverageOfList_NullList() throws Exception {
-        PowerMockito.mockStatic(Logger.class);
-
-        Vec3 u = new Vec3();
-        Vec3 w = u.averageOfList(null);
-
-        fail("Expected an IllegalArgumentException to be thrown.");
-    }
-
-    /**
-     * Ensures averageOfList handles an empty list correctly.
-     *
-     * @throws Exception
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void testAverageOfList_EmptyList() throws Exception {
-        PowerMockito.mockStatic(Logger.class);
-
-        Vec3 u = new Vec3();
-        u.averageOfList(new ArrayList<Vec3>());
-
-        fail("Expected an IllegalArgumentException to be thrown.");
-    }
-
-    @Ignore("not implemented")
-    @Test
-    public void testTriangleNormal() throws Exception {
-
-        fail("The test case is a stub.");
-
     }
 }
 
