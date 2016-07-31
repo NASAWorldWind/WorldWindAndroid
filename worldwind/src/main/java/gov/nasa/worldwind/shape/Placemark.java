@@ -108,7 +108,9 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
     /**
      * The picked object ID associated with the placemark during the current render pass.
      */
-    protected int activePickedObjectId;
+    protected int pickedObjectId;
+
+    protected Color pickColor = new Color();
 
     /**
      * The label text to draw near the placemark.
@@ -705,6 +707,10 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
 
         // Keep track of the drawable count to determine whether or not this placemark has enqueued drawables.
         int drawableCount = rc.drawableCount();
+        if (rc.pickMode) {
+            this.pickedObjectId = rc.nextPickedObjectId();
+            this.pickColor = PickedObject.identifierToUniqueColor(this.pickedObjectId, this.pickColor);
+        }
 
         // Prepare a drawable for the placemark's leader, if requested. Enqueue the leader drawable before the icon
         // drawable in order to give the icon visual priority over the leader.
@@ -756,8 +762,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
 
         // Enqueue a picked object that associates the placemark's icon and leader with its picked object ID.
         if (rc.pickMode && rc.drawableCount() != drawableCount) {
-            rc.offerPickedObject(PickedObject.fromRenderable(this, this.position, rc.currentLayer,
-                this.activePickedObjectId));
+            rc.offerPickedObject(PickedObject.fromRenderable(this.pickedObjectId, this, rc.currentLayer));
         }
     }
 
@@ -771,10 +776,6 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
             this.activeAttributes = this.highlightAttributes;
         } else {
             this.activeAttributes = this.attributes;
-        }
-
-        if (rc.pickMode) {
-            this.activePickedObjectId = rc.nextPickedObjectId();
         }
     }
 
@@ -868,19 +869,13 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         // Use the plaemark's unit square transform matrix.
         drawable.unitSquareTransform.set(unitSquareTransform);
 
-        // Configure the drawable according to the placemark's active attributes. Use the texture associated with the
-        // active attributes' image source and its associated tex coord transform. If the texture is not specified or
-        // not available, draw a simple colored square.
+        // Configure the drawable according to the placemark's active attributes. Use a color appropriate for the pick
+        // mode. When picking use a unique color associated with the picked object ID. Use the texture associated with
+        // the active attributes' image source and its associated tex coord transform. If the texture is not specified
+        // or not available, draw a simple colored square.
+        drawable.color.set(rc.pickMode ? this.pickColor : this.activeAttributes.imageColor);
         drawable.texture = this.activeTexture;
         drawable.enableDepthTest = this.activeAttributes.depthTest;
-
-        // Configure the drawable to display a color appropriate for the current pick mode. During picking we display
-        // the icon in a unique color associated with the picked object ID.
-        if (rc.pickMode) {
-            drawable.color = PickedObject.identifierToUniqueColor(this.activePickedObjectId, drawable.color);
-        } else {
-            drawable.color.set(this.activeAttributes.imageColor);
-        }
     }
 
     /**
@@ -909,16 +904,11 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         drawable.mvpMatrix.set(rc.modelviewProjection);
         drawable.mvpMatrix.multiplyByTranslation(groundPoint.x, groundPoint.y, groundPoint.z);
 
-        // Configure the drawable according to the placemark's active leader attributes.
-        drawable.color.set(this.activeAttributes.leaderAttributes.outlineColor);
+        // Configure the drawable according to the placemark's active leader attributes. Use a color appropriate for the
+        // pick mode. When picking use a unique color associated with the picked object ID.
+        drawable.color.set(rc.pickMode ? this.pickColor : this.activeAttributes.leaderAttributes.outlineColor);
         drawable.lineWidth = this.activeAttributes.leaderAttributes.outlineWidth;
         drawable.enableDepthTest = this.activeAttributes.leaderAttributes.depthTest;
-
-        // Configure the drawable to display a color appropriate for the current pick mode. During picking we display
-        // the leader in a unique color associated with the picked object ID.
-        if (rc.pickMode) {
-            drawable.color = PickedObject.identifierToUniqueColor(this.activePickedObjectId, drawable.color);
-        }
     }
 
     /**

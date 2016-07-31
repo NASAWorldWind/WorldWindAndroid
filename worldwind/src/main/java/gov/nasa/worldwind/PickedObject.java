@@ -15,42 +15,18 @@ public class PickedObject {
 
     protected boolean isOnTop;
 
-    protected Object userObject;
+    protected int identifier;
 
-    protected Position position;
+    protected Object userObject;
 
     protected Layer layer;
 
-    protected int identifier;
+    protected Position terrainPosition;
 
     protected PickedObject() {
     }
 
-    public static PickedObject fromRenderable(Renderable renderable, Position position, Layer layer, int identifier) {
-        if (renderable == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "PickedObject", "fromRenderable", "missingRenderable"));
-        }
-
-        if (position == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "PickedObject", "fromRenderable", "missingPosition"));
-        }
-
-        if (layer == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "PickedObject", "fromRenderable", "missingLayer"));
-        }
-
-        PickedObject po = new PickedObject();
-        po.userObject = (renderable.getPickDelegate() != null) ? renderable.getPickDelegate() : renderable;
-        po.position = new Position(position);
-        po.layer = layer;
-        po.identifier = identifier;
-        return po;
-    }
-
-    public static PickedObject fromRenderable(Renderable renderable, Layer layer, int identifier) {
+    public static PickedObject fromRenderable(int identifier, Renderable renderable, Layer layer) {
         if (renderable == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "PickedObject", "fromRenderable", "missingRenderable"));
@@ -62,22 +38,23 @@ public class PickedObject {
         }
 
         PickedObject po = new PickedObject();
+        po.identifier = identifier;
         po.userObject = (renderable.getPickDelegate() != null) ? renderable.getPickDelegate() : renderable;
         po.layer = layer;
-        po.identifier = identifier;
         return po;
     }
 
-    public static PickedObject fromTerrain(Position position, int identifier) {
+    public static PickedObject fromTerrain(int identifier, Position position) {
         if (position == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "PickedObject", "fromTerrain", "missingPosition"));
         }
 
+        Position positionCopy = new Position(position);
         PickedObject po = new PickedObject();
-        po.position = new Position(position);
-        po.userObject = po.position;
         po.identifier = identifier;
+        po.userObject = positionCopy;
+        po.terrainPosition = positionCopy;
         return po;
     }
 
@@ -116,10 +93,10 @@ public class PickedObject {
     public String toString() {
         return "PickedObject{" +
             "isOnTop=" + this.isOnTop +
-            ", userObject=" + this.userObject +
-            ", position=" + this.position +
-            ", layer=" + this.layer +
             ", identifier=" + this.identifier +
+            ", userObject=" + this.userObject +
+            ", layer=" + this.layer +
+            ", terrainPosition=" + this.terrainPosition +
             '}';
     }
 
@@ -131,23 +108,23 @@ public class PickedObject {
         this.isOnTop = true;
     }
 
-    public boolean isTerrain() {
-        return this.userObject == this.position;
+    public int getIdentifier() {
+        return this.identifier;
     }
 
     public Object getUserObject() {
         return this.userObject;
     }
 
-    public Position getPosition() {
-        return this.position;
-    }
-
     public Layer getLayer() {
         return this.layer;
     }
 
-    public int getIdentifier() {
-        return this.identifier;
+    public boolean isTerrain() {
+        return this.terrainPosition != null;
+    }
+
+    public Position getTerrainPosition() {
+        return this.terrainPosition;
     }
 }

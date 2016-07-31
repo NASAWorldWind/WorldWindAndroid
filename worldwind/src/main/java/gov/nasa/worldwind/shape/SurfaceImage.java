@@ -97,11 +97,9 @@ public class SurfaceImage extends AbstractRenderable {
 
         // Enqueue a picked object that associates the drawable surface texture with this surface image.
         if (rc.pickMode) {
-            PickedObject terrainObject = rc.pickedObjects.terrainPickedObject();
-            PickedObject pickedObject = PickedObject.fromRenderable(this, terrainObject.getPosition(),
-                rc.currentLayer, rc.nextPickedObjectId());
-            PickedObject.identifierToUniqueColor(pickedObject.getIdentifier(), drawable.color);
-            rc.offerPickedObject(pickedObject);
+            int pickedObjectId = rc.nextPickedObjectId();
+            PickedObject.identifierToUniqueColor(pickedObjectId, drawable.color);
+            rc.offerPickedObject(PickedObject.fromRenderable(pickedObjectId, this, rc.currentLayer));
         }
     }
 
