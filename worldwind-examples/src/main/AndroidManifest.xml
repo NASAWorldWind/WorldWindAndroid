@@ -49,6 +49,14 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
+            android:name=".PathsExampleActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_paths_example"
+            android:launchMode="singleInstance"
+            android:noHistory="true"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
             android:name=".PlacemarksDemoActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_placemarks_demo"
