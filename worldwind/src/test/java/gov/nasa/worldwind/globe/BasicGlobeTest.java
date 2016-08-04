@@ -38,13 +38,13 @@ import static org.mockito.Mockito.verify;
 @PrepareForTest(Logger.class)   // We mock the Logger class to avoid its calls to android.util.log
 public class BasicGlobeTest {
 
-    private static final double OFFICIAL_SEMI_MAJOR_AXIS = 6378137.0;
+    private static final double OFFICIAL_WGS84_SEMI_MAJOR_AXIS = 6378137.0;
 
-    private static final double OFFICIAL_SEMI_MINOR_AXIS = 6356752.314245;
+    private static final double OFFICIAL_WGS84_SEMI_MINOR_AXIS = 6356752.314245;
 
-    private static final double OFFICIAL_EC2 = 6.69437999014E-3;
+    private static final double OFFICIAL_WGS84_EC2 = 6.69437999014E-3;
 
-    private static final double INVERSE_FLATTENING = 298.257223563;
+    private static final double OFFICIAL_WGS84_INVERSE_FLATTENING = 298.257223563;
 
     private static final double TOLERANCE = 1e-6;
 
@@ -71,7 +71,7 @@ public class BasicGlobeTest {
         // Mock all the static methods in Logger
         PowerMockito.mockStatic(Logger.class);
         // Create the globe object used by the test
-        globe = new BasicGlobe(OFFICIAL_SEMI_MAJOR_AXIS, INVERSE_FLATTENING, mockedProjection);
+        globe = new BasicGlobe(OFFICIAL_WGS84_SEMI_MAJOR_AXIS, OFFICIAL_WGS84_INVERSE_FLATTENING, mockedProjection);
     }
 
     @After
@@ -94,7 +94,7 @@ public class BasicGlobeTest {
     public void testGetEquatorialRadius() throws Exception {
         double equatorialRadius = globe.getEquatorialRadius();
 
-        assertEquals("equatorial radius", OFFICIAL_SEMI_MAJOR_AXIS, equatorialRadius, 0);
+        assertEquals("equatorial radius", OFFICIAL_WGS84_SEMI_MAJOR_AXIS, equatorialRadius, 0);
     }
 
     /**
@@ -108,7 +108,7 @@ public class BasicGlobeTest {
 
         // WGS84 official value:  6356752.314245
         // Actual computed value: 6356752.314245179
-        assertEquals("polar radius", OFFICIAL_SEMI_MINOR_AXIS, polarRadius, 1e-6);
+        assertEquals("polar radius", OFFICIAL_WGS84_SEMI_MINOR_AXIS, polarRadius, 1e-6);
     }
 
     /**
@@ -139,7 +139,7 @@ public class BasicGlobeTest {
 
         // Official value:        6356752.314 245
         // Actual computed value: 6356752.314 245 179
-        assertEquals("eccentricity squared", OFFICIAL_EC2, eccentricitySquared, 1e-14);
+        assertEquals("eccentricity squared", OFFICIAL_WGS84_EC2, eccentricitySquared, 1e-14);
     }
 
     /**
@@ -274,8 +274,8 @@ public class BasicGlobeTest {
         // J. Clynch, Naval Post Graduate School, 2002
         double sinLatSquared = pow(sin(toRadians(geographicLat)), 2);
         double cosLatSquared = pow(cos(toRadians(geographicLat)), 2);
-        double a = OFFICIAL_SEMI_MAJOR_AXIS;
-        double eSquared = OFFICIAL_EC2;
+        double a = OFFICIAL_WGS84_SEMI_MAJOR_AXIS;
+        double eSquared = OFFICIAL_WGS84_EC2;
         double radius = a * sqrt(pow(1 - eSquared, 2.0) * sinLatSquared + cosLatSquared);
         radius /= sqrt(1 - eSquared * sinLatSquared);
         return radius;

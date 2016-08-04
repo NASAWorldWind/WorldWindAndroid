@@ -1,0 +1,120 @@
+<!--
+  ~ Copyright (c) 2016 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration. All Rights Reserved.
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Paths Tutorial</title>
+    <script src="file:///android_asset/codemirror-5.16.0/lib/codemirror.js" type="text/javascript"></script>
+    <script src="file:///android_asset/codemirror-5.16.0/mode/clike/clike.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/codemirror-5.16.0/lib/codemirror.css"/>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/override.css"/>
+</head>
+<body>
+<h1>Paths Tutorial</h1>
+<p>
+    Demonstrates how to add Paths to a RenderableLayer.
+</p>
+<p>
+    This example renders four different wing-shaped or chevron-shaped paths on the globe.
+    <ul>
+    <li>The northern most path is above ground, using the default ABSOLUTE altitude mode and default attributes.</li>
+    <li>The next path is on the terrain surface, using a CLAMP_TO_GROUND altitude mode and default attributes</li>
+    <li>The third path is above ground, like the first, but with setExtrude(true).</li>
+    <li>The southern most path is like the third, but with custom attributes.</li>
+</ul>
+</p>
+<h2>Example</h2>
+<h3>PathsFragment.java</h3>
+<p>
+    The PathsFragment class extends the BasicGlobeFragment and overrides the createWorldWindow method.
+    Here we create and add a RenderableLayer to the globe, and then define and add four Paths to the layer.
+</p>
+<div style="border-top: 1px solid black; border-bottom: 1px solid black;">
+    <textarea id="java-code">
+package gov.nasa.worldwindx;
+...
+public class PathsFragment extends BasicGlobeFragment {
+
+    /**
+     * Creates a new WorldWindow (GLSurfaceView) object with a WMS Layer
+     *
+     * @return The WorldWindow object containing the globe.
+     */
+    @Override
+    public WorldWindow createWorldWindow() {
+        // Let the super class (BasicGlobeFragment) do the creation
+        WorldWindow wwd = super.createWorldWindow();
+
+        // Create a layer to display the tutorial paths.
+        RenderableLayer layer = new RenderableLayer();
+        wwd.getLayers().addLayer(layer);
+
+        // Create a basic path with the default attributes, the default altitude mode (ABSOLUTE),
+        // and the default path type (GREAT_CIRCLE).
+        List<Position> positions = Arrays.asList(
+            Position.fromDegrees(50, -180, 1e5),
+            Position.fromDegrees(30, -100, 1e6),
+            Position.fromDegrees(50, -40, 1e5)
+        );
+        Path path = new Path(positions);
+        layer.addRenderable(path);
+
+        // Create a basic path with the default attributes, the CLAMP_TO_GROUND altitude mode,
+        // and the default path type (GREAT_CIRCLE).
+        positions = Arrays.asList(
+            Position.fromDegrees(40, -180, 0),
+            Position.fromDegrees(20, -100, 0),
+            Position.fromDegrees(40, -40, 0)
+        );
+        path = new Path(positions);
+        path.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+        layer.addRenderable(path);
+
+        // Create an extruded path with the default attributes, the default altitude mode (ABSOLUTE),
+        // and the default path type (GREAT_CIRCLE).
+        positions = Arrays.asList(
+            Position.fromDegrees(30, -180, 1e5),
+            Position.fromDegrees(10, -100, 1e6),
+            Position.fromDegrees(30, -40, 1e5)
+        );
+        path = new Path(positions);
+        path.setExtrude(true); // extrude the path from the ground to each path position's altitude
+        layer.addRenderable(path);
+
+        // Create an extruded path with custom attributes that display the extruded vertical lines,
+        // make the extruded interior 50% transparent, and increase the path line with.
+        positions = Arrays.asList(
+            Position.fromDegrees(20, -180, 1e5),
+            Position.fromDegrees(0, -100, 1e6),
+            Position.fromDegrees(20, -40, 1e5)
+        );
+        ShapeAttributes attrs = new ShapeAttributes();
+        attrs.setDrawVerticals(true); // display the extruded verticals
+        attrs.setInteriorColor(new Color(1, 1, 1, 0.5f)); // 50% transparent white
+        attrs.setOutlineWidth(3);
+        path = new Path(positions, attrs);
+        path.setExtrude(true); // extrude the path from the ground to each path position's altitude
+        layer.addRenderable(path);
+
+        return wwd;
+    }
+}
+    </textarea>
+</div>
+
+<script type="text/javascript">
+      var javaEditor = CodeMirror.fromTextArea(document.getElementById("java-code"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        mode: "text/x-java",
+        readOnly: true
+      });
+
+
+</script>
+</body>
+</html>

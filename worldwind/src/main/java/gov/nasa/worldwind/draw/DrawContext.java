@@ -17,12 +17,15 @@ import gov.nasa.worldwind.PickedObjectList;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.geom.Viewport;
 import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.Color;
 
 public class DrawContext {
 
     public Vec3 eyePoint = new Vec3();
+
+    public Viewport viewport = new Viewport();
 
     public Matrix4 projection = new Matrix4();
 
@@ -43,6 +46,8 @@ public class DrawContext {
     public Vec2 pickPoint;
 
     public boolean pickMode;
+
+    private int framebufferId;
 
     private int programId;
 
@@ -67,6 +72,7 @@ public class DrawContext {
 
     public void reset() {
         this.eyePoint.set(0, 0, 0);
+        this.viewport.setEmpty();
         this.projection.setToIdentity();
         this.modelview.setToIdentity();
         this.modelviewProjection.setToIdentity();
@@ -82,6 +88,7 @@ public class DrawContext {
 
     public void contextLost() {
         // Clear objects and values associated with the current OpenGL context.
+        this.framebufferId = 0;
         this.programId = 0;
         this.textureUnit = GLES20.GL_TEXTURE0;
         this.arrayBufferId = 0;
@@ -110,6 +117,31 @@ public class DrawContext {
 
     public DrawableTerrain getDrawableTerrain(int index) {
         return (this.drawableTerrain != null) ? (DrawableTerrain) this.drawableTerrain.getDrawable(index) : null;
+    }
+
+    /**
+     * Returns the name of the OpenGL framebuffer object that is currently active.
+     *
+     * @return the currently active framebuffer object, or 0 if no framebuffer object is active
+     */
+    public int currentFramebuffer() {
+        return this.framebufferId;
+    }
+
+    /**
+     * Makes an OpenGL framebuffer object active. The active framebuffer becomes the target of all OpenGL commands that
+     * render to the framebuffer or read from the framebuffer. This has no effect if the specified framebuffer object is
+     * already active. The default is framebuffer 0, indicating that the default framebuffer provided by the windowing
+     * system is active.
+     *
+     * @param framebufferId the name of the OpenGL framebuffer object to make active, or 0 to make the default
+     *                      framebuffer provided by the windowing system active
+     */
+    public void bindFramebuffer(int framebufferId) {
+        if (this.framebufferId != framebufferId) {
+            this.framebufferId = framebufferId;
+            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, framebufferId);
+        }
     }
 
     /**

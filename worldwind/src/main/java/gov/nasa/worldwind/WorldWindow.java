@@ -372,11 +372,10 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * Android screen pixels relative to this View.
      * <p/>
      * If the screen point intersects any number of World Wind shapes, the returned list contains a picked object
-     * identifying the top shape at the screen point. This picked object includes the shape renderable or its non-null
-     * pick delegate, the shape's geographic position, and the World Wind layer that displayed the shape. Shapes which
-     * are either hidden behind another shape at the screen point or hidden behind terrain at the screen point are
-     * omitted from the returned list. Therefore if the returned list contains a picked object identifying a shape, it
-     * is always marked as 'on top'.
+     * identifying the top shape at the screen point. This picked object includes the shape renderable (or its non-null
+     * pick delegate) and the World Wind layer that displayed the shape. Shapes which are either hidden behind another
+     * shape at the screen point or hidden behind terrain at the screen point are omitted from the returned list.
+     * Therefore if the returned list contains a picked object identifying a shape, it is always marked as 'on top'.
      * <p/>
      * If the screen point intersects the World Wind terrain, the returned list contains a picked object identifying the
      * associated geographic position. If there are no shapes in the World Wind scene between the terrain and the screen
@@ -897,6 +896,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Setup the draw context according to the frame's current state.
         this.dc.eyePoint = frame.modelview.extractEyePoint(this.dc.eyePoint);
+        this.dc.viewport.set(frame.viewport);
         this.dc.projection.set(frame.projection);
         this.dc.modelview.set(frame.modelview);
         this.dc.modelviewProjection.setToMultiply(frame.projection, frame.modelview);

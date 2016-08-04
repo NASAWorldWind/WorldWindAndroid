@@ -40,6 +40,10 @@
             android:icon="@android:drawable/ic_menu_myplaces"
             android:title="@string/title_placemarks_picking"/>
         <item
+            android:id="@+id/nav_paths_activity"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="@string/title_paths"/>
+        <item
             android:id="@+id/nav_camera_control_activity"
             android:icon="@android:drawable/ic_menu_camera"
             android:title="@string/title_camera_controls"/>

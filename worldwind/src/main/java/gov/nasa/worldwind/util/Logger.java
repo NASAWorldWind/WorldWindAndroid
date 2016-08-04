@@ -30,6 +30,7 @@ public class Logger {
         messageTable.put("invalidBitmap", "The bitmap is recycled");
         messageTable.put("invalidCapacity", "The capacity is less than 1");
         messageTable.put("invalidClass", "The class is null or cannot be found");
+        messageTable.put("invalidCount", "The count is invalid");
         messageTable.put("invalidClipDistance", "The clip distance is invalid");
         messageTable.put("invalidFieldOfView", "The field of view is invalid");
         messageTable.put("invalidHeight", "The height is invalid");
@@ -44,7 +45,6 @@ public class Logger {
         messageTable.put("invalidWidthOrHeight", "The width or the height is invalid");
         messageTable.put("missingArray", "The array is null or insufficient length");
         messageTable.put("missingBitmap", "The bitmap is null");
-        messageTable.put("missingBuffer", "The buffer is null or insufficient length");
         messageTable.put("missingCache", "The cache is null");
         messageTable.put("missingCallback", "The callback is null");
         messageTable.put("missingCamera", "The camera is null");

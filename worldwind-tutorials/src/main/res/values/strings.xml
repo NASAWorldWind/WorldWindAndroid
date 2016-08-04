@@ -17,6 +17,7 @@
     <string name="title_camera_view">Camera View</string>
     <string name="title_look_at_view">Look At View</string>
     <string name="title_navigator_event">Navigator Events</string>
+    <string name="title_paths">Paths</string>
     <string name="title_placemarks">Placemarks</string>
     <string name="title_placemarks_picking">Placemark Picking</string>
     <string name="title_placemarks_select_drag">Placemark Select and Drag</string>

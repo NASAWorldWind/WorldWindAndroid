@@ -69,7 +69,7 @@ public class BasicFrameController implements FrameController {
         // If the pick ray intersects the terrain, enqueue a picked object that associates the terrain drawable with its
         // picked object ID and the intersection position.
         if (this.resolveTerrainPickPosition(rc, this.pickPos)) {
-            rc.offerPickedObject(PickedObject.fromTerrain(this.pickPos, pickedObjectId));
+            rc.offerPickedObject(PickedObject.fromTerrain(pickedObjectId, this.pickPos));
         }
     }
 

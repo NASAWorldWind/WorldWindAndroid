@@ -133,7 +133,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
         // Bitmap image sources are already in memory, so a texture may be created and put into the cache immediately.
         if (imageSource.isBitmap()) {
             Texture texture = new Texture(imageSource.asBitmap());
-            this.put(imageSource, texture, texture.getTextureByteCount());
+            this.put(imageSource, texture, texture.getByteCount());
             return texture;
         }
 
@@ -144,7 +144,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
         Bitmap bitmap = this.imageRetrieverCache.remove(imageSource);
         if (bitmap != null) {
             Texture texture = new Texture(bitmap);
-            this.put(imageSource, texture, texture.getTextureByteCount());
+            this.put(imageSource, texture, texture.getByteCount());
             return texture;
         }
 

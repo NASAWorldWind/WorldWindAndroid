@@ -5,9 +5,6 @@
 
 package gov.nasa.worldwind.geom;
 
-import java.nio.FloatBuffer;
-import java.util.List;
-
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -65,102 +62,6 @@ public class Vec3 {
         this.x = vector.x;
         this.y = vector.y;
         this.z = vector.z;
-    }
-
-    /**
-     * Computes the average of a specified array of points packed into an NIO buffer.
-     *
-     * @param points the buffer of points to consider
-     * @param stride the number of coordinates between the first coordinate of adjacent points - must be at least 3
-     * @param result a pre-allocated Vec3 in which to return the computed average
-     *
-     * @return the result argument set to the average of the specified array of points
-     *
-     * @throws IllegalArgumentException If the buffer of points is null or empty, if the stride is less than 3, or the
-     *                                  result argument is null
-     */
-    public static Vec3 averageOfBuffer(FloatBuffer points, int stride, Vec3 result) {
-        if (points == null || points.remaining() < stride) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Vec3", "averageOfBuffer", "missingBuffer"));
-        }
-
-        if (stride < 3) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Vec3", "averageOfBuffer", "invalidStride"));
-        }
-
-        if (result == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Vec3", "averageOfBuffer", "nullResult"));
-        }
-
-        result.x = 0;
-        result.y = 0;
-        result.z = 0;
-
-        int count = points.remaining() / stride;
-        float[] coords = new float[stride];
-
-        points.mark();
-
-        for (int i = 0; i < count; i++) {
-            points.get(coords, 0, stride); // get the entire coordinate to advance the buffer position
-            result.x += coords[0];
-            result.y += coords[1];
-            result.z += coords[2];
-        }
-
-        points.reset();
-
-        result.x /= count;
-        result.y /= count;
-        result.z /= count;
-
-        return result;
-    }
-
-    /**
-     * Computes the principal axes of a specified array of points packed into an NIO buffer. The computed axes are
-     * stored in the pre-allocated array sorted by descending magnitude (longest to shortest).
-     *
-     * @param points the buffer of points to consider
-     * @param stride the number of coordinates between the first coordinate of adjacent points - must be at least 3
-     * @param result a pre-allocated Vec3 array of length 3 in which to return the computed axes
-     *
-     * @return the specified result argument set to the computed axes
-     *
-     * @throws IllegalArgumentException If the buffer of points is null or empty, if the stride is less than 3, or if
-     *                                  any result argument is null
-     */
-    public static Vec3[] principalAxesOfBuffer(FloatBuffer points, int stride, Vec3[] result) {
-        if (points == null || points.remaining() < stride) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Vec3", "principalAxesOfBuffer", "missingBuffer"));
-        }
-
-        if (stride < 3) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Vec3", "principalAxesOfBuffer", "invalidStride"));
-        }
-
-        if (result == null || result.length < 3 || result[0] == null || result[1] == null || result[2] == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Vec3", "principalAxesOfBuffer", "missingResult"));
-        }
-
-        // Compute the covariance matrix.
-        Matrix4 covariance = new Matrix4().setToCovarianceOfBuffer(points, stride);
-
-        // Compute the eigenvectors from the covariance matrix. The covariance matrix is symmetric by definition.
-        covariance.eigensystemFromSymmetricMatrix(result);
-
-        // Normalize the eigenvectors, which are already sorted in order of descending magnitude.
-        result[0].normalize();
-        result[1].normalize();
-        result[2].normalize();
-
-        return result;
     }
 
     @Override
@@ -569,75 +470,6 @@ public class Vec3 {
         this.x = this.x * w0 + vector.x * w1;
         this.y = this.y * w0 + vector.y * w1;
         this.z = this.z * w0 + vector.z * w1;
-
-        return this;
-    }
-
-    /**
-     * Computes the average of a specified list of vectors, setting this vector to the result.
-     *
-     * @param vectors the vectors whose average to compute
-     *
-     * @return this vector set to the average of the specified list of vectors
-     *
-     * @throws IllegalArgumentException If the array null or empty
-     */
-    public Vec3 averageOfList(List<Vec3> vectors) {
-        if (vectors == null || vectors.size() == 0) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Vec3", "averageOfList", "missingList"));
-        }
-
-        this.x = 0;
-        this.y = 0;
-        this.z = 0;
-
-        for (Vec3 vec : vectors) {
-            this.x += vec.x;
-            this.y += vec.y;
-            this.z += vec.z;
-        }
-
-        int count = vectors.size();
-        this.x /= count;
-        this.y /= count;
-        this.z /= count;
-
-        return this;
-    }
-
-    /**
-     * Computes the normal vector of a specified triangle, setting this vector to the result.
-     *
-     * @param a the triangle's first vertex
-     * @param b the triangle's second vertex
-     * @param c the triangle's third vertex
-     *
-     * @return this vector set to the normal of the specified triangle
-     *
-     * @throws IllegalArgumentException If any of the vectors are null
-     */
-    public Vec3 triangleNormal(Vec3 a, Vec3 b, Vec3 c) {
-        if (a == null || b == null || c == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Vec3", "triangleNormal", "missingVector"));
-        }
-
-        double x = ((b.y - a.y) * (c.z - a.z)) - ((b.z - a.z) * (c.y - a.y));
-        double y = ((b.z - a.z) * (c.x - a.x)) - ((b.x - a.x) * (c.z - a.z));
-        double z = ((b.x - a.x) * (c.y - a.y)) - ((b.y - a.y) * (c.x - a.x));
-        double length = (x * x) + (y * y) + (z * z);
-
-        if (length == 0) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        } else {
-            length = Math.sqrt(length);
-            this.x = x / length;
-            this.y = y / length;
-            this.z = z / length;
-        }
 
         return this;
     }

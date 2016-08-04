@@ -6,15 +6,15 @@
 package gov.nasa.worldwind.shape;
 
 /**
- * An interface to control a shape's highlighting. Shapes implementing this interface have their own highlighting
- * behaviors and attributes and the means for setting them.
+ * Interface to control a shape's highlighting. Shapes implementing this interface have their own highlighting behaviors
+ * and attributes and the means for setting them.
  */
 public interface Highlightable {
 
     /**
-     * Indicates whether to highlight the shape.
+     * Indicates whether the shape is highlighted.
      *
-     * @return true to highlight the shape, otherwise false
+     * @return true if the shape is highlighted, otherwise false
      */
     boolean isHighlighted();
 

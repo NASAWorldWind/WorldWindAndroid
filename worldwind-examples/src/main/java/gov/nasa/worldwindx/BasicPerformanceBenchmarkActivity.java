@@ -16,6 +16,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -306,15 +308,26 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
 
         BufferedReader reader = null;
         try {
-            InputStream in = this.getResources().openRawResource(R.raw.arpt2);
+            InputStream in = this.getResources().openRawResource(R.raw.world_apts);
             reader = new BufferedReader(new InputStreamReader(in));
 
-            String line;
+            // The first line is the CSV header:
+            //  LAT,LON,ALT,NAM,IKO,NA3,USE,USEdesc
+            String line = reader.readLine();
+            List<String> headers = Arrays.asList(line.split(","));
+            final int LAT = headers.indexOf("LAT");
+            final int LON = headers.indexOf("LON");
+            final int NA3 = headers.indexOf("NA3");
+            final int USE = headers.indexOf("USE");
+
+            // Read the remaining lines
             int attrIndex = 0;
             while ((line = reader.readLine()) != null) {
-                String[] locationString = line.split(",");
-                Position pos = Position.fromDegrees(Double.parseDouble(locationString[0]), Double.parseDouble(locationString[1]), 0);
-                layer.addRenderable(new Placemark(pos, attrs[attrIndex++ % attrs.length]));
+                String[] fields = line.split(",");
+                if (fields[NA3].startsWith("US") && fields[USE].equals("49")) { // display USA Civilian/Public airports
+                    Position pos = Position.fromDegrees(Double.parseDouble(fields[LAT]), Double.parseDouble(fields[LON]), 0);
+                    layer.addRenderable(new Placemark(pos, attrs[attrIndex++ % attrs.length]));
+                }
             }
 
         } catch (IOException e) {

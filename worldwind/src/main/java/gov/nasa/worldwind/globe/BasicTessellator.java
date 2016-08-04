@@ -105,6 +105,8 @@ public class BasicTessellator implements Tessellator, TileFactory {
     protected void assembleTiles(RenderContext rc) {
         // Assemble the terrain buffers and OpenGL buffer objects associated with the level set.
         this.assembleLevelSetBuffers(rc);
+        this.currentTerrain.setGlobe(rc.globe);
+        this.currentTerrain.setVerticalExaggeration(rc.verticalExaggeration);
         this.currentTerrain.setTriStripElements(this.levelSetTriStripElements);
 
         // Assemble the tessellator's top level terrain tiles, which we keep permanent references to.
