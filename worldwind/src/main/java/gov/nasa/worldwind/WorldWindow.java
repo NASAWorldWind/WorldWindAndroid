@@ -896,6 +896,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Setup the draw context according to the frame's current state.
         this.dc.eyePoint = frame.modelview.extractEyePoint(this.dc.eyePoint);
+        this.dc.viewport.set(frame.viewport);
         this.dc.projection.set(frame.projection);
         this.dc.modelview.set(frame.modelview);
         this.dc.modelviewProjection.setToMultiply(frame.projection, frame.modelview);
