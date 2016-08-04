@@ -809,8 +809,8 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         // from the origin point. When the placemark has no active texture the image scale defines the image size and no
         // other scaling is applied.
         if (this.activeTexture != null) {
-            int w = this.activeTexture.getImageWidth();
-            int h = this.activeTexture.getImageHeight();
+            int w = this.activeTexture.getWidth();
+            int h = this.activeTexture.getHeight();
             double s = this.activeAttributes.imageScale * visibilityScale;
             this.activeAttributes.imageOffset.offsetForSize(w, h, offset);
 
