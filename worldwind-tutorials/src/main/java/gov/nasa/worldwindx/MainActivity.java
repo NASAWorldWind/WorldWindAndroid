@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             //
             // http://developer.android.com/guide/components/fragments.html
             //
-            loadTutorial(BasicGlobeFragment.class, "file:///android_asset/basic_globe_tutorial.html");
+            loadTutorial(BasicGlobeFragment.class, "file:///android_asset/basic_globe_tutorial.html", R.string.title_basic_globe);
         }
     }
 
@@ -261,34 +261,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (selectedItemId) {
 
             case R.id.nav_basic_globe_activity:
-                loadTutorial(BasicGlobeFragment.class, "file:///android_asset/basic_globe_tutorial.html");
+                loadTutorial(BasicGlobeFragment.class, "file:///android_asset/basic_globe_tutorial.html", R.string.title_basic_globe);
                 break;
             case R.id.nav_camera_view_activity:
-                loadTutorial(CameraViewFragment.class, "file:///android_asset/camera_view_tutorial.html");
+                loadTutorial(CameraViewFragment.class, "file:///android_asset/camera_view_tutorial.html",  R.string.title_camera_view);
                 break;
             case R.id.nav_camera_control_activity:
-                loadTutorial(CameraControlFragment.class, "file:///android_asset/camera_control_tutorial.html");
+                loadTutorial(CameraControlFragment.class, "file:///android_asset/camera_control_tutorial.html",  R.string.title_camera_controls);
                 break;
             case R.id.nav_look_at_view_activity:
-                loadTutorial(LookAtViewFragment.class, "file:///android_asset/look_at_view_tutorial.html");
+                loadTutorial(LookAtViewFragment.class, "file:///android_asset/look_at_view_tutorial.html", R.string.title_look_at_view);
                 break;
             case R.id.nav_navigator_event_activity:
-                loadTutorial(NavigatorEventFragment.class, "file:///android_asset/navigator_events_tutorial.html");
+                loadTutorial(NavigatorEventFragment.class, "file:///android_asset/navigator_events_tutorial.html",  R.string.title_navigator_event);
                 break;
             case R.id.nav_placemarks_activity:
-                loadTutorial(PlacemarksFragment.class, "file:///android_asset/placemarks_tutorial.html");
+                loadTutorial(PlacemarksFragment.class, "file:///android_asset/placemarks_tutorial.html", R.string.title_placemarks);
                 break;
             case R.id.nav_placemarks_picking_activity:
-                loadTutorial(PlacemarksPickingFragment.class, "file:///android_asset/placemarks_picking_tutorial.html");
+                loadTutorial(PlacemarksPickingFragment.class, "file:///android_asset/placemarks_picking_tutorial.html", R.string.title_placemarks_picking);
                 break;
             case R.id.nav_show_tessellation_activity:
-                loadTutorial(ShowTessellationFragment.class, "file:///android_asset/show_tessellation_tutorial.html");
+                loadTutorial(ShowTessellationFragment.class, "file:///android_asset/show_tessellation_tutorial.html", R.string.title_show_tessellation);
                 break;
             case R.id.nav_surface_image_activity:
-                loadTutorial(SurfaceImageFragment.class, "file:///android_asset/surface_image_tutorial.html");
+                loadTutorial(SurfaceImageFragment.class, "file:///android_asset/surface_image_tutorial.html", R.string.title_surface_image);
                 break;
             case R.id.nav_wms_layer_activity:
-                loadTutorial(WmsLayerFragment.class, "file:///android_asset/wms_layer_tutorial.html");
+                loadTutorial(WmsLayerFragment.class, "file:///android_asset/wms_layer_tutorial.html", R.string.title_wms_layer);
                 break;
         }
 
@@ -297,8 +297,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
-    protected void loadTutorial(Class<? extends Fragment> globeFragment, String url) {
+    protected void loadTutorial(Class<? extends Fragment> globeFragment, String url, int titleId) {
         try {
+            this.setTitle(titleId);
             Fragment globe = globeFragment.newInstance();
             getSupportFragmentManager()
                 .beginTransaction()
