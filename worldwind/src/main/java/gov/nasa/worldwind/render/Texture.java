@@ -169,37 +169,41 @@ public class Texture implements RenderResource {
 
     protected static int estimateByteCount(int width, int height, int format, int type) {
         // Compute the number of bytes per row of texture image level 0. Use a default of 32 bits per pixel when either
-        // of the bitmap's type or internal format are unrecognized. Assume that the
-        int bytesPerRow = width * 4;
+        // of the bitmap's type or internal format are unrecognized. Adjust the width to the next highest power-of-two
+        // to better estimate the memory consumed by non power-of-two images.
+        int widthPow2 = WWMath.powerOfTwoCeiling(width);
+        int bytesPerRow = widthPow2 * 4;
         switch (type) {
             case GLES20.GL_UNSIGNED_BYTE:
                 switch (format) {
                     case GLES20.GL_ALPHA:
-                        bytesPerRow = width; // 8 bits per pixel
+                        bytesPerRow = widthPow2; // 8 bits per pixel
                         break;
                     case GLES20.GL_RGB:
-                        bytesPerRow = width * 3; // 24 bits per pixel
+                        bytesPerRow = widthPow2 * 3; // 24 bits per pixel
                         break;
                     case GLES20.GL_RGBA:
-                        bytesPerRow = width * 4; // 32 bits per pixel
+                        bytesPerRow = widthPow2 * 4; // 32 bits per pixel
                         break;
                     case GLES20.GL_LUMINANCE:
-                        bytesPerRow = width; // 8 bits per pixel
+                        bytesPerRow = widthPow2; // 8 bits per pixel
                         break;
                     case GLES20.GL_LUMINANCE_ALPHA:
-                        bytesPerRow = width * 2; // 16 bits per pixel
+                        bytesPerRow = widthPow2 * 2; // 16 bits per pixel
                         break;
                 }
                 break;
             case GLES20.GL_UNSIGNED_SHORT_5_6_5:
             case GLES20.GL_UNSIGNED_SHORT_4_4_4_4:
             case GLES20.GL_UNSIGNED_SHORT_5_5_5_1:
-                bytesPerRow = width * 2; // 16 bits per pixel
+                bytesPerRow = widthPow2 * 2; // 16 bits per pixel
                 break;
         }
 
-        // Compute the number of bytes for the entire texture image level 0 (i.e. bytePerRow * numRows).
-        int byteCount = bytesPerRow * height;
+        // Compute the number of bytes for the entire texture image level 0 (i.e. bytePerRow * numRows). Adjust the
+        // height to the next highest power-of-two to better estimate the memory consumed by non power-of-two images.
+        int heightPow2 = WWMath.powerOfTwoCeiling(height);
+        int byteCount = bytesPerRow * heightPow2;
 
         // If the texture will have mipmaps, add 1/3 to account for the bytes used by texture image level 1 through
         // texture image level N.

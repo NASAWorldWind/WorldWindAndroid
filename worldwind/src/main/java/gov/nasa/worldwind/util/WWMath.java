@@ -221,4 +221,16 @@ public class WWMath {
     public static boolean isPowerOfTwo(int value) {
         return value != 0 && (value & (value - 1)) == 0;
     }
+
+    /**
+     * Returns the value that is the nearest power of 2 greater than or equal to the given value.
+     *
+     * @param value the reference value. The power of 2 returned is greater than or equal to this value.
+     *
+     * @return the value that is the nearest power of 2 greater than or equal to the reference value
+     */
+    public static int powerOfTwoCeiling(int value) {
+        int pow = (int) Math.floor(Math.log(value) / Math.log(2));
+        return 1 << pow;
+    }
 }
