@@ -9,10 +9,7 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globe.Globe;
-import gov.nasa.worldwind.ogc.WmsLayer;
-import gov.nasa.worldwind.ogc.WmsLayerConfig;
 
 public class CameraViewFragment extends BasicGlobeFragment {
 

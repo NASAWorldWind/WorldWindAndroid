@@ -22,9 +22,6 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.LookAt;
-import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.ogc.WmsLayer;
-import gov.nasa.worldwind.ogc.WmsLayerConfig;
 
 public class NavigatorEventFragment extends BasicGlobeFragment {
 

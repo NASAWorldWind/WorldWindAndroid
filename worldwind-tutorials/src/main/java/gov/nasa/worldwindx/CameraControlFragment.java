@@ -10,13 +10,10 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Location;
-import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.gesture.GestureRecognizer;
 import gov.nasa.worldwind.gesture.PinchRecognizer;
 import gov.nasa.worldwind.gesture.RotationRecognizer;
 import gov.nasa.worldwind.globe.Globe;
-import gov.nasa.worldwind.ogc.WmsLayer;
-import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwind.util.WWMath;
 
 public class CameraControlFragment extends BasicGlobeFragment {

@@ -5,19 +5,8 @@
 
 package gov.nasa.worldwindx;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.layer.BackgroundLayer;
-import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
 import gov.nasa.worldwind.ogc.WmsLayer;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
 

@@ -8,8 +8,6 @@ package gov.nasa.worldwindx;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layer.RenderableLayer;
-import gov.nasa.worldwind.ogc.WmsLayer;
-import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.shape.SurfaceImage;
 
