@@ -14,8 +14,9 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.LayoutRes;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -23,6 +24,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import java.util.Date;
 import java.util.Locale;
@@ -34,8 +36,7 @@ import gov.nasa.worldwind.util.Logger;
 /**
  * This abstract Activity class implements a Navigation Drawer menu shared by all the World Wind Example activities.
  */
-public abstract class AbstractMainActivity extends AppCompatActivity
-    implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     protected static final int PRINT_METRICS = 1;
 
@@ -49,9 +50,13 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
     protected NavigationView navigationView;
 
-    protected String aboutBoxTitle = "Title goes here";
+    protected boolean twoPaneView;
 
-    protected String aboutBoxText = "Description goes here;";
+    protected String tutorialUrl;
+
+    protected String aboutBoxTitle = "World Wind Tutorials";        // TODO: use a string resource, e.g., app name
+
+    protected String aboutBoxText = "A collection of tutorials";    // TODO: make this a string resource
 
     protected Handler handler = new Handler(new Handler.Callback() {
         @Override
@@ -66,22 +71,57 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
     /**
      * Returns a reference to the WorldWindow.
-     * <p/>
+     * <p>
      * Derived classes must implement this method.
      *
      * @return The WorldWindow GLSurfaceView object
      */
-    abstract public WorldWindow getWorldWindow();
+    public WorldWindow getWorldWindow() {
+        // TODO: Implement via Fragment Manager and findFragmentById
+        return null;
+    }
 
-    /**
-     * This method should be called by derived classes in their onCreate method.
-     *
-     * @param layoutResID
-     */
     @Override
-    public void setContentView(@LayoutRes int layoutResID) {
-        super.setContentView(layoutResID);
-        this.onCreateDrawer();
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        onCreateDrawer();
+
+        if (findViewById(R.id.code_container) != null) {
+            // The code container view will be present only in the
+            // large-screen layouts (res/values-w900dp).
+            // If this view is present, then the
+            // activity should be in two-pane mode.
+            twoPaneView = true;
+        }
+
+        if (!twoPaneView) {
+            FloatingActionButton codeViewButton = (FloatingActionButton) findViewById(R.id.fab);
+            codeViewButton.setVisibility(View.VISIBLE);    // is set to GONE in layout
+            codeViewButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Context context = view.getContext();
+                    Intent intent = new Intent(context, CodeActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("url", tutorialUrl);
+                    intent.putExtra("arguments", bundle);
+                    context.startActivity(intent);
+                }
+            });
+        }
+        if (savedInstanceState == null) {
+            // savedInstanceState is non-null when there is fragment state
+            // saved from previous configurations of this activity
+            // (e.g. when rotating the screen from portrait to landscape).
+            // In this case, the fragment will automatically be re-added
+            // to its container so we don't need to manually add it.
+            // For more information, see the Fragments API guide at:
+            //
+            // http://developer.android.com/guide/components/fragments.html
+            //
+            loadTutorial(BasicGlobeFragment.class, "file:///android_asset/basic_globe_tutorial.html", R.string.title_basic_globe);
+        }
     }
 
     protected void onCreateDrawer() {
@@ -139,14 +179,6 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    protected void setAboutBoxTitle(String title) {
-        this.aboutBoxTitle = title;
-    }
-
-    protected void setAboutBoxText(String text) {
-        this.aboutBoxText = text;
-    }
-
     /**
      * This method is invoked when the About button is selected in the Options menu.
      */
@@ -169,12 +201,18 @@ public abstract class AbstractMainActivity extends AppCompatActivity
     }
 
     protected boolean printMetrics() {
+
+        WorldWindow wwd = this.getWorldWindow();
+        if (wwd == null) {
+            return false;
+        }
         // Assemble the current system memory info.
         ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
         ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
         am.getMemoryInfo(mi);
 
         // Assemble the current World Wind frame metrics.
+
         FrameMetrics fm = this.getWorldWindow().getFrameMetrics();
 
         // Print a log message with the system memory, World Wind cache usage, and World Wind average frame time.
@@ -223,43 +261,72 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         switch (selectedItemId) {
 
             case R.id.nav_basic_globe_activity:
-                startActivity(new Intent(getApplicationContext(), BasicGlobeActivity.class));
+                loadTutorial(BasicGlobeFragment.class, "file:///android_asset/basic_globe_tutorial.html", R.string.title_basic_globe);
                 break;
             case R.id.nav_camera_view_activity:
-                startActivity(new Intent(getApplicationContext(), CameraViewActivity.class));
+                loadTutorial(CameraViewFragment.class, "file:///android_asset/camera_view_tutorial.html",  R.string.title_camera_view);
                 break;
             case R.id.nav_camera_control_activity:
-                startActivity(new Intent(getApplicationContext(), CameraControlActivity.class));
+                loadTutorial(CameraControlFragment.class, "file:///android_asset/camera_control_tutorial.html",  R.string.title_camera_controls);
                 break;
             case R.id.nav_look_at_view_activity:
-                startActivity(new Intent(getApplicationContext(), LookAtViewActivity.class));
+                loadTutorial(LookAtViewFragment.class, "file:///android_asset/look_at_view_tutorial.html", R.string.title_look_at_view);
                 break;
             case R.id.nav_navigator_event_activity:
-                startActivity(new Intent(getApplicationContext(), NavigatorEventActivity.class));
+                loadTutorial(NavigatorEventFragment.class, "file:///android_asset/navigator_events_tutorial.html",  R.string.title_navigator_event);
                 break;
             case R.id.nav_paths_activity:
-                startActivity(new Intent(getApplicationContext(), PathsActivity.class));
+                loadTutorial(PathsFragment.class, "file:///android_asset/paths_tutorial.html", R.string.title_paths);
                 break;
             case R.id.nav_placemarks_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksActivity.class));
+                loadTutorial(PlacemarksFragment.class, "file:///android_asset/placemarks_tutorial.html", R.string.title_placemarks);
                 break;
             case R.id.nav_placemarks_picking_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksPickingActivity.class));
+                loadTutorial(PlacemarksPickingFragment.class, "file:///android_asset/placemarks_picking_tutorial.html", R.string.title_placemarks_picking);
                 break;
             case R.id.nav_show_tessellation_activity:
-                startActivity(new Intent(getApplicationContext(), ShowTessellationActivity.class));
+                loadTutorial(ShowTessellationFragment.class, "file:///android_asset/show_tessellation_tutorial.html", R.string.title_show_tessellation);
                 break;
             case R.id.nav_surface_image_activity:
-                startActivity(new Intent(getApplicationContext(), SurfaceImageActivity.class));
+                loadTutorial(SurfaceImageFragment.class, "file:///android_asset/surface_image_tutorial.html", R.string.title_surface_image);
                 break;
             case R.id.nav_wms_layer_activity:
-                startActivity(new Intent(getApplicationContext(), WmsLayerActivity.class));
+                loadTutorial(WmsLayerFragment.class, "file:///android_asset/wms_layer_tutorial.html", R.string.title_wms_layer);
                 break;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    protected void loadTutorial(Class<? extends Fragment> globeFragment, String url, int titleId) {
+        try {
+            this.setTitle(titleId);
+            Fragment globe = globeFragment.newInstance();
+            getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.globe_container, globe)    // replace (destroy) existing fragment (if any)
+                .commit();
+
+            if (this.twoPaneView) {
+                Bundle bundle = new Bundle();
+                bundle.putString("url", url);
+
+                Fragment code = new CodeFragment();
+                code.setArguments(bundle);
+                getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.code_container, code)
+                    .commit();
+            } else {
+                this.tutorialUrl = url;
+            }
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     protected static long getSessionTimestamp() {

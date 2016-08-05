@@ -7,9 +7,9 @@ package gov.nasa.worldwindx;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Bundle;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.geom.Position;
@@ -19,21 +19,19 @@ import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
 
-public class PlacemarksActivity extends BasicGlobeActivity {
+public class PlacemarksFragment extends BasicGlobeFragment {
 
+    /**
+     * Creates a new WorldWindow with a RenderableLayer populated with four Placemarks.
+     */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_placemarks));
-        setAboutBoxText("Demonstrates how to add Placemarks to a RenderableLayer.");
-
-        ///////////////////////////////////////////////////////////////////////////
-        // First, setup the WorldWind globe to support the rendering of placemarks
-        ///////////////////////////////////////////////////////////////////////////
+    public WorldWindow createWorldWindow() {
+        // Let the super class (BasicGlobeFragment) do the creation
+        WorldWindow wwd = super.createWorldWindow();
 
         // Create a RenderableLayer for placemarks and add it to the WorldWindow
         RenderableLayer placemarksLayer = new RenderableLayer("Placemarks");
-        this.getWorldWindow().getLayers().addLayer(placemarksLayer);
+        wwd.getLayers().addLayer(placemarksLayer);
 
         //////////////////////////////////////
         // Second, create some placemarks...
@@ -82,7 +80,8 @@ public class PlacemarksActivity extends BasicGlobeActivity {
         Position pos = airport.getPosition();
         LookAt lookAt = new LookAt().set(pos.latitude, pos.longitude, pos.altitude, WorldWind.ABSOLUTE,
             1e5 /*range*/, 0 /*heading*/, 80 /*tilt*/, 0 /*roll*/);
-        this.getWorldWindow().getNavigator().setAsLookAt(this.getWorldWindow().getGlobe(), lookAt);
-    }
+        wwd.getNavigator().setAsLookAt(wwd.getGlobe(), lookAt);
 
+        return wwd;
+    }
 }

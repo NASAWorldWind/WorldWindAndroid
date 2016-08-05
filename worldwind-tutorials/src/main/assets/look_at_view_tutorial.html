@@ -1,0 +1,83 @@
+<!--
+  ~ Copyright (c) 2016 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration. All Rights Reserved.
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Look At View Tutorial</title>
+    <script src="file:///android_asset/codemirror-5.16.0/lib/codemirror.js" type="text/javascript"></script>
+    <script src="file:///android_asset/codemirror-5.16.0/mode/clike/clike.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/codemirror-5.16.0/lib/codemirror.css"/>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/override.css"/>
+</head>
+<body>
+<h1>Look At View Tutorial</h1>
+<p>
+    Demonstrates how to use LookAt to view a position. This example also shows how to compute great circle distance and
+    azimuth between two positions.
+</p>
+<p>
+    This example simulates a view from an aircraft above Santa Monica, CA looking at the LAX airport.
+</p>
+<h2>Example</h2>
+<h3>CameraViewFragment.java</h3>
+<p>
+    The LookAtViewFragment class extends the BasicGlobeFragment and overrides the createWorldWindow method.
+    Here we position the Navigator's camera at an aircraft's location and point the camera at a nearby airport.
+</p>
+<div style="border-top: 1px solid black; border-bottom: 1px solid black;">
+    <textarea id="java-code">
+package gov.nasa.worldwindx;
+...
+public class LookAtViewFragment extends BasicGlobeFragment {
+
+    /**
+     * Creates a new WorldWindow with its camera configured to look at a given location from a given position.
+     */
+    @Override
+    public WorldWindow createWorldWindow() {
+        // Let the super class (BasicGlobeFragment) do the creation
+        WorldWindow wwd = super.createWorldWindow();
+
+        // Create a view of LAX airport as seen from an aircraft above Santa Monica, CA.
+        Position aircraft = new Position(34.0158333, -118.4513056, 2500);   // Aircraft above Santa Monica airport, altitude in meters
+        Position airport = new Position(33.9424368, -118.4081222, 38.7);    // LAX airport, Los Angeles CA, altitude MSL
+
+        // Compute heading and distance from aircraft to airport
+        Globe globe = wwd.getGlobe();
+        double heading = aircraft.greatCircleAzimuth(airport);
+        double distanceRadians = aircraft.greatCircleDistance(airport);
+        double distance = distanceRadians * globe.getRadiusAt(aircraft.latitude, aircraft.longitude);
+
+        // Compute camera settings
+        double altitude = aircraft.altitude - airport.altitude;
+        double range = Math.sqrt(altitude * altitude + distance * distance);
+        double tilt = Math.toDegrees(Math.atan(distance / aircraft.altitude));
+
+        // Apply the new view
+        LookAt lookAt = new LookAt();
+        lookAt.set(airport.latitude, airport.longitude, airport.altitude, WorldWind.ABSOLUTE, range, heading, tilt, 0 /*roll*/);
+        wwd.getNavigator().setAsLookAt(globe, lookAt);
+
+        return wwd;
+    }
+}
+
+    </textarea>
+</div>
+
+<script type="text/javascript">
+      var javaEditor = CodeMirror.fromTextArea(document.getElementById("java-code"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        mode: "text/x-java",
+        readOnly: true
+      });
+
+
+</script>
+</body>
+</html>

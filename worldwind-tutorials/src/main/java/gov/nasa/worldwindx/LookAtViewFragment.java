@@ -5,28 +5,28 @@
 
 package gov.nasa.worldwindx;
 
-import android.os.Bundle;
-
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.globe.Globe;
 
-public class LookAtViewActivity extends BasicGlobeActivity {
+public class LookAtViewFragment extends BasicGlobeFragment {
 
+    /**
+     * Creates a new WorldWindow with its camera configured to look at a given location from a given position.
+     */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_look_at_view));
-        setAboutBoxText("Demonstrates how to use LookAt to view a position.\n" +
-            "This example simulates a view from an aircraft above Santa Monica, CA looking at the LAX airport.");
+    public WorldWindow createWorldWindow() {
+        // Let the super class (BasicGlobeFragment) do the creation
+        WorldWindow wwd = super.createWorldWindow();
 
         // Create a view of LAX airport as seen from an aircraft above Santa Monica, CA.
         Position aircraft = new Position(34.0158333, -118.4513056, 2500);   // Aircraft above Santa Monica airport, altitude in meters
         Position airport = new Position(33.9424368, -118.4081222, 38.7);    // LAX airport, Los Angeles CA, altitude MSL
 
         // Compute heading and distance from aircraft to airport
-        Globe globe = this.getWorldWindow().getGlobe();
+        Globe globe = wwd.getGlobe();
         double heading = aircraft.greatCircleAzimuth(airport);
         double distanceRadians = aircraft.greatCircleDistance(airport);
         double distance = distanceRadians * globe.getRadiusAt(aircraft.latitude, aircraft.longitude);
@@ -39,7 +39,8 @@ public class LookAtViewActivity extends BasicGlobeActivity {
         // Apply the new view
         LookAt lookAt = new LookAt();
         lookAt.set(airport.latitude, airport.longitude, airport.altitude, WorldWind.ABSOLUTE, range, heading, tilt, 0 /*roll*/);
-        this.getWorldWindow().getNavigator().setAsLookAt(globe, lookAt);
-    }
+        wwd.getNavigator().setAsLookAt(globe, lookAt);
 
+        return wwd;
+    }
 }

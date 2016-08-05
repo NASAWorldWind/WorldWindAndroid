@@ -5,28 +5,29 @@
 
 package gov.nasa.worldwindx;
 
-import android.os.Bundle;
-
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.globe.Globe;
 
-public class CameraViewActivity extends BasicGlobeActivity {
+public class CameraViewFragment extends BasicGlobeFragment {
 
+    /**
+     * Creates a new WorldWindow with its camera positioned at a given location and configured to point in a given
+     * direction.
+     */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_camera_view));
-        setAboutBoxText("Demonstrates how to use a Camera to view a position.\n" +
-            "This example simulates a view from an aircraft above Oxnard, CA looking at the Point Mugu Naval Air Station.");
+    public WorldWindow createWorldWindow() {
+        // Let the super class (BasicGlobeFragment) do the creation
+        WorldWindow wwd = super.createWorldWindow();
 
         // Create a view of Point Mugu airport as seen from an aircraft above Oxnard, CA.
         Position aircraft = new Position(34.2, -119.2, 3000);           // Above Oxnard CA, altitude in meters
         Position airport = new Position(34.1192744, -119.1195850, 4.0); // KNTD airport, Point Mugu CA, altitude MSL
 
         // Compute heading and tilt angles from aircraft to airport
-        Globe globe = this.getWorldWindow().getGlobe();
+        Globe globe = wwd.getGlobe();
         double heading = aircraft.greatCircleAzimuth(airport);
         double distanceRadians = aircraft.greatCircleDistance(airport);
         double distance = distanceRadians * globe.getRadiusAt(aircraft.latitude, aircraft.longitude);
@@ -37,15 +38,16 @@ public class CameraViewActivity extends BasicGlobeActivity {
         camera.set(aircraft.latitude, aircraft.longitude, aircraft.altitude, WorldWind.ABSOLUTE, heading, tilt, 0); // No roll
 
         // Apply the view
-        this.getWorldWindow().getNavigator().setAsCamera(globe, camera);
+        wwd.getNavigator().setAsCamera(globe, camera);
 
         // This works too!  Using the fluid api to manipulate the Navigator's camera:
-//        this.getWorldWindow().getNavigator()
+//        wwd.getNavigator()
 //            .setLatitude(aircraft.latitude)
 //            .setLongitude(aircraft.longitude)
 //            .setAltitude(aircraft.altitude)
 //            .setHeading(heading)
 //            .setTilt(tilt);
-    }
 
+        return wwd;
+    }
 }

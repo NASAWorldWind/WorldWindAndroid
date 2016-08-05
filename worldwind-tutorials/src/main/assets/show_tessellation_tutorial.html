@@ -1,0 +1,66 @@
+<!--
+  ~ Copyright (c) 2016 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration. All Rights Reserved.
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Show Tessellation Tutorial</title>
+    <script src="file:///android_asset/codemirror-5.16.0/lib/codemirror.js" type="text/javascript"></script>
+    <script src="file:///android_asset/codemirror-5.16.0/mode/clike/clike.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/codemirror-5.16.0/lib/codemirror.css"/>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/override.css"/>
+</head>
+<body>
+<h1>Show Tessellation Tutorial</h1>
+<p>
+    Demonstrates the globe's Tessellator.
+</p>
+<p>
+    This example adds a layer to the basic globe that shows the tessellation.
+</p>
+
+<h2>Example</h2>
+<h3>ShowTessellationFragment.java</h3>
+<p>
+    The ShowTessellationFragment class extends the BasicGlobeFragment and overrides the createWorldWindow method.
+    Here we simply add an additional ShowTessellationLayer to the globe.
+</p>
+<div style="border-top: 1px solid black; border-bottom: 1px solid black;">
+    <textarea id="java-code">
+package gov.nasa.worldwindx;
+...
+public class ShowTessellationFragment extends BasicGlobeFragment {
+
+    /**
+     * Creates a new WorldWindow with a additional tessellation layer.
+     */
+    @Override
+    public WorldWindow createWorldWindow() {
+        // Let the super class (BasicGlobeFragment) do the creation
+        WorldWindow wwd = super.createWorldWindow();
+
+        // Create a layer that displays the globe's tessellation geometry.
+        ShowTessellationLayer layer = new ShowTessellationLayer();
+        wwd.getLayers().addLayer(layer);
+
+        return wwd;
+    }
+}
+    </textarea>
+</div>
+
+<script type="text/javascript">
+      var javaEditor = CodeMirror.fromTextArea(document.getElementById("java-code"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        mode: "text/x-java",
+        readOnly: true
+      });
+
+
+</script>
+</body>
+</html>

@@ -1,39 +1,52 @@
-/*
- * Copyright (c) 2016 United States Government as represented by the Administrator of the
- * National Aeronautics and Space Administration. All Rights Reserved.
- */
+<!--
+  ~ Copyright (c) 2016 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration. All Rights Reserved.
+  -->
 
-package gov.nasa.worldwindx;
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Camera Control Tutorial</title>
+    <script src="file:///android_asset/codemirror-5.16.0/lib/codemirror.js" type="text/javascript"></script>
+    <script src="file:///android_asset/codemirror-5.16.0/mode/clike/clike.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/codemirror-5.16.0/lib/codemirror.css"/>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/override.css"/>
+</head>
+<body>
+<h1>Camera Control Tutorial</h1>
+<p>
+    Demonstrates how to override the WorldWindowController gesture controller.
+    </p>
+<p>
+    This advanced example uses the Navigator's setAsCamera interface in response touch event gestures.</p>
+<ul>
+    <li>one-finger pan moves the geographic location of the camera,</li>
+    <li>two-finger pinch-zoom adjusts the camera altitude,</li>
+    <li>two-finger rotate rotates the camera about its own axis,</li>
+    <li>three-finger tilt tilts the camera about its own axis.</li>
+</ul>
 
-import android.os.Bundle;
+<h2>Example</h2>
+<h3>CameraControlFragment.java</h3>
+<p>
+    The CameraControlFragment class extends the BasicGlobeFragment and overrides the createWorldWindow method.
+    Here we create override the default WorldWindowController with our own CameraController inner class.
+</p>
+<div style="border-top: 1px solid black; border-bottom: 1px solid black;">
+    <textarea id="java-code">
+public class CameraControlFragment extends BasicGlobeFragment {
 
-import gov.nasa.worldwind.BasicWorldWindowController;
-import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.geom.Camera;
-import gov.nasa.worldwind.geom.Location;
-import gov.nasa.worldwind.gesture.GestureRecognizer;
-import gov.nasa.worldwind.gesture.PinchRecognizer;
-import gov.nasa.worldwind.gesture.RotationRecognizer;
-import gov.nasa.worldwind.globe.Globe;
-import gov.nasa.worldwind.util.WWMath;
-
-public class CameraControlActivity extends BasicGlobeActivity {
-
+    /**
+     * Creates a new WorldWindow object with a custom WorldWindowController.
+     */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_camera_controls));
-        setAboutBoxText("Demonstrates how to override the WorldWindowController gesture controller.\n" +
-            "This example uses the Navigator's setAsCamera interface " +
-            "instead of setAsLookAt.\n" +
-            " - one-finger pan moves the geographic location of the camera,\n" +
-            " - two-finger pinch-zoom adjusts the camera altitude, \n" +
-            " - two-finger rotate rotates the camera about its own axis,\n" +
-            " - three-finger tilt tilts the camera about its own axis.");
-
+    public WorldWindow createWorldWindow() {
+        // Let the super class (BasicGlobeFragment) do the creation
+        WorldWindow wwd = super.createWorldWindow();
 
         // Override the default "look at" gesture behavior with a camera centric gesture controller
-        getWorldWindow().setWorldWindowController(new CameraController());
+        wwd.setWorldWindowController(new CameraController());
 
         // Create a camera position above KOXR airport, Oxnard, CA
         Camera camera = new Camera();
@@ -44,9 +57,12 @@ public class CameraControlActivity extends BasicGlobeActivity {
             0); // No roll
 
         // Apply the new camera position
-        Globe globe = this.getWorldWindow().getGlobe();
-        this.getWorldWindow().getNavigator().setAsCamera(globe, camera);
+        Globe globe = wwd.getGlobe();
+        wwd.getNavigator().setAsCamera(globe, camera);
+
+        return wwd;
     }
+
 
     /**
      * A custom WorldWindController that uses gestures to control the camera directly via the setAsCamera interface
@@ -204,10 +220,22 @@ public class CameraControlActivity extends BasicGlobeActivity {
             double maxTilt = Math.toDegrees(Math.asin(r / (r + camera.altitude)));
             double minTilt = 0;
             camera.tilt = WWMath.clamp(camera.tilt, minTilt, maxTilt);
-
-
         }
-
     }
-
 }
+
+    </textarea>
+</div>
+
+<script type="text/javascript">
+      var javaEditor = CodeMirror.fromTextArea(document.getElementById("java-code"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        mode: "text/x-java",
+        readOnly: true
+      });
+
+
+</script>
+</body>
+</html>

@@ -5,23 +5,21 @@
 
 package gov.nasa.worldwindx;
 
-import android.os.Bundle;
-
+import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.shape.SurfaceImage;
 
-public class SurfaceImageActivity extends BasicGlobeActivity {
+public class SurfaceImageFragment extends BasicGlobeFragment {
 
+    /**
+     * Creates a new WorldWindow with an additional RenderableLayer containing two SurfaceImages.
+     */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_surface_image));
-        setAboutBoxText("Demonstrates how to add SurfaceImages to a RenderableLayer.\n" +
-            "This example adds two surface images to the basic globe:\n" +
-            "1. A remote image showing Mount Etna erupting on July 13th, 2001.\n" +
-            "2. The NASA 'Meatball' logo.");
+    public WorldWindow createWorldWindow() {
+        // Let the super class (BasicGlobeFragment) do the creation
+        WorldWindow wwd = super.createWorldWindow();
 
         // Configure a Surface Image to display an Android resource showing the NASA logo.
         Sector sector = new Sector(37.46, 15.5, 0.5, 0.6);
@@ -38,12 +36,13 @@ public class SurfaceImageActivity extends BasicGlobeActivity {
         RenderableLayer layer = new RenderableLayer("Surface Image");
         layer.addRenderable(surfaceImageResource);
         layer.addRenderable(surfaceImageUrl);
-        this.getWorldWindow().getLayers().addLayer(layer);
+        wwd.getLayers().addLayer(layer);
 
         // Position the viewer so that the Surface Images are visible when the activity is created.
-        this.getWorldWindow().getNavigator().setLatitude(37.46543388598137);
-        this.getWorldWindow().getNavigator().setLongitude(14.97980511744455);
-        this.getWorldWindow().getNavigator().setAltitude(4.0e5);
-    }
+        wwd.getNavigator().setLatitude(37.46543388598137);
+        wwd.getNavigator().setLongitude(14.97980511744455);
+        wwd.getNavigator().setAltitude(4.0e5);
 
+        return wwd;
+    }
 }

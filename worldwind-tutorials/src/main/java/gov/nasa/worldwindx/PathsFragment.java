@@ -5,29 +5,32 @@
 
 package gov.nasa.worldwindx;
 
-import android.os.Bundle;
-
 import java.util.Arrays;
 import java.util.List;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.shape.Path;
 import gov.nasa.worldwind.shape.ShapeAttributes;
 
-public class PathsActivity extends BasicGlobeActivity {
+public class PathsFragment extends BasicGlobeFragment {
 
+    /**
+     * Creates a new WorldWindow (GLSurfaceView) object with a WMS Layer
+     *
+     * @return The WorldWindow object containing the globe.
+     */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        this.setAboutBoxTitle("About " + this.getResources().getText(R.string.title_paths));
-        this.setAboutBoxText("Demonstrates how to use the Path shape.");
+    public WorldWindow createWorldWindow() {
+        // Let the super class (BasicGlobeFragment) do the creation
+        WorldWindow wwd = super.createWorldWindow();
 
         // Create a layer to display the tutorial paths.
         RenderableLayer layer = new RenderableLayer();
-        this.wwd.getLayers().addLayer(layer);
+        wwd.getLayers().addLayer(layer);
 
         // Create a basic path with the default attributes, the default altitude mode (ABSOLUTE),
         // and the default path type (GREAT_CIRCLE).
@@ -75,5 +78,7 @@ public class PathsActivity extends BasicGlobeActivity {
         path = new Path(positions, attrs);
         path.setExtrude(true); // extrude the path from the ground to each path position's altitude
         layer.addRenderable(path);
+
+        return wwd;
     }
 }

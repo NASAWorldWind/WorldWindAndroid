@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwindx;
 
-import android.os.Bundle;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 
@@ -23,21 +22,21 @@ import gov.nasa.worldwind.shape.Highlightable;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
 
-public class PlacemarksPickingActivity extends BasicGlobeActivity {
+public class PlacemarksPickingFragment extends BasicGlobeFragment {
 
     private static final double NORMAL_IMAGE_SCALE = 3.0;
 
     private static final double HIGHLIGHTED_IMAGE_SCALE = 4.0;
 
+    /**
+     * Creates a new WorldWindow (GLSurfaceView) object with a WMS Layer
+     *
+     * @return The WorldWindow object containing the globe.
+     */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_placemarks_picking));
-        setAboutBoxText("Demonstrates how to pick and highlight Placemarks.\n\n" +
-            "Tapping a placemark will toggle its highlighted state.");
-
-        // Get a reference to the WorldWindow view
-        WorldWindow wwd = this.getWorldWindow();
+    public WorldWindow createWorldWindow() {
+        // Let the super class (BasicGlobeFragment) do the creation
+        WorldWindow wwd = super.createWorldWindow();
 
         // Override the World Window's built-in navigation behavior by adding picking support.
         wwd.setWorldWindowController(new PickNavigateController());
@@ -54,7 +53,9 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
 
         // Position the viewer to look near the airports
         LookAt lookAt = new LookAt().set(34.15, -119.15, 0, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
-        this.getWorldWindow().getNavigator().setAsLookAt(this.getWorldWindow().getGlobe(), lookAt);
+        wwd.getNavigator().setAsLookAt(wwd.getGlobe(), lookAt);
+
+        return wwd;
     }
 
     /**
@@ -92,7 +93,8 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
         /**
          * Assign a subclassed SimpleOnGestureListener to a GestureDetector to handle the "pick" events.
          */
-        protected GestureDetector pickGestureDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
+        protected GestureDetector pickGestureDetector = new GestureDetector(
+            getContext().getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDown(MotionEvent event) {
                 pick(event);    // Pick the object(s) at the tap location
@@ -170,7 +172,5 @@ public class PlacemarksPickingActivity extends BasicGlobeActivity {
                 this.selectedObject = isNewSelection ? pickedObject : null;
             }
         }
-
     }
-
 }
