@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.render;
 
 import android.opengl.GLES20;
+import android.util.SparseArray;
 
 import gov.nasa.worldwind.draw.DrawContext;
 
@@ -15,6 +16,8 @@ public class Framebuffer implements RenderResource {
 
     protected int[] framebufferName = UNINITIALIZED_NAME;
 
+    protected SparseArray<Texture> attachedTextures = new SparseArray<>();
+
     public Framebuffer() {
     }
 
@@ -22,6 +25,7 @@ public class Framebuffer implements RenderResource {
     public void release(DrawContext dc) {
         if (this.framebufferName[0] != 0) {
             this.deleteFramebuffer(dc);
+            this.attachedTextures.clear();
         }
     }
 
@@ -37,16 +41,21 @@ public class Framebuffer implements RenderResource {
         return this.framebufferName[0] != 0;
     }
 
-    public boolean attachTexture(DrawContext dc, Texture texture) {
+    public boolean attachTexture(DrawContext dc, Texture texture, int attachment) {
         if (this.framebufferName == UNINITIALIZED_NAME) {
             this.createFramebuffer(dc);
         }
 
         if (this.framebufferName[0] != 0) {
-            this.framebufferTexture(dc, texture);
+            this.framebufferTexture(dc, texture, attachment);
+            this.attachedTextures.put(attachment, texture);
         }
 
         return this.framebufferName[0] != 0;
+    }
+
+    public Texture getAttachedTexture(int attachment) {
+        return this.attachedTextures.get(attachment);
     }
 
     public boolean isFramebufferComplete(DrawContext dc) {
@@ -73,16 +82,14 @@ public class Framebuffer implements RenderResource {
         this.framebufferName[0] = 0;
     }
 
-    protected void framebufferTexture(DrawContext dc, Texture texture) {
+    protected void framebufferTexture(DrawContext dc, Texture texture, int attachment) {
         int currentFramebuffer = dc.currentFramebuffer();
         try {
             // Make the OpenGL framebuffer object the currently active framebuffer.
             dc.bindFramebuffer(this.framebufferName[0]);
-            // Configure the texture as the framebuffer object's color attachment, or remove any color attachment if
-            // the texture is null.
+            // Attach the texture to the framebuffer object, or remove the attachment if the texture is null.
             int textureName = (texture != null) ? texture.getTextureName(dc) : 0;
-            GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D,
-                textureName, 0 /*level*/);
+            GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, attachment, GLES20.GL_TEXTURE_2D, textureName, 0 /*level*/);
         } finally {
             // Restore the current OpenGL framebuffer object binding.
             dc.bindFramebuffer(currentFramebuffer);

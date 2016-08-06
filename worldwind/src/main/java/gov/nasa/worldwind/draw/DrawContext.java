@@ -20,6 +20,8 @@ import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.geom.Viewport;
 import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.Color;
+import gov.nasa.worldwind.render.Framebuffer;
+import gov.nasa.worldwind.render.Texture;
 
 public class DrawContext {
 
@@ -59,6 +61,8 @@ public class DrawContext {
 
     private int elementArrayBufferId;
 
+    private Framebuffer surfaceFramebuffer;
+
     private BufferObject unitSquareBuffer;
 
     private ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder());
@@ -93,6 +97,7 @@ public class DrawContext {
         this.textureUnit = GLES20.GL_TEXTURE0;
         this.arrayBufferId = 0;
         this.elementArrayBufferId = 0;
+        this.surfaceFramebuffer = null;
         this.unitSquareBuffer = null;
         Arrays.fill(this.textureId, 0);
     }
@@ -142,6 +147,18 @@ public class DrawContext {
             this.framebufferId = framebufferId;
             GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, framebufferId);
         }
+    }
+
+    public Framebuffer surfaceFramebuffer() {
+        if (this.surfaceFramebuffer != null) {
+            return this.surfaceFramebuffer;
+        }
+
+        Framebuffer framebuffer = new Framebuffer();
+        Texture colorAttachment = new Texture(1024, 1024, GLES20.GL_RGBA);
+        framebuffer.attachTexture(this, colorAttachment, GLES20.GL_COLOR_ATTACHMENT0);
+
+        return (this.surfaceFramebuffer = framebuffer);
     }
 
     /**
@@ -285,8 +302,9 @@ public class DrawContext {
         FloatBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
         buffer.put(points).rewind();
 
-        this.unitSquareBuffer = new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer);
-        return this.unitSquareBuffer;
+        BufferObject bufferObject = new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer);
+
+        return (this.unitSquareBuffer = bufferObject);
     }
 
     /**
