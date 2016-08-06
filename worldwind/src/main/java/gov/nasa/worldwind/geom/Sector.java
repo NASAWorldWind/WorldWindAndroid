@@ -38,7 +38,6 @@ public class Sector {
     public Sector() {
     }
 
-
     /**
      * Constructs a sector with the specified latitude and longitude values in degrees.
      *
@@ -138,7 +137,6 @@ public class Sector {
         return minLatitude;
     }
 
-
     /**
      * Returns this sector's maximum latitude.
      *
@@ -147,7 +145,6 @@ public class Sector {
     public double maxLatitude() {
         return maxLatitude;
     }
-
 
     /**
      * Returns this sector's minimum longitude.
@@ -158,7 +155,6 @@ public class Sector {
         return minLongitude;
     }
 
-
     /**
      * Returns this sector's maximum longitude.
      *
@@ -167,7 +163,6 @@ public class Sector {
     public double maxLongitude() {
         return maxLongitude;
     }
-
 
     /**
      * Returns the angle between this sector's minimum and maximum latitudes.
@@ -526,34 +521,56 @@ public class Sector {
     }
 
     /**
-     * Sets this sector to the union of itself and a list of specified locations. If this sector is empty, it bounds the
-     * specified locations.
+     * Sets this sector to the union of itself and an array of specified locations. If this sector is empty, it bounds
+     * the specified locations. The array is understood to contain location of at least two coordinates organized as
+     * (longitude, latitude, ...), where stride indicates the number of coordinates between longitude values.
      *
-     * @param locations the list of locations to union with
+     * @param array  the array of locations to consider
+     * @param count  the number of array elements to consider
+     * @param stride the number of coordinates between the first coordinate of adjacent locations - must be at least 2
      *
-     * @return this sector, set to its union with the specified sector
+     * @return This bounding box set to contain the specified array of locations.
      *
-     * @throws IllegalArgumentException If the list is null
+     * @throws IllegalArgumentException If the array is null or empty, if the count is less than 0, or if the stride is
+     *                                  less than 2
      */
-    public Sector union(Iterable<? extends Location> locations) {
-        if (locations == null) {
+    public Sector union(float[] array, int count, int stride) {
+        if (array == null || array.length < stride) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Sector", "union", "missingList"));
+                Logger.logMessage(Logger.ERROR, "Sector", "union", "missingArray"));
         }
+
+        if (count < 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Sector", "union", "invalidCount"));
+        }
+
+        if (stride < 2) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Sector", "union", "invalidStride"));
+        }
+
         double minLat = Double.isNaN(this.minLatitude) ? Double.MAX_VALUE : this.minLatitude;
         double maxLat = Double.isNaN(this.maxLatitude) ? -Double.MAX_VALUE : this.maxLatitude;
         double minLon = Double.isNaN(this.minLongitude) ? Double.MAX_VALUE : this.minLongitude;
         double maxLon = Double.isNaN(this.maxLongitude) ? -Double.MAX_VALUE : this.maxLongitude;
 
-        for (Location location : locations) {
-            if (location == null) {
-                throw new IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Sector", "union", "missingLocation"));
+        for (int idx = 0; idx < count; idx += stride) {
+            float lon = array[idx];
+            float lat = array[idx + 1];
+
+            if (maxLat < lat) {
+                maxLat = lat;
             }
-            maxLat = Math.max(maxLat, location.latitude);
-            minLat = Math.min(minLat, location.latitude);
-            maxLon = Math.max(maxLon, location.longitude);
-            minLon = Math.min(minLon, location.longitude);
+            if (minLat > lat) {
+                minLat = lat;
+            }
+            if (maxLon < lon) {
+                maxLon = lon;
+            }
+            if (minLon > lon) {
+                minLon = lon;
+            }
         }
 
         if (minLat < Double.MAX_VALUE) {
@@ -568,6 +585,7 @@ public class Sector {
         if (maxLon > -Double.MAX_VALUE) {
             this.maxLongitude = maxLon;
         }
+
         return this;
     }
 

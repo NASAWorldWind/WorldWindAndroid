@@ -802,20 +802,21 @@ public class SectorTest {
     }
 
     @Test
-    public void testUnion_IterableLocations() throws Exception {
-        Location oxr = Location.fromDegrees(34.2, -119.2);
-        Location lax = Location.fromDegrees(33.94, -118.4);
-        Location smo = Location.fromDegrees(34.02, -118.45);
-        List<Location> airports = Arrays.asList(lax, oxr, smo);
+    public void testUnion_ArrayOfLocations() throws Exception {
+        float[] array = {
+            -119.2f, 34.2f, // OXR airport
+            -118.4f, 33.94f, // LAX airport
+            -118.45f, 34.02f // SMO airport
+        };
         Sector a = new Sector();
 
-        Sector b = a.union(airports);
+        Sector b = a.union(array, array.length, 2 /*stride*/);
 
         assertFalse(a.isEmpty());
-        assertEquals("min lat", lax.latitude, a.minLatitude(), 0);
-        assertEquals("min lon", oxr.longitude, a.minLongitude(), 0);
-        assertEquals("max lat", oxr.latitude, a.maxLatitude(), 0);
-        assertEquals("max lon", lax.longitude, a.maxLongitude(), 0);
+        assertEquals("min lat", 33.94f /*LAX lat*/, a.minLatitude(), 0);
+        assertEquals("min lon", -119.2f /*OXR lon*/, a.minLongitude(), 0);
+        assertEquals("max lat", 34.2f /*OXR lat*/, a.maxLatitude(), 0);
+        assertEquals("max lon", -118.4f /*LAX lon*/, a.maxLongitude(), 0);
         assertSame(a, b);
     }
 
