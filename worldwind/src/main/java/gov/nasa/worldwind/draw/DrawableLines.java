@@ -19,7 +19,7 @@ import gov.nasa.worldwind.util.Pool;
 
 public class DrawableLines implements Drawable {
 
-    private static FloatBuffer vertexPointBuffer;
+    private static FloatBuffer vertexPointBuffer; // TODO this breaks with multi-window apps; accessed from multiple GLThreads
 
     public BasicShaderProgram program = null;
 

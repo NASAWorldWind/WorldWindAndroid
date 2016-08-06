@@ -83,6 +83,7 @@ public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
         }
 
         // Accumulate surface textures in the draw context's scratch list.
+        // TODO accumulate in a geospatial quadtree
         ArrayList<Object> scratchList = dc.scratchList();
 
         try {
