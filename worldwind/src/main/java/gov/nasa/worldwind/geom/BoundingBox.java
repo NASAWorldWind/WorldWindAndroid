@@ -69,15 +69,32 @@ public class BoundingBox {
     }
 
     /**
-     * Indicates whether this box is an uninitialized unit box centered at the Cartesian origin (0, 0, 0).
+     * Indicates whether this bounding box is a unit box centered at the Cartesian origin (0, 0, 0).
      *
-     * @return true if this box is an uninitialized unit box, otherwise false
+     * @return true if this bounding box is a unit box, otherwise false
      */
     public boolean isUnitBox() {
         return this.center.x == 0
             && this.center.y == 0
             && this.center.z == 0
             && this.radius == Math.sqrt(3);
+    }
+
+    /**
+     * Sets this bounding box to a unit box centered at the Cartesian origin (0, 0, 0).
+     *
+     * @return This bounding box set to a unit box
+     */
+    public BoundingBox setToUnitBox() {
+        this.center.set(0, 0, 0);
+        this.bottomCenter.set(-0.5, 0, 0);
+        this.topCenter.set(0.5, 0, 0);
+        this.r.set(1, 0, 0);
+        this.s.set(0, 1, 0);
+        this.t.set(0, 0, 1);
+        this.radius = Math.sqrt(3);
+
+        return this;
     }
 
     /**
