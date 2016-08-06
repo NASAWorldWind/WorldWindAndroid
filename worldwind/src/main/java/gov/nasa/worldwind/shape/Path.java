@@ -14,8 +14,10 @@ import java.nio.ShortBuffer;
 import java.util.List;
 
 import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.draw.DrawableElements;
+import gov.nasa.worldwind.draw.DrawShapeState;
+import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableShape;
+import gov.nasa.worldwind.draw.DrawableSurfaceShape;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec3;
@@ -33,6 +35,8 @@ public class Path extends AbstractShape {
 
     protected boolean extrude;
 
+    protected boolean followTerrain;
+
     protected FloatArray vertexArray = new FloatArray();
 
     protected ShortArray interiorElements = new ShortArray();
@@ -41,11 +45,13 @@ public class Path extends AbstractShape {
 
     protected ShortArray verticalElements = new ShortArray();
 
-    protected String vertexBufferKey = nextCacheKey();
+    protected Object vertexBufferKey = nextCacheKey();
 
-    protected String elementBufferKey = nextCacheKey();
+    protected Object elementBufferKey = nextCacheKey();
 
     protected Vec3 vertexOrigin = new Vec3();
+
+    protected boolean isSurfacePath;
 
     private int numSubsegments = 10;
 
@@ -55,10 +61,8 @@ public class Path extends AbstractShape {
 
     protected static final double NEAR_ZERO_THRESHOLD = 1.0e-10;
 
-    private static long cacheKeySequence;
-
-    private static String nextCacheKey() {
-        return Path.class.getName() + ".cacheKey." + Long.toString(++cacheKeySequence);
+    protected static Object nextCacheKey() {
+        return new Object();
     }
 
     public Path(List<Position> positions) {
@@ -104,6 +108,15 @@ public class Path extends AbstractShape {
         this.reset();
     }
 
+    public boolean isFollowTerrain() {
+        return this.followTerrain;
+    }
+
+    public void setFollowTerrain(boolean followTerrain) {
+        this.followTerrain = followTerrain;
+        this.reset();
+    }
+
     protected void reset() {
         this.vertexArray.clear();
     }
@@ -116,74 +129,86 @@ public class Path extends AbstractShape {
 
         if (this.mustAssembleGeometry(rc)) {
             this.assembleGeometry(rc);
-            //rc.renderResourceCache.remove(this.vertexBufferKey);
-            //rc.renderResourceCache.remove(this.elementBufferKey);
             this.vertexBufferKey = nextCacheKey();
             this.elementBufferKey = nextCacheKey();
         }
 
         // Obtain a drawable form the render context pool.
-        Pool<DrawableShape> pool = rc.getDrawablePool(DrawableShape.class);
-        DrawableShape drawable = DrawableShape.obtain(pool);
+        Drawable drawable;
+        DrawShapeState drawState;
+        if (this.isSurfacePath) {
+            Pool<DrawableSurfaceShape> pool = rc.getDrawablePool(DrawableSurfaceShape.class);
+            drawable = DrawableSurfaceShape.obtain(pool);
+            drawState = ((DrawableSurfaceShape) drawable).drawState;
+            ((DrawableSurfaceShape) drawable).sector.set(this.boundingSector);
+        } else {
+            Pool<DrawableShape> pool = rc.getDrawablePool(DrawableShape.class);
+            drawable = DrawableShape.obtain(pool);
+            drawState = ((DrawableShape) drawable).drawState;
+        }
 
         // Use the basic GLSL program to draw the shape.
-        drawable.program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
-        if (drawable.program == null) {
-            drawable.program = (BasicShaderProgram) rc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(rc.resources));
+        drawState.program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
+        if (drawState.program == null) {
+            drawState.program = (BasicShaderProgram) rc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(rc.resources));
         }
 
         // Assemble the drawable's OpenGL vertex buffer object.
-        drawable.vertexBuffer = rc.getBufferObject(this.vertexBufferKey);
-        if (drawable.vertexBuffer == null) {
+        drawState.vertexBuffer = rc.getBufferObject(this.vertexBufferKey);
+        if (drawState.vertexBuffer == null) {
             int size = this.vertexArray.size() * 4;
             FloatBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
             buffer.put(this.vertexArray.array(), 0, this.vertexArray.size());
-            BufferObject bufferObject = new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer.rewind());
-            drawable.vertexBuffer = rc.putBufferObject(this.vertexBufferKey, bufferObject);
+            drawState.vertexBuffer = new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer.rewind());
+            rc.putBufferObject(this.vertexBufferKey, drawState.vertexBuffer);
         }
 
         // Assemble the drawable's OpenGL element buffer object.
-        drawable.elementBuffer = rc.getBufferObject(this.elementBufferKey);
-        if (drawable.elementBuffer == null) {
+        drawState.elementBuffer = rc.getBufferObject(this.elementBufferKey);
+        if (drawState.elementBuffer == null) {
             int size = (this.interiorElements.size() * 2) + (this.outlineElements.size() * 2) + (this.verticalElements.size() * 2);
             ShortBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer();
             buffer.put(this.interiorElements.array(), 0, this.interiorElements.size());
             buffer.put(this.outlineElements.array(), 0, this.outlineElements.size());
             buffer.put(this.verticalElements.array(), 0, this.verticalElements.size());
-            BufferObject bufferObject = new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind());
-            drawable.elementBuffer = rc.putBufferObject(this.elementBufferKey, bufferObject);
+            drawState.elementBuffer = new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind());
+            rc.putBufferObject(this.elementBufferKey, drawState.elementBuffer);
         }
 
         // Configure the drawable to display the path's outline.
         if (this.activeAttributes.drawOutline) {
-            DrawableElements prim = drawable.addDrawElements(GLES20.GL_LINE_STRIP, this.outlineElements.size(),
+            drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
+            drawState.lineWidth(this.activeAttributes.outlineWidth);
+            drawState.drawElements(GLES20.GL_LINE_STRIP, this.outlineElements.size(),
                 GLES20.GL_UNSIGNED_SHORT, this.interiorElements.size() * 2);
-            prim.color.set(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
-            prim.lineWidth = this.activeAttributes.outlineWidth;
         }
 
         // Configure the drawable to display the path's extruded verticals.
         if (this.activeAttributes.drawOutline && this.activeAttributes.drawVerticals && this.extrude) {
-            DrawableElements prim = drawable.addDrawElements(GLES20.GL_LINES, this.verticalElements.size(),
+            drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
+            drawState.lineWidth(this.activeAttributes.outlineWidth);
+            drawState.drawElements(GLES20.GL_LINES, this.verticalElements.size(),
                 GLES20.GL_UNSIGNED_SHORT, (this.interiorElements.size() * 2) + (this.outlineElements.size() * 2));
-            prim.color.set(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
-            prim.lineWidth = this.activeAttributes.outlineWidth;
         }
 
         // Configure the drawable to display the path's extruded interior.
         if (this.activeAttributes.drawInterior && this.extrude) {
-            DrawableElements prim = drawable.addDrawElements(GLES20.GL_TRIANGLE_STRIP, this.interiorElements.size(),
+            drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.interiorColor);
+            drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, this.interiorElements.size(),
                 GLES20.GL_UNSIGNED_SHORT, 0);
-            prim.color.set(rc.pickMode ? this.pickColor : this.activeAttributes.interiorColor);
         }
 
         // Configure the drawable according to the shape's attributes.
-        drawable.vertexOrigin.set(this.vertexOrigin);
-        drawable.enableDepthTest = this.activeAttributes.depthTest;
+        drawState.vertexOrigin.set(this.vertexOrigin);
+        drawState.enableDepthTest = this.activeAttributes.depthTest;
 
         // Enqueue the drawable for processing on the OpenGL thread.
-        double cameraDistance = this.boundingBox.distanceTo(rc.cameraPoint);
-        rc.offerShapeDrawable(drawable, cameraDistance);
+        if (this.isSurfacePath) {
+            rc.offerSurfaceDrawable(drawable, 0 /*zOrder*/);
+        } else {
+            double cameraDistance = this.boundingBox.distanceTo(rc.cameraPoint);
+            rc.offerShapeDrawable(drawable, cameraDistance);
+        }
     }
 
     protected boolean mustAssembleGeometry(RenderContext rc) {
@@ -191,6 +216,9 @@ public class Path extends AbstractShape {
     }
 
     protected void assembleGeometry(RenderContext rc) {
+        // Determine whether the shape geometry must be assembled as Cartesian geometry or as geographic geometry.
+        this.isSurfacePath = (this.altitudeMode == WorldWind.CLAMP_TO_GROUND) && this.followTerrain;
+
         // Clear the path's vertex array and element arrays. These arrays will accumulate values as the path's Cartesian
         // geometry is assembled.
         this.vertexArray.clear();
@@ -210,9 +238,15 @@ public class Path extends AbstractShape {
             begin = end;
         }
 
-        // Compute the path's Cartesian bounding box from its Cartesian coordinates.
-        this.boundingBox.setToPoints(this.vertexArray.array(), this.vertexArray.size(), 3);
-        this.boundingBox.translate(this.vertexOrigin.x, this.vertexOrigin.y, this.vertexOrigin.z);
+        // Compute the path's bounding box or bounding sector from its assembled coordinates.
+        if (this.isSurfacePath) {
+            this.boundingSector.union(this.vertexArray.array(), this.vertexArray.size(), 2);
+            this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
+        } else {
+            this.boundingBox.setToPoints(this.vertexArray.array(), this.vertexArray.size(), 3);
+            this.boundingBox.translate(this.vertexOrigin.x, this.vertexOrigin.y, this.vertexOrigin.z);
+            this.boundingSector.setEmpty(); // Cartesian shape bounding sector is unused
+        }
     }
 
     protected void addSegment(RenderContext rc, Position begin, Position end) {
@@ -268,6 +302,22 @@ public class Path extends AbstractShape {
     }
 
     protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude, boolean tessellated) {
+        if (this.isSurfacePath) {
+            this.addVertexGeographic(rc, latitude, longitude, altitude, tessellated);
+        } else {
+            this.addVertexCartesian(rc, latitude, longitude, altitude, tessellated);
+        }
+    }
+
+    protected void addVertexGeographic(RenderContext rc, double latitude, double longitude, double altitude, boolean tessellated) {
+        int vertex = this.vertexArray.size() / 2;
+        this.vertexArray.add((float) longitude);
+        this.vertexArray.add((float) latitude);
+
+        this.outlineElements.add((short) vertex);
+    }
+
+    protected void addVertexCartesian(RenderContext rc, double latitude, double longitude, double altitude, boolean tessellated) {
         rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, this.point);
 
         int topVertex = this.vertexArray.size() / 3;

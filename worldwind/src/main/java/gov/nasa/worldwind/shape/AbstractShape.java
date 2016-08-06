@@ -8,6 +8,7 @@ package gov.nasa.worldwind.shape;
 import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.BoundingBox;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.RenderContext;
@@ -32,16 +33,16 @@ public class AbstractShape extends AbstractRenderable implements Attributable, H
 
     protected Color pickColor = new Color();
 
-    protected BoundingBox boundingBox;
+    protected Sector boundingSector = new Sector();
+
+    protected BoundingBox boundingBox = new BoundingBox();
 
     public AbstractShape() {
         this.attributes = new ShapeAttributes();
-        this.boundingBox = new BoundingBox(); // uninitialized unit box
     }
 
     public AbstractShape(ShapeAttributes attributes) {
         this.attributes = attributes;
-        this.boundingBox = new BoundingBox(); // uninitialized unit box
     }
 
     @Override

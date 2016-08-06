@@ -50,7 +50,7 @@ public class PathsFragment extends BasicGlobeFragment {
         );
         path = new Path(positions);
         path.setAltitudeMode(WorldWind.CLAMP_TO_GROUND); // clamp the path vertices to the ground
-        //path.setFollowTerrain(true); // follow the ground between path vertices
+        path.setFollowTerrain(true); // follow the ground between path vertices
         layer.addRenderable(path);
 
         // Create an extruded path with the default attributes, the default altitude mode (ABSOLUTE),
