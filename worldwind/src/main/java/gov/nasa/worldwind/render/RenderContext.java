@@ -368,16 +368,9 @@ public class RenderContext {
         return result;
     }
 
-    public BufferObject getBufferObject(Object key) {
-        return (BufferObject) this.renderResourceCache.get(key);
-    }
-
-    public BufferObject putBufferObject(Object key, BufferObject buffer) {
-        this.renderResourceCache.put(key, buffer, (buffer != null) ? buffer.getBufferByteCount() : 0);
-        return buffer;
-    }
-
     public ShaderProgram getShaderProgram(Object key) {
+        // TODO redesign ShaderProgram to operate as a resource accessible from DrawContext
+        // TODO created automatically on OpenGL thread, unless the caller wants to explicitly create a program
         return (ShaderProgram) this.renderResourceCache.get(key);
     }
 
@@ -397,6 +390,15 @@ public class RenderContext {
 
     public Texture retrieveTexture(ImageSource imageSource, ImageOptions imageOptions) {
         return this.renderResourceCache.retrieveTexture(imageSource, imageOptions);
+    }
+
+    public BufferObject getBufferObject(Object key) {
+        return (BufferObject) this.renderResourceCache.get(key);
+    }
+
+    public BufferObject putBufferObject(Object key, BufferObject buffer) {
+        this.renderResourceCache.put(key, buffer, (buffer != null) ? buffer.getBufferByteCount() : 0);
+        return buffer;
     }
 
     public void offerDrawable(Drawable drawable, int groupId, double order) {
