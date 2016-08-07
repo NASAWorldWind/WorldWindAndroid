@@ -31,6 +31,8 @@ import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.SynchronizedPool;
+import gov.nasa.worldwind.util.glu.GLU;
+import gov.nasa.worldwind.util.glu.GLUtessellator;
 
 public class RenderContext {
 
@@ -85,6 +87,8 @@ public class RenderContext {
     private boolean redrawRequested;
 
     private double pixelSizeFactor;
+
+    private GLUtessellator tessellator;
 
     private Map<Object, Pool<?>> drawablePools = new HashMap<>();
 
@@ -461,6 +465,16 @@ public class RenderContext {
         }
 
         return this.pickedObjectId;
+    }
+
+    public GLUtessellator getTessellator() {
+        if (this.tessellator != null) {
+            return this.tessellator;
+        }
+
+        GLUtessellator tess = GLU.gluNewTess();
+
+        return (this.tessellator = tess);
     }
 
     public Object getUserProperty(Object key) {
