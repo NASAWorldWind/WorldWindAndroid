@@ -284,6 +284,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_placemarks_picking_activity:
                 loadTutorial(PlacemarksPickingFragment.class, "file:///android_asset/placemarks_picking_tutorial.html", R.string.title_placemarks_picking);
                 break;
+            case R.id.nav_polygons_activity:
+                loadTutorial(PolygonsFragment.class, "file:///android_asset/polygons_tutorial.html", R.string.title_polygons);
+                break;
             case R.id.nav_show_tessellation_activity:
                 loadTutorial(ShowTessellationFragment.class, "file:///android_asset/show_tessellation_tutorial.html", R.string.title_show_tessellation);
                 break;
