@@ -296,6 +296,137 @@ public class ViewportTest {
     }
 
     @Test
+    public void testIntersect_Doubles() throws Exception {
+        Viewport a = new Viewport(30, 100, 2, 2);
+        Viewport b = new Viewport(31, 101, 2, 2);
+        Viewport northeast = new Viewport(31, 101, 1, 1);
+
+        boolean intersected = a.intersect(b.x, b.y, b.width, b.height);
+
+        assertTrue("intersecting", intersected);
+        assertEquals("intersection", northeast, a);
+    }
+
+    @Test
+    public void testIntersect_DoublesEmpty() throws Exception {
+        Viewport a = new Viewport(30, 100, 2, 2);
+        Viewport b = new Viewport(31, 101, 0, 0);
+
+        boolean aIntersectedB = a.intersect(b.x, b.y, b.width, b.height);
+        boolean bIntersectedA = b.intersect(a.x, a.y, a.width, a.height);
+
+        assertFalse("a intersecting b", aIntersectedB);
+        assertFalse("b intersecting a", bIntersectedA);
+    }
+
+    @Test
+    public void testIntersect_DoublesInside() throws Exception {
+        Viewport a = new Viewport(30, 100, 3, 3);
+        Viewport inside = new Viewport(31, 101, 1, 1);
+
+        boolean intersected = a.intersect(inside.x, inside.y, inside.width, inside.height);
+
+        assertTrue("interesecting", intersected);
+        assertEquals("inside, intersection is interior sector", inside, a);
+    }
+
+    @Test
+    public void testIntersect_DoublesEast() throws Exception {
+        Viewport a = new Viewport(30, 100, 3, 3);
+        Viewport east = new Viewport(31, 102, 1, 2);
+        Viewport expected = new Viewport(31, 102, 1, 1);
+
+        boolean intersected = a.intersect(east.x, east.y, east.width, east.height);
+
+        assertTrue("overlapping", intersected);
+        assertEquals("intersection", a, expected);
+    }
+
+    @Test
+    public void testIntersect_DoublesWest() throws Exception {
+        Viewport a = new Viewport(30, 100, 3, 3);
+        Viewport west = new Viewport(31, 99, 1, 2);
+        Viewport expected = new Viewport(31, 100, 1, 1);
+
+        boolean intersected = a.intersect(west.x, west.y, west.width, west.height);
+
+        assertTrue("overlapping", intersected);
+        assertEquals("intersection", a, expected);
+    }
+
+    @Test
+    public void testIntersect_DoublesNorth() throws Exception {
+        Viewport a = new Viewport(30, 100, 3, 3);
+        Viewport north = new Viewport(32, 101, 2, 1);
+        Viewport expected = new Viewport(32, 101, 1, 1);
+
+        boolean intersected = a.intersect(north.x, north.y, north.width, north.height);
+
+        assertTrue("overlapping", intersected);
+        assertEquals("intersection", a, expected);
+    }
+
+    @Test
+    public void testIntersect_DoublesSouth() throws Exception {
+        Viewport a = new Viewport(30, 100, 3, 3);
+        Viewport south = new Viewport(29, 101, 2, 1);
+        Viewport expected = new Viewport(30, 101, 1, 1);
+
+        boolean intersected = a.intersect(south.x, south.y, south.width, south.height);
+
+        assertTrue("overlapping", intersected);
+        assertEquals("intersection", a, expected);
+    }
+
+    @Test
+    public void testIntersect_DoublesAdjacentEast() throws Exception {
+        Viewport a = new Viewport(30, 100, 3, 3);
+        Viewport adjacentEast = new Viewport(31, 103, 1, 1);
+        Viewport copy = new Viewport(a);
+
+        boolean intersected = a.intersect(adjacentEast.x, adjacentEast.y, adjacentEast.width, adjacentEast.height);
+
+        assertFalse("adjacent, no intersection", intersected);
+        assertEquals("adjacent, no changed", a, copy);
+    }
+
+    @Test
+    public void testIntersect_DoublesAdjacentWest() throws Exception {
+        Viewport a = new Viewport(30, 100, 3, 3);
+        Viewport adjacentWest = new Viewport(31, 99, 1, 1);
+        Viewport copy = new Viewport(a);
+
+        boolean intersected = a.intersect(adjacentWest.x, adjacentWest.y, adjacentWest.width, adjacentWest.height);
+
+        assertFalse("adjacent, no intersection", intersected);
+        assertEquals("adjacent, no changed", a, copy);
+    }
+
+    @Test
+    public void testIntersect_DoublesAdjacentNorth() throws Exception {
+        Viewport a = new Viewport(30, 100, 3, 3);
+        Viewport adjacentNorth = new Viewport(33, 101, 1, 1);
+        Viewport copy = new Viewport(a);
+
+        boolean intersected = a.intersect(adjacentNorth.x, adjacentNorth.y, adjacentNorth.width, adjacentNorth.height);
+
+        assertFalse("adjacent, no intersection", intersected);
+        assertEquals("adjacent, no changed", a, copy);
+    }
+
+    @Test
+    public void testIntersect_DoublesAdjacentSouth() throws Exception {
+        Viewport a = new Viewport(30, 100, 3, 3);
+        Viewport adjacentSouth = new Viewport(29, 101, 1, 1);
+        Viewport copy = new Viewport(a);
+
+        boolean intersected = a.intersect(adjacentSouth.x, adjacentSouth.y, adjacentSouth.width, adjacentSouth.height);
+
+        assertFalse("adjacent, no intersection", intersected);
+        assertEquals("adjacent, no changed", a, copy);
+    }
+
+    @Test
     public void testIntersects() throws Exception {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport copy = new Viewport(a);
@@ -331,6 +462,44 @@ public class ViewportTest {
         assertFalse("coincident se point", a.intersects(new Viewport(29, 101, 1, 1)));
         assertFalse("coincident nw point", a.intersects(new Viewport(31, 99, 1, 1)));
         assertFalse("coincident sw point", a.intersects(new Viewport(29, 99, 1, 1)));
+    }
+
+    @Test
+    public void testIntersects_Doubles() throws Exception {
+        Viewport a = new Viewport(30, 100, 3, 3);
+        Viewport copy = new Viewport(a);
+
+        assertTrue("inside", a.intersects(31, 101, 1, 1));
+        assertTrue("overlap east", a.intersects(31, 102, 1, 2));
+        assertTrue("overlap west", a.intersects(31, 99, 1, 2));
+        assertTrue("overlap north", a.intersects(32, 101, 2, 1));
+        assertTrue("overlap south", a.intersects(29, 101, 2, 1));
+        assertEquals("no mutation", copy, a);
+    }
+
+    @Test
+    public void testIntersects_DoublesEmpty() throws Exception {
+        Viewport a = new Viewport(30, 100, 3, 3);
+
+        assertFalse("empty", a.intersects(0, 0, 0, 0));
+        assertFalse("no dimension", a.intersects(31, 101, 0, 0));
+        assertFalse("no width", a.intersects(31, 101, 5, 0));
+        assertFalse("no height", a.intersects(31, 101, 0, 5));
+    }
+
+    @Test
+    public void testIntersects_DoublesCoincident() throws Exception {
+        Viewport a = new Viewport(30, 100, 1, 1);
+
+        assertTrue("coincident", a.intersects(30, 100, 1, 1));
+        assertFalse("coincident east edge", a.intersects(30, 101, 1, 1));
+        assertFalse("coincident west edge", a.intersects(30, 99, 1, 1));
+        assertFalse("coincident north edge", a.intersects(31, 100, 1, 1));
+        assertFalse("coincident south edge", a.intersects(29, 100, 1, 1));
+        assertFalse("coincident ne point", a.intersects(31, 101, 1, 1));
+        assertFalse("coincident se point", a.intersects(29, 101, 1, 1));
+        assertFalse("coincident nw point", a.intersects(31, 99, 1, 1));
+        assertFalse("coincident sw point", a.intersects(29, 99, 1, 1));
     }
 }
 

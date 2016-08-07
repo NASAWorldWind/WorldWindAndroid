@@ -85,7 +85,6 @@ public class Viewport {
 
         Viewport that = (Viewport) o;
         return this.x == that.x && this.y == that.y && this.width == that.width && this.height == that.height;
-
     }
 
     @Override
@@ -178,6 +177,24 @@ public class Viewport {
      * Indicates whether this viewport intersects a specified viewport. Two viewport intersect when both overlap by a
      * non-zero amount. An empty viewport never intersects another viewport.
      *
+     * @param x      the X component of the viewport to test intersection with
+     * @param y      the Y component of the viewport to test intersection with
+     * @param width  the viewport width to test intersection with
+     * @param height the viewport height to test intersection with
+     *
+     * @return true if the specified viewport intersections this viewport, false otherwise
+     */
+    public boolean intersects(int x, int y, int width, int height) {
+        return this.width > 0 && this.height > 0
+            && width > 0 && height > 0
+            && this.x < (x + width) && x < (this.x + this.width)
+            && this.y < (y + height) && y < (this.y + this.height);
+    }
+
+    /**
+     * Indicates whether this viewport intersects a specified viewport. Two viewport intersect when both overlap by a
+     * non-zero amount. An empty viewport never intersects another viewport.
+     *
      * @param viewport the viewport to test intersection with
      *
      * @return true if the specified viewport intersections this viewport, false otherwise
@@ -196,6 +213,51 @@ public class Viewport {
             && that.width > 0 && that.height > 0
             && this.x < (that.x + that.width) && that.x < (this.x + this.width)
             && this.y < (that.y + that.height) && that.y < (this.y + this.height);
+    }
+
+    /**
+     * Computes the intersection of this viewport and a specified viewport, storing the result in this viewport and
+     * returning whether or not the viewport intersect. Two viewport intersect when both overlap by a non-zero amount.
+     * An empty viewport never intersects another viewport.
+     * <p/>
+     * When there is no intersection, this returns false and leaves this viewport unchanged. To test for intersection
+     * without modifying this viewport, use {@link #intersects}.
+     *
+     * @param x      the X component of the viewport to intersect with
+     * @param y      the Y component of the viewport to intersect with
+     * @param width  the viewport width to intersect with
+     * @param height the viewport height to intersect with
+     *
+     * @return this true if this viewport intersects the specified viewport, false otherwise
+     */
+    public boolean intersect(int x, int y, int width, int height) {
+        if (this.width > 0 && this.height > 0
+            && width > 0 && height > 0
+            && this.x < (x + width) && x < (this.x + this.width)
+            && this.y < (y + height) && y < (this.y + this.height)) {
+
+            if (this.x < x) {
+                this.width -= x - this.x;
+                this.x = x;
+            }
+
+            if (this.y < y) {
+                this.height -= y - this.y;
+                this.y = y;
+            }
+
+            if ((this.x + this.width) > (x + width)) {
+                this.width = x + width - this.x;
+            }
+
+            if ((this.y + this.height) > (y + height)) {
+                this.height = y + height - this.y;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
