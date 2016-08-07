@@ -299,8 +299,10 @@ public class Polygon extends AbstractShape {
                 GLES20.GL_UNSIGNED_SHORT, 0);
         }
 
-        // Configure the drawable according to the shape's attributes.
+        // Configure the drawable according to the shape's attributes. Disable triangle backface culling when we're
+        // displaying a polygon without extruded sides, so we want to draw the top and the bottom.
         drawState.vertexOrigin.set(this.vertexOrigin);
+        drawState.enableCullFace = this.extrude;
         drawState.enableDepthTest = this.activeAttributes.depthTest;
 
         // Enqueue the drawable for processing on the OpenGL thread.

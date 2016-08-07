@@ -67,13 +67,15 @@ public class DrawableShape implements Drawable {
         this.mvpMatrix.multiplyByTranslation(this.drawState.vertexOrigin.x, this.drawState.vertexOrigin.y, this.drawState.vertexOrigin.z);
         this.drawState.program.loadModelviewProjection(this.mvpMatrix);
 
+        // Disable triangle backface culling if requested.
+        if (!this.drawState.enableCullFace) {
+            GLES20.glDisable(GLES20.GL_CULL_FACE);
+        }
+
         // Disable depth testing if requested.
         if (!this.drawState.enableDepthTest) {
             GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         }
-
-        // Disable polygon backface culling in order to draw both sides of the triangles.
-        GLES20.glDisable(GLES20.GL_CULL_FACE);
 
         // Use the shape's vertex point attribute.
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 3, GLES20.GL_FLOAT, false, 0, 0);
@@ -87,6 +89,9 @@ public class DrawableShape implements Drawable {
         }
 
         // Restore the default World Wind OpenGL state.
+        if (!this.drawState.enableCullFace) {
+            GLES20.glEnable(GLES20.GL_CULL_FACE);
+        }
         if (!this.drawState.enableDepthTest) {
             GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         }

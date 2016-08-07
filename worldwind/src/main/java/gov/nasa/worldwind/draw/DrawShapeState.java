@@ -22,6 +22,8 @@ public class DrawShapeState {
 
     public Vec3 vertexOrigin = new Vec3();
 
+    public boolean enableCullFace = true;
+
     public boolean enableDepthTest = true;
 
     protected Color color = new Color();
@@ -44,6 +46,7 @@ public class DrawShapeState {
         this.elementBuffer = null;
         this.vertexOrigin.set(0, 0, 0);
         this.color.set(1, 1, 1, 1);
+        this.enableCullFace = true;
         this.enableDepthTest = true;
         this.lineWidth = 1;
         this.primCount = 0;
