@@ -19,7 +19,7 @@ import gov.nasa.worldwind.shape.ShapeAttributes;
 public class PathsFragment extends BasicGlobeFragment {
 
     /**
-     * Creates a new WorldWindow (GLSurfaceView) object with a WMS Layer
+     * Creates a new WorldWindow (GLSurfaceView) object with a set of Path shapes
      *
      * @return The WorldWindow object containing the globe.
      */
