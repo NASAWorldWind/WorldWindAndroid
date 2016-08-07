@@ -211,6 +211,7 @@ public class Path extends AbstractShape {
 
         // Configure the drawable according to the shape's attributes.
         drawState.vertexOrigin.set(this.vertexOrigin);
+        drawState.enableCullFace = false;
         drawState.enableDepthTest = this.activeAttributes.depthTest;
 
         // Enqueue the drawable for processing on the OpenGL thread.
