@@ -354,7 +354,7 @@ public class Sector {
      * @param deltaLatitude  the width of the sector to intersect with, in degrees
      * @param deltaLongitude the height of the sector to intersect with, in degrees
      *
-     * @return this sector, set to its intersection with the specified sector
+     * @return true if the specified sector intersections this sector, false otherwise
      */
     public boolean intersect(double minLatitude, double minLongitude, double deltaLatitude, double deltaLongitude) {
         // Assumes normalized latitude and longitude: [-90, +90], [-180, +180]
