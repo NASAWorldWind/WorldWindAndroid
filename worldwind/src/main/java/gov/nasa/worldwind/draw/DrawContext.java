@@ -12,6 +12,8 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import gov.nasa.worldwind.PickedObjectList;
 import gov.nasa.worldwind.geom.Matrix4;
@@ -44,6 +46,8 @@ public class DrawContext {
     public DrawableList drawableTerrain;
 
     public PickedObjectList pickedObjects;
+
+    public Viewport pickViewport;
 
     public Vec2 pickPoint;
 
@@ -85,6 +89,7 @@ public class DrawContext {
         this.drawableQueue = null;
         this.drawableTerrain = null;
         this.pickedObjects = null;
+        this.pickViewport = null;
         this.pickPoint = null;
         this.pickMode = false;
         this.scratchList.clear();
@@ -323,15 +328,58 @@ public class DrawContext {
             result = new Color();
         }
 
+        // Read the fragment pixel as an RGBA 8888 color.
         GLES20.glReadPixels(x, y, 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, this.pixelBuffer.rewind());
         this.pixelBuffer.get(this.pixelArray);
 
+        // Convert the RGBA 8888 color to a World Wind color.
         result.red = (this.pixelArray[0] & 0xFF) / (float) 0xFF;
         result.green = (this.pixelArray[1] & 0xFF) / (float) 0xFF;
         result.blue = (this.pixelArray[2] & 0xFF) / (float) 0xFF;
         result.alpha = (this.pixelArray[3] & 0xFF) / (float) 0xFF;
 
         return result;
+    }
+
+    /**
+     * Reads the unique fragment colors within a screen rectangle in the currently active OpenGL frame buffer. The
+     * components indicate OpenGL screen coordinates, which originate in the frame buffer's lower left corner.
+     *
+     * @param x      the screen rectangle's X component
+     * @param y      the screen rectangle's Y component
+     * @param width  the screen rectangle's width
+     * @param height the screen rectangle's height
+     *
+     * @return a set containing the unique fragment colors
+     */
+    public Set<Color> readPixelColors(int x, int y, int width, int height) {
+        int count = width * height * 4;
+        if (count > this.pixelBuffer.capacity()) {
+            this.pixelBuffer = ByteBuffer.allocateDirect(count).order(ByteOrder.nativeOrder());
+            this.pixelArray = new byte[count];
+        }
+
+        // Read the fragment pixels as a tightly packed array of RGBA 8888 colors.
+        GLES20.glReadPixels(x, y, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, this.pixelBuffer.rewind());
+        this.pixelBuffer.get(this.pixelArray, 0, count);
+
+        HashSet<Color> resultSet = new HashSet<>();
+        Color result = new Color();
+
+        for (int idx = 0; idx < count; idx += 4) {
+            // Convert the RGBA 8888 color to a World Wind color.
+            result.red = (this.pixelArray[idx] & 0xFF) / (float) 0xFF;
+            result.green = (this.pixelArray[idx + 1] & 0xFF) / (float) 0xFF;
+            result.blue = (this.pixelArray[idx + 2] & 0xFF) / (float) 0xFF;
+            result.alpha = (this.pixelArray[idx + 3] & 0xFF) / (float) 0xFF;
+
+            // Accumulate the unique colors in a set.
+            if (resultSet.add(result)) {
+                result = new Color();
+            }
+        }
+
+        return resultSet;
     }
 
     /**

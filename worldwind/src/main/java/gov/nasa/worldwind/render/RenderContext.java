@@ -76,6 +76,8 @@ public class RenderContext {
 
     public PickedObjectList pickedObjects;
 
+    public Viewport pickViewport;
+
     public Vec2 pickPoint;
 
     public Line pickRay;
@@ -117,6 +119,7 @@ public class RenderContext {
         this.drawableQueue = null;
         this.drawableTerrain = null;
         this.pickedObjects = null;
+        this.pickViewport = null;
         this.pickPoint = null;
         this.pickRay = null;
         this.pickMode = false;
