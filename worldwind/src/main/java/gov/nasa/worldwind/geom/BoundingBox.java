@@ -336,7 +336,50 @@ public class BoundingBox {
     }
 
     public double distanceTo(Vec3 point) {
-        return this.center.distanceTo(point); // TODO shortest distance to center and corner points
+        if (point == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "BoundingBox", "distanceTo", "missingPoint"));
+        }
+
+        double minDist2 = Double.POSITIVE_INFINITY;
+
+        // Start with distance to the center of the box.
+        double dist2 = this.center.distanceToSquared(point);
+        if (minDist2 > dist2) {
+            minDist2 = dist2;
+        }
+
+        // Test distance to the bottom of the R axis.
+        dist2 = this.bottomCenter.distanceToSquared(point);
+        if (minDist2 > dist2) {
+            minDist2 = dist2;
+        }
+
+        // Test distance to the top of the R axis.
+        dist2 = this.topCenter.distanceToSquared(point);
+        if (minDist2 > dist2) {
+            minDist2 = dist2;
+        }
+
+        // Test distance to the bottom of the S axis.
+        this.endPoint1.x = this.center.x - (0.5 * this.r.x);
+        this.endPoint1.y = this.center.y - (0.5 * this.r.y);
+        this.endPoint1.z = this.center.z - (0.5 * this.r.z);
+        dist2 = this.endPoint1.distanceToSquared(point);
+        if (minDist2 > dist2) {
+            minDist2 = dist2;
+        }
+
+        // Test distance to the top of the S axis.
+        this.endPoint1.x = this.center.x + (0.5 * this.r.x);
+        this.endPoint1.y = this.center.y + (0.5 * this.r.y);
+        this.endPoint1.z = this.center.z + (0.5 * this.r.z);
+        dist2 = this.endPoint1.distanceToSquared(point);
+        if (minDist2 > dist2) {
+            minDist2 = dist2;
+        }
+
+        return Math.sqrt(minDist2);
     }
 
     /**
