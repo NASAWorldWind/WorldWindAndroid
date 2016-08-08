@@ -158,6 +158,8 @@ public class Polygon extends AbstractShape {
                 Logger.logMessage(Logger.ERROR, "Polygon", "setBoundary", "missingList"));
         }
 
+        this.reset();
+
         return this.boundaries.set(index, positions);
     }
 
@@ -168,6 +170,7 @@ public class Polygon extends AbstractShape {
         }
 
         this.boundaries.add(positions);
+        this.reset();
     }
 
     public void addBoundary(int index, List<Position> positions) {
@@ -182,6 +185,7 @@ public class Polygon extends AbstractShape {
         }
 
         this.boundaries.add(index, positions);
+        this.reset();
     }
 
     public List<Position> removeBoundary(int index) {
@@ -190,11 +194,14 @@ public class Polygon extends AbstractShape {
                 Logger.logMessage(Logger.ERROR, "Polygon", "removeBoundary", "invalidIndex"));
         }
 
+        this.reset();
+
         return this.boundaries.remove(index);
     }
 
     public void clearBoundaries() {
         this.boundaries.clear();
+        this.reset();
     }
 
     public boolean isExtrude() {
