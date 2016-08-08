@@ -32,6 +32,10 @@ public class Texture implements RenderResource {
 
     protected Bitmap imageBitmap;
 
+    protected boolean haveMipmaps;
+
+    private boolean pickMode;
+
     public Texture(Bitmap bitmap) {
         if (bitmap == null || bitmap.isRecycled()) {
             throw new IllegalArgumentException(
@@ -108,6 +112,11 @@ public class Texture implements RenderResource {
             dc.bindTexture(this.textureName[0]);
         }
 
+        if (this.textureName[0] != 0 && this.pickMode != dc.pickMode) {
+            this.setTexParameters(dc);
+            this.pickMode = dc.pickMode;
+        }
+
         return this.textureName[0] != 0;
     }
 
@@ -155,8 +164,8 @@ public class Texture implements RenderResource {
 
             // If the bitmap has power-of-two dimensions, generate the texture object's image data for image levels 1
             // through level N, and configure the texture object's filtering modes to use those image levels.
-            boolean isPowerOfTwo = WWMath.isPowerOfTwo(bitmap.getWidth()) && WWMath.isPowerOfTwo(bitmap.getHeight());
-            if (isPowerOfTwo) {
+            this.haveMipmaps = WWMath.isPowerOfTwo(bitmap.getWidth()) && WWMath.isPowerOfTwo(bitmap.getHeight());
+            if (this.haveMipmaps) {
                 GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
                 GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
             }
@@ -164,6 +173,19 @@ public class Texture implements RenderResource {
             // The Android utility was unable to load the texture image data.
             Logger.logMessage(Logger.ERROR, "Texture", "loadTexImage",
                 "Exception attempting to load texture image \'" + bitmap + "\'", e);
+        }
+    }
+
+    protected void setTexParameters(DrawContext dc) {
+        if (dc.pickMode) {
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+        } else if (this.haveMipmaps) {
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        } else {
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
         }
     }
 
