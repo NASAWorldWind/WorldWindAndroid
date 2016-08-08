@@ -431,6 +431,58 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     /**
+     * Determines the World Wind shapes displayed in a screen rectangle. The screen rectangle is interpreted as
+     * coordinates in Android screen pixels relative to this view.
+     * <p/>
+     * If the screen rectangle intersects any number of World Wind shapes, the returned list contains a picked object
+     * identifying the all of the top shapes in the rectangle. This picked object includes the shape renderable (or its
+     * non-null pick delegate) and the World Wind layer that displayed the shape. Shapes which are entirely hidden
+     * behind another shape in the screen rectangle or are entirely hidden behind terrain in the screen rectangle are
+     * omitted from the returned list.
+     * <p/>
+     * This returns an empty list when no shapes in the World Wind scene intersect the screen rectangle, when the screen
+     * rectangle is outside this View's bounds, or if the OpenGL thread displaying the World Window's scene is paused
+     * (or becomes paused while this method is executing).
+     *
+     * @param x      the screen rectangle's X coordinate in Android screen pixels
+     * @param y      the screen rectangle's Y coordinate in Android screen pixels
+     * @param width  the screen rectangle's width in Android screen pixels
+     * @param height the screen rectangle's height in Android screen pixels
+     *
+     * @return a list of World Wind shapes in the screen rectangle
+     */
+    public PickedObjectList pickShapesInRect(float x, float y, float width, float height) {
+        // Allocate a list in which to collect and return the picked objects.
+        PickedObjectList pickedObjects = new PickedObjectList();
+
+        // Nothing can be picked if the World Window's OpenGL thread is paused.
+        if (this.isPaused) {
+            return pickedObjects;
+        }
+
+        int px = (int) Math.floor(x);
+        int py = (int) Math.floor(this.getHeight() - (y + height));
+        int pw = (int) Math.ceil(width);
+        int ph = (int) Math.ceil(height);
+        if (!this.viewport.intersects(px, py, pw, ph)) {
+            return pickedObjects;
+        }
+
+        // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
+        Frame frame = Frame.obtain(this.framePool);
+        frame.pickedObjects = pickedObjects;
+        frame.pickViewport = new Viewport(px, py, pw, ph); // caller-specified pick rectangle
+        frame.pickViewport.intersect(this.viewport); // limit the pick viewport to the screen viewport
+        frame.pickMode = true;
+        this.renderFrame(frame);
+
+        // Wait until the OpenGL thread is done processing the frame and resolving the picked objects.
+        frame.awaitDone();
+
+        return pickedObjects;
+    }
+
+    /**
      * Transforms a Cartesian coordinate point to Android screen coordinates. The resultant screen point is in Android
      * screen pixels relative to this View.
      * <p/>
@@ -851,6 +903,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.rc.drawableQueue = frame.drawableQueue;
         this.rc.drawableTerrain = frame.drawableTerrain;
         this.rc.pickedObjects = frame.pickedObjects;
+        this.rc.pickViewport = frame.pickViewport;
         this.rc.pickPoint = frame.pickPoint;
         this.rc.pickRay = frame.pickRay;
         this.rc.pickMode = frame.pickMode;
@@ -907,6 +960,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.dc.drawableQueue = frame.drawableQueue;
         this.dc.drawableTerrain = frame.drawableTerrain;
         this.dc.pickedObjects = frame.pickedObjects;
+        this.dc.pickViewport = frame.pickViewport;
         this.dc.pickPoint = frame.pickPoint;
         this.dc.pickMode = frame.pickMode;
 

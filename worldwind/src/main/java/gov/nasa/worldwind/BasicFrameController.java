@@ -7,6 +7,8 @@ package gov.nasa.worldwind;
 
 import android.opengl.GLES20;
 
+import java.util.Set;
+
 import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableSurfaceColor;
@@ -98,8 +100,10 @@ public class BasicFrameController implements FrameController {
         this.clearFrame(dc);
         this.drawDrawables(dc);
 
-        if (dc.pickMode) {
+        if (dc.pickMode && dc.pickPoint != null) {
             this.resolvePick(dc);
+        } else if (dc.pickMode) {
+            this.resolvePickRect(dc);
         }
     }
 
@@ -149,8 +153,32 @@ public class BasicFrameController implements FrameController {
         }
     }
 
+    protected void resolvePickRect(DrawContext dc) {
+        if (dc.pickedObjects.count() == 0) {
+            return; // no eligible objects; avoid expensive calls to glReadPixels
+        }
+
+        // Read the unique fragment colors in the pick rectangle.
+        Set<Color> pickColors = dc.readPixelColors(dc.pickViewport.x, dc.pickViewport.y, dc.pickViewport.width, dc.pickViewport.height);
+
+        for (Color pickColor : pickColors) {
+            // Convert the fragment color to a picked object ID. This returns zero if the color cannot indicate a picked
+            // object ID.
+            int topObjectId = PickedObject.uniqueColorToIdentifier(pickColor);
+            if (topObjectId != 0) {
+                PickedObject topObject = dc.pickedObjects.pickedObjectWithId(topObjectId);
+                if (topObject != null) {
+                    topObject.markOnTop();
+                }
+            }
+        }
+
+        // Remove all picked objects not marked as on top.
+        dc.pickedObjects.keepTopObjects();
+    }
+
     protected boolean resolveTerrainPickPosition(RenderContext rc, Position result) {
-        if (rc.terrain.intersect(rc.pickRay, this.pickPoint)) {
+        if (rc.pickRay != null && rc.terrain.intersect(rc.pickRay, this.pickPoint)) {
             result = rc.globe.cartesianToGeographic(this.pickPoint.x, this.pickPoint.y, this.pickPoint.z, result);
             result.altitude = 0; // report the actual altitude, which does necessarily match the Cartesian surface
             return true;
