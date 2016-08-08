@@ -7,6 +7,8 @@ package gov.nasa.worldwind;
 
 import android.util.SparseArray;
 
+import java.util.ArrayList;
+
 import gov.nasa.worldwind.util.Logger;
 
 public class PickedObjectList {
@@ -89,5 +91,23 @@ public class PickedObjectList {
 
     public void clearPickedObjects() {
         this.entries.clear();
+    }
+
+    public void keepTopObjects() {
+        ArrayList<Integer> removalList = new ArrayList<>();
+
+        // Collect the indices of picked objects not marked as on top.
+        for (int idx = 0, len = this.entries.size(); idx < len; idx++) {
+            PickedObject po = this.entries.valueAt(idx);
+            if (!po.isOnTop()) {
+                removalList.add(idx);
+            }
+        }
+
+        // Safely remove the picked objects not marked as on top (without iterating over the entries themselves).
+        for (int idx = 0, len = removalList.size(); idx < len; idx++) {
+            int indexToRemove = removalList.get(idx);
+            this.entries.removeAt(indexToRemove);
+        }
     }
 }
