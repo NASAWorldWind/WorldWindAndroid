@@ -106,7 +106,7 @@ public class ShapeAttributes {
             && this.outlineWidth == that.outlineWidth
             && this.outlineStippleFactor == that.outlineStippleFactor
             && this.outlineStipplePattern == that.outlineStipplePattern
-            && (this.imageSource == null) ? (that.imageSource == null) : this.imageSource.equals(that.imageSource);
+            && ((this.imageSource == null) ? (that.imageSource == null) : this.imageSource.equals(that.imageSource));
     }
 
     @Override
