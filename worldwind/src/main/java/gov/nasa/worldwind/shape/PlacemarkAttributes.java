@@ -130,15 +130,15 @@ public class PlacemarkAttributes {
         }
 
         PlacemarkAttributes that = (PlacemarkAttributes) o;
-        return (this.imageSource == null) ? (that.imageSource == null) : this.imageSource.equals(that.imageSource)
+        return ((this.imageSource == null) ? (that.imageSource == null) : this.imageSource.equals(that.imageSource))
             && this.imageColor.equals(that.imageColor)
             && this.imageOffset.equals(that.imageOffset)
             && this.imageScale == that.imageScale
             && this.minimumImageScale == that.minimumImageScale
             && this.drawLeader == that.drawLeader
             && this.depthTest == that.depthTest
-            && (this.labelAttributes == null) ? (that.labelAttributes == null) : this.labelAttributes.equals(that.labelAttributes)
-            && (this.leaderAttributes == null) ? (that.leaderAttributes == null) : this.leaderAttributes.equals(that.leaderAttributes);
+            && ((this.labelAttributes == null) ? (that.labelAttributes == null) : this.labelAttributes.equals(that.labelAttributes))
+            && ((this.leaderAttributes == null) ? (that.leaderAttributes == null) : this.leaderAttributes.equals(that.leaderAttributes));
     }
 
     @Override
