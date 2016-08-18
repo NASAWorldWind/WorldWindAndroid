@@ -13,7 +13,7 @@ import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.RenderContext;
 
-public class AbstractShape extends AbstractRenderable implements Attributable, Highlightable {
+public abstract class AbstractShape extends AbstractRenderable implements Attributable, Highlightable {
 
     protected ShapeAttributes attributes;
 
@@ -136,9 +136,6 @@ public class AbstractShape extends AbstractRenderable implements Attributable, H
         }
     }
 
-    protected void reset() {
-    }
-
     protected boolean intersectsFrustum(RenderContext rc) {
         return this.boundingBox.isUnitBox() || this.boundingBox.intersectsFrustum(rc.frustum);
     }
@@ -151,6 +148,7 @@ public class AbstractShape extends AbstractRenderable implements Attributable, H
         }
     }
 
-    protected void makeDrawable(RenderContext rc) {
-    }
+    protected abstract void reset();
+
+    protected abstract void makeDrawable(RenderContext rc);
 }
