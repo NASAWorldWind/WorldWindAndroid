@@ -29,6 +29,8 @@ public class AbstractShape extends AbstractRenderable implements Attributable, H
     @WorldWind.PathType
     protected int pathType = WorldWind.GREAT_CIRCLE;
 
+    protected int maximumIntermediatePoints = 10;
+
     protected int pickedObjectId;
 
     protected Color pickColor = new Color();
@@ -36,6 +38,8 @@ public class AbstractShape extends AbstractRenderable implements Attributable, H
     protected Sector boundingSector = new Sector();
 
     protected BoundingBox boundingBox = new BoundingBox();
+
+    protected static final double NEAR_ZERO_THRESHOLD = 1.0e-10;
 
     public AbstractShape() {
         this.attributes = new ShapeAttributes();
@@ -93,6 +97,14 @@ public class AbstractShape extends AbstractRenderable implements Attributable, H
     public void setPathType(@WorldWind.PathType int pathType) {
         this.pathType = pathType;
         this.reset();
+    }
+
+    public int getMaximumIntermediatePoints() {
+        return maximumIntermediatePoints;
+    }
+
+    public void setMaximumIntermediatePoints(int maximumIntermediatePoints) {
+        this.maximumIntermediatePoints = maximumIntermediatePoints;
     }
 
     @Override

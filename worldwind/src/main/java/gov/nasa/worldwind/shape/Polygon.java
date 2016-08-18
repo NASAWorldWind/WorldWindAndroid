@@ -79,15 +79,11 @@ public class Polygon extends AbstractShape {
         }
     };
 
-    protected static final double NEAR_ZERO_THRESHOLD = 1.0e-10;
+    protected static final int VERTEX_ORIGINAL = 0;
 
-    protected static final int VERTEX_USER = 0;
-
-    protected static final int VERTEX_TESSELATED = 1;
+    protected static final int VERTEX_INTERMEDIATE = 1;
 
     protected static final int VERTEX_COMBINED = 2;
-
-    private int numSubsegments = 10;
 
     private Vec3 point = new Vec3();
 
@@ -358,19 +354,19 @@ public class Polygon extends AbstractShape {
             if (this.vertexArray.size() == 0) {
                 rc.geographicToCartesian(begin.latitude, begin.longitude, begin.altitude, this.altitudeMode, this.vertexOrigin);
             }
-            this.addVertex(rc, begin.latitude, begin.longitude, begin.altitude, VERTEX_USER /*type*/);
+            this.addVertex(rc, begin.latitude, begin.longitude, begin.altitude, VERTEX_ORIGINAL /*type*/);
 
             // Add the remaining boundary vertices, tessellating each edge as indicated by the polygon's properties.
             for (int idx = 1, len = positions.size(); idx < len; idx++) {
                 Position end = positions.get(idx);
-                this.addEdgeVertices(rc, begin, end);
-                this.addVertex(rc, end.latitude, end.longitude, end.altitude, VERTEX_USER /*type*/);
+                this.addIntermediateVertices(rc, begin, end);
+                this.addVertex(rc, end.latitude, end.longitude, end.altitude, VERTEX_ORIGINAL /*type*/);
                 begin = end;
             }
 
             // Tessellate the implicit closing edge if the boundary is not already closed.
             if (!begin.equals(positions.get(0))) {
-                this.addEdgeVertices(rc, begin, positions.get(0));
+                this.addIntermediateVertices(rc, begin, positions.get(0));
             }
 
             GLU.gluTessEndContour(tess);
@@ -394,9 +390,13 @@ public class Polygon extends AbstractShape {
         }
     }
 
-    protected void addEdgeVertices(RenderContext rc, Position begin, Position end) {
+    protected void addIntermediateVertices(RenderContext rc, Position begin, Position end) {
         if (this.pathType == WorldWind.LINEAR) {
-            return; // suppress edge vertices when the path type is linear
+            return; // suppress intermediate vertices when the path type is linear
+        }
+
+        if (this.maximumIntermediatePoints <= 0) {
+            return; // suppress intermediate vertices when configured to do so
         }
 
         double azimuth = 0;
@@ -410,26 +410,25 @@ public class Polygon extends AbstractShape {
         }
 
         if (length < NEAR_ZERO_THRESHOLD) {
-            return; // suppress edge vertices when the edge length less than a millimeter (on Earth)
+            return; // suppress intermediate vertices when the edge length less than a millimeter (on Earth)
         }
 
-        if (this.numSubsegments > 0) {
-            double deltaDist = length / this.numSubsegments;
-            double deltaAlt = (end.altitude - begin.altitude) / this.numSubsegments;
-            double dist = deltaDist;
-            double alt = begin.altitude + deltaAlt;
+        int numSubsegments = this.maximumIntermediatePoints + 1;
+        double deltaDist = length / numSubsegments;
+        double deltaAlt = (end.altitude - begin.altitude) / numSubsegments;
+        double dist = deltaDist;
+        double alt = begin.altitude + deltaAlt;
 
-            for (int idx = 1; idx < this.numSubsegments; idx++) {
-                if (this.pathType == WorldWind.GREAT_CIRCLE) {
-                    begin.greatCircleLocation(azimuth, dist, this.loc);
-                } else if (this.pathType == WorldWind.RHUMB_LINE) {
-                    begin.rhumbLocation(azimuth, dist, this.loc);
-                }
-
-                this.addVertex(rc, this.loc.latitude, this.loc.longitude, alt, VERTEX_TESSELATED /*type*/);
-                dist += deltaDist;
-                alt += deltaAlt;
+        for (int idx = 1; idx < numSubsegments; idx++) {
+            if (this.pathType == WorldWind.GREAT_CIRCLE) {
+                begin.greatCircleLocation(azimuth, dist, this.loc);
+            } else if (this.pathType == WorldWind.RHUMB_LINE) {
+                begin.rhumbLocation(azimuth, dist, this.loc);
             }
+
+            this.addVertex(rc, this.loc.latitude, this.loc.longitude, alt, VERTEX_INTERMEDIATE /*type*/);
+            dist += deltaDist;
+            alt += deltaAlt;
         }
     }
 
@@ -470,7 +469,7 @@ public class Polygon extends AbstractShape {
             this.vertexArray.add((float) (this.point.z - this.vertexOrigin.z));
         }
 
-        if (this.extrude && type == VERTEX_USER) {
+        if (this.extrude && type == VERTEX_ORIGINAL) {
             this.verticalElements.add((short) vertex);
             this.verticalElements.add((short) (vertex + 1));
         }

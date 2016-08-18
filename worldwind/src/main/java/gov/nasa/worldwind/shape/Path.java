@@ -54,13 +54,9 @@ public class Path extends AbstractShape {
 
     protected boolean isSurfaceShape;
 
-    private int numSubsegments = 10;
-
     private Vec3 point = new Vec3();
 
     private Location loc = new Location();
-
-    protected static final double NEAR_ZERO_THRESHOLD = 1.0e-10;
 
     protected static Object nextCacheKey() {
         return new Object();
@@ -246,7 +242,7 @@ public class Path extends AbstractShape {
         // Add the remaining vertices, tessellating each edge as indicated by the path's properties.
         for (int idx = 1, len = this.positions.size(); idx < len; idx++) {
             Position end = this.positions.get(idx);
-            this.addEdgeVertices(rc, begin, end);
+            this.addIntermediateVertices(rc, begin, end);
             this.addVertex(rc, end.latitude, end.longitude, end.altitude, false /*tessellated*/);
             begin = end;
         }
@@ -263,9 +259,13 @@ public class Path extends AbstractShape {
         }
     }
 
-    protected void addEdgeVertices(RenderContext rc, Position begin, Position end) {
+    protected void addIntermediateVertices(RenderContext rc, Position begin, Position end) {
         if (this.pathType == WorldWind.LINEAR) {
-            return; // suppress edge vertices when the path type is linear
+            return; // suppress intermediate vertices when the path type is linear
+        }
+
+        if (this.maximumIntermediatePoints <= 0) {
+            return; // suppress intermediate vertices when configured to do so
         }
 
         double azimuth = 0;
@@ -279,38 +279,37 @@ public class Path extends AbstractShape {
         }
 
         if (length < NEAR_ZERO_THRESHOLD) {
-            return; // suppress edge vertices when the edge length less than a millimeter (on Earth)
+            return; // suppress intermediate vertices when the edge length less than a millimeter (on Earth)
         }
 
-        if (this.numSubsegments > 0) {
-            double deltaDist = length / this.numSubsegments;
-            double deltaAlt = (end.altitude - begin.altitude) / this.numSubsegments;
-            double dist = deltaDist;
-            double alt = begin.altitude + deltaAlt;
+        int numSubsegments = this.maximumIntermediatePoints + 1;
+        double deltaDist = length / numSubsegments;
+        double deltaAlt = (end.altitude - begin.altitude) / numSubsegments;
+        double dist = deltaDist;
+        double alt = begin.altitude + deltaAlt;
 
-            for (int idx = 1; idx < this.numSubsegments; idx++) {
-                if (this.pathType == WorldWind.GREAT_CIRCLE) {
-                    begin.greatCircleLocation(azimuth, dist, this.loc);
-                } else if (this.pathType == WorldWind.RHUMB_LINE) {
-                    begin.rhumbLocation(azimuth, dist, this.loc);
-                }
-
-                this.addVertex(rc, this.loc.latitude, this.loc.longitude, alt, true /*tessellated*/);
-                dist += deltaDist;
-                alt += deltaAlt;
+        for (int idx = 1; idx < numSubsegments; idx++) {
+            if (this.pathType == WorldWind.GREAT_CIRCLE) {
+                begin.greatCircleLocation(azimuth, dist, this.loc);
+            } else if (this.pathType == WorldWind.RHUMB_LINE) {
+                begin.rhumbLocation(azimuth, dist, this.loc);
             }
+
+            this.addVertex(rc, this.loc.latitude, this.loc.longitude, alt, true /*tessellated*/);
+            dist += deltaDist;
+            alt += deltaAlt;
         }
     }
 
-    protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude, boolean tessellated) {
+    protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude, boolean intermediate) {
         if (this.isSurfaceShape) {
-            this.addVertexGeographic(rc, latitude, longitude, altitude, tessellated);
+            this.addVertexGeographic(rc, latitude, longitude, altitude, intermediate);
         } else {
-            this.addVertexCartesian(rc, latitude, longitude, altitude, tessellated);
+            this.addVertexCartesian(rc, latitude, longitude, altitude, intermediate);
         }
     }
 
-    protected void addVertexGeographic(RenderContext rc, double latitude, double longitude, double altitude, boolean tessellated) {
+    protected void addVertexGeographic(RenderContext rc, double latitude, double longitude, double altitude, boolean intermediate) {
         int vertex = this.vertexArray.size() / 2;
         this.vertexArray.add((float) longitude);
         this.vertexArray.add((float) latitude);
@@ -318,7 +317,7 @@ public class Path extends AbstractShape {
         this.outlineElements.add((short) vertex);
     }
 
-    protected void addVertexCartesian(RenderContext rc, double latitude, double longitude, double altitude, boolean tessellated) {
+    protected void addVertexCartesian(RenderContext rc, double latitude, double longitude, double altitude, boolean intermediate) {
         rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, this.point);
         int vertex = this.vertexArray.size() / 3;
         this.vertexArray.add((float) (this.point.x - this.vertexOrigin.x));
@@ -337,7 +336,7 @@ public class Path extends AbstractShape {
             this.interiorElements.add((short) (vertex + 1));
         }
 
-        if (this.extrude && !tessellated) {
+        if (this.extrude && !intermediate) {
             this.verticalElements.add((short) vertex);
             this.verticalElements.add((short) (vertex + 1));
         }
