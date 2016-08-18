@@ -238,15 +238,16 @@ public class Path extends AbstractShape {
         this.outlineElements.clear();
         this.verticalElements.clear();
 
-        // Compute the shape's local Cartesian coordinate origin and add the first vertex.
+        // Add the first vertex and compute the shape's local Cartesian coordinate origin.
         Position begin = this.positions.get(0);
         rc.geographicToCartesian(begin.latitude, begin.longitude, begin.altitude, this.altitudeMode, this.vertexOrigin);
         this.addVertex(rc, begin.latitude, begin.longitude, begin.altitude, false /*tessellated*/);
 
-        // Add the remaining path vertices, tessellating each segment as indicated by the path's properties.
+        // Add the remaining vertices, tessellating each edge as indicated by the path's properties.
         for (int idx = 1, len = this.positions.size(); idx < len; idx++) {
             Position end = this.positions.get(idx);
-            this.addSegment(rc, begin, end);
+            this.addEdgeVertices(rc, begin, end);
+            this.addVertex(rc, end.latitude, end.longitude, end.altitude, false /*tessellated*/);
             begin = end;
         }
 
@@ -262,27 +263,23 @@ public class Path extends AbstractShape {
         }
     }
 
-    protected void addSegment(RenderContext rc, Position begin, Position end) {
+    protected void addEdgeVertices(RenderContext rc, Position begin, Position end) {
+        if (this.pathType == WorldWind.LINEAR) {
+            return; // suppress edge vertices when the path type is linear
+        }
+
         double azimuth = 0;
         double length = 0;
-
-        switch (this.pathType) {
-            case WorldWind.GREAT_CIRCLE:
-                azimuth = begin.greatCircleAzimuth(end);
-                length = begin.greatCircleDistance(end);
-                break;
-            case WorldWind.LINEAR:
-                azimuth = begin.linearAzimuth(end);
-                length = begin.linearDistance(end);
-                break;
-            case WorldWind.RHUMB_LINE:
-                azimuth = begin.rhumbAzimuth(end);
-                length = begin.rhumbDistance(end);
-                break;
+        if (this.pathType == WorldWind.GREAT_CIRCLE) {
+            azimuth = begin.greatCircleAzimuth(end);
+            length = begin.greatCircleDistance(end);
+        } else if (this.pathType == WorldWind.RHUMB_LINE) {
+            azimuth = begin.rhumbAzimuth(end);
+            length = begin.rhumbDistance(end);
         }
 
         if (length < NEAR_ZERO_THRESHOLD) {
-            return; // suppress the next point when the segment length less than a millimeter (on Earth)
+            return; // suppress edge vertices when the edge length less than a millimeter (on Earth)
         }
 
         if (this.numSubsegments > 0) {
@@ -292,16 +289,10 @@ public class Path extends AbstractShape {
             double alt = begin.altitude + deltaAlt;
 
             for (int idx = 1; idx < this.numSubsegments; idx++) {
-                switch (this.pathType) {
-                    case WorldWind.GREAT_CIRCLE:
-                        begin.greatCircleLocation(azimuth, dist, this.loc);
-                        break;
-                    case WorldWind.LINEAR:
-                        begin.linearLocation(azimuth, dist, this.loc);
-                        break;
-                    case WorldWind.RHUMB_LINE:
-                        begin.rhumbLocation(azimuth, dist, this.loc);
-                        break;
+                if (this.pathType == WorldWind.GREAT_CIRCLE) {
+                    begin.greatCircleLocation(azimuth, dist, this.loc);
+                } else if (this.pathType == WorldWind.RHUMB_LINE) {
+                    begin.rhumbLocation(azimuth, dist, this.loc);
                 }
 
                 this.addVertex(rc, this.loc.latitude, this.loc.longitude, alt, true /*tessellated*/);
@@ -309,9 +300,6 @@ public class Path extends AbstractShape {
                 alt += deltaAlt;
             }
         }
-
-        // Explicitly add the endpoint to ensure alignment.
-        this.addVertex(rc, end.latitude, end.longitude, end.altitude, false /*tessellated*/);
     }
 
     protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude, boolean tessellated) {

@@ -326,9 +326,6 @@ public class Polygon extends AbstractShape {
     }
 
     protected void assembleGeometry(RenderContext rc) {
-        // Prepare the vertex origin to be re-computed.
-        this.vertexOrigin.set(Double.NaN, Double.NaN, Double.NaN);
-
         // Determine whether the shape geometry must be assembled as Cartesian geometry or as geographic geometry.
         this.isSurfaceShape = (this.altitudeMode == WorldWind.CLAMP_TO_GROUND) && this.followTerrain;
 
@@ -351,22 +348,29 @@ public class Polygon extends AbstractShape {
 
             List<Position> positions = this.boundaries.get(boundaryIdx);
             if (positions.isEmpty()) {
-                continue; // no boundary to tessellate
+                continue; // no boundary positions to assemble
             }
 
             GLU.gluTessBeginContour(tess);
 
-            // Assemble the vertices for each edge between boundary positions.
+            // Add the boundary's first vertex and compute the polygon's local Cartesian coordinate origin.
             Position begin = positions.get(0);
+            if (this.vertexArray.size() == 0) {
+                rc.geographicToCartesian(begin.latitude, begin.longitude, begin.altitude, this.altitudeMode, this.vertexOrigin);
+            }
+            this.addVertex(rc, begin.latitude, begin.longitude, begin.altitude, VERTEX_USER /*type*/);
+
+            // Add the remaining boundary vertices, tessellating each edge as indicated by the polygon's properties.
             for (int idx = 1, len = positions.size(); idx < len; idx++) {
                 Position end = positions.get(idx);
-                this.addEdge(rc, begin, end);
+                this.addEdgeVertices(rc, begin, end);
+                this.addVertex(rc, end.latitude, end.longitude, end.altitude, VERTEX_USER /*type*/);
                 begin = end;
             }
 
-            // If the the boundary is not closed, add the vertices the edge between the last and first positions.
+            // Tessellate the implicit closing edge if the boundary is not already closed.
             if (!begin.equals(positions.get(0))) {
-                this.addEdge(rc, begin, positions.get(0));
+                this.addEdgeVertices(rc, begin, positions.get(0));
             }
 
             GLU.gluTessEndContour(tess);
@@ -390,62 +394,43 @@ public class Polygon extends AbstractShape {
         }
     }
 
-    protected void addEdge(RenderContext rc, Position begin, Position end) {
-        // Compute the segment's constant properties - the segment azimuth and the segment length.
+    protected void addEdgeVertices(RenderContext rc, Position begin, Position end) {
+        if (this.pathType == WorldWind.LINEAR) {
+            return; // suppress edge vertices when the path type is linear
+        }
+
         double azimuth = 0;
         double length = 0;
-        switch (this.pathType) {
-            case WorldWind.GREAT_CIRCLE:
-                azimuth = begin.greatCircleAzimuth(end);
-                length = begin.greatCircleDistance(end);
-                break;
-            case WorldWind.LINEAR:
-                azimuth = begin.linearAzimuth(end);
-                length = begin.linearDistance(end);
-                break;
-            case WorldWind.RHUMB_LINE:
-                azimuth = begin.rhumbAzimuth(end);
-                length = begin.rhumbDistance(end);
-                break;
+        if (this.pathType == WorldWind.GREAT_CIRCLE) {
+            azimuth = begin.greatCircleAzimuth(end);
+            length = begin.greatCircleDistance(end);
+        } else if (this.pathType == WorldWind.RHUMB_LINE) {
+            azimuth = begin.rhumbAzimuth(end);
+            length = begin.rhumbDistance(end);
         }
 
-        // Compute the shape's local Cartesian coordinate origin.
-        if (Double.isNaN(this.vertexOrigin.x)) {
-            rc.geographicToCartesian(begin.latitude, begin.longitude, begin.altitude, this.altitudeMode, this.vertexOrigin);
+        if (length < NEAR_ZERO_THRESHOLD) {
+            return; // suppress edge vertices when the edge length less than a millimeter (on Earth)
         }
 
-        // Explicitly add the first vertex to ensure alignment with adjacent segments.
-        this.addVertex(rc, begin.latitude, begin.longitude, begin.altitude, VERTEX_USER /*type*/);
-
-        // Add additional segment vertices when specified, and the segment length is nonzero.
-        if (this.numSubsegments > 0 && length > NEAR_ZERO_THRESHOLD) {
+        if (this.numSubsegments > 0) {
             double deltaDist = length / this.numSubsegments;
             double deltaAlt = (end.altitude - begin.altitude) / this.numSubsegments;
             double dist = deltaDist;
             double alt = begin.altitude + deltaAlt;
 
             for (int idx = 1; idx < this.numSubsegments; idx++) {
-                switch (this.pathType) {
-                    case WorldWind.GREAT_CIRCLE:
-                        begin.greatCircleLocation(azimuth, dist, this.loc);
-                        break;
-                    case WorldWind.LINEAR:
-                        begin.linearLocation(azimuth, dist, this.loc);
-                        break;
-                    case WorldWind.RHUMB_LINE:
-                        begin.rhumbLocation(azimuth, dist, this.loc);
-                        break;
+                if (this.pathType == WorldWind.GREAT_CIRCLE) {
+                    begin.greatCircleLocation(azimuth, dist, this.loc);
+                } else if (this.pathType == WorldWind.RHUMB_LINE) {
+                    begin.rhumbLocation(azimuth, dist, this.loc);
                 }
 
                 this.addVertex(rc, this.loc.latitude, this.loc.longitude, alt, VERTEX_TESSELATED /*type*/);
-
                 dist += deltaDist;
                 alt += deltaAlt;
             }
         }
-
-        // Explicitly add the last vertex to ensure alignment with adjacent segments.
-        this.addVertex(rc, end.latitude, end.longitude, end.altitude, VERTEX_USER /*type*/);
     }
 
     protected int addVertex(RenderContext rc, double latitude, double longitude, double altitude, int type) {
