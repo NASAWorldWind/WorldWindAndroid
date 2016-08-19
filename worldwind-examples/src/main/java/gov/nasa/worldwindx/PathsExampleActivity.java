@@ -43,9 +43,8 @@ public class PathsExampleActivity extends GeneralGlobeActivity implements Handle
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.setAboutBoxTitle("");
-        this.setAboutBoxText("");
-
+        this.setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_paths_example));
+        setAboutBoxText("Demonstrates Paths used to animate aircraft great-circle routes from Seattle to other US airports.");
         this.readAirportTable();
         this.populateFlightPaths();
         this.getWorldWindow().getLayers().addLayer(this.flightPathLayer);
