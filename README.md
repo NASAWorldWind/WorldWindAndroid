@@ -11,10 +11,11 @@ use to represent information on the globe or in space.
 # Important Sites
 
 - [World Wind Tutorials](http://worldwindserver.net/android/latest/worldwind-tutorials.apk) runs on devices with Android
-  4.4 (KitKat) and newer
+4.4 (KitKat) and newer
 - [World Wind Examples](http://worldwindserver.net/android/latest/worldwind-examples.apk) runs on devices with Android
-  4.4 (KitKat) and newer
-- [World Wind Library](http://worldwindserver.net/android/latest/worldwind.aar) provides the World Wind Library as an Android Archive (AAR)
+4.4 (KitKat) and newer
+- [World Wind Library](http://worldwindserver.net/android/latest/worldwind.aar) provides the World Wind Library as an
+ Android Archive (AAR)
 - [API Docs](http://worldwindserver.net/android/latest/doc) gives class level details for developers
 - [JIRA](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA/) provides requirement and issue tracking
 - [World Wind Forum](http://forum.worldwindcentral.com) provides help from the World Wind community
@@ -22,12 +23,14 @@ use to represent information on the globe or in space.
 
 # Release 0.4.0, August 19, 2016
 
-World Wind Android v0.4.0 adds new functionality for rendering paths and polygons as on the surface or above ground,
-with optional extrusions. This release also includes region picking, the ability to pick all features within a user-defined
+World Wind Android v0.4.0 adds new functionality for rendering paths and polygons on the surface or above ground, with
+optional extrusions. This release also includes region picking, the ability to pick all features within a user-defined
 rectangular region.  Also included in this release is the new Tutorials App.
 
-- [World Wind Tutorials 0.4.0](http://worldwindserver.net/android/0.4.0/worldwind-tutorials.apk) - Tutorial App for 0.4.0; runs on Android 4.4 and newer
-- [World Wind Examples 0.4.0](http://worldwindserver.net/android/0.4.0/worldwind-examples.apk) - Example App for 0.4.0; runs on Android 4.4 and newer
+- [World Wind Tutorials 0.4.0](http://worldwindserver.net/android/0.4.0/worldwind-tutorials.apk) - Tutorial App for 0.4.0;
+runs on Android 4.4 and newer
+- [World Wind Examples 0.4.0](http://worldwindserver.net/android/0.4.0/worldwind-examples.apk) - Example App for 0.4.0;
+runs on Android 4.4 and newer
 - [World Wind Library 0.4.0](http://worldwindserver.net/android/0.4.0/worldwind.aar) - Android Archive (AAR) for 0.4.0
 - [API Docs 0.4.0](http://worldwindserver.net/android/0.4.0/doc) - Developer documentation for 0.4.0
 - [JIRA 0.4.0](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA/fixforversion/10914) - Detailed release notes for 0.4.0
