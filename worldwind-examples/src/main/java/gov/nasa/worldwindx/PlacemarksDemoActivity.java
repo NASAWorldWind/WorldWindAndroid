@@ -42,7 +42,7 @@ import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
 
 /**
- * This Activity
+ * This Activity demonstrates a LOT of Placemarks with varying levels of detail.
  */
 public class PlacemarksDemoActivity extends GeneralGlobeActivity {
 
@@ -52,8 +52,12 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_placemarks_stress_test));
-        setAboutBoxText("Demonstrates a LOT of Placemarks.");
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_placemarks_demo));
+        setAboutBoxText("Demonstrates LOTS (38K) of Placemarks with various levels of detail.\n\n" +
+            "Placemarks are conditionally displayed based on the camera distance: \n" +
+                " - symbols are based on population and capitol status,\n" +
+                " - zoom in to reveal more placemarks,\n" +
+                " - picking is supported, touch a placemark to see the place name.");
         // Add a TextView on top of the globe to convey the status of this activity
         this.statusText = new TextView(this);
         this.statusText.setTextColor(android.graphics.Color.YELLOW);
