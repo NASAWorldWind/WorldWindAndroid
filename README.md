@@ -10,6 +10,8 @@ use to represent information on the globe or in space.
 
 # Important Sites
 
+- [World Wind Tutorials](http://worldwindserver.net/android/latest/worldwind-tutorials.apk) runs on devices with Android
+  4.4 (KitKat) and newer
 - [World Wind Examples](http://worldwindserver.net/android/latest/worldwind-examples.apk) runs on devices with Android
   4.4 (KitKat) and newer
 - [World Wind Library](http://worldwindserver.net/android/latest/worldwind.aar) provides the World Wind Library as an Android Archive (AAR)
@@ -17,6 +19,36 @@ use to represent information on the globe or in space.
 - [JIRA](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA/) provides requirement and issue tracking
 - [World Wind Forum](http://forum.worldwindcentral.com) provides help from the World Wind community
 - [Android Studio](http://developer.android.com/sdk/) is used for World Wind Android development
+
+# Release 0.4.0, August 19, 2016
+
+World Wind Android v0.4.0 adds new functionality for rendering paths and polygons as on the surface or above ground,
+with optional extrusions. This release also includes region picking, the ability to pick all features within a user-defined
+rectangular region.  Also included in this release is the new Tutorials App.
+
+- [World Wind Tutorials 0.4.0](http://worldwindserver.net/android/0.4.0/worldwind-tutorials.apk) - Tutorial App for 0.4.0; runs on Android 4.4 and newer
+- [World Wind Examples 0.4.0](http://worldwindserver.net/android/0.4.0/worldwind-examples.apk) - Example App for 0.4.0; runs on Android 4.4 and newer
+- [World Wind Library 0.4.0](http://worldwindserver.net/android/0.4.0/worldwind.aar) - Android Archive (AAR) for 0.4.0
+- [API Docs 0.4.0](http://worldwindserver.net/android/0.4.0/doc) - Developer documentation for 0.4.0
+- [JIRA 0.4.0](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA/fixforversion/10914) - Detailed release notes for 0.4.0
+
+#### Release Notes
+
+###### Requirement
+- [WWA-12](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-12) - Polyline
+- [WWA-13](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-13) - Polygon
+- [WWA-15](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-15) - Predictable shape ordering
+- [WWA-24](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-24) - Surface shape rendering support
+- [WWA-25](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-25) - Surface polygon
+
+
+###### Task
+- [WWA-74](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-74) - Region picking
+- [WWA-100](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-100) - Fix failing unit tests
+- [WWA-101](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-101) - WorldWind tutorials
+
+###### Bug
+- [WWA-103](http://issues.worldwind.arc.nasa.gov/jira/browse/WWA-103) - Placemarks in multiple windows cause exceptions
 
 # Release 0.3.0, June 30, 2016
 
