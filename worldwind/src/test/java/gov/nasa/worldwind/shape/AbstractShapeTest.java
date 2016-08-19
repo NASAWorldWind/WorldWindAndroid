@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.shape;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
@@ -14,6 +13,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Logger;
 
 import static org.junit.Assert.*;
@@ -28,9 +28,29 @@ public class AbstractShapeTest {
         PowerMockito.mockStatic(Logger.class);
     }
 
+    /**
+     * A simple concrete implementation of AbstractShape for testing.
+     */
+    private class AbstractShapeImpl extends AbstractShape {
+
+        public AbstractShapeImpl() {
+            super();
+        }
+
+        public AbstractShapeImpl(ShapeAttributes attributes) {
+            super(attributes);
+        }
+
+        protected void reset() {
+        }
+
+        protected void makeDrawable(RenderContext rc) {
+        }
+    }
+
     @Test
     public void testConstructor_Default() throws Exception {
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new AbstractShapeImpl();
         assertNotNull(shape);
         assertNotNull(shape.attributes);
         assertNull(shape.highlightAttributes);
@@ -39,7 +59,7 @@ public class AbstractShapeTest {
     @Test
     public void testConstructor_WithAttributes() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
-        AbstractShape shape = new AbstractShape(attributes);
+        AbstractShape shape = new AbstractShapeImpl(attributes);
         assertNotNull(shape);
         assertTrue(attributes == shape.attributes);
         assertNull(shape.highlightAttributes);
@@ -48,7 +68,7 @@ public class AbstractShapeTest {
     @Test
     public void testGetAttributes() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
-        AbstractShape shape = new AbstractShape(attributes);
+        AbstractShape shape = new AbstractShapeImpl(attributes);
 
         assertTrue(attributes == shape.getAttributes());
     }
@@ -56,7 +76,7 @@ public class AbstractShapeTest {
     @Test
     public void testSetAttributes() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new AbstractShapeImpl();
 
         shape.setAttributes(attributes);
 
@@ -66,7 +86,7 @@ public class AbstractShapeTest {
     @Test
     public void testGetHighlightAttributes() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new AbstractShapeImpl();
         shape.highlightAttributes = attributes;
 
         assertTrue(attributes == shape.getHighlightAttributes());
@@ -75,7 +95,7 @@ public class AbstractShapeTest {
     @Test
     public void testSetHighlightAttributes() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new AbstractShapeImpl();
 
         shape.setHighlightAttributes(attributes);
 
@@ -84,7 +104,7 @@ public class AbstractShapeTest {
 
     @Test
     public void testIsHighlighted() throws Exception {
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new AbstractShapeImpl();
         shape.highlighted = true;
 
         assertTrue(shape.isHighlighted());
@@ -92,7 +112,7 @@ public class AbstractShapeTest {
 
     @Test
     public void testSetHighlighted() throws Exception {
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new AbstractShapeImpl();
 
         shape.setHighlighted(true);
 
@@ -101,7 +121,7 @@ public class AbstractShapeTest {
 
     @Test
     public void testGetAltitudeMode() throws Exception {
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new AbstractShapeImpl();
         shape.altitudeMode = WorldWind.CLAMP_TO_GROUND;
 
         assertEquals(WorldWind.CLAMP_TO_GROUND, shape.getAltitudeMode());
@@ -109,7 +129,7 @@ public class AbstractShapeTest {
 
     @Test
     public void testSetAltitudeMode() throws Exception {
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new AbstractShapeImpl();
 
         shape.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
 
@@ -118,7 +138,7 @@ public class AbstractShapeTest {
 
     @Test
     public void testGetPathType() throws Exception {
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new AbstractShapeImpl();
         shape.pathType = WorldWind.RHUMB_LINE;
 
         assertEquals(WorldWind.RHUMB_LINE, shape.getPathType());
@@ -126,7 +146,7 @@ public class AbstractShapeTest {
 
     @Test
     public void testSetPathType() throws Exception {
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new AbstractShapeImpl();
         shape.setPathType(WorldWind.RHUMB_LINE);
 
         assertEquals(WorldWind.RHUMB_LINE, shape.pathType);
