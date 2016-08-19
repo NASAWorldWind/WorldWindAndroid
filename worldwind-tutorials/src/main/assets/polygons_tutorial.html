@@ -128,7 +128,7 @@ public class PolygonsFragment extends BasicGlobeFragment {
         layer.addRenderable(poly);
 
         // Create an extruded polygon with an inner ring and custom attributes that display the extruded vertical lines,
-        // make the extruded interior 50% transparent, and increase the polygon line with.
+        // make the extruded interior 50% transparent, and increase the polygon line width.
         poly = new Polygon(attrs);
         poly.addBoundary(Arrays.asList(
             Position.fromDegrees(0, -105, 5.0e5),
