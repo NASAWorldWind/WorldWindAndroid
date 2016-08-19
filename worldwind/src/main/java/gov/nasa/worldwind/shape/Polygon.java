@@ -279,27 +279,12 @@ public class Polygon extends AbstractShape {
             rc.putBufferObject(this.elementBufferKey, drawState.elementBuffer);
         }
 
-        // Configure the drawable to display the shape's outline.
-        if (this.activeAttributes.drawOutline) {
-            drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
-            drawState.lineWidth(this.activeAttributes.outlineWidth);
-            drawState.drawElements(GLES20.GL_LINES, this.outlineElements.size(),
-                GLES20.GL_UNSIGNED_SHORT, this.interiorElements.size() * 2);
-        }
-
-        // Configure the drawable to display the shape's extruded verticals.
-        if (this.activeAttributes.drawOutline && this.activeAttributes.drawVerticals && this.extrude) {
-            drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
-            drawState.lineWidth(this.activeAttributes.outlineWidth);
-            drawState.drawElements(GLES20.GL_LINES, this.verticalElements.size(),
-                GLES20.GL_UNSIGNED_SHORT, (this.interiorElements.size() * 2) + (this.outlineElements.size() * 2));
-        }
-
-        // Configure the drawable to display the shape's interior (and its optional extruded interior).
-        if (this.activeAttributes.drawInterior) {
-            drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.interiorColor);
-            drawState.drawElements(GLES20.GL_TRIANGLES, this.interiorElements.size(),
-                GLES20.GL_UNSIGNED_SHORT, 0);
+        if (this.isSurfaceShape || this.activeAttributes.interiorColor.alpha >= 1.0) {
+            this.drawInterior(rc, drawState);
+            this.drawOutline(rc, drawState);
+        } else {
+            this.drawOutline(rc, drawState);
+            this.drawInterior(rc, drawState);
         }
 
         // Configure the drawable according to the shape's attributes. Disable triangle backface culling when we're
@@ -314,6 +299,33 @@ public class Polygon extends AbstractShape {
         } else {
             double cameraDistance = this.boundingBox.distanceTo(rc.cameraPoint);
             rc.offerShapeDrawable(drawable, cameraDistance);
+        }
+    }
+
+    protected void drawInterior(RenderContext rc, DrawShapeState drawState) {
+        // Configure the drawable to display the shape's interior (and its optional extruded interior).
+        if (this.activeAttributes.drawInterior) {
+            drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.interiorColor);
+            drawState.drawElements(GLES20.GL_TRIANGLES, this.interiorElements.size(),
+                GLES20.GL_UNSIGNED_SHORT, 0);
+        }
+    }
+
+    protected void drawOutline(RenderContext rc, DrawShapeState drawState) {
+        // Configure the drawable to display the shape's outline.
+        if (this.activeAttributes.drawOutline) {
+            drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
+            drawState.lineWidth(this.activeAttributes.outlineWidth);
+            drawState.drawElements(GLES20.GL_LINES, this.outlineElements.size(),
+                GLES20.GL_UNSIGNED_SHORT, this.interiorElements.size() * 2);
+        }
+
+        // Configure the drawable to display the shape's extruded verticals.
+        if (this.activeAttributes.drawOutline && this.activeAttributes.drawVerticals && this.extrude) {
+            drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
+            drawState.lineWidth(this.activeAttributes.outlineWidth);
+            drawState.drawElements(GLES20.GL_LINES, this.verticalElements.size(),
+                GLES20.GL_UNSIGNED_SHORT, (this.interiorElements.size() * 2) + (this.outlineElements.size() * 2));
         }
     }
 
