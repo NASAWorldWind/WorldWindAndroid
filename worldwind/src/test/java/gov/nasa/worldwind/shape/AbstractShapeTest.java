@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.shape;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
@@ -50,7 +51,9 @@ public class AbstractShapeTest {
 
     @Test
     public void testConstructor_Default() throws Exception {
+
         AbstractShape shape = new AbstractShapeImpl();
+
         assertNotNull(shape);
         assertNotNull(shape.attributes);
         assertNull(shape.highlightAttributes);
@@ -59,7 +62,9 @@ public class AbstractShapeTest {
     @Test
     public void testConstructor_WithAttributes() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
+
         AbstractShape shape = new AbstractShapeImpl(attributes);
+
         assertNotNull(shape);
         assertTrue(attributes == shape.attributes);
         assertNull(shape.highlightAttributes);
@@ -70,7 +75,9 @@ public class AbstractShapeTest {
         ShapeAttributes attributes = new ShapeAttributes();
         AbstractShape shape = new AbstractShapeImpl(attributes);
 
-        assertTrue(attributes == shape.getAttributes());
+        ShapeAttributes result = shape.getAttributes();
+
+        assertTrue(attributes == result);
     }
 
     @Test
@@ -89,7 +96,9 @@ public class AbstractShapeTest {
         AbstractShape shape = new AbstractShapeImpl();
         shape.highlightAttributes = attributes;
 
-        assertTrue(attributes == shape.getHighlightAttributes());
+        ShapeAttributes result = shape.getHighlightAttributes();
+
+        assertTrue(attributes == result);
     }
 
     @Test
@@ -107,7 +116,9 @@ public class AbstractShapeTest {
         AbstractShape shape = new AbstractShapeImpl();
         shape.highlighted = true;
 
-        assertTrue(shape.isHighlighted());
+        boolean result = shape.isHighlighted();
+
+        assertTrue(result);
     }
 
     @Test
@@ -124,7 +135,9 @@ public class AbstractShapeTest {
         AbstractShape shape = new AbstractShapeImpl();
         shape.altitudeMode = WorldWind.CLAMP_TO_GROUND;
 
-        assertEquals(WorldWind.CLAMP_TO_GROUND, shape.getAltitudeMode());
+        int result = shape.getAltitudeMode();
+
+        assertEquals(WorldWind.CLAMP_TO_GROUND, result);
     }
 
     @Test
@@ -141,14 +154,36 @@ public class AbstractShapeTest {
         AbstractShape shape = new AbstractShapeImpl();
         shape.pathType = WorldWind.RHUMB_LINE;
 
-        assertEquals(WorldWind.RHUMB_LINE, shape.getPathType());
+        int result = shape.getPathType();
+
+        assertEquals(WorldWind.RHUMB_LINE, result);
     }
 
     @Test
     public void testSetPathType() throws Exception {
         AbstractShape shape = new AbstractShapeImpl();
+
         shape.setPathType(WorldWind.RHUMB_LINE);
 
         assertEquals(WorldWind.RHUMB_LINE, shape.pathType);
+    }
+
+    @Test
+    public void testGetMaximumIntermediatePoints() throws Exception {
+        AbstractShape shape = new AbstractShapeImpl();
+        shape.maximumIntermediatePoints = 123;
+
+        int result = shape.getMaximumIntermediatePoints();
+
+        assertEquals(123, result);
+    }
+
+    @Test
+    public void testSetMaximumIntermediatePoints() throws Exception {
+        AbstractShape shape = new AbstractShapeImpl();
+
+        shape.setMaximumIntermediatePoints(123);
+
+        assertEquals(123, shape.maximumIntermediatePoints);
     }
 }
