@@ -45,3 +45,20 @@ dependencies {
         exclude module: 'objenesis'
     }
 }
+
+task generateJavadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    include("**/*.java")
+    destinationDir = file("./build/outputs/doc/")
+    failOnError false
+    title = "NASA World Wind Android"
+    options.windowTitle = "NASA World Wind Android"
+    options.memberLevel = JavadocMemberLevel.PUBLIC
+}
+
+assemble {
+    doLast{
+        tasks.generateJavadoc.execute()
+    }
+}
