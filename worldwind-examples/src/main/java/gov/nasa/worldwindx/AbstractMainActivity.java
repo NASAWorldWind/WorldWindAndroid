@@ -318,6 +318,9 @@ public abstract class AbstractMainActivity extends AppCompatActivity
             case R.id.nav_paths_example:
                 startActivity(new Intent(getApplicationContext(), PathsExampleActivity.class));
                 break;
+            case R.id.nav_paths_and_polygons_activity:
+                startActivity(new Intent(getApplicationContext(), PathsAndPolygonsActivity.class));
+                break;
             case R.id.nav_placemarks_demo_activity:
                 startActivity(new Intent(getApplicationContext(), PlacemarksDemoActivity.class));
                 break;

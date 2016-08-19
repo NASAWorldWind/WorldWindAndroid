@@ -57,6 +57,14 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
+            android:name=".PathsAndPolygonsActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/paths_and_polygons_title"
+            android:launchMode="singleInstance"
+            android:noHistory="true"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
             android:name=".PlacemarksDemoActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_placemarks_demo"
