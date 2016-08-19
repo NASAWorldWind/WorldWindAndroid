@@ -7,9 +7,6 @@ package gov.nasa.worldwind.draw;
 
 import android.opengl.GLES20;
 
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import gov.nasa.worldwind.geom.Matrix4;
@@ -18,8 +15,6 @@ import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.util.Pool;
 
 public class DrawableLines implements Drawable {
-
-    private static FloatBuffer vertexPointBuffer; // TODO this breaks with multi-window apps; accessed from multiple GLThreads
 
     public BasicShaderProgram program = null;
 
@@ -88,7 +83,9 @@ public class DrawableLines implements Drawable {
 
         // Use the leader line as the vertex point attribute.
         dc.bindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-        Buffer buffer = getVertexPointBuffer(this.vertexPoints);
+        FloatBuffer buffer = dc.scratchBuffer(this.vertexPoints.length * 4).asFloatBuffer();
+        buffer.clear();
+        buffer.put(this.vertexPoints).flip();
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 3, GLES20.GL_FLOAT, false, 0, buffer);
 
         // Draw the leader line.
@@ -99,17 +96,5 @@ public class DrawableLines implements Drawable {
             GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         }
         GLES20.glLineWidth(1);
-    }
-
-    private static FloatBuffer getVertexPointBuffer(float[] points) {
-        int size = points.length;
-        if (vertexPointBuffer == null || vertexPointBuffer.capacity() < size) {
-            vertexPointBuffer = ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        }
-
-        vertexPointBuffer.clear();
-        vertexPointBuffer.put(points).flip();
-
-        return vertexPointBuffer;
     }
 }
