@@ -30,7 +30,7 @@ public class AbstractShapeTest {
 
     @Test
     public void testConstructor_Default() throws Exception {
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new Path();
         assertNotNull(shape);
         assertNotNull(shape.attributes);
         assertNull(shape.highlightAttributes);
@@ -39,7 +39,7 @@ public class AbstractShapeTest {
     @Test
     public void testConstructor_WithAttributes() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
-        AbstractShape shape = new AbstractShape(attributes);
+        AbstractShape shape = new Path(attributes);
         assertNotNull(shape);
         assertTrue(attributes == shape.attributes);
         assertNull(shape.highlightAttributes);
@@ -48,7 +48,7 @@ public class AbstractShapeTest {
     @Test
     public void testGetAttributes() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
-        AbstractShape shape = new AbstractShape(attributes);
+        AbstractShape shape = new Path(attributes);
 
         assertTrue(attributes == shape.getAttributes());
     }
@@ -56,7 +56,7 @@ public class AbstractShapeTest {
     @Test
     public void testSetAttributes() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new Path();
 
         shape.setAttributes(attributes);
 
@@ -66,7 +66,7 @@ public class AbstractShapeTest {
     @Test
     public void testGetHighlightAttributes() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new Path();
         shape.highlightAttributes = attributes;
 
         assertTrue(attributes == shape.getHighlightAttributes());
@@ -75,7 +75,7 @@ public class AbstractShapeTest {
     @Test
     public void testSetHighlightAttributes() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new Path();
 
         shape.setHighlightAttributes(attributes);
 
@@ -84,7 +84,7 @@ public class AbstractShapeTest {
 
     @Test
     public void testIsHighlighted() throws Exception {
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new Path();
         shape.highlighted = true;
 
         assertTrue(shape.isHighlighted());
@@ -92,7 +92,7 @@ public class AbstractShapeTest {
 
     @Test
     public void testSetHighlighted() throws Exception {
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new Path();
 
         shape.setHighlighted(true);
 
@@ -101,7 +101,7 @@ public class AbstractShapeTest {
 
     @Test
     public void testGetAltitudeMode() throws Exception {
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new Path();
         shape.altitudeMode = WorldWind.CLAMP_TO_GROUND;
 
         assertEquals(WorldWind.CLAMP_TO_GROUND, shape.getAltitudeMode());
@@ -109,7 +109,7 @@ public class AbstractShapeTest {
 
     @Test
     public void testSetAltitudeMode() throws Exception {
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new Path();
 
         shape.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
 
@@ -118,7 +118,7 @@ public class AbstractShapeTest {
 
     @Test
     public void testGetPathType() throws Exception {
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new Path();
         shape.pathType = WorldWind.RHUMB_LINE;
 
         assertEquals(WorldWind.RHUMB_LINE, shape.getPathType());
@@ -126,7 +126,7 @@ public class AbstractShapeTest {
 
     @Test
     public void testSetPathType() throws Exception {
-        AbstractShape shape = new AbstractShape();
+        AbstractShape shape = new Path();
         shape.setPathType(WorldWind.RHUMB_LINE);
 
         assertEquals(WorldWind.RHUMB_LINE, shape.pathType);
