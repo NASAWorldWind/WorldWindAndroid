@@ -1,17 +1,18 @@
-# Set up to run the an Android build script per the Travis CI documentation
-# Runs the script ./gradlew build connectedCheck
+# Set up to run the Android build script per the Travis CI documentation
+# Executes the script ./gradlew build connectedCheck
 language: android
 android:
   components:
-    # Use the latest revision of the Android SDK Tools
-    - platform-tools
-    - tools
-    # Use the Android build tools and Android SDK specified in build.gradle
-    - build-tools-23.0.3
-    - android-23
-    # Make the android and google extras available
+    - tools #latest
+    - platform-tools #latest
+    - android-24
+    - build-tools-24.0.1
     - extra-android-support
     - extra-android-m2repository
+
+# Configure the build to use Oracle JDK 8, which is required to compile for Android API 24 and newer
+jdk:
+  - oraclejdk8
 
 # Notify the World Wind services mailing list on every build
 notifications:
@@ -21,8 +22,7 @@ notifications:
     on_success: always
     on_failure: always
 
-# Reduce the maximum JVM memory used by gradle to avoid termination by the Travis CI container
-# during the gradle lint task
+# Reduce the maximum JVM memory used by gradle to avoid termination by the Travis CI container during the lint task
 env:
   - GRADLE_OPTS="-Xmx512m -XX:MaxPermSize=512m"
 
