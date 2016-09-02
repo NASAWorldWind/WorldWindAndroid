@@ -59,7 +59,7 @@
         <activity
             android:name=".PathsAndPolygonsActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/paths_and_polygons_title"
+            android:label="@string/title_paths_and_polygons"
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">

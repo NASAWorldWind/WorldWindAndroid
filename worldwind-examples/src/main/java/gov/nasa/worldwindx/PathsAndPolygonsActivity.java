@@ -47,7 +47,7 @@ public class PathsAndPolygonsActivity extends GeneralGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + this.getResources().getText(R.string.paths_and_polygons_title));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_paths_and_polygons));
         setAboutBoxText("Demonstrates world highways rendered as paths and countries as polygons with random interior colors.");
         // Add a TextView on top of the globe to convey the status of this activity
         this.statusText = new TextView(this);

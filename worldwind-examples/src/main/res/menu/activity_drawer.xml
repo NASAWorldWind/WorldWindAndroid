@@ -34,7 +34,7 @@
         <item
             android:id="@+id/nav_paths_and_polygons_activity"
             android:icon="@android:drawable/ic_menu_directions"
-            android:title="@string/paths_and_polygons_title"/>
+            android:title="@string/title_paths_and_polygons"/>
         <item
             android:id="@+id/nav_day_night_cycle_activity"
             android:icon="@android:drawable/ic_menu_recent_history"
