@@ -315,6 +315,9 @@ public abstract class AbstractMainActivity extends AppCompatActivity
             case R.id.nav_general_globe_activity:
                 startActivity(new Intent(getApplicationContext(), GeneralGlobeActivity.class));
                 break;
+            case R.id.nav_multi_globe_activity:
+                startActivity(new Intent(getApplicationContext(), MultiGlobeActivity.class));
+                break;
             case R.id.nav_paths_example:
                 startActivity(new Intent(getApplicationContext(), PathsExampleActivity.class));
                 break;

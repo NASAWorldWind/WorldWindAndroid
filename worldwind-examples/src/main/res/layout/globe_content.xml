@@ -4,6 +4,7 @@
   ~ National Aeronautics and Space Administration. All Rights Reserved.
   -->
 <RelativeLayout
+    android:id="@+id/globe_content"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
