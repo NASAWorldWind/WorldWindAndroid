@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2016 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration. All Rights Reserved.
+  -->
+<LinearLayout
+    android:id="@+id/multi_globe_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="left|top"
+    android:orientation="horizontal"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".MultiGlobeActivity"
+    android:dividerPadding="0dp"
+    android:showDividers="none"
+    android:focusable="false"
+    android:clickable="false"
+    android:baselineAligned="false"
+    android:contextClickable="false"
+    android:background="#00ffff">
+    <!--
+   This layout is a two-pane layout for the multi-globe example
+   -->
+    <FrameLayout
+        android:id="@+id/globe_one"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1011.5"
+        />
+
+    <ImageButton
+        android:id="@+id/splitter"
+        android:layout_height="match_parent"
+        android:layout_width="0dp"
+        android:enabled="true"
+        android:visibility="visible"
+        android:src="@drawable/grip_vertical"
+        android:background="@color/primary_material_light"
+        android:layout_weight="25"
+        android:layout_gravity="left"/>
+
+    <FrameLayout
+        android:id="@+id/globe_two"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1011.5"
+        />
+
+</LinearLayout>

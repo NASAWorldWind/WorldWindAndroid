@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2016 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration. All Rights Reserved.
+  -->
+<LinearLayout
+    android:id="@+id/multi_globe_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="left|top"
+    android:orientation="vertical"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".MultiGlobeActivity"
+    android:showDividers="none"
+    android:focusable="false"
+    android:clickable="false"
+    android:baselineAligned="false"
+    android:contextClickable="false"
+    android:background="#00ffff"
+    android:weightSum="1774">
+    <!--
+   This layout is a two-pane portrait layout for the multi-globe example.
+   Layout weights are based on a 1774 window size for a fixed with splitter size.
+   -->
+    <FrameLayout
+        android:id="@+id/globe_one"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="872"
+        />
+
+    <!--
+    Bizarre behavior. The layout height MUST be set to greater than zero
+    otherwise the image button doesn't display, regardless of the layout_weight.
+    The landscape version behaves correctly.
+    Also, this splitter will wrap from bottom to top when it is dragged to the bottom.
+    Very strange behavior
+    -->
+    <ImageButton
+        android:id="@+id/splitter"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:enabled="true"
+        android:visibility="visible"
+        android:src="@drawable/grip_horizontal"
+        android:background="@color/primary_material_light"
+        android:layout_weight="30"
+        />
+
+    <FrameLayout
+        android:id="@+id/globe_two"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="872"
+        />
+
+</LinearLayout>
