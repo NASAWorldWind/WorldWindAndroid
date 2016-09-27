@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.render;
 
 import android.content.res.Resources;
+import android.graphics.Typeface;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +29,7 @@ import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.Terrain;
 import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.layer.LayerList;
+import gov.nasa.worldwind.shape.TextAttributes;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.SynchronizedPool;
@@ -91,6 +93,10 @@ public class RenderContext {
     private double pixelSizeFactor;
 
     private GLUtessellator tessellator;
+
+    private TextRenderer textRenderer = new TextRenderer();
+
+    private TextCacheKey scratchTextCacheKey = new TextCacheKey();
 
     private Map<Object, Pool<?>> drawablePools = new HashMap<>();
 
@@ -408,6 +414,27 @@ public class RenderContext {
         return buffer;
     }
 
+    public Texture getText(String text, TextAttributes attributes) {
+        TextCacheKey key = this.scratchTextCacheKey.set(text, attributes);
+        return (Texture) this.renderResourceCache.get(key);
+    }
+
+    public Texture renderText(String text, TextAttributes attributes) {
+        TextCacheKey key = new TextCacheKey().set(text, attributes);
+        Texture texture = null;
+
+        if (text != null && attributes != null) {
+            this.textRenderer.setTextSize(attributes.getTextSize());
+            this.textRenderer.setTypeface(attributes.getTypeface());
+            this.textRenderer.setEnableOutline(attributes.isEnableOutline());
+            this.textRenderer.setOutlineWidth(attributes.getOutlineWidth());
+            texture = this.textRenderer.renderText(text);
+        }
+
+        this.renderResourceCache.put(key, texture, (texture != null) ? texture.getByteCount() : 0);
+        return texture;
+    }
+
     public void offerDrawable(Drawable drawable, int groupId, double order) {
         if (this.drawableQueue != null) {
             this.drawableQueue.offerDrawable(drawable, groupId, order);
@@ -494,5 +521,54 @@ public class RenderContext {
 
     public boolean hasUserProperty(Object key) {
         return this.userProperties.containsKey(key);
+    }
+
+    protected static class TextCacheKey {
+
+        protected String text;
+
+        protected float textSize;
+
+        protected Typeface typeface;
+
+        protected boolean enableOutline;
+
+        protected float outlineWidth;
+
+        public TextCacheKey set(String text, TextAttributes attributes) {
+            this.text = text;
+            this.textSize = (attributes != null ? attributes.getTextSize() : 0);
+            this.typeface = (attributes != null ? attributes.getTypeface() : null);
+            this.enableOutline = (attributes != null ? attributes.isEnableOutline() : false);
+            this.outlineWidth = (attributes != null ? attributes.getOutlineWidth() : 0);
+            return this;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || this.getClass() != o.getClass()) {
+                return false;
+            }
+
+            TextCacheKey that = (TextCacheKey) o;
+            return ((this.text == null) ? (that.text == null) : this.text.equals(that.text))
+                && this.textSize == that.textSize
+                && ((this.typeface == null) ? (that.typeface == null) : this.typeface.equals(that.typeface))
+                && this.enableOutline == that.enableOutline
+                && this.outlineWidth == that.outlineWidth;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (this.text != null ? this.text.hashCode() : 0);
+            result = 31 * result + (this.textSize != +0.0f ? Float.floatToIntBits(this.textSize) : 0);
+            result = 31 * result + (this.typeface != null ? this.typeface.hashCode() : 0);
+            result = 31 * result + (this.enableOutline ? 1 : 0);
+            result = 31 * result + (this.outlineWidth != +0.0f ? Float.floatToIntBits(this.outlineWidth) : 0);
+            return result;
+        }
     }
 }
