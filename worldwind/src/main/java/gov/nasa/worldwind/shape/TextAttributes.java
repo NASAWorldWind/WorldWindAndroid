@@ -7,121 +7,172 @@ package gov.nasa.worldwind.shape;
 
 import android.graphics.Typeface;
 
-import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.render.Color;
+import gov.nasa.worldwind.util.Logger;
 
 /**
- * Holds attributes applied to shapes text and {@link Placemark} labels.
+ * Holds attributes applied to text shapes and {@link Placemark} labels.
  */
 public class TextAttributes {
 
-    protected Color color;
+    protected Color textColor;
 
-    protected Typeface font;
+    protected Offset textOffset;
 
-    protected Offset offset;
+    protected float textSize;
 
-    protected double scale;
+    protected Typeface typeface;
 
-    protected boolean depthTest;
+    protected boolean enableOutline;
+
+    protected boolean enableDepthTest;
+
+    protected float outlineWidth;
 
     public TextAttributes() {
-        this.color = new Color(1, 1, 1, 1);
-        this.font = Typeface.DEFAULT;
-        this.offset = new Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.0);
-        this.scale = 1d;
-        this.depthTest = false;
+        this.textColor = new Color(1, 1, 1, 1);
+        this.textOffset = Offset.bottomCenter();
+        this.textSize = 24;
+        this.typeface = null;
+        this.enableOutline = true;
+        this.enableDepthTest = true;
+        this.outlineWidth = 3;
     }
 
-    /**
-     * Constructs a text attributes bundle.
-     *
-     * @param attributes Attributes to initialize this attributes instance to. May be null, in which
-     *                         case the new instance contains default attributes.
-     */
     public TextAttributes(TextAttributes attributes) {
-        this.color = new Color(attributes.color);
-        this.font = attributes.font;
-        this.offset = new Offset(attributes.offset);
-        this.scale = attributes.scale;
-        this.depthTest = attributes.depthTest;
+        if (attributes == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "TextAttributes", "constructor", "missingAttributes"));
+        }
+
+        this.textColor = new Color(attributes.textColor);
+        this.textOffset = new Offset(attributes.textOffset);
+        this.textSize = attributes.textSize;
+        this.typeface = attributes.typeface;
+        this.enableOutline = attributes.enableOutline;
+        this.enableDepthTest = attributes.enableDepthTest;
+        this.outlineWidth = attributes.outlineWidth;
     }
 
     public TextAttributes set(TextAttributes attributes) {
-        this.color.set(attributes.color);
-        this.font = attributes.font;
-        this.offset.set(attributes.offset);
-        this.scale = attributes.scale;
-        this.depthTest = attributes.depthTest;
+        if (attributes == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "TextAttributes", "set", "missingAttributes"));
+        }
+
+        this.textColor.set(attributes.textColor);
+        this.textOffset.set(attributes.textOffset);
+        this.textSize = attributes.textSize;
+        this.typeface = attributes.typeface;
+        this.enableOutline = attributes.enableOutline;
+        this.enableDepthTest = attributes.enableDepthTest;
+        this.outlineWidth = attributes.outlineWidth;
+
         return this;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
 
         TextAttributes that = (TextAttributes) o;
-
-        if (Double.compare(that.scale, scale) != 0) return false;
-        if (depthTest != that.depthTest) return false;
-        if (color != null ? !color.equals(that.color) : that.color != null) return false;
-        if (font != null ? !font.equals(that.font) : that.font != null) return false;
-        return !(offset != null ? !offset.equals(that.offset) : that.offset != null);
-
+        return this.textColor.equals(that.textColor)
+            && this.textOffset.equals(that.textOffset)
+            && this.textSize == that.textSize
+            && ((this.typeface == null) ? (that.typeface == null) : this.typeface.equals(that.typeface))
+            && this.enableOutline == that.enableOutline
+            && this.enableDepthTest == that.enableDepthTest
+            && this.outlineWidth == that.outlineWidth;
     }
 
     @Override
     public int hashCode() {
-        int result;
-        long temp;
-        result = color != null ? color.hashCode() : 0;
-        result = 31 * result + (font != null ? font.hashCode() : 0);
-        result = 31 * result + (offset != null ? offset.hashCode() : 0);
-        temp = Double.doubleToLongBits(scale);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
-        result = 31 * result + (depthTest ? 1 : 0);
+        int result = this.textColor.hashCode();
+        result = 31 * result + this.textOffset.hashCode();
+        result = 31 * result + (this.textSize != +0.0f ? Float.floatToIntBits(this.textSize) : 0);
+        result = 31 * result + (this.typeface != null ? this.typeface.hashCode() : 0);
+        result = 31 * result + (this.enableOutline ? 1 : 0);
+        result = 31 * result + (this.enableDepthTest ? 1 : 0);
+        result = 31 * result + (this.outlineWidth != +0.0f ? Float.floatToIntBits(this.outlineWidth) : 0);
         return result;
     }
 
-    public Color getColor() {
-        return color;
+    public Color getTextColor() {
+        return this.textColor;
     }
 
-    public void setColor(Color color) {
-        this.color = color;
+    public TextAttributes setTextColor(Color color) {
+        if (color == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "TextAttributes", "setTextColor", "missingColor"));
+        }
+
+        this.textColor.set(color);
+        return this;
     }
 
-    public Typeface getFont() {
-        return font;
+    public Offset getTextOffset() {
+        return this.textOffset;
     }
 
-    public void setFont(Typeface font) {
-        this.font = font;
+    public TextAttributes setTextOffset(Offset offset) {
+        if (offset == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "TextAttributes", "setTextOffset", "missingOffset"));
+        }
+
+        this.textOffset.set(offset);
+        return this;
     }
 
-    public Offset getOffset() {
-        return offset;
+    public float getTextSize() {
+        return this.textSize;
     }
 
-    public void setOffset(Offset offset) {
-        this.offset = offset;
+    public TextAttributes setTextSize(float size) {
+        this.textSize = size;
+        return this;
     }
 
-    public double getScale() {
-        return scale;
+    public Typeface getTypeface() {
+        return this.typeface;
     }
 
-    public void setScale(double scale) {
-        this.scale = scale;
+    public TextAttributes setTypeface(Typeface typeface) {
+        this.typeface = typeface;
+        return this;
     }
 
-    public boolean isDepthTest() {
-        return depthTest;
+    public boolean isEnableOutline() {
+        return this.enableOutline;
     }
 
-    public void setDepthTest(boolean depthTest) {
-        this.depthTest = depthTest;
+    public TextAttributes setEnableOutline(boolean enable) {
+        this.enableOutline = enable;
+        return this;
+    }
+
+    public boolean isEnableDepthTest() {
+        return this.enableDepthTest;
+    }
+
+    public TextAttributes setEnableDepthTest(boolean enable) {
+        this.enableDepthTest = enable;
+        return this;
+    }
+
+    public float getOutlineWidth() {
+        return this.outlineWidth;
+    }
+
+    public TextAttributes setOutlineWidth(float lineWidth) {
+        this.outlineWidth = lineWidth;
+        return this;
     }
 }

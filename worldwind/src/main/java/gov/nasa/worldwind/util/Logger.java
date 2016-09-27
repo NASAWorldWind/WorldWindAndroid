@@ -84,10 +84,11 @@ public class Logger {
         messageTable.put("missingSector", "The sector is null");
         messageTable.put("missingServiceAddress", "The service address is null");
         messageTable.put("missingSource", "The source is null");
+        messageTable.put("missingTessellator", "The tessellator is null");
         messageTable.put("missingTile", "The tile is null");
         messageTable.put("missingTileFactory", "The tile factory is null");
         messageTable.put("missingTileUrlFactory", "The tile url factory is null");
-        messageTable.put("missingTessellator", "The tessellator is null");
+        messageTable.put("missingTypeface", "The typeface is null");
         messageTable.put("missingUrl", "The url is null");
         messageTable.put("missingViewport", "The viewport is null");
         messageTable.put("missingVector", "The vector is null");
