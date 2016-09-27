@@ -18,7 +18,6 @@ import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.RenderContext;
-import gov.nasa.worldwind.render.TextRenderer;
 import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
