@@ -13,6 +13,8 @@ uniform sampler2D texSampler;
 varying vec2 texCoord;
 
 void main() {
+    /* TODO consolidate pickMode and enableTexture into a single textureMode */
+    /* TODO it's confusing that pickMode must be disabled during surface shape render-to-texture */
     if (enablePickMode && enableTexture) {
         /* Modulate the RGBA color with the 2D texture's Alpha component (rounded to 0.0 or 1.0). */
         float texMask = floor(texture2D(texSampler, texCoord).a + 0.5);

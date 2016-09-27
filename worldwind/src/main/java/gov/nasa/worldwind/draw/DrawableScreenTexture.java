@@ -65,60 +65,65 @@ public class DrawableScreenTexture implements Drawable {
 
         // Use the draw context's pick mode and use the drawable's color.
         this.program.enablePickMode(dc.pickMode);
-        this.program.loadColor(this.color);
 
-        // Attempt to bind the icon's texture to multi-texture unit 0, configuring the shader program appropriately
-        // if there is no texture or the texture failed to bind.
+        // Make multi-texture unit 0 active.
         dc.activeTextureUnit(GLES20.GL_TEXTURE0);
-        if (this.texture != null && this.texture.bindTexture(dc)) {
-            this.program.enableTexture(true);
-            this.program.loadTexCoordMatrix(this.texture.getTexCoordTransform());
-        } else {
-            this.program.enableTexture(false);
-        }
 
-        // Disable writing to the depth buffer, and disable depth testing if requested.
+        // Disable writing to the depth buffer.
         GLES20.glDepthMask(false);
-        if (!this.enableDepthTest) {
-            GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-        }
 
-        // Use a 2D unit square as the vertex point and vertex tex coord attributes.
+        // Use a unit square as the vertex point and vertex tex coord attributes.
         GLES20.glEnableVertexAttribArray(1); // enable vertex attrib 1; vertex attrib 0 is enabled by default
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 2, GLES20.GL_FLOAT, false, 0, 0);
         GLES20.glVertexAttribPointer(1 /*vertexTexCoord*/, 2, GLES20.GL_FLOAT, false, 0, 0);
 
-        // Use a modelview-projection matrix that transforms the unit square to screen coordinates.
-        this.mvpMatrix.setToMultiply(dc.screenProjection, this.unitSquareTransform);
-        this.program.loadModelviewProjection(this.mvpMatrix);
+        // Draw this DrawableScreenTextures.
+        this.doDraw(dc, this);
 
-        // Draw the 2D unit square as triangles.
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
-
+        // Draw all DrawableScreenTextures adjacent in the queue that share the same GLSL program.
         Drawable next;
         while ((next = dc.peekDrawable()) != null && this.canBatchWith(next)) { // check if the drawable at the front of the queue can be batched
-            // Use a modelview-projection matrix that transforms the unit square to screen coordinates.
             DrawableScreenTexture drawable = (DrawableScreenTexture) dc.pollDrawable(); // take it off the queue
-            this.mvpMatrix.setToMultiply(dc.screenProjection, drawable.unitSquareTransform);
-            this.program.loadModelviewProjection(this.mvpMatrix);
-
-            // Draw the 2D unit square as triangles.
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+            this.doDraw(dc, drawable);
         }
 
         // Restore the default World Wind OpenGL state.
         GLES20.glDepthMask(true);
-        if (!this.enableDepthTest) {
-            GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-        }
         GLES20.glDisableVertexAttribArray(1);
     }
 
+    protected void doDraw(DrawContext dc, DrawableScreenTexture drawable) {
+        // Use the drawable's color.
+        drawable.program.loadColor(drawable.color);
+
+        // Attempt to bind the drawable's texture, configuring the shader program appropriately if there is no texture
+        // or if the texture failed to bind.
+        if (drawable.texture != null && drawable.texture.bindTexture(dc)) {
+            drawable.program.enableTexture(true);
+            drawable.program.loadTexCoordMatrix(drawable.texture.getTexCoordTransform());
+        } else {
+            drawable.program.enableTexture(false);
+        }
+
+        // Use a modelview-projection matrix that transforms the unit square to screen coordinates.
+        drawable.mvpMatrix.setToMultiply(dc.screenProjection, drawable.unitSquareTransform);
+        drawable.program.loadModelviewProjection(drawable.mvpMatrix);
+
+        // Disable depth testing if requested.
+        if (!drawable.enableDepthTest) {
+            GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+        }
+
+        // Draw the unit square as triangles.
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+
+        // Restore the default World Wind OpenGL state.
+        if (!drawable.enableDepthTest) {
+            GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+        }
+    }
+
     protected boolean canBatchWith(Drawable that) {
-        return this.getClass() == that.getClass()
-            && this.program == ((DrawableScreenTexture) that).program
-            && this.color.equals(((DrawableScreenTexture) that).color) // TODO expand batching to include color
-            && this.texture == ((DrawableScreenTexture) that).texture // TODO expand batching to include texture
-            && this.enableDepthTest == ((DrawableScreenTexture) that).enableDepthTest;
+        return this.getClass() == that.getClass() && this.program == ((DrawableScreenTexture) that).program;
     }
 }

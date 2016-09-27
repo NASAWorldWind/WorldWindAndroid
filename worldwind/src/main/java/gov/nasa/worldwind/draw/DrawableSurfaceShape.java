@@ -13,6 +13,7 @@ import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.Framebuffer;
 import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Pool;
@@ -26,6 +27,8 @@ public class DrawableSurfaceShape implements Drawable {
     private Matrix4 mvpMatrix = new Matrix4();
 
     private Matrix3 texCoordMatrix = new Matrix3();
+
+    private Color color = new Color();
 
     private Pool<DrawableSurfaceShape> pool;
 
@@ -179,11 +182,11 @@ public class DrawableSurfaceShape implements Drawable {
 
         // Configure the program to draw texture fragments unmodified and aligned with the terrain.
         // TODO consolidate pickMode and enableTexture into a single textureMode
-        // TODO it's confusing that pickMode must be disabled during picking to correctly display the contents of the texture
+        // TODO it's confusing that pickMode must be disabled during surface shape render-to-texture
         this.drawState.program.enablePickMode(false);
         this.drawState.program.enableTexture(true);
         this.drawState.program.loadTexCoordMatrix(this.texCoordMatrix);
-        this.drawState.program.loadColor(1, 1, 1, 1);
+        this.drawState.program.loadColor(this.color);
 
         // Use the draw context's modelview projection matrix, transformed to terrain local coordinates.
         Vec3 terrainOrigin = terrain.getVertexOrigin();
