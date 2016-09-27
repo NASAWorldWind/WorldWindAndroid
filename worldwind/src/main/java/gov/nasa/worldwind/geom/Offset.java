@@ -52,7 +52,6 @@ public class Offset {
      * @param y      The offset in the Y dimension.
      */
     public Offset(@WorldWind.OffsetMode int xUnits, double x, @WorldWind.OffsetMode int yUnits, double y) {
-
         this.x = x;
         this.y = y;
         this.xUnits = xUnits;
@@ -60,17 +59,22 @@ public class Offset {
     }
 
     /**
-     * Creates a new copy of this offset with identical property values.
+     * Creates a new offset of this offset with identical property values.
      */
-    public Offset(Offset copy) {
-        this.x = copy.x;
-        this.y = copy.y;
-        this.xUnits = copy.xUnits;
-        this.yUnits = copy.yUnits;
+    public Offset(Offset offset) {
+        if (offset == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Offset", "constructor", "missingOffset"));
+        }
+
+        this.x = offset.x;
+        this.y = offset.y;
+        this.xUnits = offset.xUnits;
+        this.yUnits = offset.yUnits;
     }
 
     /**
-     * This factory method returns a new offset for centering an image on its geographic position.
+     * This factory method returns a new offset used for anchoring a rectangle to its center.
      *
      * @return Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.5)
      */
@@ -79,8 +83,7 @@ public class Offset {
     }
 
     /**
-     * This factory method returns a new offset used for anchoring an image to the bottom, left of its geographic
-     * position.
+     * This factory method returns a new offset used for anchoring a rectangle to its bottom-left corner.
      *
      * @return Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 0.0)
      */
@@ -89,7 +92,7 @@ public class Offset {
     }
 
     /**
-     * This factory method returns a new offset for anchoring an image to the bottom and the center width.
+     * This factory method returns a new offset for anchoring a rectangle to its center of its bottom edge.
      *
      * @return Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.0)
      */
@@ -98,7 +101,7 @@ public class Offset {
     }
 
     /**
-     * This factory method returns a new offset for anchoring an image to the bottom, right of its geographic position.
+     * This factory method returns a new offset for anchoring a rectangle to its bottom-right corner.
      *
      * @return Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 0.0)
      */
@@ -107,9 +110,41 @@ public class Offset {
     }
 
     /**
+     * This factory method returns a new offset for anchoring a rectangle its top-left corner.
+     *
+     * @return Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 1.0)
+     */
+    public static Offset topLeft() {
+        return new Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 1.0);
+    }
+
+    /**
+     * This factory method returns a new offset for anchoring a rectangle to the center of its top edge.
+     *
+     * @return Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 1.0)
+     */
+    public static Offset topCenter() {
+        return new Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 1.0);
+    }
+
+    /**
+     * This factory method returns a new offset for anchoring a rectangle to its top-right corner.
+     *
+     * @return Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 1.0)
+     */
+    public static Offset topRight() {
+        return new Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 1.0);
+    }
+
+    /**
      * Sets this offset to identical property values of the specified offset.
      */
     public Offset set(Offset offset) {
+        if (offset == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Offset", "set", "missingOffset"));
+        }
+
         this.x = offset.x;
         this.y = offset.y;
         this.xUnits = offset.xUnits;
@@ -119,38 +154,40 @@ public class Offset {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
 
-        Offset offset = (Offset) o;
-
-        if (Double.compare(offset.x, x) != 0) return false;
-        if (Double.compare(offset.y, y) != 0) return false;
-        if (xUnits != offset.xUnits) return false;
-        return yUnits == offset.yUnits;
-
+        Offset that = (Offset) o;
+        return this.x == that.x
+            && this.y == that.y
+            && this.xUnits == that.xUnits
+            && this.yUnits == that.yUnits;
     }
 
     @Override
     public int hashCode() {
         int result;
         long temp;
-        temp = Double.doubleToLongBits(x);
+        temp = Double.doubleToLongBits(this.x);
         result = (int) (temp ^ (temp >>> 32));
-        temp = Double.doubleToLongBits(y);
+        temp = Double.doubleToLongBits(this.y);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
-        result = 31 * result + xUnits;
-        result = 31 * result + yUnits;
+        result = 31 * result + this.xUnits;
+        result = 31 * result + this.yUnits;
         return result;
     }
 
     @Override
     public String toString() {
         return "{" +
-            "x=" + x +
-            ", y=" + y +
-            ", xUnits=" + xUnits +
-            ", yUnits=" + yUnits +
+            "x=" + this.x +
+            ", y=" + this.y +
+            ", xUnits=" + this.xUnits +
+            ", yUnits=" + this.yUnits +
             '}';
     }
 
@@ -191,5 +228,4 @@ public class Offset {
 
         return result.set(x, y);
     }
-
 }
