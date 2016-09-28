@@ -73,7 +73,7 @@ public class DrawableScreenTexture implements Drawable {
         GLES20.glDepthMask(false);
 
         // Use a unit square as the vertex point and vertex tex coord attributes.
-        GLES20.glEnableVertexAttribArray(1); // enable vertex attrib 1; vertex attrib 0 is enabled by default
+        GLES20.glEnableVertexAttribArray(1 /*vertexTexCoord*/); // only vertexPoint is enabled by default
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 2, GLES20.GL_FLOAT, false, 0, 0);
         GLES20.glVertexAttribPointer(1 /*vertexTexCoord*/, 2, GLES20.GL_FLOAT, false, 0, 0);
 
@@ -89,7 +89,7 @@ public class DrawableScreenTexture implements Drawable {
 
         // Restore the default World Wind OpenGL state.
         GLES20.glDepthMask(true);
-        GLES20.glDisableVertexAttribArray(1);
+        GLES20.glDisableVertexAttribArray(1 /*vertexTexCoord*/); // only vertexPoint is enabled by default
     }
 
     protected void doDraw(DrawContext dc, DrawableScreenTexture drawable) {
