@@ -26,7 +26,7 @@ public class DrawableSurfaceShape implements Drawable {
 
     private Matrix4 mvpMatrix = new Matrix4();
 
-    private Matrix3 texCoordMatrix = new Matrix3();
+    private Matrix3 identityMatrix3 = new Matrix3();
 
     private Color color = new Color();
 
@@ -60,6 +60,12 @@ public class DrawableSurfaceShape implements Drawable {
             return; // program unspecified or failed to build
         }
 
+        // Make multi-texture unit 0 active.
+        dc.activeTextureUnit(GLES20.GL_TEXTURE0);
+
+        // Set up to use vertex tex coord attributes.
+        GLES20.glEnableVertexAttribArray(1 /*vertexTexCoord*/); // only vertexPoint is enabled by default
+
         // Accumulate shapes in the draw context's scratch list.
         // TODO accumulate in a geospatial quadtree
         ArrayList<Object> scratchList = dc.scratchList();
@@ -87,6 +93,8 @@ public class DrawableSurfaceShape implements Drawable {
         } finally {
             // Clear the accumulated shapes.
             scratchList.clear();
+            // Restore the default World Wind OpenGL state.
+            GLES20.glDisableVertexAttribArray(1 /*vertexTexCoord*/); // only vertexPoint is enabled by default
         }
     }
 
@@ -114,14 +122,11 @@ public class DrawableSurfaceShape implements Drawable {
             // Use the draw context's pick mode.
             this.drawState.program.enablePickMode(dc.pickMode);
 
-            // Disable texturing.
-            this.drawState.program.enableTexture(false);
-
             // Transform geographic coordinates to texture fragments appropriate for the terrain sector.
             // TODO capture this in a method on Matrix4
             this.mvpMatrix.setToIdentity();
             this.mvpMatrix.multiplyByTranslation(-1, -1, 0);
-            this.mvpMatrix.multiplyByScale(2 / terrainSector.deltaLongitude(), 2 / terrainSector.deltaLatitude(), 1);
+            this.mvpMatrix.multiplyByScale(2 / terrainSector.deltaLongitude(), 2 / terrainSector.deltaLatitude(), 0);
             this.mvpMatrix.multiplyByTranslation(-terrainSector.minLongitude(), -terrainSector.minLatitude(), 0);
             this.drawState.program.loadModelviewProjection(this.mvpMatrix);
 
@@ -142,12 +147,21 @@ public class DrawableSurfaceShape implements Drawable {
                 }
 
                 // Use the shape's vertex point attribute.
-                GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 2, GLES20.GL_FLOAT, false, 0, 0);
+                GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 3, GLES20.GL_FLOAT, false, shape.drawState.vertexStride, 0);
 
                 // Draw the specified primitives to the framebuffer texture.
                 for (int primIdx = 0; primIdx < shape.drawState.primCount; primIdx++) {
                     DrawShapeState.DrawElements prim = shape.drawState.prims[primIdx];
                     this.drawState.program.loadColor(prim.color);
+
+                    if (prim.texture != null && prim.texture.bindTexture(dc)) {
+                        this.drawState.program.loadTexCoordMatrix(prim.texCoordMatrix);
+                        this.drawState.program.enableTexture(true);
+                    } else {
+                        this.drawState.program.enableTexture(false);
+                    }
+
+                    GLES20.glVertexAttribPointer(1 /*vertexTexCoord*/, prim.texCoordAttrib.size, GLES20.GL_FLOAT, false, this.drawState.vertexStride, prim.texCoordAttrib.offset);
                     GLES20.glLineWidth(prim.lineWidth);
                     GLES20.glDrawElements(prim.mode, prim.count, prim.type, prim.offset);
                 }
@@ -174,7 +188,6 @@ public class DrawableSurfaceShape implements Drawable {
             return; // terrain vertex attribute failed to bind
         }
 
-        dc.activeTextureUnit(GLES20.GL_TEXTURE0);
         Texture colorAttachment = dc.surfaceFramebuffer().getAttachedTexture(GLES20.GL_COLOR_ATTACHMENT0);
         if (!colorAttachment.bindTexture(dc)) {
             return; // framebuffer texture failed to bind
@@ -185,7 +198,7 @@ public class DrawableSurfaceShape implements Drawable {
         // TODO it's confusing that pickMode must be disabled during surface shape render-to-texture
         this.drawState.program.enablePickMode(false);
         this.drawState.program.enableTexture(true);
-        this.drawState.program.loadTexCoordMatrix(this.texCoordMatrix);
+        this.drawState.program.loadTexCoordMatrix(this.identityMatrix3);
         this.drawState.program.loadColor(this.color);
 
         // Use the draw context's modelview projection matrix, transformed to terrain local coordinates.
@@ -194,13 +207,7 @@ public class DrawableSurfaceShape implements Drawable {
         this.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
         this.drawState.program.loadModelviewProjection(this.mvpMatrix);
 
-        // Set up to use vertex tex coord attributes.
-        GLES20.glEnableVertexAttribArray(1 /*vertexTexCoord*/);
-
         // Draw the terrain as triangles.
         terrain.drawTriangles(dc);
-
-        // Restore the default World Wind OpenGL state.
-        GLES20.glDisableVertexAttribArray(1 /*vertexTexCoord*/);
     }
 }

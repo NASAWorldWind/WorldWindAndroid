@@ -5,10 +5,12 @@
 
 package gov.nasa.worldwind.draw;
 
+import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.Color;
+import gov.nasa.worldwind.render.Texture;
 
 public class DrawShapeState {
 
@@ -22,6 +24,8 @@ public class DrawShapeState {
 
     public Vec3 vertexOrigin = new Vec3();
 
+    public int vertexStride;
+
     public boolean enableCullFace = true;
 
     public boolean enableDepthTest = true;
@@ -29,6 +33,12 @@ public class DrawShapeState {
     protected Color color = new Color();
 
     protected float lineWidth = 1;
+
+    protected Texture texture;
+
+    protected Matrix3 texCoordMatrix = new Matrix3();
+
+    protected VertexAttrib texCoordAttrib = new VertexAttrib();
 
     protected int primCount;
 
@@ -45,11 +55,20 @@ public class DrawShapeState {
         this.vertexBuffer = null;
         this.elementBuffer = null;
         this.vertexOrigin.set(0, 0, 0);
-        this.color.set(1, 1, 1, 1);
+        this.vertexStride = 0;
         this.enableCullFace = true;
         this.enableDepthTest = true;
+        this.color.set(1, 1, 1, 1);
         this.lineWidth = 1;
+        this.texture = null;
+        this.texCoordMatrix.setToIdentity();
+        this.texCoordAttrib.size = 0;
+        this.texCoordAttrib.offset = 0;
         this.primCount = 0;
+
+        for (int idx = 0; idx < MAX_DRAW_ELEMENTS; idx++) {
+            this.prims[idx].texture = null;
+        }
     }
 
     public void color(Color color) {
@@ -60,6 +79,19 @@ public class DrawShapeState {
         this.lineWidth = width;
     }
 
+    public void texture(Texture texture) {
+        this.texture = texture;
+    }
+
+    public void texCoordMatrix(Matrix3 matrix) {
+        this.texCoordMatrix.set(matrix);
+    }
+
+    public void texCoordAttrib(int size, int offset) {
+        this.texCoordAttrib.size = size;
+        this.texCoordAttrib.offset = offset;
+    }
+
     public void drawElements(int mode, int count, int type, int offset) {
         DrawElements prim = this.prims[this.primCount++];
         prim.mode = mode;
@@ -68,6 +100,10 @@ public class DrawShapeState {
         prim.offset = offset;
         prim.color.set(this.color);
         prim.lineWidth = this.lineWidth;
+        prim.texture = this.texture;
+        prim.texCoordMatrix.set(this.texCoordMatrix);
+        prim.texCoordAttrib.size = this.texCoordAttrib.size;
+        prim.texCoordAttrib.offset = this.texCoordAttrib.offset;
     }
 
     protected static class DrawElements {
@@ -83,5 +119,18 @@ public class DrawShapeState {
         public Color color = new Color();
 
         public float lineWidth;
+
+        public Texture texture;
+
+        public Matrix3 texCoordMatrix = new Matrix3();
+
+        public VertexAttrib texCoordAttrib = new VertexAttrib();
+    }
+
+    protected static class VertexAttrib {
+
+        public int size;
+
+        public int offset;
     }
 }

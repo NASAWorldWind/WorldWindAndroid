@@ -20,17 +20,21 @@ import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableShape;
 import gov.nasa.worldwind.draw.DrawableSurfaceShape;
 import gov.nasa.worldwind.geom.Location;
+import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.RenderContext;
+import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.FloatArray;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.ShortArray;
 
 public class Path extends AbstractShape {
+
+    protected static final int VERTEX_STRIDE = 4;
 
     protected List<Position> positions = Collections.emptyList();
 
@@ -52,9 +56,13 @@ public class Path extends AbstractShape {
 
     protected Vec3 vertexOrigin = new Vec3();
 
+    protected double boundaryLength;
+
     protected boolean isSurfaceShape;
 
     private Vec3 point = new Vec3();
+
+    private Vec3 lastPoint = new Vec3();
 
     private Location loc = new Location();
 
@@ -140,18 +148,21 @@ public class Path extends AbstractShape {
             this.elementBufferKey = nextCacheKey();
         }
 
-        // Obtain a drawable form the render context pool.
+        // Obtain a drawable form the render context pool, and compute distance to the render camera.
         Drawable drawable;
         DrawShapeState drawState;
+        double cameraDistance;
         if (this.isSurfaceShape) {
             Pool<DrawableSurfaceShape> pool = rc.getDrawablePool(DrawableSurfaceShape.class);
             drawable = DrawableSurfaceShape.obtain(pool);
             drawState = ((DrawableSurfaceShape) drawable).drawState;
+            cameraDistance = this.cameraDistanceGeographic(rc, this.boundingSector);
             ((DrawableSurfaceShape) drawable).sector.set(this.boundingSector);
         } else {
             Pool<DrawableShape> pool = rc.getDrawablePool(DrawableShape.class);
             drawable = DrawableShape.obtain(pool);
             drawState = ((DrawableShape) drawable).drawState;
+            cameraDistance = this.cameraDistanceCartesian(rc, this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE, this.vertexOrigin);
         }
 
         // Use the basic GLSL program to draw the shape.
@@ -182,6 +193,23 @@ public class Path extends AbstractShape {
             rc.putBufferObject(this.elementBufferKey, drawState.elementBuffer);
         }
 
+        // Configure the drawable's vertex texture coordinate attribute.
+        drawState.texCoordAttrib(1 /*size*/, 12 /*stride in bytes*/);
+
+        // Configure the drawable to use the outline texture when drawing the outline.
+        if (this.activeAttributes.drawOutline && this.activeAttributes.outlineImageSource != null) {
+            Texture texture = rc.getTexture(this.activeAttributes.outlineImageSource);
+            if (texture == null) {
+                texture = rc.retrieveTexture(this.activeAttributes.outlineImageSource, null);
+            }
+            if (texture != null) {
+                double metersPerPixel = rc.pixelSizeAtDistance(cameraDistance);
+                Matrix3 texCoordMatrix = new Matrix3().setScale(1.0 / (texture.getWidth() * metersPerPixel), 1.0);
+                drawState.texture(texture);
+                drawState.texCoordMatrix(texCoordMatrix);
+            }
+        }
+
         // Configure the drawable to display the shape's outline.
         if (this.activeAttributes.drawOutline) {
             drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
@@ -189,6 +217,9 @@ public class Path extends AbstractShape {
             drawState.drawElements(GLES20.GL_LINE_STRIP, this.outlineElements.size(),
                 GLES20.GL_UNSIGNED_SHORT, this.interiorElements.size() * 2);
         }
+
+        // Disable texturing for the remaining drawable primitives.
+        drawState.texture(null);
 
         // Configure the drawable to display the shape's extruded verticals.
         if (this.activeAttributes.drawOutline && this.activeAttributes.drawVerticals && this.extrude) {
@@ -207,6 +238,7 @@ public class Path extends AbstractShape {
 
         // Configure the drawable according to the shape's attributes.
         drawState.vertexOrigin.set(this.vertexOrigin);
+        drawState.vertexStride = VERTEX_STRIDE * 4; // stride in bytes
         drawState.enableCullFace = false;
         drawState.enableDepthTest = this.activeAttributes.depthTest;
 
@@ -214,7 +246,6 @@ public class Path extends AbstractShape {
         if (this.isSurfaceShape) {
             rc.offerSurfaceDrawable(drawable, 0 /*zOrder*/);
         } else {
-            double cameraDistance = this.boundingBox.distanceTo(rc.cameraPoint);
             rc.offerShapeDrawable(drawable, cameraDistance);
         }
     }
@@ -233,10 +264,12 @@ public class Path extends AbstractShape {
         this.interiorElements.clear();
         this.outlineElements.clear();
         this.verticalElements.clear();
+        this.boundaryLength = 0;
 
         // Add the first vertex and compute the shape's local Cartesian coordinate origin.
         Position begin = this.positions.get(0);
         rc.geographicToCartesian(begin.latitude, begin.longitude, begin.altitude, this.altitudeMode, this.vertexOrigin);
+        this.lastPoint.set(this.vertexOrigin);
         this.addVertex(rc, begin.latitude, begin.longitude, begin.altitude, false /*tessellated*/);
 
         // Add the remaining vertices, tessellating each edge as indicated by the path's properties.
@@ -250,10 +283,10 @@ public class Path extends AbstractShape {
         // Compute the shape's bounding box or bounding sector from its assembled coordinates.
         if (this.isSurfaceShape) {
             this.boundingSector.setEmpty();
-            this.boundingSector.union(this.vertexArray.array(), this.vertexArray.size(), 2);
+            this.boundingSector.union(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
             this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
         } else {
-            this.boundingBox.setToPoints(this.vertexArray.array(), this.vertexArray.size(), 3);
+            this.boundingBox.setToPoints(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
             this.boundingBox.translate(this.vertexOrigin.x, this.vertexOrigin.y, this.vertexOrigin.z);
             this.boundingSector.setEmpty(); // Cartesian shape bounding sector is unused
         }
@@ -310,19 +343,31 @@ public class Path extends AbstractShape {
     }
 
     protected void addVertexGeographic(RenderContext rc, double latitude, double longitude, double altitude, boolean intermediate) {
-        int vertex = this.vertexArray.size() / 2;
+        rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, this.point);
+
+        this.boundaryLength += this.lastPoint.distanceTo(this.point);
+        this.lastPoint.set(this.point);
+
+        int vertex = this.vertexArray.size() / VERTEX_STRIDE;
         this.vertexArray.add((float) longitude);
         this.vertexArray.add((float) latitude);
+        this.vertexArray.add((float) altitude);
+        this.vertexArray.add((float) this.boundaryLength); // 1D texture coordinate
 
         this.outlineElements.add((short) vertex);
     }
 
     protected void addVertexCartesian(RenderContext rc, double latitude, double longitude, double altitude, boolean intermediate) {
         rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, this.point);
-        int vertex = this.vertexArray.size() / 3;
+
+        this.boundaryLength += this.lastPoint.distanceTo(this.point);
+        this.lastPoint.set(this.point);
+
+        int vertex = this.vertexArray.size() / VERTEX_STRIDE;
         this.vertexArray.add((float) (this.point.x - this.vertexOrigin.x));
         this.vertexArray.add((float) (this.point.y - this.vertexOrigin.y));
         this.vertexArray.add((float) (this.point.z - this.vertexOrigin.z));
+        this.vertexArray.add((float) this.boundaryLength); // 1D texture coordinate
 
         this.outlineElements.add((short) vertex);
 
@@ -331,6 +376,7 @@ public class Path extends AbstractShape {
             this.vertexArray.add((float) (this.point.x - this.vertexOrigin.x));
             this.vertexArray.add((float) (this.point.y - this.vertexOrigin.y));
             this.vertexArray.add((float) (this.point.z - this.vertexOrigin.z));
+            this.vertexArray.add((float) this.boundaryLength); // 1D texture coordinate
 
             this.interiorElements.add((short) vertex);
             this.interiorElements.add((short) (vertex + 1));

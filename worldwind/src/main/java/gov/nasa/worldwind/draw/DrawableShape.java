@@ -59,9 +59,6 @@ public class DrawableShape implements Drawable {
         // Use the draw context's pick mode.
         this.drawState.program.enablePickMode(dc.pickMode);
 
-        // Disable texturing.
-        this.drawState.program.enableTexture(false);
-
         // Use the draw context's modelview projection matrix, transformed to shape local coordinates.
         this.mvpMatrix.set(dc.modelviewProjection);
         this.mvpMatrix.multiplyByTranslation(this.drawState.vertexOrigin.x, this.drawState.vertexOrigin.y, this.drawState.vertexOrigin.z);
@@ -77,13 +74,26 @@ public class DrawableShape implements Drawable {
             GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         }
 
-        // Use the shape's vertex point attribute.
-        GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 3, GLES20.GL_FLOAT, false, 0, 0);
+        // Make multi-texture unit 0 active.
+        dc.activeTextureUnit(GLES20.GL_TEXTURE0);
+
+        // Use the shape's vertex point attribute and vertex texture coordinate attribute.
+        GLES20.glEnableVertexAttribArray(1 /*vertexTexCoord*/);
+        GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 3, GLES20.GL_FLOAT, false, this.drawState.vertexStride, 0 /*offset*/);
 
         // Draw the specified primitives.
         for (int idx = 0; idx < this.drawState.primCount; idx++) {
             DrawShapeState.DrawElements prim = this.drawState.prims[idx];
             this.drawState.program.loadColor(prim.color);
+
+            if (prim.texture != null && prim.texture.bindTexture(dc)) {
+                this.drawState.program.loadTexCoordMatrix(prim.texCoordMatrix);
+                this.drawState.program.enableTexture(true);
+            } else {
+                this.drawState.program.enableTexture(false);
+            }
+
+            GLES20.glVertexAttribPointer(1 /*vertexTexCoord*/, prim.texCoordAttrib.size, GLES20.GL_FLOAT, false, this.drawState.vertexStride, prim.texCoordAttrib.offset);
             GLES20.glLineWidth(prim.lineWidth);
             GLES20.glDrawElements(prim.mode, prim.count, prim.type, prim.offset);
         }
@@ -97,5 +107,6 @@ public class DrawableShape implements Drawable {
         }
         GLES20.glLineWidth(1);
         GLES20.glEnable(GLES20.GL_CULL_FACE);
+        GLES20.glDisableVertexAttribArray(1 /*vertexTexCoord*/);
     }
 }

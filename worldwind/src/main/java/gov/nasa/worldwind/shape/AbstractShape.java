@@ -9,9 +9,11 @@ import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.BoundingBox;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.RenderContext;
+import gov.nasa.worldwind.util.WWMath;
 
 public abstract class AbstractShape extends AbstractRenderable implements Attributable, Highlightable {
 
@@ -40,6 +42,8 @@ public abstract class AbstractShape extends AbstractRenderable implements Attrib
     protected BoundingBox boundingBox = new BoundingBox();
 
     protected static final double NEAR_ZERO_THRESHOLD = 1.0e-10;
+
+    private Vec3 scratchPoint = new Vec3();
 
     public AbstractShape() {
         this.attributes = new ShapeAttributes();
@@ -146,6 +150,37 @@ public abstract class AbstractShape extends AbstractRenderable implements Attrib
         } else {
             this.activeAttributes = this.attributes;
         }
+    }
+
+    protected double cameraDistanceGeographic(RenderContext rc, Sector boundingSector) {
+        double lat = WWMath.clamp(rc.camera.latitude, boundingSector.minLatitude(), boundingSector.maxLatitude());
+        double lon = WWMath.clamp(rc.camera.longitude, boundingSector.minLongitude(), boundingSector.maxLongitude());
+        Vec3 point = rc.geographicToCartesian(lat, lon, 0, WorldWind.CLAMP_TO_GROUND, this.scratchPoint);
+
+        return point.distanceTo(rc.cameraPoint);
+    }
+
+    protected double cameraDistanceCartesian(RenderContext rc, float[] array, int count, int stride, Vec3 offset) {
+        double cx = rc.cameraPoint.x - offset.x;
+        double cy = rc.cameraPoint.y - offset.y;
+        double cz = rc.cameraPoint.z - offset.z;
+        double minDistance2 = Double.POSITIVE_INFINITY;
+
+        for (int idx = 0; idx < count; idx += stride) {
+            double px = array[idx];
+            double py = array[idx + 1];
+            double pz = array[idx + 2];
+            double dx = px - cx;
+            double dy = py - cy;
+            double dz = pz - cz;
+            double distance2 = (dx * dx) + (dy * dy) + (dz * dz);
+
+            if (minDistance2 > distance2) {
+                minDistance2 = distance2;
+            }
+        }
+
+        return Math.sqrt(minDistance2);
     }
 
     protected abstract void reset();

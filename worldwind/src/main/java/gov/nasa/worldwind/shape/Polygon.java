@@ -35,6 +35,8 @@ import gov.nasa.worldwind.util.glu.GLUtessellatorCallbackAdapter;
 
 public class Polygon extends AbstractShape {
 
+    protected static final int VERTEX_STRIDE = 6;
+
     protected List<List<Position>> boundaries = new ArrayList<>();
 
     protected boolean extrude;
@@ -290,6 +292,7 @@ public class Polygon extends AbstractShape {
         // Configure the drawable according to the shape's attributes. Disable triangle backface culling when we're
         // displaying a polygon without extruded sides, so we want to draw the top and the bottom.
         drawState.vertexOrigin.set(this.vertexOrigin);
+        drawState.vertexStride = VERTEX_STRIDE * 4; // stride in bytes
         drawState.enableCullFace = this.extrude;
         drawState.enableDepthTest = this.activeAttributes.depthTest;
 
@@ -303,6 +306,9 @@ public class Polygon extends AbstractShape {
     }
 
     protected void drawInterior(RenderContext rc, DrawShapeState drawState) {
+        // Configure the drawable's interior vertex texture coordinate attribute.
+        drawState.texCoordAttrib(2 /*size*/, 12 /*offset in bytes*/);
+
         // Configure the drawable to display the shape's interior (and its optional extruded interior).
         if (this.activeAttributes.drawInterior) {
             drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.interiorColor);
@@ -312,6 +318,9 @@ public class Polygon extends AbstractShape {
     }
 
     protected void drawOutline(RenderContext rc, DrawShapeState drawState) {
+        // Configure the drawable's outline vertex texture coordinate attribute.
+        drawState.texCoordAttrib(1 /*size*/, 20 /*offset in bytes*/);
+
         // Configure the drawable to display the shape's outline.
         if (this.activeAttributes.drawOutline) {
             drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
@@ -393,10 +402,10 @@ public class Polygon extends AbstractShape {
         // Compute the shape's bounding box or bounding sector from its assembled coordinates.
         if (this.isSurfaceShape) {
             this.boundingSector.setEmpty();
-            this.boundingSector.union(this.vertexArray.array(), this.vertexArray.size(), 2);
+            this.boundingSector.union(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
             this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
         } else {
-            this.boundingBox.setToPoints(this.vertexArray.array(), this.vertexArray.size(), 3);
+            this.boundingBox.setToPoints(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
             this.boundingBox.translate(this.vertexOrigin.x, this.vertexOrigin.y, this.vertexOrigin.z);
             this.boundingSector.setEmpty(); // Cartesian shape bounding sector is unused
         }
@@ -453,9 +462,13 @@ public class Polygon extends AbstractShape {
     }
 
     protected int addVertexGeographic(RenderContext rc, double latitude, double longitude, double altitude, int type) {
-        int vertex = this.vertexArray.size() / 2;
+        int vertex = this.vertexArray.size() / VERTEX_STRIDE;
         this.vertexArray.add((float) longitude);
         this.vertexArray.add((float) latitude);
+        this.vertexArray.add((float) altitude);
+        this.vertexArray.add((float) 0); /*TODO*/ // 2D texture coordinate
+        this.vertexArray.add((float) 0); /*TODO*/ // 2D texture coordinate
+        this.vertexArray.add((float) 0); /*TODO*/ // 1D texture coordinate
 
         if (type != VERTEX_COMBINED) {
             this.tessCoords[0] = (float) longitude;
@@ -469,16 +482,22 @@ public class Polygon extends AbstractShape {
 
     protected int addVertexCartesian(RenderContext rc, double latitude, double longitude, double altitude, int type) {
         rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, this.point);
-        int vertex = this.vertexArray.size() / 3;
+        int vertex = this.vertexArray.size() / VERTEX_STRIDE;
         this.vertexArray.add((float) (this.point.x - this.vertexOrigin.x));
         this.vertexArray.add((float) (this.point.y - this.vertexOrigin.y));
         this.vertexArray.add((float) (this.point.z - this.vertexOrigin.z));
+        this.vertexArray.add((float) 0); /*TODO*/ // 2D texture coordinate
+        this.vertexArray.add((float) 0); /*TODO*/ // 2D texture coordinate
+        this.vertexArray.add((float) 0); /*TODO*/ // 1D texture coordinate
 
         if (this.extrude) {
             rc.geographicToCartesian(latitude, longitude, 0, WorldWind.CLAMP_TO_GROUND, this.point);
             this.vertexArray.add((float) (this.point.x - this.vertexOrigin.x));
             this.vertexArray.add((float) (this.point.y - this.vertexOrigin.y));
             this.vertexArray.add((float) (this.point.z - this.vertexOrigin.z));
+            this.vertexArray.add((float) 0); /*TODO*/ // 2D texture coordinate
+            this.vertexArray.add((float) 0); /*TODO*/ // 2D texture coordinate
+            this.vertexArray.add((float) 0); /*TODO*/ // 1D texture coordinate
         }
 
         if (this.extrude && type == VERTEX_ORIGINAL) {
