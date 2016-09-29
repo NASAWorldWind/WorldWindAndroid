@@ -20,8 +20,8 @@ void main() {
         float texMask = floor(texture2D(texSampler, texCoord).a + 0.5);
         gl_FragColor = color * texMask;
     } else if (!enablePickMode && enableTexture) {
-       /* Modulate the RGBA color with the 2D texture's RGBA color. */
-       gl_FragColor = color * texture2D(texSampler, texCoord);
+        /* Modulate the RGBA color with the 2D texture's RGBA color. */
+        gl_FragColor = color * texture2D(texSampler, texCoord);
     } else {
         /* Return the RGBA color as-is. */
         gl_FragColor = color;
