@@ -5,6 +5,7 @@
 
 package gov.nasa.worldwindx;
 
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.GestureDetector;
@@ -26,18 +27,29 @@ import java.util.Random;
 import gov.nasa.worldwind.BasicWorldWindowController;
 import gov.nasa.worldwind.PickedObjectList;
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.shape.Highlightable;
+import gov.nasa.worldwind.shape.Label;
 import gov.nasa.worldwind.shape.Path;
 import gov.nasa.worldwind.shape.Polygon;
 import gov.nasa.worldwind.shape.ShapeAttributes;
+import gov.nasa.worldwind.shape.TextAttributes;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
 
-public class PathsAndPolygonsActivity extends GeneralGlobeActivity {
+/**
+ * This activity demonstrates rendering Labels, Paths and Polygons on the globe. All of the Renderable objects are
+ * loaded from .csv files via an AsyncTask. The CreateRenderablesTask creates the individual Renderable objects on a
+ * background thread and adds each renderable to the WorldWindow on the UI Thread (essential!) via publishProgress and
+ * onProgressUpdate.
+ * <p/>
+ * This activity also implements a PickController that displays the name of the picked renderable.
+ */
+public class PathsPolygonsLabelsActivity extends GeneralGlobeActivity {
 
     // A component for displaying the status of this activity
     protected TextView statusText = null;
@@ -48,7 +60,9 @@ public class PathsAndPolygonsActivity extends GeneralGlobeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_paths_and_polygons));
-        setAboutBoxText("Demonstrates world highways rendered as paths and countries as polygons with random interior colors.");
+        setAboutBoxText("Demonstrates place names rendered as labels, world highways rendered as paths " +
+            "and countries rendered as polygons with random interior colors. \n\n" +
+            "The name of the object(s) are displayed when picked.");
         // Add a TextView on top of the globe to convey the status of this activity
         this.statusText = new TextView(this);
         this.statusText.setTextColor(android.graphics.Color.YELLOW);
@@ -74,56 +88,116 @@ public class PathsAndPolygonsActivity extends GeneralGlobeActivity {
 
         private int numHighwaysCreated;
 
-        private Random random = new Random(19);    // for Random color fills.
+        private int numPlacesCreated;
+
+        private Random random = new Random(22);    // Seed the random number generator for random color fills.
 
         /**
-         * Loads the world_highways and world_political_areas files a background thread. The {@link Renderable}
-         * objects are added to the RenderableLayer on the UI thread via onProgressUpdate.
+         * Loads the world_highways and world_political_areas files a background thread. The {@link Renderable} objects
+         * are added to the RenderableLayer on the UI thread via onProgressUpdate.
          */
         @Override
         protected Void doInBackground(Void... notUsed) {
             loadCountriesFile();
-            loadHighwaysFile();
+            loadHighways();
+            loadPlaceNames();
             return null;
         }
 
         /**
-         * Updates the RenderableLayer on the UI Thread.
+         * Updates the RenderableLayer on the UI Thread. Invoked by calls to publishProgress.
          *
          * @param renderables An array of Renderables (length = 1) to add to the shapes layer.
          */
         @Override
         protected void onProgressUpdate(Renderable... renderables) {
             super.onProgressUpdate(renderables);
-            statusText.setText("Added " + renderables[0].getDisplayName() + " feature...");
-            shapesLayer.addRenderable(renderables[0]);
+            Renderable shape = renderables[0];
+            statusText.setText("Added " + shape.getDisplayName() + " feature...");
+            shapesLayer.addRenderable(shape);
             getWorldWindow().requestRedraw();
         }
 
         /**
-         * Updates the WorldWindow layer list on the UI Thread.
+         * Updates the status overlay after the background processing is complete.
          */
         @Override
         protected void onPostExecute(Void notUsed) {
             super.onPostExecute(notUsed);
-            statusText.setText(String.format(Locale.US, "%,d highways and %,d countries created",
+            statusText.setText(String.format(Locale.US, "%,d places, %,d highways and %,d countries created",
+                this.numPlacesCreated,
                 this.numHighwaysCreated,
                 this.numCountriesCreated));
             getWorldWindow().requestRedraw();
         }
 
         /**
-         * Called by doInBackground(); loads the VMAP0 World Highways data.
+         * Creates Label objects from the VMAP0 World Place Names data. Called by doInBackground().
          */
-        private void loadHighwaysFile() {
+        private void loadPlaceNames() {
+            // Define the text attributes used for places
+            TextAttributes placeAttrs = new TextAttributes()
+                .setTypeface(Typeface.DEFAULT_BOLD)     // Override the normal Typeface
+                .setTextSize(28f)                       // default size is 24
+                .setTextOffset(Offset.bottomRight());   // anchor the label's bottom-right corner at its position
+
+            // Define the text attribute used for lakes
+            TextAttributes lakeAttrs = new TextAttributes()
+                .setTypeface(Typeface.create("serif", Typeface.BOLD_ITALIC))
+                .setTextSize(32f)                           // default size is 24
+                .setTextColor(new Color(0f, 1f, 1f, 0.70f))  // cyan, with 7% opacity
+                .setTextOffset(Offset.center());            // center the label over its position
+
+            // Load the place names
+            BufferedReader reader = null;
+            try {
+                InputStream in = getResources().openRawResource(R.raw.world_placenames);
+                reader = new BufferedReader(new InputStreamReader(in));
+
+                // Process the header in the first line of the CSV file ...
+                String line = reader.readLine();
+                List<String> headers = Arrays.asList(line.split(","));
+                final int LAT = headers.indexOf("LAT");
+                final int LON = headers.indexOf("LON");
+                final int NAM = headers.indexOf("PLACE_NAME");
+
+                // ... and process the remaining lines in the CSV
+                while ((line = reader.readLine()) != null) {
+                    String[] fields = line.split(",");
+
+                    Label label = new Label(
+                        Position.fromDegrees(Double.parseDouble(fields[LAT]), Double.parseDouble(fields[LON]), 0),
+                        fields[NAM],
+                        fields[NAM].contains("Lake") ? lakeAttrs : placeAttrs);
+                    label.setDisplayName(label.getText());
+
+                    // Add the Label object to the RenderableLayer on the UI Thread (see onProgressUpdate)
+                    publishProgress(label);
+
+                    this.numPlacesCreated++;
+                }
+            } catch (IOException e) {
+                Logger.log(Logger.ERROR, "Exception attempting to read/parse world_placenames file.");
+            } finally {
+                WWUtil.closeSilently(reader);
+            }
+        }
+
+        /**
+         * Creates Path objects from the VMAP0 World Highways data. Called by doInBackground().
+         */
+        private void loadHighways() {
+            // Define the normal shape attributes
             ShapeAttributes attrs = new ShapeAttributes();
             attrs.getOutlineColor().set(1.0f, 1.0f, 0.0f, 1.0f);
             attrs.setOutlineWidth(3);
 
+            // Define the shape attributes used for highlighted "highways"
             ShapeAttributes highlightAttrs = new ShapeAttributes();
             highlightAttrs.getOutlineColor().set(1.0f, 0.0f, 0.0f, 1.0f);
             highlightAttrs.setOutlineWidth(7);
 
+            // Load the highways
             BufferedReader reader = null;
             try {
                 InputStream in = getResources().openRawResource(R.raw.world_highways);
@@ -162,10 +236,10 @@ public class PathsAndPolygonsActivity extends GeneralGlobeActivity {
                     path.setFollowTerrain(true);  // essential for preventing long segments from intercepting ellipsoid.
                     path.setDisplayName(attributes);
 
+                    // Add the Path object to the RenderableLayer on the UI Thread (see onProgressUpdate)
                     publishProgress(path);
                     this.numHighwaysCreated++;
                 }
-
             } catch (IOException e) {
                 Logger.log(Logger.ERROR, "Exception attempting to read/parse world_highways file.");
             } finally {
@@ -174,19 +248,22 @@ public class PathsAndPolygonsActivity extends GeneralGlobeActivity {
         }
 
         /**
-         * Called by doInBackground(); loads the VMAP0 World Political Areas data.
+         * Creates Polygon objects from the e VMAP0 World Political Areas data. Called by doInBackground().
          */
         private void loadCountriesFile() {
+            // Define the normal shape attributes
             ShapeAttributes commonAttrs = new ShapeAttributes();
             commonAttrs.getInteriorColor().set(1.0f, 1.0f, 0.0f, 0.5f);
             commonAttrs.getOutlineColor().set(0.0f, 0.0f, 0.0f, 1.0f);
             commonAttrs.setOutlineWidth(3);
 
+            // Define the shape attributes used for highlighted countries
             ShapeAttributes highlightAttrs = new ShapeAttributes();
             highlightAttrs.getInteriorColor().set(1.0f, 1.0f, 1.0f, 0.5f);
             highlightAttrs.getOutlineColor().set(1.0f, 1.0f, 1.0f, 1.0f);
             highlightAttrs.setOutlineWidth(5);
 
+            // Load the countries
             BufferedReader reader = null;
             try {
                 InputStream in = getResources().openRawResource(R.raw.world_political_boundaries);
@@ -242,7 +319,9 @@ public class PathsAndPolygonsActivity extends GeneralGlobeActivity {
                         polyStart = feature.indexOf("(", polyEnd);
                     }
 
+                    // Add the Polygon object to the RenderableLayer on the UI Thread (see onProgressUpdate).
                     publishProgress(polygon);
+
                     this.numCountriesCreated++;
                 }
             } catch (IOException e) {
