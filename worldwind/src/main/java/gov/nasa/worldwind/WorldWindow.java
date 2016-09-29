@@ -59,6 +59,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected static final int MSG_ID_SET_VIEWPORT = 3;
 
+    protected static final int MSG_ID_SET_DEPTH_BITS = 4;
+
     /**
      * Indicates the planet or celestial object displayed by this World Window.
      */
@@ -88,6 +90,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected Viewport viewport = new Viewport();
 
+    protected int depthBits;
+
     protected Pool<Frame> framePool = new SynchronizedPool<>();
 
     protected Queue<Frame> frameQueue = new ConcurrentLinkedQueue<>();
@@ -109,6 +113,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
                 requestRedraw();
             } else if (msg.what == MSG_ID_SET_VIEWPORT) {
                 viewport.set((Viewport) msg.obj);
+            } else if (msg.what == MSG_ID_SET_DEPTH_BITS) {
+                depthBits = (Integer) msg.obj;
             }
             return false;
         }
@@ -706,6 +712,12 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // Clear any cached OpenGL resources and state, which are now invalid.
         this.dc.contextLost();
 
+        // Set the World Window's depth bits.
+        int[] depthBits = new int[1];
+        GLES20.glGetIntegerv(GLES20.GL_DEPTH_BITS, depthBits, 0);
+        this.mainThreadHandler.sendMessage(
+            Message.obtain(this.mainThreadHandler, MSG_ID_SET_DEPTH_BITS /*msg.what*/, depthBits[0] /*msg.obj*/));
+
         // Clear the render resource cache on the main thread.
         this.mainThreadHandler.sendEmptyMessage(MSG_ID_CLEAR_CACHE /*msg.what*/);
     }
@@ -1007,8 +1019,20 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // TODO adjust the clip plane distances based on the navigator's orientation - shorter distances when the
         // TODO horizon is not in view
         // TODO parameterize the object altitude for horizon distance
-        double near = this.navigator.getAltitude() * 0.75;
+        double near = this.navigator.getAltitude() * 0.5;
         double far = this.globe.horizonDistance(this.navigator.getAltitude(), 160000);
+
+        // Computes the near clip distance that provides a minimum resolution at the far clip plane, based on the OpenGL
+        // context's depth buffer precision.
+        if (this.depthBits != 0) {
+            double maxDepthValue = (1 << this.depthBits) - 1;
+            double farResolution = 10.0;
+            double nearDistance = far / (maxDepthValue / (1 - farResolution / far) - maxDepthValue + 1);
+            // Use the computed near distance only when it's less than our default distance.
+            if (near > nearDistance) {
+                near = nearDistance;
+            }
+        }
 
         // Compute a perspective projection matrix given the World Window's viewport, field of view, and clip distances.
         projection.setToPerspectiveProjection(this.viewport.width, this.viewport.height, this.fieldOfView, near, far);

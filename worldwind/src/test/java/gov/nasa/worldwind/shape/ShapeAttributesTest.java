@@ -31,9 +31,9 @@ public class ShapeAttributesTest {
 
     @Test
     public void testConstructor_Default() throws Exception {
-        
+
         ShapeAttributes shapeAttributes = new ShapeAttributes();
-        
+
         assertNotNull(shapeAttributes);
         // Assert default values are as expected.
         assertTrue("drawInterior should be true", shapeAttributes.drawInterior);
@@ -44,25 +44,27 @@ public class ShapeAttributesTest {
         assertEquals("interiorColor should be white", new Color(1, 1, 1, 1), shapeAttributes.interiorColor);
         assertEquals("outlineColor should be red", new Color(1, 0, 0, 1), shapeAttributes.outlineColor);
         assertEquals("outlineWidth should be 1.0", 1.0f, shapeAttributes.outlineWidth, 0.0f);
-        assertEquals("outlineStippleFactor should be 0", 0, shapeAttributes.outlineStippleFactor);
-        assertEquals("outlineStipplePattern should be 0xF0F0", (short) 0xF0F0, shapeAttributes.outlineStipplePattern);
-        assertNull("imageSource should be null", shapeAttributes.imageSource);
+        assertNull("interiorImageSource should be null", shapeAttributes.interiorImageSource);
+        assertNull("outlineImageSource should be null", shapeAttributes.outlineImageSource);
     }
 
     @Test
     public void testConstructor_Copy() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
-        attributes.imageSource = ImageSource.fromObject(new Object());
+        attributes.interiorImageSource = ImageSource.fromObject(new Object());
+        attributes.outlineImageSource = ImageSource.fromObject(new Object());
 
         ShapeAttributes copy = new ShapeAttributes(attributes);
 
         assertNotNull(copy);
         assertEquals(attributes, copy);
-        // Ensure we made a copy of the colors and not just a reference
+        // Ensure we made a deep copy of the colors
         assertTrue(copy.interiorColor != attributes.interiorColor);
         assertTrue(copy.outlineColor != attributes.outlineColor);
+        // Ensure we copied the image sources by reference
+        assertTrue(copy.interiorImageSource == attributes.interiorImageSource);
+        assertTrue(copy.outlineImageSource == attributes.outlineImageSource);
     }
-
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor_CopyWithNull() throws Exception {
@@ -82,11 +84,11 @@ public class ShapeAttributesTest {
         other.drawVerticals = true;
         other.depthTest = false;
         other.enableLighting = true;
-        other.interiorColor = new Color(0,0,0,0);
-        other.outlineColor = new Color(0,1,1,0);
+        other.interiorColor = new Color(0, 0, 0, 0);
+        other.outlineColor = new Color(0, 1, 1, 0);
         other.outlineWidth = 0.0f;
-        other.outlineStippleFactor = (short) 0x0F0F;
-        other.imageSource = ImageSource.fromObject(new Object());
+        other.interiorImageSource = ImageSource.fromObject(new Object());
+        other.outlineImageSource = ImageSource.fromObject(new Object());
 
         attributes.set(other);
 
@@ -115,12 +117,13 @@ public class ShapeAttributesTest {
         assertEquals(same.interiorColor, attributes.interiorColor);
         assertEquals(same.outlineColor, attributes.outlineColor);
         assertEquals(same.outlineWidth, attributes.outlineWidth, 0.0f);
-        assertEquals(same.outlineStippleFactor, attributes.outlineStippleFactor);
-        assertEquals(same.imageSource, attributes.imageSource);
+        assertEquals(same.interiorImageSource, attributes.interiorImageSource);
+        assertEquals(same.outlineImageSource, attributes.outlineImageSource);
         assertEquals(attributes, attributes);
         assertEquals(attributes, same);
         assertEquals(same, attributes);
     }
+
     @Test
     public void testInequality() throws Exception {
         ShapeAttributes typical = new ShapeAttributes();
@@ -130,11 +133,11 @@ public class ShapeAttributesTest {
         different.drawVerticals = true;
         different.depthTest = false;
         different.enableLighting = true;
-        different.interiorColor = new Color(0,0,0,0);
-        different.outlineColor = new Color(0,1,1,0);
+        different.interiorColor = new Color(0, 0, 0, 0);
+        different.outlineColor = new Color(0, 1, 1, 0);
         different.outlineWidth = 0.0f;
-        different.outlineStippleFactor = (short) 0x0F0F;
-        different.imageSource = ImageSource.fromObject(new Object());
+        different.interiorImageSource = ImageSource.fromObject(new Object());
+        different.outlineImageSource = ImageSource.fromObject(new Object());
 
         assertNotEquals(different.drawInterior, typical.drawInterior);
         assertNotEquals(different.drawOutline, typical.drawOutline);
@@ -144,8 +147,8 @@ public class ShapeAttributesTest {
         assertNotEquals(different.interiorColor, typical.interiorColor);
         assertNotEquals(different.outlineColor, typical.outlineColor);
         assertNotEquals(different.outlineWidth, typical.outlineWidth, 0.0f);
-        assertNotEquals(different.outlineStippleFactor, typical.outlineStippleFactor);
-        assertNotEquals(different.imageSource, typical.imageSource);
+        assertNotEquals(different.interiorImageSource, typical.interiorImageSource);
+        assertNotEquals(different.outlineImageSource, typical.outlineImageSource);
         assertNotEquals(different, typical);
         assertNotEquals(typical, different);
         assertNotEquals(typical, null);
@@ -279,7 +282,7 @@ public class ShapeAttributesTest {
     @Test
     public void testGetInteriorColor() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
-        Color black = new Color(0,0,0,1);
+        Color black = new Color(0, 0, 0, 1);
         attributes.interiorColor = black;
 
         assertEquals(black, attributes.getInteriorColor());
@@ -288,17 +291,19 @@ public class ShapeAttributesTest {
     @Test
     public void testSetInteriorColor() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
-        Color black = new Color(0,0,0,1);
+        Color black = new Color(0, 0, 0, 1);
 
         attributes.setInteriorColor(black);
 
+        // Verify that the object is an equivalent deep copy.
         assertEquals(black, attributes.interiorColor);
+        assertTrue(black != attributes.interiorColor);
     }
 
     @Test
     public void testGetOutlineColor() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
-        Color black = new Color(0,0,0,1);
+        Color black = new Color(0, 0, 0, 1);
         attributes.outlineColor = black;
 
         assertEquals(black, attributes.getOutlineColor());
@@ -307,11 +312,13 @@ public class ShapeAttributesTest {
     @Test
     public void testSetOutlineColor() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
-        Color black = new Color(0,0,0,1);
+        Color black = new Color(0, 0, 0, 1);
 
         attributes.setOutlineColor(black);
 
+        // Verify that the object is an equivalent deep copy.
         assertEquals(black, attributes.outlineColor);
+        assertTrue(black != attributes.outlineColor);
     }
 
     @Test
@@ -334,59 +341,40 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testGetOutlineStippleFactor() throws Exception {
-        ShapeAttributes attributes = new ShapeAttributes();
-        int factor = 3;
-        attributes.outlineStippleFactor = factor;
-
-        assertEquals(factor, attributes.getOutlineStippleFactor());
-    }
-
-    @Test
-    public void testSetOutlineStippleFactor() throws Exception {
-        ShapeAttributes attributes = new ShapeAttributes();
-        int factor = 3;
-
-        attributes.setOutlineStippleFactor(factor);
-
-        assertEquals(factor, attributes.outlineStippleFactor);
-    }
-
-    @Test
-    public void testGetOutlineStipplePattern() throws Exception {
-        ShapeAttributes attributes = new ShapeAttributes();
-        short pattern = (short)0xABCD;
-        attributes.outlineStipplePattern = pattern;
-
-        assertEquals(pattern, attributes.getOutlineStipplePattern());
-    }
-
-    @Test
-    public void testSetOutlineStipplePattern() throws Exception {
-        ShapeAttributes attributes = new ShapeAttributes();
-        short pattern = (short)0xABCD;
-
-        attributes.setOutlineStipplePattern(pattern);
-
-        assertEquals(pattern, attributes.outlineStipplePattern);
-    }
-
-    @Test
-    public void testGetImageSource() throws Exception {
+    public void testGetInteriorImageSource() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
         ImageSource imageSource = ImageSource.fromObject(new Object());
-        attributes.imageSource = imageSource;
+        attributes.interiorImageSource = imageSource;
 
-        assertEquals(imageSource, attributes.getImageSource());
+        assertEquals(imageSource, attributes.getInteriorImageSource());
     }
 
     @Test
-    public void testSetImageSource() throws Exception {
+    public void testSetInteriorImageSource() throws Exception {
         ShapeAttributes attributes = new ShapeAttributes();
         ImageSource imageSource = ImageSource.fromObject(new Object());
 
-        attributes.setImageSource(imageSource);
+        attributes.setInteriorImageSource(imageSource);
 
-        assertEquals(imageSource, attributes.imageSource);
+        assertEquals(imageSource, attributes.interiorImageSource);
+    }
+
+    @Test
+    public void testGetOutlineImageSource() throws Exception {
+        ShapeAttributes attributes = new ShapeAttributes();
+        ImageSource imageSource = ImageSource.fromObject(new Object());
+        attributes.outlineImageSource = imageSource;
+
+        assertEquals(imageSource, attributes.getOutlineImageSource());
+    }
+
+    @Test
+    public void testSetOutlineImageSource() throws Exception {
+        ShapeAttributes attributes = new ShapeAttributes();
+        ImageSource imageSource = ImageSource.fromObject(new Object());
+
+        attributes.setOutlineImageSource(imageSource);
+
+        assertEquals(imageSource, attributes.outlineImageSource);
     }
 }

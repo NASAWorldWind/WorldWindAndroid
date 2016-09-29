@@ -6,7 +6,10 @@
 package gov.nasa.worldwind.render;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.support.annotation.DrawableRes;
+
+import java.util.Arrays;
 
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
@@ -165,6 +168,56 @@ public class ImageSource {
         imageSource.type = TYPE_URL;
         imageSource.source = urlString;
         return imageSource;
+    }
+
+    /**
+     * Constructs a bitmap image source with a line stipple pattern. The result is a one-dimensional bitmap with pixels
+     * representing the specified stipple factor and stipple pattern. Line stipple images can be used for displaying
+     * dashed shape outlines. See {@link gov.nasa.worldwind.shape.ShapeAttributes#setOutlineImageSource(ImageSource)}.
+     *
+     * @param factor  specifies the number of times each bit in the pattern is repeated before the next bit is used. For
+     *                example, if the factor is 3, each bit is repeated three times before using the next bit. The
+     *                specified factor must be either 0 or an integer greater than 0. A factor of 0 indicates no
+     *                stippling.
+     * @param pattern specifies a number whose lower 16 bits define a pattern of which pixels in the image are white and
+     *                which are transparent. Each bit corresponds to a pixel, and the pattern repeats after every n*16
+     *                pixels, where n is the factor. For example, if the factor is 3, each bit in the pattern is
+     *                repeated three times before using the next bit.
+     *
+     * @return the new image source
+     */
+    public static ImageSource fromLineStipple(int factor, short pattern) {
+        final int transparent = Color.argb(0, 0, 0, 0);
+        final int white = Color.argb(255, 255, 255, 255);
+
+        if (factor <= 0) {
+            int width = 16;
+            int[] pixels = new int[width];
+            Arrays.fill(pixels, white);
+
+            Bitmap bitmap = Bitmap.createBitmap(width, 1 /*height*/, Bitmap.Config.ALPHA_8);
+            bitmap.setPixels(pixels, 0 /*offset*/, width /*stride*/, 0 /*x*/, 0 /*y*/, width, 1 /*height*/);
+
+            return ImageSource.fromBitmap(bitmap);
+        } else {
+            int width = factor * 16;
+            int[] pixels = new int[width];
+            int pixel = 0;
+
+            for (int bi = 0; bi < 16; bi++) {
+                int bit = pattern & (1 << bi);
+                int color = (bit == 0) ? transparent : white;
+
+                for (int fi = 0; fi < factor; fi++) {
+                    pixels[pixel++] = color;
+                }
+            }
+
+            Bitmap bitmap = Bitmap.createBitmap(width, 1 /*height*/, Bitmap.Config.ALPHA_8);
+            bitmap.setPixels(pixels, 0 /*offset*/, width /*stride*/, 0 /*x*/, 0 /*y*/, width, 1 /*height*/);
+
+            return ImageSource.fromBitmap(bitmap);
+        }
     }
 
     /**

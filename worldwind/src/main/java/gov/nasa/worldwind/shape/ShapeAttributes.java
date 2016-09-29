@@ -9,6 +9,9 @@ import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.util.Logger;
 
+/**
+ * Holds attributes applied to geographic shapes.
+ */
 public class ShapeAttributes {
 
     protected boolean drawInterior;
@@ -27,11 +30,9 @@ public class ShapeAttributes {
 
     protected float outlineWidth;
 
-    protected int outlineStippleFactor;
+    protected ImageSource interiorImageSource;
 
-    protected short outlineStipplePattern;
-
-    protected ImageSource imageSource;
+    protected ImageSource outlineImageSource;
 
     public ShapeAttributes() {
         this.drawInterior = true;
@@ -42,9 +43,8 @@ public class ShapeAttributes {
         this.interiorColor = new Color(1, 1, 1, 1); // white
         this.outlineColor = new Color(1, 0, 0, 1); // red
         this.outlineWidth = 1.0f;
-        this.outlineStippleFactor = 0;
-        this.outlineStipplePattern = (short) 0xF0F0;
-        this.imageSource = null;
+        this.interiorImageSource = null;
+        this.outlineImageSource = null;
     }
 
     public ShapeAttributes(ShapeAttributes attributes) {
@@ -61,9 +61,8 @@ public class ShapeAttributes {
         this.interiorColor = new Color(attributes.interiorColor);
         this.outlineColor = new Color(attributes.outlineColor);
         this.outlineWidth = attributes.outlineWidth;
-        this.outlineStippleFactor = attributes.outlineStippleFactor;
-        this.outlineStipplePattern = attributes.outlineStipplePattern;
-        this.imageSource = attributes.imageSource;
+        this.interiorImageSource = attributes.interiorImageSource;
+        this.outlineImageSource = attributes.outlineImageSource;
     }
 
     public ShapeAttributes set(ShapeAttributes attributes) {
@@ -80,9 +79,8 @@ public class ShapeAttributes {
         this.interiorColor.set(attributes.interiorColor);
         this.outlineColor.set(attributes.outlineColor);
         this.outlineWidth = attributes.outlineWidth;
-        this.outlineStippleFactor = attributes.outlineStippleFactor;
-        this.outlineStipplePattern = attributes.outlineStipplePattern;
-        this.imageSource = attributes.imageSource;
+        this.interiorImageSource = attributes.interiorImageSource;
+        this.outlineImageSource = attributes.outlineImageSource;
         return this;
     }
 
@@ -104,9 +102,8 @@ public class ShapeAttributes {
             && this.interiorColor.equals(that.interiorColor)
             && this.outlineColor.equals(that.outlineColor)
             && this.outlineWidth == that.outlineWidth
-            && this.outlineStippleFactor == that.outlineStippleFactor
-            && this.outlineStipplePattern == that.outlineStipplePattern
-            && ((this.imageSource == null) ? (that.imageSource == null) : this.imageSource.equals(that.imageSource));
+            && ((this.interiorImageSource == null) ? (that.interiorImageSource == null) : this.interiorImageSource.equals(that.interiorImageSource))
+            && ((this.outlineImageSource == null) ? (that.outlineImageSource == null) : this.outlineImageSource.equals(that.outlineImageSource));
     }
 
     @Override
@@ -122,36 +119,43 @@ public class ShapeAttributes {
         result = 31 * result + this.outlineColor.hashCode();
         temp = Double.doubleToLongBits(this.outlineWidth);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
-        result = 31 * result + this.outlineStippleFactor;
-        result = 31 * result + (int) outlineStipplePattern;
-        result = 31 * result + (this.imageSource != null ? this.imageSource.hashCode() : 0);
+        result = 31 * result + (this.interiorImageSource != null ? this.interiorImageSource.hashCode() : 0);
+        result = 31 * result + (this.outlineImageSource != null ? this.outlineImageSource.hashCode() : 0);
         return result;
     }
 
     /**
-     * Indicates whether the interior of the associated shape is drawn.
+     * Indicates whether shape interiors are enabled.
+     *
+     * @return true if shape interiors are enabled, and false otherwise
      */
     public boolean isDrawInterior() {
         return this.drawInterior;
     }
 
     /**
-     * Indicates whether the interior of the associated shape is drawn.
+     * Sets whether to enable shape interiors.
+     *
+     * @param enable true to enable shape interiors, and false otherwise
      */
-    public ShapeAttributes setDrawInterior(boolean draw) {
-        this.drawInterior = draw;
+    public ShapeAttributes setDrawInterior(boolean enable) {
+        this.drawInterior = enable;
         return this;
     }
 
     /**
-     * Indicates whether the outline of the associated shape is drawn
+     * Indicates whether shape outlines are enabled.
+     *
+     * @return true if shape outlines are enabled, and false otherwise
      */
     public boolean isDrawOutline() {
         return this.drawOutline;
     }
 
     /**
-     * Indicates whether the outline of the associated shape is drawn
+     * Sets whether to enable shape outlines.
+     *
+     * @param enable true to enable shape outlines, and false otherwise
      */
     public ShapeAttributes setDrawOutline(boolean enable) {
         this.drawOutline = enable;
@@ -159,14 +163,22 @@ public class ShapeAttributes {
     }
 
     /**
-     * Indicates whether this shape should draw vertical lines extending from its specified positions to the ground.
+     * Indicates whether shape vertical outlines are enabled. Not all shapes display vertical outlines. Those that do
+     * not ignore this property. When enabled, those that do display vertical lines extending from the shape's specified
+     * positions to the ground.
+     *
+     * @return true if shape vertical outlines are enabled, and false otherwise
      */
     public boolean isDrawVerticals() {
         return this.drawVerticals;
     }
 
     /**
-     * Indicates whether this shape should draw vertical lines extending from its specified positions to the ground.
+     * Sets whether to enable shape vertical outlines. Not all shapes display vertical outlines. Those that do not
+     * ignore this property. When enabled, those that do display vertical lines extending from the shape's specified
+     * positions to the ground.
+     *
+     * @param enable true to enable shape vertical outlines, and false otherwise
      */
     public ShapeAttributes setDrawVerticals(boolean enable) {
         this.drawVerticals = enable;
@@ -174,18 +186,20 @@ public class ShapeAttributes {
     }
 
     /**
-     * Indicates whether the shape should be depth-tested against other objects in the scene. If true, the shape may be
-     * occluded by terrain and other objects in certain viewing situations. If false, the shape will not be occluded by
-     * terrain and other objects.
+     * Indicates whether shape depth-testing is enabled. When true, shapes may be occluded by terrain and other shapes
+     * in certain viewing situations. When false, shapes will not be occluded by terrain and other shapes.
+     *
+     * @return true if enable shape depth-testing is enabled, and false otherwise
      */
     public boolean isDepthTest() {
         return this.depthTest;
     }
 
     /**
-     * Indicates whether the shape should be depth-tested against other objects in the scene. If true, the shape may be
-     * occluded by terrain and other objects in certain viewing situations. If false, the shape will not be occluded by
-     * terrain and other objects.
+     * Sets whether to enable shape depth-testing. When true, shapes may be occluded by terrain and other shapes in
+     * certain viewing situations. When false, shapes will not be occluded by terrain and other shapes.
+     *
+     * @param enable true to enable shape depth-testing, and false otherwise
      */
     public ShapeAttributes setDepthTest(boolean enable) {
         this.depthTest = enable;
@@ -193,14 +207,20 @@ public class ShapeAttributes {
     }
 
     /**
-     * Indicates whether lighting is applied to the associated shape.
+     * Sets whether shape lighting is enabled. When true, the appearance of a shape's color and image source may be
+     * modified by shading applied from a global light source.
+     *
+     * @return true if shape lighting is enabled, and false otherwise
      */
     public boolean isEnableLighting() {
         return this.enableLighting;
     }
 
     /**
-     * Indicates whether lighting is applied to the associated shape.
+     * Sets whether to enable shape lighting. When true, the appearance of a shape's color and image source may be
+     * modified by shading applied from a global light source.
+     *
+     * @param enable true to enable shape lighting, and false otherwise
      */
     public ShapeAttributes setEnableLighting(boolean enable) {
         this.enableLighting = enable;
@@ -208,14 +228,20 @@ public class ShapeAttributes {
     }
 
     /**
-     * Indicates the associated shape's interior color and opacity.
+     * Indicates the color and opacity of shape interiors.
+     *
+     * @return the RGBA color used for shape interiors
      */
     public Color getInteriorColor() {
         return this.interiorColor;
     }
 
     /**
-     * Indicates the associated shape's interior color and opacity.
+     * Sets shape interior color and opacity.
+     *
+     * @param color the new RGBA color to use for shape interiors
+     *
+     * @throws IllegalArgumentException If the color is null
      */
     public ShapeAttributes setInteriorColor(Color color) {
         if (color == null) {
@@ -228,16 +254,21 @@ public class ShapeAttributes {
     }
 
     /**
-     * Indicates the associated shape's outline color and opacity.
+     * Indicates the color and opacity of shape outlines.
+     *
+     * @return the RGBA color used for shape outlines
      */
     public Color getOutlineColor() {
         return this.outlineColor;
     }
 
     /**
-     * Indicates the associated shape's outline color and opacity.
+     * Sets shape outline color and opacity.
+     *
+     * @param color the new RGBA color to use for shape outlines
+     *
+     * @throws IllegalArgumentException If the color is null
      */
-
     public ShapeAttributes setOutlineColor(Color color) {
         if (color == null) {
             throw new IllegalArgumentException(
@@ -249,83 +280,80 @@ public class ShapeAttributes {
     }
 
     /**
-     * Indicates the associated shape's outline color and opacity.
+     * Indicates the width of shape outlines.
+     *
+     * @return the line width, in screen pixels.
      */
     public float getOutlineWidth() {
         return this.outlineWidth;
     }
 
     /**
-     * Indicates the associated shape's outline color and opacity.
+     * Sets shape outline width.
+     *
+     * @param lineWidth the new line width, in screen pixels
      */
-
     public ShapeAttributes setOutlineWidth(float lineWidth) {
         this.outlineWidth = lineWidth;
         return this;
     }
 
     /**
-     * Indicates the associated shape's outline stipple factor. Specifies the number of times each bit in the outline
-     * stipple pattern is repeated before the next bit is used. For example, if the outline stipple factor is 3, each
-     * bit is repeated three times before using the next bit. The specified factor must be either 0 or an integer
-     * greater than 0. A stipple factor of 0 indicates no stippling.
+     * Indicates the image source applied to shape interiors. When null, shape interiors are displayed in the interior
+     * color. When non-null, image pixels appear in shape interiors, with each image pixel multiplied by the interior
+     * RGBA color. Use a white interior color to display unmodified image pixels.
+     * <p/>
+     * By default, interior image sources are displayed as a repeating pattern across shape interiors. The pattern
+     * matches image pixels to screen pixels, such that the image appears to repeat in screen coordinates.
+     *
+     * @return a reference to the interior image source; may be null
      */
-    public int getOutlineStippleFactor() {
-        return this.outlineStippleFactor;
+    public ImageSource getInteriorImageSource() {
+        return this.interiorImageSource;
     }
 
     /**
-     * Indicates the associated shape's outline stipple factor. Specifies the number of times each bit in the outline
-     * stipple pattern is repeated before the next bit is used. For example, if the outline stipple factor is 3, each
-     * bit is repeated three times before using the next bit. The specified factor must be either 0 or an integer
-     * greater than 0. A stipple factor of 0 indicates no stippling.
+     * Sets the image source to apply to shape interiors. When null, shape interiors are displayed in the interior
+     * color. When non-null, image pixels appear in shape interiors, with each image pixel multiplied by the interior
+     * RGBA color. Use a white interior color to display the original image pixels.
+     * <p/>
+     * Interior images appear as a two-dimensional repeating pattern that fills each shape's interior. The image is
+     * repeated both horizontally and vertically in screen coordinates, with camera perspective applied to the pattern.
+     *
+     * @param imageSource a reference to the new interior image source; may be null
      */
-    public ShapeAttributes setOutlineStippleFactor(int stippleFactor) {
-        this.outlineStippleFactor = stippleFactor;
+    public ShapeAttributes setInteriorImageSource(ImageSource imageSource) {
+        this.interiorImageSource = imageSource;
         return this;
     }
 
     /**
-     * Indicates the associated shape's outline stipple pattern. Specifies a number whose lower 16 bits define a pattern
-     * of which pixels in the outline are rendered and which are suppressed. Each bit corresponds to a pixel in the
-     * shape's outline, and the pattern repeats after every n*16 pixels, where n is the [stipple factor]{@link
-     * ShapeAttributes#outlineStippleFactor}. For example, if the outline stipple factor is 3, each bit in the stipple
-     * pattern is repeated three times before using the next bit.
-     * <p>
-     * To disable outline stippling, either specify a stipple factor of 0 or specify a stipple pattern of all 1 bits,
-     * i.e., 0xFFFF.
+     * Indicates the image source applied to shape outlines.
+     *
+     * @return a reference to the outline image source; may be null
      */
-    public short getOutlineStipplePattern() {
-        return this.outlineStipplePattern;
+    public ImageSource getOutlineImageSource() {
+        return this.outlineImageSource;
     }
 
     /**
-     * Indicates the associated shape's outline stipple pattern. Specifies a number whose lower 16 bits define a pattern
-     * of which pixels in the outline are rendered and which are suppressed. Each bit corresponds to a pixel in the
-     * shape's outline, and the pattern repeats after every n*16 pixels, where n is the [stipple factor]{@link
-     * ShapeAttributes#outlineStippleFactor}. For example, if the outline stipple factor is 3, each bit in the stipple
-     * pattern is repeated three times before using the next bit.
-     * <p>
-     * To disable outline stippling, either specify a stipple factor of 0 or specify a stipple pattern of all 1 bits,
-     * i.e., 0xFFFF.
+     * Sets the image source to apply to shape outlines. When null, shape outlines are displayed in the outline color.
+     * When non-null, image pixels appear along shape outlines, with each image pixel multiplied by the outline RGBA
+     * color. Use a white outline color to display the original image pixels.
+     * <p/>
+     * Outline images appear as a one-dimensional repeating pattern that fills each shape's outline. The first row of
+     * image pixels is repeated linearly along shape outlines in screen coordinates, with camera perspective applied to
+     * the pattern.
+     * <p/>
+     * Dashed shape outlines are accomplished with a one-dimensional outline image containing a mix of a transparent
+     * pixels and white pixels. The image width indicates the pattern length in screen coordinates, while the
+     * transparent pixels and white pixels indicate the dashing pattern. To display dashed lines similar to OpenGL's
+     * classic line stippling feature, see {@link ImageSource#fromLineStipple(int, short)}.
+     *
+     * @param imageSource a reference to the new outline image source; may be null
      */
-    public ShapeAttributes setOutlineStipplePattern(short stipplePattern) {
-        this.outlineStipplePattern = stipplePattern;
-        return this;
-    }
-
-    /**
-     * Indicates the associated shape's image source. May be null, in which case no image is applied to the shape.
-     */
-    public Object getImageSource() {
-        return this.imageSource;
-    }
-
-    /**
-     * Indicates the associated shape's image source. May be null, in which case no image is applied to the shape.
-     */
-    public ShapeAttributes setImageSource(ImageSource imageSource) {
-        this.imageSource = imageSource;
+    public ShapeAttributes setOutlineImageSource(ImageSource imageSource) {
+        this.outlineImageSource = imageSource;
         return this;
     }
 }
