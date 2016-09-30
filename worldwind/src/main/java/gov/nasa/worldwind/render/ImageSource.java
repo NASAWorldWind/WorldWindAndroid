@@ -195,7 +195,7 @@ public class ImageSource {
             int[] pixels = new int[width];
             Arrays.fill(pixels, white);
 
-            Bitmap bitmap = Bitmap.createBitmap(width, 1 /*height*/, Bitmap.Config.ALPHA_8);
+            Bitmap bitmap = Bitmap.createBitmap(width, 1 /*height*/, Bitmap.Config.ARGB_4444);
             bitmap.setPixels(pixels, 0 /*offset*/, width /*stride*/, 0 /*x*/, 0 /*y*/, width, 1 /*height*/);
 
             return ImageSource.fromBitmap(bitmap);
@@ -213,7 +213,7 @@ public class ImageSource {
                 }
             }
 
-            Bitmap bitmap = Bitmap.createBitmap(width, 1 /*height*/, Bitmap.Config.ALPHA_8);
+            Bitmap bitmap = Bitmap.createBitmap(width, 1 /*height*/, Bitmap.Config.ARGB_4444);
             bitmap.setPixels(pixels, 0 /*offset*/, width /*stride*/, 0 /*x*/, 0 /*y*/, width, 1 /*height*/);
 
             return ImageSource.fromBitmap(bitmap);
