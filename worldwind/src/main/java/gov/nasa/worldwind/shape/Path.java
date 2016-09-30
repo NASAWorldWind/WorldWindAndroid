@@ -68,6 +68,8 @@ public class Path extends AbstractShape {
 
     private Vec3 scratchPoint2 = new Vec3();
 
+    private Matrix3 scratchMatrix = new Matrix3();
+
     private Location scratchLocation = new Location();
 
     protected static Object nextCacheKey() {
@@ -202,7 +204,9 @@ public class Path extends AbstractShape {
             }
             if (texture != null) {
                 double metersPerPixel = rc.pixelSizeAtDistance(cameraDistance);
-                Matrix3 texCoordMatrix = new Matrix3().setScale(1.0 / (texture.getWidth() * metersPerPixel), 1.0);
+                Matrix3 texCoordMatrix = this.scratchMatrix.setToIdentity();
+                texCoordMatrix.setScale(1.0 / (texture.getWidth() * metersPerPixel), 1.0);
+                texCoordMatrix.multiplyByMatrix(texture.getTexCoordTransform());
                 drawState.texture(texture);
                 drawState.texCoordMatrix(texCoordMatrix);
             }
@@ -364,7 +368,7 @@ public class Path extends AbstractShape {
             this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
             this.vertexArray.add((float) (point.y - this.vertexOrigin.y));
             this.vertexArray.add((float) (point.z - this.vertexOrigin.z));
-            this.vertexArray.add((float) this.texCoord1d);
+            this.vertexArray.add((float) 0 /*unused*/);
             this.interiorElements.add((short) vertex);
             this.interiorElements.add((short) (vertex + 1));
         }

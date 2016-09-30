@@ -22,6 +22,7 @@ import gov.nasa.worldwind.draw.DrawableSurfaceShape;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
@@ -66,6 +67,8 @@ public class Polygon extends AbstractShape {
 
     protected Vec3 vertexOrigin = new Vec3();
 
+    protected Vec2 texCoord2dOrigin = new Vec2();
+
     protected boolean isSurfaceShape;
 
     protected double cameraDistance;
@@ -103,6 +106,8 @@ public class Polygon extends AbstractShape {
     private Vec3 scratchPoint = new Vec3();
 
     private Vec3 scratchPoint2 = new Vec3();
+
+    private Matrix3 scratchMatrix = new Matrix3();
 
     private Location scratchLocation = new Location();
 
@@ -343,7 +348,7 @@ public class Polygon extends AbstractShape {
             if (texture != null) {
                 double metersPerDegree = rc.globe.getEquatorialRadius() * Math.PI / 180;
                 double metersPerPixel = rc.pixelSizeAtDistance(this.cameraDistance);
-                Matrix3 texCoordMatrix = new Matrix3(); // TODO allocation
+                Matrix3 texCoordMatrix = this.scratchMatrix.setToIdentity();
                 texCoordMatrix.setScale(
                     metersPerDegree / (texture.getWidth() * metersPerPixel),
                     metersPerDegree / (texture.getHeight() * metersPerPixel));
@@ -382,7 +387,9 @@ public class Polygon extends AbstractShape {
             }
             if (texture != null) {
                 double metersPerPixel = rc.pixelSizeAtDistance(this.cameraDistance);
-                Matrix3 texCoordMatrix = new Matrix3().setScale(1.0 / (texture.getWidth() * metersPerPixel), 1.0);
+                Matrix3 texCoordMatrix = this.scratchMatrix.setToIdentity();
+                texCoordMatrix.setScale(1.0 / (texture.getWidth() * metersPerPixel), 1.0);
+                texCoordMatrix.multiplyByMatrix(texture.getTexCoordTransform());
                 drawState.texture(texture);
                 drawState.texCoordMatrix(texCoordMatrix);
             }
@@ -468,6 +475,8 @@ public class Polygon extends AbstractShape {
         GLU.gluTessCallback(tess, GLU.GLU_TESS_EDGE_FLAG_DATA, null);
         GLU.gluTessCallback(tess, GLU.GLU_TESS_ERROR_DATA, null);
 
+        this.adjustTexCoords();
+
         // Compute the shape's bounding box or bounding sector from its assembled coordinates.
         if (this.isSurfaceShape) {
             this.boundingSector.setEmpty();
@@ -537,6 +546,7 @@ public class Polygon extends AbstractShape {
 
         if (this.vertexArray.size() == 0) {
             this.vertexOrigin.set(point);
+            this.texCoord2dOrigin.set(longitude, latitude);
             this.texCoord1d = 0;
         } else {
             this.texCoord1d += point.distanceTo(this.scratchPoint2);
@@ -547,16 +557,16 @@ public class Polygon extends AbstractShape {
             this.vertexArray.add((float) longitude);
             this.vertexArray.add((float) latitude);
             this.vertexArray.add((float) altitude);
-            this.vertexArray.add((float) longitude);
-            this.vertexArray.add((float) latitude);
+            this.vertexArray.add((float) (longitude - this.texCoord2dOrigin.x));
+            this.vertexArray.add((float) (latitude - this.texCoord2dOrigin.y));
             this.vertexArray.add((float) this.texCoord1d);
         } else {
             point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, this.scratchPoint);
             this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
             this.vertexArray.add((float) (point.y - this.vertexOrigin.y));
             this.vertexArray.add((float) (point.z - this.vertexOrigin.z));
-            this.vertexArray.add((float) longitude);
-            this.vertexArray.add((float) latitude);
+            this.vertexArray.add((float) (longitude - this.texCoord2dOrigin.x));
+            this.vertexArray.add((float) (latitude - this.texCoord2dOrigin.y));
             this.vertexArray.add((float) this.texCoord1d);
 
             if (this.extrude) {
@@ -576,6 +586,26 @@ public class Polygon extends AbstractShape {
         }
 
         return vertex;
+    }
+
+    protected void adjustTexCoords() {
+        float[] array = this.vertexArray.array();
+        double ms = 0, mt = 0;
+        double numCoords = 0;
+
+        for (int idx = 0, count = this.vertexArray.size(); idx < count; idx += VERTEX_STRIDE) {
+            ms += array[idx + 3];
+            mt += array[idx + 4];
+            numCoords++;
+        }
+
+        ms /= numCoords;
+        mt /= numCoords;
+
+        for (int idx = 0, count = this.vertexArray.size(); idx < count; idx += VERTEX_STRIDE) {
+            array[idx + 3] -= ms;
+            array[idx + 4] -= mt;
+        }
     }
 
     protected void tessCombine(RenderContext rc, double[] coords, Object[] data, float[] weight, Object[] outData) {
