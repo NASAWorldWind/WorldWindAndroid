@@ -146,7 +146,7 @@ public class PathsExampleActivity extends GeneralGlobeActivity implements Handle
     protected void populateFlightPaths() {
         ShapeAttributes attrs = new ShapeAttributes();
         attrs.getInteriorColor().set(0.8f, 0.8f, 1.0f, 0.8f);
-        attrs.getOutlineColor().set(0.0f, 0.0f, 1.0f, 1.0f);
+        attrs.getOutlineColor().set(1.0f, 1.0f, 0.0f, 1.0f);
 
         Airport dept = this.airportIkoIndex.get("KSEA");
 
