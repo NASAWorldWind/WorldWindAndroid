@@ -24,10 +24,6 @@
             android:icon="@android:drawable/ic_menu_compass"
             android:title="@string/title_camera_view"/>
         <item
-            android:id="@+id/nav_labels_activity"
-            android:icon="@android:drawable/ic_input_add"
-            android:title="@string/title_labels"/>
-        <item
             android:id="@+id/nav_look_at_view_activity"
             android:icon="@android:drawable/ic_menu_compass"
             android:title="@string/title_look_at_view"/>
@@ -52,8 +48,12 @@
             android:icon="@android:drawable/ic_menu_myplaces"
             android:title="@string/title_polygons"/>
         <item
+            android:id="@+id/nav_labels_activity"
+            android:icon="@android:drawable/ic_menu_edit"
+            android:title="@string/title_labels"/>
+        <item
             android:id="@+id/nav_shapes_dash_and_fill"
-            android:icon="@android:drawable/ic_menu_myplaces"
+            android:icon="@android:drawable/ic_menu_edit"
             android:title="@string/title_shapes_dash_and_fill"/>
         <item
             android:id="@+id/nav_camera_control_activity"
