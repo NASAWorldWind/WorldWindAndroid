@@ -23,7 +23,7 @@ public class WmsLayerFragment extends BasicGlobeFragment {
         WorldWindow wwd = super.createWorldWindow();
 
         // Configure an OGC Web Map Service (WMS) layer to display the
-        // sea surface temperature layer from NASA's Near Earth Observations WMS.
+        // surface temperature layer from NASA's Near Earth Observations WMS.
         WmsLayerConfig config = new WmsLayerConfig();
         config.serviceAddress = "http://neowms.sci.gsfc.nasa.gov/wms/wms";
         config.wmsVersion = "1.1.1"; // NEO server works best with WMS 1.1.1
