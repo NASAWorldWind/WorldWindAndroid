@@ -40,8 +40,8 @@ public class ShapesDashAndFillFragment extends BasicGlobeFragment {
 
         // Create a path with a simple dashed pattern generated from the ImageSource factory. The
         // ImageSource.fromLineStipple function generates a texture based on the provided factor and pattern, similar to
-        // stipple properties of OpenGL2. The binary representation of the pattern will be the pattern displayed, where
-        // positions with a 1 appearing as opaque and a 0 as completely transparent.
+        // stipple parameters of OpenGL 2. The binary representation of the pattern value will be the pattern displayed,
+        // where positions with a 1 appearing as opaque and a 0 as transparent.
         List<Position> positions = Arrays.asList(
             Position.fromDegrees(60.0, -100.0, 1e5),
             Position.fromDegrees(30.0, -120.0, 1e5),
@@ -49,12 +49,11 @@ public class ShapesDashAndFillFragment extends BasicGlobeFragment {
         );
         Path path = new Path(positions);
         ShapeAttributes sa = new ShapeAttributes(thickenLine);
-        sa.setOutlineImageSource(ImageSource.fromLineStipple(5 /*factor*/, (short) 0xF0F0 /*pattern*/));
+        sa.setOutlineImageSource(ImageSource.fromLineStipple(2 /*factor*/, (short) 0xF0F0 /*pattern*/));
         path.setAttributes(sa);
         layer.addRenderable(path);
 
-        // Modify the factor of the pattern for comparison to first path. Extrude to the ground demonstrating how the
-        // dash pattern carries through the extrusion.
+        // Modify the factor of the pattern for comparison to first path. Only the factor is modified, not the pattern.
         positions = Arrays.asList(
             Position.fromDegrees(60.0, -90.0, 5e4),
             Position.fromDegrees(30.0, -110.0, 5e4),
@@ -62,12 +61,11 @@ public class ShapesDashAndFillFragment extends BasicGlobeFragment {
         );
         path = new Path(positions);
         sa = new ShapeAttributes(thickenLine);
-        sa.setOutlineImageSource(ImageSource.fromLineStipple(10 /*factor*/, (short) 0xF0F0 /*pattern*/));
+        sa.setOutlineImageSource(ImageSource.fromLineStipple(4 /*factor*/, (short) 0xF0F0 /*pattern*/));
         path.setAttributes(sa);
-        path.setExtrude(true);
         layer.addRenderable(path);
 
-        // Create a path conforming to the terrain with a different pattern.
+        // Create a path conforming to the terrain with a different pattern from the first two Paths.
         positions = Arrays.asList(
             Position.fromDegrees(60.0, -80.0, 0.0),
             Position.fromDegrees(30.0, -100.0, 0.0),
@@ -75,13 +73,13 @@ public class ShapesDashAndFillFragment extends BasicGlobeFragment {
         );
         path = new Path(positions);
         sa = new ShapeAttributes(thickenLine);
-        sa.setOutlineImageSource(ImageSource.fromLineStipple(10 /*factor*/, (short) 0xFFF4 /*pattern*/));
+        sa.setOutlineImageSource(ImageSource.fromLineStipple(8 /*factor*/, (short) 0xDFF6 /*pattern*/));
         path.setAttributes(sa);
         path.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
         path.setFollowTerrain(true);
         layer.addRenderable(path);
 
-        // Create a polygon using the NASA logo as a repeating fill pattern.
+        // Create a polygon using an image as a repeating fill pattern.
         positions = Arrays.asList(
             Position.fromDegrees(50.0, -70.0, 1e5),
             Position.fromDegrees(35.0, -85.0, 1e5),
@@ -89,11 +87,12 @@ public class ShapesDashAndFillFragment extends BasicGlobeFragment {
         );
         Polygon polygon = new Polygon(positions);
         sa = new ShapeAttributes(thickenLine);
-        sa.setInteriorImageSource(ImageSource.fromResource(R.drawable.nasa_logo));
+        sa.setInteriorImageSource(ImageSource.fromResource(R.drawable.pattern_sample_houndstooth));
+        sa.setInteriorColor(new gov.nasa.worldwind.render.Color(1f, 1f, 1f, 1f));
         polygon.setAttributes(sa);
         layer.addRenderable(polygon);
 
-        // Create a surface polygon using the NASA logo as a repeating fill pattern and a dash pattern for the outline
+        // Create a surface polygon using an image as a repeating fill pattern and a dash pattern for the outline
         // of the polygon.
         positions = Arrays.asList(
             Position.fromDegrees(25.0, -85.0, 0.0),
@@ -103,8 +102,8 @@ public class ShapesDashAndFillFragment extends BasicGlobeFragment {
         );
         polygon = new Polygon(positions);
         sa = new ShapeAttributes(thickenLine);
-        sa.setInteriorImageSource(ImageSource.fromResource(R.drawable.nasa_logo));
-        sa.setOutlineImageSource(ImageSource.fromLineStipple(5 /*factor*/, (short) 0xF0F0 /*pattern*/));
+        sa.setInteriorImageSource(ImageSource.fromResource(R.drawable.pattern_sample_houndstooth));
+        sa.setOutlineImageSource(ImageSource.fromLineStipple(8, (short) 0xDFF6));
         polygon.setAttributes(sa);
         polygon.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
         polygon.setFollowTerrain(true);
