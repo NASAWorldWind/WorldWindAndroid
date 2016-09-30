@@ -17,7 +17,7 @@
 <p>
     Demonstrates how to construct a WmsLayer with a WmsLayerConfig.</p>
 <p>
-    This example adds a Sea Surface Temperature WMS layer to a the basic globe example.</p>
+    This example adds a Surface Temperature WMS layer to a the basic globe example.</p>
 
 <h2>Example</h2>
 <h3>WmsLayerFragment.java</h3>
@@ -43,11 +43,11 @@ public class WmsLayerFragment extends BasicGlobeFragment {
         WorldWindow wwd = super.createWorldWindow();
 
         // Configure an OGC Web Map Service (WMS) layer to display the
-        // sea surface temperature layer from NASA's Near Earth Observations WMS.
+        // surface temperature layer from NASA's Near Earth Observations WMS.
         WmsLayerConfig config = new WmsLayerConfig();
         config.serviceAddress = "http://neowms.sci.gsfc.nasa.gov/wms/wms";
         config.wmsVersion = "1.1.1"; // NEO server works best with WMS 1.1.1
-        config.layerNames = "MYD28M"; // Sea surface temperature (MODIS)
+        config.layerNames = "MOD_LSTD_CLIM_M"; // Land Surface Temperature
         WmsLayer layer = new WmsLayer(new Sector().setFullSphere(), 1e3, config); // 1km resolution
 
         // Add the WMS layer to the World Window.
