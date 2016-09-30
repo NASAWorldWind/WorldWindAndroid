@@ -64,13 +64,13 @@ public class Path extends AbstractShape {
 
     protected double texCoord1d;
 
-    private Vec3 scratchPoint = new Vec3();
+    private Vec3 point = new Vec3();
 
-    private Vec3 scratchPoint2 = new Vec3();
+    private Vec3 prevPoint = new Vec3();
 
-    private Matrix3 scratchMatrix = new Matrix3();
+    private Matrix3 texCoordMatrix = new Matrix3();
 
-    private Location scratchLocation = new Location();
+    private Location intermediateLocation = new Location();
 
     protected static Object nextCacheKey() {
         return new Object();
@@ -204,7 +204,7 @@ public class Path extends AbstractShape {
             }
             if (texture != null) {
                 double metersPerPixel = rc.pixelSizeAtDistance(cameraDistance);
-                Matrix3 texCoordMatrix = this.scratchMatrix.setToIdentity();
+                Matrix3 texCoordMatrix = this.texCoordMatrix.setToIdentity();
                 texCoordMatrix.setScale(1.0 / (texture.getWidth() * metersPerPixel), 1.0);
                 texCoordMatrix.multiplyByMatrix(texture.getTexCoordTransform());
                 drawState.texture(texture);
@@ -321,7 +321,7 @@ public class Path extends AbstractShape {
         double alt = begin.altitude + deltaAlt;
 
         for (int idx = 1; idx < numSubsegments; idx++) {
-            Location loc = this.scratchLocation;
+            Location loc = this.intermediateLocation;
 
             if (this.pathType == WorldWind.GREAT_CIRCLE) {
                 begin.greatCircleLocation(azimuth, dist, loc);
@@ -343,15 +343,15 @@ public class Path extends AbstractShape {
         }
 
         int vertex = this.vertexArray.size() / VERTEX_STRIDE;
-        Vec3 point = rc.geographicToCartesian(latitude, longitude, altitude, WorldWind.ABSOLUTE, this.scratchPoint);
+        Vec3 point = rc.geographicToCartesian(latitude, longitude, altitude, WorldWind.ABSOLUTE, this.point);
 
         if (this.vertexArray.size() == 0) {
             this.vertexOrigin.set(point);
-            this.scratchPoint2.set(point);
+            this.prevPoint.set(point);
             this.texCoord1d = 0;
         } else {
-            this.texCoord1d += point.distanceTo(this.scratchPoint2);
-            this.scratchPoint2.set(point);
+            this.texCoord1d += point.distanceTo(this.prevPoint);
+            this.prevPoint.set(point);
         }
 
         this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
@@ -363,7 +363,7 @@ public class Path extends AbstractShape {
         if (this.extrude) {
             // TODO clamp to ground points must be continually updated to reflect change in terrain
             // TODO use absolute altitude 0 as a temporary workaround while the globe has no terrain
-            point = rc.geographicToCartesian(latitude, longitude, 0, WorldWind.ABSOLUTE, this.scratchPoint);
+            point = rc.geographicToCartesian(latitude, longitude, 0, WorldWind.ABSOLUTE, this.point);
 
             this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
             this.vertexArray.add((float) (point.y - this.vertexOrigin.y));
