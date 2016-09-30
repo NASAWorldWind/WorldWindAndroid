@@ -8,6 +8,7 @@ package gov.nasa.worldwind.render;
 import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
+import android.util.SparseIntArray;
 
 import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.geom.Matrix3;
@@ -30,9 +31,11 @@ public class Texture implements RenderResource {
 
     protected Matrix3 texCoordTransform = new Matrix3();
 
+    protected SparseIntArray texParameters;
+
     protected Bitmap imageBitmap;
 
-    protected boolean haveMipmaps;
+    protected boolean imageHasMipMap; /*TODO consider using Bitmap.hasMipMap*/
 
     private boolean pickMode;
 
@@ -84,6 +87,18 @@ public class Texture implements RenderResource {
         return this.texCoordTransform;
     }
 
+    public int getTexParameter(int name) {
+        return (this.texParameters != null) ? this.texParameters.get(name) : 0;
+    }
+
+    public void setTexParameter(int name, int param) {
+        if (this.texParameters == null) {
+            this.texParameters = new SparseIntArray();
+        }
+
+        this.texParameters.put(name, param);
+    }
+
     @Override
     public void release(DrawContext dc) {
         if (this.textureName[0] != 0) {
@@ -123,15 +138,11 @@ public class Texture implements RenderResource {
     protected void createTexture(DrawContext dc) {
         int currentTexture = dc.currentTexture();
         try {
-            this.textureName = new int[1];
             // Create the OpenGL texture 2D object.
+            this.textureName = new int[1];
             GLES20.glGenTextures(1, this.textureName, 0);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this.textureName[0]);
-            // Configure the texture object's filtering modes and wrap modes.
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+
             // Specify the texture object's image data, either by loading a bitmap or by allocating an empty image.
             if (this.imageBitmap != null) {
                 this.loadTexImage(dc, this.imageBitmap);
@@ -139,6 +150,9 @@ public class Texture implements RenderResource {
             } else {
                 this.allocTexImage(dc);
             }
+
+            // Configure the texture object's parameters.
+            this.setTexParameters(dc);
         } finally {
             // Restore the current OpenGL texture object binding.
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, currentTexture);
@@ -164,10 +178,10 @@ public class Texture implements RenderResource {
 
             // If the bitmap has power-of-two dimensions, generate the texture object's image data for image levels 1
             // through level N, and configure the texture object's filtering modes to use those image levels.
-            this.haveMipmaps = WWMath.isPowerOfTwo(bitmap.getWidth()) && WWMath.isPowerOfTwo(bitmap.getHeight());
-            if (this.haveMipmaps) {
+            // TODO consider using Bitmap.hasMipMap
+            this.imageHasMipMap = WWMath.isPowerOfTwo(bitmap.getWidth()) && WWMath.isPowerOfTwo(bitmap.getHeight());
+            if (this.imageHasMipMap) {
                 GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
-                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
             }
         } catch (Exception e) {
             // The Android utility was unable to load the texture image data.
@@ -177,15 +191,41 @@ public class Texture implements RenderResource {
     }
 
     protected void setTexParameters(DrawContext dc) {
+        int param;
+
+        // Configure the OpenGL texture minification function. Always use a nearest filtering function in picking mode.
         if (dc.pickMode) {
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
-        } else if (this.haveMipmaps) {
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        } else if ((param = this.getTexParameter(GLES20.GL_TEXTURE_MIN_FILTER)) != 0) {
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, param);
         } else {
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
+                this.imageHasMipMap ? GLES20.GL_LINEAR_MIPMAP_LINEAR : GLES20.GL_LINEAR);
+        }
+
+        // Configure the OpenGL texture magnification function. Always use a nearest filtering function in picking mode.
+        if (dc.pickMode) {
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+        } else if ((param = this.getTexParameter(GLES20.GL_TEXTURE_MAG_FILTER)) != 0) {
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, param);
+        } else {
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        }
+
+        // Configure the OpenGL texture wrapping function for texture coordinate S. Default to the edge clamping
+        // function to render image tiles without seams.
+        if ((param = this.getTexParameter(GLES20.GL_TEXTURE_WRAP_S)) != 0) {
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, param);
+        } else {
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        }
+
+        // Configure the OpenGL texture wrapping function for texture coordinate T. Default to the edge clamping
+        // function to render image tiles without seams.
+        if ((param = this.getTexParameter(GLES20.GL_TEXTURE_WRAP_T)) != 0) {
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, param);
+        } else {
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
         }
     }
 
