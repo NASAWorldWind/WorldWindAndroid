@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.support.annotation.DrawableRes;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
@@ -48,6 +49,8 @@ public class ImageSource {
          */
         Bitmap createBitmap();
     }
+
+    protected static final HashMap<Object, BitmapFactory> lineStippleFactories = new HashMap<>();
 
     protected static final int TYPE_UNRECOGNIZED = 0;
 
@@ -187,37 +190,20 @@ public class ImageSource {
      * @return the new image source
      */
     public static ImageSource fromLineStipple(int factor, short pattern) {
-        final int transparent = Color.argb(0, 0, 0, 0);
-        final int white = Color.argb(255, 255, 255, 255);
+        long lfactor = (factor & 0xFFFFFFFFL);
+        long lpattern = (pattern & 0xFFFFL);
+        long key = (lfactor << 32) | lpattern;
+        BitmapFactory factory = lineStippleFactories.get(key);
 
-        if (factor <= 0) {
-            int width = 16;
-            int[] pixels = new int[width];
-            Arrays.fill(pixels, white);
-
-            Bitmap bitmap = Bitmap.createBitmap(width, 1 /*height*/, Bitmap.Config.ARGB_4444);
-            bitmap.setPixels(pixels, 0 /*offset*/, width /*stride*/, 0 /*x*/, 0 /*y*/, width, 1 /*height*/);
-
-            return ImageSource.fromBitmap(bitmap);
-        } else {
-            int width = factor * 16;
-            int[] pixels = new int[width];
-            int pixel = 0;
-
-            for (int bi = 0; bi < 16; bi++) {
-                int bit = pattern & (1 << bi);
-                int color = (bit == 0) ? transparent : white;
-
-                for (int fi = 0; fi < factor; fi++) {
-                    pixels[pixel++] = color;
-                }
-            }
-
-            Bitmap bitmap = Bitmap.createBitmap(width, 1 /*height*/, Bitmap.Config.ARGB_4444);
-            bitmap.setPixels(pixels, 0 /*offset*/, width /*stride*/, 0 /*x*/, 0 /*y*/, width, 1 /*height*/);
-
-            return ImageSource.fromBitmap(bitmap);
+        if (factory == null) {
+            factory = new LineStippleBitmapFactory(factor, pattern);
+            lineStippleFactories.put(key, factory);
         }
+
+        ImageSource imageSource = new ImageSource();
+        imageSource.type = TYPE_BITMAP_FACTORY;
+        imageSource.source = factory;
+        return imageSource;
     }
 
     /**
@@ -391,5 +377,57 @@ public class ImageSource {
      */
     public Object asObject() {
         return this.source;
+    }
+
+    protected static class LineStippleBitmapFactory implements BitmapFactory {
+
+        protected int factor;
+
+        protected short pattern;
+
+        public LineStippleBitmapFactory(int factor, short pattern) {
+            this.factor = factor;
+            this.pattern = pattern;
+        }
+
+        @Override
+        public Bitmap createBitmap() {
+            final int transparent = Color.argb(0, 0, 0, 0);
+            final int white = Color.argb(255, 255, 255, 255);
+
+            if (factor <= 0) {
+                int width = 16;
+                int[] pixels = new int[width];
+                Arrays.fill(pixels, white);
+
+                Bitmap bitmap = Bitmap.createBitmap(width, 1 /*height*/, Bitmap.Config.ARGB_4444);
+                bitmap.setPixels(pixels, 0 /*offset*/, width /*stride*/, 0 /*x*/, 0 /*y*/, width, 1 /*height*/);
+
+                return bitmap;
+            } else {
+                int width = factor * 16;
+                int[] pixels = new int[width];
+                int pixel = 0;
+
+                for (int bi = 0; bi < 16; bi++) {
+                    int bit = pattern & (1 << bi);
+                    int color = (bit == 0) ? transparent : white;
+
+                    for (int fi = 0; fi < factor; fi++) {
+                        pixels[pixel++] = color;
+                    }
+                }
+
+                Bitmap bitmap = Bitmap.createBitmap(width, 1 /*height*/, Bitmap.Config.ARGB_4444);
+                bitmap.setPixels(pixels, 0 /*offset*/, width /*stride*/, 0 /*x*/, 0 /*y*/, width, 1 /*height*/);
+
+                return bitmap;
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "LineStippleBitmapFactory factor=" + this.factor + ", pattern=" + Integer.toHexString(this.pattern & 0xFFFF);
+        }
     }
 }
