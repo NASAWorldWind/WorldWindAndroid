@@ -23,6 +23,7 @@
     <string name="title_placemarks_picking">Placemark Picking</string>
     <string name="title_placemarks_select_drag">Placemark Select and Drag</string>
     <string name="title_polygons">Polygons</string>
+    <string name="title_shapes_dash_and_fill">Shapes Dash and Fill</string>
     <string name="title_show_tessellation">Show Tessellation</string>
     <string name="title_surface_image">Surface Image</string>
     <string name="title_wms_layer">WMS Layer</string>
