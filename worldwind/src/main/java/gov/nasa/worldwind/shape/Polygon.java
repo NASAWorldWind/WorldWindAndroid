@@ -20,11 +20,14 @@ import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableShape;
 import gov.nasa.worldwind.draw.DrawableSurfaceShape;
 import gov.nasa.worldwind.geom.Location;
+import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
+import gov.nasa.worldwind.render.ImageOptions;
 import gov.nasa.worldwind.render.RenderContext;
+import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.FloatArray;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
@@ -37,6 +40,10 @@ public class Polygon extends AbstractShape {
 
     protected static final int VERTEX_STRIDE = 6;
 
+    protected static final ImageOptions defaultInteriorImageOptions = new ImageOptions();
+
+    protected static final ImageOptions defaultOutlineImageOptions = new ImageOptions();
+
     protected List<List<Position>> boundaries = new ArrayList<>();
 
     protected boolean extrude;
@@ -45,7 +52,9 @@ public class Polygon extends AbstractShape {
 
     protected FloatArray vertexArray = new FloatArray();
 
-    protected ShortArray interiorElements = new ShortArray();
+    protected ShortArray topElements = new ShortArray();
+
+    protected ShortArray sideElements = new ShortArray();
 
     protected ShortArray outlineElements = new ShortArray();
 
@@ -58,6 +67,10 @@ public class Polygon extends AbstractShape {
     protected Vec3 vertexOrigin = new Vec3();
 
     protected boolean isSurfaceShape;
+
+    protected double cameraDistance;
+
+    protected double texCoord1d;
 
     protected GLUtessellatorCallbackAdapter tessCallback = new GLUtessellatorCallbackAdapter() {
         @Override
@@ -87,9 +100,11 @@ public class Polygon extends AbstractShape {
 
     protected static final int VERTEX_COMBINED = 2;
 
-    private Vec3 point = new Vec3();
+    private Vec3 scratchPoint = new Vec3();
 
-    private Location loc = new Location();
+    private Vec3 scratchPoint2 = new Vec3();
+
+    private Location scratchLocation = new Location();
 
     private double[] tessCoords = new double[3];
 
@@ -103,6 +118,12 @@ public class Polygon extends AbstractShape {
 
     protected static Object nextCacheKey() {
         return new Object();
+    }
+
+    static {
+        defaultInteriorImageOptions.wrapMode = WorldWind.REPEAT;
+        defaultOutlineImageOptions.resamplingMode = WorldWind.NEAREST_NEIGHBOR;
+        defaultOutlineImageOptions.wrapMode = WorldWind.REPEAT;
     }
 
     public Polygon() {
@@ -222,7 +243,8 @@ public class Polygon extends AbstractShape {
 
     protected void reset() {
         this.vertexArray.clear();
-        this.interiorElements.clear();
+        this.topElements.clear();
+        this.sideElements.clear();
         this.outlineElements.clear();
         this.verticalElements.clear();
     }
@@ -246,11 +268,13 @@ public class Polygon extends AbstractShape {
             Pool<DrawableSurfaceShape> pool = rc.getDrawablePool(DrawableSurfaceShape.class);
             drawable = DrawableSurfaceShape.obtain(pool);
             drawState = ((DrawableSurfaceShape) drawable).drawState;
+            this.cameraDistance = this.cameraDistanceGeographic(rc, this.boundingSector);
             ((DrawableSurfaceShape) drawable).sector.set(this.boundingSector);
         } else {
             Pool<DrawableShape> pool = rc.getDrawablePool(DrawableShape.class);
             drawable = DrawableShape.obtain(pool);
             drawState = ((DrawableShape) drawable).drawState;
+            this.cameraDistance = this.cameraDistanceCartesian(rc, this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE, this.vertexOrigin);
         }
 
         // Use the basic GLSL program to draw the shape.
@@ -272,9 +296,10 @@ public class Polygon extends AbstractShape {
         // Assemble the drawable's OpenGL element buffer object.
         drawState.elementBuffer = rc.getBufferObject(this.elementBufferKey);
         if (drawState.elementBuffer == null) {
-            int size = (this.interiorElements.size() * 2) + (this.outlineElements.size() * 2) + (this.verticalElements.size() * 2);
+            int size = (this.topElements.size() * 2) + (this.sideElements.size() * 2) + (this.outlineElements.size() * 2) + (this.verticalElements.size() * 2);
             ShortBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer();
-            buffer.put(this.interiorElements.array(), 0, this.interiorElements.size());
+            buffer.put(this.topElements.array(), 0, this.topElements.size());
+            buffer.put(this.sideElements.array(), 0, this.sideElements.size());
             buffer.put(this.outlineElements.array(), 0, this.outlineElements.size());
             buffer.put(this.verticalElements.array(), 0, this.verticalElements.size());
             drawState.elementBuffer = new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind());
@@ -300,41 +325,85 @@ public class Polygon extends AbstractShape {
         if (this.isSurfaceShape) {
             rc.offerSurfaceDrawable(drawable, 0 /*zOrder*/);
         } else {
-            double cameraDistance = this.boundingBox.distanceTo(rc.cameraPoint);
-            rc.offerShapeDrawable(drawable, cameraDistance);
+            rc.offerShapeDrawable(drawable, this.cameraDistance);
         }
     }
 
     protected void drawInterior(RenderContext rc, DrawShapeState drawState) {
-        // Configure the drawable's interior vertex texture coordinate attribute.
-        drawState.texCoordAttrib(2 /*size*/, 12 /*offset in bytes*/);
+        if (!this.activeAttributes.drawInterior) {
+            return;
+        }
 
-        // Configure the drawable to display the shape's interior (and its optional extruded interior).
-        if (this.activeAttributes.drawInterior) {
-            drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.interiorColor);
-            drawState.drawElements(GLES20.GL_TRIANGLES, this.interiorElements.size(),
-                GLES20.GL_UNSIGNED_SHORT, 0);
+        // Configure the drawable to use the interior texture when drawing the interior.
+        if (this.activeAttributes.interiorImageSource != null) {
+            Texture texture = rc.getTexture(this.activeAttributes.interiorImageSource);
+            if (texture == null) {
+                texture = rc.retrieveTexture(this.activeAttributes.interiorImageSource, defaultInteriorImageOptions);
+            }
+            if (texture != null) {
+                double metersPerDegree = rc.globe.getEquatorialRadius() * Math.PI / 180;
+                double metersPerPixel = rc.pixelSizeAtDistance(this.cameraDistance);
+                Matrix3 texCoordMatrix = new Matrix3(); // TODO allocation
+                texCoordMatrix.setScale(
+                    metersPerDegree / (texture.getWidth() * metersPerPixel),
+                    metersPerDegree / (texture.getHeight() * metersPerPixel));
+                texCoordMatrix.multiplyByMatrix(texture.getTexCoordTransform());
+                drawState.texture(texture);
+                drawState.texCoordMatrix(texCoordMatrix);
+            }
+        } else {
+            drawState.texture(null);
+        }
+
+        // Configure the drawable to display the shape's interior top.
+        drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.interiorColor);
+        drawState.texCoordAttrib(2 /*size*/, 12 /*offset in bytes*/);
+        drawState.drawElements(GLES20.GL_TRIANGLES, this.topElements.size(),
+            GLES20.GL_UNSIGNED_SHORT, 0 /*offset*/);
+
+        // Configure the drawable to display the shape's interior sides.
+        if (this.extrude) {
+            drawState.texture(null);
+            drawState.drawElements(GLES20.GL_TRIANGLES, this.sideElements.size(),
+                GLES20.GL_UNSIGNED_SHORT, this.topElements.size() * 2 /*offset*/);
         }
     }
 
     protected void drawOutline(RenderContext rc, DrawShapeState drawState) {
-        // Configure the drawable's outline vertex texture coordinate attribute.
-        drawState.texCoordAttrib(1 /*size*/, 20 /*offset in bytes*/);
-
-        // Configure the drawable to display the shape's outline.
-        if (this.activeAttributes.drawOutline) {
-            drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
-            drawState.lineWidth(this.activeAttributes.outlineWidth);
-            drawState.drawElements(GLES20.GL_LINES, this.outlineElements.size(),
-                GLES20.GL_UNSIGNED_SHORT, this.interiorElements.size() * 2);
+        if (!this.activeAttributes.drawOutline) {
+            return;
         }
 
+        // Configure the drawable to use the outline texture when drawing the outline.
+        if (this.activeAttributes.outlineImageSource != null) {
+            Texture texture = rc.getTexture(this.activeAttributes.outlineImageSource);
+            if (texture == null) {
+                texture = rc.retrieveTexture(this.activeAttributes.outlineImageSource, defaultOutlineImageOptions);
+            }
+            if (texture != null) {
+                double metersPerPixel = rc.pixelSizeAtDistance(this.cameraDistance);
+                Matrix3 texCoordMatrix = new Matrix3().setScale(1.0 / (texture.getWidth() * metersPerPixel), 1.0);
+                drawState.texture(texture);
+                drawState.texCoordMatrix(texCoordMatrix);
+            }
+        } else {
+            drawState.texture(null);
+        }
+
+        // Configure the drawable to display the shape's outline.
+        drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
+        drawState.lineWidth(this.activeAttributes.outlineWidth);
+        drawState.texCoordAttrib(1 /*size*/, 20 /*offset in bytes*/);
+        drawState.drawElements(GLES20.GL_LINES, this.outlineElements.size(),
+            GLES20.GL_UNSIGNED_SHORT, (this.topElements.size() * 2) + (this.sideElements.size() * 2) /*offset*/);
+
         // Configure the drawable to display the shape's extruded verticals.
-        if (this.activeAttributes.drawOutline && this.activeAttributes.drawVerticals && this.extrude) {
+        if (this.activeAttributes.drawVerticals && this.extrude) {
             drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
             drawState.lineWidth(this.activeAttributes.outlineWidth);
+            drawState.texture(null);
             drawState.drawElements(GLES20.GL_LINES, this.verticalElements.size(),
-                GLES20.GL_UNSIGNED_SHORT, (this.interiorElements.size() * 2) + (this.outlineElements.size() * 2));
+                GLES20.GL_UNSIGNED_SHORT, (this.topElements.size() * 2) + (this.sideElements.size() * 2) + (this.outlineElements.size() * 2) /*offset*/);
         }
     }
 
@@ -349,7 +418,8 @@ public class Polygon extends AbstractShape {
         // Clear the shape's vertex array and element arrays. These arrays will accumulate values as the shapes's
         // geometry is assembled.
         this.vertexArray.clear();
-        this.interiorElements.clear();
+        this.topElements.clear();
+        this.sideElements.clear();
         this.outlineElements.clear();
         this.verticalElements.clear();
 
@@ -370,11 +440,10 @@ public class Polygon extends AbstractShape {
 
             GLU.gluTessBeginContour(tess);
 
-            // Add the boundary's first vertex and compute the polygon's local Cartesian coordinate origin.
+            // Add the boundary's first vertex.
             Position begin = positions.get(0);
-            if (this.vertexArray.size() == 0) {
-                rc.geographicToCartesian(begin.latitude, begin.longitude, begin.altitude, this.altitudeMode, this.vertexOrigin);
-            }
+            rc.geographicToCartesian(begin.latitude, begin.longitude, begin.altitude, this.altitudeMode, this.scratchPoint2);
+            this.texCoord1d = 0;
             this.addVertex(rc, begin.latitude, begin.longitude, begin.altitude, VERTEX_ORIGINAL /*type*/);
 
             // Add the remaining boundary vertices, tessellating each edge as indicated by the polygon's properties.
@@ -441,75 +510,69 @@ public class Polygon extends AbstractShape {
         double alt = begin.altitude + deltaAlt;
 
         for (int idx = 1; idx < numSubsegments; idx++) {
+            Location loc = this.scratchLocation;
+
             if (this.pathType == WorldWind.GREAT_CIRCLE) {
-                begin.greatCircleLocation(azimuth, dist, this.loc);
+                begin.greatCircleLocation(azimuth, dist, loc);
             } else if (this.pathType == WorldWind.RHUMB_LINE) {
-                begin.rhumbLocation(azimuth, dist, this.loc);
+                begin.rhumbLocation(azimuth, dist, loc);
             }
 
-            this.addVertex(rc, this.loc.latitude, this.loc.longitude, alt, VERTEX_INTERMEDIATE /*type*/);
+            this.addVertex(rc, loc.latitude, loc.longitude, alt, VERTEX_INTERMEDIATE /*type*/);
             dist += deltaDist;
             alt += deltaAlt;
         }
     }
 
     protected int addVertex(RenderContext rc, double latitude, double longitude, double altitude, int type) {
-        if (this.isSurfaceShape) {
-            return this.addVertexGeographic(rc, latitude, longitude, altitude, type);
+        int vertex = this.vertexArray.size() / VERTEX_STRIDE;
+        Vec3 point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, this.scratchPoint);
+
+        if (type != VERTEX_COMBINED) {
+            this.tessCoords[0] = (float) longitude;
+            this.tessCoords[1] = (float) latitude;
+            this.tessCoords[2] = (float) altitude;
+            GLU.gluTessVertex(rc.getTessellator(), this.tessCoords, 0 /*coords_offset*/, vertex);
+        }
+
+        if (this.vertexArray.size() == 0) {
+            this.vertexOrigin.set(point);
+            this.texCoord1d = 0;
         } else {
-            return this.addVertexCartesian(rc, latitude, longitude, altitude, type);
-        }
-    }
-
-    protected int addVertexGeographic(RenderContext rc, double latitude, double longitude, double altitude, int type) {
-        int vertex = this.vertexArray.size() / VERTEX_STRIDE;
-        this.vertexArray.add((float) longitude);
-        this.vertexArray.add((float) latitude);
-        this.vertexArray.add((float) altitude);
-        this.vertexArray.add((float) 0); /*TODO*/ // 2D texture coordinate
-        this.vertexArray.add((float) 0); /*TODO*/ // 2D texture coordinate
-        this.vertexArray.add((float) 0); /*TODO*/ // 1D texture coordinate
-
-        if (type != VERTEX_COMBINED) {
-            this.tessCoords[0] = (float) longitude;
-            this.tessCoords[1] = (float) latitude;
-            this.tessCoords[2] = (float) altitude;
-            GLU.gluTessVertex(rc.getTessellator(), this.tessCoords, 0 /*coords_offset*/, vertex);
+            this.texCoord1d += point.distanceTo(this.scratchPoint2);
+            this.scratchPoint2.set(point);
         }
 
-        return vertex;
-    }
+        if (this.isSurfaceShape) {
+            this.vertexArray.add((float) longitude);
+            this.vertexArray.add((float) latitude);
+            this.vertexArray.add((float) altitude);
+            this.vertexArray.add((float) longitude);
+            this.vertexArray.add((float) latitude);
+            this.vertexArray.add((float) this.texCoord1d);
+        } else {
+            point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, this.scratchPoint);
+            this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
+            this.vertexArray.add((float) (point.y - this.vertexOrigin.y));
+            this.vertexArray.add((float) (point.z - this.vertexOrigin.z));
+            this.vertexArray.add((float) longitude);
+            this.vertexArray.add((float) latitude);
+            this.vertexArray.add((float) this.texCoord1d);
 
-    protected int addVertexCartesian(RenderContext rc, double latitude, double longitude, double altitude, int type) {
-        rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, this.point);
-        int vertex = this.vertexArray.size() / VERTEX_STRIDE;
-        this.vertexArray.add((float) (this.point.x - this.vertexOrigin.x));
-        this.vertexArray.add((float) (this.point.y - this.vertexOrigin.y));
-        this.vertexArray.add((float) (this.point.z - this.vertexOrigin.z));
-        this.vertexArray.add((float) 0); /*TODO*/ // 2D texture coordinate
-        this.vertexArray.add((float) 0); /*TODO*/ // 2D texture coordinate
-        this.vertexArray.add((float) 0); /*TODO*/ // 1D texture coordinate
+            if (this.extrude) {
+                point = rc.geographicToCartesian(latitude, longitude, 0, WorldWind.CLAMP_TO_GROUND, this.scratchPoint);
+                this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
+                this.vertexArray.add((float) (point.y - this.vertexOrigin.y));
+                this.vertexArray.add((float) (point.z - this.vertexOrigin.z));
+                this.vertexArray.add((float) 0 /*unused*/);
+                this.vertexArray.add((float) 0 /*unused*/);
+                this.vertexArray.add((float) 0 /*unused*/);
 
-        if (this.extrude) {
-            rc.geographicToCartesian(latitude, longitude, 0, WorldWind.CLAMP_TO_GROUND, this.point);
-            this.vertexArray.add((float) (this.point.x - this.vertexOrigin.x));
-            this.vertexArray.add((float) (this.point.y - this.vertexOrigin.y));
-            this.vertexArray.add((float) (this.point.z - this.vertexOrigin.z));
-            this.vertexArray.add((float) 0); /*TODO*/ // 2D texture coordinate
-            this.vertexArray.add((float) 0); /*TODO*/ // 2D texture coordinate
-            this.vertexArray.add((float) 0); /*TODO*/ // 1D texture coordinate
-        }
-
-        if (this.extrude && type == VERTEX_ORIGINAL) {
-            this.verticalElements.add((short) vertex);
-            this.verticalElements.add((short) (vertex + 1));
-        }
-
-        if (type != VERTEX_COMBINED) {
-            this.tessCoords[0] = (float) longitude;
-            this.tessCoords[1] = (float) latitude;
-            this.tessCoords[2] = (float) altitude;
-            GLU.gluTessVertex(rc.getTessellator(), this.tessCoords, 0 /*coords_offset*/, vertex);
+                if (type == VERTEX_ORIGINAL) {
+                    this.verticalElements.add((short) vertex);
+                    this.verticalElements.add((short) (vertex + 1));
+                }
+            }
         }
 
         return vertex;
@@ -535,19 +598,19 @@ public class Polygon extends AbstractShape {
         int v1 = this.tessVertices[1];
         int v2 = this.tessVertices[2];
 
-        this.interiorElements.add((short) v0).add((short) v1).add((short) v2);
+        this.topElements.add((short) v0).add((short) v1).add((short) v2);
 
         if (this.tessEdgeFlags[0] && this.extrude && !this.isSurfaceShape) {
-            this.interiorElements.add((short) v0).add((short) (v0 + 1)).add((short) v1);
-            this.interiorElements.add((short) v1).add((short) (v0 + 1)).add((short) (v1 + 1));
+            this.sideElements.add((short) v0).add((short) (v0 + 1)).add((short) v1);
+            this.sideElements.add((short) v1).add((short) (v0 + 1)).add((short) (v1 + 1));
         }
         if (this.tessEdgeFlags[1] && this.extrude && !this.isSurfaceShape) {
-            this.interiorElements.add((short) v1).add((short) (v1 + 1)).add((short) v2);
-            this.interiorElements.add((short) v2).add((short) (v1 + 1)).add((short) (v2 + 1));
+            this.sideElements.add((short) v1).add((short) (v1 + 1)).add((short) v2);
+            this.sideElements.add((short) v2).add((short) (v1 + 1)).add((short) (v2 + 1));
         }
         if (this.tessEdgeFlags[2] && this.extrude && !this.isSurfaceShape) {
-            this.interiorElements.add((short) v2).add((short) (v2 + 1)).add((short) v0);
-            this.interiorElements.add((short) v0).add((short) (v2 + 1)).add((short) (v0 + 1));
+            this.sideElements.add((short) v2).add((short) (v2 + 1)).add((short) v0);
+            this.sideElements.add((short) v0).add((short) (v2 + 1)).add((short) (v0 + 1));
         }
 
         if (this.tessEdgeFlags[0]) {
