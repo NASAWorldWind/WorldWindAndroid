@@ -18,7 +18,6 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.draw.DrawShapeState;
 import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableShape;
-import gov.nasa.worldwind.draw.DrawableSurfaceShape;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Position;
@@ -35,6 +34,10 @@ import gov.nasa.worldwind.util.ShortArray;
 public class Path extends AbstractShape {
 
     protected static final int VERTEX_STRIDE = 4;
+
+    protected static final double CLAMP_TO_GROUND_DEPTH_OFFSET = -0.01;
+
+    protected static final double FOLLOW_TERRAIN_SEGMENT_LENGTH = 1000.0;
 
     protected List<Position> positions = Collections.emptyList();
 
@@ -56,15 +59,13 @@ public class Path extends AbstractShape {
 
     protected Vec3 vertexOrigin = new Vec3();
 
-    protected double boundaryLength;
+    protected double texCoord1d;
 
-    protected boolean isSurfaceShape;
+    private Vec3 scratchPoint = new Vec3();
 
-    private Vec3 point = new Vec3();
+    private Vec3 scratchPoint2 = new Vec3();
 
-    private Vec3 lastPoint = new Vec3();
-
-    private Location loc = new Location();
+    private Location scratchLocation = new Location();
 
     protected static Object nextCacheKey() {
         return new Object();
@@ -149,21 +150,10 @@ public class Path extends AbstractShape {
         }
 
         // Obtain a drawable form the render context pool, and compute distance to the render camera.
-        Drawable drawable;
-        DrawShapeState drawState;
-        double cameraDistance;
-        if (this.isSurfaceShape) {
-            Pool<DrawableSurfaceShape> pool = rc.getDrawablePool(DrawableSurfaceShape.class);
-            drawable = DrawableSurfaceShape.obtain(pool);
-            drawState = ((DrawableSurfaceShape) drawable).drawState;
-            cameraDistance = this.cameraDistanceGeographic(rc, this.boundingSector);
-            ((DrawableSurfaceShape) drawable).sector.set(this.boundingSector);
-        } else {
-            Pool<DrawableShape> pool = rc.getDrawablePool(DrawableShape.class);
-            drawable = DrawableShape.obtain(pool);
-            drawState = ((DrawableShape) drawable).drawState;
-            cameraDistance = this.cameraDistanceCartesian(rc, this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE, this.vertexOrigin);
-        }
+        Pool<DrawableShape> pool = rc.getDrawablePool(DrawableShape.class);
+        Drawable drawable = DrawableShape.obtain(pool);
+        DrawShapeState drawState = ((DrawableShape) drawable).drawState;
+        double cameraDistance = this.cameraDistanceCartesian(rc, this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE, this.vertexOrigin);
 
         // Use the basic GLSL program to draw the shape.
         drawState.program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
@@ -241,13 +231,10 @@ public class Path extends AbstractShape {
         drawState.vertexStride = VERTEX_STRIDE * 4; // stride in bytes
         drawState.enableCullFace = false;
         drawState.enableDepthTest = this.activeAttributes.depthTest;
+        drawState.depthOffset = (this.altitudeMode == WorldWind.CLAMP_TO_GROUND ? CLAMP_TO_GROUND_DEPTH_OFFSET : 0);
 
         // Enqueue the drawable for processing on the OpenGL thread.
-        if (this.isSurfaceShape) {
-            rc.offerSurfaceDrawable(drawable, 0 /*zOrder*/);
-        } else {
-            rc.offerShapeDrawable(drawable, cameraDistance);
-        }
+        rc.offerShapeDrawable(drawable, cameraDistance);
     }
 
     protected boolean mustAssembleGeometry(RenderContext rc) {
@@ -255,41 +242,28 @@ public class Path extends AbstractShape {
     }
 
     protected void assembleGeometry(RenderContext rc) {
-        // Determine whether the shape geometry must be assembled as Cartesian geometry or as geographic geometry.
-        this.isSurfaceShape = (this.altitudeMode == WorldWind.CLAMP_TO_GROUND) && this.followTerrain;
-
         // Clear the shape's vertex array and element arrays. These arrays will accumulate values as the shapes's
         // geometry is assembled.
         this.vertexArray.clear();
         this.interiorElements.clear();
         this.outlineElements.clear();
         this.verticalElements.clear();
-        this.boundaryLength = 0;
 
-        // Add the first vertex and compute the shape's local Cartesian coordinate origin.
+        // Add the first vertex.
         Position begin = this.positions.get(0);
-        rc.geographicToCartesian(begin.latitude, begin.longitude, begin.altitude, this.altitudeMode, this.vertexOrigin);
-        this.lastPoint.set(this.vertexOrigin);
-        this.addVertex(rc, begin.latitude, begin.longitude, begin.altitude, false /*tessellated*/);
+        this.addVertex(rc, begin.latitude, begin.longitude, begin.altitude, false /*intermediate*/);
 
-        // Add the remaining vertices, tessellating each edge as indicated by the path's properties.
+        // Add the remaining vertices, inserting vertices along each edge as indicated by the path's properties.
         for (int idx = 1, len = this.positions.size(); idx < len; idx++) {
             Position end = this.positions.get(idx);
             this.addIntermediateVertices(rc, begin, end);
-            this.addVertex(rc, end.latitude, end.longitude, end.altitude, false /*tessellated*/);
+            this.addVertex(rc, end.latitude, end.longitude, end.altitude, false /*intermediate*/);
             begin = end;
         }
 
-        // Compute the shape's bounding box or bounding sector from its assembled coordinates.
-        if (this.isSurfaceShape) {
-            this.boundingSector.setEmpty();
-            this.boundingSector.union(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
-            this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
-        } else {
-            this.boundingBox.setToPoints(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
-            this.boundingBox.translate(this.vertexOrigin.x, this.vertexOrigin.y, this.vertexOrigin.z);
-            this.boundingSector.setEmpty(); // Cartesian shape bounding sector is unused
-        }
+        // Compute the shape's bounding box from its assembled coordinates.
+        this.boundingBox.setToPoints(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
+        this.boundingBox.translate(this.vertexOrigin.x, this.vertexOrigin.y, this.vertexOrigin.z);
     }
 
     protected void addIntermediateVertices(RenderContext rc, Position begin, Position end) {
@@ -316,68 +290,69 @@ public class Path extends AbstractShape {
         }
 
         int numSubsegments = this.maximumIntermediatePoints + 1;
+
+        if (this.followTerrain) {
+            double lengthMeters = length * rc.globe.getEquatorialRadius();
+            int followTerrainNumSubsegments = (int) (lengthMeters / FOLLOW_TERRAIN_SEGMENT_LENGTH);
+            if (numSubsegments < followTerrainNumSubsegments) {
+                numSubsegments = followTerrainNumSubsegments;
+            }
+        }
+
         double deltaDist = length / numSubsegments;
         double deltaAlt = (end.altitude - begin.altitude) / numSubsegments;
         double dist = deltaDist;
         double alt = begin.altitude + deltaAlt;
 
         for (int idx = 1; idx < numSubsegments; idx++) {
+            Location loc = this.scratchLocation;
+
             if (this.pathType == WorldWind.GREAT_CIRCLE) {
-                begin.greatCircleLocation(azimuth, dist, this.loc);
+                begin.greatCircleLocation(azimuth, dist, loc);
             } else if (this.pathType == WorldWind.RHUMB_LINE) {
-                begin.rhumbLocation(azimuth, dist, this.loc);
+                begin.rhumbLocation(azimuth, dist, loc);
             }
 
-            this.addVertex(rc, this.loc.latitude, this.loc.longitude, alt, true /*tessellated*/);
+            this.addVertex(rc, loc.latitude, loc.longitude, alt, true /*intermediate*/);
             dist += deltaDist;
             alt += deltaAlt;
         }
     }
 
     protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude, boolean intermediate) {
-        if (this.isSurfaceShape) {
-            this.addVertexGeographic(rc, latitude, longitude, altitude, intermediate);
-        } else {
-            this.addVertexCartesian(rc, latitude, longitude, altitude, intermediate);
+        // TODO clamp to ground points must be continually updated to reflect change in terrain
+        // TODO use absolute altitude 0 as a temporary workaround while the globe has no terrain
+        if (this.altitudeMode == WorldWind.CLAMP_TO_GROUND) {
+            altitude = 0;
         }
-    }
-
-    protected void addVertexGeographic(RenderContext rc, double latitude, double longitude, double altitude, boolean intermediate) {
-        rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, this.point);
-
-        this.boundaryLength += this.lastPoint.distanceTo(this.point);
-        this.lastPoint.set(this.point);
 
         int vertex = this.vertexArray.size() / VERTEX_STRIDE;
-        this.vertexArray.add((float) longitude);
-        this.vertexArray.add((float) latitude);
-        this.vertexArray.add((float) altitude);
-        this.vertexArray.add((float) this.boundaryLength); // 1D texture coordinate
+        Vec3 point = rc.geographicToCartesian(latitude, longitude, altitude, WorldWind.ABSOLUTE, this.scratchPoint);
 
-        this.outlineElements.add((short) vertex);
-    }
+        if (this.vertexArray.size() == 0) {
+            this.vertexOrigin.set(point);
+            this.scratchPoint2.set(point);
+            this.texCoord1d = 0;
+        } else {
+            this.texCoord1d += point.distanceTo(this.scratchPoint2);
+            this.scratchPoint2.set(point);
+        }
 
-    protected void addVertexCartesian(RenderContext rc, double latitude, double longitude, double altitude, boolean intermediate) {
-        rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, this.point);
-
-        this.boundaryLength += this.lastPoint.distanceTo(this.point);
-        this.lastPoint.set(this.point);
-
-        int vertex = this.vertexArray.size() / VERTEX_STRIDE;
-        this.vertexArray.add((float) (this.point.x - this.vertexOrigin.x));
-        this.vertexArray.add((float) (this.point.y - this.vertexOrigin.y));
-        this.vertexArray.add((float) (this.point.z - this.vertexOrigin.z));
-        this.vertexArray.add((float) this.boundaryLength); // 1D texture coordinate
-
+        this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
+        this.vertexArray.add((float) (point.y - this.vertexOrigin.y));
+        this.vertexArray.add((float) (point.z - this.vertexOrigin.z));
+        this.vertexArray.add((float) this.texCoord1d);
         this.outlineElements.add((short) vertex);
 
         if (this.extrude) {
-            rc.geographicToCartesian(latitude, longitude, 0, WorldWind.CLAMP_TO_GROUND, this.point);
-            this.vertexArray.add((float) (this.point.x - this.vertexOrigin.x));
-            this.vertexArray.add((float) (this.point.y - this.vertexOrigin.y));
-            this.vertexArray.add((float) (this.point.z - this.vertexOrigin.z));
-            this.vertexArray.add((float) this.boundaryLength); // 1D texture coordinate
+            // TODO clamp to ground points must be continually updated to reflect change in terrain
+            // TODO use absolute altitude 0 as a temporary workaround while the globe has no terrain
+            point = rc.geographicToCartesian(latitude, longitude, 0, WorldWind.ABSOLUTE, this.scratchPoint);
 
+            this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
+            this.vertexArray.add((float) (point.y - this.vertexOrigin.y));
+            this.vertexArray.add((float) (point.z - this.vertexOrigin.z));
+            this.vertexArray.add((float) this.texCoord1d);
             this.interiorElements.add((short) vertex);
             this.interiorElements.add((short) (vertex + 1));
         }

@@ -60,7 +60,12 @@ public class DrawableShape implements Drawable {
         this.drawState.program.enablePickMode(dc.pickMode);
 
         // Use the draw context's modelview projection matrix, transformed to shape local coordinates.
-        this.mvpMatrix.set(dc.modelviewProjection);
+        if (this.drawState.depthOffset != 0) {
+            this.mvpMatrix.set(dc.projection).offsetProjectionDepth(this.drawState.depthOffset);
+            this.mvpMatrix.multiplyByMatrix(dc.modelview);
+        } else {
+            this.mvpMatrix.set(dc.modelviewProjection);
+        }
         this.mvpMatrix.multiplyByTranslation(this.drawState.vertexOrigin.x, this.drawState.vertexOrigin.y, this.drawState.vertexOrigin.z);
         this.drawState.program.loadModelviewProjection(this.mvpMatrix);
 

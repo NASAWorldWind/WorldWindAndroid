@@ -30,6 +30,8 @@ public class DrawShapeState {
 
     public boolean enableDepthTest = true;
 
+    public double depthOffset;
+
     protected Color color = new Color();
 
     protected float lineWidth = 1;
@@ -58,6 +60,7 @@ public class DrawShapeState {
         this.vertexStride = 0;
         this.enableCullFace = true;
         this.enableDepthTest = true;
+        this.depthOffset = 0;
         this.color.set(1, 1, 1, 1);
         this.lineWidth = 1;
         this.texture = null;
