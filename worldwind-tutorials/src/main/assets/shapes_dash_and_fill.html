@@ -1,0 +1,158 @@
+<!--
+  ~ Copyright (c) 2016 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration. All Rights Reserved.
+  -->
+
+<!--
+  ~ Copyright (c) 2016 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration. All Rights Reserved.
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Shapes Dash and Fill</title>
+    <script src="file:///android_asset/codemirror-5.16.0/lib/codemirror.js" type="text/javascript"></script>
+    <script src="file:///android_asset/codemirror-5.16.0/mode/clike/clike.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/codemirror-5.16.0/lib/codemirror.css"/>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/override.css"/>
+</head>
+<body>
+<h1>Shapes Dash and Fill</h1>
+<p>
+    Demonstrates how to specify dashed outlines and repeating fill patterns for shapes.
+</p>
+<p>
+    This example renders five different dashed shapes on the globe.
+<ul>
+    <li>The westernmost Path specifies a dash pattern and factor.</li>
+    <li>The middle Path modifies the dash factor from the western example and extrudes to ground.</li>
+    <li>The easternmost Path follows terrains and uses a different pattern.</li>
+    <li>The northern Polygon specifies a repeating fill using an image.</li>
+    <li>The southern Polygon uses the same repeating fill but also specifies a dashed outline.</li>
+</ul>
+</p>
+<h2>Example</h2>
+<h3>ShapesDashAndFillFragment.java</h3>
+<p>
+    The ShapesDashAndFillFragment class extends the BasicGlobeFragment and overrides the createWorldWindow method.
+    Here we create and add a RenderableLayer to the globe, and then define and add four Paths to the layer.
+</p>
+<div style="border-top: 1px solid black; border-bottom: 1px solid black;">
+    <textarea id="java-code">
+package gov.nasa.worldwindx;
+...
+public class ShapesDashAndFillFragment extends BasicGlobeFragment {
+
+    /**
+     * Creates a new WorldWindow (GLSurfaceView) object with a set of Path and Polygon shapes with dashed lines and
+     * repeating fill.
+     *
+     * @return The WorldWindow object containing the globe.
+     */
+    @Override
+    public WorldWindow createWorldWindow() {
+        // Let the super class (BasicGlobeFragment) do the creation
+        WorldWindow wwd = super.createWorldWindow();
+
+        // Create a layer to display the tutorial shapes.
+        RenderableLayer layer = new RenderableLayer();
+        wwd.getLayers().addLayer(layer);
+
+        // Thicken all lines used in the tutorial.
+        ShapeAttributes thickenLine = new ShapeAttributes();
+        thickenLine.setOutlineWidth(4f);
+
+        // Create a path with a simple dashed pattern generated from the ImageSource factory. The
+        // ImageSource.fromLineStipple function generates a texture based on the provided factor and pattern, similar to
+        // stipple properties of OpenGL2. The binary representation of the pattern will be the pattern displayed, where
+        // positions with a 1 appearing as opaque and a 0 as completely transparent.
+        List<Position> positions = Arrays.asList(
+            Position.fromDegrees(60.0, -100.0, 1e5),
+            Position.fromDegrees(30.0, -120.0, 1e5),
+            Position.fromDegrees(0.0, -100.0, 1e5)
+        );
+        Path path = new Path(positions);
+        ShapeAttributes sa = new ShapeAttributes(thickenLine);
+        sa.setOutlineImageSource(ImageSource.fromLineStipple(5 /*factor*/, (short) 0xF0F0 /*pattern*/));
+        path.setAttributes(sa);
+        layer.addRenderable(path);
+
+        // Modify the factor of the pattern for comparison to first path. Extrude to the ground demonstrating how the
+        // dash pattern carries through the extrusion.
+        positions = Arrays.asList(
+            Position.fromDegrees(60.0, -90.0, 5e4),
+            Position.fromDegrees(30.0, -110.0, 5e4),
+            Position.fromDegrees(0.0, -90.0, 5e4)
+        );
+        path = new Path(positions);
+        sa = new ShapeAttributes(thickenLine);
+        sa.setOutlineImageSource(ImageSource.fromLineStipple(10 /*factor*/, (short) 0xF0F0 /*pattern*/));
+        path.setAttributes(sa);
+        path.setExtrude(true);
+        layer.addRenderable(path);
+
+        // Create a path conforming to the terrain with a different pattern.
+        positions = Arrays.asList(
+            Position.fromDegrees(60.0, -80.0, 0.0),
+            Position.fromDegrees(30.0, -100.0, 0.0),
+            Position.fromDegrees(0.0, -80.0, 0.0)
+        );
+        path = new Path(positions);
+        sa = new ShapeAttributes(thickenLine);
+        sa.setOutlineImageSource(ImageSource.fromLineStipple(10 /*factor*/, (short) 0xFFF4 /*pattern*/));
+        path.setAttributes(sa);
+        path.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+        path.setFollowTerrain(true);
+        layer.addRenderable(path);
+
+        // Create a polygon using the NASA logo as a repeating fill pattern.
+        positions = Arrays.asList(
+            Position.fromDegrees(50.0, -70.0, 1e5),
+            Position.fromDegrees(35.0, -85.0, 1e5),
+            Position.fromDegrees(35.0, -55.0, 1e5)
+        );
+        Polygon polygon = new Polygon(positions);
+        sa = new ShapeAttributes(thickenLine);
+        sa.setInteriorImageSource(ImageSource.fromResource(R.drawable.nasa_logo));
+        polygon.setAttributes(sa);
+        layer.addRenderable(polygon);
+
+        // Create a surface polygon using the NASA logo as a repeating fill pattern and a dash pattern for the outline
+        // of the polygon.
+        positions = Arrays.asList(
+            Position.fromDegrees(25.0, -85.0, 0.0),
+            Position.fromDegrees(10.0, -80.0, 0.0),
+            Position.fromDegrees(10.0, -60.0, 0.0),
+            Position.fromDegrees(25.0, -55.0, 0.0)
+        );
+        polygon = new Polygon(positions);
+        sa = new ShapeAttributes(thickenLine);
+        sa.setInteriorImageSource(ImageSource.fromResource(R.drawable.nasa_logo));
+        sa.setOutlineImageSource(ImageSource.fromLineStipple(5 /*factor*/, (short) 0xF0F0 /*pattern*/));
+        polygon.setAttributes(sa);
+        polygon.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+        polygon.setFollowTerrain(true);
+        layer.addRenderable(polygon);
+
+        return wwd;
+    }
+}
+    </textarea>
+</div>
+
+<script type="text/javascript">
+      var javaEditor = CodeMirror.fromTextArea(document.getElementById("java-code"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        mode: "text/x-java",
+        readOnly: true
+      });
+
+
+
+
+</script>
+</body>
+</html>
