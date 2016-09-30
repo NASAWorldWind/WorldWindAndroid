@@ -251,6 +251,49 @@ public class WorldWind {
     }
 
     /**
+     * {@link ResamplingMode} constant indicating bilinear image sampling.
+     */
+    public static final int BILINEAR = 0;
+
+    /**
+     * {@link ResamplingMode} constant indicating nearest neighbor image sampling.
+     */
+    public static final int NEAREST_NEIGHBOR = 1;
+
+    /**
+     * Resampling mode indicates the image sampling algorithm used by World Wind to display images that appear larger or
+     * smaller on screen than their native resolution. Accepted values are {@link WorldWind#BILINEAR} and {@link
+     * WorldWind#NEAREST_NEIGHBOR}.
+     */
+    @IntDef({BILINEAR, NEAREST_NEIGHBOR})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ResamplingMode {
+
+    }
+
+    /**
+     * {@link WrapMode} constant indicating that the image's edge pixels should be displayed outside of the image
+     * bounds.
+     */
+    public static final int CLAMP = 0;
+
+    /**
+     * {@link WrapMode} constant indicating that the image should display as a repeating pattern outside of the image
+     * bounds.
+     */
+    public static final int REPEAT = 1;
+
+    /**
+     * Wrap mode indicates how World Wind displays the contents of an image when attempting to draw a region outside of
+     * the image bounds. Accepted values are {@link WorldWind#CLAMP} and {@link WorldWind#REPEAT}.
+     */
+    @IntDef({CLAMP, REPEAT})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface WrapMode {
+
+    }
+
+    /**
      * Notification constant requesting that World Window instances update their display.
      */
     public static final String REQUEST_REDRAW = "gov.nasa.worldwind.RequestRedraw";

@@ -22,6 +22,21 @@ public class ImageOptions {
     public int imageConfig = WorldWind.RGBA_8888;
 
     /**
+     * Indicates the image sampling algorithm used by World Wind to display images that appear larger or smaller on
+     * screen than their native resolution. Accepted values are {@link WorldWind#BILINEAR} and {@link
+     * WorldWind#NEAREST_NEIGHBOR}.
+     */
+    @WorldWind.ResamplingMode
+    public int resamplingMode = WorldWind.BILINEAR;
+
+    /**
+     * Indicates how World Wind displays the contents of an image when attempting to draw a region outside of the image
+     * bounds. Accepted values are {@link WorldWind#CLAMP} and {@link WorldWind#REPEAT}.
+     */
+    @WorldWind.WrapMode
+    public int wrapMode = WorldWind.CLAMP;
+
+    /**
      * Constructs an image options with default values.
      */
     public ImageOptions() {

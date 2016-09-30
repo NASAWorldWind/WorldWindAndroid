@@ -24,6 +24,7 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
+import gov.nasa.worldwind.render.ImageOptions;
 import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.FloatArray;
@@ -38,6 +39,8 @@ public class Path extends AbstractShape {
     protected static final double CLAMP_TO_GROUND_DEPTH_OFFSET = -0.01;
 
     protected static final double FOLLOW_TERRAIN_SEGMENT_LENGTH = 1000.0;
+
+    protected static final ImageOptions defaultOutlineImageOptions = new ImageOptions();
 
     protected List<Position> positions = Collections.emptyList();
 
@@ -69,6 +72,11 @@ public class Path extends AbstractShape {
 
     protected static Object nextCacheKey() {
         return new Object();
+    }
+
+    static {
+        defaultOutlineImageOptions.resamplingMode = WorldWind.NEAREST_NEIGHBOR;
+        defaultOutlineImageOptions.wrapMode = WorldWind.REPEAT;
     }
 
     public Path() {
@@ -190,7 +198,7 @@ public class Path extends AbstractShape {
         if (this.activeAttributes.drawOutline && this.activeAttributes.outlineImageSource != null) {
             Texture texture = rc.getTexture(this.activeAttributes.outlineImageSource);
             if (texture == null) {
-                texture = rc.retrieveTexture(this.activeAttributes.outlineImageSource, null);
+                texture = rc.retrieveTexture(this.activeAttributes.outlineImageSource, defaultOutlineImageOptions);
             }
             if (texture != null) {
                 double metersPerPixel = rc.pixelSizeAtDistance(cameraDistance);
@@ -234,7 +242,11 @@ public class Path extends AbstractShape {
         drawState.depthOffset = (this.altitudeMode == WorldWind.CLAMP_TO_GROUND ? CLAMP_TO_GROUND_DEPTH_OFFSET : 0);
 
         // Enqueue the drawable for processing on the OpenGL thread.
-        rc.offerShapeDrawable(drawable, cameraDistance);
+        if (this.altitudeMode == WorldWind.CLAMP_TO_GROUND) {
+            rc.offerSurfaceDrawable(drawable, 0 /*zOrder*/);
+        } else {
+            rc.offerShapeDrawable(drawable, cameraDistance);
+        }
     }
 
     protected boolean mustAssembleGeometry(RenderContext rc) {

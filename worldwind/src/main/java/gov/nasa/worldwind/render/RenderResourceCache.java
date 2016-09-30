@@ -9,6 +9,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.opengl.GLES20;
 import android.os.Handler;
 import android.os.Message;
 
@@ -132,7 +133,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
 
         // Bitmap image sources are already in memory, so a texture may be created and put into the cache immediately.
         if (imageSource.isBitmap()) {
-            Texture texture = new Texture(imageSource.asBitmap());
+            Texture texture = this.createTexture(imageSource, options, imageSource.asBitmap());
             this.put(imageSource, texture, texture.getByteCount());
             return texture;
         }
@@ -143,7 +144,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
         // corresponding texture if found.
         Bitmap bitmap = this.imageRetrieverCache.remove(imageSource);
         if (bitmap != null) {
-            Texture texture = new Texture(bitmap);
+            Texture texture = this.createTexture(imageSource, options, bitmap);
             this.put(imageSource, texture, texture.getByteCount());
             return texture;
         }
@@ -158,6 +159,22 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
             this.imageRetriever.retrieve(imageSource, options, this);
         }
         return null;
+    }
+
+    protected Texture createTexture(ImageSource imageSource, ImageOptions options, Bitmap bitmap) {
+        Texture texture = new Texture(bitmap);
+
+        if (options != null && options.resamplingMode == WorldWind.NEAREST_NEIGHBOR) {
+            texture.setTexParameter(GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+            texture.setTexParameter(GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+        }
+
+        if (options != null && options.wrapMode == WorldWind.REPEAT) {
+            texture.setTexParameter(GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
+            texture.setTexParameter(GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
+        }
+
+        return texture;
     }
 
     @Override
