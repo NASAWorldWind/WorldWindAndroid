@@ -20,12 +20,12 @@ use to represent information on the globe or in space.
 
 # Latest Release
 
-**Release v0.5.0, published September 30, 2016**
+### [v0.5.0](https://github.com/NASAWorldWind/WorldWindAndroid/releases/tag/v0.5.0)
+###### released on Sept 30
 
 - [Release Notes](https://github.com/NASAWorldWind/WorldWindAndroid/releases/tag/v0.5.0) for v0.5.0
 - [GitHub Milestone](https://github.com/NASAWorldWind/WorldWindAndroid/milestone/1?closed=1) for v0.5.0
 - [API Docs](http://worldwindserver.net/android/0.5.0/doc) gives class level details for developers
 - [World Wind Tutorials](https://github.com/NASAWorldWind/WorldWindAndroid/releases/download/v0.5.0/worldwind-tutorials.apk) helps developers get started with core World Wind concepts with code and a live example
 - [World Wind Examples](https://github.com/NASAWorldWind/WorldWindAndroid/releases/download/v0.5.0/worldwind-examples.apk) demonstrates advanced World Wind features
-- [World Wind Library](https://github.com/NASAWorldWind/WorldWindAndroid/releases/download/v0.5.0/worldwind.apk) provides the World Wind Library as an
-   Android Archive (AAR).
+- [World Wind Library](https://github.com/NASAWorldWind/WorldWindAndroid/releases/download/v0.5.0/worldwind.apk) provides the World Wind Library as an Android Archive (AAR).
