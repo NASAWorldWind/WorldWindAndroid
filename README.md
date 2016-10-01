@@ -27,4 +27,4 @@ use to represent information on the globe or in space.
 - [API Docs](http://worldwindserver.net/android/0.5.0/doc) gives class level details for developers
 - [World Wind Tutorials](https://github.com/NASAWorldWind/WorldWindAndroid/releases/download/v0.5.0/worldwind-tutorials.apk) helps developers get started with core World Wind concepts with code and a live example
 - [World Wind Examples](https://github.com/NASAWorldWind/WorldWindAndroid/releases/download/v0.5.0/worldwind-examples.apk) demonstrates advanced World Wind features
-- [World Wind Library](https://github.com/NASAWorldWind/WorldWindAndroid/releases/download/v0.5.0/worldwind.apk) provides the World Wind Library as an Android Archive (AAR).
+- [World Wind Library](https://github.com/NASAWorldWind/WorldWindAndroid/releases/download/v0.5.0/worldwind.aar) provides the World Wind Library as an Android Archive (AAR).
