@@ -1,4 +1,4 @@
-![NASA](https://nasaworldwind.github.io/css/images/nasa-logo_48.png) **World Wind**
+<img src="https://nasaworldwind.github.io/css/images/nasa-logo.svg" height="100"/> # World Wind Android
 
 # World Wind Android #
 
