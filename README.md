@@ -1,4 +1,6 @@
-<img src="https://nasaworldwind.github.io/css/images/nasa-logo.svg" height="100"/> <font size="2em">World Wind Android</font>
+<img src="https://nasaworldwind.github.io/css/images/nasa-logo.svg" height="100"/>
+
+# World Wind Android
 
 [![Build Status](https://travis-ci.org/NASAWorldWind/WorldWindAndroid.svg?branch=develop)](https://travis-ci.org/NASAWorldWind/WorldWindAndroid)
 
