@@ -20,8 +20,7 @@ use to represent information on the globe or in space.
 
 # Latest Release
 
-### [v0.5.0](https://github.com/NASAWorldWind/WorldWindAndroid/releases/tag/v0.5.0)
-###### released on Sept 30
+### [v0.5.0](https://github.com/NASAWorldWind/WorldWindAndroid/releases/tag/v0.5.0) released on Sept 30
 
 - [Release Notes](https://github.com/NASAWorldWind/WorldWindAndroid/releases/tag/v0.5.0) for v0.5.0
 - [GitHub Milestone](https://github.com/NASAWorldWind/WorldWindAndroid/milestone/1?closed=1) for v0.5.0
