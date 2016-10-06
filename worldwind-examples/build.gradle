@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion '24.0.1'
+    buildToolsVersion '24.0.3'
     defaultConfig {
         applicationId 'gov.nasa.worldwindx.examples'
         minSdkVersion 16
@@ -33,7 +33,7 @@ dependencies {
     compile project(':worldwind')
     compile 'mil-sym-android:renderer:0.1.2@aar'
     //maven-like dependency from flatDir repo; alternative: compile(name: 'renderer', ext: 'aar')
-    compile 'com.android.support:appcompat-v7:24.2.0'
-    compile 'com.android.support:design:24.2.0'
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support:design:24.2.1'
     testCompile 'junit:junit:4.12'
 }

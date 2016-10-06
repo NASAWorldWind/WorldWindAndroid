@@ -14,14 +14,7 @@
             <option value="$PROJECT_DIR$/worldwind-tutorials" />
           </set>
         </option>
-        <option name="myModules">
-          <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/worldwind" />
-            <option value="$PROJECT_DIR$/worldwind-examples" />
-            <option value="$PROJECT_DIR$/worldwind-tutorials" />
-          </set>
-        </option>
+        <option name="resolveModulePerSourceSet" value="false" />
       </GradleProjectSettings>
     </option>
   </component>
