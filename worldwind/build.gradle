@@ -31,7 +31,7 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support:support-annotations:24.2.1'
     testCompile 'junit:junit:4.12'
@@ -47,19 +47,17 @@ dependencies {
     }
 }
 
-task generateJavadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
+task assembleJavadocs(type: Javadoc) {
+    group 'build'
+    description 'Assembles the Javadoc API documentation.'
+    source android.sourceSets.main.java.srcDirs
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    include("**/*.java")
-    destinationDir = file("./build/outputs/api-doc/")
-    failOnError false
-    title = "NASA World Wind Android"
-    options.windowTitle = "NASA World Wind Android"
+    include('**/*.java')
+    destinationDir file('./build/outputs/api-doc/')
+    title 'NASA World Wind Android'
+    options.windowTitle 'NASA World Wind Android'
     options.memberLevel = JavadocMemberLevel.PUBLIC
+    failOnError false
 }
 
-assemble {
-    doLast{
-        tasks.generateJavadoc.execute()
-    }
-}
+assemble.dependsOn(assembleJavadocs)
