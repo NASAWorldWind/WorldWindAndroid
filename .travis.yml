@@ -1,14 +1,26 @@
 # Set up to run the Android build script per the Travis CI documentation
-# Executes the script ./gradlew build connectedCheck
 language: android
+
 android:
   components:
-    - tools #latest
-    - platform-tools #latest
-    - android-24
-    - build-tools-24.0.3
+    - platform-tools      # latest SDK platform-tools is v23.0.1 (but lint wants 24.0.1 for NewApi check)
+    - tools               # latest SDK tools
+    - android-24          # SDK version used to compile project
+    - build-tools-24.0.3  # build tools used by the project
     - extra-android-support
     - extra-android-m2repository
+
+env:
+  global:
+    # TODO: Create a GITHUB_API_KEY for nasaworldwind.github.io
+    # GITHUB_API_KEY personal access token for Travis to access GitHub Pages
+    #- secure: "QEY1qgORKmYdBmvIuDmPpBeBuiy6miLTpBTwfBxuhQEhms3pnDMB0EpllURCR6bgq/AxVy+SCo98gjVo8OhXDFW1bfzs7CjSyvx/5lfY5RfIcdRknXV/M+jiqr2QADj5g73rnECQTWNm1VEA4GxNbpHQfjxs/9aPs4XlOeMwBwRi3/OLzVf74PGwiwX8rB5zU1S/BRDHGKv6d6l8iTCFreDTl5NxCa5FzwLwyBXggSWKwrl7bBWgm8eh9UHHTCF/xKGrjYCvsBbntBflhdZv/K75RsB68tFktUvPhdstOAfIhhEEBgYc5JlwzU+xrR/7XccBuLsp2+Vsokj0VaiwVp8UhgjjSRp9sno1NB5tcUXsFTKW2uZLHKecoQdKA0CBu6O6WmDZG6OgcKJ6NU+Ma566jwg90iDGxJvaO3R3JExlZxqaJWp2qnC7CCpF5MRC+l3PgD20a8DP0pNTJx6GtIeqzuv4smPgVS6il+dwPH/zQqQX23F5xVz7oFmrtgVkfM96Wq7KP++1X/rd9asXLdtd9BzvlJBeHsuAY6b8w0eVIZojrOoL1QrSwu4w6WV3cTOUq3ficbtKQOsU4ySKjaRQj10+11LdD1I3MQZB53/WUyKXV60id1FA2mDzJf8n8kOrcuZfo9MJQElIqlyeEkKtnZffdWbTmfEwPdB75ts="
+    # GitHub Pages repo URL sans protocol
+    - GH_PAGES_REPO="github.com/NASAWorldWind/NASAWorldWind.github.io"
+    # GitHub Pages directory name for the cloned repo
+    - GH_PAGES_DIR="gh_pages"
+    # Uncomment to test the cron job logic
+    #- TRAVIS_EVENT_TYPE="cron"
 
 # Configure the build to use Oracle JDK 8, which is required to compile for Android API 24 and newer
 jdk:
@@ -22,9 +34,28 @@ notifications:
     on_success: always
     on_failure: always
 
-# Reduce the maximum JVM memory used by gradle to avoid termination by the Travis CI container during the lint task
-env:
-  - GRADLE_OPTS="-Xmx512m -XX:MaxPermSize=512m"
+before_script: |
+  # Clone the GitHub Pages repo to so it can be updated with javadoc and test reports.
+  # Ensure script(s) can be executed (req'd if scripts are created in Windows)
+  chmod +x gradlew
+  chmod +x travis/*.sh
+  ./travis/clone_github_pages.sh
+
+script: |
+  # Build the project
+  ./gradlew build
+
+after_failure: |
+  # Concatenate the logcat.log file et al to the travis log
+  for file in *.log; do echo "$file"; echo "====================="; cat "$file"; done || true
+
+after_success: |
+  # Push javadoc to GitHub pages
+  ./travis/update_javadoc.sh
+
+after_script: |
+  # Push lint and test reports to GitHub pages
+  ./travis/update_reports.sh
 
 # Use the caching configuration per the Travis CI documentation
 # See https://docs.travis-ci.com/user/languages/android#Caching
