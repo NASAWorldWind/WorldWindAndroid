@@ -25,6 +25,7 @@ android {
     productFlavors {
     }
     lintOptions {
+        abortOnError false
         disable 'GradleDependency'
     }
 }
@@ -50,7 +51,7 @@ task generateJavadoc(type: Javadoc) {
     source = android.sourceSets.main.java.srcDirs
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
     include("**/*.java")
-    destinationDir = file("./build/outputs/doc/")
+    destinationDir = file("./build/outputs/api-doc/")
     failOnError false
     title = "NASA World Wind Android"
     options.windowTitle = "NASA World Wind Android"
