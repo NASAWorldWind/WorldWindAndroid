@@ -30,8 +30,9 @@ after_script: |
   ./travis/update_reports.sh
 
 after_success: |
-  # Push javadoc to GitHub pages
+  # Push javadoc and Android packages to GitHub pages
   ./travis/update_javadoc.sh
+  ./travis/update_packages.sh
 
 after_failure: |
   # Concatenate the logcat.log file et al to the travis log
