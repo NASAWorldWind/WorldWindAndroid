@@ -18,4 +18,6 @@ keystore.jks
 
 keystore.properties
 
+keystore.tar
+
 local.properties

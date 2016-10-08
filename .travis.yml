@@ -15,9 +15,9 @@ jdk:
   - oraclejdk8
 
 before_install:
-  # Decrypt the files keystore.jks and keystore.properties used to sign release APKs
-  - openssl aes-256-cbc -K $encrypted_f4941407fe7e_key -iv $encrypted_f4941407fe7e_iv -in keystore.jks.enc -out keystore.jks -d
-  - openssl aes-256-cbc -K $encrypted_f4941407fe7e_key -iv $encrypted_f4941407fe7e_iv -in keystore.properties.enc -out keystore.properties -d
+  # Decrypt and un-archive the files keystore.jks and keystore.properties which are used to sign release APKs
+  - openssl aes-256-cbc -K $encrypted_f4941407fe7e_key -iv $encrypted_f4941407fe7e_iv -in keystore.tar.enc -out keystore.tar -d
+  - tar -xf keystore.tar
 
 before_script: |
   # Clone the GitHub Pages repo to so it can be updated with javadoc and test reports.
