@@ -68,6 +68,8 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
     protected NavigationView navigationView;
 
+    protected Menu optionsMenu;
+
     protected String aboutBoxTitle = "Title goes here";
 
     protected String aboutBoxText = "Description goes here;";
@@ -144,6 +146,8 @@ public abstract class AbstractMainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        // Maintain a reference to the menu so we have a convenient entry point for dynamic updates
+        this.optionsMenu = menu;
         return true;
     }
 
