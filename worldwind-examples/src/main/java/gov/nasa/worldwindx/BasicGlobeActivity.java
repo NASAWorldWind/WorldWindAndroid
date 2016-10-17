@@ -6,11 +6,20 @@
 package gov.nasa.worldwindx;
 
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ZoomControls;
 
 import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.geom.LookAt;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.layer.BackgroundLayer;
 import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
+import gov.nasa.worldwind.ogc.WmsLayer;
+import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 
 /**
@@ -28,6 +37,12 @@ public class BasicGlobeActivity extends AbstractMainActivity {
      */
     protected WorldWindow wwd;
 
+
+    /**
+     * Creates and initializes the WorldWindow and adds it to the layout.
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,10 +64,82 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
         globeLayout.addView(this.wwd);
 
-        // Setup the World Window's layers.
+        initializeLayers();
+        initializeZoomControls();
+    }
+
+    /**
+     * Adds the layers to the globe.
+     */
+    protected void initializeLayers() {
         this.wwd.getLayers().addLayer(new BackgroundLayer());
         this.wwd.getLayers().addLayer(new BlueMarbleLandsatLayer());
         this.wwd.getLayers().addLayer(new AtmosphereLayer());
+    }
+
+    /**
+     * Adds the zoom controls to the layout.
+     */
+    protected void initializeZoomControls() {
+        ZoomControls zoomControls = (ZoomControls) findViewById(R.id.zoom_controls);
+        zoomControls.setOnZoomInClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                adjustZoom(-0.6);
+            }
+        });
+        zoomControls.setOnZoomOutClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                adjustZoom(0.6);
+            }
+        });
+        zoomControls.setZoomSpeed(50);  // repeat every 50 ms after a long press
+    }
+
+    /**
+     * Inflates the options menu and synchronizes the Zoom Controls menu item to the controls.
+     *
+     * @param menu The options menu
+     *
+     * @return true
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Let the base class inflate the the options menu
+        boolean result = super.onCreateOptionsMenu(menu);
+
+        if (result) {
+            // Set the initial state of the zoom controls menu item to the controls
+            ZoomControls zoomControls = (ZoomControls) findViewById(R.id.zoom_controls);
+            MenuItem menuItem = menu.findItem(R.id.action_zoom_controls);
+            menuItem.setChecked(zoomControls.isShown());
+        }
+        return result;
+    }
+
+    /**
+     * Handles show/hide "zoom controls" events
+     *
+     * @param item The selected menu item.
+     *
+     * @return true if handled
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_zoom_controls) {
+            // Toggle the selection
+            item.setChecked(!item.isChecked());
+            ZoomControls zoomControls = (ZoomControls) findViewById(R.id.zoom_controls);
+            if (item.isChecked()) {
+                zoomControls.show();
+            } else {
+                zoomControls.hide();
+            }
+            return true;
+        }
+        // Let the base class handle its items
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -67,9 +154,34 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         this.wwd.onResume(); // resumes a paused rendering thread
     }
 
-
+    /**
+     * Gets the WorldWindow attached to this activity.
+     *
+     * @return The WorldWindow
+     */
     @Override
     public WorldWindow getWorldWindow() {
         return this.wwd;
+    }
+
+    /**
+     * Zooms the WorldWindow by the given zoom step.
+     *
+     * @param amount Zoom step; negative values zoom in.
+     */
+     protected void adjustZoom(double amount) {
+        Globe globe = this.wwd.getGlobe();
+        LookAt lookAt = this.wwd.getNavigator().getAsLookAt(globe, new LookAt());
+        double range = lookAt.range;
+        double coeff = 0.05;
+        double change = coeff * amount;
+        double logRange = range != 0 ? Math.log(range) : 0;
+        // Zoom changes are treated as logarithmic values. This accomplishes two things:
+        // 1) Zooming is slow near the globe, and fast at great distances.
+        // 2) Zooming in then immediately zooming out returns the viewer to the same range value.
+        lookAt.range = Math.exp(logRange + change);
+
+         this.wwd.getNavigator().setAsLookAt(globe, lookAt);
+         this.wwd.requestRedraw();
     }
 }
