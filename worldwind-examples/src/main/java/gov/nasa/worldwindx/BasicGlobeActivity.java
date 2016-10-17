@@ -72,8 +72,25 @@ public class BasicGlobeActivity extends AbstractMainActivity {
      * Adds the layers to the globe.
      */
     protected void initializeLayers() {
+        // CADRG map layer on local WMS Server
+        WmsLayerConfig config = new WmsLayerConfig();
+        config.serviceAddress = "http://10.0.2.7:5000/WmsServer";
+        config.wmsVersion = "1.3.0";
+        config.coordinateSystem = "CRS:84";
+        config.layerNames = "imagery_part1-2.0.0.1-gnc.gpkg";
+        WmsLayer gncLayer = new WmsLayer(new Sector().setFullSphere(), 300, config);
+
+        // Ft Dix map layer on local WMS Server
+        config.serviceAddress = "http://10.0.2.7:5000/WmsServer";
+        config.wmsVersion = "1.1.1";
+        config.layerNames = "Ft_Dix_1.gpkg";
+        config.transparent = false;
+        WmsLayer ftDixLayer = new WmsLayer(new Sector(39.902, -74.531, (40.2539 - 39.902), (-74.179 - -74.531)), 30, config);
+
         this.wwd.getLayers().addLayer(new BackgroundLayer());
         this.wwd.getLayers().addLayer(new BlueMarbleLandsatLayer());
+        this.wwd.getLayers().addLayer(gncLayer);
+        this.wwd.getLayers().addLayer(ftDixLayer);
         this.wwd.getLayers().addLayer(new AtmosphereLayer());
     }
 
