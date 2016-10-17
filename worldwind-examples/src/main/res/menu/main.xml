@@ -11,4 +11,11 @@
         android:orderInCategory="101"
         android:title="@string/action_about"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_zoom_controls"
+        android:orderInCategory="100"
+        android:title="@string/action_zoom_controls"
+        android:checkable="true"
+        android:checked="false"
+        app:showAsAction="never"/>
 </menu>
