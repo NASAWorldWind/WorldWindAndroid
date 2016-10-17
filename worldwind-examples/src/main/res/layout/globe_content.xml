@@ -17,13 +17,8 @@
 
     <FrameLayout
         android:id="@+id/globe"
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
         android:paddingBottom="1px"
         android:paddingLeft="1px"
         android:paddingRight="1px"
@@ -31,7 +26,6 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <!--TODO: Resolve hack. Added a 1px visible border to this layout to prevent it from displaying on top of navigation drawer-->
-
     </FrameLayout>
 
     <LinearLayout
@@ -91,7 +85,19 @@
             android:shadowDx="0"
             android:shadowDy="0"
             android:singleLine="true"/>
+
     </LinearLayout>
+
+    <ZoomControls
+        android:id="@+id/zoom_controls"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="bottom|center"
+        tools:layout_above="@+id/globe_status"
+        android:layout_centerInParent="false"
+        android:alpha="0.5"
+        android:layout_centerHorizontal="true">
+    </ZoomControls>
 
     <ImageView
         android:layout_width="wrap_content"
