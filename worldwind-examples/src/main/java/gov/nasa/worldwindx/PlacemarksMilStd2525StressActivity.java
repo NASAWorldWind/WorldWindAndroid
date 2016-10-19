@@ -23,6 +23,7 @@ import gov.nasa.worldwind.Navigator;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.layer.ShowTessellationLayer;
+import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 import gov.nasa.worldwindx.milstd2525.MilStd2525;
 import gov.nasa.worldwindx.milstd2525.MilStd2525LevelOfDetailSelector;
 import gov.nasa.worldwindx.milstd2525.MilStd2525Placemark;
@@ -1404,12 +1405,18 @@ public class PlacemarksMilStd2525StressActivity extends GeneralGlobeActivity imp
         FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
         globeLayout.addView(this.statusText);
 
-        this.getWorldWindow().getLayers().clearLayers();
-        this.getWorldWindow().getLayers().addLayer(new ShowTessellationLayer());
-
         // The MIL-STD-2525 rendering library takes time initialize, we'll perform this task via the
         // AsyncTask's background thread and then load the symbols in its post execute handler.
         new InitializeSymbolsTask().execute();
+    }
+
+    /**
+     * Adds the layers to the globe.
+     */
+    @Override
+    protected void initializeLayers() {
+        // Don't invoke the super class. We don't want its layers.
+        this.getWorldWindow().getLayers().addLayer(new ShowTessellationLayer());
     }
 
     @Override
@@ -1489,7 +1496,8 @@ public class PlacemarksMilStd2525StressActivity extends GeneralGlobeActivity imp
 
             // Create a Renderable layer for the placemarks and add it to the WorldWindow
             RenderableLayer symbolLayer = new RenderableLayer("MIL-STD-2525 Symbols");
-            getWorldWindow().getLayers().addLayer(symbolLayer);
+            getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, symbolLayer);
+            initializeLayerManager();
 
             MilStd2525LevelOfDetailSelector.setFarThreshold(1500000);
             MilStd2525LevelOfDetailSelector.setNearThreshold(750000);

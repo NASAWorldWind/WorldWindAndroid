@@ -18,10 +18,13 @@ import gov.nasa.worldwind.layer.ShowTessellationLayer;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
+import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 
 public class PlacemarksStressTestActivity extends GeneralGlobeActivity implements Choreographer.FrameCallback {
 
     protected static final int NUM_PLACEMARKS = 10000;
+
+    protected RenderableLayer placemarksLayer = new RenderableLayer("Placemarks");
 
     protected boolean activityPaused;
 
@@ -34,18 +37,10 @@ public class PlacemarksStressTestActivity extends GeneralGlobeActivity implement
         super.onCreate(savedInstanceState);
         setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_placemarks_stress_test));
         setAboutBoxText("Demonstrates a LOT of Placemarks.");
+        createPlacemarks();
+    }
 
-        // Turn off all layers while debugging/profiling memory allocations...
-        for (Layer l : this.getWorldWindow().getLayers()) {
-            l.setEnabled(false);
-        }
-        // ... and add the tessellation layer instead
-        this.getWorldWindow().getLayers().addLayer(new ShowTessellationLayer());
-
-        // Create a Renderable layer for the placemarks and add it to the WorldWindow
-        RenderableLayer placemarksLayer = new RenderableLayer("Placemarks");
-        this.getWorldWindow().getLayers().addLayer(placemarksLayer);
-
+    protected void createPlacemarks() {
         // Create some placemarks at a known locations
         Placemark origin = new Placemark(Position.fromDegrees(0, 0, 1e5),
             PlacemarkAttributes.createWithImageAndLeader(ImageSource.fromResource(R.drawable.airport)),
@@ -59,19 +54,17 @@ public class PlacemarksStressTestActivity extends GeneralGlobeActivity implement
         Placemark antiMeridian = new Placemark(Position.fromDegrees(0, 180, 0),
             PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.ic_menu_home)),
             "Anti-meridian");
-
-        placemarksLayer.addRenderable(origin);
-        placemarksLayer.addRenderable(northPole);
-        placemarksLayer.addRenderable(southPole);
-        placemarksLayer.addRenderable(antiMeridian);
+        this.placemarksLayer.addRenderable(origin);
+        this.placemarksLayer.addRenderable(northPole);
+        this.placemarksLayer.addRenderable(southPole);
+        this.placemarksLayer.addRenderable(antiMeridian);
 
         // Create a random number generator with an arbitrary seed
         // that will generate the same numbers between runs.
         Random random = new Random(123);
 
-        // Create pushpins anchored at the "pinpoints" with eye distance scaling
+        // Create pushpins with eye distance scaling
         PlacemarkAttributes attributes = PlacemarkAttributes.createWithImage(ImageSource.fromResource(R.drawable.aircraft_fixwing));
-
         for (int i = 0; i < NUM_PLACEMARKS; i++) {
             // Create an even distribution of latitude and longitudes across the globe.
             // Use a random sin value to generate latitudes without clustering at the poles.
@@ -83,8 +76,17 @@ public class PlacemarksStressTestActivity extends GeneralGlobeActivity implement
                 new PlacemarkAttributes(attributes).setMinimumImageScale(0.5)).setEyeDistanceScaling(true);
             placemark.setDisplayName(placemark.getPosition().toString());
 
-            placemarksLayer.addRenderable(placemark);
+            this.placemarksLayer.addRenderable(placemark);
         }
+    }
+
+    /**
+     * Adds the layers to the globe. Invoked by super.onCreate
+     */
+    @Override
+    protected void initializeLayers() {
+        this.getWorldWindow().getLayers().addLayer(new ShowTessellationLayer());
+        this.getWorldWindow().getLayers().addLayer(this.placemarksLayer);
     }
 
     @Override

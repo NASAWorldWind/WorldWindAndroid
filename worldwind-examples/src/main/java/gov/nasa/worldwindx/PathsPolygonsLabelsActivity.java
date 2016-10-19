@@ -40,6 +40,7 @@ import gov.nasa.worldwind.shape.ShapeAttributes;
 import gov.nasa.worldwind.shape.TextAttributes;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
+import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 
 /**
  * This activity demonstrates rendering Labels, Paths and Polygons on the globe. All of the Renderable objects are
@@ -71,11 +72,19 @@ public class PathsPolygonsLabelsActivity extends GeneralGlobeActivity {
 
         // Override the World Window's built-in navigation behavior by adding picking support.
         this.getWorldWindow().setWorldWindowController(new PickController());
-        this.getWorldWindow().getLayers().addLayer(this.shapesLayer);
 
         // Load the shapes into the renderable layer
         statusText.setText("Loading countries....");
         new CreateRenderablesTask().execute();
+    }
+
+    /**
+     * Adds the layers to the globe.
+     */
+    @Override
+    protected void initializeLayers() {
+        super.initializeLayers();
+        this.getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.shapesLayer);
     }
 
     /**

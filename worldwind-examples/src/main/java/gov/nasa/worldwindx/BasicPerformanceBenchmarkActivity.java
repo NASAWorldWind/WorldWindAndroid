@@ -36,6 +36,7 @@ import gov.nasa.worldwind.shape.PlacemarkAttributes;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWMath;
 import gov.nasa.worldwind.util.WWUtil;
+import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 
 public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
 
@@ -229,9 +230,17 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
         // Suppress the World Window's built-in navigation behavior.
         WorldWindow wwd = this.getWorldWindow();
         wwd.setWorldWindowController(new NoOpWorldWindowController());
+    }
+
+    /**
+     * Adds the layers to the globe.
+     */
+    @Override
+    protected void initializeLayers() {
+        super.initializeLayers();
 
         // Add a layer containing a large number of placemarks.
-        this.getWorldWindow().getLayers().addLayer(this.createPlacemarksLayer());
+        this.getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.createPlacemarksLayer());
     }
 
     @Override

@@ -25,6 +25,7 @@ import gov.nasa.worldwind.shape.Path;
 import gov.nasa.worldwind.shape.ShapeAttributes;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
+import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 
 public class PathsExampleActivity extends GeneralGlobeActivity implements Handler.Callback {
 
@@ -32,7 +33,7 @@ public class PathsExampleActivity extends GeneralGlobeActivity implements Handle
 
     protected HashMap<String, Airport> airportIkoIndex = new HashMap<>();
 
-    protected RenderableLayer flightPathLayer = new RenderableLayer();
+    protected RenderableLayer flightPathLayer = new RenderableLayer("Flight Paths");
 
     protected Handler handler = new Handler(this);
 
@@ -45,9 +46,18 @@ public class PathsExampleActivity extends GeneralGlobeActivity implements Handle
         super.onCreate(savedInstanceState);
         this.setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_paths_example));
         setAboutBoxText("Demonstrates Paths used to animate aircraft great-circle routes from Seattle to other US airports.");
+    }
+
+    /**
+     * Adds the layers to the globe.
+     */
+    @Override
+    protected void initializeLayers() {
+        super.initializeLayers();
+
         this.readAirportTable();
         this.populateFlightPaths();
-        this.getWorldWindow().getLayers().addLayer(this.flightPathLayer);
+        this.getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.flightPathLayer);
     }
 
     @Override

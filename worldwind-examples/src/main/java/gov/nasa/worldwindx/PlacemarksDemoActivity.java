@@ -40,6 +40,7 @@ import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
+import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 
 /**
  * This Activity demonstrates a LOT of Placemarks with varying levels of detail.
@@ -474,7 +475,7 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
 
         private ArrayList<Place> places = new ArrayList<>();
 
-        private RenderableLayer placeLayer = new RenderableLayer();
+        private RenderableLayer placeLayer = new RenderableLayer("Placemarks");
 
         private int numPlacesCreated;
 
@@ -507,7 +508,10 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
         @Override
         protected void onPostExecute(Void notUsed) {
             super.onPostExecute(notUsed);
-            getWorldWindow().getLayers().addLayer(this.placeLayer);
+
+            getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.placeLayer);
+            initializeLayerManager();
+
             statusText.setText(String.format(Locale.US, "%,d US places created", this.numPlacesCreated));
             getWorldWindow().requestRedraw();
         }

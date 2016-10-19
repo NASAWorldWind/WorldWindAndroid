@@ -36,11 +36,6 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Choreog
         setAboutBoxText("Demonstrates how to display a continuous day-night cycle on the World Wind globe.\n" +
             "This gradually changes both the Navigator's location and the AtmosphereLayer's light location.");
 
-        // Initialize the Atmosphere layer's light location to our custom location. By default the light location is
-        // always behind the viewer.
-        LayerList layers = this.getWorldWindow().getLayers();
-        this.atmosphereLayer = (AtmosphereLayer) layers.getLayer(layers.indexOfLayerNamed("Atmosphere"));
-        this.atmosphereLayer.setLightLocation(this.sunLocation);
 
         // Initialize the Navigator so that the sun is behind the viewer.
         Navigator navigator = this.getWorldWindow().getNavigator();
@@ -49,6 +44,19 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Choreog
 
         // Use this Activity's Choreographer to animate the day-night cycle.
         Choreographer.getInstance().postFrameCallback(this);
+    }
+
+    /**
+     * Adds the layers to the globe.
+     */
+    @Override
+    protected void initializeLayers() {
+        super.initializeLayers();
+        // Initialize the Atmosphere layer's light location to our custom location. By default the light location is
+        // always behind the viewer.
+        LayerList layers = this.getWorldWindow().getLayers();
+        this.atmosphereLayer = (AtmosphereLayer) layers.getLayer(layers.indexOfLayerNamed(AtmosphereLayer.LAYER_NAME));
+        this.atmosphereLayer.setLightLocation(this.sunLocation);
     }
 
     @Override

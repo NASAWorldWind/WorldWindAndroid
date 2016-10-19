@@ -17,6 +17,7 @@ import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.shape.Placemark;
+import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 import gov.nasa.worldwindx.milstd2525.MilStd2525;
 
 public class PlacemarksMilStd2525Activity extends GeneralGlobeActivity {
@@ -77,8 +78,9 @@ public class PlacemarksMilStd2525Activity extends GeneralGlobeActivity {
             super.onPostExecute(notUsed);
 
             // Create a layer for the military symbols and add it to the WorldWindow
-            RenderableLayer symbolLayer = new RenderableLayer("Symbols");
-            getWorldWindow().getLayers().addLayer(symbolLayer);
+            RenderableLayer symbolLayer = new RenderableLayer("MIL-STD-2525 Symbols");
+            getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, symbolLayer);
+            initializeLayerManager();
 
             // Add a "MIL-STD-2525 Friendly SOF Drone Aircraft"
             SparseArray<String> modifiers = new SparseArray<String>();

@@ -32,6 +32,7 @@ import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
+import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 import gov.nasa.worldwindx.milstd2525.MilStd2525;
 import gov.nasa.worldwindx.milstd2525.MilStd2525Placemark;
 
@@ -230,9 +231,9 @@ public class PlacemarksMilStd2525DemoActivity extends GeneralGlobeActivity imple
 
         private ArrayList<Airport> airports = new ArrayList<>(NUM_AIRPORTS);
 
-        private RenderableLayer airportLayer = new RenderableLayer();
+        private RenderableLayer airportLayer = new RenderableLayer("Airports");
 
-        private RenderableLayer aircraftLayer = new RenderableLayer();
+        private RenderableLayer aircraftLayer = new RenderableLayer("Aircraft");
 
         /**
          * Loads the aircraft database and creates the placemarks on a background thread. The {@link RenderableLayer}
@@ -266,8 +267,9 @@ public class PlacemarksMilStd2525DemoActivity extends GeneralGlobeActivity imple
         protected void onPostExecute(Void notUsed) {
             super.onPostExecute(notUsed);
 
-            getWorldWindow().getLayers().addLayer(this.airportLayer);
-            getWorldWindow().getLayers().addLayer(this.aircraftLayer);
+            getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.airportLayer);
+            getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.aircraftLayer);
+            initializeLayerManager();
 
             statusText.setText("");
             PlacemarksMilStd2525DemoActivity.this.startAnimation();

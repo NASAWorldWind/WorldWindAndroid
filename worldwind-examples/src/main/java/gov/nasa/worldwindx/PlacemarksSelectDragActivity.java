@@ -36,6 +36,7 @@ import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.shape.Highlightable;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.PlacemarkAttributes;
+import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 
 /**
  * This Activity demonstrates how to implement gesture detectors for picking, selecting, dragging, editing and context.
@@ -128,6 +129,16 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
      */
     private SelectDragNavigateController controller;
 
+    public PlacemarksSelectDragActivity() {
+        // Initialize the mapping of vehicle types to their icons.
+        for (int i = 0; i < aircraftTypes.length; i++) {
+            aircraftIconMap.put(aircraftTypes[i], aircraftIcons[i]);
+        }
+        for (int i = 0; i < automotiveTypes.length; i++) {
+            automotiveIconMap.put(automotiveTypes[i], automotiveIcons[i]);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -140,14 +151,6 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
             "Vehicle icons are selectable, movable, and editable.\n" +
             "Airport icons are display only.");
 
-        // Initialize the mapping of vehicle types to their icons.
-        for (int i = 0; i < aircraftTypes.length; i++) {
-            aircraftIconMap.put(aircraftTypes[i], aircraftIcons[i]);
-        }
-        for (int i = 0; i < automotiveTypes.length; i++) {
-            automotiveIconMap.put(automotiveTypes[i], automotiveIcons[i]);
-        }
-
         // Get a reference to the WorldWindow view
         WorldWindow wwd = this.getWorldWindow();
 
@@ -155,9 +158,21 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
         this.controller = new SelectDragNavigateController();
         wwd.setWorldWindowController(this.controller);
 
+        // And finally, for this demo, position the viewer to look at the placemarks
+        LookAt lookAt = new LookAt().set(34.150, -119.150, 0, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
+        wwd.getNavigator().setAsLookAt(wwd.getGlobe(), lookAt);
+    }
+
+    /**
+     * Adds the layers to the globe.
+     */
+    @Override
+    protected void initializeLayers() {
+        super.initializeLayers();
+
         // Add a layer for placemarks to the WorldWindow
         RenderableLayer layer = new RenderableLayer("Placemarks");
-        wwd.getLayers().addLayer(layer);
+        this.getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, layer);
 
         // Create some placemarks and add them to the layer
         layer.addRenderable(createAirportPlacemark(Position.fromDegrees(34.2000, -119.2070, 0), "Oxnard Airport"));
@@ -168,11 +183,6 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
         layer.addRenderable(createAircraftPlacemark(Position.fromDegrees(34.200, -119.207, 1000), "Commercial Aircraft", aircraftTypes[1])); // twin
         layer.addRenderable(createAircraftPlacemark(Position.fromDegrees(34.210, -119.150, 2000), "Military Aircraft", aircraftTypes[3])); // fighter
         layer.addRenderable(createAircraftPlacemark(Position.fromDegrees(34.150, -119.150, 500), "Private Aircraft", aircraftTypes[0])); // small plane
-
-
-        // And finally, for this demo, position the viewer to look at the placemarks
-        LookAt lookAt = new LookAt().set(34.150, -119.150, 0, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
-        this.getWorldWindow().getNavigator().setAsLookAt(this.getWorldWindow().getGlobe(), lookAt);
     }
 
     /**

@@ -20,7 +20,7 @@ import gov.nasa.worldwind.shape.SurfaceImage;
 
 public class TextureStressTestActivity extends BasicGlobeActivity {
 
-    protected RenderableLayer layer = new RenderableLayer();
+    protected RenderableLayer layer = new RenderableLayer("Textures");
 
     protected Sector firstSector = new Sector();
 
@@ -49,11 +49,6 @@ public class TextureStressTestActivity extends BasicGlobeActivity {
         this.setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_texture_stress_test));
         this.setAboutBoxText("Continuously allocates OpenGL texture objects to test the effect of an excessive number of textures on the World Wind render resource cache.");
 
-        // Setup the World Window to display the tessellation layer and a layer of surface images. We use a minimal
-        // layer configuration in order to gather precise metrics on memory usage.
-        this.getWorldWindow().getLayers().clearLayers();
-        this.getWorldWindow().getLayers().addLayer(new ShowTessellationLayer());
-        this.getWorldWindow().getLayers().addLayer(this.layer);
 
         // Position the viewer so that the surface images will be visible as they're added.
         this.firstSector.set(35.0, 10.0, 0.5, 0.5);
@@ -66,6 +61,17 @@ public class TextureStressTestActivity extends BasicGlobeActivity {
         int[] colors = new int[1024 * 1024];
         Arrays.fill(colors, 0xFF00FF00);
         this.bitmap = Bitmap.createBitmap(colors, 1024, 1024, Bitmap.Config.ARGB_8888);
+    }
+
+    /**
+     * Adds the layers to the globe.
+     */
+    @Override
+    protected void initializeLayers() {
+        // Setup the World Window to display the tessellation layer and a layer of surface images. We use a minimal
+        // layer configuration in order to gather precise metrics on memory usage.
+        this.getWorldWindow().getLayers().addLayer(new ShowTessellationLayer());
+        this.getWorldWindow().getLayers().addLayer(this.layer);
     }
 
     protected boolean addImage() {
