@@ -6,6 +6,7 @@
 package gov.nasa.worldwindx;
 
 import android.os.Bundle;
+import android.support.v4.view.GravityCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,6 +19,8 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.layer.BackgroundLayer;
 import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
+import gov.nasa.worldwind.layer.Layer;
+import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.ogc.WmsLayer;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwindx.experimental.AtmosphereLayer;
@@ -36,7 +39,6 @@ public class BasicGlobeActivity extends AbstractMainActivity {
      * The WorldWindow (GLSurfaceView) maintained by this activity
      */
     protected WorldWindow wwd;
-
 
     /**
      * Creates and initializes the WorldWindow and adds it to the layout.
@@ -65,33 +67,91 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         globeLayout.addView(this.wwd);
 
         initializeLayers();
+        initializeLayerManager();
         initializeZoomControls();
     }
+
+    /**
+     * Gets the WorldWindow attached to this activity.
+     *
+     * @return The WorldWindow
+     */
+    @Override
+    public WorldWindow getWorldWindow() {
+        return this.wwd;
+    }
+
 
     /**
      * Adds the layers to the globe.
      */
     protected void initializeLayers() {
+        // Default base layers
+        this.wwd.getLayers().addLayer(new BackgroundLayer());
+        this.wwd.getLayers().addLayer(new BlueMarbleLandsatLayer());
+
+        //////////////////////////////////////////////////////////////
+        // Start TMIS tests
         // CADRG map layer on local WMS Server
         WmsLayerConfig config = new WmsLayerConfig();
         config.serviceAddress = "http://10.0.2.7:5000/WmsServer";
         config.wmsVersion = "1.3.0";
         config.coordinateSystem = "CRS:84";
         config.layerNames = "imagery_part1-2.0.0.1-gnc.gpkg";
-        WmsLayer gncLayer = new WmsLayer(new Sector().setFullSphere(), 300, config);
+        double metersPerPixel = 0.00028 * 305.748;// 0.28mm pixel size * max scale denominator
+        WmsLayer layer = new WmsLayer(new Sector().setFullSphere() /*bbox*/, 1000 /*meters per pixel*/, config);
+        layer.setDisplayName("> TMIS - GNC");
+        layer.setEnabled(false);
+        this.wwd.getLayers().addLayer(layer);
+
+        // WSMR map layer on local WMS Server
+        config = new WmsLayerConfig();
+        config.serviceAddress = "http://10.0.2.7:5000/WmsServer";
+        config.wmsVersion = "1.3.0";
+        config.coordinateSystem = "CRS:84";
+        config.layerNames = "imagery_part2-2.0.0.1-wsmr.gpkg";
+        Sector bbox = new Sector(32.695312, -106.171875, // SW corner
+            (33.046875 - 32.695312),        // delta lat
+            (-105.802312 - -106.171875));   // delta lon
+        metersPerPixel = 0.00028 * 2.388657;// 0.28mm pixel size * max scale denominator
+        layer = new WmsLayer(bbox, 100 /*meters per pixel*/, config);
+        layer.setDisplayName("> TMIS - WSMR");
+        layer.setEnabled(false);
+        this.wwd.getLayers().addLayer(layer);
 
         // Ft Dix map layer on local WMS Server
+        config = new WmsLayerConfig();
         config.serviceAddress = "http://10.0.2.7:5000/WmsServer";
         config.wmsVersion = "1.1.1";
         config.layerNames = "Ft_Dix_1.gpkg";
-        config.transparent = false;
-        WmsLayer ftDixLayer = new WmsLayer(new Sector(39.902, -74.531, (40.2539 - 39.902), (-74.179 - -74.531)), 30, config);
+        bbox = new Sector(39.902, -74.531, // SW corner
+            (40.2539 - 39.902),     // delta lat
+            (-74.179 - -74.531));   // delta lon
+        layer = new WmsLayer(bbox, 0.0007 /*meters per pixel*/, config);
+        layer.setDisplayName("> TMIS - Fort Dix");
+        layer.setEnabled(false);
+        this.wwd.getLayers().addLayer(layer);
+        // End TMIS test
+        ///////////////////////////////////////////////////////////////////
 
-        this.wwd.getLayers().addLayer(new BackgroundLayer());
-        this.wwd.getLayers().addLayer(new BlueMarbleLandsatLayer());
-        this.wwd.getLayers().addLayer(gncLayer);
-        this.wwd.getLayers().addLayer(ftDixLayer);
+        // Atmosphere must be added last
         this.wwd.getLayers().addLayer(new AtmosphereLayer());
+    }
+
+    /**
+     * Populates the Layer Manager
+     */
+    protected void initializeLayerManager() {
+        Menu menu = this.layerManagerView.getMenu();
+        menu.clear();
+        final int groupId = 1;
+        LayerList layers = this.wwd.getLayers();
+        for (int i = 0; i < layers.count(); i++) {
+            Layer layer = layers.getLayer(i);
+            String layerName = layer.getDisplayName();
+            menu.add(groupId, i /*item id*/, i /*order*/, layerName == null || layerName.isEmpty() ? layer.getClass().getSimpleName() : layerName)
+                .setIcon(layer.isEnabled() ? R.drawable.ic_menu_enabled : R.drawable.ic_menu_disabled  );
+        }
     }
 
     /**
@@ -115,28 +175,26 @@ public class BasicGlobeActivity extends AbstractMainActivity {
     }
 
     /**
-     * Inflates the options menu and synchronizes the Zoom Controls menu item to the controls.
+     * Synchronizes the state of the Zoom Controls menu item to the controls widget. This is called right before the
+     * menu is shown, every time it is shown.
      *
-     * @param menu The options menu
+     * @param menu The options menu as last shown or first initialized by onCreateOptionsMenu().
      *
-     * @return true
+     * @return You must return true for the menu to be displayed; if you return false it will not be shown.
+     *
+     * @see #onCreateOptionsMenu
      */
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Let the base class inflate the the options menu
-        boolean result = super.onCreateOptionsMenu(menu);
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        ZoomControls zoomControls = (ZoomControls) findViewById(R.id.zoom_controls);
+        MenuItem menuItem = menu.findItem(R.id.action_zoom_controls);
+        menuItem.setChecked(zoomControls.isShown());
 
-        if (result) {
-            // Set the initial state of the zoom controls menu item to the controls
-            ZoomControls zoomControls = (ZoomControls) findViewById(R.id.zoom_controls);
-            MenuItem menuItem = menu.findItem(R.id.action_zoom_controls);
-            menuItem.setChecked(zoomControls.isShown());
-        }
-        return result;
+        return super.onPrepareOptionsMenu(menu);
     }
 
     /**
-     * Handles show/hide "zoom controls" events
+     * Handles show/hide "Zoom Controls" and "Show Layer Manager" events.
      *
      * @param item The selected menu item.
      *
@@ -153,6 +211,9 @@ public class BasicGlobeActivity extends AbstractMainActivity {
             } else {
                 zoomControls.hide();
             }
+            return true;
+        } else if (item.getItemId() == R.id.action_layer_manager) {
+            this.drawerLayout.openDrawer(GravityCompat.END); /*Opens the Right Drawer*/
             return true;
         }
         // Let the base class handle its items
@@ -172,21 +233,11 @@ public class BasicGlobeActivity extends AbstractMainActivity {
     }
 
     /**
-     * Gets the WorldWindow attached to this activity.
-     *
-     * @return The WorldWindow
-     */
-    @Override
-    public WorldWindow getWorldWindow() {
-        return this.wwd;
-    }
-
-    /**
      * Zooms the WorldWindow by the given zoom step.
      *
      * @param amount Zoom step; negative values zoom in.
      */
-     protected void adjustZoom(double amount) {
+    protected void adjustZoom(double amount) {
         Globe globe = this.wwd.getGlobe();
         LookAt lookAt = this.wwd.getNavigator().getAsLookAt(globe, new LookAt());
         double range = lookAt.range;
@@ -198,7 +249,7 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         // 2) Zooming in then immediately zooming out returns the viewer to the same range value.
         lookAt.range = Math.exp(logRange + change);
 
-         this.wwd.getNavigator().setAsLookAt(globe, lookAt);
-         this.wwd.requestRedraw();
+        this.wwd.getNavigator().setAsLookAt(globe, lookAt);
+        this.wwd.requestRedraw();
     }
 }
