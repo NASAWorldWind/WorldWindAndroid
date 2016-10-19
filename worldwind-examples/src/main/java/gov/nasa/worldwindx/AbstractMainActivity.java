@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.LayoutRes;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -32,13 +33,13 @@ import gov.nasa.worldwind.FrameMetrics;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Camera;
+import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.util.Logger;
 
 /**
  * This abstract Activity class implements a Navigation Drawer menu shared by all the World Wind Example activities.
  */
-public abstract class AbstractMainActivity extends AppCompatActivity
-    implements NavigationView.OnNavigationItemSelectedListener {
+public abstract class AbstractMainActivity extends AppCompatActivity {
 
     protected final static String SESSION_TIMESTAMP = "session_timestamp";
 
@@ -64,7 +65,11 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
     protected static int selectedItemId = R.id.nav_general_globe_activity;
 
+    protected DrawerLayout drawerLayout;
+
     protected ActionBarDrawerToggle drawerToggle;
+
+    protected NavigationView layerManagerView;
 
     protected NavigationView navigationView;
 
@@ -110,16 +115,19 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // Add support for the navigation drawer full of examples
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        // Add support for the navigation drawer full of example activities
+        this.drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         this.drawerToggle = new ActionBarDrawerToggle(
-            this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(this.drawerToggle);
+            this, this.drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        this.drawerLayout.addDrawerListener(this.drawerToggle);
         this.drawerToggle.syncState();
 
         this.navigationView = (NavigationView) findViewById(R.id.nav_view);
-        this.navigationView.setNavigationItemSelectedListener(this);
+        this.navigationView.setNavigationItemSelectedListener(new NavigationViewSelectListener());
         this.navigationView.setCheckedItem(selectedItemId);
+
+        this.layerManagerView = (NavigationView) findViewById(R.id.layer_manager_view);
+        this.layerManagerView.setNavigationItemSelectedListener(new LayerManagerSelectListener());
     }
 
     @Override
@@ -279,9 +287,10 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
+        if (this.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            this.drawerLayout.closeDrawer(GravityCompat.START);
+        } else if (this.drawerLayout.isDrawerOpen(GravityCompat.END)) {
+            this.drawerLayout.closeDrawer(GravityCompat.END);
         } else {
             super.onBackPressed();
         }
@@ -299,61 +308,92 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         this.drawerToggle.onConfigurationChanged(newConfig);
     }
 
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Persist the selected item between Activities
-        selectedItemId = item.getItemId();
+    protected class NavigationViewSelectListener implements NavigationView.OnNavigationItemSelectedListener {
 
-        // Handle navigation view item clicks here.
-        switch (selectedItemId) {
-
-            case R.id.nav_basic_performance_benchmark_activity:
-                startActivity(new Intent(getApplicationContext(), BasicPerformanceBenchmarkActivity.class));
-                break;
-            case R.id.nav_basic_stress_test_activity:
-                startActivity(new Intent(getApplicationContext(), BasicStressTestActivity.class));
-                break;
-            case R.id.nav_day_night_cycle_activity:
-                startActivity(new Intent(getApplicationContext(), DayNightCycleActivity.class));
-                break;
-            case R.id.nav_general_globe_activity:
-                startActivity(new Intent(getApplicationContext(), GeneralGlobeActivity.class));
-                break;
-            case R.id.nav_multi_globe_activity:
-                startActivity(new Intent(getApplicationContext(), MultiGlobeActivity.class));
-                break;
-            case R.id.nav_paths_example:
-                startActivity(new Intent(getApplicationContext(), PathsExampleActivity.class));
-                break;
-            case R.id.nav_paths_and_polygons_activity:
-                startActivity(new Intent(getApplicationContext(), PathsPolygonsLabelsActivity.class));
-                break;
-            case R.id.nav_placemarks_demo_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksDemoActivity.class));
-                break;
-            case R.id.nav_placemarks_milstd2525_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525Activity.class));
-                break;
-            case R.id.nav_placemarks_milstd2525_demo_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525DemoActivity.class));
-                break;
-            case R.id.nav_placemarks_milstd2525_stress_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525StressActivity.class));
-                break;
-            case R.id.nav_placemarks_select_drag_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksSelectDragActivity.class));
-                break;
-            case R.id.nav_placemarks_stress_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksStressTestActivity.class));
-                break;
-            case R.id.nav_texture_stress_test_activity:
-                startActivity(new Intent(getApplicationContext(), TextureStressTestActivity.class));
-                break;
+        public NavigationViewSelectListener() {
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            // Persist the selected item between Activities
+            selectedItemId = item.getItemId();
+
+            // Handle navigation view item clicks here.
+            switch (selectedItemId) {
+
+                case R.id.nav_basic_performance_benchmark_activity:
+                    startActivity(new Intent(getApplicationContext(), BasicPerformanceBenchmarkActivity.class));
+                    break;
+                case R.id.nav_basic_stress_test_activity:
+                    startActivity(new Intent(getApplicationContext(), BasicStressTestActivity.class));
+                    break;
+                case R.id.nav_day_night_cycle_activity:
+                    startActivity(new Intent(getApplicationContext(), DayNightCycleActivity.class));
+                    break;
+                case R.id.nav_general_globe_activity:
+                    startActivity(new Intent(getApplicationContext(), GeneralGlobeActivity.class));
+                    break;
+                case R.id.nav_multi_globe_activity:
+                    startActivity(new Intent(getApplicationContext(), MultiGlobeActivity.class));
+                    break;
+                case R.id.nav_paths_example:
+                    startActivity(new Intent(getApplicationContext(), PathsExampleActivity.class));
+                    break;
+                case R.id.nav_paths_and_polygons_activity:
+                    startActivity(new Intent(getApplicationContext(), PathsPolygonsLabelsActivity.class));
+                    break;
+                case R.id.nav_placemarks_demo_activity:
+                    startActivity(new Intent(getApplicationContext(), PlacemarksDemoActivity.class));
+                    break;
+                case R.id.nav_placemarks_milstd2525_activity:
+                    startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525Activity.class));
+                    break;
+                case R.id.nav_placemarks_milstd2525_demo_activity:
+                    startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525DemoActivity.class));
+                    break;
+                case R.id.nav_placemarks_milstd2525_stress_activity:
+                    startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525StressActivity.class));
+                    break;
+                case R.id.nav_placemarks_select_drag_activity:
+                    startActivity(new Intent(getApplicationContext(), PlacemarksSelectDragActivity.class));
+                    break;
+                case R.id.nav_placemarks_stress_activity:
+                    startActivity(new Intent(getApplicationContext(), PlacemarksStressTestActivity.class));
+                    break;
+                case R.id.nav_texture_stress_test_activity:
+                    startActivity(new Intent(getApplicationContext(), TextureStressTestActivity.class));
+                    break;
+            }
+
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        }
+    }
+
+    public static class LayerManagerView extends NavigationView {
+
+        public LayerManagerView(Context context) {
+            super(context);
+        }
+    }
+
+    protected class LayerManagerSelectListener implements NavigationView.OnNavigationItemSelectedListener {
+
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            // Toggle the layer
+            WorldWindow wwd = getWorldWindow();
+            Layer layer = wwd.getLayers().getLayer(item.getItemId());
+            layer.setEnabled(!layer.isEnabled());
+            wwd.requestRedraw();
+
+            // Update the menu to reflected the layer's enabled state
+            item.setIcon(layer.isEnabled() ? R.drawable.ic_menu_enabled : R.drawable.ic_menu_disabled);
+
+                // Close the layer manager
+            drawerLayout.closeDrawer(GravityCompat.END);
+            return true;
+        }
     }
 
     protected static long getSessionTimestamp() {
