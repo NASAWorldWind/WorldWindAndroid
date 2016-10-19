@@ -27,6 +27,8 @@ import gov.nasa.worldwindx.R;
 
 public class AtmosphereLayer extends AbstractLayer {
 
+    public final static String LAYER_NAME = "Atmosphere";
+
     protected ImageSource nightImageSource;
 
     protected ImageOptions nightImageOptions;
@@ -42,7 +44,7 @@ public class AtmosphereLayer extends AbstractLayer {
     private static final String TRI_STRIP_ELEMENTS_KEY = AtmosphereLayer.class.getName() + ".triStripElements";
 
     public AtmosphereLayer() {
-        this.setDisplayName("Atmosphere");
+        this.setDisplayName(LAYER_NAME);
         this.setPickEnabled(false);
         this.nightImageSource = ImageSource.fromResource(R.drawable.dnb_land_ocean_ice_2012);
         this.nightImageOptions = new ImageOptions(WorldWind.RGB_565);
