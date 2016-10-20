@@ -121,15 +121,6 @@ public class LayerList implements Iterable<Layer> {
         this.layers.add(index, layer);
     }
 
-    public void addLayerBeforeNamed(String name, Layer layer) {
-        int index = this.indexOfLayerNamed(name);
-        if (index >= 0) {
-            this.addLayer(index, layer);
-        } else {
-            this.addLayer(layer);
-        }
-    }
-
     public void addAllLayers(LayerList list) {
         if (list == null) {
             throw new IllegalArgumentException(
