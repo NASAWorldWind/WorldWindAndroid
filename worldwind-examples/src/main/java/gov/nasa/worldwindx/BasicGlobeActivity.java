@@ -19,11 +19,11 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.layer.BackgroundLayer;
 import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
-import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.ogc.WmsLayer;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwindx.experimental.AtmosphereLayer;
+import gov.nasa.worldwindx.support.LayerManager;
 
 /**
  * Creates a simple view of a globe with touch navigation and a few layers.
@@ -39,6 +39,11 @@ public class BasicGlobeActivity extends AbstractMainActivity {
      * The WorldWindow (GLSurfaceView) maintained by this activity
      */
     protected WorldWindow wwd;
+
+    /**
+     * The Layer Manager is responsible for rendering the layer manager menu.
+     */
+    protected LayerManager layerManager;
 
     /**
      * Creates and initializes the WorldWindow and adds it to the layout.
@@ -61,13 +66,13 @@ public class BasicGlobeActivity extends AbstractMainActivity {
 
         // Create the World Window (a GLSurfaceView) which displays the globe.
         this.wwd = new WorldWindow(this);
+        this.layerManager = new LayerManager(this, this.wwd);
 
         // Add the WorldWindow view object to the layout that was reserved for the globe.
         FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
         globeLayout.addView(this.wwd);
 
         initializeLayers();
-        initializeLayerManager();
         initializeZoomControls();
     }
 
@@ -81,14 +86,19 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         return this.wwd;
     }
 
+    public LayerManager getLayerManager() {
+        return this.layerManager;
+    }
 
     /**
      * Adds the layers to the globe.
      */
     protected void initializeLayers() {
+
+        LayerList layers = new LayerList();
         // Default base layers
-        this.wwd.getLayers().addLayer(new BackgroundLayer());
-        this.wwd.getLayers().addLayer(new BlueMarbleLandsatLayer());
+        layers.addLayer(new BackgroundLayer());
+        layers.addLayer(new BlueMarbleLandsatLayer());
 
         //////////////////////////////////////////////////////////////
         // Start TMIS tests
@@ -102,7 +112,7 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         WmsLayer layer = new WmsLayer(new Sector().setFullSphere() /*bbox*/, 1000 /*meters per pixel*/, config);
         layer.setDisplayName("> TMIS - GNC");
         layer.setEnabled(false);
-        this.wwd.getLayers().addLayer(layer);
+        layers.addLayer(layer);
 
         // WSMR map layer on local WMS Server
         config = new WmsLayerConfig();
@@ -117,7 +127,7 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         layer = new WmsLayer(bbox, 100 /*meters per pixel*/, config);
         layer.setDisplayName("> TMIS - WSMR");
         layer.setEnabled(false);
-        this.wwd.getLayers().addLayer(layer);
+        layers.addLayer(layer);
 
         // Ft Dix map layer on local WMS Server
         config = new WmsLayerConfig();
@@ -130,28 +140,14 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         layer = new WmsLayer(bbox, 0.0007 /*meters per pixel*/, config);
         layer.setDisplayName("> TMIS - Fort Dix");
         layer.setEnabled(false);
-        this.wwd.getLayers().addLayer(layer);
+        layers.addLayer(layer);
         // End TMIS test
         ///////////////////////////////////////////////////////////////////
 
         // Atmosphere must be added last
-        this.wwd.getLayers().addLayer(new AtmosphereLayer());
-    }
+        layers.addLayer(new AtmosphereLayer());
 
-    /**
-     * Populates the Layer Manager
-     */
-    protected void initializeLayerManager() {
-        Menu menu = this.layerManagerView.getMenu();
-        menu.clear();
-        final int groupId = 1;
-        LayerList layers = this.wwd.getLayers();
-        for (int i = 0; i < layers.count(); i++) {
-            Layer layer = layers.getLayer(i);
-            String layerName = layer.getDisplayName();
-            menu.add(groupId, i /*item id*/, i /*order*/, layerName == null || layerName.isEmpty() ? layer.getClass().getSimpleName() : layerName)
-                .setIcon(layer.isEnabled() ? R.drawable.ic_menu_enabled : R.drawable.ic_menu_disabled  );
-        }
+        this.layerManager.addAllLayers(layers);
     }
 
     /**

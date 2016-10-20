@@ -33,13 +33,13 @@ import gov.nasa.worldwind.FrameMetrics;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Camera;
-import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.util.Logger;
 
 /**
  * This abstract Activity class implements a Navigation Drawer menu shared by all the World Wind Example activities.
  */
-public abstract class AbstractMainActivity extends AppCompatActivity {
+public abstract class AbstractMainActivity extends AppCompatActivity
+    implements NavigationView.OnNavigationItemSelectedListener {
 
     protected final static String SESSION_TIMESTAMP = "session_timestamp";
 
@@ -69,9 +69,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity {
 
     protected ActionBarDrawerToggle drawerToggle;
 
-    protected NavigationView layerManagerView;
-
-    protected NavigationView navigationView;
+    protected NavigationView navigationMenu;
 
     protected Menu optionsMenu;
 
@@ -115,26 +113,25 @@ public abstract class AbstractMainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // Add support for the navigation drawer full of example activities
+        // Add support for the navigation drawer menu(s) with an ActionBarDrawerToggle that
+        // adds a Hamburger icon when a drawer is closed and an arrow when the drawer is open.
         this.drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         this.drawerToggle = new ActionBarDrawerToggle(
             this, this.drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         this.drawerLayout.addDrawerListener(this.drawerToggle);
         this.drawerToggle.syncState();
 
-        this.navigationView = (NavigationView) findViewById(R.id.nav_view);
-        this.navigationView.setNavigationItemSelectedListener(new NavigationViewSelectListener());
-        this.navigationView.setCheckedItem(selectedItemId);
-
-        this.layerManagerView = (NavigationView) findViewById(R.id.layer_manager_view);
-        this.layerManagerView.setNavigationItemSelectedListener(new LayerManagerSelectListener());
+        // Initialize the navigation drawer menu
+        this.navigationMenu = (NavigationView) findViewById(R.id.navigation_drawer);
+        this.navigationMenu.setNavigationItemSelectedListener(this);
+        this.navigationMenu.setCheckedItem(selectedItemId);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         // Update the menu by highlighting the last selected menu item
-        this.navigationView.setCheckedItem(selectedItemId);
+        this.navigationMenu.setCheckedItem(selectedItemId);
         // Use this Activity's Handler to periodically print the FrameMetrics.
         this.handler.sendEmptyMessageDelayed(PRINT_METRICS, PRINT_METRICS_DELAY);
         // Restore the navigator's camera state from previously saved session data
@@ -153,7 +150,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.options_menu, menu);
         // Maintain a reference to the menu so we have a convenient entry point for dynamic updates
         this.optionsMenu = menu;
         return true;
@@ -308,92 +305,60 @@ public abstract class AbstractMainActivity extends AppCompatActivity {
         this.drawerToggle.onConfigurationChanged(newConfig);
     }
 
-    protected class NavigationViewSelectListener implements NavigationView.OnNavigationItemSelectedListener {
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        // Persist the selected item between Activities
+        selectedItemId = item.getItemId();
 
-        public NavigationViewSelectListener() {
+        // Handle navigation view item clicks here.
+        switch (selectedItemId) {
+
+            case R.id.nav_basic_performance_benchmark_activity:
+                startActivity(new Intent(getApplicationContext(), BasicPerformanceBenchmarkActivity.class));
+                break;
+            case R.id.nav_basic_stress_test_activity:
+                startActivity(new Intent(getApplicationContext(), BasicStressTestActivity.class));
+                break;
+            case R.id.nav_day_night_cycle_activity:
+                startActivity(new Intent(getApplicationContext(), DayNightCycleActivity.class));
+                break;
+            case R.id.nav_general_globe_activity:
+                startActivity(new Intent(getApplicationContext(), GeneralGlobeActivity.class));
+                break;
+            case R.id.nav_multi_globe_activity:
+                startActivity(new Intent(getApplicationContext(), MultiGlobeActivity.class));
+                break;
+            case R.id.nav_paths_example:
+                startActivity(new Intent(getApplicationContext(), PathsExampleActivity.class));
+                break;
+            case R.id.nav_paths_and_polygons_activity:
+                startActivity(new Intent(getApplicationContext(), PathsPolygonsLabelsActivity.class));
+                break;
+            case R.id.nav_placemarks_demo_activity:
+                startActivity(new Intent(getApplicationContext(), PlacemarksDemoActivity.class));
+                break;
+            case R.id.nav_placemarks_milstd2525_activity:
+                startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525Activity.class));
+                break;
+            case R.id.nav_placemarks_milstd2525_demo_activity:
+                startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525DemoActivity.class));
+                break;
+            case R.id.nav_placemarks_milstd2525_stress_activity:
+                startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525StressActivity.class));
+                break;
+            case R.id.nav_placemarks_select_drag_activity:
+                startActivity(new Intent(getApplicationContext(), PlacemarksSelectDragActivity.class));
+                break;
+            case R.id.nav_placemarks_stress_activity:
+                startActivity(new Intent(getApplicationContext(), PlacemarksStressTestActivity.class));
+                break;
+            case R.id.nav_texture_stress_test_activity:
+                startActivity(new Intent(getApplicationContext(), TextureStressTestActivity.class));
+                break;
         }
 
-        @Override
-        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-            // Persist the selected item between Activities
-            selectedItemId = item.getItemId();
-
-            // Handle navigation view item clicks here.
-            switch (selectedItemId) {
-
-                case R.id.nav_basic_performance_benchmark_activity:
-                    startActivity(new Intent(getApplicationContext(), BasicPerformanceBenchmarkActivity.class));
-                    break;
-                case R.id.nav_basic_stress_test_activity:
-                    startActivity(new Intent(getApplicationContext(), BasicStressTestActivity.class));
-                    break;
-                case R.id.nav_day_night_cycle_activity:
-                    startActivity(new Intent(getApplicationContext(), DayNightCycleActivity.class));
-                    break;
-                case R.id.nav_general_globe_activity:
-                    startActivity(new Intent(getApplicationContext(), GeneralGlobeActivity.class));
-                    break;
-                case R.id.nav_multi_globe_activity:
-                    startActivity(new Intent(getApplicationContext(), MultiGlobeActivity.class));
-                    break;
-                case R.id.nav_paths_example:
-                    startActivity(new Intent(getApplicationContext(), PathsExampleActivity.class));
-                    break;
-                case R.id.nav_paths_and_polygons_activity:
-                    startActivity(new Intent(getApplicationContext(), PathsPolygonsLabelsActivity.class));
-                    break;
-                case R.id.nav_placemarks_demo_activity:
-                    startActivity(new Intent(getApplicationContext(), PlacemarksDemoActivity.class));
-                    break;
-                case R.id.nav_placemarks_milstd2525_activity:
-                    startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525Activity.class));
-                    break;
-                case R.id.nav_placemarks_milstd2525_demo_activity:
-                    startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525DemoActivity.class));
-                    break;
-                case R.id.nav_placemarks_milstd2525_stress_activity:
-                    startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525StressActivity.class));
-                    break;
-                case R.id.nav_placemarks_select_drag_activity:
-                    startActivity(new Intent(getApplicationContext(), PlacemarksSelectDragActivity.class));
-                    break;
-                case R.id.nav_placemarks_stress_activity:
-                    startActivity(new Intent(getApplicationContext(), PlacemarksStressTestActivity.class));
-                    break;
-                case R.id.nav_texture_stress_test_activity:
-                    startActivity(new Intent(getApplicationContext(), TextureStressTestActivity.class));
-                    break;
-            }
-
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        }
-    }
-
-    public static class LayerManagerView extends NavigationView {
-
-        public LayerManagerView(Context context) {
-            super(context);
-        }
-    }
-
-    protected class LayerManagerSelectListener implements NavigationView.OnNavigationItemSelectedListener {
-
-        @Override
-        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-            // Toggle the layer
-            WorldWindow wwd = getWorldWindow();
-            Layer layer = wwd.getLayers().getLayer(item.getItemId());
-            layer.setEnabled(!layer.isEnabled());
-            wwd.requestRedraw();
-
-            // Update the menu to reflected the layer's enabled state
-            item.setIcon(layer.isEnabled() ? R.drawable.ic_menu_enabled : R.drawable.ic_menu_disabled);
-
-                // Close the layer manager
-            drawerLayout.closeDrawer(GravityCompat.END);
-            return true;
-        }
+        this.drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
     }
 
     protected static long getSessionTimestamp() {
