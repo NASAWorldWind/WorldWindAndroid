@@ -509,8 +509,7 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
         protected void onPostExecute(Void notUsed) {
             super.onPostExecute(notUsed);
 
-            getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.placeLayer);
-            initializeLayerManager();
+            getLayerManager().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.placeLayer);
 
             statusText.setText(String.format(Locale.US, "%,d US places created", this.numPlacesCreated));
             getWorldWindow().requestRedraw();

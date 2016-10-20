@@ -172,7 +172,7 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
 
         // Add a layer for placemarks to the WorldWindow
         RenderableLayer layer = new RenderableLayer("Placemarks");
-        this.getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, layer);
+        getLayerManager().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, layer);
 
         // Create some placemarks and add them to the layer
         layer.addRenderable(createAirportPlacemark(Position.fromDegrees(34.2000, -119.2070, 0), "Oxnard Airport"));

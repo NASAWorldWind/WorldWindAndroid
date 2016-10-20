@@ -85,8 +85,8 @@ public class PlacemarksStressTestActivity extends GeneralGlobeActivity implement
      */
     @Override
     protected void initializeLayers() {
-        this.getWorldWindow().getLayers().addLayer(new ShowTessellationLayer());
-        this.getWorldWindow().getLayers().addLayer(this.placemarksLayer);
+        getLayerManager().addLayer(new ShowTessellationLayer());
+        getLayerManager().addLayer(this.placemarksLayer);
     }
 
     @Override

@@ -40,7 +40,7 @@ public class BasicStressTestActivity extends GeneralGlobeActivity implements Cho
         super.initializeLayers();
 
         // Add the ShowTessellation layer to provide some visual feedback regardless of texture details
-        this.getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, new ShowTessellationLayer());
+        getLayerManager().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, new ShowTessellationLayer());
     }
 
     @Override

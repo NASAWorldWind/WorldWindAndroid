@@ -1416,7 +1416,7 @@ public class PlacemarksMilStd2525StressActivity extends GeneralGlobeActivity imp
     @Override
     protected void initializeLayers() {
         // Don't invoke the super class. We don't want its layers.
-        this.getWorldWindow().getLayers().addLayer(new ShowTessellationLayer());
+        getLayerManager().addLayer(new ShowTessellationLayer());
     }
 
     @Override
@@ -1496,8 +1496,7 @@ public class PlacemarksMilStd2525StressActivity extends GeneralGlobeActivity imp
 
             // Create a Renderable layer for the placemarks and add it to the WorldWindow
             RenderableLayer symbolLayer = new RenderableLayer("MIL-STD-2525 Symbols");
-            getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, symbolLayer);
-            initializeLayerManager();
+            getLayerManager().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, symbolLayer);
 
             MilStd2525LevelOfDetailSelector.setFarThreshold(1500000);
             MilStd2525LevelOfDetailSelector.setNearThreshold(750000);

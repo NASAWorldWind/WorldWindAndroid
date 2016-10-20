@@ -240,7 +240,7 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
         super.initializeLayers();
 
         // Add a layer containing a large number of placemarks.
-        this.getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.createPlacemarksLayer());
+        getLayerManager().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.createPlacemarksLayer());
     }
 
     @Override

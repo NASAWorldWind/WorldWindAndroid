@@ -55,7 +55,11 @@ public class PathsPolygonsLabelsActivity extends GeneralGlobeActivity {
     // A component for displaying the status of this activity
     protected TextView statusText = null;
 
-    protected RenderableLayer shapesLayer = new RenderableLayer("Shapes");
+    protected RenderableLayer shapesLayer = new RenderableLayer("Countries");
+
+    protected RenderableLayer roadsLayer = new RenderableLayer("Roads");
+
+    protected RenderableLayer labelsLayer = new RenderableLayer("Labels");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +78,7 @@ public class PathsPolygonsLabelsActivity extends GeneralGlobeActivity {
         this.getWorldWindow().setWorldWindowController(new PickController());
 
         // Load the shapes into the renderable layer
-        statusText.setText("Loading countries....");
+        this.statusText.setText("Loading countries....");
         new CreateRenderablesTask().execute();
     }
 
@@ -84,7 +88,9 @@ public class PathsPolygonsLabelsActivity extends GeneralGlobeActivity {
     @Override
     protected void initializeLayers() {
         super.initializeLayers();
-        this.getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.shapesLayer);
+        getLayerManager().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.shapesLayer);
+        getLayerManager().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.roadsLayer);
+        getLayerManager().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.labelsLayer);
     }
 
     /**
@@ -123,7 +129,13 @@ public class PathsPolygonsLabelsActivity extends GeneralGlobeActivity {
             super.onProgressUpdate(renderables);
             Renderable shape = renderables[0];
             statusText.setText("Added " + shape.getDisplayName() + " feature...");
-            shapesLayer.addRenderable(shape);
+            if (shape instanceof Polygon) {
+                shapesLayer.addRenderable(shape);
+            } else if (shape instanceof Path) {
+                roadsLayer.addRenderable(shape);
+            } else if (shape instanceof Label) {
+                labelsLayer.addRenderable(shape);
+            }
             getWorldWindow().requestRedraw();
         }
 

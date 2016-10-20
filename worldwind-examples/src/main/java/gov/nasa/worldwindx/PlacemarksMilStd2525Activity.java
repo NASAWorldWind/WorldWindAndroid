@@ -79,8 +79,7 @@ public class PlacemarksMilStd2525Activity extends GeneralGlobeActivity {
 
             // Create a layer for the military symbols and add it to the WorldWindow
             RenderableLayer symbolLayer = new RenderableLayer("MIL-STD-2525 Symbols");
-            getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, symbolLayer);
-            initializeLayerManager();
+            getLayerManager().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, symbolLayer);
 
             // Add a "MIL-STD-2525 Friendly SOF Drone Aircraft"
             SparseArray<String> modifiers = new SparseArray<String>();

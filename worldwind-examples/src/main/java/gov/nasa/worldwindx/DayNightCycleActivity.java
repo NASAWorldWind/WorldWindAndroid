@@ -57,6 +57,9 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Choreog
         LayerList layers = this.getWorldWindow().getLayers();
         this.atmosphereLayer = (AtmosphereLayer) layers.getLayer(layers.indexOfLayerNamed(AtmosphereLayer.LAYER_NAME));
         this.atmosphereLayer.setLightLocation(this.sunLocation);
+        this.atmosphereLayer.setDisplayName("Day/Night/Atmosphere");
+
+        getLayerManager().refresh();
     }
 
     @Override

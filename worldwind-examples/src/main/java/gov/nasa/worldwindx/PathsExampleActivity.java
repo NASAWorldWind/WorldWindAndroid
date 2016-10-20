@@ -57,7 +57,7 @@ public class PathsExampleActivity extends GeneralGlobeActivity implements Handle
 
         this.readAirportTable();
         this.populateFlightPaths();
-        this.getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.flightPathLayer);
+        getLayerManager().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.flightPathLayer);
     }
 
     @Override

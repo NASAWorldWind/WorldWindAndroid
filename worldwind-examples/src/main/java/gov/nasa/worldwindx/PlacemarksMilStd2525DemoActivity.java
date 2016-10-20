@@ -267,9 +267,8 @@ public class PlacemarksMilStd2525DemoActivity extends GeneralGlobeActivity imple
         protected void onPostExecute(Void notUsed) {
             super.onPostExecute(notUsed);
 
-            getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.airportLayer);
-            getWorldWindow().getLayers().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.aircraftLayer);
-            initializeLayerManager();
+            getLayerManager().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.airportLayer);
+            getLayerManager().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, this.aircraftLayer);
 
             statusText.setText("");
             PlacemarksMilStd2525DemoActivity.this.startAnimation();

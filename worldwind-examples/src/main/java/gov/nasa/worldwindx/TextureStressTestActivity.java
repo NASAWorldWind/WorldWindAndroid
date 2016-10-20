@@ -70,8 +70,8 @@ public class TextureStressTestActivity extends BasicGlobeActivity {
     protected void initializeLayers() {
         // Setup the World Window to display the tessellation layer and a layer of surface images. We use a minimal
         // layer configuration in order to gather precise metrics on memory usage.
-        this.getWorldWindow().getLayers().addLayer(new ShowTessellationLayer());
-        this.getWorldWindow().getLayers().addLayer(this.layer);
+        getLayerManager().addLayer(new ShowTessellationLayer());
+        getLayerManager().addLayer(this.layer);
     }
 
     protected boolean addImage() {
