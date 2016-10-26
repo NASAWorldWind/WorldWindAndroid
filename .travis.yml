@@ -1,6 +1,9 @@
 # Set up to run the Android build script per the Travis CI documentation
 language: android
 
+# sudo required is used to install the jq JSON filter
+sudo: required
+
 android:
   components:
     - platform-tools      # latest SDK platform-tools is v23.0.1 (but lint wants 24.0.1 for NewApi check)
@@ -20,7 +23,10 @@ before_install:
   - tar -xf keystore.tar
 
 before_script: |
-  # Clone the GitHub Pages repo to so it can be updated with javadoc and test reports.
+  # Install the jq shell filter so we can extract data from GitHub API JSON results
+  # See apt configuration: http://docs.travis-ci.com/user/ci-environment/#apt-configuration
+  sudo apt-get install -qq jq
+  jq --version  # Clone the GitHub Pages repo to so it can be updated with javadoc and test reports.
   # Ensure script(s) can be executed (req'd if scripts are created in Windows)
   chmod +x gradlew
   chmod +x travis/*.sh
@@ -35,9 +41,9 @@ after_script: |
   ./travis/update_reports.sh
 
 after_success: |
-  # Push javadoc and Android packages to GitHub pages
+  # Push javadoc to GitHub pages and build artifacts to GitHub releases
   ./travis/update_javadoc.sh
-  ./travis/update_packages.sh
+  ./travis/update_artifacts.sh
 
 after_failure: |
   # Concatenate the logcat.log file et al to the travis log
