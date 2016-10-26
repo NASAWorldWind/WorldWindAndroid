@@ -122,7 +122,7 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         config.layerNames = "imagery_part2-2.0.0.1-wsmr.gpkg";
         Sector bbox = new Sector(32.695312, -106.171875, // SW corner
             (33.046875 - 32.695312),        // delta lat
-            (-105.802312 - -106.171875));   // delta lon
+            (-105.802312 + 106.171875));   // delta lon
         metersPerPixel = 0.00028 * 2.388657;// 0.28mm pixel size * max scale denominator
         layer = new WmsLayer(bbox, 1 /*meters per pixel*/, config);
         layer.setDisplayName("> TMIS - WSMR");
@@ -136,7 +136,7 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         config.layerNames = "Ft_Dix_1.gpkg";
         bbox = new Sector(39.902, -74.531, // SW corner
             (40.2539 - 39.902),     // delta lat
-            (-74.179 - -74.531));   // delta lon
+            (-74.179 + 74.531));   // delta lon
         layer = new WmsLayer(bbox, 1 /*meters per pixel*/, config);
         layer.setDisplayName("> TMIS - Fort Dix");
         layer.setEnabled(false);
