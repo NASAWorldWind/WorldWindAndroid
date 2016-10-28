@@ -60,4 +60,11 @@ task assembleJavadocs(type: Javadoc) {
     failOnError false
 }
 
+task zipJavadocs(type: Zip, dependsOn: assembleJavadocs) {
+    description 'Zips Javadoc API documentation.'
+    from assembleJavadocs.destinationDir
+    include '**/*'
+    destinationDir file('./build/outputs')
+    archiveName 'worldwind-javadoc.zip'
+}
 assemble.dependsOn(assembleJavadocs)
