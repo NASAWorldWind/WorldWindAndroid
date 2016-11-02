@@ -26,7 +26,7 @@ elif [[ "$TRAVIS_BRANCH" == "master" ]]; then
     PRERELEASE="true"
     RELEASE_TAG="stable"
     RELEASE_BRANCH="master"
-    RELEASE_NOTES="### Build artifacts from the master branch.\r\n\r\n"
+    RELEASE_NOTES="### Artifacts from the master branch.\r\n\r\n"
     RELEASE_NOTES+="Built ${RELEASE_DATE} from commit ${TRAVIS_COMMIT}\r\n\r\n"
     RELEASE_NOTES+="The World Wind Development Team uploads the latest build artifacts "
     RELEASE_NOTES+="from the *master* branch here--prior to generating an 'official' tagged release. "
@@ -35,7 +35,7 @@ elif [[ "$TRAVIS_BRANCH" == "develop" ]]; then
     PRERELEASE="true"
     RELEASE_TAG="development"
     RELEASE_BRANCH="develop"
-    RELEASE_NOTES="### Build artifacts from the develop branch.\r\n\r\n"
+    RELEASE_NOTES="### Artifacts from the develop branch.\r\n\r\n"
     RELEASE_NOTES+="Built ${RELEASE_DATE} from commit ${TRAVIS_COMMIT}\r\n\r\n"
     RELEASE_NOTES+="The World Wind Development Team uploads the latest build artifacts "
     RELEASE_NOTES+="from the *develop* branch here--to download, test and install on devices. "
@@ -72,9 +72,7 @@ if [[ ${#RELEASE_ID} -eq 0 ]]; then
     --request POST ${RELEASES_URL})
 
     # Extract the release id from the JSON result
-    #RELEASE_ID=$(echo $RELEASE | jq '.[] | .id')
-    RELEASE_ID=$(curl ${RELEASES_URL} | jq --arg tagname $RELEASE_TAG '.[] | select(.tag_name == $tagname) | .id')
-
+    RELEASE_ID=$(echo $RELEASE | jq '.id')
 fi
 
 # Assert that we found a GitHub release id for the current branch (release id length > 0)
