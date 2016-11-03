@@ -24,7 +24,7 @@ if [[ -n $TRAVIS_TAG ]]; then
     RELEASE_NOTES="World Wind Android ${RELEASE_TAG} adds new functionality and/or fixes.\r\n\r\n"
 elif [[ "$TRAVIS_BRANCH" == "master" ]]; then
     PRERELEASE="true"
-    RELEASE_TAG="stable"
+    RELEASE_TAG="production"
     RELEASE_BRANCH="master"
     RELEASE_NOTES="### Artifacts from the master branch.\r\n\r\n"
     RELEASE_NOTES+="Built ${RELEASE_DATE} from commit ${TRAVIS_COMMIT}\r\n\r\n"
