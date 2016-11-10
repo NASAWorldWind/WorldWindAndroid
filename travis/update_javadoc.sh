@@ -25,14 +25,14 @@ elif [[ "$TRAVIS_BRANCH" == "develop" && "$TRAVIS_EVENT_TYPE" != "cron" ]]; then
     exit 0
 fi
 
-# JavaDocs are stored at ./assets/android/TRAVIS_BRANCH/api-doc
-echo Updating ${GH_PAGES_REPO}/assets/android/${TRAVIS_BRANCH}/api-doc
+# JavaDocs are stored at ./assets/android/TRAVIS_BRANCH/javadoc
+echo Updating ${GH_PAGES_REPO}/assets/android/${TRAVIS_BRANCH}/javadoc
 cd ${HOME}/${GH_PAGES_DIR}
 
-git rm -rfq --ignore-unmatch ./assets/android/${TRAVIS_BRANCH}/api-doc
+git rm -rfq --ignore-unmatch ./assets/android/${TRAVIS_BRANCH}/javadoc
 
-mkdir -p ./assets/android/${TRAVIS_BRANCH}/api-doc
-cp -Rf ${TRAVIS_BUILD_DIR}/worldwind/build/outputs/api-doc ./assets/android/${TRAVIS_BRANCH}
+mkdir -p ./assets/android/${TRAVIS_BRANCH}/javadoc
+cp -Rf ${TRAVIS_BUILD_DIR}/worldwind/build/outputs/doc/javadoc ./assets/android/${TRAVIS_BRANCH}
 
 git add -f .
 git commit -m "Updated Android javadoc from successful travis build $TRAVIS_BUILD_NUMBER in $TRAVIS_BRANCH"

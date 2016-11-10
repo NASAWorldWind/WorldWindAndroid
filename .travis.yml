@@ -35,7 +35,7 @@ before_script: |
 
 script: |
   # Build the project
-  ./gradlew build zipJavadocs
+  ./gradlew build
 
 after_script: |
   # Push lint and test reports to GitHub pages

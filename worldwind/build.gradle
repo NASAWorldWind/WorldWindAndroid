@@ -47,24 +47,30 @@ dependencies {
     }
 }
 
-task assembleJavadocs(type: Javadoc) {
+task compileJavadocSources(type: Javadoc) {
     group 'build'
-    description 'Assembles the Javadoc API documentation.'
     source android.sourceSets.main.java.srcDirs
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
     include('**/*.java')
-    destinationDir file('./build/outputs/api-doc/')
+    destinationDir file('./build/outputs/doc/javadoc/')
     title 'NASA World Wind Android'
     options.windowTitle 'NASA World Wind Android'
     options.memberLevel = JavadocMemberLevel.PUBLIC
     failOnError false
 }
 
-task zipJavadocs(type: Zip, dependsOn: assembleJavadocs) {
-    description 'Zips Javadoc API documentation.'
-    from assembleJavadocs.destinationDir
+task bundleJavadoc(type: Zip) {
+    description 'Assembles a bundle containing the Javadoc API documentation.'
+    from compileJavadocSources.destinationDir
     include '**/*'
-    destinationDir file('./build/outputs')
+    destinationDir file('./build/outputs/doc/')
     archiveName 'worldwind-javadoc.zip'
 }
-assemble.dependsOn(assembleJavadocs)
+
+task assembleJavadoc(type: Task, dependsOn: [compileJavadocSources, bundleJavadoc]) {
+    description 'Assembles the Javadoc API documentation.'
+    group 'build'
+}
+
+assemble.dependsOn(assembleJavadoc)
+bundleJavadoc.mustRunAfter(compileJavadocSources)
