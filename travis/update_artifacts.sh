@@ -22,14 +22,14 @@ if [[ -n $TRAVIS_TAG ]]; then
 elif [[ "$TRAVIS_BRANCH" == "master" ]]; then
     RELEASE_TAG="production"
     RELEASE_BRANCH="master"
-    RELEASE_BODY="World Wind Android builds from the [master](https://github.com/NASAWorldWind/WorldWindAndroid/tree/master) branch."
-    RELEASE_BODY+="<br/>Production builds with new features, enhancements and bug fixes ready for official release."
+    RELEASE_BODY="World Wind Android builds from the [master](https://github.com/NASAWorldWind/WorldWindAndroid/tree/master) branch. "
+    RELEASE_BODY+="Production builds have new features, enhancements and bug fixes ready for official release."
     PRERELEASE="true"
 elif [[ "$TRAVIS_BRANCH" == "develop" ]]; then
     RELEASE_TAG="development"
     RELEASE_BRANCH="develop"
-    RELEASE_BODY="World Wind Android builds from the [develop](https://github.com/NASAWorldWind/WorldWindAndroid/tree/develop) branch."
-    RELEASE_BODY+="<br/>Development builds with the newest, bleeding-edge World Wind Android features. Intended for developers and early adopters."
+    RELEASE_BODY="World Wind Android builds from the [develop](https://github.com/NASAWorldWind/WorldWindAndroid/tree/develop) branch. "
+    RELEASE_BODY+="Development builds have the newest, bleeding-edge World Wind Android features. Intended for developers and early adopters."
     PRERELEASE="true"
 else
     echo Skipping $TRAVIS_BRANCH branch
