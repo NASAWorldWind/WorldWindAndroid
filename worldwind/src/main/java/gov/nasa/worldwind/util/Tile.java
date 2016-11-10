@@ -364,7 +364,7 @@ public class Tile {
     /**
      * Calculates the distance to this Tile from the {@link gov.nasa.worldwind.geom.Camera} provided by the {@link
      * RenderContext}. If the camera is located above the tile, the altitude of the camera is returned, otherwise the
-     * minimum distance to nine points oriented in a grid across the tile is returned.
+     * minimum distance to one of nine points oriented in a grid across the tile is returned.
      *
      * @param rc the {@link RenderContext} which provides the current {@link gov.nasa.worldwind.globe.Globe} and {@link
      *           gov.nasa.worldwind.geom.Camera}
