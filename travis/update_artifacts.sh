@@ -10,29 +10,27 @@
 # GitHub RESTful API URLs
 RELEASES_URL="https://api.github.com/repos/nasaworldwind/worldwindandroid/releases"
 UPLOADS_URL="https://uploads.github.com/repos/nasaworldwind/worldwindandroid/releases"
-DOWNLOADS_URL="https://github.com/nasaworldwind/WorldWindAndroid/releases/download"
 
-# Initialize the release variables predicated on the tag and branch.
-# Note: In the release notes markdown, don't allow preceding spaces
-# on new lines else GitHub doesn't format the text correctly.
+# Initialize the release variables predicated on the tag and branch. Note: In the release body markdown, don't allow
+# preceding spaces on new lines else GitHub doesn't format the text correctly.
 if [[ -n $TRAVIS_TAG ]]; then
     echo Tagged Release $TRAVIS_TAG
-    PRERELEASE="false"
     RELEASE_TAG=$TRAVIS_TAG
     RELEASE_BRANCH="master"
-    RELEASE_NOTES="World Wind Android ${RELEASE_TAG} adds new features, enhancements and bug fixes."
+    RELEASE_BODY="World Wind Android ${RELEASE_TAG} adds new features, enhancements and bug fixes."
+    PRERELEASE="false"
 elif [[ "$TRAVIS_BRANCH" == "master" ]]; then
-    PRERELEASE="true"
     RELEASE_TAG="production"
     RELEASE_BRANCH="master"
-    RELEASE_NOTES="World Wind Android builds from the [master](https://github.com/NASAWorldWind/WorldWindAndroid/tree/master) branch."
-    RELEASE_NOTES+="<br/>Production builds with new features, enhancements and bug fixes ready for official release."
-elif [[ "$TRAVIS_BRANCH" == "develop" ]]; then
+    RELEASE_BODY="World Wind Android builds from the [master](https://github.com/NASAWorldWind/WorldWindAndroid/tree/master) branch."
+    RELEASE_BODY+="<br/>Production builds with new features, enhancements and bug fixes ready for official release."
     PRERELEASE="true"
+elif [[ "$TRAVIS_BRANCH" == "develop" ]]; then
     RELEASE_TAG="development"
     RELEASE_BRANCH="develop"
-    RELEASE_NOTES="World Wind Android builds from the [develop](https://github.com/NASAWorldWind/WorldWindAndroid/tree/develop) branch."
-    RELEASE_NOTES+="Development builds with the newest, bleeding-edge World Wind Android features. Intended for developers and early adopters."
+    RELEASE_BODY="World Wind Android builds from the [develop](https://github.com/NASAWorldWind/WorldWindAndroid/tree/develop) branch."
+    RELEASE_BODY+="<br/>Development builds with the newest, bleeding-edge World Wind Android features. Intended for developers and early adopters."
+    PRERELEASE="true"
 else
     echo Skipping $TRAVIS_BRANCH branch
     exit 0  # Exit quietly when a feature branch is built
@@ -45,13 +43,12 @@ RELEASE_ID=$(curl ${RELEASES_URL} | jq --arg tagname $RELEASE_TAG '.[] | select(
 # Create the release if it doesn't exist (if zero-length release id)
 if [[ ${#RELEASE_ID} -eq 0 ]]; then
     echo Creating $TRAVIS_TAG Release
-    IS_NEW_RELEASE=0 # true
     # Build the JSON (Note: single quotes inhibit variable substitution, must use double quotes)
     JSON_DATA="{ \
       \"tag_name\": \"${RELEASE_TAG}\", \
       \"target_commitish\": \"${RELEASE_BRANCH}\", \
       \"name\": \"${RELEASE_TAG}\", \
-      \"body\": \"${RELEASE_NOTES}\", \
+      \"body\": \"${RELEASE_BODY}\", \
       \"draft\": false, \
       \"prerelease\": ${PRERELEASE} \
     }"
