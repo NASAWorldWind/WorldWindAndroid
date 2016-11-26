@@ -42,8 +42,8 @@ git config --global user.name "travis-ci"
 
 # Clone the GitHub Pages repository to the local filesystem
 GH_PAGES_DIR=${HOME}/gh_pages
-cd $GH_PAGES_DIR
 git clone --quiet --branch=master https://${GITHUB_API_KEY}@${GH_PAGES_REPO} $GH_PAGES_DIR > /dev/null
+cd $GH_PAGES_DIR
 
 # Remove existing javadocs from the repository
 git rm -rfq --ignore-unmatch ./assets/android/${FOLDER}/javadoc
