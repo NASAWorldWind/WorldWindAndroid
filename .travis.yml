@@ -24,7 +24,7 @@ before_install:
 
 before_script: |
   # Install the jq shell filter so we can extract data from GitHub API JSON results
-  # See apt configuration: http://docs.travis-ci.com/user/ci-environment/#apt-configuration
+  # See apt configuration: https://docs.travis-ci.com/user/ci-environment/#apt-configuration
   sudo apt-get install -qq jq
   jq --version
   # Clone the GitHub Pages repo to so it can be updated with javadoc and test reports.
