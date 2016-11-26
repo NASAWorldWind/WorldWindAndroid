@@ -4,30 +4,41 @@
 
 [![Build Status](https://travis-ci.org/NASAWorldWind/WorldWindAndroid.svg?branch=develop)](https://travis-ci.org/NASAWorldWind/WorldWindAndroid)
 
-A virtual globe SDK for [Android](http://developer.android.com) developed by NASA. Provides a geographic context,
+A virtual globe SDK for [Android](https://developer.android.com) developed by NASA. Provides a geographic context,
 complete with terrain, for visualizing geographic or geo-located information in 3D and 2D. World Wind Android provides
-high-resolution terrain and imagery, retrieved from remote servers automatically as needed. You can also provide your
-own terrain and imagery. World Wind Android additionally supports a rich collection of shapes useful for representing
-information on the globe or in space. More information at [NASAWorldWind.github.io](https://nasaworldwind.github.io).
+high-resolution terrain and imagery, retrieved from remote servers automatically as needed. Developers can provide
+custom terrain and imagery. Supports rendering information on the globe or in space with a rich collection of shapes.
+More information at [NASAWorldWind.github.io](https://nasaworldwind.github.io).
 
 ## Get Started
 
-- [NASAWorldWind.github.io](https://nasaworldwind.github.io) has all things World Wind  in one place
+Develop a world-class World Wind application for your Android phone or tablet. Setup instructions, developers guides,
+API documentation and more are available at [NASAWorldWind.github.io](https://nasaworldwind.github.io). This GitHub
+repository contains the library source, examples and tutorials.
+
+- [NASAWorldWind.github.io](https://nasaworldwind.github.io) has all things World Wind in one place
 - [World Wind Forum](http://forum.worldwindcentral.com) provides help from the World Wind community
 - [GitHub Issues](https://github.com/NASAWorldWind/WorldWindAndroid/issues) provides requirements and issue tracking
-- [Android Studio](http://developer.android.com/sdk/) is used for World Wind Android development
 - [Travis CI](https://travis-ci.org/NASAWorldWind/WorldWindAndroid) provides continuous integration and build automation
+- [Android Studio](https://developer.android.com/sdk/) is used for World Wind Android development
 
-## Latest Release
+## Releases and Roadmap
 
-### [v0.5.0](https://github.com/NASAWorldWind/WorldWindAndroid/releases/tag/v0.5.0) released on Sept 30
+Official World Wind releases from the [master](https://github.com/NASAWorldWind/WorldWindAndroid/tree/master) branch.
+Releases have the latest stable features, enhancements and bug fixes ready for production use.
 
-- [Release Notes](https://github.com/NASAWorldWind/WorldWindAndroid/releases/tag/v0.5.0) for v0.5.0
-- [GitHub Milestone](https://github.com/NASAWorldWind/WorldWindAndroid/milestone/1?closed=1) for v0.5.0
-- [API Docs](http://worldwindserver.net/android/0.5.0/doc) gives class level details for developers
-- [World Wind Tutorials](https://github.com/NASAWorldWind/WorldWindAndroid/releases/download/v0.5.0/worldwind-tutorials.apk) helps developers get started with core World Wind concepts with code and a live example
-- [World Wind Examples](https://github.com/NASAWorldWind/WorldWindAndroid/releases/download/v0.5.0/worldwind-examples.apk) demonstrates advanced World Wind features
-- [World Wind Library](https://github.com/NASAWorldWind/WorldWindAndroid/releases/download/v0.5.0/worldwind.aar) provides the World Wind Library as an Android Archive (AAR).
+- [Latest Release](https://github.com/NASAWorldWind/WorldWindAndroid/releases/latest) has the release changelogs and binary assets
+- [Releases](https://github.com/NASAWorldWind/WorldWindAndroid/releases/) lists all official releases
+- [Milestones](https://github.com/NASAWorldWind/WorldWindAndroid/milestones) documents upcoming releases and the development roadmap
+- [API Documentation](https://nasaworldwind.github.io/assets/android/latest/javadoc) for the latest release
+
+## Daily Builds
+
+World Wind Android builds from the [develop](https://github.com/NASAWorldWind/WorldWindAndroid/tree/develop) branch.
+Daily builds have the newest, bleeding-edge World Wind Android features. Intended for developers and early adopters.
+
+- [Releases](https://github.com/NASAWorldWind/WorldWindAndroid/releases) hosts the World Wind Android daily builds
+- [API Documentation](https://nasaworldwind.github.io/assets/android/daily/javadoc) for the current daily build
 
 ## License
 
@@ -59,5 +70,5 @@ information on the globe or in space. More information at [NASAWorldWind.github.
 
     You may obtain a full copy of the license at:
 
-        http://worldwind.arc.nasa.gov/worldwind-nosa-1.3.html
+        https://worldwind.arc.nasa.gov/worldwind-nosa-1.3.html
 
