@@ -4,7 +4,8 @@
 # Pushes a daily build tag to the HEAD of the checked out branch (usually develop). Does nothing if the build is not
 # initiated by a cron job.
 #
-# Note: git commands using authentication are use --quiet and redirect to null to prevent leaking the token to the log.
+# Uses Git to update tags in the repo. Git commands using authentication are redirected to /dev/null to prevent leaking
+# the access token into the log.
 # ======================================================================================================================
 
 # Ensure shell commands are not echoed to the log to prevent leaking the access token

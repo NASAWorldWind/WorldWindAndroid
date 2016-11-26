@@ -203,6 +203,8 @@ done
 
 # Cleanup daily tags
 if [[ "${TRAVIS_TAG}" == "daily"* ]]; then
+    # Emit a log message for the daily tag cleanup
+    echo "Cleaning up daily tags"
 
     # Get a sorted array of daily tags (sorting is req'd if you want to do some array slicing)
     DAILY_TAGS=($(git tag --list "daily*" | sort))
@@ -211,6 +213,7 @@ if [[ "${TRAVIS_TAG}" == "daily"* ]]; then
     for TAG in ${DAILY_TAGS[*]}
     do
         if [[ $TAG != $TRAVIS_TAG ]]; then
+            echo "Deleting ${TAG}"
             git tag --delete $TAG
             git push --quiet $REMOTE_URL :${TAG} > /dev/null
             RESULT=$?
