@@ -18,7 +18,7 @@ import gov.nasa.worldwind.util.TileUrlFactory;
 /**
  * Displays a composite of NASA's Blue Marble next generation imagery at 500m resolution and Landsat imagery at 15m
  * resolution from an OGC Web Map Service (WMS). By default, BlueMarbleLandsatLayer is configured to retrieve imagery
- * from the WMS at <a href="http://worldwind25.arc.nasa.gov/wms?SERVICE=WMS&REQUEST=GetCapabilities">http://worldwind25.arc.nasa.gov/wms</a>.
+ * from the WMS at <a href="https://worldwind25.arc.nasa.gov/wms?SERVICE=WMS&REQUEST=GetCapabilities">https://worldwind25.arc.nasa.gov/wms</a>.
  */
 public class BlueMarbleLandsatLayer extends TiledImageLayer implements TileUrlFactory {
 
@@ -27,10 +27,10 @@ public class BlueMarbleLandsatLayer extends TiledImageLayer implements TileUrlFa
     protected TileUrlFactory landsatUrlFactory;
 
     /**
-     * Constructs a composite image layer with the WMS at http://worldwind25.arc.nasa.gov/wms.
+     * Constructs a composite image layer with the WMS at https://worldwind25.arc.nasa.gov/wms.
      */
     public BlueMarbleLandsatLayer() {
-        this("http://worldwind25.arc.nasa.gov/wms");
+        this("https://worldwind25.arc.nasa.gov/wms");
     }
 
     /**

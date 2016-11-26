@@ -35,7 +35,7 @@ public class WmsGetMapUrlFactoryTest {
     /**
      * Common parameters used when creating a WMS request URL.
      */
-    public static final String COMMON_SERVICE_ADDRESS = "http://worldwind25.arc.nasa.gov/wms";
+    public static final String COMMON_SERVICE_ADDRESS = "https://worldwind25.arc.nasa.gov/wms";
 
     public static final String COMMON_SERVICE_WMS = "WMS";
 
