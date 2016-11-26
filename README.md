@@ -4,11 +4,11 @@
 
 [![Build Status](https://travis-ci.org/NASAWorldWind/WorldWindAndroid.svg?branch=develop)](https://travis-ci.org/NASAWorldWind/WorldWindAndroid)
 
-A virtual globe SDK for [Android](https://developer.android.com) developed by NASA. Provides a geographic context,
+3D virtual globe API for [Android](https://developer.android.com), developed by NASA. Provides a geographic context,
 complete with terrain, for visualizing geographic or geo-located information in 3D and 2D. World Wind Android provides
 high-resolution terrain and imagery, retrieved from remote servers automatically as needed. Developers can provide
-custom terrain and imagery. Supports rendering information on the globe or in space with a rich collection of shapes.
-More information at [NASAWorldWind.github.io](https://nasaworldwind.github.io).
+custom terrain and imagery. Contains a rich collection of shapes for displaying and interacting with geographic data and
+representing a range of geometric objects. More information at [NASAWorldWind.github.io](https://nasaworldwind.github.io).
 
 ## Get Started
 
@@ -20,7 +20,7 @@ repository contains the library source, examples and tutorials.
 - [World Wind Forum](http://forum.worldwindcentral.com) provides help from the World Wind community
 - [GitHub Issues](https://github.com/NASAWorldWind/WorldWindAndroid/issues) provides requirements and issue tracking
 - [Travis CI](https://travis-ci.org/NASAWorldWind/WorldWindAndroid) provides continuous integration and build automation
-- [Android Studio](https://developer.android.com/sdk/) is used for World Wind Android development
+- [Android Studio](https://developer.android.com/sdk/) is used by the NASA World Wind development team
 
 ## Releases and Roadmap
 
@@ -41,7 +41,6 @@ Daily builds have the newest, bleeding-edge World Wind Android features. Intende
 - [API Documentation](https://nasaworldwind.github.io/assets/android/daily/javadoc) for the current daily build
 
 ## License
-
 
     NASA WORLD WIND
 
