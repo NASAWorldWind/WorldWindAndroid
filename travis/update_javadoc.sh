@@ -1,43 +1,61 @@
 #!/bin/bash
-
-# This script updates the GitHub Pages website with the updated JavaDoc from the build.
-# The JavaDocs are updated only if we're building the master or develop branch, not
-# feature branches. JavaDocs from the develop branch are built daily via a cron job,
-# not on push events.
+# ======================================================================================================================
+# Updates the GitHub Pages website with the updated javadoc from the build. Clones the GitHub Pages to the local
+# filesystem, deletes the javadoc for the current build, copies the new javadoc, then commits and pushes the changes.
+# Does nothing if the build is initiated by a cron job.
 #
-# Syntax: update_javadoc.sh
+# Uses Git to update tags in the repo. Git commands using authentication are redirected to /dev/null to prevent leaking
+# the access token into the log.
+# ======================================================================================================================
 
-# Assert the GitHub Pages local folder is defined and exists.
-if [[ -z "$GH_PAGES_DIR" ]]; then
-    echo $0 error: You must export GH_PAGES_DIR containing the folder name for the cloned GitHub Pages\; the repo was not updated.
-    exit 0
-elif [[ ! -d ${HOME}/${GH_PAGES_DIR} ]]; then
-    echo $0 error: The GitHub Pages folder does not exist\; the repo was not updated.
-    exit 0
-fi
+# Ensure shell commands are not echoed in the log to prevent leaking the access token.
+set +x
 
-# Assert the branch is master or develop, and that develop is updated only in a cron job.
-if ! [[ "$TRAVIS_BRANCH" == "master" || "$TRAVIS_BRANCH" == "develop" ]]; then
-    # Exit quietly when a feature branch is built
-    exit 0
-elif [[ "$TRAVIS_BRANCH" == "develop" && "$TRAVIS_EVENT_TYPE" != "cron" ]]; then
-    # Exit quietly when the develop branch is built via a "push" event
+# Exit quietly without error when this build is a cron job
+if [[ "$TRAVIS_EVENT_TYPE" == "cron" ]]; then
     exit 0
 fi
 
-# JavaDocs are stored at ./assets/android/TRAVIS_BRANCH/javadoc
-echo Updating ${GH_PAGES_REPO}/assets/android/${TRAVIS_BRANCH}/javadoc
-cd ${HOME}/${GH_PAGES_DIR}
+# Assert the GitHub Personal Access Token exists
+if [[ -z "$GITHUB_API_KEY" ]]; then
+    echo $0 error: You must export the GITHUB_API_KEY containing the personal access token for Travis\; the repo was not cloned.
+    exit 1
+fi
 
-git rm -rfq --ignore-unmatch ./assets/android/${TRAVIS_BRANCH}/javadoc
+# Assert the GitHub Pages repo is defined
+if [[ -z "$GH_PAGES_REPO" ]]; then
+    echo $0 error: You must export the GH_PAGES_REPO containing GitHub Pages URL sans protocol\; the repo was not cloned.
+    exit 1
+fi
 
-mkdir -p ./assets/android/${TRAVIS_BRANCH}/javadoc
-cp -Rf ${TRAVIS_BUILD_DIR}/worldwind/build/outputs/doc/javadoc ./assets/android/${TRAVIS_BRANCH}
+# Initialize the FOLDER var predicated on the build configuration. On a tagged build, Travis cloned the repo into a
+# branch named with the tag, thus the TRAVIS_BRANCH var reflects the tag name, not "master" or "develop" like you might
+# expect.
+if [[ "${TRAVIS_TAG}" == "daily"* ]]; then # daily build associated with a tag in the format daily/YYYYMMDD
+    FOLDER="daily"
+elif [[ "${TRAVIS_BRANCH}" == "master" ]]; then # latest stable build from the master branch
+    FOLDER="latest"
+else # all other build types; exit quietly without error
+    exit 0
+fi
 
+# Configure the user to be associated with commits to the GitHub pages
+git config --global user.email "travis@travis-ci.org"
+git config --global user.name "travis-ci"
+
+# Clone the GitHub Pages repository to the local filesystem
+GH_PAGES_DIR=${HOME}/gh_pages
+cd $GH_PAGES_DIR
+git clone --quiet --branch=master https://${GITHUB_API_KEY}@${GH_PAGES_REPO} $GH_PAGES_DIR > /dev/null
+
+# Remove existing javadocs from the repository
+git rm -rfq --ignore-unmatch ./assets/android/${FOLDER}/javadoc
+
+# Copy new javadocs to the repository
+mkdir -p ./assets/android/${FOLDER}/javadoc
+cp -Rf ${TRAVIS_BUILD_DIR}/worldwind/build/outputs/doc/javadoc/* ./assets/android/${FOLDER}/javadoc
+
+# Commit and push the changes (quietly)
 git add -f .
-git commit -m "Updated Android javadoc from successful travis build $TRAVIS_BUILD_NUMBER in $TRAVIS_BRANCH"
-
-# Push the changes to GitHub
+git commit -m "Updated javadoc from successful travis build $TRAVIS_BUILD_NUMBER in $TRAVIS_BRANCH"
 git push -fq origin master > /dev/null
-
-cd $TRAVIS_BUILD_DIR
