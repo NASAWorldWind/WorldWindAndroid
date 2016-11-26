@@ -18,13 +18,13 @@ fi
 
 # Assert the GitHub Personal Access Token exists
 if [[ -z "$GITHUB_API_KEY" ]]; then
-    echo $0 error: You must export the GITHUB_API_KEY containing the personal access token for Travis\; the repo was not cloned.
+    echo "$0 error: You must export the GITHUB_API_KEY containing the personal access token for Travis\; the repo was not cloned."
     exit 1
 fi
 
 # Assert the GitHub Pages repo is defined
 if [[ -z "$GH_PAGES_REPO" ]]; then
-    echo $0 error: You must export the GH_PAGES_REPO containing GitHub Pages URL sans protocol\; the repo was not cloned.
+    echo "$0 error: You must export the GH_PAGES_REPO containing GitHub Pages URL sans protocol\; the repo was not cloned."
     exit 1
 fi
 
@@ -38,6 +38,9 @@ elif [[ "${TRAVIS_BRANCH}" == "master" ]]; then # latest stable build from the m
 else # all other build types; exit quietly without error
     exit 0
 fi
+
+# Emit a log message for the javadoc update
+echo "Updating JavaDoc at ${GH_PAGES_REPO}/assets/android/${FOLDER}/javadoc"
 
 # Configure the user to be associated with commits to the GitHub pages
 git config --global user.email "travis@travis-ci.org"

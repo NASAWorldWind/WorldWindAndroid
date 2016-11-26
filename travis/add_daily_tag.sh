@@ -10,7 +10,7 @@
 # Ensure shell commands are not echoed to the log to prevent leaking the access token
 set +x
 
-# Exit quietly without error when this build is not a cron job
+# Exit without error when this build is not a cron job
 if [[ "$TRAVIS_EVENT_TYPE" != "cron" ]]; then
     exit 0
 fi
@@ -27,9 +27,10 @@ fi
 # Add the tag "daily/YYYYMMDD" tag to the HEAD. Delimiting the date with a slash allows Git tools to collect daily tags in a folder
 # RELEASE_DATE=$(date '+%Y%m%d-%H%M%Z') # add time for testing
 RELEASE_DATE=$(date '+%Y%m%d')
-DAILY_TAG="daily/$(date '+%Y%m%d')"
+DAILY_TAG="daily/${RELEASE_DATE}"
 
 # Create a lightweight tag (vs an annotated tag) and push it to the remote
+echo "Pushing daily tag ${DAILY_TAG}"
 git tag $DAILY_TAG
 git push --quiet $REMOTE_URL tag $DAILY_TAG > /dev/null
 

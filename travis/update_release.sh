@@ -20,7 +20,7 @@ set +x
 
 # Ensure the GitHub Personal Access Token for GitHub exists
 if [[ -z "$GITHUB_API_KEY" ]]; then
-    echo $0 error: You must export the GITHUB_API_KEY containing the personal access token for Travis\; GitHub was not updated.
+    echo "$0 error: You must export the GITHUB_API_KEY containing the personal access token for Travis\; GitHub was not updated."
     exit 1
 fi
 
@@ -69,6 +69,9 @@ RELEASE_ID=${RELEASE_ARRAY[0]}
 
 # Update the GitHub releases (create if release id's length == 0)
 if [[ ${#RELEASE_ID} -eq 0 ]]; then
+    # Emit a log message for the new release
+    echo "Creating release ${RELEASE_NAME} with tag ${TRAVIS_TAG}"
+
     # Build the JSON (Note: single quotes inhibit variable substitution, must use escaped double quotes)
     # Note: the tag already exists, so the "target_commitish" parameter is not used
     JSON_DATA="{ \
@@ -89,6 +92,9 @@ if [[ ${#RELEASE_ID} -eq 0 ]]; then
     # Extract the newly created release id from the JSON result
     RELEASE_ID=$(echo $RELEASE | jq '.id')
 else
+    # Emit a log message for the updated release
+    echo "Updating release ${RELEASE_NAME} with tag ${TRAVIS_TAG}"
+
     # Define the patch data to update the tag_name
     JSON_DATA="{ \
         \"tag_name\": \"${TRAVIS_TAG}\" \
@@ -105,7 +111,7 @@ fi
 
 # Assert that we found a GitHub release id for the current branch (release id length > 0)
 if [[ ${#RELEASE_ID} -eq 0 ]]; then
-    echo $0 error: The $RELEASE_NAME release was not found. No artifacts were uploaded to GitHub releases.
+    echo "$0 error: Release $RELEASE_NAME was not found. No artifacts were uploaded to GitHub releases."
     exit 0
 fi
 
@@ -132,13 +138,16 @@ TUTORIAL_FILES=( \
 JAVADOC_FILES=( worldwind-javadoc.zip )
 ALL_FILES=( "${LIBRARY_FILES[@]}"  "${EXAMPLE_FILES[@]}" "${TUTORIAL_FILES[@]}" "${JAVADOC_FILES[@]}" )
 
+# Emit a log message for the updated release
+echo "Uploading release assets for ${RELEASE_NAME}"
+
 # Remove the old assets if they exist (asset id length > 0)
 for FILENAME in ${ALL_FILES[*]}
 do
     # Note, we're using the jq "--arg name value" commandline option to create a predefined filename variable
     ASSET_ID=$(curl ${RELEASES_URL}/${RELEASE_ID}/assets | jq --arg filename $FILENAME '.[] | select(.name == $filename) | .id')
     if [ ${#ASSET_ID} -gt 0 ]; then
-        echo DELETE ${RELEASES_URL}/assets/${ASSET_ID}
+        echo "Deleting ${FILENAME}"
         curl -include --header "Authorization: token ${GITHUB_API_KEY}" --request DELETE ${RELEASES_URL}/assets/${ASSET_ID}
     fi
 done
@@ -146,6 +155,7 @@ done
 # Upload the new assets
 for FILENAME in ${LIBRARY_FILES[*]}
 do
+    echo "Posting ${FILENAME}"
     curl -include \
     --header "Authorization: token ${GITHUB_API_KEY}" \
     --header "Content-Type: application/vnd.android.package-archive" \
@@ -156,6 +166,7 @@ done
 
 for FILENAME in ${EXAMPLE_FILES[*]}
 do
+    echo "Posting ${FILENAME}"
     curl -include \
     --header "Authorization: token ${GITHUB_API_KEY}" \
     --header "Content-Type: application/vnd.android.package-archive" \
@@ -166,6 +177,7 @@ done
 
 for FILENAME in ${TUTORIAL_FILES[*]}
 do
+    echo "Posting ${FILENAME}"
     curl -include \
     --header "Authorization: token ${GITHUB_API_KEY}" \
     --header "Content-Type: application/vnd.android.package-archive" \
@@ -176,6 +188,7 @@ done
 
 for FILENAME in ${JAVADOC_FILES[*]}
 do
+    echo "Posting ${FILENAME}"
     curl -include \
     --header "Authorization: token ${GITHUB_API_KEY}" \
     --header "Content-Type: application/zip" \
