@@ -24,10 +24,10 @@ repository contains the library source, examples and tutorials.
 
 ## Releases and Roadmap
 
-Official World Wind releases from the [master](https://github.com/NASAWorldWind/WorldWindAndroid/tree/master) branch.
-Releases have the latest stable features, enhancements and bug fixes ready for production use.
+Official World Wind Android releases from the [master](https://github.com/NASAWorldWind/WorldWindAndroid/tree/master)
+branch. Releases have the latest stable features, enhancements and bug fixes ready for production use.
 
-- [Latest Release](https://github.com/NASAWorldWind/WorldWindAndroid/releases/latest) has the release changelogs and binary assets
+- [Latest Release](https://github.com/NASAWorldWind/WorldWindAndroid/releases/latest) has the current release changelogs, binary assets, and associated GitHub tag
 - [Releases](https://github.com/NASAWorldWind/WorldWindAndroid/releases/) lists all official releases
 - [Milestones](https://github.com/NASAWorldWind/WorldWindAndroid/milestones) documents upcoming releases and the development roadmap
 - [API Documentation](https://nasaworldwind.github.io/assets/android/latest/javadoc) for the latest release
@@ -37,7 +37,7 @@ Releases have the latest stable features, enhancements and bug fixes ready for p
 World Wind Android builds from the [develop](https://github.com/NASAWorldWind/WorldWindAndroid/tree/develop) branch.
 Daily builds have the newest, bleeding-edge World Wind Android features. Intended for developers and early adopters.
 
-- [Releases](https://github.com/NASAWorldWind/WorldWindAndroid/releases) hosts the World Wind Android daily builds
+- [Releases](https://github.com/NASAWorldWind/WorldWindAndroid/releases) hosts the daily builds
 - [API Documentation](https://nasaworldwind.github.io/assets/android/daily/javadoc) for the current daily build
 
 ## License
