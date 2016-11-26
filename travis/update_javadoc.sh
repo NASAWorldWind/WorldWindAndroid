@@ -2,7 +2,6 @@
 # ======================================================================================================================
 # Updates the GitHub Pages website with the updated javadoc from the build. Clones the GitHub Pages to the local
 # filesystem, deletes the javadoc for the current build, copies the new javadoc, then commits and pushes the changes.
-# Does nothing if the build is initiated by a cron job.
 #
 # Uses Git to update tags in the repo. Git commands using authentication are redirected to /dev/null to prevent leaking
 # the access token into the log.
@@ -10,11 +9,6 @@
 
 # Ensure shell commands are not echoed in the log to prevent leaking the access token.
 set +x
-
-# Exit quietly without error when this build is a cron job
-if [[ "$TRAVIS_EVENT_TYPE" == "cron" ]]; then
-    exit 0
-fi
 
 # Assert the GitHub Personal Access Token exists
 if [[ -z "$GITHUB_API_KEY" ]]; then

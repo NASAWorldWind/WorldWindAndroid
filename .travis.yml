@@ -38,7 +38,7 @@ script:
   - ./gradlew build
 
 after_script:
-  # Push the daily dag when this build is a cron job
+  # Push the daily tag when this build is a cron job
   - ./travis/add_daily_tag.sh
 
 after_success:

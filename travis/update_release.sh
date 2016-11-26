@@ -2,7 +2,7 @@
 
 # ======================================================================================================================
 # Creates or updates a GitHub release and uploads release artifacts for builds initiated by a tag. Does nothing if the
-# build is not associated with a tag, or if the build is initiated by a cron job.
+# build is not associated with a tag.
 #
 # Uses curl to performs CRUD operations on the GitHub Repos/Releases REST API.
 #
