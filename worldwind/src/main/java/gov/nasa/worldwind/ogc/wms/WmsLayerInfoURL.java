@@ -15,7 +15,7 @@ import javax.xml.namespace.QName;
 import gov.nasa.worldwind.util.xml.XmlElementModel;
 import gov.nasa.worldwind.util.xml.XmlPullParserContext;
 
-public class WmsLayerInfoURL extends XmlElementModel
+public class WmsLayerInfoUrl extends XmlElementModel
 {
     protected QName FORMAT;
     protected QName ONLINE_RESOURCE;
@@ -24,7 +24,7 @@ public class WmsLayerInfoURL extends XmlElementModel
     protected String name;
     protected String format;
 
-    public WmsLayerInfoURL(String namespaceUri)
+    public WmsLayerInfoUrl(String namespaceUri)
     {
         super(namespaceUri);
 
