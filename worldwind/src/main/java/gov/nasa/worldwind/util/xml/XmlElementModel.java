@@ -53,10 +53,14 @@ public class XmlElementModel {
                 Logger.logMessage(Logger.ERROR, "XmlElementModel", "parse", "missingContext"));
         }
 
+        XmlPullParser xpp = ctx.getParser();
+
+        if (xpp.getEventType() == XmlPullParser.START_DOCUMENT) {
+            xpp.next();
+        }
+
         this.doParseEventAttributes(ctx);
         // eliminated the symbol table and the exception call
-
-        XmlPullParser xpp = ctx.getParser();
 
         // Capture the start element name
         String startElementName = xpp.getName();
@@ -91,7 +95,7 @@ public class XmlElementModel {
         for (int i = 0; i < attributeCount; i++) {
             attributeName = xpp.getAttributeName(i);
             attributeValue = xpp.getAttributeValue(i);
-            this.fields.put(attributeName, attributeValue);
+            this.setField(attributeName, attributeValue);
         }
 
     }
@@ -101,6 +105,8 @@ public class XmlElementModel {
         String s = ctx.getParser().getText();
         if (s == null || s.isEmpty()) {
             return;
+        } else {
+            s = s.replaceAll("\n", "").trim();
         }
 
         StringBuilder sb = (StringBuilder) this.getField(CHARACTERS_CONTENT);
@@ -119,7 +125,8 @@ public class XmlElementModel {
         // Override in subclass to parse an event's sub-elements.
         if (xpp.getEventType() == XmlPullParser.START_TAG) {
 
-            XmlElementModel model = ctx.getParsableModel(new QName(xpp.getNamespace(), xpp.getName()));
+            QName qName = new QName(xpp.getNamespace(), xpp.getName());
+            XmlElementModel model = ctx.getParsableModel(qName);
 
             if (model == null) {
 
@@ -127,8 +134,7 @@ public class XmlElementModel {
 
                 model = ctx.getUnrecognizedElementModel();
 
-                QName elementName = new QName(xpp.getNamespace(), xpp.getName());
-                ctx.registerParsableModel(elementName, model);
+                ctx.registerParsableModel(qName, model);
             }
 
             if (model != null) {

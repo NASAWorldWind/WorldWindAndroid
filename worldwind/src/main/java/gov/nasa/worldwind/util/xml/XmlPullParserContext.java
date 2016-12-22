@@ -73,7 +73,7 @@ public class XmlPullParserContext {
     }
 
     public XmlElementModel getUnrecognizedElementModel() {
-        return null;
+        return new XmlElementModel();
     }
 
 }
