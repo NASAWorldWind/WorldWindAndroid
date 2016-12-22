@@ -30,22 +30,22 @@
             </ContactPosition>
             <ContactAddress>
                 <AddressType>
-                    <![CDATA[]]>
+                    <![CDATA[Business]]>
                 </AddressType>
                 <Address>
-                    <![CDATA[]]>
+                    <![CDATA[1234 Hollywood Lane]]>
                 </Address>
                 <City>
-                    <![CDATA[]]>
+                    <![CDATA[Springfield]]>
                 </City>
                 <StateOrProvince>
-                    <![CDATA[]]>
+                    <![CDATA[Unknown]]>
                 </StateOrProvince>
                 <PostCode>
-                    <![CDATA[]]>
+                    <![CDATA[90210]]>
                 </PostCode>
                 <Country>
-                    <![CDATA[]]>
+                    <![CDATA[United States of America]]>
                 </Country>
             </ContactAddress>
             <ContactVoiceTelephone>
