@@ -21,19 +21,18 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-public class XmlElementModelParseTesting {
+public class XmlElementModelParseTest {
 
     @Test
     public void testBasicModelParse() throws Exception {
 
         // Initialize the context and basic model
-        XmlPullParserContext context = new XmlPullParserContext();
+        XmlPullParserContext context = new XmlPullParserContext(null);
         Resources resources = getInstrumentation().getTargetContext().getResources();
         InputStream is = resources.openRawResource(R.raw.gov_nasa_worldwind_basic_xml);
         context.setParserInput(is);
 
-        // Just assure this thing runs with the instrumentation
-        XmlElementModel basicElementModel = new XmlElementModel();
+        XmlElementModel basicElementModel = new XmlElementModel(null);
         Object o;
         do {
             o = basicElementModel.read(context);
@@ -58,13 +57,12 @@ public class XmlElementModelParseTesting {
     public void testAdvancedModelParse() throws Exception {
 
         // Initialize the context and basic model
-        XmlPullParserContext context = new XmlPullParserContext();
+        XmlPullParserContext context = new XmlPullParserContext(null);
         Resources resources = getInstrumentation().getTargetContext().getResources();
         InputStream is = resources.openRawResource(R.raw.gov_nasa_worldwind_advanced_xml);
         context.setParserInput(is);
 
-        // Just assure this thing runs with the instrumentation
-        XmlElementModel advancedElementModel = new XmlElementModel();
+        XmlElementModel advancedElementModel = new XmlElementModel(null);
         Object o;
         do {
             o = advancedElementModel.read(context);

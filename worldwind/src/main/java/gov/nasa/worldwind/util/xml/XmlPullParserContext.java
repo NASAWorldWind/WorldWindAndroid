@@ -24,14 +24,16 @@ public class XmlPullParserContext {
      */
     public final static String UNRECOGNIZED_ELEMENT_PARSER = "gov.nasa.worldwind.util.xml.UnknownElementParser";
 
+    public final static String DEFAULT_NAMESPACE = "http://www.opengis.net/wms";
+
     protected XmlPullParser parser;
 
     protected Map<QName, XmlElementModel> parserModels = new HashMap<>();
 
-    protected String defaultNamespaceUri = "";
+    protected String defaultNamespaceUri;
 
-    public XmlPullParserContext() {
-
+    public XmlPullParserContext(String defaultNamespaceUri) {
+        this.defaultNamespaceUri = defaultNamespaceUri;
     }
 
     public void setParserInput(InputStream is) throws XmlPullParserException {
@@ -58,7 +60,13 @@ public class XmlPullParserContext {
      */
     public XmlElementModel getParsableModel(QName eventName) {
 
-        return this.parserModels.get(eventName);
+        XmlElementModel model = this.parserModels.get(eventName);
+
+        if (model != null) {
+            return model.newInstance();
+        } else {
+            return null;
+        }
 
     }
 

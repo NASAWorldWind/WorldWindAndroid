@@ -226,4 +226,10 @@ public class XmlElementModel {
         return this.fields;
     }
 
+    public XmlElementModel newInstance() {
+
+        return new XmlElementModel(this.getNamespaceUri());
+
+    }
+
 }
