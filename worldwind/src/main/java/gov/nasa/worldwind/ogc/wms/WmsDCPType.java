@@ -60,16 +60,16 @@ public class WmsDcpType extends XmlModel {
 
         XmlPullParser xpp = ctx.getParser();
 
-        if (xpp.getEventType() == XmlPullParser.START_TAG) {
-            if (xpp.getName().equals(HTTP.getLocalPart())) {
-                this.addProtocol(xpp.getName());
-            } else if (xpp.getName().equals(GET.getLocalPart()) || xpp.getName().equals(POST.getLocalPart())) {
-                this.addRequestMethod(xpp.getName());
-            } else if (xpp.getName().equals(ONLINE_RESOURCE.getLocalPart())) {
-                XmlModel model = ctx.createParsableModel(ONLINE_RESOURCE);
-                model.read(ctx);
-                if (model != null) {
-                    this.addOnlineResource((WmsOnlineResource) model);
+        if (ctx.isStartElement(this.HTTP)) {
+            this.addProtocol(xpp.getName());
+        } else if (ctx.isStartElement(this.GET) || ctx.isStartElement(this.POST)) {
+            this.addRequestMethod(xpp.getName());
+        } else if (ctx.isStartElement(this.ONLINE_RESOURCE)) {
+            XmlModel model = ctx.createParsableModel(this.ONLINE_RESOURCE);
+            if (model != null) {
+                Object o = model.read(ctx);
+                if (o != null) {
+                    this.addOnlineResource((WmsOnlineResource) o);
                 }
             }
         }

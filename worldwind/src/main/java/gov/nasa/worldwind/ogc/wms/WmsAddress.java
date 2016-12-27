@@ -55,36 +55,30 @@ public class WmsAddress extends XmlModel
 
         XmlPullParser xpp = ctx.getParser();
 
-        if (xpp.getEventType() == XmlPullParser.START_TAG) {
-
-            QName event = new QName(xpp.getNamespace(), xpp.getName());
-
-            if (event.equals(ADDRESS_TYPE)) {
-                if (xpp.next() == XmlPullParser.TEXT) {
-                    this.setAddressType(xpp.getText().trim());
-                }
-            } else if (event.equals(ADDRESS)) {
-                if (xpp.next() == XmlPullParser.TEXT) {
-                    this.setAddress(xpp.getText().trim());
-                }
-            } else if (event.equals(CITY)) {
-                if (xpp.next() == XmlPullParser.TEXT) {
-                    this.setCity(xpp.getText().trim());
-                }
-            } else if (event.equals(STATE_OR_PROVINCE)) {
-                if (xpp.next() == XmlPullParser.TEXT) {
-                    this.setStateOrProvince(xpp.getText().trim());
-                }
-            } else if (event.equals(POST_CODE)) {
-                if (xpp.next() == XmlPullParser.TEXT) {
-                    this.setPostCode(xpp.getText().trim());
-                }
-            } else if (event.equals(COUNTRY)) {
-                if (xpp.next() == XmlPullParser.TEXT) {
-                    this.setCountry(xpp.getText().trim());
-                }
+        if (ctx.isStartElement(this.ADDRESS_TYPE)) {
+            if (xpp.next() == XmlPullParser.TEXT) {
+                this.setAddressType(xpp.getText().trim());
             }
-
+        } else if (ctx.isStartElement(this.ADDRESS)) {
+            if (xpp.next() == XmlPullParser.TEXT) {
+                this.setAddress(xpp.getText().trim());
+            }
+        } else if (ctx.isStartElement(this.CITY)) {
+            if (xpp.next() == XmlPullParser.TEXT) {
+                this.setCity(xpp.getText().trim());
+            }
+        } else if (ctx.isStartElement(this.STATE_OR_PROVINCE)) {
+            if (xpp.next() == XmlPullParser.TEXT) {
+                this.setStateOrProvince(xpp.getText().trim());
+            }
+        } else if (ctx.isStartElement(this.POST_CODE)) {
+            if (xpp.next() == XmlPullParser.TEXT) {
+                this.setPostCode(xpp.getText().trim());
+            }
+        } else if (ctx.isStartElement(this.COUNTRY)) {
+            if (xpp.next() == XmlPullParser.TEXT) {
+                this.setCountry(xpp.getText().trim());
+            }
         }
     }
 
