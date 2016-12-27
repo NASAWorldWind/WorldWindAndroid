@@ -20,6 +20,7 @@ import javax.xml.namespace.QName;
 import gov.nasa.worldwind.ogc.wms.WmsAddress;
 import gov.nasa.worldwind.ogc.wms.WmsAuthorityUrl;
 import gov.nasa.worldwind.ogc.wms.WmsBoundingBox;
+import gov.nasa.worldwind.ogc.wms.WmsDcpType;
 import gov.nasa.worldwind.ogc.wms.WmsLayerInfoUrl;
 import gov.nasa.worldwind.ogc.wms.WmsOnlineResource;
 
@@ -62,6 +63,8 @@ public class XmlPullParserContext {
             new QName(this.defaultNamespaceUri, "AuthorityUrl"), new WmsAuthorityUrl(this.defaultNamespaceUri));
         this.registerParsableModel(
             new QName(this.defaultNamespaceUri, "BoundingBox"), new WmsBoundingBox(this.defaultNamespaceUri));
+        this.registerParsableModel(
+            new QName(this.defaultNamespaceUri, "DCPType"), new WmsDcpType(this.defaultNamespaceUri));
         // TODO check wms schema for element name
         this.registerParsableModel(
             new QName(this.defaultNamespaceUri, "LayerInfo"), new WmsLayerInfoUrl(this.defaultNamespaceUri));
