@@ -12,10 +12,10 @@ import java.io.IOException;
 
 import javax.xml.namespace.QName;
 
-import gov.nasa.worldwind.util.xml.XmlElementModel;
+import gov.nasa.worldwind.util.xml.XmlModel;
 import gov.nasa.worldwind.util.xml.XmlPullParserContext;
 
-public class WmsAddress extends XmlElementModel
+public class WmsAddress extends XmlModel
 {
     protected QName ADDRESS_TYPE;
     protected QName ADDRESS;
@@ -146,11 +146,6 @@ public class WmsAddress extends XmlElementModel
     protected void setCountry(String country)
     {
         this.country = country;
-    }
-
-    @Override
-    public XmlElementModel newInstance() {
-        return new WmsAddress(this.getNamespaceUri());
     }
 
     @Override

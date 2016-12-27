@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-public class XmlElementModelParseTest {
+public class XmlModelParseTest {
 
     @Test
     public void testBasicModelParse() throws Exception {
@@ -32,7 +32,7 @@ public class XmlElementModelParseTest {
         InputStream is = resources.openRawResource(R.raw.gov_nasa_worldwind_basic_xml);
         context.setParserInput(is);
 
-        XmlElementModel basicElementModel = new XmlElementModel(null);
+        XmlModel basicElementModel = new XmlModel(null);
         Object o;
         do {
             o = basicElementModel.read(context);
@@ -40,17 +40,17 @@ public class XmlElementModelParseTest {
 
         assertEquals("fields captured", 5, basicElementModel.getFields().size());
         assertEquals("to field captured", "Tove",
-            ((XmlElementModel) basicElementModel.getFields().get("to"))
-                .getField(XmlElementModel.CHARACTERS_CONTENT).toString());
+            ((XmlModel) basicElementModel.getFields().get("to"))
+                .getField(XmlModel.CHARACTERS_CONTENT).toString());
         assertEquals("from field captured", "Jani",
-            ((XmlElementModel) basicElementModel.getFields().get("from"))
-                .getField(XmlElementModel.CHARACTERS_CONTENT).toString());
+            ((XmlModel) basicElementModel.getFields().get("from"))
+                .getField(XmlModel.CHARACTERS_CONTENT).toString());
         assertEquals("heading field captured", "Reminder",
-            ((XmlElementModel) basicElementModel.getFields().get("heading"))
-                .getField(XmlElementModel.CHARACTERS_CONTENT).toString());
+            ((XmlModel) basicElementModel.getFields().get("heading"))
+                .getField(XmlModel.CHARACTERS_CONTENT).toString());
         assertEquals("body field captured", "Don't forget me this weekend!",
-            ((XmlElementModel) basicElementModel.getFields().get("body"))
-                .getField(XmlElementModel.CHARACTERS_CONTENT).toString());
+            ((XmlModel) basicElementModel.getFields().get("body"))
+                .getField(XmlModel.CHARACTERS_CONTENT).toString());
     }
 
     @Test
@@ -62,7 +62,7 @@ public class XmlElementModelParseTest {
         InputStream is = resources.openRawResource(R.raw.gov_nasa_worldwind_advanced_xml);
         context.setParserInput(is);
 
-        XmlElementModel advancedElementModel = new XmlElementModel(null);
+        XmlModel advancedElementModel = new XmlModel(null);
         Object o;
         do {
             o = advancedElementModel.read(context);
@@ -71,17 +71,17 @@ public class XmlElementModelParseTest {
         assertEquals("fields captured", 5, advancedElementModel.getFields().size());
         assertEquals("root element attributes", "nice", advancedElementModel.getField("style").toString());
         assertEquals("root element attributes", "the web", advancedElementModel.getField("source").toString());
-        XmlElementModel schoolModel = (XmlElementModel) advancedElementModel.getField("MySchool");
+        XmlModel schoolModel = (XmlModel) advancedElementModel.getField("MySchool");
         assertEquals("school element attributes", "undergraduate", schoolModel.getField("level").toString());
-        XmlElementModel schoolIdentityModel = (XmlElementModel) schoolModel.getField("Identity");
+        XmlModel schoolIdentityModel = (XmlModel) schoolModel.getField("Identity");
         assertEquals("school identity elements", "Colorado State University",
-            ((XmlElementModel) schoolIdentityModel.getField("Name")).getField(XmlElementModel.CHARACTERS_CONTENT).toString());
+            ((XmlModel) schoolIdentityModel.getField("Name")).getField(XmlModel.CHARACTERS_CONTENT).toString());
         assertEquals("school identity elements", "1870",
-            ((XmlElementModel) schoolIdentityModel.getField("Established")).getField(XmlElementModel.CHARACTERS_CONTENT).toString());
+            ((XmlModel) schoolIdentityModel.getField("Established")).getField(XmlModel.CHARACTERS_CONTENT).toString());
         assertEquals("school identity elements", "combined",
-            ((XmlElementModel) schoolIdentityModel.getField("StudentBody")).getField("population").toString());
+            ((XmlModel) schoolIdentityModel.getField("StudentBody")).getField("population").toString());
         assertEquals("school identity elements", "33468",
-            ((XmlElementModel) schoolIdentityModel.getField("StudentBody")).getField("size").toString());
+            ((XmlModel) schoolIdentityModel.getField("StudentBody")).getField("size").toString());
         // TODO additional tests of the other elements
     }
 

@@ -12,10 +12,10 @@ import java.io.IOException;
 
 import javax.xml.namespace.QName;
 
-import gov.nasa.worldwind.util.xml.XmlElementModel;
+import gov.nasa.worldwind.util.xml.XmlModel;
 import gov.nasa.worldwind.util.xml.XmlPullParserContext;
 
-public class WmsLayerInfoUrl extends XmlElementModel
+public class WmsLayerInfoUrl extends XmlModel
 {
     protected QName FORMAT;
     protected QName ONLINE_RESOURCE;
@@ -53,7 +53,7 @@ public class WmsLayerInfoUrl extends XmlElementModel
                     this.setFormat(xpp.getText().trim());
                 }
             } else if (event.equals(ONLINE_RESOURCE)) {
-                XmlElementModel elementModel = ctx.getParsableModel(ONLINE_RESOURCE);
+                XmlModel elementModel = ctx.createParsableModel(ONLINE_RESOURCE);
                 Object o = elementModel.read(ctx);
                 if (o != null && o instanceof WmsOnlineResource) {
                     this.setOnlineResource((WmsOnlineResource) o);

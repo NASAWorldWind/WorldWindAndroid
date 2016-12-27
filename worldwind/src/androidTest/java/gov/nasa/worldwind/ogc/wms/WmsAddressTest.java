@@ -19,7 +19,7 @@ import java.io.InputStream;
 import javax.xml.namespace.QName;
 
 import gov.nasa.worldwind.R;
-import gov.nasa.worldwind.util.xml.XmlElementModel;
+import gov.nasa.worldwind.util.xml.XmlModel;
 import gov.nasa.worldwind.util.xml.XmlPullParserContext;
 
 import static android.support.test.InstrumentationRegistry.getInstrumentation;
@@ -41,12 +41,12 @@ public class WmsAddressTest {
             new QName(XmlPullParserContext.DEFAULT_NAMESPACE, "ContactAddress"),
             new WmsAddress(XmlPullParserContext.DEFAULT_NAMESPACE));
 
-        XmlElementModel elementModel = new XmlElementModel(XmlPullParserContext.DEFAULT_NAMESPACE);
+        XmlModel elementModel = new XmlModel(XmlPullParserContext.DEFAULT_NAMESPACE);
         Object o;
         do {
             o = elementModel.read(context);
         } while (o != null);
-        WmsAddress wmsAddress = (WmsAddress) ((XmlElementModel) ((XmlElementModel) elementModel.getField("Service"))
+        WmsAddress wmsAddress = (WmsAddress) ((XmlModel) ((XmlModel) elementModel.getField("Service"))
             .getField("ContactInformation")).getField("ContactAddress");
 
         assertEquals("test address type", "Business", wmsAddress.getAddressType());

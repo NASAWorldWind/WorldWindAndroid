@@ -9,10 +9,10 @@ import org.xmlpull.v1.XmlPullParser;
 
 import javax.xml.namespace.QName;
 
-import gov.nasa.worldwind.util.xml.XmlElementModel;
+import gov.nasa.worldwind.util.xml.XmlModel;
 import gov.nasa.worldwind.util.xml.XmlPullParserContext;
 
-public class WmsOnlineResource extends XmlElementModel
+public class WmsOnlineResource extends XmlModel
 {
 
     /**
@@ -70,13 +70,6 @@ public class WmsOnlineResource extends XmlElementModel
     protected void setHref(String href)
     {
         this.href = href;
-    }
-
-    @Override
-    public XmlElementModel newInstance() {
-
-        return new WmsOnlineResource(this.getNamespaceUri());
-
     }
 
     @Override

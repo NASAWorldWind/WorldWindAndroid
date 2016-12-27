@@ -20,7 +20,7 @@ import gov.nasa.worldwind.util.Logger;
  * Created by zach on 12/20/16.
  */
 
-public class XmlElementModel {
+public class XmlModel {
 
     protected static final String CHARACTERS_CONTENT = "CharactersContent";
 
@@ -28,13 +28,13 @@ public class XmlElementModel {
 
     protected Map<String, Object> fields;
 
-    protected XmlElementModel parent;
+    protected XmlModel parent;
 
-    public XmlElementModel() {
+    public XmlModel() {
         this.namespaceUri = null;
     }
 
-    public XmlElementModel(String namespaceUri) {
+    public XmlModel(String namespaceUri) {
         this.namespaceUri = namespaceUri;
     }
 
@@ -50,7 +50,7 @@ public class XmlElementModel {
 
         if (ctx == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "XmlElementModel", "parse", "missingContext"));
+                Logger.logMessage(Logger.ERROR, "XmlModel", "parse", "missingContext"));
         }
 
         XmlPullParser xpp = ctx.getParser();
@@ -84,7 +84,7 @@ public class XmlElementModel {
         return null;
     }
 
-    protected void doParseEventAttributes(XmlPullParserContext ctx) {
+    protected void doParseEventAttributes(XmlPullParserContext ctx) throws XmlPullParserException, IOException {
 
         XmlPullParser xpp = ctx.getParser();
 
@@ -126,7 +126,7 @@ public class XmlElementModel {
         if (xpp.getEventType() == XmlPullParser.START_TAG) {
 
             QName qName = new QName(xpp.getNamespace(), xpp.getName());
-            XmlElementModel model = ctx.getParsableModel(qName);
+            XmlModel model = ctx.createParsableModel(qName);
 
             if (model == null) {
 
@@ -158,11 +158,11 @@ public class XmlElementModel {
 
     }
 
-    public void setParent(XmlElementModel parent) {
+    public void setParent(XmlModel parent) {
         this.parent = parent;
     }
 
-    public XmlElementModel getParent() {
+    public XmlModel getParent() {
         return this.parent;
     }
 
@@ -224,12 +224,6 @@ public class XmlElementModel {
     public Map<String, Object> getFields()
     {
         return this.fields;
-    }
-
-    public XmlElementModel newInstance() {
-
-        return new XmlElementModel(this.getNamespaceUri());
-
     }
 
 }

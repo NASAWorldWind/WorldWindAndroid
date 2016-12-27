@@ -11,6 +11,7 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +29,7 @@ public class XmlPullParserContext {
 
     protected XmlPullParser parser;
 
-    protected Map<QName, XmlElementModel> parserModels = new HashMap<>();
+    protected Map<QName, XmlModel> parserModels = new HashMap<>();
 
     protected String defaultNamespaceUri;
 
@@ -58,30 +59,39 @@ public class XmlPullParserContext {
      *
      * @return the new parser, or null if no parser has been registered for the specified element name.
      */
-    public XmlElementModel getParsableModel(QName eventName) {
+    public XmlModel createParsableModel(QName eventName) {
 
-        XmlElementModel model = this.parserModels.get(eventName);
+        XmlModel model = this.parserModels.get(eventName);
 
-        if (model != null) {
-            return model.newInstance();
-        } else {
-            return null;
+        // If no model is specified use the default class and the provided QName namespace
+        if (model == null) {
+            return new XmlModel(eventName.getNamespaceURI());
         }
 
+        try {
+            // create a duplicate instance using reflective utilities
+            Constructor ctor = model.getClass().getDeclaredConstructor(String.class);
+            //ctor.setAccessible(true);
+            return (XmlModel) ctor.newInstance(eventName.getNamespaceURI());
+        } catch (Exception e) {
+            // TODO log error
+        }
+
+        return null;
     }
 
     /**
      * Registers a parser for a specified element name. A parser of the same type and namespace is returned when is
      * called for the same element name.
      */
-    public void registerParsableModel(QName elementName, XmlElementModel parsableModel) {
+    public void registerParsableModel(QName elementName, XmlModel parsableModel) {
 
         this.parserModels.put(elementName, parsableModel);
 
     }
 
-    public XmlElementModel getUnrecognizedElementModel() {
-        return new XmlElementModel();
+    public XmlModel getUnrecognizedElementModel() {
+        return new XmlModel();
     }
 
 }
