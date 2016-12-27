@@ -16,10 +16,6 @@ import javax.xml.namespace.QName;
 
 import gov.nasa.worldwind.util.Logger;
 
-/**
- * Created by zach on 12/20/16.
- */
-
 public class XmlModel {
 
     protected static final String CHARACTERS_CONTENT = "CharactersContent";
