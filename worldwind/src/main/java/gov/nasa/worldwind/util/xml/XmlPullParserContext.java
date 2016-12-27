@@ -17,6 +17,12 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+import gov.nasa.worldwind.ogc.wms.WmsAddress;
+import gov.nasa.worldwind.ogc.wms.WmsAuthorityUrl;
+import gov.nasa.worldwind.ogc.wms.WmsBoundingBox;
+import gov.nasa.worldwind.ogc.wms.WmsLayerInfoUrl;
+import gov.nasa.worldwind.ogc.wms.WmsOnlineResource;
+
 public class XmlPullParserContext {
 
     /**
@@ -34,13 +40,33 @@ public class XmlPullParserContext {
     protected String defaultNamespaceUri;
 
     public XmlPullParserContext(String defaultNamespaceUri) {
+
         this.defaultNamespaceUri = defaultNamespaceUri;
+
+        this.initializeParsers();
     }
 
     public void setParserInput(InputStream is) throws XmlPullParserException {
 
         this.parser = Xml.newPullParser();
         this.parser.setInput(is, null);
+    }
+
+    protected void initializeParsers() {
+
+        // Wms Element Registration
+        this.registerParsableModel(
+            new QName(this.defaultNamespaceUri, "ContactAddress"), new WmsAddress(this.defaultNamespaceUri));
+        // TODO check wms schema for element name
+        this.registerParsableModel(
+            new QName(this.defaultNamespaceUri, "AuthorityUrl"), new WmsAuthorityUrl(this.defaultNamespaceUri));
+        this.registerParsableModel(
+            new QName(this.defaultNamespaceUri, "BoundingBox"), new WmsBoundingBox(this.defaultNamespaceUri));
+        // TODO check wms schema for element name
+        this.registerParsableModel(
+            new QName(this.defaultNamespaceUri, "LayerInfo"), new WmsLayerInfoUrl(this.defaultNamespaceUri));
+        this.registerParsableModel(
+            new QName(this.defaultNamespaceUri, "OnlineResource"), new WmsOnlineResource(this.defaultNamespaceUri));
 
     }
 

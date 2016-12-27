@@ -16,8 +16,6 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.xml.namespace.QName;
-
 import gov.nasa.worldwind.R;
 import gov.nasa.worldwind.util.xml.XmlModel;
 import gov.nasa.worldwind.util.xml.XmlPullParserContext;
@@ -39,12 +37,9 @@ public class WmsBoundingBoxTest {
         Resources resources = getInstrumentation().getTargetContext().getResources();
         InputStream is = resources.openRawResource(R.raw.gov_nasa_worldwind_sample_wms_xml);
         context.setParserInput(is);
-        context.registerParsableModel(
-            new QName(XmlPullParserContext.DEFAULT_NAMESPACE, "BoundingBox"),
-            new WmsBoundingBox(XmlPullParserContext.DEFAULT_NAMESPACE));
-
         XmlModel elementModel = new XmlModel(XmlPullParserContext.DEFAULT_NAMESPACE);
         Object o;
+
         do {
             o = elementModel.read(context);
         } while (o != null);
