@@ -70,9 +70,9 @@ public class XmlPullParserContext {
 
         try {
             // create a duplicate instance using reflective utilities
-            Constructor ctor = model.getClass().getDeclaredConstructor(String.class);
+            Constructor<? extends XmlModel> ctor = model.getClass().getDeclaredConstructor(String.class);
             //ctor.setAccessible(true);
-            return (XmlModel) ctor.newInstance(eventName.getNamespaceURI());
+            return ctor.newInstance(eventName.getNamespaceURI());
         } catch (Exception e) {
             // TODO log error
         }
