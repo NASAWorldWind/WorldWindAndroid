@@ -10,6 +10,7 @@ import android.util.Xml;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
@@ -21,7 +22,9 @@ import gov.nasa.worldwind.ogc.wms.WmsAddress;
 import gov.nasa.worldwind.ogc.wms.WmsAuthorityUrl;
 import gov.nasa.worldwind.ogc.wms.WmsBoundingBox;
 import gov.nasa.worldwind.ogc.wms.WmsDcpType;
+import gov.nasa.worldwind.ogc.wms.WmsLayerAttribution;
 import gov.nasa.worldwind.ogc.wms.WmsLayerInfoUrl;
+import gov.nasa.worldwind.ogc.wms.WmsLogoUrl;
 import gov.nasa.worldwind.ogc.wms.WmsOnlineResource;
 
 public class XmlPullParserContext {
@@ -70,6 +73,10 @@ public class XmlPullParserContext {
             new QName(this.defaultNamespaceUri, "LayerInfo"), new WmsLayerInfoUrl(this.defaultNamespaceUri));
         this.registerParsableModel(
             new QName(this.defaultNamespaceUri, "OnlineResource"), new WmsOnlineResource(this.defaultNamespaceUri));
+        this.registerParsableModel(
+            new QName(this.defaultNamespaceUri, "LogoURL"), new WmsLogoUrl(this.defaultNamespaceUri));
+        this.registerParsableModel(
+            new QName(this.defaultNamespaceUri, "Attribution"), new WmsLayerAttribution(this.defaultNamespaceUri));
 
     }
 
@@ -121,6 +128,13 @@ public class XmlPullParserContext {
 
     public XmlModel getUnrecognizedElementModel() {
         return new XmlModel();
+    }
+
+    public boolean isStartElement(QName event) throws XmlPullParserException, IOException {
+        return (this.getParser().getEventType() == XmlPullParser.START_TAG
+            && this.getParser().getName() != null
+            && this.getParser().getName().equals(event.getLocalPart())
+            && this.getParser().getNamespace().equals(event.getNamespaceURI()));
     }
 
 }
