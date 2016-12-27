@@ -79,7 +79,7 @@ public class WmsBoundingBox extends XmlModel {
 
         String referenceSystem = xpp.getAttributeValue(CRS.getNamespaceURI(), CRS.getLocalPart());
         if (referenceSystem == null) {
-            referenceSystem = xpp.getAttributeValue(CRS.getNamespaceURI(), CRS.getLocalPart());
+            referenceSystem = xpp.getAttributeValue(SRS.getNamespaceURI(), SRS.getLocalPart());
         }
 
         if (referenceSystem != null && !referenceSystem.isEmpty()) {
