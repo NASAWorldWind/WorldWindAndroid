@@ -5,31 +5,24 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.IOException;
-
 import javax.xml.namespace.QName;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
-import gov.nasa.worldwind.util.xml.XmlPullParserContext;
 
 public class WmsAddress extends XmlModel
 {
-    protected QName ADDRESS_TYPE;
-    protected QName ADDRESS;
-    protected QName CITY;
-    protected QName STATE_OR_PROVINCE;
-    protected QName POST_CODE;
-    protected QName COUNTRY;
 
-    protected String addressType;
-    protected String address;
-    protected String city;
-    protected String stateOrProvince;
-    protected String postCode;
-    protected String country;
+    protected QName addressType;
+
+    protected QName address;
+
+    protected QName city;
+
+    protected QName stateOrProvince;
+
+    protected QName postCode;
+
+    protected QName country;
 
     public WmsAddress(String namespaceURI)
     {
@@ -40,106 +33,72 @@ public class WmsAddress extends XmlModel
 
     protected void initialize()
     {
-        ADDRESS_TYPE = new QName(this.getNamespaceUri(), "AddressType");
-        ADDRESS = new QName(this.getNamespaceUri(), "Address");
-        CITY = new QName(this.getNamespaceUri(), "City");
-        STATE_OR_PROVINCE = new QName(this.getNamespaceUri(), "StateOrProvince");
-        POST_CODE = new QName(this.getNamespaceUri(), "PostCode");
-        COUNTRY = new QName(this.getNamespaceUri(), "Country");
-    }
-
-    @Override
-    protected void doParseEventContent(XmlPullParserContext ctx)
-        throws XmlPullParserException, IOException
-    {
-
-        XmlPullParser xpp = ctx.getParser();
-
-        if (ctx.isStartElement(this.ADDRESS_TYPE)) {
-            if (xpp.next() == XmlPullParser.TEXT) {
-                this.setAddressType(xpp.getText().trim());
-            }
-        } else if (ctx.isStartElement(this.ADDRESS)) {
-            if (xpp.next() == XmlPullParser.TEXT) {
-                this.setAddress(xpp.getText().trim());
-            }
-        } else if (ctx.isStartElement(this.CITY)) {
-            if (xpp.next() == XmlPullParser.TEXT) {
-                this.setCity(xpp.getText().trim());
-            }
-        } else if (ctx.isStartElement(this.STATE_OR_PROVINCE)) {
-            if (xpp.next() == XmlPullParser.TEXT) {
-                this.setStateOrProvince(xpp.getText().trim());
-            }
-        } else if (ctx.isStartElement(this.POST_CODE)) {
-            if (xpp.next() == XmlPullParser.TEXT) {
-                this.setPostCode(xpp.getText().trim());
-            }
-        } else if (ctx.isStartElement(this.COUNTRY)) {
-            if (xpp.next() == XmlPullParser.TEXT) {
-                this.setCountry(xpp.getText().trim());
-            }
-        }
+        this.addressType = new QName(this.getNamespaceUri(), "AddressType");
+        this.address = new QName(this.getNamespaceUri(), "Address");
+        this.city = new QName(this.getNamespaceUri(), "City");
+        this.stateOrProvince = new QName(this.getNamespaceUri(), "StateOrProvince");
+        this.postCode = new QName(this.getNamespaceUri(), "PostCode");
+        this.country = new QName(this.getNamespaceUri(), "Country");
     }
 
     public String getAddressType()
     {
-        return addressType;
+        return this.getChildCharacterValue(this.addressType);
     }
 
     protected void setAddressType(String addressType)
     {
-        this.addressType = addressType;
+        this.setChildCharacterValue(this.addressType, addressType);
     }
 
     public String getAddress()
     {
-        return address;
+        return this.getChildCharacterValue(this.address);
     }
 
     protected void setAddress(String address)
     {
-        this.address = address;
+        this.setChildCharacterValue(this.address, address);
     }
 
     public String getCity()
     {
-        return city;
+        return this.getChildCharacterValue(this.city);
     }
 
     protected void setCity(String city)
     {
-        this.city = city;
+        this.setChildCharacterValue(this.city, city);
     }
 
     public String getStateOrProvince()
     {
-        return stateOrProvince;
+        return this.getChildCharacterValue(this.stateOrProvince);
     }
 
     protected void setStateOrProvince(String stateOrProvince)
     {
-        this.stateOrProvince = stateOrProvince;
+        this.setChildCharacterValue(this.stateOrProvince, stateOrProvince);
     }
 
     public String getPostCode()
     {
-        return postCode;
+        return this.getChildCharacterValue(this.postCode);
     }
 
     protected void setPostCode(String postCode)
     {
-        this.postCode = postCode;
+        this.setChildCharacterValue(this.postCode, postCode);
     }
 
     public String getCountry()
     {
-        return country;
+        return this.getChildCharacterValue(this.country);
     }
 
     protected void setCountry(String country)
     {
-        this.country = country;
+        this.setChildCharacterValue(this.country, country);
     }
 
     @Override
@@ -147,12 +106,12 @@ public class WmsAddress extends XmlModel
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("AddressType: ").append(this.addressType != null ? this.addressType : "none").append(" ");
-        sb.append("Address: ").append(this.address != null ? this.address : "none").append(" ");
-        sb.append("City: ").append(this.city != null ? this.city : "none").append(" ");
-        sb.append("StateOrProvince: ").append(this.stateOrProvince != null ? this.stateOrProvince : "none").append(" ");
-        sb.append("PostCode: ").append(this.postCode != null ? this.postCode : "none").append(" ");
-        sb.append("Country: ").append(this.country != null ? this.country : "none");
+        sb.append("AddressType: ").append(this.getAddressType() != null ? this.getAddressType() : "none").append(" ");
+        sb.append("Address: ").append(this.getAddress() != null ? this.getAddress() : "none").append(" ");
+        sb.append("City: ").append(this.getCity() != null ? this.getCity() : "none").append(" ");
+        sb.append("StateOrProvince: ").append(this.getStateOrProvince() != null ? this.getStateOrProvince() : "none").append(" ");
+        sb.append("PostCode: ").append(this.getPostCode() != null ? this.getPostCode() : "none").append(" ");
+        sb.append("Country: ").append(this.getCountry() != null ? this.getCountry() : "none");
 
         return sb.toString();
     }

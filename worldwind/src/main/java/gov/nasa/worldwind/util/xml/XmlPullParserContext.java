@@ -77,6 +77,12 @@ public class XmlPullParserContext {
             new QName(this.defaultNamespaceUri, "LogoURL"), new WmsLogoUrl(this.defaultNamespaceUri));
         this.registerParsableModel(
             new QName(this.defaultNamespaceUri, "Attribution"), new WmsLayerAttribution(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "AddressType"), new XmlModel());
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "Address"), new XmlModel());
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "City"), new XmlModel());
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "StateOrProvince"), new XmlModel());
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "PostCode"), new XmlModel());
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "Country"), new XmlModel());
 
     }
 
