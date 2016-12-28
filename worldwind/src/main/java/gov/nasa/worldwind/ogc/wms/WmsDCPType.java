@@ -35,8 +35,6 @@ public class WmsDcpType extends XmlModel {
             this.protocol = protocol;
         }
     }
-//
-//    protected List<DcpInfo> protocols = new ArrayList<DcpInfo>(1);
 
     public WmsDcpType(String namespaceURI) {
         super(namespaceURI);
@@ -50,28 +48,6 @@ public class WmsDcpType extends XmlModel {
         this.http = new QName(this.getNamespaceUri(), "HTTP");
         this.onlineResource = new QName(this.getNamespaceUri(), "OnlineResource");
     }
-
-//    @Override
-//    protected void doParseEventContent(XmlPullParserContext ctx) throws XmlPullParserException, IOException {
-//
-//        XmlPullParser xpp = ctx.getParser();
-//
-//        if (ctx.isStartElement(this.http)) {
-//            this.addProtocol(xpp.getName());
-//        } else if (ctx.isStartElement(this.get) || ctx.isStartElement(this.post)) {
-//            this.addRequestMethod(xpp.getName());
-//        } else if (ctx.isStartElement(this.on)) {
-//            XmlModel model = ctx.createParsableModel(this.on);
-//            if (model != null) {
-//                Object o = model.read(ctx);
-//                if (o != null) {
-//                    this.addOnlineResource((WmsOnlineResource) o);
-//                }
-//            }
-//        } else {
-//            super.doParseEventContent(ctx);
-//        }
-//    }
 
     public List<DcpInfo> getDcpInfos() {
 
