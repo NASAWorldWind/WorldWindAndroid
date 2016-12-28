@@ -20,11 +20,9 @@ public class WmsOnlineResource extends XmlModel
      */
     public static final String DEFAULT_NAMESPACE = "http://www.w3.org/1999/xlink";
 
-    protected QName HREF;
-    protected QName TYPE;
+    protected static QName href = new QName(DEFAULT_NAMESPACE, "href");
 
-    protected String type;
-    protected String href;
+    protected static QName type = new QName(DEFAULT_NAMESPACE, "type");
 
     public WmsOnlineResource() {
         super(XmlPullParserContext.DEFAULT_NAMESPACE);
@@ -33,14 +31,6 @@ public class WmsOnlineResource extends XmlModel
     public WmsOnlineResource(String namespaceURI)
     {
         super(namespaceURI == null ? XmlPullParserContext.DEFAULT_NAMESPACE : namespaceURI);
-
-        this.initialize();
-    }
-
-    private void initialize()
-    {
-        HREF = new QName(DEFAULT_NAMESPACE, "href");
-        TYPE = new QName(DEFAULT_NAMESPACE, "type");
     }
 
     @Override
@@ -48,28 +38,28 @@ public class WmsOnlineResource extends XmlModel
     {
         XmlPullParser xpp = ctx.getParser();
 
-        this.setType(xpp.getAttributeValue(TYPE.getNamespaceURI(), "type"));
-        this.setHref(xpp.getAttributeValue(HREF.getNamespaceURI(), "href"));
+        this.setType(xpp.getAttributeValue(this.type.getNamespaceURI(), "type"));
+        this.setHref(xpp.getAttributeValue(this.href.getNamespaceURI(), "href"));
     }
 
     public String getType()
     {
-        return type;
+        return (String) this.getField(this.type);
     }
 
     protected void setType(String type)
     {
-        this.type = type;
+        this.setField(this.type, type);
     }
 
     public String getHref()
     {
-        return href;
+        return (String) this.getField(this.href);
     }
 
     protected void setHref(String href)
     {
-        this.href = href;
+        this.setField(this.href, href);
     }
 
     @Override
@@ -77,8 +67,8 @@ public class WmsOnlineResource extends XmlModel
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("href: ").append(this.href != null ? this.href : "null");
-        sb.append(", type: ").append(this.type != null ? this.type : "null");
+        sb.append("href: ").append(this.getHref() != null ? this.getHref() : "null");
+        sb.append(", type: ").append(this.getType() != null ? this.getType() : "null");
 
         return sb.toString();
     }
