@@ -46,7 +46,7 @@ public class WmsTileFactory implements TileFactory {
     protected String coordinateSystem = "EPSG:4326";
 
     /**
-     * The image MIME format to use in Get Map URLs. May be null in which case a default format is assumed.
+     * The image content type to use in Get Map URLs. May be null in which case a default format is assumed.
      */
     protected String imageFormat;
 
@@ -258,18 +258,18 @@ public class WmsTileFactory implements TileFactory {
     }
 
     /**
-     * Indicates the image MIME format to use in Get Map URLs, or null in which case the default format is assumed.
+     * Indicates the image content type to use in Get Map URLs, or null in which case the default format is assumed.
      *
-     * @return the image MIME format
+     * @return the image content type
      */
     public String getImageFormat() {
         return imageFormat;
     }
 
     /**
-     * Sets the image MIME format to use in Get Map URLs. May be null in which case the default format is assumed.
+     * Sets the image content type to use in Get Map URLs. May be null in which case the default format is assumed.
      *
-     * @param imageFormat the image MIME format to use
+     * @param imageFormat the image content type to use
      */
     public void setImageFormat(String imageFormat) {
         this.imageFormat = imageFormat;
@@ -335,6 +335,11 @@ public class WmsTileFactory implements TileFactory {
         if (sector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "WmsTileFactory", "urlForTile", "missingSector"));
+        }
+
+        if (width < 1 || height < 1) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "urlForTile", "invalidWidthOrHeight"));
         }
 
         StringBuilder url = new StringBuilder(this.serviceAddress);

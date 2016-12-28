@@ -16,10 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.util.Level;
-import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.Logger;
-import gov.nasa.worldwind.util.Tile;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -43,8 +40,6 @@ public class WmsTileFactoryTest {
 
     public static final String COMMON_LAYER_NAMES = "BlueMarble-200405,esat";
 
-    public static final String COMMON_IMAGE_FORMAT = "image/png";
-
     public static final String SYSTEM_CRS84 = "CRS:84";
 
     public static final String SYSTEM_EPSG4326 = "EPSG:4326";
@@ -62,9 +57,9 @@ public class WmsTileFactoryTest {
 
     private static final double NOTIONAL_MAX_LON = -90.0;
 
-    private static final int NOTIONAL_ROW = 3;
+    private static final int NOTIONAL_WIDTH = 10;
 
-    private static final int NOTIONAL_COLUMN = 2;
+    private static final int NOTIONAL_HEIGHT = 11;
 
     private static final String NOTIONAL_WMS_VERSION = "1.23";
 
@@ -112,8 +107,8 @@ public class WmsTileFactoryTest {
     }
 
     /**
-     * Tests the {@link WmsTileFactory} constructor that takes the different service parameters. Checks that
-     * parameters which are not intended to be null throw {@link IllegalArgumentException}.
+     * Tests the {@link WmsTileFactory} constructor that takes the different service parameters. Checks that parameters
+     * which are not intended to be null throw {@link IllegalArgumentException}.
      */
     @Test
     public void testConstructor_ServiceParameters() {
@@ -153,8 +148,8 @@ public class WmsTileFactoryTest {
     }
 
     /**
-     * Tests the {@link WmsTileFactory} constructor which takes a single non-null {@link WmsLayerConfig} object.
-     * Checks that a null {@link WmsLayerConfig} will throw an {@link IllegalArgumentException}.
+     * Tests the {@link WmsTileFactory} constructor which takes a single non-null {@link WmsLayerConfig} object. Checks
+     * that a null {@link WmsLayerConfig} will throw an {@link IllegalArgumentException}.
      */
     @Test
     public void testConstructor_Config() {
@@ -168,7 +163,7 @@ public class WmsTileFactoryTest {
 
         // The config constructor incorporates the same pattern as the service parameters constructor
         // Test all null checks conducted by the config constructor
-        WmsLayerConfig layerConfig = new WmsLayerConfig(null, null, null, null, null, false, null);
+        WmsLayerConfig layerConfig = new WmsLayerConfig(null, null, null, null, null, null, false, null);
         try {
             WmsTileFactory wmsFactory = new WmsTileFactory(layerConfig);
             fail("Missing the serviceAddress, should not return");
@@ -211,6 +206,7 @@ public class WmsTileFactoryTest {
         assertEquals("layer name match", layerConfig.layerNames, wmsFactory.layerNames);
         assertEquals("coordinate system match", layerConfig.coordinateSystem, wmsFactory.coordinateSystem);
         assertNull("null style names", wmsFactory.styleNames);
+        assertNull("null image format", wmsFactory.imageFormat);
     }
 
     /**
@@ -359,8 +355,8 @@ public class WmsTileFactoryTest {
     }
 
     /**
-     * Test the {@code getStyleNames} method. A default instantiation of a {@link WmsTileFactory} will null style
-     * names and this setting is tested in this test.
+     * Test the {@code getStyleNames} method. A default instantiation of a {@link WmsTileFactory} will null style names
+     * and this setting is tested in this test.
      */
     @Test
     public void testGetStyleNames_Null() {
@@ -374,8 +370,8 @@ public class WmsTileFactoryTest {
     }
 
     /**
-     * Test the {@code getStyleNames} method. A default instantiation of a {@link WmsTileFactory} will null style
-     * names. This test sets a style name, then proceeds with the test.
+     * Test the {@code getStyleNames} method. A default instantiation of a {@link WmsTileFactory} will null style names.
+     * This test sets a style name, then proceeds with the test.
      */
     @Test
     public void testGetStyleNames_NotNull() {
@@ -465,6 +461,54 @@ public class WmsTileFactoryTest {
     }
 
     /**
+     * Test the {@code setImageFormat} method.
+     */
+    @Test
+    public void testSetImageFormat() {
+
+        String updatedImageFormat = "image/jpeg"; // notional
+        WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
+
+        standardWmsMapFactory.setImageFormat(updatedImageFormat);
+
+        String imageFormat = standardWmsMapFactory.getImageFormat();
+        assertEquals("update image format", updatedImageFormat, imageFormat);
+    }
+
+    /**
+     * Test the {@code getImageFormat} method. A default instantiation of a {@link WmsTileFactory} will null the image
+     * format and this setting is tested in this test.
+     */
+    @Test
+    public void testGetImageFormat_Null() {
+
+        WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
+
+        String imageFormat = standardWmsMapFactory.getImageFormat();
+
+        assertNull("default null of image format", imageFormat);
+    }
+
+    /**
+     * Test the {@code getImageFormat} method. A default instantiation of a {@link WmsTileFactory} will null the image
+     * format. This test sets a notional image format, then proceeds with the test.
+     */
+    @Test
+    public void testGetImageFormat_NotNull() {
+
+        WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
+        String alternativeImageFormat = "image/jpeg";
+        standardWmsMapFactory.setImageFormat(alternativeImageFormat);
+
+        String imageFormat = standardWmsMapFactory.getImageFormat();
+
+        assertEquals("updated time string", alternativeImageFormat, imageFormat);
+    }
+
+    /**
      * Test the {@code setTimeString} method.
      */
     @Test
@@ -481,8 +525,8 @@ public class WmsTileFactoryTest {
     }
 
     /**
-     * Test the {@code getTimeString} method. A default instantiation of a {@link WmsTileFactory} will null the
-     * time string and this setting is tested in this test.
+     * Test the {@code getTimeString} method. A default instantiation of a {@link WmsTileFactory} will null the time
+     * string and this setting is tested in this test.
      */
     @Test
     public void testGetTimeString_Null() {
@@ -496,8 +540,8 @@ public class WmsTileFactoryTest {
     }
 
     /**
-     * Test the {@code getTimeString} method. A default instantiation of a {@link WmsTileFactory} will null the the
-     * time string. This test sets a notional time string, then proceeds with the test.
+     * Test the {@code getTimeString} method. A default instantiation of a {@link WmsTileFactory} will null the time
+     * string. This test sets a notional time string, then proceeds with the test.
      */
     @Test
     public void testGetTimeString_NotNull() {
@@ -523,7 +567,7 @@ public class WmsTileFactoryTest {
         WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
         try {
 
-            standardWmsMapFactory.urlForTile(null, null);
+            standardWmsMapFactory.urlForTile(null, 0, 0);
 
             fail("null parameters provided to urlForTile");
         } catch (IllegalArgumentException ex) {
@@ -531,11 +575,11 @@ public class WmsTileFactoryTest {
             assertNotNull("null exception thrown", ex);
         }
 
-        Tile tile = PowerMockito.mock(Tile.class);
+        Sector sector = PowerMockito.mock(Sector.class);
         standardWmsMapFactory = new WmsTileFactory(layerConfig);
         try {
 
-            standardWmsMapFactory.urlForTile(tile, null);
+            standardWmsMapFactory.urlForTile(sector, 0, 0);
 
             fail("null Parameters Pushed to urlForTile");
         } catch (IllegalArgumentException ex) {
@@ -555,23 +599,19 @@ public class WmsTileFactoryTest {
         String serviceAddress = COMMON_SERVICE_ADDRESS;
         String wmsVersion = COMMON_WMS_VERSION;
         String layerNames = COMMON_LAYER_NAMES;
-        String imageFormat = COMMON_IMAGE_FORMAT;
 
         // Mocking of method object parameters - notional values
         int tileHeight = 5;
         int tileWidth = 4;
-        LevelSet levelSet = new LevelSet();
-        Level tileLevel = new Level(levelSet, 0, 0.1);
         Sector sector = PowerMockito.mock(Sector.class);
         PowerMockito.when(sector.minLatitude()).thenReturn(NOTIONAL_MIN_LAT);
         PowerMockito.when(sector.maxLatitude()).thenReturn(NOTIONAL_MAX_LAT);
         PowerMockito.when(sector.minLongitude()).thenReturn(NOTIONAL_MIN_LON);
         PowerMockito.when(sector.maxLongitude()).thenReturn(NOTIONAL_MAX_LON);
-        Tile tile = new Tile(sector, tileLevel, tileHeight, tileWidth);
 
         // Provide the method a service address without a query delimiter
-        WmsTileFactory wmsUrlFactory = new WmsTileFactory(serviceAddress, wmsVersion, layerNames, null);
-        String url = wmsUrlFactory.urlForTile(tile, imageFormat);
+        WmsTileFactory wmsFactory = new WmsTileFactory(serviceAddress, wmsVersion, layerNames, null);
+        String url = wmsFactory.urlForTile(sector, tileWidth, tileHeight);
 
         checkQueryDelimiter(url);
     }
@@ -587,23 +627,19 @@ public class WmsTileFactoryTest {
         String serviceAddress = COMMON_SERVICE_ADDRESS;
         String wmsVersion = COMMON_WMS_VERSION;
         String layerNames = COMMON_LAYER_NAMES;
-        String imageFormat = COMMON_IMAGE_FORMAT;
 
         // Mocking of method object parameters - notional values
         int tileHeight = 5;
         int tileWidth = 4;
-        LevelSet levelSet = new LevelSet();
-        Level tileLevel = new Level(levelSet, 0, 0.1);
         Sector sector = PowerMockito.mock(Sector.class);
         PowerMockito.when(sector.minLatitude()).thenReturn(NOTIONAL_MIN_LAT);
         PowerMockito.when(sector.maxLatitude()).thenReturn(NOTIONAL_MAX_LAT);
         PowerMockito.when(sector.minLongitude()).thenReturn(NOTIONAL_MIN_LON);
         PowerMockito.when(sector.maxLongitude()).thenReturn(NOTIONAL_MAX_LON);
-        Tile tile = new Tile(sector, tileLevel, tileHeight, tileWidth);
 
         // Provide the method a service address with a query delimiter appended
-        WmsTileFactory wmsUrlFactory = new WmsTileFactory(serviceAddress + '?', wmsVersion, layerNames, null);
-        String url = wmsUrlFactory.urlForTile(tile, imageFormat);
+        WmsTileFactory wmsFactory = new WmsTileFactory(serviceAddress + '?', wmsVersion, layerNames, null);
+        String url = wmsFactory.urlForTile(sector, tileWidth, tileHeight);
 
         checkQueryDelimiter(url);
     }
@@ -619,24 +655,19 @@ public class WmsTileFactoryTest {
         String serviceAddress = COMMON_SERVICE_ADDRESS;
         String wmsVersion = COMMON_WMS_VERSION;
         String layerNames = COMMON_LAYER_NAMES;
-        String imageFormat = COMMON_IMAGE_FORMAT;
 
         // Mocking of method object parameters - notional values
         int tileHeight = 5;
         int tileWidth = 4;
-        LevelSet levelSet = new LevelSet();
-        Level tileLevel = new Level(levelSet, 0, 0.1);
         Sector sector = PowerMockito.mock(Sector.class);
         PowerMockito.when(sector.minLatitude()).thenReturn(NOTIONAL_MIN_LAT);
         PowerMockito.when(sector.maxLatitude()).thenReturn(NOTIONAL_MAX_LAT);
         PowerMockito.when(sector.minLongitude()).thenReturn(NOTIONAL_MIN_LON);
         PowerMockito.when(sector.maxLongitude()).thenReturn(NOTIONAL_MAX_LON);
-        Tile tile = new Tile(sector, tileLevel, tileHeight, tileWidth);
 
         // Provide the method a service address with a query delimiter and existing parameters
-        WmsTileFactory wmsUrlFactory
-            = new WmsTileFactory(serviceAddress + "?NOTIONAL=YES", wmsVersion, layerNames, null);
-        String url = wmsUrlFactory.urlForTile(tile, imageFormat);
+        WmsTileFactory wmsFactory = new WmsTileFactory(serviceAddress + "?NOTIONAL=YES", wmsVersion, layerNames, null);
+        String url = wmsFactory.urlForTile(sector, tileWidth, tileHeight);
 
         checkQueryDelimiter(url);
     }
@@ -652,32 +683,26 @@ public class WmsTileFactoryTest {
         String serviceAddress = COMMON_SERVICE_ADDRESS;
         String wmsVersion = COMMON_WMS_VERSION;
         String layerNames = COMMON_LAYER_NAMES;
-        String imageFormat = COMMON_IMAGE_FORMAT;
 
         // Mocking of method object parameters - notional values
         int tileHeight = 5;
         int tileWidth = 4;
-        LevelSet levelSet = new LevelSet();
-        Level tileLevel = new Level(levelSet, 0, 0.1);
         Sector sector = PowerMockito.mock(Sector.class);
         PowerMockito.when(sector.minLatitude()).thenReturn(NOTIONAL_MIN_LAT);
         PowerMockito.when(sector.maxLatitude()).thenReturn(NOTIONAL_MAX_LAT);
         PowerMockito.when(sector.minLongitude()).thenReturn(NOTIONAL_MIN_LON);
         PowerMockito.when(sector.maxLongitude()).thenReturn(NOTIONAL_MAX_LON);
-        Tile tile = new Tile(sector, tileLevel, tileHeight, tileWidth);
 
         // Provide the method a service address with a query delimiter and existing parameters
-        WmsTileFactory wmsUrlFactory
-            = new WmsTileFactory(serviceAddress + "?NOTIONAL=YES&", wmsVersion, layerNames, null);
-        String url = wmsUrlFactory.urlForTile(tile, imageFormat);
+        WmsTileFactory wmsFactory = new WmsTileFactory(serviceAddress + "?NOTIONAL=YES&", wmsVersion, layerNames, null);
+        String url = wmsFactory.urlForTile(sector, tileWidth, tileHeight);
 
         checkQueryDelimiter(url);
     }
 
     /**
-     * Tests the generated url parameters match the properties of the {@link WmsTileFactory} and {@link Tile} used
-     * to generate the url. This test evaluates the configuration: WMS version 1.3.0 using the EPSG:4326 coordinate
-     * format.
+     * Tests the generated url parameters match the properties of the {@link WmsTileFactory} used to generate the url.
+     * This test evaluates the configuration: WMS version 1.3.0 using the EPSG:4326 coordinate format.
      * <p/>
      * <p>This is part of test suite detailed below:</p>
      * <p/>
@@ -694,32 +719,21 @@ public class WmsTileFactoryTest {
         PowerMockito.when(sector.maxLatitude()).thenReturn(NOTIONAL_MAX_LAT);
         PowerMockito.when(sector.minLongitude()).thenReturn(NOTIONAL_MIN_LON);
         PowerMockito.when(sector.maxLongitude()).thenReturn(NOTIONAL_MAX_LON);
-        // The urlForTile method accesses protected fields, thus notional objects are used
-        LevelSet levelSet = new LevelSet();
-        Level tileLevel = new Level(levelSet, 0, 0.1);
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
         WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
-
-        // A Standard Tile to use for generating URLs
-        Tile tile = new Tile(sector, tileLevel, NOTIONAL_ROW, NOTIONAL_COLUMN);
-
-        // Set the Service Address
         standardWmsMapFactory.setServiceAddress(COMMON_SERVICE_ADDRESS);
-
-        // Settings for test one
         standardWmsMapFactory.setWmsVersion(COMMON_WMS_VERSION);
         standardWmsMapFactory.setCoordinateSystem(SYSTEM_EPSG4326);
 
-        String url = standardWmsMapFactory.urlForTile(tile, COMMON_IMAGE_FORMAT);
+        String url = standardWmsMapFactory.urlForTile(sector, NOTIONAL_WIDTH, NOTIONAL_HEIGHT);
 
-        checkUrl(url, standardWmsMapFactory, tile);
+        checkUrl(url, standardWmsMapFactory);
     }
 
     /**
-     * Tests the generated url parameters match the properties of the {@link WmsTileFactory} and {@link Tile} used
-     * to generate the url. This test evaluates the configuration: WMS version 1.3.0 using the CRS:84 coordinate
-     * format.
+     * Tests the generated url parameters match the properties of the {@link WmsTileFactory} used to generate the url.
+     * This test evaluates the configuration: WMS version 1.3.0 using the CRS:84 coordinate format.
      * <p/>
      * <p>This is part of test suite detailed below:</p>
      * <p/>
@@ -736,31 +750,21 @@ public class WmsTileFactoryTest {
         PowerMockito.when(sector.maxLatitude()).thenReturn(NOTIONAL_MAX_LAT);
         PowerMockito.when(sector.minLongitude()).thenReturn(NOTIONAL_MIN_LON);
         PowerMockito.when(sector.maxLongitude()).thenReturn(NOTIONAL_MAX_LON);
-        // The urlForTile method accesses protected fields, thus notional objects are used
-        LevelSet levelSet = new LevelSet();
-        Level tileLevel = new Level(levelSet, 0, 0.1);
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
         WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
-
-        // A Standard Tile to use for generating URLs
-        Tile tile = new Tile(sector, tileLevel, NOTIONAL_ROW, NOTIONAL_COLUMN);
-
-        // Set the Service Address
         standardWmsMapFactory.setServiceAddress(COMMON_SERVICE_ADDRESS);
-
-        // Settings for test one
         standardWmsMapFactory.setWmsVersion(COMMON_WMS_VERSION);
         standardWmsMapFactory.setCoordinateSystem(SYSTEM_CRS84);
 
-        String url = standardWmsMapFactory.urlForTile(tile, COMMON_IMAGE_FORMAT);
+        String url = standardWmsMapFactory.urlForTile(sector, NOTIONAL_WIDTH, NOTIONAL_HEIGHT);
 
-        checkUrl(url, standardWmsMapFactory, tile);
+        checkUrl(url, standardWmsMapFactory);
     }
 
     /**
-     * Tests the generated url parameters match the properties of the {@link WmsTileFactory} and {@link Tile} used
-     * to generate the url. This test evaluates the configuration: WMS Version other than 1.3.0.
+     * Tests the generated url parameters match the properties of the {@link WmsTileFactory} used to generate the url.
+     * This test evaluates the configuration: WMS Version other than 1.3.0.
      * <p/>
      * <p>This is part of test suite detailed below:</p>
      * <p/>
@@ -777,30 +781,20 @@ public class WmsTileFactoryTest {
         PowerMockito.when(sector.maxLatitude()).thenReturn(NOTIONAL_MAX_LAT);
         PowerMockito.when(sector.minLongitude()).thenReturn(NOTIONAL_MIN_LON);
         PowerMockito.when(sector.maxLongitude()).thenReturn(NOTIONAL_MAX_LON);
-        // The urlForTile method accesses protected fields, thus notional objects are used
-        LevelSet levelSet = new LevelSet();
-        Level tileLevel = new Level(levelSet, 0, 0.1);
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
         WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
-
-        // A Standard Tile to use for generating URLs
-        Tile tile = new Tile(sector, tileLevel, NOTIONAL_ROW, NOTIONAL_COLUMN);
-
-        // Set the Service Address
         standardWmsMapFactory.setServiceAddress(COMMON_SERVICE_ADDRESS);
-
-        // Settings for test one
         standardWmsMapFactory.setWmsVersion(NOTIONAL_WMS_VERSION);
 
-        String url = standardWmsMapFactory.urlForTile(tile, COMMON_IMAGE_FORMAT);
+        String url = standardWmsMapFactory.urlForTile(sector, NOTIONAL_WIDTH, NOTIONAL_HEIGHT);
 
-        checkUrl(url, standardWmsMapFactory, tile);
+        checkUrl(url, standardWmsMapFactory);
     }
 
     /**
-     * Tests the generated url parameters match the properties of the {@link WmsTileFactory} and {@link Tile} used
-     * to generate the url. This test evaluates the configuration: Addition of optional Style parameter.
+     * Tests the generated url parameters match the properties of the {@link WmsTileFactory} used to generate the url.
+     * This test evaluates the configuration: Addition of optional Style parameter.
      * <p/>
      * <p>This is part of test suite detailed below:</p>
      * <p/>
@@ -817,25 +811,48 @@ public class WmsTileFactoryTest {
         PowerMockito.when(sector.maxLatitude()).thenReturn(NOTIONAL_MAX_LAT);
         PowerMockito.when(sector.minLongitude()).thenReturn(NOTIONAL_MIN_LON);
         PowerMockito.when(sector.maxLongitude()).thenReturn(NOTIONAL_MAX_LON);
-        // The urlForTile method accesses protected fields, thus notional objects are used
-        LevelSet levelSet = new LevelSet();
-        Level tileLevel = new Level(levelSet, 0, 0.1);
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
         WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
-
-        // A Standard Tile to use for generating URLs
-        Tile tile = new Tile(sector, tileLevel, NOTIONAL_ROW, NOTIONAL_COLUMN);
         standardWmsMapFactory.setStyleNames("notionalstyle1,notionalstyle2");
 
-        String url = standardWmsMapFactory.urlForTile(tile, COMMON_IMAGE_FORMAT);
+        String url = standardWmsMapFactory.urlForTile(sector, NOTIONAL_WIDTH, NOTIONAL_HEIGHT);
 
-        checkUrl(url, standardWmsMapFactory, tile);
+        checkUrl(url, standardWmsMapFactory);
     }
 
     /**
-     * Tests the generated url parameters match the properties of the {@link WmsTileFactory} and {@link Tile} used
-     * to generate the url. This test evaluates the configuration: Additional optional time parameter.
+     * Tests the generated url parameters match the properties of the {@link WmsTileFactory} used to generate the url.
+     * This test evaluates the configuration: Additional optional image format.
+     * <p/>
+     * <p>This is part of test suite detailed below:</p>
+     * <p/>
+     * <p>Essentially three different formats for describing the bounding box to the WMS servier. A four and fifth test
+     * case provide for testing the optional STYLE and TIME parameters. 1. WMS Version 1.3.0 and EPSG:4326 2. WMS
+     * Version 1.3.0 and CRS:84 3. Other WMS Version 4. Optional Styles Parameter 5. Optional Time Parameter</p>
+     */
+    @Test
+    public void testUrlForTile_Parameters_OptionalImageFormat() {
+
+        // Create mocked supporting objects
+        Sector sector = PowerMockito.mock(Sector.class);
+        PowerMockito.when(sector.minLatitude()).thenReturn(NOTIONAL_MIN_LAT);
+        PowerMockito.when(sector.maxLatitude()).thenReturn(NOTIONAL_MAX_LAT);
+        PowerMockito.when(sector.minLongitude()).thenReturn(NOTIONAL_MIN_LON);
+        PowerMockito.when(sector.maxLongitude()).thenReturn(NOTIONAL_MAX_LON);
+
+        WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
+        standardWmsMapFactory.setImageFormat("type/name"); //notional MIME type
+
+        String url = standardWmsMapFactory.urlForTile(sector, NOTIONAL_WIDTH, NOTIONAL_HEIGHT);
+
+        checkUrl(url, standardWmsMapFactory);
+    }
+
+    /**
+     * Tests the generated url parameters match the properties of the {@link WmsTileFactory} used to generate the url.
+     * This test evaluates the configuration: Additional optional time parameter.
      * <p/>
      * <p>This is part of test suite detailed below:</p>
      * <p/>
@@ -852,32 +869,27 @@ public class WmsTileFactoryTest {
         PowerMockito.when(sector.maxLatitude()).thenReturn(NOTIONAL_MAX_LAT);
         PowerMockito.when(sector.minLongitude()).thenReturn(NOTIONAL_MIN_LON);
         PowerMockito.when(sector.maxLongitude()).thenReturn(NOTIONAL_MAX_LON);
-        // The urlForTile method accesses protected fields, thus notional objects are used
-        LevelSet levelSet = new LevelSet();
-        Level tileLevel = new Level(levelSet, 0, 0.1);
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
         WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         // A Standard Tile to use for generating URLs
-        Tile tile = new Tile(sector, tileLevel, NOTIONAL_ROW, NOTIONAL_COLUMN);
         standardWmsMapFactory.setTimeString("1800-ZULU"); //notional time
 
-        String url = standardWmsMapFactory.urlForTile(tile, COMMON_IMAGE_FORMAT);
+        String url = standardWmsMapFactory.urlForTile(sector, NOTIONAL_WIDTH, NOTIONAL_HEIGHT);
 
-        checkUrl(url, standardWmsMapFactory, tile);
+        checkUrl(url, standardWmsMapFactory);
     }
 
     /**
-     * Test the provided {@link String} url against the {@link WmsTileFactory} and {@link Tile} objects properties.
-     * This method will test that the parameters of {@link WmsTileFactory} and {@link Tile} are properly
-     * represented in the url. This method uses the {@link junit.framework.Assert} methods to communicate test results.
+     * Test the provided {@link String} url against the {@link WmsTileFactory} objects properties. This method will test
+     * that the parameters of {@link WmsTileFactory} are properly represented in the url. This method uses the {@link
+     * junit.framework.Assert} methods to communicate test results.
      *
-     * @param url        the generated {@link String} url to be evaluated
-     * @param urlFactory the {@link WmsTileFactory} which generated the url
-     * @param tile       the {@link Tile} used to generate the url
+     * @param url     the generated {@link String} url to be evaluated
+     * @param factory the {@link WmsTileFactory} which generated the url
      */
-    private static void checkUrl(String url, WmsTileFactory urlFactory, Tile tile) {
+    private static void checkUrl(String url, WmsTileFactory factory) {
 
         // Test Service Description - WMS only at this time
         Matcher m = SERVICE_P.matcher(url);
@@ -892,7 +904,7 @@ public class WmsTileFactoryTest {
         m = VERSION_P.matcher(url);
 
         if (m.find()) {
-            assertEquals("test wms version parameter", urlFactory.getWmsVersion(), m.group(1));
+            assertEquals("test wms version parameter", factory.getWmsVersion(), m.group(1));
         } else {
             fail("wms version parameter not found");
         }
@@ -901,16 +913,16 @@ public class WmsTileFactoryTest {
         m = LAYERS_P.matcher(url);
 
         if (m.find()) {
-            assertEquals("test layer list parameter", urlFactory.getLayerNames(), m.group(1));
+            assertEquals("test layer list parameter", factory.getLayerNames(), m.group(1));
         } else {
             fail("layer list parameter not found");
         }
 
         // Test Styles
-        if (urlFactory.getStyleNames() != null) {
+        if (factory.getStyleNames() != null) {
             m = STYLES_P.matcher(url);
             if (m.find()) {
-                assertEquals("test style parameter", urlFactory.getStyleNames(), m.group(1));
+                assertEquals("test style parameter", factory.getStyleNames(), m.group(1));
             } else {
                 fail("style list parameter not found");
             }
@@ -920,7 +932,7 @@ public class WmsTileFactoryTest {
         m = CRS_P.matcher(url);
 
         if (m.find()) {
-            assertEquals("test coordinate system parameter", urlFactory.getCoordinateSystem(), m.group(1));
+            assertEquals("test coordinate system parameter", factory.getCoordinateSystem(), m.group(1));
         } else {
             fail("coordinate system parameter not found");
         }
@@ -936,15 +948,14 @@ public class WmsTileFactoryTest {
 
                 // From this point need to proceed with knowledge of the WMS version and coordinate system in order
                 // to parse the values in the right order
-                if (urlFactory.getWmsVersion().equals(COMMON_WMS_VERSION)) {
+                if (factory.getWmsVersion().equals(COMMON_WMS_VERSION)) {
 
-                    if (urlFactory.getCoordinateSystem().equals(SYSTEM_CRS84)) {
+                    if (factory.getCoordinateSystem().equals(SYSTEM_CRS84)) {
 
                         coords[LON_MIN] = Double.parseDouble(values[0]);
                         coords[LAT_MIN] = Double.parseDouble(values[1]);
                         coords[LON_MAX] = Double.parseDouble(values[2]);
                         coords[LAT_MAX] = Double.parseDouble(values[3]);
-
                     } else {
 
                         coords[LAT_MIN] = Double.parseDouble(values[0]);
@@ -965,7 +976,6 @@ public class WmsTileFactoryTest {
                 assertEquals("test max lat", NOTIONAL_MAX_LAT, coords[LAT_MAX], DELTA);
                 assertEquals("test min lon", NOTIONAL_MIN_LON, coords[LON_MIN], DELTA);
                 assertEquals("test max lon", NOTIONAL_MAX_LON, coords[LON_MAX], DELTA);
-
             } else {
 
                 fail("unable to delimit bounding box values");
@@ -978,14 +988,14 @@ public class WmsTileFactoryTest {
         // Test Width and Height
         m = WIDTH_P.matcher(url);
         if (m.find()) {
-            assertEquals("width value test", tile.level.tileWidth, Integer.parseInt(m.group(1)));
+            assertEquals("width value test", NOTIONAL_WIDTH, Integer.parseInt(m.group(1)));
         } else {
             fail("did not find width parameter");
         }
 
         m = HEIGHT_P.matcher(url);
         if (m.find()) {
-            assertEquals("height value test", tile.level.tileHeight, Integer.parseInt(m.group(1)));
+            assertEquals("height value test", NOTIONAL_HEIGHT, Integer.parseInt(m.group(1)));
         } else {
             fail("did not find height parameter");
         }
@@ -993,7 +1003,11 @@ public class WmsTileFactoryTest {
         // Test Format
         m = FORMAT_P.matcher(url);
         if (m.find()) {
-            assertEquals("format test", COMMON_IMAGE_FORMAT, m.group(1));
+            if (factory.getImageFormat() == null) {
+                assertEquals("format test (default)", "image/png", m.group(1));
+            } else {
+                assertEquals("format test", factory.getImageFormat(), m.group(1));
+            }
         } else {
             fail("image format parameter not found");
         }
@@ -1001,17 +1015,17 @@ public class WmsTileFactoryTest {
         // Test Transparency
         m = TRANSPARENT_P.matcher(url);
         if (m.find()) {
-            assertEquals("test transparency", urlFactory.isTransparent(), Boolean.parseBoolean(m.group(1)));
+            assertEquals("test transparency", factory.isTransparent(), Boolean.parseBoolean(m.group(1)));
         } else {
             fail("transparency parameter not found");
         }
 
         // Test Time, if there is any
-        String timeString = urlFactory.getTimeString();
+        String timeString = factory.getTimeString();
         if (timeString != null && !timeString.isEmpty()) {
             m = TIME_P.matcher(url);
             if (m.find()) {
-                assertEquals("time test", urlFactory.getTimeString(), m.group(1));
+                assertEquals("time test", factory.getTimeString(), m.group(1));
             } else {
                 fail("time did not match");
             }

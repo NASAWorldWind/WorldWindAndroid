@@ -41,7 +41,7 @@ public class WmsLayerConfig {
     public boolean transparent = true;
 
     /**
-     * The image MIME format to use in Get Map requests.
+     * The image content type to use in Get Map requests.
      */
     public String imageFormat;
 
@@ -64,7 +64,7 @@ public class WmsLayerConfig {
      * @param layerNames       comma-separated list of WMS layer names
      * @param styleNames       comma-separated list of WMS style names
      * @param coordinateSystem the coordinate reference system to use when requesting layers
-     * @param imageFormat      the image MIME format to use in Get Map requests
+     * @param imageFormat      the image content type to use in Get Map requests
      * @param transparent      indicates whether Get Map requests should include transparency
      * @param timeString       the time parameter to include in Get Map requests
      */
