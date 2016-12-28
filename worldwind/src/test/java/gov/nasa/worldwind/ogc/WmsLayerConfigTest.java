@@ -37,7 +37,7 @@ public class WmsLayerConfigTest {
         String wmsVersion = "1.2.0";
         String layerNames = "layer1";
         String styleNames = "style1";
-        String coordinateSystem = WmsGetMapUrlFactoryTest.SYSTEM_CRS84;
+        String coordinateSystem = WmsTileFactoryTest.SYSTEM_CRS84;
         boolean transparent = false;
         String time = "1600-ZULU";
 

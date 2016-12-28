@@ -30,7 +30,7 @@ import static junit.framework.Assert.fail;
 
 @RunWith(PowerMockRunner.class) // Support for mocking static methods
 @PrepareForTest(Logger.class)   // We mock the Logger class to avoid its calls to android.util.log
-public class WmsGetMapUrlFactoryTest {
+public class WmsTileFactoryTest {
 
     /**
      * Common parameters used when creating a WMS request URL.
@@ -112,7 +112,7 @@ public class WmsGetMapUrlFactoryTest {
     }
 
     /**
-     * Tests the {@link WmsGetMapUrlFactory} constructor that takes the different service parameters. Checks that
+     * Tests the {@link WmsTileFactory} constructor that takes the different service parameters. Checks that
      * parameters which are not intended to be null throw {@link IllegalArgumentException}.
      */
     @Test
@@ -120,32 +120,32 @@ public class WmsGetMapUrlFactoryTest {
 
         // Javadocs specify that the serviceAddress, wmsVersion, and layerNames cannot be null
         try {
-            WmsGetMapUrlFactory wmsFactory
-                = new WmsGetMapUrlFactory(null, COMMON_WMS_VERSION, COMMON_LAYER_NAMES, null);
+            WmsTileFactory wmsFactory
+                = new WmsTileFactory(null, COMMON_WMS_VERSION, COMMON_LAYER_NAMES, null);
             fail("Missing the serviceAddress, should not return");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
         }
 
         try {
-            WmsGetMapUrlFactory wmsFactory
-                = new WmsGetMapUrlFactory(COMMON_SERVICE_ADDRESS, null, COMMON_LAYER_NAMES, null);
+            WmsTileFactory wmsFactory
+                = new WmsTileFactory(COMMON_SERVICE_ADDRESS, null, COMMON_LAYER_NAMES, null);
             fail("Missing the wmsVersion, should not return");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
         }
 
         try {
-            WmsGetMapUrlFactory wmsFactory
-                = new WmsGetMapUrlFactory(COMMON_SERVICE_ADDRESS, COMMON_WMS_VERSION, null, null);
+            WmsTileFactory wmsFactory
+                = new WmsTileFactory(COMMON_SERVICE_ADDRESS, COMMON_WMS_VERSION, null, null);
             fail("Missing the layerNames, should not return");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
         }
 
         // Check parameters are passed successfully and utilized
-        WmsGetMapUrlFactory wmsFactory
-            = new WmsGetMapUrlFactory(COMMON_SERVICE_ADDRESS, COMMON_WMS_VERSION, COMMON_LAYER_NAMES, null);
+        WmsTileFactory wmsFactory
+            = new WmsTileFactory(COMMON_SERVICE_ADDRESS, COMMON_WMS_VERSION, COMMON_LAYER_NAMES, null);
         assertEquals("Service Address Match", COMMON_SERVICE_ADDRESS, wmsFactory.serviceAddress);
         assertEquals("WMS Version Match", COMMON_WMS_VERSION, wmsFactory.wmsVersion);
         assertEquals("Layer Name Match", COMMON_LAYER_NAMES, wmsFactory.layerNames);
@@ -153,14 +153,14 @@ public class WmsGetMapUrlFactoryTest {
     }
 
     /**
-     * Tests the {@link WmsGetMapUrlFactory} constructor which takes a single non-null {@link WmsLayerConfig} object.
+     * Tests the {@link WmsTileFactory} constructor which takes a single non-null {@link WmsLayerConfig} object.
      * Checks that a null {@link WmsLayerConfig} will throw an {@link IllegalArgumentException}.
      */
     @Test
     public void testConstructor_Config() {
 
         try {
-            WmsGetMapUrlFactory wmsFactory = new WmsGetMapUrlFactory(null);
+            WmsTileFactory wmsFactory = new WmsTileFactory(null);
             fail("Missing config, should not return");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
@@ -170,7 +170,7 @@ public class WmsGetMapUrlFactoryTest {
         // Test all null checks conducted by the config constructor
         WmsLayerConfig layerConfig = new WmsLayerConfig(null, null, null, null, null, false, null);
         try {
-            WmsGetMapUrlFactory wmsFactory = new WmsGetMapUrlFactory(layerConfig);
+            WmsTileFactory wmsFactory = new WmsTileFactory(layerConfig);
             fail("Missing the serviceAddress, should not return");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
@@ -179,7 +179,7 @@ public class WmsGetMapUrlFactoryTest {
         // Progressively add agruments and test for exceptions
         layerConfig.serviceAddress = COMMON_SERVICE_ADDRESS;
         try {
-            WmsGetMapUrlFactory wmsFactory = new WmsGetMapUrlFactory(layerConfig);
+            WmsTileFactory wmsFactory = new WmsTileFactory(layerConfig);
             fail("Missing the wmsVersion, should not return");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
@@ -187,7 +187,7 @@ public class WmsGetMapUrlFactoryTest {
 
         layerConfig.wmsVersion = COMMON_WMS_VERSION;
         try {
-            WmsGetMapUrlFactory wmsFactory = new WmsGetMapUrlFactory(layerConfig);
+            WmsTileFactory wmsFactory = new WmsTileFactory(layerConfig);
             fail("Missing the layerNames, should not return");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
@@ -195,7 +195,7 @@ public class WmsGetMapUrlFactoryTest {
 
         layerConfig.layerNames = COMMON_LAYER_NAMES;
         try {
-            WmsGetMapUrlFactory wmsFactory = new WmsGetMapUrlFactory(layerConfig);
+            WmsTileFactory wmsFactory = new WmsTileFactory(layerConfig);
             fail("Missing the coordinateSystem, should not return");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
@@ -204,7 +204,7 @@ public class WmsGetMapUrlFactoryTest {
         // This is the final required parameter
         layerConfig.coordinateSystem = "EPSG:4326";
 
-        WmsGetMapUrlFactory wmsFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory wmsFactory = new WmsTileFactory(layerConfig);
 
         assertEquals("service address match", layerConfig.serviceAddress, wmsFactory.serviceAddress);
         assertEquals("wms version match", layerConfig.wmsVersion, wmsFactory.wmsVersion);
@@ -222,7 +222,7 @@ public class WmsGetMapUrlFactoryTest {
 
         String alteredServiceAddress = "testAddress"; // notional address
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         standardWmsMapFactory.setServiceAddress(alteredServiceAddress);
         String serviceAddress = standardWmsMapFactory.getServiceAddress();
@@ -230,7 +230,7 @@ public class WmsGetMapUrlFactoryTest {
         assertEquals("update service address", alteredServiceAddress, serviceAddress);
 
         // Check the setter prevents null submissions
-        standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        standardWmsMapFactory = new WmsTileFactory(layerConfig);
         try {
 
             standardWmsMapFactory.setServiceAddress(null);
@@ -249,7 +249,7 @@ public class WmsGetMapUrlFactoryTest {
     public void testGetServiceAddress() {
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         String serviceAddress = standardWmsMapFactory.getServiceAddress();
 
@@ -265,7 +265,7 @@ public class WmsGetMapUrlFactoryTest {
 
         String updatedWmsVersion = "1.4.0"; // notional versioning
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         standardWmsMapFactory.setWmsVersion(updatedWmsVersion);
 
@@ -273,7 +273,7 @@ public class WmsGetMapUrlFactoryTest {
         assertEquals("update wms version", updatedWmsVersion, wmsVersion);
 
         // Check the setter prevents null submissions
-        standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        standardWmsMapFactory = new WmsTileFactory(layerConfig);
         try {
 
             standardWmsMapFactory.setWmsVersion(null);
@@ -292,7 +292,7 @@ public class WmsGetMapUrlFactoryTest {
     public void testGetWmsVersion() {
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         String wmsVersion = standardWmsMapFactory.getWmsVersion();
 
@@ -308,7 +308,7 @@ public class WmsGetMapUrlFactoryTest {
 
         String updatedLayerNames = "layer1,layer2"; // notional
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         standardWmsMapFactory.setLayerNames(updatedLayerNames);
 
@@ -316,7 +316,7 @@ public class WmsGetMapUrlFactoryTest {
         assertEquals("update layer names", updatedLayerNames, layerNames);
 
         // Check the setter prevents null submissions
-        standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        standardWmsMapFactory = new WmsTileFactory(layerConfig);
         try {
 
             standardWmsMapFactory.setLayerNames(null);
@@ -335,7 +335,7 @@ public class WmsGetMapUrlFactoryTest {
     public void testGetLayerNames() {
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         String layerNames = standardWmsMapFactory.getLayerNames();
 
@@ -350,7 +350,7 @@ public class WmsGetMapUrlFactoryTest {
 
         String updatedStyleNames = "style1,style2"; // notional
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         standardWmsMapFactory.setStyleNames(updatedStyleNames);
 
@@ -359,14 +359,14 @@ public class WmsGetMapUrlFactoryTest {
     }
 
     /**
-     * Test the {@code getStyleNames} method. A default instantiation of a {@link WmsGetMapUrlFactory} will null style
+     * Test the {@code getStyleNames} method. A default instantiation of a {@link WmsTileFactory} will null style
      * names and this setting is tested in this test.
      */
     @Test
     public void testGetStyleNames_Null() {
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         String styleNames = standardWmsMapFactory.getStyleNames();
 
@@ -374,14 +374,14 @@ public class WmsGetMapUrlFactoryTest {
     }
 
     /**
-     * Test the {@code getStyleNames} method. A default instantiation of a {@link WmsGetMapUrlFactory} will null style
+     * Test the {@code getStyleNames} method. A default instantiation of a {@link WmsTileFactory} will null style
      * names. This test sets a style name, then proceeds with the test.
      */
     @Test
     public void testGetStyleNames_NotNull() {
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
         String notionalStyleNames = "notionalstyle1,notionalstyle2";
         standardWmsMapFactory.setStyleNames(notionalStyleNames);
 
@@ -399,7 +399,7 @@ public class WmsGetMapUrlFactoryTest {
 
         String updatedCoordinateSystem = "system"; // notional
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         standardWmsMapFactory.setCoordinateSystem(updatedCoordinateSystem);
 
@@ -407,7 +407,7 @@ public class WmsGetMapUrlFactoryTest {
         assertEquals("update coordinate system", updatedCoordinateSystem, coordinateSystem);
 
         // Check the setter prevents null submissions
-        standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        standardWmsMapFactory = new WmsTileFactory(layerConfig);
         try {
 
             standardWmsMapFactory.setCoordinateSystem(null);
@@ -426,7 +426,7 @@ public class WmsGetMapUrlFactoryTest {
     public void testGetCoordinateSystem() {
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         String coordinateSystem = standardWmsMapFactory.getCoordinateSystem();
 
@@ -441,7 +441,7 @@ public class WmsGetMapUrlFactoryTest {
     public void testSetTransparency() {
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
         boolean previousSetting = standardWmsMapFactory.isTransparent();
 
         standardWmsMapFactory.setTransparent(!previousSetting);
@@ -456,7 +456,7 @@ public class WmsGetMapUrlFactoryTest {
     public void testIsTransparent() {
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         boolean transparent = standardWmsMapFactory.isTransparent();
 
@@ -472,7 +472,7 @@ public class WmsGetMapUrlFactoryTest {
 
         String updatedTimeString = "time"; // notional
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         standardWmsMapFactory.setTimeString(updatedTimeString);
 
@@ -481,14 +481,14 @@ public class WmsGetMapUrlFactoryTest {
     }
 
     /**
-     * Test the {@code getTimeString} method. A default instantiation of a {@link WmsGetMapUrlFactory} will null the
+     * Test the {@code getTimeString} method. A default instantiation of a {@link WmsTileFactory} will null the
      * time string and this setting is tested in this test.
      */
     @Test
     public void testGetTimeString_Null() {
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         String timeString = standardWmsMapFactory.getTimeString();
 
@@ -496,14 +496,14 @@ public class WmsGetMapUrlFactoryTest {
     }
 
     /**
-     * Test the {@code getTimeString} method. A default instantiation of a {@link WmsGetMapUrlFactory} will null the the
+     * Test the {@code getTimeString} method. A default instantiation of a {@link WmsTileFactory} will null the the
      * time string. This test sets a notional time string, then proceeds with the test.
      */
     @Test
     public void testGetTimeString_NotNull() {
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
         String alternativeTimeString = "1600-NOTIONAL";
         standardWmsMapFactory.setTimeString(alternativeTimeString);
 
@@ -520,7 +520,7 @@ public class WmsGetMapUrlFactoryTest {
 
         // check null's are not permitted
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
         try {
 
             standardWmsMapFactory.urlForTile(null, null);
@@ -532,7 +532,7 @@ public class WmsGetMapUrlFactoryTest {
         }
 
         Tile tile = PowerMockito.mock(Tile.class);
-        standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        standardWmsMapFactory = new WmsTileFactory(layerConfig);
         try {
 
             standardWmsMapFactory.urlForTile(tile, null);
@@ -570,7 +570,7 @@ public class WmsGetMapUrlFactoryTest {
         Tile tile = new Tile(sector, tileLevel, tileHeight, tileWidth);
 
         // Provide the method a service address without a query delimiter
-        WmsGetMapUrlFactory wmsUrlFactory = new WmsGetMapUrlFactory(serviceAddress, wmsVersion, layerNames, null);
+        WmsTileFactory wmsUrlFactory = new WmsTileFactory(serviceAddress, wmsVersion, layerNames, null);
         String url = wmsUrlFactory.urlForTile(tile, imageFormat);
 
         checkQueryDelimiter(url);
@@ -602,7 +602,7 @@ public class WmsGetMapUrlFactoryTest {
         Tile tile = new Tile(sector, tileLevel, tileHeight, tileWidth);
 
         // Provide the method a service address with a query delimiter appended
-        WmsGetMapUrlFactory wmsUrlFactory = new WmsGetMapUrlFactory(serviceAddress + '?', wmsVersion, layerNames, null);
+        WmsTileFactory wmsUrlFactory = new WmsTileFactory(serviceAddress + '?', wmsVersion, layerNames, null);
         String url = wmsUrlFactory.urlForTile(tile, imageFormat);
 
         checkQueryDelimiter(url);
@@ -634,8 +634,8 @@ public class WmsGetMapUrlFactoryTest {
         Tile tile = new Tile(sector, tileLevel, tileHeight, tileWidth);
 
         // Provide the method a service address with a query delimiter and existing parameters
-        WmsGetMapUrlFactory wmsUrlFactory
-            = new WmsGetMapUrlFactory(serviceAddress + "?NOTIONAL=YES", wmsVersion, layerNames, null);
+        WmsTileFactory wmsUrlFactory
+            = new WmsTileFactory(serviceAddress + "?NOTIONAL=YES", wmsVersion, layerNames, null);
         String url = wmsUrlFactory.urlForTile(tile, imageFormat);
 
         checkQueryDelimiter(url);
@@ -667,15 +667,15 @@ public class WmsGetMapUrlFactoryTest {
         Tile tile = new Tile(sector, tileLevel, tileHeight, tileWidth);
 
         // Provide the method a service address with a query delimiter and existing parameters
-        WmsGetMapUrlFactory wmsUrlFactory
-            = new WmsGetMapUrlFactory(serviceAddress + "?NOTIONAL=YES&", wmsVersion, layerNames, null);
+        WmsTileFactory wmsUrlFactory
+            = new WmsTileFactory(serviceAddress + "?NOTIONAL=YES&", wmsVersion, layerNames, null);
         String url = wmsUrlFactory.urlForTile(tile, imageFormat);
 
         checkQueryDelimiter(url);
     }
 
     /**
-     * Tests the generated url parameters match the properties of the {@link WmsGetMapUrlFactory} and {@link Tile} used
+     * Tests the generated url parameters match the properties of the {@link WmsTileFactory} and {@link Tile} used
      * to generate the url. This test evaluates the configuration: WMS version 1.3.0 using the EPSG:4326 coordinate
      * format.
      * <p/>
@@ -699,7 +699,7 @@ public class WmsGetMapUrlFactoryTest {
         Level tileLevel = new Level(levelSet, 0, 0.1);
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         // A Standard Tile to use for generating URLs
         Tile tile = new Tile(sector, tileLevel, NOTIONAL_ROW, NOTIONAL_COLUMN);
@@ -717,7 +717,7 @@ public class WmsGetMapUrlFactoryTest {
     }
 
     /**
-     * Tests the generated url parameters match the properties of the {@link WmsGetMapUrlFactory} and {@link Tile} used
+     * Tests the generated url parameters match the properties of the {@link WmsTileFactory} and {@link Tile} used
      * to generate the url. This test evaluates the configuration: WMS version 1.3.0 using the CRS:84 coordinate
      * format.
      * <p/>
@@ -741,7 +741,7 @@ public class WmsGetMapUrlFactoryTest {
         Level tileLevel = new Level(levelSet, 0, 0.1);
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         // A Standard Tile to use for generating URLs
         Tile tile = new Tile(sector, tileLevel, NOTIONAL_ROW, NOTIONAL_COLUMN);
@@ -759,7 +759,7 @@ public class WmsGetMapUrlFactoryTest {
     }
 
     /**
-     * Tests the generated url parameters match the properties of the {@link WmsGetMapUrlFactory} and {@link Tile} used
+     * Tests the generated url parameters match the properties of the {@link WmsTileFactory} and {@link Tile} used
      * to generate the url. This test evaluates the configuration: WMS Version other than 1.3.0.
      * <p/>
      * <p>This is part of test suite detailed below:</p>
@@ -782,7 +782,7 @@ public class WmsGetMapUrlFactoryTest {
         Level tileLevel = new Level(levelSet, 0, 0.1);
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         // A Standard Tile to use for generating URLs
         Tile tile = new Tile(sector, tileLevel, NOTIONAL_ROW, NOTIONAL_COLUMN);
@@ -799,7 +799,7 @@ public class WmsGetMapUrlFactoryTest {
     }
 
     /**
-     * Tests the generated url parameters match the properties of the {@link WmsGetMapUrlFactory} and {@link Tile} used
+     * Tests the generated url parameters match the properties of the {@link WmsTileFactory} and {@link Tile} used
      * to generate the url. This test evaluates the configuration: Addition of optional Style parameter.
      * <p/>
      * <p>This is part of test suite detailed below:</p>
@@ -822,7 +822,7 @@ public class WmsGetMapUrlFactoryTest {
         Level tileLevel = new Level(levelSet, 0, 0.1);
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         // A Standard Tile to use for generating URLs
         Tile tile = new Tile(sector, tileLevel, NOTIONAL_ROW, NOTIONAL_COLUMN);
@@ -834,7 +834,7 @@ public class WmsGetMapUrlFactoryTest {
     }
 
     /**
-     * Tests the generated url parameters match the properties of the {@link WmsGetMapUrlFactory} and {@link Tile} used
+     * Tests the generated url parameters match the properties of the {@link WmsTileFactory} and {@link Tile} used
      * to generate the url. This test evaluates the configuration: Additional optional time parameter.
      * <p/>
      * <p>This is part of test suite detailed below:</p>
@@ -857,7 +857,7 @@ public class WmsGetMapUrlFactoryTest {
         Level tileLevel = new Level(levelSet, 0, 0.1);
 
         WmsLayerConfig layerConfig = new WmsLayerConfig(COMMON_SERVICE_ADDRESS, COMMON_LAYER_NAMES);
-        WmsGetMapUrlFactory standardWmsMapFactory = new WmsGetMapUrlFactory(layerConfig);
+        WmsTileFactory standardWmsMapFactory = new WmsTileFactory(layerConfig);
 
         // A Standard Tile to use for generating URLs
         Tile tile = new Tile(sector, tileLevel, NOTIONAL_ROW, NOTIONAL_COLUMN);
@@ -869,15 +869,15 @@ public class WmsGetMapUrlFactoryTest {
     }
 
     /**
-     * Test the provided {@link String} url against the {@link WmsGetMapUrlFactory} and {@link Tile} objects properties.
-     * This method will test that the parameters of {@link WmsGetMapUrlFactory} and {@link Tile} are properly
+     * Test the provided {@link String} url against the {@link WmsTileFactory} and {@link Tile} objects properties.
+     * This method will test that the parameters of {@link WmsTileFactory} and {@link Tile} are properly
      * represented in the url. This method uses the {@link junit.framework.Assert} methods to communicate test results.
      *
      * @param url        the generated {@link String} url to be evaluated
-     * @param urlFactory the {@link WmsGetMapUrlFactory} which generated the url
+     * @param urlFactory the {@link WmsTileFactory} which generated the url
      * @param tile       the {@link Tile} used to generate the url
      */
-    private static void checkUrl(String url, WmsGetMapUrlFactory urlFactory, Tile tile) {
+    private static void checkUrl(String url, WmsTileFactory urlFactory, Tile tile) {
 
         // Test Service Description - WMS only at this time
         Matcher m = SERVICE_P.matcher(url);

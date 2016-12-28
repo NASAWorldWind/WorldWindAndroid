@@ -16,7 +16,7 @@ public class WmsLayerConfig {
     public String serviceAddress;
 
     /**
-     * The WMS protocol version.
+     * The WMS protocol version. Defaults to 1.3.0.
      */
     public String wmsVersion = "1.3.0";
 
@@ -31,7 +31,7 @@ public class WmsLayerConfig {
     public String styleNames;
 
     /**
-     * The coordinate reference system to use when requesting layers.
+     * The coordinate reference system to use when requesting layers. Defaults to EPSG:4326.
      */
     public String coordinateSystem = "EPSG:4326";
 
@@ -39,6 +39,11 @@ public class WmsLayerConfig {
      * Indicates whether Get Map requests should include transparency.
      */
     public boolean transparent = true;
+
+    /**
+     * The image MIME format to use in Get Map requests.
+     */
+    public String imageFormat;
 
     /**
      * The time parameter to include in Get Map requests.
@@ -59,15 +64,17 @@ public class WmsLayerConfig {
      * @param layerNames       comma-separated list of WMS layer names
      * @param styleNames       comma-separated list of WMS style names
      * @param coordinateSystem the coordinate reference system to use when requesting layers
+     * @param imageFormat      the image MIME format to use in Get Map requests
      * @param transparent      indicates whether Get Map requests should include transparency
      * @param timeString       the time parameter to include in Get Map requests
      */
-    public WmsLayerConfig(String serviceAddress, String wmsVersion, String layerNames, String styleNames, String coordinateSystem, boolean transparent, String timeString) {
+    public WmsLayerConfig(String serviceAddress, String wmsVersion, String layerNames, String styleNames, String coordinateSystem, String imageFormat, boolean transparent, String timeString) {
         this.serviceAddress = serviceAddress;
         this.wmsVersion = wmsVersion;
         this.layerNames = layerNames;
         this.styleNames = styleNames;
         this.coordinateSystem = coordinateSystem;
+        this.imageFormat = imageFormat;
         this.transparent = transparent;
         this.timeString = timeString;
     }

@@ -107,7 +107,6 @@ public class WmsLayer extends TiledImageLayer {
 
     protected void init() {
         this.setDisplayName("WMS Layer");
-        this.setImageFormat("image/png"); // default to the PNG image format
     }
 
     /**
@@ -142,7 +141,7 @@ public class WmsLayer extends TiledImageLayer {
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel);
 
         this.setLevelSet(new LevelSet(levelsConfig));
-        this.setTileUrlFactory(new WmsGetMapUrlFactory(config));
+        this.setTileFactory(new WmsTileFactory(config));
     }
 
     /**
@@ -182,6 +181,6 @@ public class WmsLayer extends TiledImageLayer {
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel);
 
         this.setLevelSet(new LevelSet(levelsConfig));
-        this.setTileUrlFactory(new WmsGetMapUrlFactory(config));
+        this.setTileFactory(new WmsTileFactory(config));
     }
 }

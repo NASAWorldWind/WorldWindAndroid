@@ -8,14 +8,17 @@ package gov.nasa.worldwind.ogc;
 import java.util.Locale;
 
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.render.ImageSource;
+import gov.nasa.worldwind.render.ImageTile;
+import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Tile;
-import gov.nasa.worldwind.util.TileUrlFactory;
+import gov.nasa.worldwind.util.TileFactory;
 
 /**
  * Factory for constructing URLs associated with WMS Get Map requests.
  */
-public class WmsGetMapUrlFactory implements TileUrlFactory {
+public class WmsTileFactory implements TileFactory {
 
     /**
      * The WMS service address used to build Get Map URLs.
@@ -43,6 +46,11 @@ public class WmsGetMapUrlFactory implements TileUrlFactory {
     protected String coordinateSystem = "EPSG:4326";
 
     /**
+     * The image MIME format to use in Get Map URLs. May be null in which case a default format is assumed.
+     */
+    protected String imageFormat;
+
+    /**
      * Indicates whether Get Map URLs should include transparency.
      */
     protected boolean transparent = true;
@@ -64,20 +72,20 @@ public class WmsGetMapUrlFactory implements TileUrlFactory {
      * @throws IllegalArgumentException If any of the service address, the WMS protocol version, or the layer names are
      *                                  null
      */
-    public WmsGetMapUrlFactory(String serviceAddress, String wmsVersion, String layerNames, String styleNames) {
+    public WmsTileFactory(String serviceAddress, String wmsVersion, String layerNames, String styleNames) {
         if (serviceAddress == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "constructor", "missingServiceAddress"));
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "constructor", "missingServiceAddress"));
         }
 
         if (wmsVersion == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "constructor", "missingVersion"));
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "constructor", "missingVersion"));
         }
 
         if (layerNames == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "constructor", "missingLayerNames"));
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "constructor", "missingLayerNames"));
         }
 
         this.serviceAddress = serviceAddress;
@@ -95,30 +103,30 @@ public class WmsGetMapUrlFactory implements TileUrlFactory {
      *
      * @throws IllegalArgumentException If the configuration is null, or if any configuration value is invalid
      */
-    public WmsGetMapUrlFactory(WmsLayerConfig config) {
+    public WmsTileFactory(WmsLayerConfig config) {
         if (config == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "constructor", "missingConfig"));
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "constructor", "missingConfig"));
         }
 
         if (config.serviceAddress == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "constructor", "missingServiceAddress"));
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "constructor", "missingServiceAddress"));
         }
 
         if (config.wmsVersion == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "constructor", "missingVersion"));
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "constructor", "missingVersion"));
         }
 
         if (config.layerNames == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "constructor", "missingLayerNames"));
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "constructor", "missingLayerNames"));
         }
 
         if (config.coordinateSystem == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "constructor", "missingCoordinateSystem"));
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "constructor", "missingCoordinateSystem"));
         }
 
         this.serviceAddress = config.serviceAddress;
@@ -126,6 +134,7 @@ public class WmsGetMapUrlFactory implements TileUrlFactory {
         this.layerNames = config.layerNames;
         this.styleNames = config.styleNames;
         this.coordinateSystem = config.coordinateSystem;
+        this.imageFormat = config.imageFormat;
         this.transparent = config.transparent;
         this.timeString = config.timeString;
     }
@@ -149,7 +158,7 @@ public class WmsGetMapUrlFactory implements TileUrlFactory {
     public void setServiceAddress(String serviceAddress) {
         if (serviceAddress == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "setServiceAddress", "missingServiceAddress"));
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "setServiceAddress", "missingServiceAddress"));
         }
 
         this.serviceAddress = serviceAddress;
@@ -174,7 +183,7 @@ public class WmsGetMapUrlFactory implements TileUrlFactory {
     public void setWmsVersion(String wmsVersion) {
         if (wmsVersion == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "setWmsVersion", "missingVersion"));
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "setWmsVersion", "missingVersion"));
         }
 
         this.wmsVersion = wmsVersion;
@@ -199,7 +208,7 @@ public class WmsGetMapUrlFactory implements TileUrlFactory {
     public void setLayerNames(String layerNames) {
         if (layerNames == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "setLayerNames", "missingLayerNames"));
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "setLayerNames", "missingLayerNames"));
         }
 
         this.layerNames = layerNames;
@@ -242,10 +251,28 @@ public class WmsGetMapUrlFactory implements TileUrlFactory {
     public void setCoordinateSystem(String coordinateSystem) {
         if (coordinateSystem == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "setCoordinateSystem", "missingCoordinateSystem"));
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "setCoordinateSystem", "missingCoordinateSystem"));
         }
 
         this.coordinateSystem = coordinateSystem;
+    }
+
+    /**
+     * Indicates the image MIME format to use in Get Map URLs, or null in which case the default format is assumed.
+     *
+     * @return the image MIME format
+     */
+    public String getImageFormat() {
+        return imageFormat;
+    }
+
+    /**
+     * Sets the image MIME format to use in Get Map URLs. May be null in which case the default format is assumed.
+     *
+     * @param imageFormat the image MIME format to use
+     */
+    public void setImageFormat(String imageFormat) {
+        this.imageFormat = imageFormat;
     }
 
     /**
@@ -285,15 +312,29 @@ public class WmsGetMapUrlFactory implements TileUrlFactory {
     }
 
     @Override
-    public String urlForTile(Tile tile, String imageFormat) {
-        if (tile == null) {
+    public Tile createTile(Sector sector, Level level, int row, int column) {
+        if (sector == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "urlForTile", "missingTile"));
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "createTile", "missingSector"));
         }
 
-        if (imageFormat == null) {
+        if (level == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "urlForTile", "missingFormat"));
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "createTile", "missingLevel"));
+        }
+
+        ImageTile tile = new ImageTile(sector, level, row, column);
+
+        String urlString = this.urlForTile(sector, level.tileWidth, level.tileHeight);
+        tile.setImageSource(ImageSource.fromUrl(urlString));
+
+        return tile;
+    }
+
+    public String urlForTile(Sector sector, int width, int height) {
+        if (sector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "urlForTile", "missingSector"));
         }
 
         StringBuilder url = new StringBuilder(this.serviceAddress);
@@ -318,7 +359,6 @@ public class WmsGetMapUrlFactory implements TileUrlFactory {
         url.append("&LAYERS=").append(this.layerNames);
         url.append("&STYLES=").append(this.styleNames != null ? this.styleNames : "");
 
-        Sector sector = tile.sector;
         if (this.wmsVersion.equals("1.3.0")) {
             url.append("&CRS=").append(this.coordinateSystem);
             url.append("&BBOX=");
@@ -336,9 +376,9 @@ public class WmsGetMapUrlFactory implements TileUrlFactory {
             url.append(sector.maxLongitude()).append(",").append(sector.maxLatitude());
         }
 
-        url.append("&WIDTH=").append(tile.level.tileWidth);
-        url.append("&HEIGHT=").append(tile.level.tileHeight);
-        url.append("&FORMAT=").append(imageFormat);
+        url.append("&WIDTH=").append(width);
+        url.append("&HEIGHT=").append(height);
+        url.append("&FORMAT=").append(this.imageFormat != null ? this.imageFormat : "image/png");
         url.append("&TRANSPARENT=").append(this.transparent ? "TRUE" : "FALSE");
 
         if (this.timeString != null) {
