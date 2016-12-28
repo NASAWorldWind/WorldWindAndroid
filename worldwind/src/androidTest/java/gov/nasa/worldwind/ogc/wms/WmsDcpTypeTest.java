@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.InputStream;
+import java.util.List;
 
 import gov.nasa.worldwind.R;
 import gov.nasa.worldwind.util.xml.XmlModel;
@@ -43,12 +44,13 @@ public class WmsDcpTypeTest {
         stepOne = (XmlModel) stepOne.getField("Request");
         stepOne = (XmlModel) stepOne.getField("GetCapabilities");
         WmsDcpType dcpType = (WmsDcpType) stepOne.getField("DCPType");
+        List<WmsDcpType.DcpInfo> types = dcpType.getDcpInfos();
 
-        assertEquals("test DCP protocol", "HTTP", dcpType.getDCPInfos().get(0).protocol);
-        assertEquals("test DCP method", "Get", dcpType.getDCPInfos().get(0).method);
+        assertEquals("test DCP protocol", "HTTP", types.get(0).protocol);
+        assertEquals("test DCP method", "Get", types.get(0).method);
         assertEquals(
             "test DCP resource url",
             "https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?",
-            dcpType.getDCPInfos().get(0).onlineResource.getHref());
+            types.get(0).onlineResource.getHref());
     }
 }

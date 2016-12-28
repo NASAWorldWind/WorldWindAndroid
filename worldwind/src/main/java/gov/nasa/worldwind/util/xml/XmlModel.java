@@ -26,10 +26,6 @@ public class XmlModel {
 
     protected XmlModel parent;
 
-    public XmlModel() {
-        this.namespaceUri = null;
-    }
-
     public XmlModel(String namespaceUri) {
         this.namespaceUri = namespaceUri;
     }

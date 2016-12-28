@@ -5,29 +5,25 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.namespace.QName;
 
+import gov.nasa.worldwind.util.xml.NameStringModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
-import gov.nasa.worldwind.util.xml.XmlPullParserContext;
 
 public class WmsDcpType extends XmlModel {
 
-    protected QName GET;
+    protected QName get;
 
-    protected QName POST;
+    protected QName post;
 
-    protected QName HTTP;
+    protected QName http;
 
-    protected QName ONLINE_RESOURCE;
+    protected QName onlineResource;
 
-    public static class DCPInfo {
+    public static class DcpInfo {
 
         protected String protocol;
 
@@ -35,12 +31,12 @@ public class WmsDcpType extends XmlModel {
 
         protected WmsOnlineResource onlineResource;
 
-        public DCPInfo(String protocol) {
+        public DcpInfo(String protocol) {
             this.protocol = protocol;
         }
     }
-
-    protected List<DCPInfo> protocols = new ArrayList<DCPInfo>(1);
+//
+//    protected List<DcpInfo> protocols = new ArrayList<DcpInfo>(1);
 
     public WmsDcpType(String namespaceURI) {
         super(namespaceURI);
@@ -49,74 +45,67 @@ public class WmsDcpType extends XmlModel {
     }
 
     private void initialize() {
-        GET = new QName(this.getNamespaceUri(), "Get");
-        POST = new QName(this.getNamespaceUri(), "Post");
-        HTTP = new QName(this.getNamespaceUri(), "HTTP");
-        ONLINE_RESOURCE = new QName(this.getNamespaceUri(), "OnlineResource");
+        this.get = new QName(this.getNamespaceUri(), "Get");
+        this.post = new QName(this.getNamespaceUri(), "Post");
+        this.http = new QName(this.getNamespaceUri(), "HTTP");
+        this.onlineResource = new QName(this.getNamespaceUri(), "OnlineResource");
     }
 
-    @Override
-    protected void doParseEventContent(XmlPullParserContext ctx) throws XmlPullParserException, IOException {
+//    @Override
+//    protected void doParseEventContent(XmlPullParserContext ctx) throws XmlPullParserException, IOException {
+//
+//        XmlPullParser xpp = ctx.getParser();
+//
+//        if (ctx.isStartElement(this.http)) {
+//            this.addProtocol(xpp.getName());
+//        } else if (ctx.isStartElement(this.get) || ctx.isStartElement(this.post)) {
+//            this.addRequestMethod(xpp.getName());
+//        } else if (ctx.isStartElement(this.on)) {
+//            XmlModel model = ctx.createParsableModel(this.on);
+//            if (model != null) {
+//                Object o = model.read(ctx);
+//                if (o != null) {
+//                    this.addOnlineResource((WmsOnlineResource) o);
+//                }
+//            }
+//        } else {
+//            super.doParseEventContent(ctx);
+//        }
+//    }
 
-        XmlPullParser xpp = ctx.getParser();
+    public List<DcpInfo> getDcpInfos() {
 
-        if (ctx.isStartElement(this.HTTP)) {
-            this.addProtocol(xpp.getName());
-        } else if (ctx.isStartElement(this.GET) || ctx.isStartElement(this.POST)) {
-            this.addRequestMethod(xpp.getName());
-        } else if (ctx.isStartElement(this.ONLINE_RESOURCE)) {
-            XmlModel model = ctx.createParsableModel(this.ONLINE_RESOURCE);
+        List<DcpInfo> infos = new ArrayList<>();
+
+        NameStringModel httpModel = (NameStringModel) this.getField(this.http);
+        if (httpModel != null) {
+
+            NameStringModel model = (NameStringModel) httpModel.getField(this.get);
             if (model != null) {
-                Object o = model.read(ctx);
-                if (o != null) {
-                    this.addOnlineResource((WmsOnlineResource) o);
-                }
+                DcpInfo dcpInfo = new DcpInfo(httpModel.getField(XmlModel.CHARACTERS_CONTENT).toString());
+                dcpInfo.method = model.getField(XmlModel.CHARACTERS_CONTENT).toString();
+                dcpInfo.onlineResource = (WmsOnlineResource) model.getField(this.onlineResource);
+                infos.add(dcpInfo);
             }
-        }
-    }
 
-    public List<DCPInfo> getDCPInfos() {
-        return this.protocols;
-    }
+            model = (NameStringModel) httpModel.getField(this.post);
+            if (model != null) {
+                DcpInfo dcpInfo = new DcpInfo(httpModel.getField(XmlModel.CHARACTERS_CONTENT).toString());
+                dcpInfo.method = model.getField(XmlModel.CHARACTERS_CONTENT).toString();
+                dcpInfo.onlineResource = (WmsOnlineResource) model.getField(this.onlineResource);
+                infos.add(dcpInfo);
+            }
 
-    protected void addProtocol(String protocol) {
-        this.protocols.add(new DCPInfo(protocol));
-    }
-
-    protected void addRequestMethod(String requestMethod) {
-        DCPInfo dcpi = this.protocols.get(this.protocols.size() - 1);
-
-        if (dcpi.method != null) {
-            dcpi = new DCPInfo(dcpi.protocol);
-            this.protocols.add(dcpi);
         }
 
-        dcpi.method = requestMethod;
-    }
-
-    protected void addOnlineResource(WmsOnlineResource onlineResource) {
-        DCPInfo dcpi = this.protocols.get(this.protocols.size() - 1);
-
-        dcpi.onlineResource = onlineResource;
-    }
-
-    public WmsOnlineResource getOnlineResouce(String protocol, String requestMethod) {
-        for (DCPInfo dcpi : this.getDCPInfos()) {
-            if (!dcpi.protocol.equalsIgnoreCase(protocol))
-                continue;
-
-            if (dcpi.method.equalsIgnoreCase(requestMethod))
-                return dcpi.onlineResource;
-        }
-
-        return null;
+        return infos;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        for (DCPInfo dcpi : this.getDCPInfos()) {
+        for (DcpInfo dcpi : this.getDcpInfos()) {
             sb.append(dcpi.protocol).append(", ");
             sb.append(dcpi.method).append(", ");
             sb.append(dcpi.onlineResource.toString());

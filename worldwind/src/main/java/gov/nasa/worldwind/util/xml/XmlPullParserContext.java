@@ -5,6 +5,7 @@
 
 package gov.nasa.worldwind.util.xml;
 
+import android.util.Log;
 import android.util.Xml;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -77,12 +78,15 @@ public class XmlPullParserContext {
             new QName(this.defaultNamespaceUri, "LogoURL"), new WmsLogoUrl(this.defaultNamespaceUri));
         this.registerParsableModel(
             new QName(this.defaultNamespaceUri, "Attribution"), new WmsLayerAttribution(this.defaultNamespaceUri));
-        this.registerParsableModel(new QName(this.defaultNamespaceUri, "AddressType"), new XmlModel());
-        this.registerParsableModel(new QName(this.defaultNamespaceUri, "Address"), new XmlModel());
-        this.registerParsableModel(new QName(this.defaultNamespaceUri, "City"), new XmlModel());
-        this.registerParsableModel(new QName(this.defaultNamespaceUri, "StateOrProvince"), new XmlModel());
-        this.registerParsableModel(new QName(this.defaultNamespaceUri, "PostCode"), new XmlModel());
-        this.registerParsableModel(new QName(this.defaultNamespaceUri, "Country"), new XmlModel());
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "AddressType"), new XmlModel(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "Address"), new XmlModel(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "City"), new XmlModel(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "StateOrProvince"), new XmlModel(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "PostCode"), new XmlModel(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "Country"), new XmlModel(this.defaultNamespaceUri));
+
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "HTTP"), new NameStringModel(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "Get"), new NameStringModel(this.defaultNamespaceUri));
 
     }
 
@@ -117,6 +121,7 @@ public class XmlPullParserContext {
             return ctor.newInstance(eventName.getNamespaceURI());
         } catch (Exception e) {
             // TODO log error
+            Log.e("gov.nasa.worldwind", e.toString());
         }
 
         return null;
@@ -133,7 +138,7 @@ public class XmlPullParserContext {
     }
 
     public XmlModel getUnrecognizedElementModel() {
-        return new XmlModel();
+        return new XmlModel(this.defaultNamespaceUri);
     }
 
     public boolean isStartElement(QName event) throws XmlPullParserException, IOException {
