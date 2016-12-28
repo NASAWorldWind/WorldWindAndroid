@@ -17,7 +17,7 @@ API documentation and more are available at [worldwind.arc.nasa.gov](https://wor
 repository contains the library source, examples and tutorials.
 
 - [worldwind.arc.nasa.gov](https://worldwind.arc.nasa.gov) has all things World Wind in one place
-- [World Wind Forum](http://forum.worldwindcentral.com) provides help from the World Wind community
+- [World Wind Forum](https://forum.worldwindcentral.com) provides help from the World Wind community
 - [GitHub Issues](https://github.com/NASAWorldWind/WorldWindAndroid/issues) provides requirements and issue tracking
 - [Travis CI](https://travis-ci.org/NASAWorldWind/WorldWindAndroid) provides continuous integration and build automation
 - [Android Studio](https://developer.android.com/sdk/) is used by the NASA World Wind development team
