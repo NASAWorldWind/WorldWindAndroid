@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
-import android.content.res.Resources;
 import android.support.test.filters.SmallTest;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -13,14 +12,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import gov.nasa.worldwind.R;
-import gov.nasa.worldwind.util.xml.XmlModel;
 import gov.nasa.worldwind.util.xml.XmlPullParserContext;
 
-import static android.support.test.InstrumentationRegistry.getInstrumentation;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(AndroidJUnit4.class)
@@ -30,23 +27,27 @@ public class WmsOnlineResourceTest {
     @Test
     public void testOnlineResource_ParseAndReadSampleWms() throws IOException, XmlPullParserException {
 
+        // Sample XML
+        String XML = "<OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+            "xlink:type=\"simple\"\n" +
+            "xlink:href=\"http://www.university.edu/stylesheets/usgs.xsl\" />\n";
         // Initialize the context and basic model
         XmlPullParserContext context = new XmlPullParserContext(XmlPullParserContext.DEFAULT_NAMESPACE);
-        Resources resources = getInstrumentation().getTargetContext().getResources();
-        InputStream is = resources.openRawResource(R.raw.gov_nasa_worldwind_sample_wms_xml);
+        InputStream is = new ByteArrayInputStream(XML.getBytes());
         context.setParserInput(is);
-        XmlModel elementModel = new XmlModel(XmlPullParserContext.DEFAULT_NAMESPACE);
+        WmsOnlineResource elementModel = new WmsOnlineResource(XmlPullParserContext.DEFAULT_NAMESPACE);
         Object o;
 
         do {
             o = elementModel.read(context);
         } while (o != null);
-        String actualLink = ((WmsOnlineResource) ((XmlModel) elementModel.getField("Service"))
-            .getField("OnlineResource")).getHref();
 
         assertEquals("test href link",
-            "https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?",
-            actualLink);
+            "http://www.university.edu/stylesheets/usgs.xsl",
+            elementModel.getHref());
+        assertEquals("test link type",
+            "simple",
+            elementModel.getType());
 
     }
 
