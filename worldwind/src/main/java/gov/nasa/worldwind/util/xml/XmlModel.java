@@ -222,4 +222,30 @@ public class XmlModel {
         return this.fields;
     }
 
+    protected String getChildCharacterValue(QName name) {
+
+        XmlModel model = (XmlModel) this.getField(name);
+        if (model != null) {
+            Object o = model.getField(XmlModel.CHARACTERS_CONTENT);
+            if (o != null) {
+                return o.toString();
+            }
+        }
+
+        return null;
+    }
+
+    protected void setChildCharacterValue(QName name, String value) {
+
+        XmlModel model = (XmlModel) this.getField(name);
+
+        if (model != null) {
+            model.setField(XmlModel.CHARACTERS_CONTENT, value);
+        } else {
+            model = new XmlModel(this.getNamespaceUri());
+            model.setField(XmlModel.CHARACTERS_CONTENT, value);
+            this.setField(name, model);
+        }
+    }
+
 }
