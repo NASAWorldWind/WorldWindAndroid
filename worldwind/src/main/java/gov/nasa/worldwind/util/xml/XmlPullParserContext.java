@@ -24,7 +24,9 @@ import gov.nasa.worldwind.ogc.wms.WmsAuthorityUrl;
 import gov.nasa.worldwind.ogc.wms.WmsBoundingBox;
 import gov.nasa.worldwind.ogc.wms.WmsDcpType;
 import gov.nasa.worldwind.ogc.wms.WmsLayerAttribution;
+import gov.nasa.worldwind.ogc.wms.WmsLayerExtent;
 import gov.nasa.worldwind.ogc.wms.WmsLayerInfoUrl;
+import gov.nasa.worldwind.ogc.wms.WmsLayerStyle;
 import gov.nasa.worldwind.ogc.wms.WmsLogoUrl;
 import gov.nasa.worldwind.ogc.wms.WmsOnlineResource;
 
@@ -87,6 +89,13 @@ public class XmlPullParserContext {
 
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "HTTP"), new NameStringModel(this.defaultNamespaceUri));
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "Get"), new NameStringModel(this.defaultNamespaceUri));
+
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "Extent"), new WmsLayerExtent(this.defaultNamespaceUri));
+
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "Style"), new WmsLayerStyle(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "LegendURL"), new WmsLogoUrl(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "StyleSheetURL"), new WmsLayerInfoUrl(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "StyleURL"), new WmsLayerInfoUrl(this.defaultNamespaceUri));
 
     }
 
