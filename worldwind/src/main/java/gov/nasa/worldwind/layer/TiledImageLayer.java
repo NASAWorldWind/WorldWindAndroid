@@ -27,13 +27,11 @@ import gov.nasa.worldwind.util.Tile;
 import gov.nasa.worldwind.util.TileFactory;
 import gov.nasa.worldwind.util.TileUrlFactory;
 
-public class TiledImageLayer extends AbstractLayer implements TileFactory {
+public class TiledImageLayer extends AbstractLayer {
+
+    protected TileFactory tileFactory;
 
     protected LevelSet levelSet = new LevelSet(); // empty level set
-
-    protected TileUrlFactory tileUrlFactory;
-
-    protected String imageFormat;
 
     protected ImageOptions imageOptions;
 
@@ -80,21 +78,12 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
         this.invalidateTiles();
     }
 
-    protected TileUrlFactory getTileUrlFactory() {
-        return this.tileUrlFactory;
+    public TileFactory getTileFactory() {
+        return this.tileFactory;
     }
 
-    protected void setTileUrlFactory(TileUrlFactory tileUrlFactory) {
-        this.tileUrlFactory = tileUrlFactory;
-        this.invalidateTiles();
-    }
-
-    protected String getImageFormat() {
-        return this.imageFormat;
-    }
-
-    protected void setImageFormat(String imageFormat) {
-        this.imageFormat = imageFormat;
+    public void setTileFactory(TileFactory tileFactory) {
+        this.tileFactory = tileFactory;
         this.invalidateTiles();
     }
 
@@ -129,18 +118,6 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
         this.ancestorTexture = null;
     }
 
-    @Override
-    public Tile createTile(Sector sector, Level level, int row, int column) {
-        ImageTile tile = new ImageTile(sector, level, row, column);
-
-        if (this.tileUrlFactory != null && this.imageFormat != null) {
-            String urlString = this.tileUrlFactory.urlForTile(tile, this.imageFormat);
-            tile.setImageSource(ImageSource.fromUrl(urlString));
-        }
-
-        return tile;
-    }
-
     protected void determineActiveProgram(RenderContext rc) {
         this.activeProgram = (SurfaceTextureProgram) rc.getShaderProgram(SurfaceTextureProgram.KEY);
 
@@ -162,7 +139,7 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
     protected void createTopLevelTiles() {
         Level firstLevel = this.levelSet.firstLevel();
         if (firstLevel != null) {
-            Tile.assembleTilesForLevel(firstLevel, this, this.topLevelTiles);
+            Tile.assembleTilesForLevel(firstLevel, this.tileFactory, this.topLevelTiles);
         }
     }
 
@@ -185,7 +162,7 @@ public class TiledImageLayer extends AbstractLayer implements TileFactory {
             this.ancestorTexture = tileTexture;
         }
 
-        for (Tile child : tile.subdivideToCache(this, this.tileCache, 4)) { // each tile has a cached size of 1
+        for (Tile child : tile.subdivideToCache(this.tileFactory, this.tileCache, 4)) { // each tile has a cached size of 1
             this.addTileOrDescendants(rc, (ImageTile) child); // recursively process the tile's children
         }
 

@@ -6,25 +6,27 @@
 package gov.nasa.worldwind.layer;
 
 import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.ogc.WmsGetMapUrlFactory;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
+import gov.nasa.worldwind.ogc.WmsTileFactory;
 import gov.nasa.worldwind.render.ImageOptions;
+import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.LevelSetConfig;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Tile;
-import gov.nasa.worldwind.util.TileUrlFactory;
+import gov.nasa.worldwind.util.TileFactory;
 
 /**
  * Displays a composite of NASA's Blue Marble next generation imagery at 500m resolution and Landsat imagery at 15m
  * resolution from an OGC Web Map Service (WMS). By default, BlueMarbleLandsatLayer is configured to retrieve imagery
  * from the WMS at <a href="https://worldwind25.arc.nasa.gov/wms?SERVICE=WMS&REQUEST=GetCapabilities">https://worldwind25.arc.nasa.gov/wms</a>.
  */
-public class BlueMarbleLandsatLayer extends TiledImageLayer implements TileUrlFactory {
+public class BlueMarbleLandsatLayer extends TiledImageLayer implements TileFactory {
 
-    protected TileUrlFactory blueMarbleUrlFactory;
+    protected TileFactory blueMarbleTileFactory;
 
-    protected TileUrlFactory landsatUrlFactory;
+    protected TileFactory landsatTileFactory;
 
     /**
      * Constructs a composite image layer with the WMS at https://worldwind25.arc.nasa.gov/wms.
@@ -53,7 +55,7 @@ public class BlueMarbleLandsatLayer extends TiledImageLayer implements TileUrlFa
         blueMarbleConfig.layerNames = "BlueMarble-200405";
         blueMarbleConfig.coordinateSystem = "EPSG:4326";
         blueMarbleConfig.transparent = false; // the BlueMarble layer is opaque
-        this.blueMarbleUrlFactory = new WmsGetMapUrlFactory(blueMarbleConfig);
+        this.blueMarbleTileFactory = new WmsTileFactory(blueMarbleConfig);
 
         // Configure a WMS Get Map URL factory to retrieve Blue Marble + Landsat tiles.
         WmsLayerConfig landsatConfig = new WmsLayerConfig();
@@ -62,7 +64,7 @@ public class BlueMarbleLandsatLayer extends TiledImageLayer implements TileUrlFa
         landsatConfig.layerNames = "BlueMarble-200405,esat"; // composite the esat layer over the BlueMarble layer
         landsatConfig.coordinateSystem = "EPSG:4326";
         landsatConfig.transparent = false; // combining BlueMarble and esat layers results in opaque images
-        this.landsatUrlFactory = new WmsGetMapUrlFactory(landsatConfig);
+        this.landsatTileFactory = new WmsTileFactory(landsatConfig);
 
         // Configure this layer's level set to capture the entire globe at 15m resolution.
         double metersPerPixel = 15;
@@ -72,20 +74,19 @@ public class BlueMarbleLandsatLayer extends TiledImageLayer implements TileUrlFa
 
         this.setDisplayName("Blue Marble & Landsat");
         this.setLevelSet(new LevelSet(levelsConfig));
-        this.setTileUrlFactory(this);
-        this.setImageFormat("image/png");
+        this.setTileFactory(this);
         this.setImageOptions(new ImageOptions(WorldWind.RGB_565)); // reduce memory usage by using a 16-bit configuration with no alpha
     }
 
     @Override
-    public String urlForTile(Tile tile, String imageFormat) {
-        double radiansPerPixel = tile.level.texelHeight;
+    public Tile createTile(Sector sector, Level level, int row, int column) {
+        double radiansPerPixel = level.texelHeight;
         double metersPerPixel = radiansPerPixel * WorldWind.WGS84_SEMI_MAJOR_AXIS;
 
         if (metersPerPixel < 2.0e3) { // switch to Landsat at 2km resolution
-            return this.landsatUrlFactory.urlForTile(tile, imageFormat);
+            return this.landsatTileFactory.createTile(sector, level, row, column);
         } else {
-            return this.blueMarbleUrlFactory.urlForTile(tile, imageFormat);
+            return this.blueMarbleTileFactory.createTile(sector, level, row, column);
         }
     }
 }
