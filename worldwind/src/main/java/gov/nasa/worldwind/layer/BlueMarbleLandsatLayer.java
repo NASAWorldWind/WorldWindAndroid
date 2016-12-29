@@ -10,7 +10,6 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwind.ogc.WmsTileFactory;
 import gov.nasa.worldwind.render.ImageOptions;
-import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.shape.TiledSurfaceImage;
 import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.LevelSet;
@@ -24,9 +23,7 @@ import gov.nasa.worldwind.util.TileFactory;
  * resolution from an OGC Web Map Service (WMS). By default, BlueMarbleLandsatLayer is configured to retrieve imagery
  * from the WMS at <a href="https://worldwind25.arc.nasa.gov/wms?SERVICE=WMS&REQUEST=GetCapabilities">https://worldwind25.arc.nasa.gov/wms</a>.
  */
-public class BlueMarbleLandsatLayer extends AbstractLayer implements TileFactory {
-
-    protected TiledSurfaceImage surfaceImage;
+public class BlueMarbleLandsatLayer extends RenderableLayer implements TileFactory {
 
     protected TileFactory blueMarbleTileFactory;
 
@@ -79,10 +76,11 @@ public class BlueMarbleLandsatLayer extends AbstractLayer implements TileFactory
         this.setDisplayName("Blue Marble & Landsat");
         this.setPickEnabled(false);
 
-        this.surfaceImage = new TiledSurfaceImage();
-        this.surfaceImage.setLevelSet(new LevelSet(levelsConfig));
-        this.surfaceImage.setTileFactory(this);
-        this.surfaceImage.setImageOptions(new ImageOptions(WorldWind.RGB_565)); // reduce memory usage by using a 16-bit configuration with no alpha
+        TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
+        surfaceImage.setLevelSet(new LevelSet(levelsConfig));
+        surfaceImage.setTileFactory(this);
+        surfaceImage.setImageOptions(new ImageOptions(WorldWind.RGB_565)); // reduce memory usage by using a 16-bit configuration with no alpha
+        this.addRenderable(surfaceImage);
     }
 
     @Override
@@ -95,10 +93,5 @@ public class BlueMarbleLandsatLayer extends AbstractLayer implements TileFactory
         } else {
             return this.blueMarbleTileFactory.createTile(sector, level, row, column);
         }
-    }
-
-    @Override
-    protected void doRender(RenderContext rc) {
-        this.surfaceImage.render(rc);
     }
 }

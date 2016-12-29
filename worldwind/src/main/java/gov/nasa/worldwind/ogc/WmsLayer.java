@@ -8,8 +8,7 @@ package gov.nasa.worldwind.ogc;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globe.Globe;
-import gov.nasa.worldwind.layer.AbstractLayer;
-import gov.nasa.worldwind.render.RenderContext;
+import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.shape.TiledSurfaceImage;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.LevelSetConfig;
@@ -25,9 +24,7 @@ import gov.nasa.worldwind.util.Logger;
  * WmsLayer defaults to retrieving imagery in the PNG format. This may be configured by calling
  * <code>setImageFormat</code>.
  */
-public class WmsLayer extends AbstractLayer {
-
-    protected TiledSurfaceImage surfaceImage;
+public class WmsLayer extends RenderableLayer {
 
     /**
      * Constructs an empty Web Map Service (WMS) layer that displays nothing.
@@ -112,7 +109,7 @@ public class WmsLayer extends AbstractLayer {
     protected void init() {
         this.setDisplayName("WMS Layer");
         this.setPickEnabled(false);
-        this.surfaceImage = new TiledSurfaceImage();
+        this.addRenderable(new TiledSurfaceImage());
     }
 
     /**
@@ -146,8 +143,9 @@ public class WmsLayer extends AbstractLayer {
         levelsConfig.sector.set(sector);
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel);
 
-        this.surfaceImage.setLevelSet(new LevelSet(levelsConfig));
-        this.surfaceImage.setTileFactory(new WmsTileFactory(config));
+        TiledSurfaceImage surfaceImage = (TiledSurfaceImage) this.getRenderable(0);
+        surfaceImage.setLevelSet(new LevelSet(levelsConfig));
+        surfaceImage.setTileFactory(new WmsTileFactory(config));
     }
 
     /**
@@ -186,12 +184,8 @@ public class WmsLayer extends AbstractLayer {
         levelsConfig.sector.set(sector);
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel);
 
-        this.surfaceImage.setLevelSet(new LevelSet(levelsConfig));
-        this.surfaceImage.setTileFactory(new WmsTileFactory(config));
-    }
-
-    @Override
-    protected void doRender(RenderContext rc) {
-        this.surfaceImage.render(rc);
+        TiledSurfaceImage surfaceImage = (TiledSurfaceImage) this.getRenderable(0);
+        surfaceImage.setLevelSet(new LevelSet(levelsConfig));
+        surfaceImage.setTileFactory(new WmsTileFactory(config));
     }
 }
