@@ -22,6 +22,8 @@ import javax.xml.namespace.QName;
 import gov.nasa.worldwind.ogc.wms.WmsAddress;
 import gov.nasa.worldwind.ogc.wms.WmsAuthorityUrl;
 import gov.nasa.worldwind.ogc.wms.WmsBoundingBox;
+import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
+import gov.nasa.worldwind.ogc.wms.WmsCapabilityInformation;
 import gov.nasa.worldwind.ogc.wms.WmsContactInformation;
 import gov.nasa.worldwind.ogc.wms.WmsDcpType;
 import gov.nasa.worldwind.ogc.wms.WmsGeographicBoundingBox;
@@ -128,9 +130,13 @@ public class XmlPullParserContext {
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "MetadataURL"), new WmsLayerInfoUrl(this.defaultNamespaceUri));
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "FeatureListURL"), new WmsLayerInfoUrl(this.defaultNamespaceUri));
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "DataURL"), new WmsLayerInfoUrl(this.defaultNamespaceUri));
-        this.registerParsableModel(new QName(this.defaultNamespaceUri, "AuthorityURL"), new WmsLayerIdentifier(this.defaultNamespaceUri));
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "Identifier"), new WmsLayerIdentifier(this.defaultNamespaceUri));
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "Dimension"), new WmsLayerDimension(this.defaultNamespaceUri));
+
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "Capability"), new WmsCapabilityInformation(this.defaultNamespaceUri));
+
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "WMT_MS_Capabilities"), new WmsCapabilities(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "WMS_Capabilities"), new WmsCapabilities(this.defaultNamespaceUri));
     }
 
     //There was limited use, and I'm trying to abstract the XmlPullParser from consumers

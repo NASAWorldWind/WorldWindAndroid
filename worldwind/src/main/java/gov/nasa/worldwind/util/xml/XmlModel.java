@@ -130,6 +130,7 @@ public class XmlModel {
             }
 
             if (model != null) {
+                model.setParent(this);
                 Object o = model.read(ctx);
                 if (o == null) {
                     return;
