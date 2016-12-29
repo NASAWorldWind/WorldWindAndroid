@@ -8,7 +8,7 @@ package gov.nasa.worldwind.ogc;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globe.Globe;
-import gov.nasa.worldwind.layer.TiledImageLayer;
+import gov.nasa.worldwind.shape.TiledImageLayer;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.LevelSetConfig;
 import gov.nasa.worldwind.util.Logger;

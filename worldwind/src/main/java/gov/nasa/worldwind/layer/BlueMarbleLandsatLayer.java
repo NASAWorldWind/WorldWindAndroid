@@ -10,6 +10,7 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwind.ogc.WmsTileFactory;
 import gov.nasa.worldwind.render.ImageOptions;
+import gov.nasa.worldwind.shape.TiledImageLayer;
 import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.LevelSetConfig;
