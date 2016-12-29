@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
-import android.content.res.Resources;
 import android.support.test.filters.SmallTest;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -13,14 +12,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import gov.nasa.worldwind.R;
-import gov.nasa.worldwind.util.xml.XmlModel;
 import gov.nasa.worldwind.util.xml.XmlPullParserContext;
 
-import static android.support.test.InstrumentationRegistry.getInstrumentation;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(AndroidJUnit4.class)
@@ -32,19 +29,18 @@ public class WmsBoundingBoxTest {
     @Test
     public void testBoundingBox_ParseAndReadSampleWms() throws XmlPullParserException, IOException {
 
+        // Sample xml
+        String xml = "<BoundingBox xmlns=\"http://www.opengis.net/wms\" CRS=\"EPSG:3857\" minx=\"-20074053.901178\" miny=\"-30281451.060015\" maxx=\"20074053.888922\" maxy=\"30281451.072272\"/>";
         // Initialize the context and basic model
         XmlPullParserContext context = new XmlPullParserContext(XmlPullParserContext.DEFAULT_NAMESPACE);
-        Resources resources = getInstrumentation().getTargetContext().getResources();
-        InputStream is = resources.openRawResource(R.raw.gov_nasa_worldwind_sample_wms_xml);
+        InputStream is = new ByteArrayInputStream(xml.getBytes());
         context.setParserInput(is);
-        XmlModel elementModel = new XmlModel(XmlPullParserContext.DEFAULT_NAMESPACE);
+        WmsBoundingBox boundingBox = new WmsBoundingBox(XmlPullParserContext.DEFAULT_NAMESPACE);
         Object o;
 
         do {
-            o = elementModel.read(context);
+            o = boundingBox.read(context);
         } while (o != null);
-        WmsBoundingBox boundingBox = (WmsBoundingBox) ((XmlModel) ((XmlModel) elementModel.getField("Capability"))
-            .getField("Layer")).getField("BoundingBox");
 
         assertEquals("reference system",
             "EPSG:3857",
