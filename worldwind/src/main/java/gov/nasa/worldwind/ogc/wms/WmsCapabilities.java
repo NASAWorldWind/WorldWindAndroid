@@ -67,8 +67,12 @@ public class WmsCapabilities extends XmlModel {
 
         List<WmsLayerCapabilities> namedLayers = new ArrayList<>();
 
-        for (WmsLayerCapabilities layer : capInfo.getLayerList()) {
-            if (layer.getName() != null && !layer.getName().isEmpty()) {
+        for (WmsLayerCapabilities topLevelLayer : capInfo.getLayerList()) {
+            if (topLevelLayer.getName() != null && !topLevelLayer.getName().isEmpty()) {
+                namedLayers.add(topLevelLayer);
+            }
+            List<WmsLayerCapabilities> named = topLevelLayer.getNamedLayers();
+            for (WmsLayerCapabilities layer : named) {
                 namedLayers.addAll(layer.getNamedLayers());
             }
         }
