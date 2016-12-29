@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-package gov.nasa.worldwind.layer;
+package gov.nasa.worldwind.shape;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +12,7 @@ import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableSurfaceTexture;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.layer.AbstractLayer;
 import gov.nasa.worldwind.render.ImageOptions;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.ImageTile;
