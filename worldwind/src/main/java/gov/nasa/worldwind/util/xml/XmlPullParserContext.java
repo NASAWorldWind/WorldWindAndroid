@@ -22,6 +22,7 @@ import javax.xml.namespace.QName;
 import gov.nasa.worldwind.ogc.wms.WmsAddress;
 import gov.nasa.worldwind.ogc.wms.WmsAuthorityUrl;
 import gov.nasa.worldwind.ogc.wms.WmsBoundingBox;
+import gov.nasa.worldwind.ogc.wms.WmsContactInformation;
 import gov.nasa.worldwind.ogc.wms.WmsDcpType;
 import gov.nasa.worldwind.ogc.wms.WmsKeywords;
 import gov.nasa.worldwind.ogc.wms.WmsLayerAttribution;
@@ -31,6 +32,7 @@ import gov.nasa.worldwind.ogc.wms.WmsLayerStyle;
 import gov.nasa.worldwind.ogc.wms.WmsLogoUrl;
 import gov.nasa.worldwind.ogc.wms.WmsOnlineResource;
 import gov.nasa.worldwind.ogc.wms.WmsRequestDescription;
+import gov.nasa.worldwind.ogc.wms.WmsServiceInformation;
 
 public class XmlPullParserContext {
 
@@ -104,7 +106,7 @@ public class XmlPullParserContext {
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "GetMap"), new WmsRequestDescription(this.defaultNamespaceUri));
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "GetFeatureInfo"), new WmsRequestDescription(this.defaultNamespaceUri));
 
-        this.registerParsableModel(new QName(this.defaultNamespaceUri, "ContactInformation"), new XmlModel(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "ContactInformation"), new WmsContactInformation(this.defaultNamespaceUri));
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "ContactPersonPrimary"), new XmlModel(this.defaultNamespaceUri));
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "ContactPerson"), new XmlModel(this.defaultNamespaceUri));
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "ContactOrganization"), new XmlModel(this.defaultNamespaceUri));
@@ -113,6 +115,11 @@ public class XmlPullParserContext {
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "ContactElectronicMailAddress"), new XmlModel(this.defaultNamespaceUri));
 
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "KeywordList"), new WmsKeywords(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "MaxHeight"), new IntegerModel(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "MaxWidth"), new IntegerModel(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "LayerLimit"), new IntegerModel(this.defaultNamespaceUri));
+
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "Service"), new WmsServiceInformation(this.defaultNamespaceUri));
     }
 
     //There was limited use, and I'm trying to abstract the XmlPullParser from consumers
