@@ -23,6 +23,7 @@ import gov.nasa.worldwind.ogc.wms.WmsAddress;
 import gov.nasa.worldwind.ogc.wms.WmsAuthorityUrl;
 import gov.nasa.worldwind.ogc.wms.WmsBoundingBox;
 import gov.nasa.worldwind.ogc.wms.WmsDcpType;
+import gov.nasa.worldwind.ogc.wms.WmsKeywords;
 import gov.nasa.worldwind.ogc.wms.WmsLayerAttribution;
 import gov.nasa.worldwind.ogc.wms.WmsLayerExtent;
 import gov.nasa.worldwind.ogc.wms.WmsLayerInfoUrl;
@@ -110,6 +111,8 @@ public class XmlPullParserContext {
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "ContactPosition"), new XmlModel(this.defaultNamespaceUri));
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "ContactVoiceTelephone"), new XmlModel(this.defaultNamespaceUri));
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "ContactElectronicMailAddress"), new XmlModel(this.defaultNamespaceUri));
+
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "KeywordList"), new WmsKeywords(this.defaultNamespaceUri));
     }
 
     //There was limited use, and I'm trying to abstract the XmlPullParser from consumers
