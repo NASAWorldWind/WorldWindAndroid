@@ -10,9 +10,13 @@ import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
 
 import gov.nasa.worldwind.util.xml.XmlPullParserContext;
 
@@ -20,13 +24,17 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-public class WmsDcpTypeTest {
+public class WmsRequestDescriptionTest {
 
     @Test
-    public void testDcpType_ParseAndReadSampleWms() throws Exception {
+    public void testRequestDescription_ParseAndReadSampleWms() throws IOException, XmlPullParserException {
 
         // Sample XML
-        String xml = "<DCPType xmlns=\"http://www.opengis.net/wms\">\n" +
+        String XML = "<GetCapabilities xmlns=\"http://www.opengis.net/wms\">\n" +
+            "\n" +
+            "<Format>text/xml</Format>\n" +
+            "\n" +
+            "<DCPType>\n" +
             "\n" +
             "<HTTP>\n" +
             "\n" +
@@ -52,25 +60,27 @@ public class WmsDcpTypeTest {
             "\n" +
             "</HTTP>\n" +
             "\n" +
-            "</DCPType>";
+            "</DCPType>\n" +
+            "\n" +
+            "</GetCapabilities>\n";
         // Initialize the context and basic model
         XmlPullParserContext context = new XmlPullParserContext(XmlPullParserContext.DEFAULT_NAMESPACE);
-        InputStream is = new ByteArrayInputStream(xml.getBytes());
+        InputStream is = new ByteArrayInputStream(XML.getBytes());
         context.setParserInput(is);
-        WmsDcpType elementModel = new WmsDcpType(XmlPullParserContext.DEFAULT_NAMESPACE);
+        WmsRequestDescription elementModel = new WmsRequestDescription(XmlPullParserContext.DEFAULT_NAMESPACE);
         Object o;
+        Set<String> expectedFormats = new HashSet<>();
+        expectedFormats.add("text/xml");
 
         do {
             o = elementModel.read(context);
         } while (o != null);
 
-        assertEquals("test DCP protocol", "HTTP", elementModel.getDcpInfos().get(0).protocol);
-        assertEquals("test DCP method", "Get", elementModel.getDcpInfos().get(0).method);
-        assertEquals("test DCP protocol", "HTTP", elementModel.getDcpInfos().get(1).protocol);
-        assertEquals("test DCP method", "Post", elementModel.getDcpInfos().get(1).method);
+        assertEquals("request description test names", "GetCapabilities", elementModel.getRequestName());
+        assertEquals("request description formats", expectedFormats, elementModel.getFormats());
         assertEquals(
-            "test DCP resource url",
-            "http://hostname/path?",
-            elementModel.getDcpInfos().get(0).onlineResource.getHref());
+            "request description online resource",
+            "http://hostname/path?", elementModel.getDcpTypes().iterator().next()
+                .getDcpInfos().get(0).onlineResource.getHref());
     }
 }
