@@ -127,6 +127,12 @@ public class TiledImageLayer extends AbstractLayer {
     }
 
     protected void assembleTiles(RenderContext rc) {
+        // TODO
+        // The need to create Tiles with a defined image source couples the need to determine a tile's visibility with
+        // he need to know its image source. Decoupling the two would mean we only need to know the image source when
+        // the texture is actually requested Could the tile-based operations done here be implicit on level/row/column,
+        // or use transient pooled tile objects not tied to an image source?
+
         if (this.topLevelTiles.isEmpty()) {
             this.createTopLevelTiles();
         }
