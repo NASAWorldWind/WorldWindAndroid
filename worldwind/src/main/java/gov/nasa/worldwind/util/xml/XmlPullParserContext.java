@@ -103,6 +103,13 @@ public class XmlPullParserContext {
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "GetMap"), new WmsRequestDescription(this.defaultNamespaceUri));
         this.registerParsableModel(new QName(this.defaultNamespaceUri, "GetFeatureInfo"), new WmsRequestDescription(this.defaultNamespaceUri));
 
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "ContactInformation"), new XmlModel(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "ContactPersonPrimary"), new XmlModel(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "ContactPerson"), new XmlModel(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "ContactOrganization"), new XmlModel(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "ContactPosition"), new XmlModel(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "ContactVoiceTelephone"), new XmlModel(this.defaultNamespaceUri));
+        this.registerParsableModel(new QName(this.defaultNamespaceUri, "ContactElectronicMailAddress"), new XmlModel(this.defaultNamespaceUri));
     }
 
     //There was limited use, and I'm trying to abstract the XmlPullParser from consumers
