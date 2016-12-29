@@ -218,7 +218,12 @@ public class XmlModel {
         return this.fields;
     }
 
-    protected String getChildCharacterValue(QName name) {
+    public String getCharactersContent() {
+        Object o = this.getField(CHARACTERS_CONTENT);
+        return o != null ? o.toString() : null;
+    }
+
+    public String getChildCharacterValue(QName name) {
 
         XmlModel model = (XmlModel) this.getField(name);
         if (model != null) {
@@ -241,6 +246,57 @@ public class XmlModel {
             model = new XmlModel(this.getNamespaceUri());
             model.setField(XmlModel.CHARACTERS_CONTENT, value);
             this.setField(name, model);
+        }
+    }
+
+    public Double getDoubleAttributeValue(QName name) {
+        Object o = this.getField(name);
+        if (o != null) {
+            if (o instanceof StringBuilder) {
+                try {
+                    return Double.parseDouble(o.toString());
+                } catch (Exception ignore) {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    public Integer getIntegerAttributeValue(QName name) {
+        Object o = this.getField(name);
+        if (o != null) {
+            if (o instanceof StringBuilder) {
+                try {
+                    return Integer.parseInt(o.toString());
+                } catch (Exception ignore) {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    public Boolean getBooleanAttributeValue(QName name) {
+        Object o = this.getField(name);
+        if (o != null) {
+            if (o instanceof StringBuilder) {
+                try {
+                    return Boolean.parseBoolean(o.toString());
+                } catch (Exception ignore) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
         }
     }
 
