@@ -28,6 +28,7 @@ public class WmsCapabilityInformation extends XmlModel {
 
     public WmsCapabilityInformation(String namespaceUri) {
         super(namespaceUri);
+        this.initialize();
     }
 
     protected void initialize() {
