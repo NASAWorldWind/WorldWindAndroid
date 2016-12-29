@@ -10,7 +10,8 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwind.ogc.WmsTileFactory;
 import gov.nasa.worldwind.render.ImageOptions;
-import gov.nasa.worldwind.shape.TiledImageLayer;
+import gov.nasa.worldwind.render.RenderContext;
+import gov.nasa.worldwind.shape.TiledSurfaceImage;
 import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.LevelSetConfig;
@@ -23,7 +24,9 @@ import gov.nasa.worldwind.util.TileFactory;
  * resolution from an OGC Web Map Service (WMS). By default, BlueMarbleLandsatLayer is configured to retrieve imagery
  * from the WMS at <a href="https://worldwind25.arc.nasa.gov/wms?SERVICE=WMS&REQUEST=GetCapabilities">https://worldwind25.arc.nasa.gov/wms</a>.
  */
-public class BlueMarbleLandsatLayer extends TiledImageLayer implements TileFactory {
+public class BlueMarbleLandsatLayer extends AbstractLayer implements TileFactory {
+
+    protected TiledSurfaceImage surfaceImage;
 
     protected TileFactory blueMarbleTileFactory;
 
@@ -74,9 +77,12 @@ public class BlueMarbleLandsatLayer extends TiledImageLayer implements TileFacto
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel);
 
         this.setDisplayName("Blue Marble & Landsat");
-        this.setLevelSet(new LevelSet(levelsConfig));
-        this.setTileFactory(this);
-        this.setImageOptions(new ImageOptions(WorldWind.RGB_565)); // reduce memory usage by using a 16-bit configuration with no alpha
+        this.setPickEnabled(false);
+
+        this.surfaceImage = new TiledSurfaceImage();
+        this.surfaceImage.setLevelSet(new LevelSet(levelsConfig));
+        this.surfaceImage.setTileFactory(this);
+        this.surfaceImage.setImageOptions(new ImageOptions(WorldWind.RGB_565)); // reduce memory usage by using a 16-bit configuration with no alpha
     }
 
     @Override
@@ -89,5 +95,10 @@ public class BlueMarbleLandsatLayer extends TiledImageLayer implements TileFacto
         } else {
             return this.blueMarbleTileFactory.createTile(sector, level, row, column);
         }
+    }
+
+    @Override
+    protected void doRender(RenderContext rc) {
+        this.surfaceImage.render(rc);
     }
 }

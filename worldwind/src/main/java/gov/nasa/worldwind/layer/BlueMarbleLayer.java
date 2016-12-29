@@ -50,6 +50,6 @@ public class BlueMarbleLayer extends WmsLayer {
 
         this.setDisplayName("Blue Marble");
         this.setConfiguration(new Sector().setFullSphere(), 500, config); // 500m resolution on Earth
-        this.setImageOptions(new ImageOptions(WorldWind.RGB_565));  // exploit opaque imagery to reduce memory usage
+        this.surfaceImage.setImageOptions(new ImageOptions(WorldWind.RGB_565));  // exploit opaque imagery to reduce memory usage
     }
 }
