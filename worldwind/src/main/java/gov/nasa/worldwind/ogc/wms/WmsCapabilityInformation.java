@@ -48,7 +48,11 @@ public class WmsCapabilityInformation extends XmlModel {
     }
 
     public Set<String> getImageFormats() {
-        WmsRequestDescription mapInfo = (WmsRequestDescription) this.getField(this.map);
+        XmlModel requests = (XmlModel) this.getField(this.request);
+        if (requests == null) {
+            return Collections.emptySet();
+        }
+        WmsRequestDescription mapInfo = (WmsRequestDescription) requests.getField(this.map);
         if (mapInfo == null) {
             return Collections.emptySet();
         }
