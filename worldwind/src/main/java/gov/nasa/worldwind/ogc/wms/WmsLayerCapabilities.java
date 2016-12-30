@@ -13,7 +13,9 @@ import java.util.Set;
 
 import javax.xml.namespace.QName;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.util.LevelSetConfig;
 import gov.nasa.worldwind.util.xml.DoubleModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
@@ -168,7 +170,7 @@ public class WmsLayerCapabilities extends XmlModel {
     }
 
     public Double getMinScaleHint() {
-        Object o = this.getChildCharacterValue(this.scaleHint);
+        Object o = this.getInheritedField(this.scaleHint);
         if (o != null && o instanceof XmlModel) {
             XmlModel scaleHint = (XmlModel) o;
             return scaleHint.getDoubleAttributeValue(new QName("", "min"), true);
@@ -177,7 +179,7 @@ public class WmsLayerCapabilities extends XmlModel {
     }
 
     public Double getMaxScaleHint() {
-        Object o = this.getChildCharacterValue(this.scaleHint);
+        Object o = this.getInheritedField(this.scaleHint);
         if (o != null && o instanceof XmlModel) {
             XmlModel scaleHint = (XmlModel) o;
             return scaleHint.getDoubleAttributeValue(new QName("", "max"), true);
@@ -318,6 +320,30 @@ public class WmsLayerCapabilities extends XmlModel {
         }
     }
 
+    public int getNumberOfLevels(int imageWidth) {
+
+        Double value = this.getMinScaleDenominator();
+
+        if (value == null) {
+            // try the 1.1.1 version
+            value = this.getMinScaleHint();
+            if (value != null) {
+                value = value / WorldWind.WGS84_SEMI_MAJOR_AXIS;
+            } else {
+                // this is a fallback value used when no minimum scale hint or denominator is provided
+                return 12;
+            }
+        } else {
+            // this conversion is based on the WMS 1.3.0 spec page 28
+            // the hard coded value 0.00028 is detailed in the spec
+            value = (value * imageWidth * 0.00028) / WorldWind.WGS84_SEMI_MAJOR_AXIS;
+        }
+
+        LevelSetConfig levelSetConfig = new LevelSetConfig();
+
+        return levelSetConfig.numLevelsForResolution(value);
+    }
+
     public String getName() {
         return this.getChildCharacterValue(this.name);
     }
@@ -344,6 +370,23 @@ public class WmsLayerCapabilities extends XmlModel {
         Set<String> crs = new HashSet<>();
         this.getAdditiveInheritedField(this.crs, crs);
         return crs;
+    }
+
+    /**
+     * Provides a WMS version agnostic reference system by returning the non-null reference system set. It is the
+     * responsibility of the caller to understand which WMS version is being used.
+     *
+     * @return
+     */
+    public Set<String> getReferenceSystem() {
+
+        Set<String> rs = this.getCRS();
+
+        if (rs.size() == 0) {
+            rs = this.getSRS();
+        }
+
+        return rs;
     }
 
     public boolean hasCoordinateSystem(String coordSys) {

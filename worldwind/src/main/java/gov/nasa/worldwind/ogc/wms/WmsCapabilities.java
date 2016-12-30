@@ -140,9 +140,9 @@ public class WmsCapabilities extends XmlModel {
         return capInfo.getImageFormats();
     }
 
-    public String getRequestURL(String requestName, String protocol, String requestMethod) {
+    public String getRequestURL(String requestName, String requestMethod) {
 
-        if (requestName == null || protocol == null || requestMethod == null) {
+        if (requestName == null || requestMethod == null) {
             return null;
         }
 
@@ -164,7 +164,7 @@ public class WmsCapabilities extends XmlModel {
             return null;
         }
 
-        WmsOnlineResource onlineResource = requestDescription.getOnlineResouce(protocol, requestMethod);
+        WmsOnlineResource onlineResource = requestDescription.getOnlineResource(requestMethod);
         if (onlineResource == null) {
             return null;
         }
