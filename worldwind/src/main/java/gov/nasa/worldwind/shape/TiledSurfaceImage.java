@@ -11,8 +11,6 @@ import java.util.List;
 import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableSurfaceTexture;
 import gov.nasa.worldwind.geom.Matrix3;
-import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.layer.AbstractLayer;
 import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.ImageOptions;
 import gov.nasa.worldwind.render.ImageSource;
@@ -27,7 +25,6 @@ import gov.nasa.worldwind.util.LruMemoryCache;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.Tile;
 import gov.nasa.worldwind.util.TileFactory;
-import gov.nasa.worldwind.util.TileUrlFactory;
 
 public class TiledSurfaceImage extends AbstractRenderable {
 
@@ -158,10 +155,13 @@ public class TiledSurfaceImage extends AbstractRenderable {
         ImageTile currentAncestorTile = this.ancestorTile;
         Texture currentAncestorTexture = this.ancestorTexture;
 
-        Texture tileTexture = rc.getTexture(tile.getImageSource());
-        if (tileTexture != null) { // use it as a fallback tile for descendants
-            this.ancestorTile = tile;
-            this.ancestorTexture = tileTexture;
+        ImageSource tileImageSource = tile.getImageSource();
+        if (tileImageSource != null) { // tile has an image source; its level is not empty
+            Texture tileTexture = rc.getTexture(tileImageSource);
+            if (tileTexture != null) { // tile has a texture; use it as a fallback tile for descendants
+                this.ancestorTile = tile;
+                this.ancestorTexture = tileTexture;
+            }
         }
 
         for (Tile child : tile.subdivideToCache(this.tileFactory, this.tileCache, 4)) { // each tile has a cached size of 1
@@ -173,9 +173,14 @@ public class TiledSurfaceImage extends AbstractRenderable {
     }
 
     protected void addTile(RenderContext rc, ImageTile tile) {
-        Texture texture = rc.getTexture(tile.getImageSource()); // try to get the texture from the cache
+        ImageSource imageSource = tile.getImageSource();
+        if (imageSource == null) {
+            return; // no image source indicates an empty level or an image missing from the tiled data store
+        }
+
+        Texture texture = rc.getTexture(imageSource); // try to get the texture from the cache
         if (texture == null) {
-            texture = rc.retrieveTexture(tile.getImageSource(), this.imageOptions); // puts retrieved textures in the cache
+            texture = rc.retrieveTexture(imageSource, this.imageOptions); // puts retrieved textures in the cache
         }
 
         if (texture != null) { // use the tile's own texture
