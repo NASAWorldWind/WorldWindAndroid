@@ -41,7 +41,7 @@ public class WmsCapabilities extends XmlModel {
     public static WmsCapabilities getCapabilities(InputStream is) throws XmlPullParserException, IOException {
 
         // Initialize the pull parser context
-        XmlPullParserContext ctx = new XmlPullParserContext(XmlPullParserContext.DEFAULT_NAMESPACE);
+        WmsPullParserContext ctx = new WmsPullParserContext(XmlPullParserContext.DEFAULT_NAMESPACE);
         ctx.setParserInput(is);
 
         // Parse the Xml document until a Wms service is discovered
