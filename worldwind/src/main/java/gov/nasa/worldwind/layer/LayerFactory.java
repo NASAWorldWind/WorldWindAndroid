@@ -12,6 +12,7 @@ import android.os.Looper;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -97,8 +98,11 @@ public class LayerFactory {
             .appendQueryParameter("VERSION", "1.3.0")
             .build();
 
-        URL serviceUrl = new URL(serviceUri.toString());
-        InputStream inputStream = new BufferedInputStream(serviceUrl.openStream());
+        URLConnection conn = new URL(serviceUri.toString()).openConnection();
+        conn.setConnectTimeout(3000);
+        conn.setReadTimeout(30000);
+
+        InputStream inputStream = new BufferedInputStream(conn.getInputStream());
 
         // Parse and read capabilities document
         WmsCapabilities wmsCapabilities = WmsCapabilities.getCapabilities(inputStream);
