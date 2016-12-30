@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WMT_MS_Capabilities version="1.1.1">
+    <Service>
+        <Name>
+            <![CDATA[WMS]]>
+        </Name>
+        <Title>OGC:WMS</Title>
+        <Abstract>OGC:WMS</Abstract>
+        <KeywordList>
+            <Keyword>
+                <![CDATA[]]>
+            </Keyword>
+        </KeywordList>
+        <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple"
+                        xlink:href="https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"/>
+        <ContactInformation>
+            <ContactPersonPrimary>
+                <ContactPerson>
+                    <![CDATA[]]>
+                </ContactPerson>
+                <ContactOrganization>
+                    <![CDATA[]]>
+                </ContactOrganization>
+            </ContactPersonPrimary>
+            <ContactPosition>
+                <![CDATA[]]>
+            </ContactPosition>
+            <ContactAddress>
+                <AddressType>
+                    <![CDATA[]]>
+                </AddressType>
+                <Address>
+                    <![CDATA[]]>
+                </Address>
+                <City>
+                    <![CDATA[]]>
+                </City>
+                <StateOrProvince>
+                    <![CDATA[]]>
+                </StateOrProvince>
+                <PostCode>
+                    <![CDATA[]]>
+                </PostCode>
+                <Country>
+                    <![CDATA[]]>
+                </Country>
+            </ContactAddress>
+            <ContactVoiceTelephone>
+                <![CDATA[]]>
+            </ContactVoiceTelephone>
+            <ContactFacsimileTelephone>
+                <![CDATA[]]>
+            </ContactFacsimileTelephone>
+            <ContactElectronicMailAddress>
+                <![CDATA[]]>
+            </ContactElectronicMailAddress>
+        </ContactInformation>
+        <Fees>
+            <![CDATA[]]>
+        </Fees>
+        <AccessConstraints>
+            <![CDATA[]]>
+        </AccessConstraints>
+    </Service>
+    <Capability>
+        <Request>
+            <GetCapabilities>
+                <Format>application/vnd.ogc.wms_xml</Format>
+                <DCPType>
+                    <HTTP>
+                        <Get>
+                            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple"
+                                            xlink:href="https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"/>
+                        </Get>
+                    </HTTP>
+                </DCPType>
+            </GetCapabilities>
+            <GetMap>
+                <Format>image/bmp</Format>
+                <Format>image/jpeg</Format>
+                <Format>image/tiff</Format>
+                <Format>image/png</Format>
+                <Format>image/png8</Format>
+                <Format>image/png24</Format>
+                <Format>image/png32</Format>
+                <Format>image/gif</Format>
+                <Format>image/svg+xml</Format>
+                <DCPType>
+                    <HTTP>
+                        <Get>
+                            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple"
+                                            xlink:href="https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"/>
+                        </Get>
+                    </HTTP>
+                </DCPType>
+            </GetMap>
+            <GetFeatureInfo>
+                <Format>application/vnd.esri.wms_raw_xml</Format>
+                <Format>application/vnd.esri.wms_featureinfo_xml</Format>
+                <Format>application/vnd.ogc.wms_xml</Format>
+                <Format>application/geojson</Format>
+                <Format>text/xml</Format>
+                <Format>text/html</Format>
+                <Format>text/plain</Format>
+                <DCPType>
+                    <HTTP>
+                        <Get>
+                            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple"
+                                            xlink:href="https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"/>
+                        </Get>
+                    </HTTP>
+                </DCPType>
+            </GetFeatureInfo>
+            <GetStyles>
+                <Format>application/vnd.ogc.sld+xml</Format>
+                <DCPType>
+                    <HTTP>
+                        <Get>
+                            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple"
+                                            xlink:href="https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?"/>
+                        </Get>
+                    </HTTP>
+                </DCPType>
+            </GetStyles>
+        </Request>
+        <Exception>
+            <Format>application/vnd.ogc.se_xml</Format>
+            <Format>application/vnd.ogc.se_inimage</Format>
+            <Format>application/vnd.ogc.se_blank</Format>
+        </Exception>
+        <Layer>
+            <Title>
+                <![CDATA[Layers]]>
+            </Title>
+            <SRS>EPSG:4326</SRS>
+            <SRS>EPSG:3857</SRS>
+            <!-- alias 3857 -->
+            <SRS>EPSG:102100</SRS>
+            <LatLonBoundingBox minx="-179.999996" miny="-89.000000" maxx="179.999996" maxy="89.000000"/>
+            <BoundingBox SRS="EPSG:4326" minx="-179.999996" miny="-89.000000" maxx="179.999996" maxy="89.000000"/>
+            <BoundingBox SRS="EPSG:3857" minx="-20074053.901178" miny="-30281451.060015" maxx="20074053.888922"
+                         maxy="30281451.072272"/>
+            <Layer queryable="1">
+                <Name>0</Name>
+                <Title>
+                    <![CDATA[USGS TNM Topo Base Map]]>
+                </Title>
+                <Abstract>
+                    <![CDATA[See http://viewer.nationalmap.gov/help for assistance with The National Map viewer, services, or metadata.]]>
+                </Abstract>
+                <SRS>EPSG:4326</SRS>
+                <SRS>EPSG:3857</SRS>
+                <!-- alias 3857 -->
+                <SRS>EPSG:102100</SRS>
+                <LatLonBoundingBox minx="-179.999996" miny="-89.000000" maxx="179.999996" maxy="89.000000"/>
+                <BoundingBox SRS="EPSG:4326" minx="-179.999996" miny="-89.000000" maxx="179.999996" maxy="89.000000"/>
+                <BoundingBox SRS="EPSG:3857" minx="-20074053.901178" miny="-30281451.060015" maxx="20074053.888922"
+                             maxy="30281451.072272"/>
+                <Style>
+                    <Name>default</Name>
+                    <Title>0</Title>
+                    <LegendURL width="0" height="0">
+                        <Format>image/png</Format>
+                        <OnlineResource
+                            xlink:href="https://basemap.nationalmap.gov/arcgis/services/USGSTopo/MapServer/WmsServer?request=GetLegendGraphic%26version=1.1.1%26format=image/png%26layer=0"
+                            xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink"/>
+                    </LegendURL>
+                </Style>
+                <ScaleHint min="7.149415" max="Infinity"></ScaleHint>
+            </Layer>
+        </Layer>
+    </Capability>
+</WMT_MS_Capabilities>
