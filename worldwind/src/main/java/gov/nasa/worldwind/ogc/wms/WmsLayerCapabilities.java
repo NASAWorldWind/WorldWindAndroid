@@ -171,7 +171,7 @@ public class WmsLayerCapabilities extends XmlModel {
         Object o = this.getChildCharacterValue(this.scaleHint);
         if (o != null && o instanceof XmlModel) {
             XmlModel scaleHint = (XmlModel) o;
-            return scaleHint.getDoubleAttributeValue(new QName("", "min"));
+            return scaleHint.getDoubleAttributeValue(new QName("", "min"), true);
         }
         return null;
     }
@@ -180,13 +180,13 @@ public class WmsLayerCapabilities extends XmlModel {
         Object o = this.getChildCharacterValue(this.scaleHint);
         if (o != null && o instanceof XmlModel) {
             XmlModel scaleHint = (XmlModel) o;
-            return scaleHint.getDoubleAttributeValue(new QName("", "max"));
+            return scaleHint.getDoubleAttributeValue(new QName("", "max"), true);
         }
         return null;
     }
 
     public Set<WmsLayerDimension> getDimensions() {
-        Set<WmsLayerDimension> dimensions = (Set<WmsLayerDimension>) this.getField(this.dimension);
+        Set<WmsLayerDimension> dimensions = (Set<WmsLayerDimension>) this.getInheritedField(this.dimension);
         return dimensions != null ? dimensions : null;
     }
 
@@ -196,41 +196,42 @@ public class WmsLayerCapabilities extends XmlModel {
     }
 
     public Boolean getCascaded() {
-        return this.getBooleanAttributeValue(this.cascaded);
+        return this.getBooleanAttributeValue(this.cascaded, true);
     }
 
     public Integer getFixedHeight() {
-        return this.getIntegerAttributeValue(this.fixedHeight);
+        return this.getIntegerAttributeValue(this.fixedHeight, true);
     }
 
     public Integer getFixedWidth() {
-        return this.getIntegerAttributeValue(this.fixedWidth);
+        return this.getIntegerAttributeValue(this.fixedWidth, true);
     }
 
     public Boolean isNoSubsets() {
-        return this.getBooleanAttributeValue(this.noSubsets);
+        return this.getBooleanAttributeValue(this.noSubsets, true);
     }
 
     public Boolean isOpaque() {
-        return this.getBooleanAttributeValue(this.opaque);
+        return this.getBooleanAttributeValue(this.opaque, true);
     }
 
     public Boolean isQueryable() {
-        return this.getBooleanAttributeValue(this.queryable);
+        return this.getBooleanAttributeValue(this.queryable, true);
     }
 
     public Set<WmsLayerAttribution> getAttributions() {
-        Set<WmsLayerAttribution> attributions = (Set<WmsLayerAttribution>) this.getField(this.attribution);
+        Set<WmsLayerAttribution> attributions = (Set<WmsLayerAttribution>) this.getInheritedField(this.attribution);
         return attributions != null ? attributions : Collections.<WmsLayerAttribution>emptySet();
     }
 
     public Set<WmsAuthorityUrl> getAuthorityUrls() {
-        Set<WmsAuthorityUrl> authorityUrls = (Set<WmsAuthorityUrl>) this.getField(this.authorityUrl);
-        return authorityUrls != null ? authorityUrls : Collections.<WmsAuthorityUrl>emptySet();
+        Set<WmsAuthorityUrl> authorityUrls = new HashSet<>();
+        this.getAdditiveInheritedField(this.authorityUrl, authorityUrls);
+        return authorityUrls;
     }
 
     public Set<WmsLayerIdentifier> getIdentifiers() {
-        Set<WmsLayerIdentifier> identifiers = (Set<WmsLayerIdentifier>) this.getField(this.identifier);
+        Set<WmsLayerIdentifier> identifiers = (Set<WmsLayerIdentifier>) this.getInheritedField(this.identifier);
         return identifiers != null ? identifiers : Collections.<WmsLayerIdentifier>emptySet();
     }
 
@@ -255,12 +256,13 @@ public class WmsLayerCapabilities extends XmlModel {
     }
 
     public Set<WmsLayerStyle> getStyles() {
-        Set<WmsLayerStyle> styles = (Set<WmsLayerStyle>) this.getField(this.style);
-        return styles != null ? styles : Collections.<WmsLayerStyle>emptySet();
+        Set<WmsLayerStyle> styles = new HashSet<>();
+        this.getAdditiveInheritedField(this.style, styles);
+        return styles;
     }
 
     public Set<WmsBoundingBox> getBoundingBoxes() {
-        Set<WmsBoundingBox> boundingBoxes = (Set<WmsBoundingBox>) this.getField(this.boundingBox);
+        Set<WmsBoundingBox> boundingBoxes = (Set<WmsBoundingBox>) this.getInheritedField(this.boundingBox);
         return boundingBoxes != null ? boundingBoxes : Collections.<WmsBoundingBox>emptySet();
     }
 
@@ -293,7 +295,7 @@ public class WmsLayerCapabilities extends XmlModel {
     }
 
     public Double getMaxScaleDenominator() {
-        DoubleModel model = (DoubleModel) this.getField(this.maxScaleDenominator);
+        DoubleModel model = (DoubleModel) this.getInheritedField(this.maxScaleDenominator);
         if (model != null) {
             return model.getValue();
         } else {
@@ -302,7 +304,7 @@ public class WmsLayerCapabilities extends XmlModel {
     }
 
     public Double getMinScaleDenominator() {
-        DoubleModel model = (DoubleModel) this.getField(this.minScaleDenominator);
+        DoubleModel model = (DoubleModel) this.getInheritedField(this.minScaleDenominator);
         if (model != null) {
             return model.getValue();
         } else {
@@ -327,13 +329,15 @@ public class WmsLayerCapabilities extends XmlModel {
     }
 
     public Set<String> getSRS() {
-        Set<String> srs = (Set<String>) this.getField(this.srs);
-        return srs != null ? srs : Collections.<String>emptySet();
+        Set<String> srs = new HashSet<>();
+        this.getAdditiveInheritedField(this.srs, srs);
+        return srs;
     }
 
     public Set<String> getCRS() {
-        Set<String> crs = (Set<String>) this.getField(this.crs);
-        return crs != null ? crs : Collections.<String>emptySet();
+        Set<String> crs = new HashSet<>();
+        this.getAdditiveInheritedField(this.crs, crs);
+        return crs;
     }
 
     public boolean hasCoordinateSystem(String coordSys) {

@@ -60,14 +60,14 @@ public class WmsLayerDimension extends XmlModel {
     }
 
     public Boolean getMultipleValues() {
-        return this.getBooleanAttributeValue(this.multipleValues);
+        return this.getBooleanAttributeValue(this.multipleValues, false);
     }
 
     public Boolean getNearestValue() {
-        return this.getBooleanAttributeValue(this.nearestValue);
+        return this.getBooleanAttributeValue(this.nearestValue, false);
     }
 
     public Boolean getCurrent() {
-        return this.getBooleanAttributeValue(this.current);
+        return this.getBooleanAttributeValue(this.current, false);
     }
 }
