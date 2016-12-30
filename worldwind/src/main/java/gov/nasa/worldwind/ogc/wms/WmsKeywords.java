@@ -40,7 +40,12 @@ public class WmsKeywords extends XmlModel {
             }
 
             if (value instanceof XmlModel) {
-                keywords.add(((XmlModel) value).getField(XmlModel.CHARACTERS_CONTENT).toString());
+                Object o = ((XmlModel) value).getField(XmlModel.CHARACTERS_CONTENT);
+                if (o != null) {
+                    keywords.add(o.toString());
+                } else {
+                    super.setField(keyName, value);
+                }
             } else {
                 super.setField(keyName, value);
             }
