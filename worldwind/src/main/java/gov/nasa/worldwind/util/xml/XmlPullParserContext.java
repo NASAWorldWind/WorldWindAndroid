@@ -137,6 +137,8 @@ public class XmlPullParserContext {
 
         this.registerParsableModel(new QName(this.namespaceUri, "WMT_MS_Capabilities"), new WmsCapabilities(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "WMS_Capabilities"), new WmsCapabilities(this.namespaceUri));
+
+        this.registerParsableModel(new QName(this.namespaceUri, "LatLonBoundingBox"), new WmsGeographicBoundingBox(this.namespaceUri));
     }
 
     //There was limited use, and I'm trying to abstract the XmlPullParser from consumers

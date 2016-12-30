@@ -20,6 +20,14 @@ public class WmsGeographicBoundingBox extends XmlModel {
 
     protected QName south;
 
+    protected QName minx;
+
+    protected QName miny;
+
+    protected QName maxx;
+
+    protected QName maxy;
+
     public WmsGeographicBoundingBox(String namespaceUri) {
         super(namespaceUri);
         this.initialize();
@@ -30,6 +38,10 @@ public class WmsGeographicBoundingBox extends XmlModel {
         this.east = new QName(this.getNamespaceUri(), "eastBoundLongitude");
         this.north = new QName(this.getNamespaceUri(), "northBoundLatitude");
         this.south = new QName(this.getNamespaceUri(), "southBoundLatitude");
+        this.minx = new QName("", "minx");
+        this.miny = new QName("", "miny");
+        this.maxx = new QName("", "maxx");
+        this.maxy = new QName("", "maxy");
     }
 
     protected Double getValue(QName name) {
@@ -42,22 +54,45 @@ public class WmsGeographicBoundingBox extends XmlModel {
     }
 
     public Double getWestBound() {
-        return this.getParsedDoubleValue(this.west);
+
+        // Default to handling the 1.3.0 style
+        Double value = this.getParsedDoubleElementValue(this.west);
+        if (value == null) {
+            // try the 1.1.1 style
+            value = this.getParsedDoubleAttributeValue(this.minx);
+        }
+
+        return value;
     }
 
     public Double getEastBound() {
-        return this.getParsedDoubleValue(this.east);
+        Double value = this.getParsedDoubleElementValue(this.east);
+        if (value == null) {
+            value = this.getParsedDoubleAttributeValue(this.maxx);
+        }
+
+        return value;
     }
 
     public Double getNorthBound() {
-        return this.getParsedDoubleValue(this.north);
+        Double value = this.getParsedDoubleElementValue(this.north);
+        if (value == null) {
+            value = this.getParsedDoubleAttributeValue(this.maxy);
+        }
+
+        return value;
     }
 
     public Double getSouthBound() {
-        return this.getParsedDoubleValue(this.south);
+        Double value = this.getParsedDoubleElementValue(this.south);
+        if (value == null) {
+            value = this.getParsedDoubleAttributeValue(this.miny);
+        }
+
+        return value;
     }
 
-    protected Double getParsedDoubleValue(QName name) {
+    protected Double getParsedDoubleElementValue(QName name) {
         String textValue = this.getChildCharacterValue(name);
         if (textValue != null && !textValue.isEmpty()) {
             try {
@@ -67,6 +102,18 @@ public class WmsGeographicBoundingBox extends XmlModel {
             }
         }
 
+        return null;
+    }
+
+    protected Double getParsedDoubleAttributeValue(QName name) {
+        Object o = this.getField(name);
+        if (o != null) {
+            try {
+                return Double.parseDouble(o.toString());
+            } catch (NumberFormatException ignore) {
+
+            }
+        }
         return null;
     }
 }
