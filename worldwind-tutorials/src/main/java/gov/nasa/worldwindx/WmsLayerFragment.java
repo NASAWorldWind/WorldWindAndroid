@@ -5,10 +5,11 @@
 
 package gov.nasa.worldwindx;
 
+import android.util.Log;
+
 import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.ogc.WmsLayer;
-import gov.nasa.worldwind.ogc.WmsLayerConfig;
+import gov.nasa.worldwind.layer.Layer;
+import gov.nasa.worldwind.layer.LayerFactory;
 
 public class WmsLayerFragment extends BasicGlobeFragment {
 
@@ -24,11 +25,22 @@ public class WmsLayerFragment extends BasicGlobeFragment {
 
         // Configure an OGC Web Map Service (WMS) layer to display the
         // surface temperature layer from NASA's Near Earth Observations WMS.
-        WmsLayerConfig config = new WmsLayerConfig();
-        config.serviceAddress = "http://neowms.sci.gsfc.nasa.gov/wms/wms";
-        config.wmsVersion = "1.1.1"; // NEO server works best with WMS 1.1.1
-        config.layerNames = "MOD_LSTD_CLIM_M"; // Land Surface Temperature
-        WmsLayer layer = new WmsLayer(new Sector().setFullSphere(), 1e3, config); // 1km resolution
+        LayerFactory layerFactory = new LayerFactory();
+        Layer layer = layerFactory.createWmsLayer(
+            "http://neowms.sci.gsfc.nasa.gov/wms/wms",
+            "MOD_LSTD_CLIM_M",
+            new LayerFactory.Callback() {
+                @Override
+                public void layerCreated(LayerFactory factory, Layer layer) {
+                    Log.d("gov.nasa.worldwind", "MOD_LSTD_CLIM_M created successfully");
+                }
+
+                @Override
+                public void layerFailed(LayerFactory factory, Layer layer, Throwable ex) {
+                    Log.e("gov.nasa.worldwind", "MOD_LSTD_CLIM_M failed: " + (ex != null ? ex.toString() : ""));
+                }
+            }
+        );
 
         // Add the WMS layer to the World Window.
         wwd.getLayers().addLayer(layer);

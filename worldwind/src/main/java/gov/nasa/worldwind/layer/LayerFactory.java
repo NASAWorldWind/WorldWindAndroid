@@ -5,12 +5,25 @@
 
 package gov.nasa.worldwind.layer;
 
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.ogc.WmsTileFactory;
+import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
+import gov.nasa.worldwind.ogc.wms.WmsLayerCapabilities;
+import gov.nasa.worldwind.shape.TiledSurfaceImage;
+import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.Logger;
 
 public class LayerFactory {
@@ -78,6 +91,97 @@ public class LayerFactory {
     protected void createWmsLayerAsync(String serviceAddress, String layerNames, Layer layer, Callback callback) {
         // Retrieve and parse the WMS capabilities at the specified service address, looking for the named layers
         // specified by the comma-delimited layerNames.
+        Uri serviceUri = Uri.parse(serviceAddress).buildUpon()
+            .appendQueryParameter("REQUEST", "GetCapabilities")
+            .appendQueryParameter("SERVICE", "WMS")
+            .appendQueryParameter("VERSION", "1.3.0")
+            .build();
+
+        try {
+            URL serviceUrl = new URL(serviceUri.toString());
+            InputStream inputStream = new BufferedInputStream(serviceUrl.openStream());
+            WmsCapabilities wmsCapabilities = WmsCapabilities.getCapabilities(inputStream);
+
+            // Establish Version
+            String version = wmsCapabilities.getVersion();
+
+            // Check that layers exist in this service
+            String[] requestedLayers = layerNames.split(",");
+            int cnt = 0;
+            List<WmsLayerCapabilities> namedLayers = wmsCapabilities.getNamedLayers();
+            Set<String> coordinateSystems = null;
+            double minLat = 90.0;
+            double minLon = 180.0;
+            double maxLat = -90.0;
+            double maxLon = -180.0;
+            for (WmsLayerCapabilities namedLayer : namedLayers) {
+                for (String requestedLayer : requestedLayers) {
+                    if (requestedLayer.equals(namedLayer.getName())) {
+                        cnt++;
+                        if (coordinateSystems == null) {
+                            coordinateSystems = new HashSet<>();
+                            if (version.equals("1.3.0")) {
+                                coordinateSystems.addAll(namedLayer.getCRS());
+                            } else if (version.equals("1.1.1")) {
+                                coordinateSystems.addAll(namedLayer.getSRS());
+                            }
+                        } else {
+                            if (version.equals("1.3.0")) {
+                                coordinateSystems.retainAll(namedLayer.getCRS());
+                            } else if (version.equals("1.1.1")) {
+                                coordinateSystems.retainAll(namedLayer.getSRS());
+                            }
+                        }
+                        Sector sector = namedLayer.getGeographicBoundingBox();
+                        if (sector != null) {
+                            minLat = Math.min(minLat, sector.minLatitude());
+                            minLon = Math.min(minLon, sector.minLongitude());
+                            maxLat = Math.max(maxLat, sector.maxLatitude());
+                            maxLon = Math.max(maxLon, sector.maxLongitude());
+                        }
+                        break;
+                    }
+                }
+            }
+            if (cnt != requestedLayers.length) {
+                callback.layerFailed(this, layer, null);
+                return;
+            }
+
+            WmsTileFactory wmsTileFactory = new WmsTileFactory(
+                wmsCapabilities.getCapabilityInformation().getCapabilitiesInfo()
+                    .getOnlineResouce(serviceUrl.getProtocol(), "Get").getHref(),
+                version,
+                layerNames,
+                ""
+            );
+
+            if (coordinateSystems.contains("CRS:84")) {
+                wmsTileFactory.setCoordinateSystem("CRS:84");
+            } else if (coordinateSystems.contains("EPSG:4326")) {
+                wmsTileFactory.setCoordinateSystem("EPSG:4326");
+            } else {
+                callback.layerFailed(this, layer, null);
+            }
+
+            Set<String> imageFormats = wmsCapabilities.getImageFormats();
+            if (imageFormats.contains("image/png")) {
+                wmsTileFactory.setImageFormat("image/png");
+            } else {
+                wmsTileFactory.setImageFormat(imageFormats.iterator().next());
+            }
+
+            TiledSurfaceImage tiledSurfaceImage = new TiledSurfaceImage();
+            tiledSurfaceImage.setTileFactory(wmsTileFactory);
+            LevelSet levelSet = new LevelSet(new Sector().setFullSphere(), 90.0, 16, 512, 512);
+            tiledSurfaceImage.setLevelSet(levelSet);
+
+            RenderableLayer renderableLayer = (RenderableLayer) layer;
+            renderableLayer.addRenderable(tiledSurfaceImage);
+        } catch (Exception e) {
+            callback.layerFailed(this, layer, e);
+            return;
+        }
 
         // Configure a tiled surface image appropriately for the named layers layers. The image's sector is the union of
         // all named layers, and the number of levels is the minimum necessary to capture the full resolution of all
