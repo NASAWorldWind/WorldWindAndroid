@@ -148,7 +148,7 @@ public class LayerFactory {
             sector = new Sector().setFullSphere();
         }
 
-        int levels = wmsLayerCapabilities.getNumberOfLevels(512);
+        int levels = Math.max(1, wmsLayerCapabilities.getNumberOfLevels(512));
 
         final TiledSurfaceImage tiledSurfaceImage = new TiledSurfaceImage();
         tiledSurfaceImage.setTileFactory(wmsTileFactory);
