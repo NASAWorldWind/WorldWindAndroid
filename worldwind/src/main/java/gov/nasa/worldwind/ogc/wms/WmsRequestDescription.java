@@ -44,8 +44,8 @@ public class WmsRequestDescription extends XmlModel {
     }
 
     public WmsOnlineResource getOnlineResouce(String protocol, String requestMethod) {
-        for (WmsDcpType2 dct : this.getDcpTypes()) {
-            for (WmsDcpType2.DcpInfo dcpInfo : dct.getDcpInfos()) {
+        for (WmsDcpType dct : this.getDcpTypes()) {
+            for (WmsDcpType.DcpInfo dcpInfo : dct.getDcpInfos()) {
                 if (dcpInfo.protocol.equalsIgnoreCase(protocol) && dcpInfo.method.equals(requestMethod)) {
                     return dcpInfo.onlineResource;
                 }
@@ -84,8 +84,8 @@ public class WmsRequestDescription extends XmlModel {
      *
      * @param dcTypes
      */
-    protected void setDCPTypes(Set<WmsDcpType2> dcTypes) {
-        Set<WmsDcpType2> currentDcpTypes = (Set<WmsDcpType2>) super.getField(this.dcpType);
+    protected void setDCPTypes(Set<WmsDcpType> dcTypes) {
+        Set<WmsDcpType> currentDcpTypes = (Set<WmsDcpType>) super.getField(this.dcpType);
         if (currentDcpTypes == null) {
             currentDcpTypes = new HashSet<>();
             super.setField(this.dcpType, currentDcpTypes);
@@ -95,11 +95,11 @@ public class WmsRequestDescription extends XmlModel {
         currentDcpTypes.addAll(dcTypes);
     }
 
-    public Set<WmsDcpType2> getDcpTypes() {
-        return (Set<WmsDcpType2>) super.getField(this.dcpType);
+    public Set<WmsDcpType> getDcpTypes() {
+        return (Set<WmsDcpType>) super.getField(this.dcpType);
     }
 
-    public void addDcpType(WmsDcpType2 dct) {
+    public void addDcpType(WmsDcpType dct) {
         this.setField(this.dcpType, dct);
     }
 
@@ -132,14 +132,14 @@ public class WmsRequestDescription extends XmlModel {
             }
         } else if (keyName.equals(this.dcpType)) {
             // DCP Types are stored as a set
-            Set<WmsDcpType2> dcpTypes = (Set<WmsDcpType2>) super.getField(this.dcpType);
+            Set<WmsDcpType> dcpTypes = (Set<WmsDcpType>) super.getField(this.dcpType);
             if (dcpTypes == null) {
                 dcpTypes = new HashSet<>();
                 super.setField(keyName, dcpTypes);
             }
 
-            if (value instanceof WmsDcpType2) {
-                dcpTypes.add((WmsDcpType2) value);
+            if (value instanceof WmsDcpType) {
+                dcpTypes.add((WmsDcpType) value);
             } else {
                 super.setField(keyName, value);
             }
@@ -161,7 +161,7 @@ public class WmsRequestDescription extends XmlModel {
         }
 
         sb.append("\n\tDCPTypes:\n");
-        for (WmsDcpType2 dcpt : this.getDcpTypes()) {
+        for (WmsDcpType dcpt : this.getDcpTypes()) {
             sb.append("\t\t").append(dcpt.toString()).append("\n");
         }
 
