@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-package gov.nasa.worldwind.layer;
+package gov.nasa.worldwind.shape;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +12,8 @@ import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableSurfaceTexture;
 import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.layer.AbstractLayer;
+import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.ImageOptions;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.ImageTile;
@@ -27,7 +29,7 @@ import gov.nasa.worldwind.util.Tile;
 import gov.nasa.worldwind.util.TileFactory;
 import gov.nasa.worldwind.util.TileUrlFactory;
 
-public class TiledImageLayer extends AbstractLayer {
+public class TiledSurfaceImage extends AbstractRenderable {
 
     protected TileFactory tileFactory;
 
@@ -54,14 +56,8 @@ public class TiledImageLayer extends AbstractLayer {
 
     protected Matrix3 ancestorTexCoordMatrix = new Matrix3();
 
-    public TiledImageLayer() {
-        this.setDisplayName("Tiled Image Layer");
-        this.setPickEnabled(false);
-    }
-
-    public TiledImageLayer(String displayName) {
-        super(displayName);
-        this.setPickEnabled(false);
+    public TiledSurfaceImage() {
+        super("Tiled Surface Image");
     }
 
     public LevelSet getLevelSet() {
@@ -71,7 +67,7 @@ public class TiledImageLayer extends AbstractLayer {
     public void setLevelSet(LevelSet levelSet) {
         if (levelSet == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "TiledImageLayer", "setLevelSet", "missingLevelSet"));
+                Logger.logMessage(Logger.ERROR, "TiledSurfaceImage", "setLevelSet", "missingLevelSet"));
         }
 
         this.levelSet = levelSet;
@@ -127,6 +123,12 @@ public class TiledImageLayer extends AbstractLayer {
     }
 
     protected void assembleTiles(RenderContext rc) {
+        // TODO
+        // The need to create Tiles with a defined image source couples the need to determine a tile's visibility with
+        // he need to know its image source. Decoupling the two would mean we only need to know the image source when
+        // the texture is actually requested Could the tile-based operations done here be implicit on level/row/column,
+        // or use transient pooled tile objects not tied to an image source?
+
         if (this.topLevelTiles.isEmpty()) {
             this.createTopLevelTiles();
         }

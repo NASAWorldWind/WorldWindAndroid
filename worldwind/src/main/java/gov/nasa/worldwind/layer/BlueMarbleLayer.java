@@ -10,6 +10,7 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.ogc.WmsLayer;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwind.render.ImageOptions;
+import gov.nasa.worldwind.shape.TiledSurfaceImage;
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -50,6 +51,8 @@ public class BlueMarbleLayer extends WmsLayer {
 
         this.setDisplayName("Blue Marble");
         this.setConfiguration(new Sector().setFullSphere(), 500, config); // 500m resolution on Earth
-        this.setImageOptions(new ImageOptions(WorldWind.RGB_565));  // exploit opaque imagery to reduce memory usage
+
+        TiledSurfaceImage surfaceImage = (TiledSurfaceImage) this.getRenderable(0);
+        surfaceImage.setImageOptions(new ImageOptions(WorldWind.RGB_565));  // exploit opaque imagery to reduce memory usage
     }
 }

@@ -8,7 +8,8 @@ package gov.nasa.worldwind.ogc;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globe.Globe;
-import gov.nasa.worldwind.layer.TiledImageLayer;
+import gov.nasa.worldwind.layer.RenderableLayer;
+import gov.nasa.worldwind.shape.TiledSurfaceImage;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.LevelSetConfig;
 import gov.nasa.worldwind.util.Logger;
@@ -23,7 +24,7 @@ import gov.nasa.worldwind.util.Logger;
  * WmsLayer defaults to retrieving imagery in the PNG format. This may be configured by calling
  * <code>setImageFormat</code>.
  */
-public class WmsLayer extends TiledImageLayer {
+public class WmsLayer extends RenderableLayer {
 
     /**
      * Constructs an empty Web Map Service (WMS) layer that displays nothing.
@@ -107,6 +108,8 @@ public class WmsLayer extends TiledImageLayer {
 
     protected void init() {
         this.setDisplayName("WMS Layer");
+        this.setPickEnabled(false);
+        this.addRenderable(new TiledSurfaceImage());
     }
 
     /**
@@ -140,8 +143,9 @@ public class WmsLayer extends TiledImageLayer {
         levelsConfig.sector.set(sector);
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel);
 
-        this.setLevelSet(new LevelSet(levelsConfig));
-        this.setTileFactory(new WmsTileFactory(config));
+        TiledSurfaceImage surfaceImage = (TiledSurfaceImage) this.getRenderable(0);
+        surfaceImage.setLevelSet(new LevelSet(levelsConfig));
+        surfaceImage.setTileFactory(new WmsTileFactory(config));
     }
 
     /**
@@ -180,7 +184,8 @@ public class WmsLayer extends TiledImageLayer {
         levelsConfig.sector.set(sector);
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel);
 
-        this.setLevelSet(new LevelSet(levelsConfig));
-        this.setTileFactory(new WmsTileFactory(config));
+        TiledSurfaceImage surfaceImage = (TiledSurfaceImage) this.getRenderable(0);
+        surfaceImage.setLevelSet(new LevelSet(levelsConfig));
+        surfaceImage.setTileFactory(new WmsTileFactory(config));
     }
 }
