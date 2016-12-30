@@ -267,7 +267,7 @@ public class WmsLayerCapabilities extends XmlModel {
     }
 
     public Sector getGeographicBoundingBox() {
-        WmsGeographicBoundingBox boundingBox = (WmsGeographicBoundingBox) this.getField(this.geographicBoundingBox);
+        WmsGeographicBoundingBox boundingBox = (WmsGeographicBoundingBox) this.getInheritedField(this.geographicBoundingBox);
         if (boundingBox != null) {
             Double minLon = boundingBox.getWestBound();
             Double maxLon = boundingBox.getEastBound();
