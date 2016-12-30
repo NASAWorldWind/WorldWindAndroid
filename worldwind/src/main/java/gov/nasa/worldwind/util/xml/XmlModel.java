@@ -89,6 +89,17 @@ public class XmlModel {
             attributeName = xpp.getAttributeName(i);
             attributeValue = xpp.getAttributeValue(i);
             this.setField(attributeName, attributeValue);
+
+            // Update the namespace based on the WMS version
+            if (attributeName.equalsIgnoreCase("version")) {
+                if (attributeValue.equalsIgnoreCase("1.3.0")) {
+                    this.setNamespaceUri(XmlPullParserContext.DEFAULT_NAMESPACE);
+                    ctx.setNamespaceUri(XmlPullParserContext.DEFAULT_NAMESPACE);
+                } else if (attributeValue.equalsIgnoreCase("1.1.1")) {
+                    this.setNamespaceUri("");
+                    ctx.setNamespaceUri("");
+                }
+            }
         }
 
     }
@@ -127,6 +138,7 @@ public class XmlModel {
 
                 model = ctx.getUnrecognizedElementModel();
 
+                // If the namespace of the context is updated, this registration will be lost
                 ctx.registerParsableModel(qName, model);
             }
 
