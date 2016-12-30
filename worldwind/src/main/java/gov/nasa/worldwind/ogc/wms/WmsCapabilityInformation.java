@@ -26,6 +26,8 @@ public class WmsCapabilityInformation extends XmlModel {
 
     protected QName layers;
 
+    protected QName request;
+
     public WmsCapabilityInformation(String namespaceUri) {
         super(namespaceUri);
         this.initialize();
@@ -37,6 +39,7 @@ public class WmsCapabilityInformation extends XmlModel {
         this.feature = new QName(this.getNamespaceUri(), "GetFeatureInfo");
         this.exceptions = new QName(this.getNamespaceUri(), "Exceptions");
         this.layers = new QName(this.getNamespaceUri(), "Layer");
+        this.request = new QName(this.getNamespaceUri(), "Request");
     }
 
     public List<WmsLayerCapabilities> getLayerList() {
@@ -56,15 +59,27 @@ public class WmsCapabilityInformation extends XmlModel {
     // TODO add exception list
 
     public WmsRequestDescription getCapabilitiesInfo() {
-        return (WmsRequestDescription) this.getField(this.capabilities);
+        XmlModel request = (XmlModel) this.getField(this.request);
+        if (request != null) {
+            return (WmsRequestDescription) request.getField(this.capabilities);
+        }
+        return null;
     }
 
     public WmsRequestDescription getMapInfo() {
-        return (WmsRequestDescription) this.getField(this.map);
+        XmlModel request = (XmlModel) this.getField(this.request);
+        if (request != null) {
+            return (WmsRequestDescription) request.getField(this.map);
+        }
+        return null;
     }
 
     public WmsRequestDescription getFeatureInfo() {
-        return (WmsRequestDescription) this.getField(this.feature);
+        XmlModel request = (XmlModel) this.getField(this.request);
+        if (request != null) {
+            return (WmsRequestDescription) request.getField(this.feature);
+        }
+        return null;
     }
 
     @Override

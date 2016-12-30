@@ -46,7 +46,7 @@ public class WmsRequestDescription extends XmlModel {
     public WmsOnlineResource getOnlineResouce(String protocol, String requestMethod) {
         for (WmsDcpType dct : this.getDcpTypes()) {
             for (WmsDcpType.DcpInfo dcpInfo : dct.getDcpInfos()) {
-                if (dcpInfo.protocol.equals(protocol) && dcpInfo.method.equals(requestMethod)) {
+                if (dcpInfo.protocol.equalsIgnoreCase(protocol) && dcpInfo.method.equals(requestMethod)) {
                     return dcpInfo.onlineResource;
                 }
             }
