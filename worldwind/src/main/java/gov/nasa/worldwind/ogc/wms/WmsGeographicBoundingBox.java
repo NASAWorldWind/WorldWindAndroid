@@ -22,6 +22,7 @@ public class WmsGeographicBoundingBox extends XmlModel {
 
     public WmsGeographicBoundingBox(String namespaceUri) {
         super(namespaceUri);
+        this.initialize();
     }
 
     protected void initialize() {
@@ -41,18 +42,31 @@ public class WmsGeographicBoundingBox extends XmlModel {
     }
 
     public Double getWestBound() {
-        return this.getValue(this.west);
+        return this.getParsedDoubleValue(this.west);
     }
 
     public Double getEastBound() {
-        return this.getValue(this.west);
+        return this.getParsedDoubleValue(this.east);
     }
 
     public Double getNorthBound() {
-        return this.getValue(this.west);
+        return this.getParsedDoubleValue(this.north);
     }
 
     public Double getSouthBound() {
-        return this.getValue(this.west);
+        return this.getParsedDoubleValue(this.south);
+    }
+
+    protected Double getParsedDoubleValue(QName name) {
+        String textValue = this.getChildCharacterValue(name);
+        if (textValue != null && !textValue.isEmpty()) {
+            try {
+                return Double.parseDouble(textValue);
+            } catch (NumberFormatException ignore) {
+
+            }
+        }
+
+        return null;
     }
 }
