@@ -9,6 +9,7 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -193,6 +194,35 @@ public class XmlModel {
         return this.fields != null ? this.fields.get(keyName) : null;
     }
 
+    protected Object getInheritedField(QName keyName) {
+
+        XmlModel model = this;
+        Object value = null;
+
+        while (model != null && value == null) {
+            value = model.getField(keyName);
+            model = model.getParent();
+        }
+
+        return value;
+    }
+
+    protected <T> Collection<T> getAdditiveInheritedField(QName keyName, Collection<T> values) {
+
+        XmlModel model = this;
+        Object value = null;
+
+        while (model != null) {
+            value = model.getField(keyName);
+            if (value instanceof Collection) {
+                values.addAll((Collection<? extends T>) value);
+            }
+            model = model.getParent();
+        }
+
+        return values;
+    }
+
     public boolean hasField(QName keyName)
     {
         return this.hasField(keyName.getLocalPart());
@@ -250,8 +280,15 @@ public class XmlModel {
         }
     }
 
-    public Double getDoubleAttributeValue(QName name) {
-        Object o = this.getField(name);
+    public Double getDoubleAttributeValue(QName name, boolean inherited) {
+
+        Object o;
+        if (inherited) {
+            o = this.getInheritedField(name);
+        } else {
+            o = this.getField(name);
+        }
+
         if (o != null) {
             if (o instanceof StringBuilder) {
                 try {
@@ -267,8 +304,15 @@ public class XmlModel {
         }
     }
 
-    public Integer getIntegerAttributeValue(QName name) {
-        Object o = this.getField(name);
+    public Integer getIntegerAttributeValue(QName name, boolean inherited) {
+
+        Object o;
+        if (inherited) {
+            o = this.getInheritedField(name);
+        } else {
+            o = this.getField(name);
+        }
+
         if (o != null) {
             if (o instanceof StringBuilder) {
                 try {
@@ -284,8 +328,15 @@ public class XmlModel {
         }
     }
 
-    public Boolean getBooleanAttributeValue(QName name) {
-        Object o = this.getField(name);
+    public Boolean getBooleanAttributeValue(QName name, boolean inherited) {
+
+        Object o;
+        if (inherited) {
+            o = this.getInheritedField(name);
+        } else {
+            o = this.getField(name);
+        }
+
         if (o != null) {
             if (o instanceof StringBuilder) {
                 try {
