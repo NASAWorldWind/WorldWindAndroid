@@ -127,7 +127,7 @@ public class LayerFactory {
                 Logger.makeMessage("LayerFactory", "createWmsLayerAsync", "Provided layer did not match available layers"));
         }
 
-        String getCapabilitiesRequestUrl = wmsCapabilities.getRequestURL("GetCapabilities", "Get");
+        String getCapabilitiesRequestUrl = wmsCapabilities.getRequestURL("GetMap", "Get");
         if (getCapabilitiesRequestUrl == null) {
             throw new IllegalStateException(
                 Logger.makeMessage("LayerFactory", "createWmsLayerAsync", "Unable to resolve GetCapabilities URL"));
