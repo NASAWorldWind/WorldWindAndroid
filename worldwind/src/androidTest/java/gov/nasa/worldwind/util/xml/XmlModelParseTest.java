@@ -14,7 +14,7 @@ import org.junit.runner.RunWith;
 
 import java.io.InputStream;
 
-import gov.nasa.worldwind.R;
+import gov.nasa.worldwind.test.R;
 
 import static android.support.test.InstrumentationRegistry.getInstrumentation;
 import static org.junit.Assert.assertEquals;
