@@ -38,14 +38,14 @@ public class WmsCapabilities extends XmlModel {
         this.serviceInformation = new QName(this.getNamespaceUri(), "Service");
     }
 
-    public static WmsCapabilities getCapabilities(InputStream is) throws XmlPullParserException, IOException {
+    public static WmsCapabilities getCapabilities(InputStream is, String namespace) throws XmlPullParserException, IOException {
 
         // Initialize the pull parser context
-        XmlPullParserContext ctx = new XmlPullParserContext(XmlPullParserContext.DEFAULT_NAMESPACE);
+        XmlPullParserContext ctx = new XmlPullParserContext(namespace);
         ctx.setParserInput(is);
 
         // Parse the Xml document until a Wms service is discovered
-        WmsCapabilities wmsCapabilities = new WmsCapabilities(XmlPullParserContext.DEFAULT_NAMESPACE);
+        WmsCapabilities wmsCapabilities = new WmsCapabilities(namespace);
 
         wmsCapabilities.read(ctx);
 
