@@ -29,9 +29,9 @@ public class LayerFactory {
 
     public interface Callback {
 
-        void layerCreated(LayerFactory factory, Layer layer);
+        void creationSucceeded(LayerFactory factory, Layer layer);
 
-        void layerFailed(LayerFactory factory, Layer layer, Throwable ex);
+        void creationFailed(LayerFactory factory, Layer layer, Throwable ex);
     }
 
     protected Handler mainLoopHandler = new Handler(Looper.getMainLooper());
@@ -39,10 +39,15 @@ public class LayerFactory {
     public LayerFactory() {
     }
 
-    public Layer createGeoPackageLayer(String pathName, Callback callback) {
+    public Layer createFromGeoPackage(String pathName, Callback callback) {
         if (pathName == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LayerFactory", "createGeoPackageLayer", "missingPathName"));
+        }
+
+        if (callback == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createGeoPackageLayer", "missingCallback"));
         }
 
         RenderableLayer layer = new RenderableLayer();
@@ -53,13 +58,13 @@ public class LayerFactory {
         try {
             WorldWind.taskService().execute(task);
         } catch (RejectedExecutionException logged) { // singleton task service is full; this should never happen but we check anyway
-            callback.layerFailed(this, layer, logged);
+            callback.creationFailed(this, layer, logged);
         }
 
         return layer;
     }
 
-    public Layer createWmsLayer(String serviceAddress, String layerNames, Callback callback) {
+    public Layer createFromWms(String serviceAddress, String layerNames, Callback callback) {
         if (serviceAddress == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LayerFactory", "createWmsLayer", "missingServiceAddress"));
@@ -70,6 +75,11 @@ public class LayerFactory {
                 Logger.logMessage(Logger.ERROR, "LayerFactory", "createWmsLayer", "missingLayerNames"));
         }
 
+        if (callback == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createWmsLayer", "missingCallback"));
+        }
+
         RenderableLayer layer = new RenderableLayer();
         layer.setPickEnabled(false);
 
@@ -78,7 +88,7 @@ public class LayerFactory {
         try {
             WorldWind.taskService().execute(task);
         } catch (RejectedExecutionException logged) { // singleton task service is full; this should never happen but we check anyway
-            callback.layerFailed(this, layer, logged);
+            callback.creationFailed(this, layer, logged);
         }
 
         return layer;
@@ -164,7 +174,7 @@ public class LayerFactory {
             public void run() {
                 RenderableLayer renderableLayer = (RenderableLayer) layer;
                 renderableLayer.addRenderable(tiledSurfaceImage);
-                callback.layerCreated(LayerFactory.this, layer);
+                callback.creationSucceeded(LayerFactory.this, layer);
             }
         });
     }
@@ -191,7 +201,7 @@ public class LayerFactory {
             try {
                 this.factory.createGeoPackageLayerAsync(this.pathName, this.layer, this.callback);
             } catch (Throwable ex) {
-                this.callback.layerFailed(this.factory, this.layer, ex);
+                this.callback.creationFailed(this.factory, this.layer, ex);
             }
         }
     }
@@ -221,7 +231,7 @@ public class LayerFactory {
             try {
                 this.factory.createWmsLayerAsync(this.serviceAddress, this.layerNames, this.layer, this.callback);
             } catch (Throwable ex) {
-                this.callback.layerFailed(this.factory, this.layer, ex);
+                this.callback.creationFailed(this.factory, this.layer, ex);
             }
         }
     }

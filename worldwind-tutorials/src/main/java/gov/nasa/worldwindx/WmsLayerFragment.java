@@ -10,6 +10,7 @@ import android.util.Log;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.layer.LayerFactory;
+import gov.nasa.worldwind.util.Logger;
 
 public class WmsLayerFragment extends BasicGlobeFragment {
 
@@ -26,18 +27,20 @@ public class WmsLayerFragment extends BasicGlobeFragment {
         // Configure an OGC Web Map Service (WMS) layer to display the
         // surface temperature layer from NASA's Near Earth Observations WMS.
         LayerFactory layerFactory = new LayerFactory();
-        Layer layer = layerFactory.createWmsLayer(
-            "http://neowms.sci.gsfc.nasa.gov/wms/wms",
-            "MOD_LSTD_CLIM_M",
+        Layer layer = layerFactory.createFromWms(
+            //"http://neowms.sci.gsfc.nasa.gov/wms/wms",
+            //"MOD_LSTD_CLIM_M",
+            "https://worldwind25.arc.nasa.gov/wms",
+            "earthatnight",
             new LayerFactory.Callback() {
                 @Override
-                public void layerCreated(LayerFactory factory, Layer layer) {
-                    Log.d("gov.nasa.worldwind", "MOD_LSTD_CLIM_M created successfully");
+                public void creationSucceeded(LayerFactory factory, Layer layer) {
+                    Log.i("gov.nasa.worldwind", "WMS layer creation succeeded");
                 }
 
                 @Override
-                public void layerFailed(LayerFactory factory, Layer layer, Throwable ex) {
-                    Log.e("gov.nasa.worldwind", "MOD_LSTD_CLIM_M failed: " + (ex != null ? ex.toString() : ""));
+                public void creationFailed(LayerFactory factory, Layer layer, Throwable ex) {
+                    Log.e("gov.nasa.worldwind", "WMS layer creation failed", ex);
                 }
             }
         );
