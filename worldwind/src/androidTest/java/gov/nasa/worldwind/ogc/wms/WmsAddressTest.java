@@ -33,7 +33,7 @@ public class WmsAddressTest {
         // Initialize the context and basic model
         XmlPullParserContext context = new XmlPullParserContext(XmlPullParserContext.DEFAULT_NAMESPACE);
         Resources resources = getInstrumentation().getTargetContext().getResources();
-        InputStream is = resources.openRawResource(R.raw.gov_nasa_worldwind_sample_wms_xml);
+        InputStream is = resources.openRawResource(R.raw.gov_nasa_worldwind_wms_130_sample);
         context.setParserInput(is);
         XmlModel elementModel = new XmlModel(XmlPullParserContext.DEFAULT_NAMESPACE);
         Object o;
