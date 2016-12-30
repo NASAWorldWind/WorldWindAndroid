@@ -15,7 +15,6 @@ import org.junit.runner.RunWith;
 import java.io.InputStream;
 
 import gov.nasa.worldwind.test.R;
-import gov.nasa.worldwind.util.xml.XmlPullParserContext;
 
 import static android.support.test.InstrumentationRegistry.getInstrumentation;
 import static org.junit.Assert.assertEquals;
@@ -32,7 +31,7 @@ public class WmsCapabilitiesTest {
         Resources resources = getInstrumentation().getTargetContext().getResources();
         InputStream is = resources.openRawResource(R.raw.gov_nasa_worldwind_wms_111_sample);
 
-        WmsCapabilities capabilities = WmsCapabilities.getCapabilities(is, "");
+        WmsCapabilities capabilities = WmsCapabilities.getCapabilities(is);
 
         assertNotNull("image formats", capabilities.getImageFormats());
         assertNotNull("service information", capabilities.getServiceInformation());
@@ -47,7 +46,7 @@ public class WmsCapabilitiesTest {
         Resources resources = getInstrumentation().getTargetContext().getResources();
         InputStream is = resources.openRawResource(R.raw.gov_nasa_worldwind_wms_111_spec);
 
-        WmsCapabilities capabilities = WmsCapabilities.getCapabilities(is, "");
+        WmsCapabilities capabilities = WmsCapabilities.getCapabilities(is);
 
         assertNotNull("image formats", capabilities.getImageFormats());
         assertNotNull("service information", capabilities.getServiceInformation());
@@ -62,7 +61,7 @@ public class WmsCapabilitiesTest {
         Resources resources = getInstrumentation().getTargetContext().getResources();
         InputStream is = resources.openRawResource(R.raw.gov_nasa_worldwind_wms_130_sample);
 
-        WmsCapabilities capabilities = WmsCapabilities.getCapabilities(is, XmlPullParserContext.DEFAULT_NAMESPACE);
+        WmsCapabilities capabilities = WmsCapabilities.getCapabilities(is);
 
         assertNotNull("image formats", capabilities.getImageFormats());
         assertNotNull("service information", capabilities.getServiceInformation());
@@ -77,7 +76,7 @@ public class WmsCapabilitiesTest {
         Resources resources = getInstrumentation().getTargetContext().getResources();
         InputStream is = resources.openRawResource(R.raw.gov_nasa_worldwind_wms_130_spec);
 
-        WmsCapabilities capabilities = WmsCapabilities.getCapabilities(is, XmlPullParserContext.DEFAULT_NAMESPACE);
+        WmsCapabilities capabilities = WmsCapabilities.getCapabilities(is);
 
         assertNotNull("image formats", capabilities.getImageFormats());
         assertNotNull("service information", capabilities.getServiceInformation());
