@@ -20,12 +20,12 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 
 import gov.nasa.worldwind.ogc.wms.WmsAddress;
-import gov.nasa.worldwind.ogc.wms.WmsAuthorityUrl;
+import gov.nasa.worldwind.ogc.wms.WmsAuthorityUrl2;
 import gov.nasa.worldwind.ogc.wms.WmsBoundingBox;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilityInformation;
 import gov.nasa.worldwind.ogc.wms.WmsContactInformation;
-import gov.nasa.worldwind.ogc.wms.WmsDcpType;
+import gov.nasa.worldwind.ogc.wms.WmsDcpType2;
 import gov.nasa.worldwind.ogc.wms.WmsGeographicBoundingBox;
 import gov.nasa.worldwind.ogc.wms.WmsKeywords;
 import gov.nasa.worldwind.ogc.wms.WmsLayerAttribution;
@@ -33,9 +33,9 @@ import gov.nasa.worldwind.ogc.wms.WmsLayerCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsLayerDimension;
 import gov.nasa.worldwind.ogc.wms.WmsLayerExtent;
 import gov.nasa.worldwind.ogc.wms.WmsLayerIdentifier;
-import gov.nasa.worldwind.ogc.wms.WmsLayerInfoUrl;
+import gov.nasa.worldwind.ogc.wms.WmsLayerInfoUrl2;
 import gov.nasa.worldwind.ogc.wms.WmsLayerStyle;
-import gov.nasa.worldwind.ogc.wms.WmsLogoUrl;
+import gov.nasa.worldwind.ogc.wms.WmsLogoUrl2;
 import gov.nasa.worldwind.ogc.wms.WmsOnlineResource;
 import gov.nasa.worldwind.ogc.wms.WmsRequestDescription;
 import gov.nasa.worldwind.ogc.wms.WmsServiceInformation;
@@ -74,13 +74,13 @@ public class XmlPullParserContext {
         // Wms Element Registration
         this.registerParsableModel(new QName(this.namespaceUri, "ContactAddress"), new WmsAddress(this.namespaceUri));
         // TODO check wms schema for element name
-        this.registerParsableModel(new QName(this.namespaceUri, "AuthorityUrl"), new WmsAuthorityUrl(this.namespaceUri));
+        this.registerParsableModel(new QName(this.namespaceUri, "AuthorityUrl"), new WmsAuthorityUrl2(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "BoundingBox"), new WmsBoundingBox(this.namespaceUri));
-        this.registerParsableModel(new QName(this.namespaceUri, "DCPType"), new WmsDcpType(this.namespaceUri));
+        this.registerParsableModel(new QName(this.namespaceUri, "DCPType"), new WmsDcpType2(this.namespaceUri));
         // TODO check wms schema for element name
-        this.registerParsableModel(new QName(this.namespaceUri, "LayerInfo"), new WmsLayerInfoUrl(this.namespaceUri));
+        this.registerParsableModel(new QName(this.namespaceUri, "LayerInfo"), new WmsLayerInfoUrl2(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "OnlineResource"), new WmsOnlineResource(this.namespaceUri));
-        this.registerParsableModel(new QName(this.namespaceUri, "LogoURL"), new WmsLogoUrl(this.namespaceUri));
+        this.registerParsableModel(new QName(this.namespaceUri, "LogoURL"), new WmsLogoUrl2(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "Attribution"), new WmsLayerAttribution(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "AddressType"), new XmlModel(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "Address"), new XmlModel(this.namespaceUri));
@@ -96,9 +96,9 @@ public class XmlPullParserContext {
         this.registerParsableModel(new QName(this.namespaceUri, "Extent"), new WmsLayerExtent(this.namespaceUri));
 
         this.registerParsableModel(new QName(this.namespaceUri, "Style"), new WmsLayerStyle(this.namespaceUri));
-        this.registerParsableModel(new QName(this.namespaceUri, "LegendURL"), new WmsLogoUrl(this.namespaceUri));
-        this.registerParsableModel(new QName(this.namespaceUri, "StyleSheetURL"), new WmsLayerInfoUrl(this.namespaceUri));
-        this.registerParsableModel(new QName(this.namespaceUri, "StyleURL"), new WmsLayerInfoUrl(this.namespaceUri));
+        this.registerParsableModel(new QName(this.namespaceUri, "LegendURL"), new WmsLogoUrl2(this.namespaceUri));
+        this.registerParsableModel(new QName(this.namespaceUri, "StyleSheetURL"), new WmsLayerInfoUrl2(this.namespaceUri));
+        this.registerParsableModel(new QName(this.namespaceUri, "StyleURL"), new WmsLayerInfoUrl2(this.namespaceUri));
 
         this.registerParsableModel(new QName(this.namespaceUri, "GetCapabilities"), new WmsRequestDescription(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "GetMap"), new WmsRequestDescription(this.namespaceUri));
@@ -127,9 +127,9 @@ public class XmlPullParserContext {
         this.registerParsableModel(new QName(this.namespaceUri, "eastBoundLongitude"), new DoubleModel(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "northBoundLatitude"), new DoubleModel(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "southBoundLatitude"), new DoubleModel(this.namespaceUri));
-        this.registerParsableModel(new QName(this.namespaceUri, "MetadataURL"), new WmsLayerInfoUrl(this.namespaceUri));
-        this.registerParsableModel(new QName(this.namespaceUri, "FeatureListURL"), new WmsLayerInfoUrl(this.namespaceUri));
-        this.registerParsableModel(new QName(this.namespaceUri, "DataURL"), new WmsLayerInfoUrl(this.namespaceUri));
+        this.registerParsableModel(new QName(this.namespaceUri, "MetadataURL"), new WmsLayerInfoUrl2(this.namespaceUri));
+        this.registerParsableModel(new QName(this.namespaceUri, "FeatureListURL"), new WmsLayerInfoUrl2(this.namespaceUri));
+        this.registerParsableModel(new QName(this.namespaceUri, "DataURL"), new WmsLayerInfoUrl2(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "Identifier"), new WmsLayerIdentifier(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "Dimension"), new WmsLayerDimension(this.namespaceUri));
 

@@ -224,8 +224,8 @@ public class WmsLayerCapabilities extends XmlModel {
         return attributions != null ? attributions : Collections.<WmsLayerAttribution>emptySet();
     }
 
-    public Set<WmsAuthorityUrl> getAuthorityUrls() {
-        Set<WmsAuthorityUrl> authorityUrls = new HashSet<>();
+    public Set<WmsAuthorityUrl2> getAuthorityUrls() {
+        Set<WmsAuthorityUrl2> authorityUrls = new HashSet<>();
         this.getAdditiveInheritedField(this.authorityUrl, authorityUrls);
         return authorityUrls;
     }
@@ -235,19 +235,19 @@ public class WmsLayerCapabilities extends XmlModel {
         return identifiers != null ? identifiers : Collections.<WmsLayerIdentifier>emptySet();
     }
 
-    public Set<WmsLayerInfoUrl> getMetadataUrls() {
-        Set<WmsLayerInfoUrl> metadataUrls = (Set<WmsLayerInfoUrl>) this.getField(this.metadataUrl);
+    public Set<WmsLayerInfoUrl2> getMetadataUrls() {
+        Set<WmsLayerInfoUrl2> metadataUrls = (Set<WmsLayerInfoUrl2>) this.getField(this.metadataUrl);
         return metadataUrls != null ? metadataUrls : metadataUrls;
     }
 
-    public Set<WmsLayerInfoUrl> getFeatureListUrls() {
-        Set<WmsLayerInfoUrl> featureUrls = (Set<WmsLayerInfoUrl>) this.getField(this.featureListUrl);
-        return featureUrls != null ? featureUrls : Collections.<WmsLayerInfoUrl>emptySet();
+    public Set<WmsLayerInfoUrl2> getFeatureListUrls() {
+        Set<WmsLayerInfoUrl2> featureUrls = (Set<WmsLayerInfoUrl2>) this.getField(this.featureListUrl);
+        return featureUrls != null ? featureUrls : Collections.<WmsLayerInfoUrl2>emptySet();
     }
 
-    public Set<WmsLayerInfoUrl> getDataUrls() {
-        Set<WmsLayerInfoUrl> dataUrls = (Set<WmsLayerInfoUrl>) this.getField(this.dataUrl);
-        return dataUrls != null ? dataUrls : Collections.<WmsLayerInfoUrl>emptySet();
+    public Set<WmsLayerInfoUrl2> getDataUrls() {
+        Set<WmsLayerInfoUrl2> dataUrls = (Set<WmsLayerInfoUrl2>) this.getField(this.dataUrl);
+        return dataUrls != null ? dataUrls : Collections.<WmsLayerInfoUrl2>emptySet();
     }
 
     public List<WmsLayerCapabilities> getLayers() {
@@ -397,35 +397,35 @@ public class WmsLayerCapabilities extends XmlModel {
                 super.setField(keyName, value);
             }
         } else if (keyName.equals(this.dataUrl)) {
-            Set<WmsLayerInfoUrl> dataUrls = (Set<WmsLayerInfoUrl>) this.getField(this.dataUrl);
+            Set<WmsLayerInfoUrl2> dataUrls = (Set<WmsLayerInfoUrl2>) this.getField(this.dataUrl);
             if (dataUrls == null) {
                 dataUrls = new HashSet<>();
                 super.setField(this.dataUrl, dataUrls);
             }
-            if (value instanceof WmsLayerInfoUrl) {
-                dataUrls.add((WmsLayerInfoUrl) value);
+            if (value instanceof WmsLayerInfoUrl2) {
+                dataUrls.add((WmsLayerInfoUrl2) value);
             } else {
                 super.setField(keyName, value);
             }
         } else if (keyName.equals(this.featureListUrl)) {
-            Set<WmsLayerInfoUrl> featureUrls = (Set<WmsLayerInfoUrl>) this.getField(this.featureListUrl);
+            Set<WmsLayerInfoUrl2> featureUrls = (Set<WmsLayerInfoUrl2>) this.getField(this.featureListUrl);
             if (featureUrls == null) {
                 featureUrls = new HashSet<>();
                 super.setField(this.dataUrl, featureUrls);
             }
-            if (value instanceof WmsLayerInfoUrl) {
-                featureUrls.add((WmsLayerInfoUrl) value);
+            if (value instanceof WmsLayerInfoUrl2) {
+                featureUrls.add((WmsLayerInfoUrl2) value);
             } else {
                 super.setField(keyName, value);
             }
         } else if (keyName.equals(this.metadataUrl)) {
-            Set<WmsLayerInfoUrl> metadataUrls = (Set<WmsLayerInfoUrl>) this.getField(this.metadataUrl);
+            Set<WmsLayerInfoUrl2> metadataUrls = (Set<WmsLayerInfoUrl2>) this.getField(this.metadataUrl);
             if (metadataUrls == null) {
                 metadataUrls = new HashSet<>();
                 super.setField(this.metadataUrl, metadataUrls);
             }
-            if (value instanceof WmsLayerInfoUrl) {
-                metadataUrls.add((WmsLayerInfoUrl) value);
+            if (value instanceof WmsLayerInfoUrl2) {
+                metadataUrls.add((WmsLayerInfoUrl2) value);
             } else {
                 super.setField(keyName, value);
             }
@@ -441,13 +441,13 @@ public class WmsLayerCapabilities extends XmlModel {
                 super.setField(keyName, value);
             }
         } else if (keyName.equals(this.authorityUrl)) {
-            Set<WmsAuthorityUrl> authorityUrls = (Set<WmsAuthorityUrl>) this.getField(this.authorityUrl);
+            Set<WmsAuthorityUrl2> authorityUrls = (Set<WmsAuthorityUrl2>) this.getField(this.authorityUrl);
             if (authorityUrls == null) {
                 authorityUrls = new HashSet<>();
                 super.setField(this.authorityUrl, authorityUrls);
             }
             if (value instanceof WmsLayerIdentifier) {
-                authorityUrls.add((WmsAuthorityUrl) value);
+                authorityUrls.add((WmsAuthorityUrl2) value);
             } else {
                 super.setField(keyName, value);
             }

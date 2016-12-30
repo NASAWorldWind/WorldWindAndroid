@@ -29,9 +29,9 @@ public class WmsLayerStyle extends XmlModel {
 //    protected String name;
 //    protected String title;
 //    protected String styleAbstract;
-//    protected WmsLayerInfoUrl styleSheetURL;
-//    protected WmsLayerInfoUrl styleURL;
-//    protected Set<WmsLogoUrl> legendURLs;
+//    protected WmsLayerInfoUrl2 styleSheetURL;
+//    protected WmsLayerInfoUrl2 styleURL;
+//    protected Set<WmsLogoUrl2> legendURLs;
 
     public WmsLayerStyle(String namespaceURI) {
         super(namespaceURI);
@@ -145,24 +145,24 @@ public class WmsLayerStyle extends XmlModel {
         this.setChildCharacterValue(this.description, styleAbstract);
     }
 
-    public WmsLayerInfoUrl getStyleSheetUrl() {
-        return (WmsLayerInfoUrl) this.getField(this.styleSheetUrl);
+    public WmsLayerInfoUrl2 getStyleSheetUrl() {
+        return (WmsLayerInfoUrl2) this.getField(this.styleSheetUrl);
     }
 
-    protected void setStyleSheetUrl(WmsLayerInfoUrl styleSheetUrl) {
+    protected void setStyleSheetUrl(WmsLayerInfoUrl2 styleSheetUrl) {
         this.setField(this.styleSheetUrl, styleSheetUrl);
     }
 
-    public WmsLayerInfoUrl getStyleUrl() {
-        return (WmsLayerInfoUrl) this.getField(this.styleUrl);
+    public WmsLayerInfoUrl2 getStyleUrl() {
+        return (WmsLayerInfoUrl2) this.getField(this.styleUrl);
     }
 
-    protected void setStyleUrl(WmsLayerInfoUrl styleUrl) {
+    protected void setStyleUrl(WmsLayerInfoUrl2 styleUrl) {
         this.setField(this.styleUrl, styleUrl);
     }
 
-    public Set<WmsLogoUrl> getLegendUrls() {
-        return (Set<WmsLogoUrl>) this.getField(this.legendUrl);
+    public Set<WmsLogoUrl2> getLegendUrls() {
+        return (Set<WmsLogoUrl2>) this.getField(this.legendUrl);
     }
 
     /**
@@ -170,8 +170,8 @@ public class WmsLayerStyle extends XmlModel {
      *
      * @param legendUrls
      */
-    protected void setLegendUrls(Set<WmsLogoUrl> legendUrls) {
-        Set<WmsLogoUrl> logoUrls = (Set<WmsLogoUrl>) this.getField(this.legendUrl);
+    protected void setLegendUrls(Set<WmsLogoUrl2> legendUrls) {
+        Set<WmsLogoUrl2> logoUrls = (Set<WmsLogoUrl2>) this.getField(this.legendUrl);
         if (logoUrls != null) {
             logoUrls.clear();
             logoUrls.addAll(legendUrls);
@@ -182,24 +182,24 @@ public class WmsLayerStyle extends XmlModel {
         }
     }
 
-    protected void addLegendUrl(WmsLogoUrl url) {
+    protected void addLegendUrl(WmsLogoUrl2 url) {
         this.setField(this.legendUrl, url);
     }
 
     @Override
     public void setField(QName keyName, Object value) {
 
-        // Since we have a list, need to check for multiple values of the WmsLogoUrl
+        // Since we have a list, need to check for multiple values of the WmsLogoUrl2
         if (keyName.getLocalPart().equals(this.legendUrl.getLocalPart())
             && keyName.getNamespaceURI().equals(this.legendUrl.getNamespaceURI())) {
-            Set<WmsLogoUrl> logoUrls = (Set<WmsLogoUrl>) this.getField(this.legendUrl);
+            Set<WmsLogoUrl2> logoUrls = (Set<WmsLogoUrl2>) this.getField(this.legendUrl);
             if (logoUrls == null) {
-                super.setField(this.legendUrl, new HashSet<WmsLogoUrl>());
-                logoUrls = (Set<WmsLogoUrl>) super.getField(this.legendUrl);
+                super.setField(this.legendUrl, new HashSet<WmsLogoUrl2>());
+                logoUrls = (Set<WmsLogoUrl2>) super.getField(this.legendUrl);
             }
 
-            if (value instanceof WmsLogoUrl) {
-                logoUrls.add((WmsLogoUrl) value);
+            if (value instanceof WmsLogoUrl2) {
+                logoUrls.add((WmsLogoUrl2) value);
                 return;
             }
         }

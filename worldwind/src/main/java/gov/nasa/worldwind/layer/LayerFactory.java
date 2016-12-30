@@ -183,6 +183,8 @@ public class LayerFactory {
             return;
         }
 
+        callback.layerCreated(this, layer);
+
         // Configure a tiled surface image appropriately for the named layers layers. The image's sector is the union of
         // all named layers, and the number of levels is the minimum necessary to capture the full resolution of all
         // named layers. Use a large default number of levels if the capabilities provides no scale hint for any of the

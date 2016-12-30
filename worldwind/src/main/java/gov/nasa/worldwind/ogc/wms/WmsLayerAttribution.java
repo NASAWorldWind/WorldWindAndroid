@@ -27,7 +27,7 @@ public class WmsLayerAttribution extends XmlModel {
 
     protected WmsOnlineResource onlineResource;
 
-    protected WmsLogoUrl logoURL;
+    protected WmsLogoUrl2 logoURL;
 
     public WmsLayerAttribution(String namespaceURI) {
         super(namespaceURI);
@@ -77,7 +77,7 @@ public class WmsLayerAttribution extends XmlModel {
             if (model != null) {
                 Object o = model.read(ctx);
                 if (o != null) {
-                    this.setLogoURL((WmsLogoUrl) o);
+                    this.setLogoURL((WmsLogoUrl2) o);
                 }
             }
         }
@@ -99,11 +99,11 @@ public class WmsLayerAttribution extends XmlModel {
         this.onlineResource = onlineResource;
     }
 
-    public WmsLogoUrl getLogoURL() {
+    public WmsLogoUrl2 getLogoURL() {
         return logoURL;
     }
 
-    protected void setLogoURL(WmsLogoUrl logoURL) {
+    protected void setLogoURL(WmsLogoUrl2 logoURL) {
         this.logoURL = logoURL;
     }
 }
