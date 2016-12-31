@@ -87,13 +87,46 @@ public class LevelSetConfig {
     public int numLevelsForResolution(double radiansPerPixel) {
         if (radiansPerPixel <= 0) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LevelSetConfig", "setNumLevelsForResolution", "invalidResolution"));
+                Logger.logMessage(Logger.ERROR, "LevelSetConfig", "numLevelsForResolution", "invalidResolution"));
         }
 
         double degreesPerPixel = Math.toDegrees(radiansPerPixel);
         double firstLevelDegreesPerPixel = this.firstLevelDelta / Math.min(this.tileWidth, this.tileHeight);
         double level = Math.log(firstLevelDegreesPerPixel / degreesPerPixel) / Math.log(2); // fractional level address
         int levelNumber = (int) Math.ceil(level); // ceiling captures the resolution
+
+        if (levelNumber < 0) {
+            levelNumber = 0; // need at least one level, even if it exceeds the desired resolution
+        }
+
+        return levelNumber + 1; // convert level number to level count
+    }
+
+    /**
+     * Returns the number of levels closest to the specified resolution, but does not exceed it. May be used to
+     * configure level sets where a not to exceed resolution is mandated. The result is correct for this configuration's
+     * current firstLevelDelta, tileWidth and tileHeight, and is invalid if any of these values change.
+     *
+     * @param radiansPerPixel the desired not to exceed resolution in radians per pixel
+     *
+     * @return the number of levels
+     *
+     * @throws IllegalArgumentException If the resolution is not positive
+     */
+    public int numLevelsForMinResolution(double radiansPerPixel) {
+        if (radiansPerPixel <= 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LevelSetConfig", "numLevelsForMinResolution", "invalidResolution"));
+        }
+
+        double degreesPerPixel = Math.toDegrees(radiansPerPixel);
+        double firstLevelDegreesPerPixel = this.firstLevelDelta / this.tileHeight;
+        double level = Math.log(firstLevelDegreesPerPixel / degreesPerPixel) / Math.log(2); // fractional level address
+        int levelNumber = (int) Math.floor(level); // floor prevents exceeding the min scale
+
+        if (levelNumber < 0) {
+            levelNumber = 0; // need at least one level, even if it exceeds the desired resolution
+        }
 
         return levelNumber + 1; // convert level number to level count
     }

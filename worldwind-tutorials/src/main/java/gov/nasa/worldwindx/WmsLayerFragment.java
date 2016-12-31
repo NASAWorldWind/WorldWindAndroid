@@ -24,29 +24,30 @@ public class WmsLayerFragment extends BasicGlobeFragment {
         // Let the super class (BasicGlobeFragment) do the creation
         WorldWindow wwd = super.createWorldWindow();
 
-        // Configure an OGC Web Map Service (WMS) layer to display the
-        // surface temperature layer from NASA's Near Earth Observations WMS.
+        // Create a layer factory, World Wind's general component for creating layers
+        // from complex data sources.
         LayerFactory layerFactory = new LayerFactory();
-        Layer layer = layerFactory.createFromWms(
-            //"http://neowms.sci.gsfc.nasa.gov/wms/wms",
-            //"MOD_LSTD_CLIM_M",
-            "https://worldwind25.arc.nasa.gov/wms",
-            "earthatnight",
+
+        // Create an OGC Web Map Service (WMS) layer to display the
+        // surface temperature layer from NASA's Near Earth Observations WMS.
+        layerFactory.createFromWms(
+            "http://neowms.sci.gsfc.nasa.gov/wms/wms", // WMS server URL
+            "MOD_LSTD_CLIM_M",                         // WMS layer name
             new LayerFactory.Callback() {
                 @Override
                 public void creationSucceeded(LayerFactory factory, Layer layer) {
+                    // Add the finished WMS layer to the World Window.
+                    getWorldWindow().getLayers().addLayer(layer);
                     Log.i("gov.nasa.worldwind", "WMS layer creation succeeded");
                 }
 
                 @Override
                 public void creationFailed(LayerFactory factory, Layer layer, Throwable ex) {
+                    // Something went wrong connecting to the WMS server.
                     Log.e("gov.nasa.worldwind", "WMS layer creation failed", ex);
                 }
             }
         );
-
-        // Add the WMS layer to the World Window.
-        wwd.getLayers().addLayer(layer);
 
         return wwd;
     }

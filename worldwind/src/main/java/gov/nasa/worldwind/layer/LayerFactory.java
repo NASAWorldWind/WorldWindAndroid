@@ -18,11 +18,13 @@ import java.util.concurrent.RejectedExecutionException;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwind.ogc.WmsTileFactory;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsLayerCapabilities;
 import gov.nasa.worldwind.shape.TiledSurfaceImage;
 import gov.nasa.worldwind.util.LevelSet;
+import gov.nasa.worldwind.util.LevelSetConfig;
 import gov.nasa.worldwind.util.Logger;
 
 public class LayerFactory {
@@ -35,6 +37,8 @@ public class LayerFactory {
     }
 
     protected Handler mainLoopHandler = new Handler(Looper.getMainLooper());
+
+    protected static final double DEFAULT_WMS_RADIANS_PER_PIXEL = 10.0 / WorldWind.WGS84_SEMI_MAJOR_AXIS;
 
     public LayerFactory() {
     }
@@ -97,54 +101,47 @@ public class LayerFactory {
     protected void createGeoPackageLayerAsync(String pathName, Layer layer, Callback callback) {
     }
 
-    protected void createWmsLayerAsync(String serviceAddress, String layerNames, final Layer layer,
-                                       final Callback callback) throws Exception {
-
+    protected void createWmsLayerAsync(String serviceAddress, String layerNames, Layer layer, Callback callback) throws Exception {
         // Retrieve and parse the WMS capabilities at the specified service address, looking for the named layers
         // specified by the comma-delimited layerNames.
         Uri serviceUri = Uri.parse(serviceAddress).buildUpon()
-            .appendQueryParameter("REQUEST", "GetCapabilities")
-            .appendQueryParameter("SERVICE", "WMS")
             .appendQueryParameter("VERSION", "1.3.0")
+            .appendQueryParameter("SERVICE", "WMS")
+            .appendQueryParameter("REQUEST", "GetCapabilities")
             .build();
 
+        // Parse and read capabilities document
+        // TODO configurable connect and read timeouts
         URLConnection conn = new URL(serviceUri.toString()).openConnection();
         conn.setConnectTimeout(3000);
         conn.setReadTimeout(30000);
-
         InputStream inputStream = new BufferedInputStream(conn.getInputStream());
-
-        // Parse and read capabilities document
         WmsCapabilities wmsCapabilities = WmsCapabilities.getCapabilities(inputStream);
 
-        // Establish Version
-        String version = wmsCapabilities.getVersion();
+        WmsLayerConfig wmsLayerConfig = new WmsLayerConfig();
+        wmsLayerConfig.wmsVersion = wmsCapabilities.getVersion();
 
-        // TODO work with multiple layer names
-        WmsLayerCapabilities wmsLayerCapabilities = wmsCapabilities.getLayerByName(layerNames);
-        if (wmsLayerCapabilities == null) {
+        String requestUrl = wmsCapabilities.getRequestURL("GetMap", "Get");
+        if (requestUrl == null) {
+            throw new IllegalStateException(
+                Logger.makeMessage("LayerFactory", "createWmsLayerAsync", "Unable to resolve GetMap URL"));
+        } else {
+            wmsLayerConfig.serviceAddress = requestUrl;
+        }
+
+        WmsLayerCapabilities layerCapabilities = wmsCapabilities.getLayerByName(layerNames);
+        if (layerCapabilities == null) {
             throw new IllegalArgumentException(
                 Logger.makeMessage("LayerFactory", "createWmsLayerAsync", "Provided layer did not match available layers"));
+        } else {
+            wmsLayerConfig.layerNames = layerCapabilities.getName();
         }
 
-        String getCapabilitiesRequestUrl = wmsCapabilities.getRequestURL("GetMap", "Get");
-        if (getCapabilitiesRequestUrl == null) {
-            throw new IllegalStateException(
-                Logger.makeMessage("LayerFactory", "createWmsLayerAsync", "Unable to resolve GetCapabilities URL"));
-        }
-
-        WmsTileFactory wmsTileFactory = new WmsTileFactory(
-            getCapabilitiesRequestUrl,
-            version,
-            layerNames,
-            ""
-        );
-
-        Set<String> coordinateSystems = wmsLayerCapabilities.getReferenceSystem();
-        if (coordinateSystems.contains("CRS:84")) {
-            wmsTileFactory.setCoordinateSystem("CRS:84");
-        } else if (coordinateSystems.contains("EPSG:4326")) {
-            wmsTileFactory.setCoordinateSystem("EPSG:4326");
+        Set<String> coordinateSystems = layerCapabilities.getReferenceSystem();
+        if (coordinateSystems.contains("EPSG:4326")) {
+            wmsLayerConfig.coordinateSystem = "EPSG:4326";
+        } else if (coordinateSystems.contains("CRS:84")) {
+            wmsLayerConfig.coordinateSystem = "CRS:84";
         } else {
             throw new RuntimeException(
                 Logger.makeMessage("LayerFactory", "createWmsLayerAsync", "Coordinate systems not compatible"));
@@ -152,29 +149,52 @@ public class LayerFactory {
 
         Set<String> imageFormats = wmsCapabilities.getImageFormats();
         if (imageFormats.contains("image/png")) {
-            wmsTileFactory.setImageFormat("image/png");
+            wmsLayerConfig.imageFormat = "image/png";
         } else {
-            wmsTileFactory.setImageFormat(imageFormats.iterator().next());
+            wmsLayerConfig.imageFormat = imageFormats.iterator().next();
         }
 
-        Sector sector = wmsLayerCapabilities.getGeographicBoundingBox();
-        if (sector == null) {
-            sector = new Sector().setFullSphere();
+        LevelSetConfig levelSetConfig = new LevelSetConfig();
+
+        Sector sector = layerCapabilities.getGeographicBoundingBox();
+        if (sector != null) {
+            levelSetConfig.sector.set(sector);
         }
 
-        int levels = Math.max(1, wmsLayerCapabilities.getNumberOfLevels(512));
+        if (layerCapabilities.getMinScaleDenominator() != null && layerCapabilities.getMinScaleDenominator() != 0) {
+            // WMS 1.3.0 scale configuration. Based on the WMS 1.3.0 spec page 28. The hard coded value 0.00028 is
+            // detailed in the spec as the common pixel size of 0.28mm x 0.28mm. Configures the maximum level not to
+            // exceed the specified min scale denominator.
+            double minMetersPerPixel = layerCapabilities.getMinScaleDenominator() * 0.00028;
+            double minRadiansPerPixel = minMetersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS;
+            levelSetConfig.numLevels = levelSetConfig.numLevelsForMinResolution(minRadiansPerPixel);
+        } else if (layerCapabilities.getMinScaleHint() != null && layerCapabilities.getMinScaleHint() != 0) {
+            // WMS 1.1.1 scale configuration, where ScaleHint indicates approximate resolution in ground distance
+            // meters. Configures the maximum level not to exceed the specified min scale denominator.
+            double minMetersPerPixel = layerCapabilities.getMinScaleHint();
+            double minRadiansPerPixel = minMetersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS;
+            levelSetConfig.numLevels = levelSetConfig.numLevelsForMinResolution(minRadiansPerPixel);
+        } else {
+            // Default scale configuration when no minimum scale denominator or scale hint is provided.
+            double defaultRadiansPerPixel = DEFAULT_WMS_RADIANS_PER_PIXEL;
+            levelSetConfig.numLevels = levelSetConfig.numLevelsForResolution(defaultRadiansPerPixel);
+        }
 
-        final TiledSurfaceImage tiledSurfaceImage = new TiledSurfaceImage();
-        tiledSurfaceImage.setTileFactory(wmsTileFactory);
-        LevelSet levelSet = new LevelSet(sector, 90.0, levels, 512, 512);
-        tiledSurfaceImage.setLevelSet(levelSet);
+        final TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
+        final RenderableLayer finalLayer = (RenderableLayer) layer;
+        final Callback finalCallback = callback;
 
+        surfaceImage.setTileFactory(new WmsTileFactory(wmsLayerConfig));
+        surfaceImage.setLevelSet(new LevelSet(levelSetConfig));
+
+        // Add the tiled surface image to the layer on the main thread and notify the caller. Request a redraw to ensure
+        // that the image displays on all WorldWindows the layer may be attached to.
         this.mainLoopHandler.post(new Runnable() {
             @Override
             public void run() {
-                RenderableLayer renderableLayer = (RenderableLayer) layer;
-                renderableLayer.addRenderable(tiledSurfaceImage);
-                callback.creationSucceeded(LayerFactory.this, layer);
+                finalLayer.addRenderable(surfaceImage);
+                finalCallback.creationSucceeded(LayerFactory.this, finalLayer);
+                WorldWind.requestRedraw();
             }
         });
     }

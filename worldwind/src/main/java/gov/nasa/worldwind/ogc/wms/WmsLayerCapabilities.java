@@ -320,30 +320,6 @@ public class WmsLayerCapabilities extends XmlModel {
         }
     }
 
-    public int getNumberOfLevels(int imageWidth) {
-
-        Double value = this.getMinScaleDenominator();
-
-        if (value == null) {
-            // try the 1.1.1 version
-            value = this.getMinScaleHint();
-            if (value != null) {
-                value = value / WorldWind.WGS84_SEMI_MAJOR_AXIS;
-            } else {
-                // this is a fallback value used when no minimum scale hint or denominator is provided
-                return 12;
-            }
-        } else {
-            // this conversion is based on the WMS 1.3.0 spec page 28
-            // the hard coded value 0.00028 is detailed in the spec
-            value = (value * imageWidth * 0.00028) / WorldWind.WGS84_SEMI_MAJOR_AXIS;
-        }
-
-        LevelSetConfig levelSetConfig = new LevelSetConfig();
-
-        return levelSetConfig.numLevelsForResolution(value);
-    }
-
     public String getName() {
         return this.getChildCharacterValue(this.name);
     }
