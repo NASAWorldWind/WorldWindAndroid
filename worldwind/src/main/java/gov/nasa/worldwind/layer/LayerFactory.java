@@ -8,6 +8,7 @@ package gov.nasa.worldwind.layer;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.SparseArray;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
@@ -20,6 +21,12 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwind.ogc.WmsTileFactory;
+import gov.nasa.worldwind.ogc.gpkg.GeoPackage;
+import gov.nasa.worldwind.ogc.gpkg.GpkgContents;
+import gov.nasa.worldwind.ogc.gpkg.GpkgSpatialReferenceSystem;
+import gov.nasa.worldwind.ogc.gpkg.GpkgTileFactory;
+import gov.nasa.worldwind.ogc.gpkg.GpkgTileMatrix;
+import gov.nasa.worldwind.ogc.gpkg.GpkgTileMatrixSet;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsLayerCapabilities;
 import gov.nasa.worldwind.shape.TiledSurfaceImage;
@@ -54,7 +61,10 @@ public class LayerFactory {
                 Logger.logMessage(Logger.ERROR, "LayerFactory", "createGeoPackageLayer", "missingCallback"));
         }
 
+        // Create a layer in which to asynchronously populate with renderables for the GeoPackage contents.
         RenderableLayer layer = new RenderableLayer();
+
+        // Disable picking for the layer; terrain surface picking is performed automatically by WorldWindow.
         layer.setPickEnabled(false);
 
         GeoPackageAsyncTask task = new GeoPackageAsyncTask(this, pathName, layer, callback);
@@ -84,7 +94,10 @@ public class LayerFactory {
                 Logger.logMessage(Logger.ERROR, "LayerFactory", "createWmsLayer", "missingCallback"));
         }
 
+        // Create a layer in which to asynchronously populate with renderables for the GeoPackage contents.
         RenderableLayer layer = new RenderableLayer();
+
+        // Disable picking for the layer; terrain surface picking is performed automatically by WorldWindow.
         layer.setPickEnabled(false);
 
         WmsAsyncTask task = new WmsAsyncTask(this, serviceAddress, layerNames, layer, callback);
@@ -98,10 +111,76 @@ public class LayerFactory {
         return layer;
     }
 
-    protected void createGeoPackageLayerAsync(String pathName, Layer layer, Callback callback) {
+    protected void createFromGeoPackageAsync(String pathName, Layer layer, Callback callback) {
+        GeoPackage geoPackage = new GeoPackage(pathName);
+
+        final RenderableLayer gpkgRenderables = new RenderableLayer();
+        final RenderableLayer finalLayer = (RenderableLayer) layer;
+        final Callback finalCallback = callback;
+
+        for (GpkgContents contents : geoPackage.getContents()) {
+            if (contents.getDataType() == null || !contents.getDataType().equalsIgnoreCase("tiles")) {
+                Logger.logMessage(Logger.WARN, "LayerFactory", "createFromGeoPackageAsync",
+                    "Unsupported GeoPackage content data_type: " + contents.getDataType());
+                continue;
+            }
+
+            GpkgSpatialReferenceSystem srs = geoPackage.getSpatialReferenceSystem(contents.getSrsId());
+            if (srs == null || !srs.getOrganization().equalsIgnoreCase("EPSG") || srs.getOrganizationCoordSysId() != 4326) {
+                Logger.logMessage(Logger.WARN, "LayerFactory", "createFromGeoPackageAsync",
+                    "Unsupported GeoPackage spatial reference system: " + (srs == null ? "undefined" : srs.getSrsName()));
+                continue;
+            }
+
+            GpkgTileMatrixSet tileMatrixSet = geoPackage.getTileMatrixSet(contents.getTableName());
+            if (tileMatrixSet == null || tileMatrixSet.getSrsId() != contents.getSrsId()) {
+                Logger.logMessage(Logger.WARN, "LayerFactory", "createFromGeoPackageAsync",
+                    "Unsupported GeoPackage tile matrix set");
+                continue;
+            }
+
+            SparseArray<GpkgTileMatrix> tileMatrices = geoPackage.getTileMatrices(contents.getTableName());
+            if (tileMatrices == null || tileMatrices.size() == 0) {
+                Logger.logMessage(Logger.WARN, "LayerFactory", "createFromGeoPackageAsync",
+                    "Undefined GeoPackage tile matrices");
+                continue;
+            }
+
+            int maxZoomLevel = 0;
+            for (int idx = 0, len = tileMatrices.size(); idx < len; idx++) {
+                int zoomLevel = tileMatrices.valueAt(idx).getZoomLevel();
+                if (maxZoomLevel < zoomLevel) {
+                    maxZoomLevel = zoomLevel;
+                }
+            }
+
+            LevelSetConfig config = new LevelSetConfig();
+            config.sector.set(contents.getMinY(), contents.getMinX(),
+                contents.getMaxY() - contents.getMinY(), contents.getMaxX() - contents.getMinX());
+            config.firstLevelDelta = 180;
+            config.numLevels = maxZoomLevel + 1;
+            config.tileWidth = 256;
+            config.tileHeight = 256;
+
+            TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
+            surfaceImage.setLevelSet(new LevelSet(config));
+            surfaceImage.setTileFactory(new GpkgTileFactory(contents));
+            gpkgRenderables.addRenderable(surfaceImage);
+        }
+
+        // Add the tiled surface image to the layer on the main thread and notify the caller. Request a redraw to ensure
+        // that the image displays on all WorldWindows the layer may be attached to.
+        this.mainLoopHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                finalLayer.addAllRenderables(gpkgRenderables);
+                finalCallback.creationSucceeded(LayerFactory.this, finalLayer);
+                WorldWind.requestRedraw();
+            }
+        });
     }
 
-    protected void createWmsLayerAsync(String serviceAddress, String layerNames, Layer layer, Callback callback) throws Exception {
+    protected void createFromWmsAsync(String serviceAddress, String layerNames, Layer layer, Callback callback) throws Exception {
         // Retrieve and parse the WMS capabilities at the specified service address, looking for the named layers
         // specified by the comma-delimited layerNames.
         Uri serviceUri = Uri.parse(serviceAddress).buildUpon()
@@ -219,9 +298,14 @@ public class LayerFactory {
         @Override
         public void run() {
             try {
-                this.factory.createGeoPackageLayerAsync(this.pathName, this.layer, this.callback);
-            } catch (Throwable ex) {
-                this.callback.creationFailed(this.factory, this.layer, ex);
+                this.factory.createFromGeoPackageAsync(this.pathName, this.layer, this.callback);
+            } catch (final Throwable ex) {
+                this.factory.mainLoopHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.creationFailed(factory, layer, ex);
+                    }
+                });
             }
         }
     }
@@ -249,9 +333,14 @@ public class LayerFactory {
         @Override
         public void run() {
             try {
-                this.factory.createWmsLayerAsync(this.serviceAddress, this.layerNames, this.layer, this.callback);
-            } catch (Throwable ex) {
-                this.callback.creationFailed(this.factory, this.layer, ex);
+                this.factory.createFromWmsAsync(this.serviceAddress, this.layerNames, this.layer, this.callback);
+            } catch (final Throwable ex) {
+                this.factory.mainLoopHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.creationFailed(factory, layer, ex);
+                    }
+                });
             }
         }
     }
