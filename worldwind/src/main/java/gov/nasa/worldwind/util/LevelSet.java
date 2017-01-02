@@ -78,7 +78,7 @@ public class LevelSet {
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidTileDelta"));
         }
 
-        if (numLevels < 1) {
+        if (numLevels < 0) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidNumLevels"));
         }
@@ -121,7 +121,7 @@ public class LevelSet {
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidTileDelta"));
         }
 
-        if (config.numLevels < 1) {
+        if (config.numLevels < 0) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidNumLevels"));
         }
