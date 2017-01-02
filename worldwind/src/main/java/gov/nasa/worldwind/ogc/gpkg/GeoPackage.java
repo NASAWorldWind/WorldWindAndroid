@@ -23,13 +23,15 @@ public class GeoPackage {
 
     protected SQLiteConnection connection;
 
-    protected List<GpkgSpatialReferenceSystem> spatialReferenceSystems = new ArrayList<>();
+    protected List<GpkgSpatialReferenceSystem> spatialReferenceSystem = new ArrayList<>();
 
-    protected List<GpkgContents> contents = new ArrayList<>();
+    protected List<GpkgContent> content = new ArrayList<>();
 
-    protected List<GpkgTileMatrixSet> tileMatrixSets = new ArrayList<>();
+    protected List<GpkgTileMatrixSet> tileMatrixSet = new ArrayList<>();
 
-    protected List<GpkgTileMatrix> tileMatrices = new ArrayList<>();
+    protected List<GpkgTileMatrix> tileMatrix = new ArrayList<>();
+
+    protected List<GpkgTileUserMetrics> tileUserMetrics = new ArrayList<>();
 
     protected SparseIntArray srsIdIndex = new SparseIntArray();
 
@@ -37,63 +39,73 @@ public class GeoPackage {
 
     protected Map<String, SparseArray<GpkgTileMatrix>> tileMatrixIndex = new HashMap<>();
 
+    protected Map<String, GpkgTileUserMetrics> tileUserMetricsIndex = new HashMap<>();
+
     public GeoPackage(String pathName) {
         if (pathName == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "GeoPackage", "constructor", "missingPathName"));
         }
 
-        this.connection = new SQLiteConnection(pathName, SQLiteDatabase.OPEN_READONLY, 60, TimeUnit.SECONDS);
         // TODO verify its a GeoPackage container
-
         // TODO select specific columns
         // TODO parameterize table names and column names as constants
-        this.readSpatialReferenceSystems();
-        this.readContents();
-        this.readTileMatrixSets();
-        this.readTileMatrices();
+        this.connection = new SQLiteConnection(pathName, SQLiteDatabase.OPEN_READONLY, 60, TimeUnit.SECONDS);
+        this.readSpatialReferenceSystem();
+        this.readContent();
+        this.readTileMatrixSet();
+        this.readTileMatrix();
+        this.readTileUserMetrics();
     }
 
-    public List<GpkgSpatialReferenceSystem> getSpatialReferenceSystems() {
-        return this.spatialReferenceSystems;
+    public List<GpkgSpatialReferenceSystem> getSpatialReferenceSystem() {
+        return this.spatialReferenceSystem;
     }
 
     public GpkgSpatialReferenceSystem getSpatialReferenceSystem(int id) {
         int index = this.srsIdIndex.get(id, -1); // -1 if not found; the default is 0, a valid index
-        return (index < 0) ? null : this.spatialReferenceSystems.get(index);
+        return (index < 0) ? null : this.spatialReferenceSystem.get(index);
     }
 
-    public List<GpkgContents> getContents() {
-        return this.contents;
+    public List<GpkgContent> getContent() {
+        return this.content;
     }
 
-    public List<GpkgTileMatrixSet> getTileMatrixSets() {
-        return this.tileMatrixSets;
+    public List<GpkgTileMatrixSet> getTileMatrixSet() {
+        return this.tileMatrixSet;
     }
 
     public GpkgTileMatrixSet getTileMatrixSet(String tableName) {
         Integer index = this.tileMatrixSetIndex.get(tableName);
-        return (index == null) ? null : this.tileMatrixSets.get(index);
+        return (index == null) ? null : this.tileMatrixSet.get(index);
     }
 
-    public List<GpkgTileMatrix> getTileMatrices() {
-        return this.tileMatrices;
+    public List<GpkgTileMatrix> getTileMatrix() {
+        return this.tileMatrix;
     }
 
-    public SparseArray<GpkgTileMatrix> getTileMatrices(String tableName) {
+    public SparseArray<GpkgTileMatrix> getTileMatrix(String tableName) {
         return this.tileMatrixIndex.get(tableName);
     }
 
-    public GpkgTileUserData getTileUserData(GpkgContents tiles, int zoomLevel, int tileColumn, int tileRow) {
+    public List<GpkgTileUserMetrics> getTileUserMetrics() {
+        return this.tileUserMetrics;
+    }
+
+    public GpkgTileUserMetrics getTileUserMetrics(String tableName) {
+        return this.tileUserMetricsIndex.get(tableName);
+    }
+
+    public GpkgTileUserData readTileUserData(GpkgContent tiles, int zoomLevel, int tileColumn, int tileRow) {
         return (tiles == null) ? null : this.readTileUserData(tiles.getTableName(), zoomLevel, tileColumn, tileRow);
     }
 
-    protected void readSpatialReferenceSystems() {
+    protected void readSpatialReferenceSystem() {
         SQLiteDatabase database = null;
         Cursor cursor = null;
         try {
             database = this.connection.openDatabase();
-            cursor = database.rawQuery("SELECT * FROM gpkg_spatial_ref_sys", null /*selectionArgs*/);
+            cursor = database.rawQuery("SELECT * FROM 'gpkg_spatial_ref_sys'", null /*selectionArgs*/);
 
             int srs_name = cursor.getColumnIndex("srs_name");
             int srs_id = cursor.getColumnIndex("srs_id");
@@ -111,9 +123,8 @@ public class GeoPackage {
                 srs.setOrganizationCoordSysId(cursor.getInt(organization_coordsys_id));
                 srs.setDefinition(cursor.getString(definition));
                 srs.setDescription(cursor.getString(description));
-
-                int index = this.spatialReferenceSystems.size();
-                this.spatialReferenceSystems.add(srs);
+                int index = this.spatialReferenceSystem.size();
+                this.spatialReferenceSystem.add(srs);
                 this.srsIdIndex.put(srs.getSrsId(), index);
             }
         } finally {
@@ -122,12 +133,12 @@ public class GeoPackage {
         }
     }
 
-    protected void readContents() {
+    protected void readContent() {
         SQLiteDatabase database = null;
         Cursor cursor = null;
         try {
             database = this.connection.openDatabase();
-            cursor = database.rawQuery("SELECT * FROM gpkg_contents", null /*selectionArgs*/);
+            cursor = database.rawQuery("SELECT * FROM 'gpkg_contents'", null /*selectionArgs*/);
 
             int table_name = cursor.getColumnIndex("table_name");
             int data_type = cursor.getColumnIndex("data_type");
@@ -141,20 +152,19 @@ public class GeoPackage {
             int srs_id = cursor.getColumnIndex("srs_id");
 
             while (cursor.moveToNext()) {
-                GpkgContents contents = new GpkgContents();
-                contents.setContainer(this);
-                contents.setTableName(cursor.getString(table_name));
-                contents.setDataType(cursor.getString(data_type));
-                contents.setIdentifier(cursor.getString(identifier));
-                contents.setDescription(cursor.getString(description));
-                contents.setLastChange(cursor.getString(last_change));
-                contents.setMinX(cursor.getDouble(min_x));
-                contents.setMinY(cursor.getDouble(min_y));
-                contents.setMaxX(cursor.getDouble(max_x));
-                contents.setMaxY(cursor.getDouble(max_y));
-                contents.setSrsId(cursor.getInt(srs_id));
-
-                this.contents.add(contents);
+                GpkgContent content = new GpkgContent();
+                content.setContainer(this);
+                content.setTableName(cursor.getString(table_name));
+                content.setDataType(cursor.getString(data_type));
+                content.setIdentifier(cursor.getString(identifier));
+                content.setDescription(cursor.getString(description));
+                content.setLastChange(cursor.getString(last_change));
+                content.setMinX(cursor.getDouble(min_x));
+                content.setMinY(cursor.getDouble(min_y));
+                content.setMaxX(cursor.getDouble(max_x));
+                content.setMaxY(cursor.getDouble(max_y));
+                content.setSrsId(cursor.getInt(srs_id));
+                this.content.add(content);
             }
         } finally {
             WWUtil.closeSilently(cursor);
@@ -162,12 +172,12 @@ public class GeoPackage {
         }
     }
 
-    protected void readTileMatrixSets() {
+    protected void readTileMatrixSet() {
         SQLiteDatabase database = null;
         Cursor cursor = null;
         try {
             database = this.connection.openDatabase();
-            cursor = database.rawQuery("SELECT * FROM gpkg_tile_matrix_set", null /*selectionArgs*/);
+            cursor = database.rawQuery("SELECT * FROM 'gpkg_tile_matrix_set'", null /*selectionArgs*/);
 
             int table_name = cursor.getColumnIndex("table_name");
             int srs_id = cursor.getColumnIndex("srs_id");
@@ -185,9 +195,8 @@ public class GeoPackage {
                 tileMatrixSet.setMinY(cursor.getDouble(min_y));
                 tileMatrixSet.setMaxX(cursor.getDouble(max_x));
                 tileMatrixSet.setMaxY(cursor.getDouble(max_y));
-
-                int index = this.tileMatrixSets.size();
-                this.tileMatrixSets.add(tileMatrixSet);
+                int index = this.tileMatrixSet.size();
+                this.tileMatrixSet.add(tileMatrixSet);
                 this.tileMatrixSetIndex.put(tileMatrixSet.getTableName(), index);
                 this.tileMatrixIndex.put(tileMatrixSet.getTableName(), new SparseArray<GpkgTileMatrix>());
             }
@@ -197,12 +206,12 @@ public class GeoPackage {
         }
     }
 
-    protected void readTileMatrices() {
+    protected void readTileMatrix() {
         SQLiteDatabase database = null;
         Cursor cursor = null;
         try {
             database = this.connection.openDatabase();
-            cursor = database.rawQuery("SELECT * FROM gpkg_tile_matrix", null /*selectionArgs*/);
+            cursor = database.rawQuery("SELECT * FROM 'gpkg_tile_matrix'", null /*selectionArgs*/);
 
             int table_name = cursor.getColumnIndex("table_name");
             int zoom_level = cursor.getColumnIndex("zoom_level");
@@ -224,13 +233,49 @@ public class GeoPackage {
                 tileMatrix.setTileHeight(cursor.getInt(tile_height));
                 tileMatrix.setPixelXSize(cursor.getDouble(pixel_x_size));
                 tileMatrix.setPixelYSize(cursor.getDouble(pixel_y_size));
-
-                this.tileMatrices.add(tileMatrix);
+                this.tileMatrix.add(tileMatrix);
                 this.tileMatrixIndex.get(tileMatrix.getTableName()).put(tileMatrix.getZoomLevel(), tileMatrix);
             }
         } finally {
             WWUtil.closeSilently(cursor);
             WWUtil.closeSilently(database);
+        }
+    }
+
+    protected void readTileUserMetrics() {
+        for (int idx = 0, len = this.content.size(); idx < len; idx++) {
+            GpkgContent content = this.content.get(idx);
+
+            if (content.getTableName() == null) {
+                continue;
+            }
+
+            if (content.getDataType() == null || !content.getDataType().equalsIgnoreCase("tiles")) {
+                continue;
+            }
+
+            SQLiteDatabase database = null;
+            Cursor cursor = null;
+            try {
+                database = this.connection.openDatabase();
+                cursor = database.rawQuery("SELECT DISTINCT zoom_level FROM '" + content.getTableName() + "' ORDER BY zoom_level ASC", null /*selectionArgs*/);
+
+                int zoom_level = cursor.getColumnIndex("zoom_level");
+                int[] zoomLevels = new int[cursor.getCount()];
+
+                for (int pos = 0; cursor.moveToNext(); pos++) {
+                    zoomLevels[pos] = cursor.getInt(zoom_level);
+                }
+
+                GpkgTileUserMetrics userMetrics = new GpkgTileUserMetrics();
+                userMetrics.setContainer(this);
+                userMetrics.setZoomLevels(zoomLevels);
+                this.tileUserMetrics.add(userMetrics);
+                this.tileUserMetricsIndex.put(content.getTableName(), userMetrics);
+            } finally {
+                WWUtil.closeSilently(cursor);
+                WWUtil.closeSilently(database);
+            }
         }
     }
 
@@ -241,7 +286,7 @@ public class GeoPackage {
         try {
             String[] selectionArgs = new String[]{Integer.toString(zoomLevel), Integer.toString(tileColumn), Integer.toString(tileRow)};
             database = this.connection.openDatabase();
-            cursor = database.rawQuery("SELECT * FROM " + tableName + " WHERE zoom_level=? AND tile_column=? AND tile_row=? LIMIT 1", selectionArgs);
+            cursor = database.rawQuery("SELECT * FROM '" + tableName + "' WHERE zoom_level=? AND tile_column=? AND tile_row=? LIMIT 1", selectionArgs);
 
             int id = cursor.getColumnIndex("id");
             int zoom_level = cursor.getColumnIndex("zoom_level");

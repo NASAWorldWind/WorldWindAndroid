@@ -8,7 +8,6 @@ package gov.nasa.worldwind.layer;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.SparseArray;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
@@ -22,11 +21,11 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwind.ogc.WmsTileFactory;
 import gov.nasa.worldwind.ogc.gpkg.GeoPackage;
-import gov.nasa.worldwind.ogc.gpkg.GpkgContents;
+import gov.nasa.worldwind.ogc.gpkg.GpkgContent;
 import gov.nasa.worldwind.ogc.gpkg.GpkgSpatialReferenceSystem;
 import gov.nasa.worldwind.ogc.gpkg.GpkgTileFactory;
-import gov.nasa.worldwind.ogc.gpkg.GpkgTileMatrix;
 import gov.nasa.worldwind.ogc.gpkg.GpkgTileMatrixSet;
+import gov.nasa.worldwind.ogc.gpkg.GpkgTileUserMetrics;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsLayerCapabilities;
 import gov.nasa.worldwind.shape.TiledSurfaceImage;
@@ -53,12 +52,12 @@ public class LayerFactory {
     public Layer createFromGeoPackage(String pathName, Callback callback) {
         if (pathName == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LayerFactory", "createGeoPackageLayer", "missingPathName"));
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromGeoPackage", "missingPathName"));
         }
 
         if (callback == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LayerFactory", "createGeoPackageLayer", "missingCallback"));
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromGeoPackage", "missingCallback"));
         }
 
         // Create a layer in which to asynchronously populate with renderables for the GeoPackage contents.
@@ -81,17 +80,17 @@ public class LayerFactory {
     public Layer createFromWms(String serviceAddress, String layerNames, Callback callback) {
         if (serviceAddress == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LayerFactory", "createWmsLayer", "missingServiceAddress"));
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWms", "missingServiceAddress"));
         }
 
         if (layerNames == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LayerFactory", "createWmsLayer", "missingLayerNames"));
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWms", "missingLayerNames"));
         }
 
         if (callback == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LayerFactory", "createWmsLayer", "missingCallback"));
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWms", "missingCallback"));
         }
 
         // Create a layer in which to asynchronously populate with renderables for the GeoPackage contents.
@@ -113,60 +112,57 @@ public class LayerFactory {
 
     protected void createFromGeoPackageAsync(String pathName, Layer layer, Callback callback) {
         GeoPackage geoPackage = new GeoPackage(pathName);
-
         final RenderableLayer gpkgRenderables = new RenderableLayer();
-        final RenderableLayer finalLayer = (RenderableLayer) layer;
-        final Callback finalCallback = callback;
 
-        for (GpkgContents contents : geoPackage.getContents()) {
-            if (contents.getDataType() == null || !contents.getDataType().equalsIgnoreCase("tiles")) {
+        for (GpkgContent content : geoPackage.getContent()) {
+            if (content.getDataType() == null || !content.getDataType().equalsIgnoreCase("tiles")) {
                 Logger.logMessage(Logger.WARN, "LayerFactory", "createFromGeoPackageAsync",
-                    "Unsupported GeoPackage content data_type: " + contents.getDataType());
+                    "Unsupported GeoPackage content data_type: " + content.getDataType());
                 continue;
             }
 
-            GpkgSpatialReferenceSystem srs = geoPackage.getSpatialReferenceSystem(contents.getSrsId());
+            GpkgSpatialReferenceSystem srs = geoPackage.getSpatialReferenceSystem(content.getSrsId());
             if (srs == null || !srs.getOrganization().equalsIgnoreCase("EPSG") || srs.getOrganizationCoordSysId() != 4326) {
                 Logger.logMessage(Logger.WARN, "LayerFactory", "createFromGeoPackageAsync",
                     "Unsupported GeoPackage spatial reference system: " + (srs == null ? "undefined" : srs.getSrsName()));
                 continue;
             }
 
-            GpkgTileMatrixSet tileMatrixSet = geoPackage.getTileMatrixSet(contents.getTableName());
-            if (tileMatrixSet == null || tileMatrixSet.getSrsId() != contents.getSrsId()) {
+            GpkgTileMatrixSet tileMatrixSet = geoPackage.getTileMatrixSet(content.getTableName());
+            if (tileMatrixSet == null || tileMatrixSet.getSrsId() != content.getSrsId()) {
                 Logger.logMessage(Logger.WARN, "LayerFactory", "createFromGeoPackageAsync",
                     "Unsupported GeoPackage tile matrix set");
                 continue;
             }
 
-            SparseArray<GpkgTileMatrix> tileMatrices = geoPackage.getTileMatrices(contents.getTableName());
-            if (tileMatrices == null || tileMatrices.size() == 0) {
+            GpkgTileUserMetrics tileMetrics = geoPackage.getTileUserMetrics(content.getTableName());
+            if (tileMetrics == null) {
                 Logger.logMessage(Logger.WARN, "LayerFactory", "createFromGeoPackageAsync",
-                    "Undefined GeoPackage tile matrices");
+                    "Unsupported GeoPackage tiles content");
                 continue;
             }
 
-            int maxZoomLevel = 0;
-            for (int idx = 0, len = tileMatrices.size(); idx < len; idx++) {
-                int zoomLevel = tileMatrices.valueAt(idx).getZoomLevel();
-                if (maxZoomLevel < zoomLevel) {
-                    maxZoomLevel = zoomLevel;
-                }
-            }
-
             LevelSetConfig config = new LevelSetConfig();
-            config.sector.set(contents.getMinY(), contents.getMinX(),
-                contents.getMaxY() - contents.getMinY(), contents.getMaxX() - contents.getMinX());
+            config.sector.set(content.getMinY(), content.getMinX(),
+                content.getMaxY() - content.getMinY(), content.getMaxX() - content.getMinX());
             config.firstLevelDelta = 180;
-            config.numLevels = maxZoomLevel + 1;
+            config.numLevels = tileMetrics.getMaxZoomLevel() + 1; // zero when there are no zoom levels, (0 = -1 + 1)
             config.tileWidth = 256;
             config.tileHeight = 256;
 
             TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
             surfaceImage.setLevelSet(new LevelSet(config));
-            surfaceImage.setTileFactory(new GpkgTileFactory(contents));
+            surfaceImage.setTileFactory(new GpkgTileFactory(content));
             gpkgRenderables.addRenderable(surfaceImage);
         }
+
+        if (gpkgRenderables.count() == 0) {
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "createFromGeoPackageAsync", "Unsupported GeoPackage contents"));
+        }
+
+        final RenderableLayer finalLayer = (RenderableLayer) layer;
+        final Callback finalCallback = callback;
 
         // Add the tiled surface image to the layer on the main thread and notify the caller. Request a redraw to ensure
         // that the image displays on all WorldWindows the layer may be attached to.
@@ -202,16 +198,16 @@ public class LayerFactory {
 
         String requestUrl = wmsCapabilities.getRequestURL("GetMap", "Get");
         if (requestUrl == null) {
-            throw new IllegalStateException(
-                Logger.makeMessage("LayerFactory", "createWmsLayerAsync", "Unable to resolve GetMap URL"));
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "createFromWmsAsync", "Unable to resolve GetMap URL"));
         } else {
             wmsLayerConfig.serviceAddress = requestUrl;
         }
 
         WmsLayerCapabilities layerCapabilities = wmsCapabilities.getLayerByName(layerNames);
         if (layerCapabilities == null) {
-            throw new IllegalArgumentException(
-                Logger.makeMessage("LayerFactory", "createWmsLayerAsync", "Provided layer did not match available layers"));
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "createFromWmsAsync", "Provided layer did not match available layers"));
         } else {
             wmsLayerConfig.layerNames = layerCapabilities.getName();
         }
@@ -223,7 +219,7 @@ public class LayerFactory {
             wmsLayerConfig.coordinateSystem = "CRS:84";
         } else {
             throw new RuntimeException(
-                Logger.makeMessage("LayerFactory", "createWmsLayerAsync", "Coordinate systems not compatible"));
+                Logger.makeMessage("LayerFactory", "createFromWmsAsync", "Coordinate systems not compatible"));
         }
 
         Set<String> imageFormats = wmsCapabilities.getImageFormats();

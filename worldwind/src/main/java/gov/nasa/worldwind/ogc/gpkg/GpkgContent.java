@@ -5,7 +5,7 @@
 
 package gov.nasa.worldwind.ogc.gpkg;
 
-public class GpkgContents extends GpkgEntry {
+public class GpkgContent extends GpkgEntry {
 
     protected String tableName;
 
@@ -27,7 +27,7 @@ public class GpkgContents extends GpkgEntry {
 
     protected int srsId;
 
-    public GpkgContents() {
+    public GpkgContent() {
     }
 
     public String getTableName() {

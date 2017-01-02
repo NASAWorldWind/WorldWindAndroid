@@ -13,7 +13,7 @@ import gov.nasa.worldwind.util.Logger;
 
 public class GpkgBitmapFactory implements ImageSource.BitmapFactory {
 
-    protected GpkgContents tiles;
+    protected GpkgContent tiles;
 
     protected int zoomLevel;
 
@@ -21,7 +21,7 @@ public class GpkgBitmapFactory implements ImageSource.BitmapFactory {
 
     protected int tileRow;
 
-    public GpkgBitmapFactory(GpkgContents tiles, int zoomLevel, int tileColumn, int tileRow) {
+    public GpkgBitmapFactory(GpkgContent tiles, int zoomLevel, int tileColumn, int tileRow) {
         if (tiles == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "GpkgBitmapFactory", "constructor", "missingTiles"));
@@ -37,14 +37,13 @@ public class GpkgBitmapFactory implements ImageSource.BitmapFactory {
     public Bitmap createBitmap() {
         // Attempt to read the GeoPackage tile user data, throwing an exception if it cannot be found.
         GeoPackage geoPackage = this.tiles.getContainer();
-        GpkgTileUserData tileUserData = geoPackage.getTileUserData(this.tiles, this.zoomLevel, this.tileColumn, this.tileRow);
+        GpkgTileUserData tileUserData = geoPackage.readTileUserData(this.tiles, this.zoomLevel, this.tileColumn, this.tileRow);
 
-        // Throw an exception if the tile user data cannot be found, but let the caller (likely an ImageFactory)
-        // determine whether to log a message.
+        // Log a message if the tile user data cannot be found, and return a null bitmap indicating this tile is empty.
         if (tileUserData == null) {
-            String msg = Logger.makeMessage("GpkgBitmapFactory", "createBitmap",
+            Logger.logMessage(Logger.WARN, "GpkgBitmapFactory", "createBitmap",
                 "The GeoPackage tile cannot be found (zoomLevel=" + this.zoomLevel + ", tileColumn=" + this.tileColumn + ", tileRow=" + this.tileRow + ")");
-            throw new RuntimeException(msg);
+            return null;
         }
 
         // Decode the tile user data, either a PNG image or a JPEG image.
