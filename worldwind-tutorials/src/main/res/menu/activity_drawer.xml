@@ -16,6 +16,10 @@
             android:icon="@android:drawable/ic_menu_mapmode"
             android:title="@string/title_wms_layer"/>
         <item
+            android:id="@+id/nav_geopackage_activity"
+            android:icon="@android:drawable/ic_menu_mapmode"
+            android:title="@string/title_geopackage"/>
+        <item
             android:id="@+id/nav_surface_image_activity"
             android:icon="@android:drawable/ic_menu_mapmode"
             android:title="@string/title_surface_image"/>
