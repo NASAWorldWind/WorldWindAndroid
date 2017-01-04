@@ -1,6 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="gov.nasa.worldwind"
-    >
+    package="gov.nasa.worldwind">
 
     <!-- Tell the system this library requires OpenGL ES 2.0. -->
     <uses-feature
