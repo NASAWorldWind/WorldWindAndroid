@@ -16,119 +16,79 @@
 <body>
 <h1>Labels Tutorial</h1>
 <p>
-    Demonstrates how to add Labels to a RenderableLayer.
+    Demonstrates how to display labels on a World Wind globe.
 </p>
 <p>
-    This example uses Labels to identify several islands off the coast of southern California.
-    The code demonstrates several facets of labels, including font family, styles, text size,
-    colors, transparency, and text alignment.
-    <ul>
-    <li><i>San Nicolas Island</i>: This is a simple label using the default text attributes.
-    </li>
-    <li><i>Channel Islands Nat'l Park</i>: This two-line label set uses customized text attributes to specify
-        the "serif" font family,  a bold-italic style, color, transparency and size; the text alignments
-        are bottom-center and top-center.
-    </li>
-    <li><i>The five national park islands</i>: These labels use customized text attributes to specify
-        the "san-serif" font family, a bold style, color and size; a variety of text alignment options are used.
-    </li>
-</ul>
+    This tutorial uses Labels shapes to identify landmarks around Washington, D.C. Label shapes have a variety of
+    configurable properties, including text color, text size (in screen pixels), typeface, text outline, and rotation.
+    </ul>
 </p>
 <h2>Example</h2>
 <h3>LabelsFragment.java</h3>
 <p>
-    The LabelsFragment class extends the BasicGlobeFragment and overrides the createWorldWindow method.
-    Here we create and add a RenderableLayer and several Labels to the globe.
+    The LabelsFragment class extends BasicGlobeFragment and overrides the createWorldWindow method. Here we configure
+    six Label shapes to identify landmarks around Washington, D.C.
 </p>
 <div style="border-top: 1px solid black; border-bottom: 1px solid black;">
     <textarea id="java-code">
 package gov.nasa.worldwindx;
 ...
 public class LabelsFragment extends BasicGlobeFragment {
+
     /**
-     * Creates a new WorldWindow with a RenderableLayer populated with several Labels.
+     * Creates a new WorldWindow (GLSurfaceView) object with a set of label shapes
+     *
+     * @return The WorldWindow object containing the globe.
      */
     @Override
     public WorldWindow createWorldWindow() {
         // Let the super class (BasicGlobeFragment) do the creation
         WorldWindow wwd = super.createWorldWindow();
 
-        // Create a RenderableLayer for labels and add it to the WorldWindow
-        RenderableLayer layer = new RenderableLayer("Renderables");
+        // Create a layer to display the tutorial labels.
+        RenderableLayer layer = new RenderableLayer();
         wwd.getLayers().addLayer(layer);
 
-        // Create a simple label with the default text attributes:
-        //  the default text size is 24;
-        //  the default text alignment is bottom-center;
-        //  the default text color is white.
-        Label sanNicolas = new Label(new Position(33.262, -119.538, 0),
-            "San Nicolas");
-        layer.addRenderable(sanNicolas);
+        // Create a basic label with the default attributes, including the default text color (white), the default text
+        // size (24 pixels), the system default typeface, and the default alignment (bottom center).
+        Label label = new Label(new Position(38.8977, -77.0365, 0), "The White House");
+        layer.addRenderable(label);
 
-        // Define the text attributes for the Nat'l Park Service
-        // using a big, bold, italic serif font.
-        TextAttributes parkAttributes = new TextAttributes()
-            .setTypeface(Typeface.create("serif", Typeface.BOLD_ITALIC))
-            .setTextColor(new Color(0f, 1f, 0f, 0.5f))  // green, 50% opacity
-            .setTextSize(50f);
+        // Create a label with a green text color, the default text size, the system default typeface, and the default
+        // alignment.
+        TextAttributes attrs = new TextAttributes();
+        attrs.setTextColor(new Color(0, 1, 0, 1)); // green via r,g,b,a
+        label = new Label(new Position(38.881389, -77.036944, 0), "Thomas Jefferson Memorial", attrs);
+        layer.addRenderable(label);
 
-        // Create a two-line label for the Nat'l Park, the top
-        // label's bottom-center is aligned to the position,
-        // the bottom label's top-center is aligned to the position.
-        Label park1 = new Label(new Position(33.9, -119.7, 0),
-            "Channel Islands", parkAttributes);
+        // Create a right-aligned label using a bottom-right offset.
+        attrs = new TextAttributes();
+        attrs.setTextOffset(Offset.bottomRight());
+        label = new Label(new Position(38.8893, -77.050111, 0), "Lincoln Memorial", attrs);
+        layer.addRenderable(label);
 
-        Label park2 = new Label(new Position(33.9, -119.7, 0),
-            "National Park",
-            new TextAttributes(parkAttributes)
-                .setTextOffset(Offset.topCenter()));
-        layer.addRenderable(park1);
-        layer.addRenderable(park2);
+        // Create a left-aligned label using a bottom-left offset.
+        attrs = new TextAttributes();
+        attrs.setTextOffset(Offset.bottomLeft());
+        label = new Label(new Position(38.889803, -77.009114, 0), "United States Capitol", attrs);
+        layer.addRenderable(label);
 
-        // Define the text attributes used for the Nat'l Park islands
-        // with a yellow, bold san-serif font
-        TextAttributes islandAttributes = new TextAttributes()
-            .setTypeface(Typeface.create("san-serif", Typeface.BOLD))
-            .setTextColor(new Color(1f, 1f, 0f, 1f));// yellow, opaque
+        // Create a label with a 48 pixel text size and a bold typeface.
+        attrs = new TextAttributes();
+        attrs.setTypeface(Typeface.DEFAULT_BOLD); // system default bold typeface
+        attrs.setTextSize(48); // 48 screen pixels
+        label = new Label(new Position(38.907192, -77.036871, 0), "Washington", attrs);
+        layer.addRenderable(label);
 
-        // Create a labels for Santa Cruz and San Miguel using
-        // the default bottom-center text alignment, but make
-        // the text size larger than the default size (24).
-        Label santaCruz = new Label(new Position(34.04, -119.77, 0),
-            "Santa Cruz", new TextAttributes(islandAttributes)
-                .setTextSize(40f));
-        layer.addRenderable(santaCruz);
+        // Create a label with its orientation fixed relative to the globe.
+        label = new Label(new Position(38.89, -77.023611, 0), "National Mall");
+        label.setRotationMode(WorldWind.RELATIVE_TO_GLOBE);
+        layer.addRenderable(label);
 
-        Label sanMiguel = new Label(new Position(34.06, -120.37, 0),
-            "Santa Miguel", new TextAttributes(islandAttributes)
-                .setTextSize(32f));
-        layer.addRenderable(sanMiguel);
-
-        // Create a label for Santa Rosa where the top-right
-        // of the text is aligned with the island's position.
-        Label santaRosa = new Label(new Position(33.95, -120.15, 0),
-            "Santa Rosa", new TextAttributes(islandAttributes)
-                .setTextSize(40f)
-                .setTextOffset(Offset.topRight()));
-        layer.addRenderable(santaRosa);
-
-        // Create smaller labels for Anacapa and Santa Barbara where
-        // the bottom-left is aligned with the island's position.
-        Label anacapa = new Label(new Position(34.005, -119.392, 0),
-            "Anacapa", new TextAttributes(islandAttributes)
-                .setTextSize(28f)
-                .setTextOffset(Offset.bottomLeft()));
-        layer.addRenderable(anacapa);
-
-        Label santaBarbara = new Label(new Position(33.475, -119.037, 0),
-            "Santa Barbara", anacapa.getAttributes());
-        layer.addRenderable(santaBarbara);
-
-        // Position the viewer to look down at the Channel Islands.
-        final Position pos = new Position(33.7, -119.6, 0);
-        LookAt lookAt = new LookAt().set(pos.latitude, pos.longitude, pos.altitude, WorldWind.ABSOLUTE,
-            30e4 /*range*/, 0 /*heading*/, 0 /*tilt*/, 0 /*roll*/);
-        wwd.getNavigator().setAsLookAt(wwd.getGlobe(), lookAt);
+        // Place the viewer directly over the tutorial labels.
+        wwd.getNavigator().setLatitude(38.89);
+        wwd.getNavigator().setLongitude(-77.023611);
+        wwd.getNavigator().setAltitude(10e3);
 
         return wwd;
     }
@@ -143,6 +103,8 @@ public class LabelsFragment extends BasicGlobeFragment {
         mode: "text/x-java",
         readOnly: true
       });
+
+
 
 </script>
 </body>
