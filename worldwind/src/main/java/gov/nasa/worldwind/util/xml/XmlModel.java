@@ -206,6 +206,15 @@ public class XmlModel {
         return this.fields != null ? this.fields.get(keyName) : null;
     }
 
+    /**
+     * Searches the present level for the provided {@link QName} and returns. If the value isn't present on the current
+     * level, searches up the tree for a matching value and returns. If no value is found, null is returned. This method
+     * should be used when an inherited value that may not be present at the current level is requested.
+     *
+     * @param keyName the qualified name of the value to retrieve
+     *
+     * @return the value of the field at this level, or this first instance of the value while traversing up the tree
+     */
     protected Object getInheritedField(QName keyName) {
 
         XmlModel model = this;
@@ -302,7 +311,7 @@ public class XmlModel {
         }
 
         if (o != null) {
-            if (o instanceof StringBuilder) {
+            if (o instanceof StringBuilder || o instanceof String) {
                 try {
                     return Double.parseDouble(o.toString());
                 } catch (Exception ignore) {
@@ -326,7 +335,7 @@ public class XmlModel {
         }
 
         if (o != null) {
-            if (o instanceof StringBuilder) {
+            if (o instanceof StringBuilder || o instanceof String) {
                 try {
                     return Integer.parseInt(o.toString());
                 } catch (Exception ignore) {
@@ -350,7 +359,7 @@ public class XmlModel {
         }
 
         if (o != null) {
-            if (o instanceof StringBuilder) {
+            if (o instanceof StringBuilder || o instanceof String) {
                 try {
                     return Boolean.parseBoolean(o.toString());
                 } catch (Exception ignore) {
