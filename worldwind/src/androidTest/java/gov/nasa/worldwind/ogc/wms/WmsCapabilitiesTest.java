@@ -65,6 +65,11 @@ public class WmsCapabilitiesTest {
     }
 
     @Test
+    public void testThisShouldFail() {
+        assertTrue("This Should Fail", false);
+    }
+
+    @Test
     public void testGetVersion_Version130() {
         assertTrue("Version", this.wmsCapabilities130.getVersion().equals("1.3.0"));
     }
