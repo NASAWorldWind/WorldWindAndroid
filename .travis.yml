@@ -37,11 +37,12 @@ before_script:
   - echo no | android create avd --force -n test -t android-24 --abi armeabi-v7a
   - emulator -avd test -no-audio -no-window &
   - android-wait-for-emulator
-  - adb shell input keyevent 82 &
+  #- adb shell input keyevent 82 &
 
 script:
   # Build the project
   - ./gradlew build
+  - ./gradlew worldwind:connectedAndroidTest
 
 after_success:
   # Push the daily tag when this build is a cron job
