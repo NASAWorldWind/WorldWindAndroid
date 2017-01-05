@@ -13,9 +13,7 @@ import java.util.Set;
 
 import javax.xml.namespace.QName;
 
-import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.util.LevelSetConfig;
 import gov.nasa.worldwind.util.xml.DoubleModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
@@ -233,7 +231,7 @@ public class WmsLayerCapabilities extends XmlModel {
     }
 
     public Set<WmsLayerIdentifier> getIdentifiers() {
-        Set<WmsLayerIdentifier> identifiers = (Set<WmsLayerIdentifier>) this.getInheritedField(this.identifier);
+        Set<WmsLayerIdentifier> identifiers = (Set<WmsLayerIdentifier>) this.getField(this.identifier);
         return identifiers != null ? identifiers : Collections.<WmsLayerIdentifier>emptySet();
     }
 

@@ -5,59 +5,76 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-import java.io.IOException;
+import javax.xml.namespace.QName;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
-import gov.nasa.worldwind.util.xml.XmlPullParserContext;
 
 public class WmsLogoUrl extends XmlModel {
 
-    protected Integer width;
+    protected QName format;
 
-    protected Integer height;
+    protected QName onlineResource;
+
+    protected QName width = new QName("", "width");
+
+    protected QName height = new QName("", "height");
 
     public WmsLogoUrl(String namespaceURI) {
         super(namespaceURI);
+        this.initialize();
+    }
+
+    protected void initialize() {
+        this.format = new QName(this.getNamespaceUri(), "Format");
+        this.onlineResource = new QName(this.getNamespaceUri(), "OnlineResource");
     }
 
     @Override
-    protected void doParseEventAttributes(XmlPullParserContext ctx) throws XmlPullParserException, IOException {
+    public void setField(QName keyName, Object value) {
 
-        super.doParseEventAttributes(ctx);
+        if (keyName.equals(this.format)) {
+            Set<String> formats = (Set<String>) this.getField(this.format);
+            if (formats == null) {
+                formats = new HashSet<>();
+                super.setField(this.format, formats);
+            }
 
-        XmlPullParser xpp = ctx.getParser();
-
-        try {
-            int width = Integer.parseInt(xpp.getAttributeValue("", "width"));
-            this.setWidth(width);
-        } catch (NumberFormatException e) {
-            // TODO log the exception
+            if (value instanceof XmlModel) {
+                formats.add(((XmlModel) value).getCharactersContent());
+                return;
+            }
         }
 
-        try {
-            int height = Integer.parseInt(xpp.getAttributeValue("", "height"));
-            this.setHeight(height);
-        } catch (NumberFormatException e) {
-            // TODO log the exception
-        }
+        super.setField(keyName, value);
     }
 
     public Integer getWidth() {
-        return width;
-    }
-
-    protected void setWidth(Integer width) {
-        this.width = width;
+        return this.getIntegerAttributeValue(this.width, false);
     }
 
     public Integer getHeight() {
-        return height;
+        return this.getIntegerAttributeValue(this.height, false);
     }
 
-    protected void setHeight(Integer height) {
-        this.height = height;
+    public Set<String> getFormats() {
+        Object o = this.getField(this.format);
+        if (o instanceof Set) {
+            return (Set<String>) o;
+        } else {
+            return Collections.emptySet();
+        }
+    }
+
+    public WmsOnlineResource getOnlineResource() {
+        Object o = this.getField(this.onlineResource);
+        if (o instanceof WmsOnlineResource) {
+            return (WmsOnlineResource) o;
+        } else {
+            return null;
+        }
     }
 }

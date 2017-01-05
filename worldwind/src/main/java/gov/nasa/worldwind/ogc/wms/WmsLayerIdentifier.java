@@ -15,6 +15,7 @@ public class WmsLayerIdentifier extends XmlModel {
 
     public WmsLayerIdentifier(String namespaceUri) {
         super(namespaceUri);
+        this.initialize();
     }
 
     protected void initialize() {
@@ -26,6 +27,11 @@ public class WmsLayerIdentifier extends XmlModel {
     }
 
     public String getAuthority() {
-        return this.getField(this.authority).toString();
+        Object o = this.getField(this.authority);
+        if (o instanceof String) {
+            return (String) o;
+        } else {
+            return null;
+        }
     }
 }
