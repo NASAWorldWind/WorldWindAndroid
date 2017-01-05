@@ -19,6 +19,7 @@ android:
     - build-tools-24.0.3  # build tools used by the project
     - extra-android-support
     - extra-android-m2repository
+    - sys-img-armeabi-v7a-android-22  # for instrumentation tests
 
 before_install:
   # Decrypt and un-archive the files keystore.jks and keystore.properties which are used to sign release APKs
@@ -32,6 +33,11 @@ before_script:
   - jq --version
   # Ensure scripts can be executed (required if scripts are authored in Windows)
   - chmod +x ./travis/*.sh
+  # Setup the emulator for instrumentation tests
+  - echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
+  - emulator -avd test -no-audio -no-window &
+  - android-wait-for-emulator
+  - adb shell input keyevent 82 &
 
 script:
   # Build the project
