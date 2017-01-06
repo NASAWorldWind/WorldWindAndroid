@@ -177,22 +177,11 @@ public class LayerFactory {
     }
 
     protected void createFromWmsAsync(String serviceAddress, String layerNames, Layer layer, Callback callback) throws Exception {
-        // Retrieve and parse the WMS capabilities at the specified service address, looking for the named layers
-        // specified by the comma-delimited layerNames.
-        Uri serviceUri = Uri.parse(serviceAddress).buildUpon()
-            .appendQueryParameter("VERSION", "1.3.0")
-            .appendQueryParameter("SERVICE", "WMS")
-            .appendQueryParameter("REQUEST", "GetCapabilities")
-            .build();
 
-        // Parse and read capabilities document
-        // TODO configurable connect and read timeouts
-        URLConnection conn = new URL(serviceUri.toString()).openConnection();
-        conn.setConnectTimeout(3000);
-        conn.setReadTimeout(30000);
-        InputStream inputStream = new BufferedInputStream(conn.getInputStream());
-        WmsCapabilities wmsCapabilities = WmsCapabilities.getCapabilities(inputStream);
+        // Parse and read the WMS Capabilities document at the provided service address
+        WmsCapabilities wmsCapabilities = this.retrieveWmsCapabilities(serviceAddress);
 
+        // Construct the WmsTiledImage renderable from the WMS Capabilities properties
         WmsLayerConfig wmsLayerConfig = new WmsLayerConfig();
         wmsLayerConfig.wmsVersion = wmsCapabilities.getVersion();
 
@@ -272,6 +261,39 @@ public class LayerFactory {
                 WorldWind.requestRedraw();
             }
         });
+    }
+
+    protected WmsCapabilities retrieveWmsCapabilities(String serviceAddress) throws Exception {
+
+        InputStream inputStream = null;
+        WmsCapabilities wmsCapabilities = null;
+        try {
+
+            // Build the appropriate request Uri given the provided service address
+            Uri serviceUri = Uri.parse(serviceAddress).buildUpon()
+                .appendQueryParameter("VERSION", "1.3.0")
+                .appendQueryParameter("SERVICE", "WMS")
+                .appendQueryParameter("REQUEST", "GetCapabilities")
+                .build();
+
+            // Open the connection as an input stream
+            URLConnection conn = new URL(serviceUri.toString()).openConnection();
+            conn.setConnectTimeout(3000);
+            conn.setReadTimeout(30000);
+            inputStream = new BufferedInputStream(conn.getInputStream());
+
+            // Parse and read the input stream
+            wmsCapabilities = WmsCapabilities.getCapabilities(inputStream);
+        } catch (Exception e) {
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "retrieveWmsCapabilities", "Unable to open connection and read from service address"));
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        }
+
+        return wmsCapabilities;
     }
 
     protected static class GeoPackageAsyncTask implements Runnable {
