@@ -19,7 +19,6 @@ android:
     - build-tools-24.0.3  # build tools used by the project
     - extra-android-support
     - extra-android-m2repository
-    - sys-img-armeabi-v7a-android-24  # for instrumentation tests
 
 before_install:
   # Decrypt and un-archive the files keystore.jks and keystore.properties which are used to sign release APKs
@@ -33,14 +32,10 @@ before_script:
   - jq --version
   # Ensure scripts can be executed (required if scripts are authored in Windows)
   - chmod +x ./travis/*.sh
-  # Setup the emulator for instrumentation tests
-  - echo no | android create avd --force -n test -t android-24 --abi armeabi-v7a
-  - emulator -avd test -no-audio -no-window &
-  - android-wait-for-emulator
 
 script:
-  # Build the project and run instrumentation tests
-  - ./gradlew connectedAndroidTest
+  # Build the project
+  - ./gradlew build
 
 after_success:
   # Push the daily tag when this build is a cron job
