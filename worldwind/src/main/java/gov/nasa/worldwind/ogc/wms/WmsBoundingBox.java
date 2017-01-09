@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 United States Government as represented by the Administrator of the
+ * Copyright (c) 2017 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
@@ -128,7 +128,10 @@ public class WmsBoundingBox extends XmlModel {
     }
 
     protected void setCRS(String crs) {
-        this.crs = crs;
+        if (crs != null) {
+            // The convention is to use uppercase identifiers of SRS and CRS
+            this.crs = crs.toUpperCase();
+        }
     }
 
     public double getMinx() {

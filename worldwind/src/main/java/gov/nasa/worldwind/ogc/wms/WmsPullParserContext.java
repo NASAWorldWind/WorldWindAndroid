@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 United States Government as represented by the Administrator of the
+ * Copyright (c) 2017 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
@@ -56,6 +56,7 @@ public class WmsPullParserContext extends XmlPullParserContext {
         this.registerParsableModel(new QName(this.namespaceUri, "southBoundLatitude"), new DoubleModel(this.namespaceUri));
 
         this.registerParsableModel(new QName(this.namespaceUri, "FeatureListURL"), new WmsLayerInfoUrl(this.namespaceUri));
+        this.registerParsableModel(new QName(this.namespaceUri, "Format"), new WmsFormat(this.namespaceUri));
 
         this.registerParsableModel(new QName(this.namespaceUri, "Get"), new NameStringModel(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "GetCapabilities"), new WmsRequestDescription(this.namespaceUri));

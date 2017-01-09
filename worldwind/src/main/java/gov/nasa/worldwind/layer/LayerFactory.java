@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 United States Government as represented by the Administrator of the
+ * Copyright (c) 2017 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
@@ -13,6 +13,8 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -45,6 +47,10 @@ public class LayerFactory {
     protected Handler mainLoopHandler = new Handler(Looper.getMainLooper());
 
     protected static final double DEFAULT_WMS_RADIANS_PER_PIXEL = 10.0 / WorldWind.WGS84_SEMI_MAJOR_AXIS;
+
+    protected static final String PREFERRED_IMAGE_TYPE = "image/png";
+
+    protected static final Set<String> ACCEPTABLE_IMAGE_FORMATS = new HashSet<>(Arrays.asList(PREFERRED_IMAGE_TYPE, "image/jpg"));
 
     public LayerFactory() {
     }
@@ -180,69 +186,14 @@ public class LayerFactory {
 
         // Parse and read the WMS Capabilities document at the provided service address
         WmsCapabilities wmsCapabilities = this.retrieveWmsCapabilities(serviceAddress);
-
-        // Construct the WmsTiledImage renderable from the WMS Capabilities properties
-        WmsLayerConfig wmsLayerConfig = new WmsLayerConfig();
-        wmsLayerConfig.wmsVersion = wmsCapabilities.getVersion();
-
-        String requestUrl = wmsCapabilities.getRequestURL("GetMap", "Get");
-        if (requestUrl == null) {
-            throw new RuntimeException(
-                Logger.makeMessage("LayerFactory", "createFromWmsAsync", "Unable to resolve GetMap URL"));
-        } else {
-            wmsLayerConfig.serviceAddress = requestUrl;
-        }
-
         WmsLayerCapabilities layerCapabilities = wmsCapabilities.getLayerByName(layerNames);
         if (layerCapabilities == null) {
             throw new RuntimeException(
                 Logger.makeMessage("LayerFactory", "createFromWmsAsync", "Provided layer did not match available layers"));
-        } else {
-            wmsLayerConfig.layerNames = layerCapabilities.getName();
         }
 
-        Set<String> coordinateSystems = layerCapabilities.getReferenceSystem();
-        if (coordinateSystems.contains("EPSG:4326")) {
-            wmsLayerConfig.coordinateSystem = "EPSG:4326";
-        } else if (coordinateSystems.contains("CRS:84")) {
-            wmsLayerConfig.coordinateSystem = "CRS:84";
-        } else {
-            throw new RuntimeException(
-                Logger.makeMessage("LayerFactory", "createFromWmsAsync", "Coordinate systems not compatible"));
-        }
-
-        Set<String> imageFormats = wmsCapabilities.getImageFormats();
-        if (imageFormats.contains("image/png")) {
-            wmsLayerConfig.imageFormat = "image/png";
-        } else {
-            wmsLayerConfig.imageFormat = imageFormats.iterator().next();
-        }
-
-        LevelSetConfig levelSetConfig = new LevelSetConfig();
-
-        Sector sector = layerCapabilities.getGeographicBoundingBox();
-        if (sector != null) {
-            levelSetConfig.sector.set(sector);
-        }
-
-        if (layerCapabilities.getMinScaleDenominator() != null && layerCapabilities.getMinScaleDenominator() != 0) {
-            // WMS 1.3.0 scale configuration. Based on the WMS 1.3.0 spec page 28. The hard coded value 0.00028 is
-            // detailed in the spec as the common pixel size of 0.28mm x 0.28mm. Configures the maximum level not to
-            // exceed the specified min scale denominator.
-            double minMetersPerPixel = layerCapabilities.getMinScaleDenominator() * 0.00028;
-            double minRadiansPerPixel = minMetersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS;
-            levelSetConfig.numLevels = levelSetConfig.numLevelsForMinResolution(minRadiansPerPixel);
-        } else if (layerCapabilities.getMinScaleHint() != null && layerCapabilities.getMinScaleHint() != 0) {
-            // WMS 1.1.1 scale configuration, where ScaleHint indicates approximate resolution in ground distance
-            // meters. Configures the maximum level not to exceed the specified min scale denominator.
-            double minMetersPerPixel = layerCapabilities.getMinScaleHint();
-            double minRadiansPerPixel = minMetersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS;
-            levelSetConfig.numLevels = levelSetConfig.numLevelsForMinResolution(minRadiansPerPixel);
-        } else {
-            // Default scale configuration when no minimum scale denominator or scale hint is provided.
-            double defaultRadiansPerPixel = DEFAULT_WMS_RADIANS_PER_PIXEL;
-            levelSetConfig.numLevels = levelSetConfig.numLevelsForResolution(defaultRadiansPerPixel);
-        }
+        WmsLayerConfig wmsLayerConfig = this.getLayerConfigFromWmsCapabilities(wmsCapabilities, layerCapabilities);
+        LevelSetConfig levelSetConfig = this.getLevelSetConfigFromWmsCapabilities(layerCapabilities);
 
         final TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
         final RenderableLayer finalLayer = (RenderableLayer) layer;
@@ -294,6 +245,89 @@ public class LayerFactory {
         }
 
         return wmsCapabilities;
+    }
+
+    protected WmsLayerConfig getLayerConfigFromWmsCapabilities(WmsCapabilities wmsCapabilities, WmsLayerCapabilities layerCapabilities) {
+
+        // Construct the WmsTiledImage renderable from the WMS Capabilities properties
+        WmsLayerConfig wmsLayerConfig = new WmsLayerConfig();
+        String version = wmsCapabilities.getVersion();
+        if (version.equals("1.3.0")) {
+            wmsLayerConfig.wmsVersion = version;
+        } else if (version.equals("1.1.1")) {
+            wmsLayerConfig.wmsVersion = version;
+        } else {
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "getLayerConfigFromWmsCapabilities", "Version not compatible"));
+        }
+
+        String requestUrl = wmsCapabilities.getRequestURL("GetMap", "Get");
+        if (requestUrl == null) {
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "getLayerConfigFromWmsCapabilities", "Unable to resolve GetMap URL"));
+        } else {
+            wmsLayerConfig.serviceAddress = requestUrl;
+        }
+
+        wmsLayerConfig.layerNames = layerCapabilities.getName();
+
+        Set<String> coordinateSystems = layerCapabilities.getReferenceSystem();
+        if (coordinateSystems.contains("EPSG:4326")) {
+            wmsLayerConfig.coordinateSystem = "EPSG:4326";
+        } else if (coordinateSystems.contains("CRS:84")) {
+            wmsLayerConfig.coordinateSystem = "CRS:84";
+        } else {
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "getLayerConfigFromWmsCapabilities", "Coordinate systems not compatible"));
+        }
+
+        Set<String> imageFormats = wmsCapabilities.getImageFormats();
+        imageFormats.retainAll(ACCEPTABLE_IMAGE_FORMATS);
+
+        if (imageFormats.contains(PREFERRED_IMAGE_TYPE)) {
+            wmsLayerConfig.imageFormat = PREFERRED_IMAGE_TYPE;
+        } else if (imageFormats.size() > 0) {
+            wmsLayerConfig.imageFormat = imageFormats.iterator().next();
+        } else {
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "getLayerConfigFromWmsCapabilities", "Image Formats Not Compatible"));
+        }
+
+        return wmsLayerConfig;
+    }
+
+    protected LevelSetConfig getLevelSetConfigFromWmsCapabilities(WmsLayerCapabilities layerCapabilities) {
+
+        LevelSetConfig levelSetConfig = new LevelSetConfig();
+
+        Sector sector = layerCapabilities.getGeographicBoundingBox();
+        if (sector != null) {
+            levelSetConfig.sector.set(sector);
+        } else {
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "getLevelSetConfigFromWmsCapabilities", "Geographic Bounding Box Not Defined"));
+        }
+
+        if (layerCapabilities.getMinScaleDenominator() != null && layerCapabilities.getMinScaleDenominator() != 0) {
+            // WMS 1.3.0 scale configuration. Based on the WMS 1.3.0 spec page 28. The hard coded value 0.00028 is
+            // detailed in the spec as the common pixel size of 0.28mm x 0.28mm. Configures the maximum level not to
+            // exceed the specified min scale denominator.
+            double minMetersPerPixel = layerCapabilities.getMinScaleDenominator() * 0.00028;
+            double minRadiansPerPixel = minMetersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS;
+            levelSetConfig.numLevels = levelSetConfig.numLevelsForMinResolution(minRadiansPerPixel);
+        } else if (layerCapabilities.getMinScaleHint() != null && layerCapabilities.getMinScaleHint() != 0) {
+            // WMS 1.1.1 scale configuration, where ScaleHint indicates approximate resolution in ground distance
+            // meters. Configures the maximum level not to exceed the specified min scale denominator.
+            double minMetersPerPixel = layerCapabilities.getMinScaleHint();
+            double minRadiansPerPixel = minMetersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS;
+            levelSetConfig.numLevels = levelSetConfig.numLevelsForMinResolution(minRadiansPerPixel);
+        } else {
+            // Default scale configuration when no minimum scale denominator or scale hint is provided.
+            double defaultRadiansPerPixel = DEFAULT_WMS_RADIANS_PER_PIXEL;
+            levelSetConfig.numLevels = levelSetConfig.numLevelsForResolution(defaultRadiansPerPixel);
+        }
+
+        return levelSetConfig;
     }
 
     protected static class GeoPackageAsyncTask implements Runnable {
