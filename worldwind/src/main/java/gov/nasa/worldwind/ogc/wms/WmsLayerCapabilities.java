@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 United States Government as represented by the Administrator of the
+ * Copyright (c) 2017 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
@@ -373,11 +373,21 @@ public class WmsLayerCapabilities extends XmlModel {
         }
 
         Set<String> srs = this.getSRS();
-        if (srs != null && srs.contains(coordSys)) {
-            return true;
+        return srs != null && srs.contains(coordSys);
+    }
+
+    public WmsCapabilities getServiceCapabilities() {
+
+        XmlModel model = this;
+
+        while (model != null) {
+            model = model.getParent();
+            if (model instanceof WmsCapabilities) {
+                return (WmsCapabilities) model;
+            }
         }
 
-        return false;
+        return null;
     }
 
     @Override

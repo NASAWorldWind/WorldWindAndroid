@@ -14,7 +14,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,9 +51,13 @@ public class LayerFactory {
 
     protected static final String PREFERRED_IMAGE_TYPE = "image/png";
 
-    protected static final Set<String> ACCEPTABLE_IMAGE_FORMATS = new HashSet<>(Arrays.asList(PREFERRED_IMAGE_TYPE, "image/jpg"));
+    protected String preferredImageType = PREFERRED_IMAGE_TYPE;
+
+    protected Set<String> compatibleImageFormats = new HashSet<>();
 
     public LayerFactory() {
+        // Additional formats
+        this.compatibleImageFormats.add("image/jpg");
     }
 
     public Layer createFromGeoPackage(String pathName, Callback callback) {
@@ -128,6 +131,55 @@ public class LayerFactory {
         }
 
         return layer;
+    }
+
+    public Layer createFromWmsLayerCapabilities(WmsLayerCapabilities layerCapabilities) {
+        if (layerCapabilities == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missing layers"));
+        }
+
+        List<WmsLayerCapabilities> layers = new ArrayList<>();
+        layers.add(layerCapabilities);
+
+        return this.createFromWmsLayerCapabilities(layers);
+    }
+
+    public Layer createFromWmsLayerCapabilities(List<WmsLayerCapabilities> layerCapabilities) {
+        if (layerCapabilities == null || layerCapabilities.size() == 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missing layers"));
+        }
+
+        WmsCapabilities wmsCapabilities = layerCapabilities.iterator().next().getServiceCapabilities();
+
+        // Check if the server supports multiple layer request
+        int layerLimit = wmsCapabilities.getServiceInformation().getLayerLimit();
+        if (layerLimit != 0 && layerLimit < layerCapabilities.size()) {
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "createFromWmsLayerCapabilities", "The number of layers specified exceeds the services limit"));
+        }
+
+        WmsLayerConfig wmsLayerConfig = getLayerConfigFromWmsCapabilities(layerCapabilities);
+        LevelSetConfig levelSetConfig = getLevelSetConfigFromWmsCapabilities(layerCapabilities);
+
+        // Collect WMS Layer Titles to set the Layer Display Name
+        StringBuilder sb = null;
+        for (WmsLayerCapabilities layerCapability : layerCapabilities) {
+            if (sb == null) {
+                sb = new StringBuilder(layerCapability.getTitle());
+            } else {
+                sb.append(",").append(layerCapability.getTitle());
+            }
+        }
+
+        TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
+        RenderableLayer finalLayer = new RenderableLayer(sb.toString());
+
+        surfaceImage.setTileFactory(new WmsTileFactory(wmsLayerConfig));
+        surfaceImage.setLevelSet(new LevelSet(levelSetConfig));
+
+        return finalLayer;
     }
 
     protected void createFromGeoPackageAsync(String pathName, Layer layer, Callback callback) {
@@ -213,8 +265,19 @@ public class LayerFactory {
                 Logger.makeMessage("LayerFactory", "createFromWmsAsync", "The number of layers specified exceeds the services limit"));
         }
 
-        WmsLayerConfig wmsLayerConfig = getLayerConfigFromWmsCapabilities(wmsCapabilities, layerCapabilities);
+        WmsLayerConfig wmsLayerConfig = getLayerConfigFromWmsCapabilities(layerCapabilities);
         LevelSetConfig levelSetConfig = getLevelSetConfigFromWmsCapabilities(layerCapabilities);
+
+        // Collect WMS Layer Titles to set the Layer Display Name
+        StringBuilder sb = null;
+        for (WmsLayerCapabilities layerCapability : layerCapabilities) {
+            if (sb == null) {
+                sb = new StringBuilder(layerCapability.getTitle());
+            } else {
+                sb.append(",").append(layerCapability.getTitle());
+            }
+        }
+        layer.setDisplayName(sb.toString());
 
         final TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
         final RenderableLayer finalLayer = (RenderableLayer) layer;
@@ -235,7 +298,7 @@ public class LayerFactory {
         });
     }
 
-    protected static WmsCapabilities retrieveWmsCapabilities(String serviceAddress) throws Exception {
+    protected WmsCapabilities retrieveWmsCapabilities(String serviceAddress) throws Exception {
 
         InputStream inputStream = null;
         WmsCapabilities wmsCapabilities = null;
@@ -268,7 +331,7 @@ public class LayerFactory {
         return wmsCapabilities;
     }
 
-    protected static List<WmsLayerCapabilities> parseLayerNames(WmsCapabilities wmsCapabilities, List<String> layerNames) {
+    protected List<WmsLayerCapabilities> parseLayerNames(WmsCapabilities wmsCapabilities, List<String> layerNames) {
 
         List<WmsLayerCapabilities> layers = new ArrayList<>();
         for (String layerName : layerNames) {
@@ -281,10 +344,11 @@ public class LayerFactory {
         return layers;
     }
 
-    protected static WmsLayerConfig getLayerConfigFromWmsCapabilities(WmsCapabilities wmsCapabilities, List<WmsLayerCapabilities> layerCapabilities) {
+    protected WmsLayerConfig getLayerConfigFromWmsCapabilities(List<WmsLayerCapabilities> layerCapabilities) {
 
         // Construct the WmsTiledImage renderable from the WMS Capabilities properties
         WmsLayerConfig wmsLayerConfig = new WmsLayerConfig();
+        WmsCapabilities wmsCapabilities = layerCapabilities.iterator().next().getServiceCapabilities();
         String version = wmsCapabilities.getVersion();
         if (version.equals("1.3.0")) {
             wmsLayerConfig.wmsVersion = version;
@@ -333,22 +397,24 @@ public class LayerFactory {
                 Logger.makeMessage("LayerFactory", "getLayerConfigFromWmsCapabilities", "Coordinate systems not compatible"));
         }
 
+        // Negotiate Image Formats
         Set<String> imageFormats = wmsCapabilities.getImageFormats();
-        imageFormats.retainAll(ACCEPTABLE_IMAGE_FORMATS);
-
-        if (imageFormats.contains(PREFERRED_IMAGE_TYPE)) {
-            wmsLayerConfig.imageFormat = PREFERRED_IMAGE_TYPE;
-        } else if (imageFormats.size() > 0) {
-            wmsLayerConfig.imageFormat = imageFormats.iterator().next();
+        if (imageFormats.contains(this.preferredImageType)) {
+            wmsLayerConfig.imageFormat = this.preferredImageType;
         } else {
-            throw new RuntimeException(
-                Logger.makeMessage("LayerFactory", "getLayerConfigFromWmsCapabilities", "Image Formats Not Compatible"));
+            imageFormats.retainAll(this.compatibleImageFormats);
+            if (imageFormats.size() > 0) {
+                wmsLayerConfig.imageFormat = imageFormats.iterator().next();
+            } else {
+                throw new RuntimeException(
+                    Logger.makeMessage("LayerFactory", "getLayerConfigFromWmsCapabilities", "Image Formats Not Compatible"));
+            }
         }
 
         return wmsLayerConfig;
     }
 
-    protected static LevelSetConfig getLevelSetConfigFromWmsCapabilities(List<WmsLayerCapabilities> layerCapabilities) {
+    protected LevelSetConfig getLevelSetConfigFromWmsCapabilities(List<WmsLayerCapabilities> layerCapabilities) {
 
         LevelSetConfig levelSetConfig = new LevelSetConfig();
 

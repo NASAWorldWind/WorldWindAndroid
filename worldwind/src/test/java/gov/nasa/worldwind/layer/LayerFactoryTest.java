@@ -21,11 +21,13 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsLayerCapabilities;
+import gov.nasa.worldwind.shape.TiledSurfaceImage;
 import gov.nasa.worldwind.util.LevelSetConfig;
 import gov.nasa.worldwind.util.Logger;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.mockito.Matchers.anyString;
 
@@ -45,6 +47,8 @@ public class LayerFactoryTest {
 
     public static final String DEFAULT_VERSION = "1.3.0";
 
+    public static final String DEFAULT_TITLE = "Layer Title";
+
     @Before
     public void setUp() throws Exception {
         // To accommodate WorldWind exception handling, we must mock all
@@ -57,8 +61,9 @@ public class LayerFactoryTest {
         WmsCapabilities wmsCapabilities = getBoilerPlateWmsCapabilities();
         WmsLayerCapabilities wmsLayerCapabilities = wmsCapabilities.getLayerByName(DEFAULT_LAYER_NAME);
         List<WmsLayerCapabilities> layerCapabilities = Arrays.asList(wmsLayerCapabilities);
+        LayerFactory layerFactory = new LayerFactory();
 
-        WmsLayerConfig wmsLayerConfig = LayerFactory.getLayerConfigFromWmsCapabilities(wmsCapabilities, layerCapabilities);
+        WmsLayerConfig wmsLayerConfig = layerFactory.getLayerConfigFromWmsCapabilities(layerCapabilities);
 
         assertEquals("Version", DEFAULT_VERSION, wmsLayerConfig.wmsVersion);
         assertEquals("Layer Name", DEFAULT_LAYER_NAME, wmsLayerConfig.layerNames);
@@ -74,9 +79,10 @@ public class LayerFactoryTest {
         PowerMockito.when(wmsCapabilities.getVersion()).thenReturn("1.2.1");
         WmsLayerCapabilities wmsLayerCapabilities = wmsCapabilities.getLayerByName(DEFAULT_LAYER_NAME);
         List<WmsLayerCapabilities> layerCapabilities = Arrays.asList(wmsLayerCapabilities);
+        LayerFactory layerFactory = new LayerFactory();
 
         try {
-            WmsLayerConfig wmsLayerConfig = LayerFactory.getLayerConfigFromWmsCapabilities(wmsCapabilities, layerCapabilities);
+            WmsLayerConfig wmsLayerConfig = layerFactory.getLayerConfigFromWmsCapabilities(layerCapabilities);
             fail("Invalid Version");
         } catch (RuntimeException e) {
             assertNotNull("Invalid Version", e);
@@ -90,9 +96,10 @@ public class LayerFactoryTest {
         PowerMockito.when(wmsCapabilities.getRequestURL(anyString(), anyString())).thenReturn(null);
         WmsLayerCapabilities wmsLayerCapabilities = wmsCapabilities.getLayerByName(DEFAULT_LAYER_NAME);
         List<WmsLayerCapabilities> layerCapabilities = Arrays.asList(wmsLayerCapabilities);
+        LayerFactory layerFactory = new LayerFactory();
 
         try {
-            WmsLayerConfig wmsLayerConfig = LayerFactory.getLayerConfigFromWmsCapabilities(wmsCapabilities, layerCapabilities);
+            WmsLayerConfig wmsLayerConfig = layerFactory.getLayerConfigFromWmsCapabilities(layerCapabilities);
             fail("Invalid Request URL");
         } catch (RuntimeException e) {
             assertNotNull("Invalid Request URL", e);
@@ -106,8 +113,9 @@ public class LayerFactoryTest {
         Set<String> modifiedReferenceSystems = new HashSet<>(Arrays.asList("CRS:84"));
         PowerMockito.when(wmsLayerCapabilities.getReferenceSystem()).thenReturn(modifiedReferenceSystems);
         List<WmsLayerCapabilities> layerCapabilities = Arrays.asList(wmsLayerCapabilities);
+        LayerFactory layerFactory = new LayerFactory();
 
-        WmsLayerConfig wmsLayerConfig = LayerFactory.getLayerConfigFromWmsCapabilities(wmsCapabilities, layerCapabilities);
+        WmsLayerConfig wmsLayerConfig = layerFactory.getLayerConfigFromWmsCapabilities(layerCapabilities);
 
         assertEquals("Alternate Coordinate System", "CRS:84", wmsLayerConfig.coordinateSystem);
     }
@@ -119,9 +127,10 @@ public class LayerFactoryTest {
         Set<String> modifiedReferenceSystems = new HashSet<>(Arrays.asList("EPSG:1234"));
         PowerMockito.when(wmsLayerCapabilities.getReferenceSystem()).thenReturn(modifiedReferenceSystems);
         List<WmsLayerCapabilities> layerCapabilities = Arrays.asList(wmsLayerCapabilities);
+        LayerFactory layerFactory = new LayerFactory();
 
         try {
-            WmsLayerConfig wmsLayerConfig = LayerFactory.getLayerConfigFromWmsCapabilities(wmsCapabilities, layerCapabilities);
+            WmsLayerConfig wmsLayerConfig = layerFactory.getLayerConfigFromWmsCapabilities(layerCapabilities);
             fail("Invalid Coordinate System");
         } catch (RuntimeException e) {
             assertNotNull("Invalid Coordinate System", e);
@@ -135,8 +144,9 @@ public class LayerFactoryTest {
         Set<String> modifiedImageFormats = new HashSet<>(Arrays.asList("image/dds", "image/jpg"));
         PowerMockito.when(wmsCapabilities.getImageFormats()).thenReturn(modifiedImageFormats);
         List<WmsLayerCapabilities> layerCapabilities = Arrays.asList(wmsLayerCapabilities);
+        LayerFactory layerFactory = new LayerFactory();
 
-        WmsLayerConfig wmsLayerConfig = LayerFactory.getLayerConfigFromWmsCapabilities(wmsCapabilities, layerCapabilities);
+        WmsLayerConfig wmsLayerConfig = layerFactory.getLayerConfigFromWmsCapabilities(layerCapabilities);
 
         assertEquals("Alternate Image Format", "image/jpg", wmsLayerConfig.imageFormat);
     }
@@ -148,9 +158,10 @@ public class LayerFactoryTest {
         Set<String> modifiedImageFormats = new HashSet<>(Arrays.asList("image/dds", "image/never"));
         PowerMockito.when(wmsCapabilities.getImageFormats()).thenReturn(modifiedImageFormats);
         List<WmsLayerCapabilities> layerCapabilities = Arrays.asList(wmsLayerCapabilities);
+        LayerFactory layerFactory = new LayerFactory();
 
         try {
-            WmsLayerConfig wmsLayerConfig = LayerFactory.getLayerConfigFromWmsCapabilities(wmsCapabilities, layerCapabilities);
+            WmsLayerConfig wmsLayerConfig = layerFactory.getLayerConfigFromWmsCapabilities(layerCapabilities);
             fail("Invalid Image Format");
         } catch (RuntimeException e) {
             assertNotNull("Invalid Image Format");
@@ -162,8 +173,9 @@ public class LayerFactoryTest {
         WmsCapabilities wmsCapabilities = getBoilerPlateWmsCapabilities();
         WmsLayerCapabilities wmsLayerCapabilities = wmsCapabilities.getLayerByName(DEFAULT_LAYER_NAME);
         List<WmsLayerCapabilities> layerCapabilities = Arrays.asList(wmsLayerCapabilities);
+        LayerFactory layerFactory = new LayerFactory();
 
-        LevelSetConfig levelSetConfig = LayerFactory.getLevelSetConfigFromWmsCapabilities(layerCapabilities);
+        LevelSetConfig levelSetConfig = layerFactory.getLevelSetConfigFromWmsCapabilities(layerCapabilities);
 
         assertEquals("Bounding Box", new Sector().setFullSphere(), levelSetConfig.sector);
         assertEquals("Number of Levels", 47, levelSetConfig.numLevels);
@@ -175,8 +187,9 @@ public class LayerFactoryTest {
         WmsLayerCapabilities wmsLayerCapabilities = wmsCapabilities.getLayerByName(DEFAULT_LAYER_NAME);
         PowerMockito.when(wmsLayerCapabilities.getMinScaleDenominator()).thenReturn(1e13);
         List<WmsLayerCapabilities> layerCapabilities = Arrays.asList(wmsLayerCapabilities);
+        LayerFactory layerFactory = new LayerFactory();
 
-        LevelSetConfig levelSetConfig = LayerFactory.getLevelSetConfigFromWmsCapabilities(layerCapabilities);
+        LevelSetConfig levelSetConfig = layerFactory.getLevelSetConfigFromWmsCapabilities(layerCapabilities);
 
         assertEquals("Number of Levels", 1, levelSetConfig.numLevels);
     }
@@ -188,8 +201,9 @@ public class LayerFactoryTest {
         PowerMockito.when(wmsLayerCapabilities.getMinScaleDenominator()).thenReturn(null);
         PowerMockito.when(wmsLayerCapabilities.getMinScaleHint()).thenReturn(null);
         List<WmsLayerCapabilities> layerCapabilities = Arrays.asList(wmsLayerCapabilities);
+        LayerFactory layerFactory = new LayerFactory();
 
-        LevelSetConfig levelSetConfig = LayerFactory.getLevelSetConfigFromWmsCapabilities(layerCapabilities);
+        LevelSetConfig levelSetConfig = layerFactory.getLevelSetConfigFromWmsCapabilities(layerCapabilities);
 
         assertEquals("Number of Levels", 13, levelSetConfig.numLevels);
     }
@@ -201,10 +215,22 @@ public class LayerFactoryTest {
         PowerMockito.when(wmsLayerCapabilities.getMinScaleDenominator()).thenReturn(null);
         PowerMockito.when(wmsLayerCapabilities.getMinScaleHint()).thenReturn(1336.34670162102);
         List<WmsLayerCapabilities> layerCapabilities = Arrays.asList(wmsLayerCapabilities);
+        LayerFactory layerFactory = new LayerFactory();
 
-        LevelSetConfig levelSetConfig = LayerFactory.getLevelSetConfigFromWmsCapabilities(layerCapabilities);
+        LevelSetConfig levelSetConfig = layerFactory.getLevelSetConfigFromWmsCapabilities(layerCapabilities);
 
         assertEquals("Number of Levels", 5, levelSetConfig.numLevels);
+    }
+
+    @Test
+    public void testCreateLayerFromWmsCapabilities_Nominal() throws Exception {
+        WmsCapabilities wmsCapabilities = getBoilerPlateWmsCapabilities();
+        LayerFactory layerFactory = new LayerFactory();
+
+        Layer layer = layerFactory.createFromWmsLayerCapabilities(wmsCapabilities.getNamedLayers().get(0));
+
+        assertTrue("Layer Type", layer instanceof RenderableLayer);
+        assertTrue("Layer Contents", ((RenderableLayer) layer).getRenderable(0) instanceof TiledSurfaceImage);
     }
 
     public static WmsCapabilities getBoilerPlateWmsCapabilities() {
@@ -213,11 +239,13 @@ public class LayerFactoryTest {
         PowerMockito.when(mockedLayerCapabilities.getReferenceSystem()).thenReturn(DEFAULT_REFERENCE_SYSTEMS);
         PowerMockito.when(mockedLayerCapabilities.getMinScaleDenominator()).thenReturn(DEFAULT_MIN_SCALE_DENOMINATOR);
         PowerMockito.when(mockedLayerCapabilities.getGeographicBoundingBox()).thenReturn(new Sector().setFullSphere());
+        PowerMockito.when(mockedLayerCapabilities.getTitle()).thenReturn(DEFAULT_TITLE);
         WmsCapabilities mockedCapabilities = PowerMockito.mock(WmsCapabilities.class);
         PowerMockito.when(mockedCapabilities.getVersion()).thenReturn(DEFAULT_VERSION);
         PowerMockito.when(mockedCapabilities.getRequestURL(anyString(), anyString())).thenReturn(DEFAULT_REQUEST_URL);
         PowerMockito.when(mockedCapabilities.getLayerByName(anyString())).thenReturn(mockedLayerCapabilities);
         PowerMockito.when(mockedCapabilities.getImageFormats()).thenReturn(DEFAULT_IMAGE_FORMATS);
+        PowerMockito.when(mockedLayerCapabilities.getServiceCapabilities()).thenReturn(mockedCapabilities);
         return mockedCapabilities;
     }
 }

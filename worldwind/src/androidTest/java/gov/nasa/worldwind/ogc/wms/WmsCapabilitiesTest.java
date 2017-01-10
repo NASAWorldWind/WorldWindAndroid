@@ -752,4 +752,13 @@ public class WmsCapabilitiesTest {
         }
         assertEquals("Layer Bounding Box Count", 2, boxes.size());
     }
+
+    @Test
+    public void testServiceCapabilities() {
+        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+
+        WmsCapabilities wmsCapabilities = wmsLayerCapabilities.getServiceCapabilities();
+
+        assertEquals("Layer Service Capabilities", this.wmsCapabilities130, wmsCapabilities);
+    }
 }
