@@ -5,23 +5,36 @@
 
 package gov.nasa.worldwindx;
 
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.GravityCompat;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ZoomControls;
 
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.List;
+
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.LookAt;
-import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.layer.BackgroundLayer;
 import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
+import gov.nasa.worldwind.layer.Layer;
+import gov.nasa.worldwind.layer.LayerFactory;
 import gov.nasa.worldwind.layer.LayerList;
-import gov.nasa.worldwind.ogc.WmsLayer;
-import gov.nasa.worldwind.ogc.WmsLayerConfig;
+import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
+import gov.nasa.worldwind.ogc.wms.WmsLayerCapabilities;
 import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 import gov.nasa.worldwindx.support.LayerManager;
 
@@ -72,8 +85,8 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
         globeLayout.addView(this.wwd);
 
-        initializeLayers();
         initializeZoomControls();
+        initializeLayers();
     }
 
     /**
@@ -94,60 +107,87 @@ public class BasicGlobeActivity extends AbstractMainActivity {
      * Adds the layers to the globe.
      */
     protected void initializeLayers() {
-
-        LayerList layers = new LayerList();
         // Default base layers
-        layers.addLayer(new BackgroundLayer());
-        layers.addLayer(new BlueMarbleLandsatLayer());
+        getLayerManager().addLayer(new BackgroundLayer());
+        getLayerManager().addLayer(new BlueMarbleLandsatLayer());
+        getLayerManager().addLayer(new AtmosphereLayer());
+        new InitializeWmsLayersTask().execute();
+    }
 
-        //////////////////////////////////////////////////////////////
-        // Start TMIS tests
-        // CADRG map layer on local WMS Server
-        WmsLayerConfig config = new WmsLayerConfig();
-        config.serviceAddress = "http://10.0.2.7:5000/WmsServer";
-        config.wmsVersion = "1.3.0";
-        config.coordinateSystem = "CRS:84";
-        config.layerNames = "imagery_part1-2.0.0.1-gnc.gpkg";
-        double metersPerPixel = 0.00028 * 305.748;// 0.28mm pixel size * max scale denominator
-        WmsLayer layer = new WmsLayer(new Sector().setFullSphere() /*bbox*/, 1000 /*meters per pixel*/, config);
-        layer.setDisplayName("> TMIS - GNC");
-        layer.setEnabled(false);
-        layers.addLayer(layer);
+    protected class InitializeWmsLayersTask extends AsyncTask<Void, String, Void> {
 
-        // WSMR map layer on local WMS Server
-        config = new WmsLayerConfig();
-        config.serviceAddress = "http://10.0.2.7:5000/WmsServer";
-        config.wmsVersion = "1.3.0";
-        config.coordinateSystem = "CRS:84";
-        config.layerNames = "imagery_part2-2.0.0.1-wsmr.gpkg";
-        Sector bbox = new Sector(32.695312, -106.171875, // SW corner
-            (33.046875 - 32.695312),        // delta lat
-            (-105.802312 + 106.171875));   // delta lon
-        metersPerPixel = 0.00028 * 2.388657;// 0.28mm pixel size * max scale denominator
-        layer = new WmsLayer(bbox, 1 /*meters per pixel*/, config);
-        layer.setDisplayName("> TMIS - WSMR");
-        layer.setEnabled(false);
-        layers.addLayer(layer);
+        protected LayerList layers = new LayerList();
 
-        // Ft Dix map layer on local WMS Server
-        config = new WmsLayerConfig();
-        config.serviceAddress = "http://10.0.2.7:5000/WmsServer";
-        config.wmsVersion = "1.1.1";
-        config.layerNames = "Ft_Dix_1.gpkg";
-        bbox = new Sector(39.902, -74.531, // SW corner
-            (40.2539 - 39.902),     // delta lat
-            (-74.179 + 74.531));   // delta lon
-        layer = new WmsLayer(bbox, 1 /*meters per pixel*/, config);
-        layer.setDisplayName("> TMIS - Fort Dix");
-        layer.setEnabled(false);
-        layers.addLayer(layer);
-        // End TMIS test
-        ///////////////////////////////////////////////////////////////////
+        @Override
+        protected Void doInBackground(Void... notUsed) {
+            // TIP: 10.0.2.2 is used to access the host development machine from emulator
+            final String WWSK_GWC = "http://10.0.2.2:8080/worldwind-geoserver/gwc/service/wms";  // GeoWebCache
+            final String WWSK_WMS = "http://10.0.2.2:8080/worldwind-geoserver/ows";  // WMS
+            final String SSGF =  "http://10.0.1.7:8080/worldwind-geoserver/ows";
+            final String TMIS =  "http://10.0.1.7:5000/WmsServer";
 
-        // Atmosphere must be added last
-        layers.addLayer(new AtmosphereLayer());
+            try {
+                // Build a WMS server GetCapabilties request
+                String serverAddress = WWSK_GWC;
+                Uri serviceUri = Uri.parse(serverAddress).buildUpon()
+                    .appendQueryParameter("VERSION", "1.3.0")
+                    .appendQueryParameter("SERVICE", "WMS")
+                    .appendQueryParameter("REQUEST", "GetCapabilities")
+                    .build();
 
-        this.layerManager.addAllLayers(layers);
+                // Connect and read capabilities document
+                URLConnection conn = new URL(serviceUri.toString()).openConnection();
+                conn.setConnectTimeout(3000);
+                conn.setReadTimeout(30000);
+                InputStream inputStream = new BufferedInputStream(conn.getInputStream());
+
+                // Parse the capabilities
+                WmsCapabilities wmsCapabilities = WmsCapabilities.getCapabilities(inputStream);
+                List<WmsLayerCapabilities> namedLayers = wmsCapabilities.getNamedLayers();
+
+                // Setup the factory that will create WMS layers from the capabilities
+                LayerFactory layerFactory = new LayerFactory();
+                LayerFactory.Callback callback = new LayerFactory.Callback() {
+                    @Override
+                    public void creationSucceeded(LayerFactory factory, Layer layer) {
+                        getLayerManager().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, layer);
+                    }
+
+                    @Override
+                    public void creationFailed(LayerFactory factory, Layer layer, Throwable ex) {
+                        Log.e("gov.nasa.worldwind", "WMS layer creation failed: " + layer.toString(), ex);
+                    }
+                };
+
+                // Create all the WMS layers
+                for (WmsLayerCapabilities layerCaps : namedLayers) {
+                    // Set the new layer's properties from the layer capabilities;
+                    // the callback will add the layer to the layer list.
+                    // TODO: Why is serverAddress needed, isn't the layer caps sufficient?
+                    Layer layer = layerFactory.createFromWms(serverAddress, layerCaps.getName(), callback);
+                    layer.setDisplayName("> SSGF - " + layerCaps.getTitle());
+                    layer.putUserProperty("BBOX", layerCaps.getGeographicBoundingBox()); // TODO: use for highlighting layers in view
+                    layer.putUserProperty("MAX_SCALE_DENOM", layerCaps.getMaxScaleDenominator()); // TODO: use for sorting the layers
+                    layer.putUserProperty("MIN_SCALE_DENOM", layerCaps.getMinScaleDenominator()); // TODO: use for sorting the layers
+                    layer.setEnabled(false);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (XmlPullParserException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        /**
+         * Updates the WorldWindow layer list on the UI Thread.
+         */
+        @Override
+        protected void onPostExecute(Void notUsed) {
+            super.onPostExecute(notUsed);
+            getLayerManager().addAllLayers(this.layers);
+        }
     }
 
     /**
