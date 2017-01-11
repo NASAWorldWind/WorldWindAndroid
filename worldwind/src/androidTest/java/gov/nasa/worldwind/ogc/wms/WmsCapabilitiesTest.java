@@ -30,6 +30,7 @@ import gov.nasa.worldwind.test.R;
 import static android.support.test.InstrumentationRegistry.getInstrumentation;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
@@ -760,5 +761,132 @@ public class WmsCapabilitiesTest {
         WmsCapabilities wmsCapabilities = wmsLayerCapabilities.getServiceCapabilities();
 
         assertEquals("Layer Service Capabilities", this.wmsCapabilities130, wmsCapabilities);
+    }
+
+    @Test
+    public void testToString_Version130() {
+        String expected = "Version: 1.3.0\n" +
+            "UpdateSequence: none\n" +
+            "ServiceName: WMS\n" +
+            "ServiceTitle: Acme Corp. Map Server\n" +
+            "ServiceAbstract: Map Server maintained by Acme Corporation. Contact: webmaster@wmt.acme.com. High-quality maps showing            roadrunner nests and possible ambush locations.\n" +
+            "Fees: none\n" +
+            "AccessConstraints: none\n" +
+            "Keywords: ambush, bird, roadrunner, \n" +
+            "OnlineResource: href: http://hostname/, type: simple\n" +
+            "PersonPrimary: Jeff Smith\n" +
+            "Organization: NASA\n" +
+            "Position: Computer Scientist\n" +
+            "VoiceTelephone: +1 301 555-1212\n" +
+            "FacsimileTelephone: none\n" +
+            "ElectronicMailAddress: user@host.com\n" +
+            "{http://www.opengis.net/wms}ContactAddress\n" +
+            "Max width = 2048 Max height = 2048\n" +
+            "\n" +
+            "Image Formats:\n" +
+            "image/gif\n" +
+            "image/png\n" +
+            "image/jpeg\n" +
+            "Capabilities Info: GetCapabilities\n" +
+            "\tFormats: \ttext/xml, \n" +
+            "\tDCPTypes:\n" +
+            "\t\tHTTP, Get, href: http://hostname/path?, type: simpleHTTP, Post, href: http://hostname/path?, type: simple\n" +
+            "\n" +
+            "Map Info: GetMap\n" +
+            "\tFormats: \timage/gif, \timage/png, \timage/jpeg, \n" +
+            "\tDCPTypes:\n" +
+            "\t\tHTTP, Get, href: http://hostname/path?, type: simple\n" +
+            "\n" +
+            "Feature Info: GetFeatureInfo\n" +
+            "\tFormats: \ttext/xml, \ttext/html, \ttext/plain, \n" +
+            "\tDCPTypes:\n" +
+            "\t\tHTTP, Get, href: http://hostname/path?, type: simple\n" +
+            "\n" +
+            "\n" +
+            "LAYERS\n" +
+            "LAYER ROADS_RIVERS: queryable = false\n" +
+            "LAYER ROADS_1M: queryable = false\n" +
+            "LAYER RIVERS_1M: queryable = false\n" +
+            "LAYER Clouds: queryable = false\n" +
+            "LAYER Temperature: queryable = false\n" +
+            "LAYER Pressure: queryable = false\n" +
+            "LAYER ozone_image: queryable = false\n" +
+            "LAYER population: queryable = false\n";
+
+        String actual = this.wmsCapabilities130.toString();
+
+        assertEquals("toString Method", expected, actual);
+    }
+
+    @Test
+    public void testToString_Version111() {
+        String expected = "Version: 1.1.1\n" +
+            "UpdateSequence: 0\n" +
+            "ServiceName: OGC:WMS\n" +
+            "ServiceTitle: Acme Corp. Map Server\n" +
+            "ServiceAbstract: WMT Map Server maintained by Acme Corporation. Contact: webmaster@wmt.acme.com. High-quality maps            showing roadrunner nests and possible ambush locations.\n" +
+            "Fees: none\n" +
+            "AccessConstraints: none\n" +
+            "Keywords: ambush, bird, roadrunner, \n" +
+            "OnlineResource: href: http://hostname/, type: simple\n" +
+            "PersonPrimary: Jeff deLaBeaujardiere\n" +
+            "Organization: NASA\n" +
+            "Position: Computer Scientist\n" +
+            "VoiceTelephone: +1 301 286-1569\n" +
+            "FacsimileTelephone: +1 301 286-1777\n" +
+            "ElectronicMailAddress: delabeau@iniki.gsfc.nasa.gov\n" +
+            "ContactAddress\n" +
+            "Max width = null Max height = null\n" +
+            "\n" +
+            "Image Formats:\n" +
+            "image/gif\n" +
+            "image/png\n" +
+            "image/jpeg\n" +
+            "Capabilities Info: GetCapabilities\n" +
+            "\tFormats: \tapplication/vnd.ogc.wms_xml, \n" +
+            "\tDCPTypes:\n" +
+            "\t\tHTTP, Get, href: http://hostname:port/path, type: simpleHTTP, Post, href: http://hostname:port/path, type: simple\n" +
+            "\n" +
+            "Map Info: GetMap\n" +
+            "\tFormats: \timage/gif, \timage/png, \timage/jpeg, \n" +
+            "\tDCPTypes:\n" +
+            "\t\tHTTP, Get, href: http://hostname:port/path, type: simple\n" +
+            "\n" +
+            "Feature Info: GetFeatureInfo\n" +
+            "\tFormats: \tapplication/vnd.ogc.gml, \ttext/html, \ttext/plain, \n" +
+            "\tDCPTypes:\n" +
+            "\t\tHTTP, Get, href: http://hostname:port/path, type: simple\n" +
+            "\n" +
+            "\n" +
+            "LAYERS\n" +
+            "LAYER ROADS_RIVERS: queryable = false\n" +
+            "LAYER ROADS_1M: queryable = false\n" +
+            "LAYER RIVERS_1M: queryable = false\n" +
+            "LAYER Clouds: queryable = false\n" +
+            "LAYER Temperature: queryable = false\n" +
+            "LAYER Pressure: queryable = false\n" +
+            "LAYER ozone_image: queryable = false\n" +
+            "LAYER population: queryable = false\n";
+
+
+        String actual = this.wmsCapabilities111.toString();
+
+        assertEquals("toString Method", expected, actual);
+    }
+
+    @Test
+    public void testNullMaxWidthHeightAndLimit_Version111() {
+        // NOTE: Version 1.1.1 doesn't support the MaxHeight, MaxWidth, and LayerLimit elements, but this test is
+        // to verify that null values are returned properly. This doesn't work with our specification resource for
+        // 1.3.0 as the values are included and tested above
+        WmsServiceInformation wmsServiceInformation = this.wmsCapabilities111.getServiceInformation();
+
+        Integer maxHeight = wmsServiceInformation.getMaxHeight();
+        Integer maxWidth = wmsServiceInformation.getMaxWidth();
+        Integer layerLimit = wmsServiceInformation.getLayerLimit();
+
+        assertNull("MaxHeight v1.1.1", maxHeight);
+        assertNull("MaxWidth v1.1.1", maxWidth);
+        assertNull("LayerLimit v1.1.1", layerLimit);
     }
 }

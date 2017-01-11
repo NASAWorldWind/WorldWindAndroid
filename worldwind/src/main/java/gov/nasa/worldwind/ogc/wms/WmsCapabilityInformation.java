@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 United States Government as represented by the Administrator of the
+ * Copyright (c) 2017 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
@@ -103,5 +103,20 @@ public class WmsCapabilityInformation extends XmlModel {
         }
 
         super.setField(keyName, value);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Image Formats:\n");
+        for (String imageFormat : this.getImageFormats()) {
+            sb.append(imageFormat).append("\n");
+        }
+        sb.append("Capabilities Info: " + this.getCapabilitiesInfo()).append("\n");
+        sb.append("Map Info: ").append(this.getMapInfo()).append("\n");
+        sb.append("Feature Info: ").append(this.getFeatureInfo() != null ? this.getFeatureInfo() : "none").append("\n");
+
+        return sb.toString();
     }
 }

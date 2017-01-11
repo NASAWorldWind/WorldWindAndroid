@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 United States Government as represented by the Administrator of the
+ * Copyright (c) 2017 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
@@ -123,27 +123,19 @@ public class WmsServiceInformation extends XmlModel {
         this.setChildCharacterValue(this.name, serviceName);
     }
 
-    public int getMaxWidth() {
-        Integer value = ((IntegerModel) this.getField(this.maxWidth)).getValue();
-        return value != null ? value : 0;
+    public Integer getMaxWidth() {
+        IntegerModel value = (IntegerModel) this.getField(this.maxWidth);
+        return value != null ? value.getValue() : null;
     }
 
-//    protected void setMaxWidth(int maxWidth) {
-//        this.maxWidth = maxWidth;
-//    }
-
-    public int getMaxHeight() {
-        Integer value = ((IntegerModel) this.getField(this.maxHeight)).getValue();
-        return value != null ? value : 0;
+    public Integer getMaxHeight() {
+        IntegerModel value = (IntegerModel) this.getField(this.maxHeight);
+        return value != null ? value.getValue() : null;
     }
 
-//    protected void setMaxHeight(int maxHeight) {
-//        this.maxHeight = maxHeight;
-//    }
-
-    public int getLayerLimit() {
-        Integer value = ((IntegerModel) this.getField(this.layerLimit)).getValue();
-        return value != null ? value : 0;
+    public Integer getLayerLimit() {
+        IntegerModel value = (IntegerModel) this.getField(this.layerLimit);
+        return value != null ? value.getValue() : null;
     }
 
     @Override
