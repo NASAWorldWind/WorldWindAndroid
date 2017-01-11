@@ -362,18 +362,18 @@ public class BoundingBox {
         }
 
         // Test distance to the bottom of the S axis.
-        this.endPoint1.x = this.center.x - (0.5 * this.r.x);
-        this.endPoint1.y = this.center.y - (0.5 * this.r.y);
-        this.endPoint1.z = this.center.z - (0.5 * this.r.z);
+        this.endPoint1.x = this.center.x - (0.5 * this.s.x);
+        this.endPoint1.y = this.center.y - (0.5 * this.s.y);
+        this.endPoint1.z = this.center.z - (0.5 * this.s.z);
         dist2 = this.endPoint1.distanceToSquared(point);
         if (minDist2 > dist2) {
             minDist2 = dist2;
         }
 
         // Test distance to the top of the S axis.
-        this.endPoint1.x = this.center.x + (0.5 * this.r.x);
-        this.endPoint1.y = this.center.y + (0.5 * this.r.y);
-        this.endPoint1.z = this.center.z + (0.5 * this.r.z);
+        this.endPoint1.x = this.center.x + (0.5 * this.s.x);
+        this.endPoint1.y = this.center.y + (0.5 * this.s.y);
+        this.endPoint1.z = this.center.z + (0.5 * this.s.z);
         dist2 = this.endPoint1.distanceToSquared(point);
         if (minDist2 > dist2) {
             minDist2 = dist2;

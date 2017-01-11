@@ -12,15 +12,15 @@ import gov.nasa.worldwind.util.Logger;
 
 /**
  * Displays Landsat imagery at 15m resolution from an OGC Web Map Service (WMS). By default, LandsatLayer is configured
- * to retrieve imagery from the WMS at <a href="http://worldwind25.arc.nasa.gov/wms?SERVICE=WMS&REQUEST=GetCapabilities">http://worldwind25.arc.nasa.gov/wms</a>.
+ * to retrieve imagery from the WMS at <a href="https://worldwind25.arc.nasa.gov/wms?SERVICE=WMS&REQUEST=GetCapabilities">https://worldwind25.arc.nasa.gov/wms</a>.
  */
 public class LandsatLayer extends WmsLayer {
 
     /**
-     * Constructs a Landsat image layer with the WMS at http://worldwind25.arc.nasa.gov/wms.
+     * Constructs a Landsat image layer with the WMS at https://worldwind25.arc.nasa.gov/wms.
      */
     public LandsatLayer() {
-        this("http://worldwind25.arc.nasa.gov/wms");
+        this("https://worldwind25.arc.nasa.gov/wms");
     }
 
     /**

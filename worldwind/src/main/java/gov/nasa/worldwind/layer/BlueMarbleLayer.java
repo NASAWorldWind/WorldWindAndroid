@@ -10,22 +10,23 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.ogc.WmsLayer;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwind.render.ImageOptions;
+import gov.nasa.worldwind.shape.TiledSurfaceImage;
 import gov.nasa.worldwind.util.Logger;
 
 /**
  * Displays NASA's Blue Marble next generation imagery at 500m resolution from an OGC Web Map Service (WMS). By default,
  * BlueMarbleLayer is configured to retrieve imagery for May 2004 from the WMS at <a
- * href="http://worldwind25.arc.nasa.gov/wms?SERVICE=WMS&REQUEST=GetCapabilities">http://worldwind25.arc.nasa.gov/wms</a>.
+ * href="https://worldwind25.arc.nasa.gov/wms?SERVICE=WMS&REQUEST=GetCapabilities">https://worldwind25.arc.nasa.gov/wms</a>.
  * <p/>
  * Information on NASA's Blue Marble next generation imagery can be found at http://earthobservatory.nasa.gov/Features/BlueMarble/
  */
 public class BlueMarbleLayer extends WmsLayer {
 
     /**
-     * Constructs a Blue Marble image layer with the WMS at http://worldwind25.arc.nasa.gov/wms.
+     * Constructs a Blue Marble image layer with the WMS at https://worldwind25.arc.nasa.gov/wms.
      */
     public BlueMarbleLayer() {
-        this("http://worldwind25.arc.nasa.gov/wms");
+        this("https://worldwind25.arc.nasa.gov/wms");
     }
 
     /**
@@ -50,6 +51,8 @@ public class BlueMarbleLayer extends WmsLayer {
 
         this.setDisplayName("Blue Marble");
         this.setConfiguration(new Sector().setFullSphere(), 500, config); // 500m resolution on Earth
-        this.setImageOptions(new ImageOptions(WorldWind.RGB_565));  // exploit opaque imagery to reduce memory usage
+
+        TiledSurfaceImage surfaceImage = (TiledSurfaceImage) this.getRenderable(0);
+        surfaceImage.setImageOptions(new ImageOptions(WorldWind.RGB_565));  // exploit opaque imagery to reduce memory usage
     }
 }

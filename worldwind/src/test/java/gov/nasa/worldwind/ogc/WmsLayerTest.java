@@ -14,6 +14,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globe.Globe;
+import gov.nasa.worldwind.shape.TiledSurfaceImage;
 import gov.nasa.worldwind.util.Logger;
 
 import static junit.framework.Assert.assertEquals;
@@ -170,7 +171,7 @@ public class WmsLayerTest {
         assertNotNull("layer created", wmsLayer);
 
         // check the mock radius is providing the resolution level
-        assertEquals("detail levels", anticipatedLevels, wmsLayer.getLevelSet().numLevels());
+        assertEquals("detail levels", anticipatedLevels, ((TiledSurfaceImage) wmsLayer.getRenderable(0)).getLevelSet().numLevels());
     }
 
     /**
@@ -253,7 +254,7 @@ public class WmsLayerTest {
             = new Sector(alternativeLatMin, alternativeLonMin, alternativeDeltaLat, alternativeDeltaLon);
 
         wmsLayer.setConfiguration(alternativeSector, metersPerPixel, initialWmsLayerConfig);
-        Sector sector = wmsLayer.getLevelSet().sector;
+        Sector sector = ((TiledSurfaceImage) wmsLayer.getRenderable(0)).getLevelSet().sector;
 
         assertEquals("sector updated", alternativeSector, sector);
     }
@@ -277,10 +278,10 @@ public class WmsLayerTest {
         double metersPerPixel = 0.5;
         WmsLayer wmsLayer = new WmsLayer(initialSector, metersPerPixel, initialWmsLayerConfig);
         double alternativeMetersPerPixel = 10.0;
-        int originalNumberOfLevels = wmsLayer.getLevelSet().numLevels();
+        int originalNumberOfLevels = ((TiledSurfaceImage) wmsLayer.getRenderable(0)).getLevelSet().numLevels();
 
         wmsLayer.setConfiguration(initialSector, alternativeMetersPerPixel, initialWmsLayerConfig);
-        int numberOfLevels = wmsLayer.getLevelSet().numLevels();
+        int numberOfLevels = ((TiledSurfaceImage) wmsLayer.getRenderable(0)).getLevelSet().numLevels();
 
         // assertEquals is not used as the determination of the number of levels is a function of LevelSetConfig
         assertFalse("levels updated", originalNumberOfLevels == numberOfLevels);
@@ -380,7 +381,7 @@ public class WmsLayerTest {
             = new Sector(alternativeLatMin, alternativeLonMin, alternativeDeltaLat, alternativeDeltaLon);
 
         wmsLayer.setConfiguration(alternativeSector, initialGlobe, metersPerPixel, initialWmsLayerConfig);
-        Sector sector = wmsLayer.getLevelSet().sector;
+        Sector sector = ((TiledSurfaceImage) wmsLayer.getRenderable(0)).getLevelSet().sector;
 
         assertEquals("sector updated", alternativeSector, sector);
     }
@@ -406,12 +407,12 @@ public class WmsLayerTest {
             = new WmsLayerConfig(initialNotionalServiceAddress, initialNotionalLayerList);
         double metersPerPixel = 0.5;
         WmsLayer wmsLayer = new WmsLayer(initialSector, initialGlobe, metersPerPixel, initialWmsLayerConfig);
-        int initialLayers = wmsLayer.getLevelSet().numLevels();
+        int initialLayers = ((TiledSurfaceImage) wmsLayer.getRenderable(0)).getLevelSet().numLevels();
         Globe alternativeGlobe = PowerMockito.mock(Globe.class);
         PowerMockito.when(alternativeGlobe.getEquatorialRadius()).thenReturn(2 * notionalGlobeRadius);
 
         wmsLayer.setConfiguration(initialSector, alternativeGlobe, metersPerPixel, initialWmsLayerConfig);
-        int numberOfLevels = wmsLayer.getLevelSet().numLevels();
+        int numberOfLevels = ((TiledSurfaceImage) wmsLayer.getRenderable(0)).getLevelSet().numLevels();
 
         assertFalse("layer levels updated by globe object change", initialLayers == numberOfLevels);
     }
@@ -438,10 +439,10 @@ public class WmsLayerTest {
         double metersPerPixel = 0.5;
         WmsLayer wmsLayer = new WmsLayer(initialSector, initialGlobe, metersPerPixel, initialWmsLayerConfig);
         double alternativeMetersPerPixel = 10.0;
-        int originalNumberOfLevels = wmsLayer.getLevelSet().numLevels();
+        int originalNumberOfLevels = ((TiledSurfaceImage) wmsLayer.getRenderable(0)).getLevelSet().numLevels();
 
         wmsLayer.setConfiguration(initialSector, initialGlobe, alternativeMetersPerPixel, initialWmsLayerConfig);
-        int numberOfLevels = wmsLayer.getLevelSet().numLevels();
+        int numberOfLevels = ((TiledSurfaceImage) wmsLayer.getRenderable(0)).getLevelSet().numLevels();
 
         assertFalse("levels updated", originalNumberOfLevels == numberOfLevels);
     }

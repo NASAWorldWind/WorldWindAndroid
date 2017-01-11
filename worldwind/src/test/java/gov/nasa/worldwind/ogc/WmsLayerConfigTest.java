@@ -37,12 +37,13 @@ public class WmsLayerConfigTest {
         String wmsVersion = "1.2.0";
         String layerNames = "layer1";
         String styleNames = "style1";
-        String coordinateSystem = WmsGetMapUrlFactoryTest.SYSTEM_CRS84;
+        String coordinateSystem = WmsTileFactoryTest.SYSTEM_CRS84;
+        String imageFormat = "type/name";
         boolean transparent = false;
         String time = "1600-ZULU";
 
         WmsLayerConfig wmsLayerConfig = new WmsLayerConfig(serviceAddess, wmsVersion, layerNames, styleNames,
-            coordinateSystem, transparent, time);
+            coordinateSystem, imageFormat, transparent, time);
 
         assertNotNull("instantiation", wmsLayerConfig);
         assertEquals("service address", serviceAddess, wmsLayerConfig.serviceAddress);
@@ -50,6 +51,7 @@ public class WmsLayerConfigTest {
         assertEquals("layer names", layerNames, wmsLayerConfig.layerNames);
         assertEquals("style names", styleNames, wmsLayerConfig.styleNames);
         assertEquals("coordinate system", coordinateSystem, wmsLayerConfig.coordinateSystem);
+        assertEquals("image format", imageFormat, wmsLayerConfig.imageFormat);
         assertEquals("transparency", transparent, wmsLayerConfig.transparent);
         assertEquals("time", time, wmsLayerConfig.timeString);
     }
