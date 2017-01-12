@@ -14,6 +14,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -49,16 +51,7 @@ public class LayerFactory {
 
     protected static final double DEFAULT_WMS_RADIANS_PER_PIXEL = 10.0 / WorldWind.WGS84_SEMI_MAJOR_AXIS;
 
-    protected static final String PREFERRED_IMAGE_TYPE = "image/png";
-
-    protected String preferredImageType = PREFERRED_IMAGE_TYPE;
-
-    protected Set<String> compatibleImageFormats = new HashSet<>();
-
-    public LayerFactory() {
-        // Additional formats
-        this.compatibleImageFormats.add("image/jpg");
-    }
+    protected List<String> compatibleImageFormats = Arrays.asList("image/png", "image/jpg", "image/gif", "image/bmp");
 
     public Layer createFromGeoPackage(String pathName, Callback callback) {
         if (pathName == null) {
@@ -94,10 +87,7 @@ public class LayerFactory {
                 Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWms", "missingLayerNames"));
         }
 
-        List<String> layers = new ArrayList<>();
-        layers.add(layerName);
-
-        return createFromWms(serviceAddress, layers, callback);
+        return createFromWms(serviceAddress, Collections.singletonList(layerName), callback);
     }
 
     public Layer createFromWms(String serviceAddress, List<String> layerNames, Callback callback) {
@@ -106,7 +96,7 @@ public class LayerFactory {
                 Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWms", "missingServiceAddress"));
         }
 
-        if (layerNames == null) {
+        if (layerNames == null || layerNames.isEmpty()) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWms", "missingLayerNames"));
         }
@@ -133,53 +123,36 @@ public class LayerFactory {
         return layer;
     }
 
-    public Layer createFromWmsLayerCapabilities(WmsLayerCapabilities layerCapabilities) {
+    public Layer createFromWmsLayerCapabilities(WmsLayerCapabilities layerCapabilities, Callback callback) {
         if (layerCapabilities == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missing layers"));
         }
 
-        List<WmsLayerCapabilities> layers = new ArrayList<>();
-        layers.add(layerCapabilities);
+        if (callback == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missingCallback"));
+        }
 
-        return this.createFromWmsLayerCapabilities(layers);
+        return this.createFromWmsLayerCapabilities(Collections.singletonList(layerCapabilities), callback);
     }
 
-    public Layer createFromWmsLayerCapabilities(List<WmsLayerCapabilities> layerCapabilities) {
+    public Layer createFromWmsLayerCapabilities(List<WmsLayerCapabilities> layerCapabilities, Callback callback) {
         if (layerCapabilities == null || layerCapabilities.size() == 0) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missing layers"));
         }
 
-        WmsCapabilities wmsCapabilities = layerCapabilities.iterator().next().getServiceCapabilities();
-
-        // Check if the server supports multiple layer request
-        int layerLimit = wmsCapabilities.getServiceInformation().getLayerLimit();
-        if (layerLimit != 0 && layerLimit < layerCapabilities.size()) {
-            throw new RuntimeException(
-                Logger.makeMessage("LayerFactory", "createFromWmsLayerCapabilities", "The number of layers specified exceeds the services limit"));
+        if (callback == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missingCallback"));
         }
 
-        WmsLayerConfig wmsLayerConfig = getLayerConfigFromWmsCapabilities(layerCapabilities);
-        LevelSetConfig levelSetConfig = getLevelSetConfigFromWmsCapabilities(layerCapabilities);
+        Layer layer = new RenderableLayer();
 
-        // Collect WMS Layer Titles to set the Layer Display Name
-        StringBuilder sb = null;
-        for (WmsLayerCapabilities layerCapability : layerCapabilities) {
-            if (sb == null) {
-                sb = new StringBuilder(layerCapability.getTitle());
-            } else {
-                sb.append(",").append(layerCapability.getTitle());
-            }
-        }
+        this.createWmsLayer(layerCapabilities, layer, callback);
 
-        TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
-        RenderableLayer finalLayer = new RenderableLayer(sb.toString());
-
-        surfaceImage.setTileFactory(new WmsTileFactory(wmsLayerConfig));
-        surfaceImage.setLevelSet(new LevelSet(levelSetConfig));
-
-        return finalLayer;
+        return layer;
     }
 
     protected void createFromGeoPackageAsync(String pathName, Layer layer, Callback callback) {
@@ -258,9 +231,16 @@ public class LayerFactory {
                 Logger.makeMessage("LayerFactory", "createFromWmsAsync", "Provided layers did not match available layers"));
         }
 
+        this.createWmsLayer(layerCapabilities, layer, callback);
+    }
+
+    protected void createWmsLayer(List<WmsLayerCapabilities> layerCapabilities, Layer layer, Callback callback) {
+
+        WmsCapabilities wmsCapabilities = layerCapabilities.iterator().next().getServiceCapabilities();
+
         // Check if the server supports multiple layer request
-        int layerLimit = wmsCapabilities.getServiceInformation().getLayerLimit();
-        if (layerLimit != 0 && layerLimit < layerCapabilities.size()) {
+        Integer layerLimit = wmsCapabilities.getServiceInformation().getLayerLimit();
+        if (layerLimit != null && layerLimit < layerCapabilities.size()) {
             throw new RuntimeException(
                 Logger.makeMessage("LayerFactory", "createFromWmsAsync", "The number of layers specified exceeds the services limit"));
         }
@@ -399,16 +379,16 @@ public class LayerFactory {
 
         // Negotiate Image Formats
         Set<String> imageFormats = wmsCapabilities.getImageFormats();
-        if (imageFormats.contains(this.preferredImageType)) {
-            wmsLayerConfig.imageFormat = this.preferredImageType;
-        } else {
-            imageFormats.retainAll(this.compatibleImageFormats);
-            if (imageFormats.size() > 0) {
-                wmsLayerConfig.imageFormat = imageFormats.iterator().next();
-            } else {
-                throw new RuntimeException(
-                    Logger.makeMessage("LayerFactory", "getLayerConfigFromWmsCapabilities", "Image Formats Not Compatible"));
+        for (String compatibleImageFormat : this.compatibleImageFormats) {
+            if (imageFormats.contains(compatibleImageFormat)) {
+                wmsLayerConfig.imageFormat = compatibleImageFormat;
+                break;
             }
+        }
+
+        if (wmsLayerConfig.imageFormat == null) {
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "getLayerConfigFromWmsCapabilities", "Image Formats Not Compatible"));
         }
 
         return wmsLayerConfig;

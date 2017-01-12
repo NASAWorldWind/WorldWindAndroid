@@ -21,13 +21,11 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsLayerCapabilities;
-import gov.nasa.worldwind.shape.TiledSurfaceImage;
 import gov.nasa.worldwind.util.LevelSetConfig;
 import gov.nasa.worldwind.util.Logger;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.mockito.Matchers.anyString;
 
@@ -222,15 +220,17 @@ public class LayerFactoryTest {
         assertEquals("Number of Levels", 5, levelSetConfig.numLevels);
     }
 
-    @Test
-    public void testCreateLayerFromWmsCapabilities_Nominal() throws Exception {
-        WmsCapabilities wmsCapabilities = getBoilerPlateWmsCapabilities();
-        LayerFactory layerFactory = new LayerFactory();
+    protected static class TestCallback implements LayerFactory.Callback {
 
-        Layer layer = layerFactory.createFromWmsLayerCapabilities(wmsCapabilities.getNamedLayers().get(0));
+        @Override
+        public void creationSucceeded(LayerFactory factory, Layer layer) {
+            // ignore
+        }
 
-        assertTrue("Layer Type", layer instanceof RenderableLayer);
-        assertTrue("Layer Contents", ((RenderableLayer) layer).getRenderable(0) instanceof TiledSurfaceImage);
+        @Override
+        public void creationFailed(LayerFactory factory, Layer layer, Throwable ex) {
+            // ignore
+        }
     }
 
     public static WmsCapabilities getBoilerPlateWmsCapabilities() {
