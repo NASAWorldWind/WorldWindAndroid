@@ -32,18 +32,15 @@ public class WmsAddress extends XmlModel
         return this.addressType;
     }
 
-
     public String getAddress()
     {
         return this.address;
     }
 
-
     public String getCity()
     {
         return this.city;
     }
-
 
     public String getStateOrProvince()
     {
@@ -54,7 +51,6 @@ public class WmsAddress extends XmlModel
     {
         return this.postCode;
     }
-
 
     public String getCountry()
     {

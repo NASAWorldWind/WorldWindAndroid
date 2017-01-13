@@ -37,6 +37,7 @@ import gov.nasa.worldwind.shape.TiledSurfaceImage;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.LevelSetConfig;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.WWUtil;
 
 public class LayerFactory {
 
@@ -45,6 +46,9 @@ public class LayerFactory {
         void creationSucceeded(LayerFactory factory, Layer layer);
 
         void creationFailed(LayerFactory factory, Layer layer, Throwable ex);
+    }
+
+    public LayerFactory() {
     }
 
     protected Handler mainLoopHandler = new Handler(Looper.getMainLooper());
@@ -148,7 +152,11 @@ public class LayerFactory {
                 Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missingCallback"));
         }
 
-        Layer layer = new RenderableLayer();
+        // Create a layer in which to asynchronously populate with renderables for the GeoPackage contents.
+        RenderableLayer layer = new RenderableLayer();
+
+        // Disable picking for the layer; terrain surface picking is performed automatically by WorldWindow.
+        layer.setPickEnabled(false);
 
         this.createWmsLayer(layerCapabilities, layer, callback);
 
@@ -224,7 +232,14 @@ public class LayerFactory {
     protected void createFromWmsAsync(String serviceAddress, List<String> layerNames, Layer layer, Callback callback) throws Exception {
         // Parse and read the WMS Capabilities document at the provided service address
         WmsCapabilities wmsCapabilities = retrieveWmsCapabilities(serviceAddress);
-        List<WmsLayerCapabilities> layerCapabilities = parseLayerNames(wmsCapabilities, layerNames);
+        List<WmsLayerCapabilities> layerCapabilities = new ArrayList<>();
+        for (String layerName : layerNames) {
+            WmsLayerCapabilities layerCaps = wmsCapabilities.getLayerByName(layerName);
+            if (layerCaps != null) {
+                layerCapabilities.add(layerCaps);
+            }
+        }
+
         if (layerCapabilities.size() == 0) {
             throw new RuntimeException(
                 Logger.makeMessage("LayerFactory", "createFromWmsAsync", "Provided layers did not match available layers"));
@@ -234,53 +249,62 @@ public class LayerFactory {
     }
 
     protected void createWmsLayer(List<WmsLayerCapabilities> layerCapabilities, Layer layer, Callback callback) {
-        WmsCapabilities wmsCapabilities = layerCapabilities.iterator().next().getServiceCapabilities();
-
-        // Check if the server supports multiple layer request
-        Integer layerLimit = wmsCapabilities.getServiceInformation().getLayerLimit();
-        if (layerLimit != null && layerLimit < layerCapabilities.size()) {
-            throw new RuntimeException(
-                Logger.makeMessage("LayerFactory", "createFromWmsAsync", "The number of layers specified exceeds the services limit"));
-        }
-
-        WmsLayerConfig wmsLayerConfig = getLayerConfigFromWmsCapabilities(layerCapabilities);
-        LevelSetConfig levelSetConfig = getLevelSetConfigFromWmsCapabilities(layerCapabilities);
-
-        // Collect WMS Layer Titles to set the Layer Display Name
-        StringBuilder sb = null;
-        for (WmsLayerCapabilities layerCapability : layerCapabilities) {
-            if (sb == null) {
-                sb = new StringBuilder(layerCapability.getTitle());
-            } else {
-                sb.append(",").append(layerCapability.getTitle());
-            }
-        }
-        layer.setDisplayName(sb.toString());
-
-        final TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
-        final RenderableLayer finalLayer = (RenderableLayer) layer;
         final Callback finalCallback = callback;
+        final RenderableLayer finalLayer = (RenderableLayer) layer;
 
-        surfaceImage.setTileFactory(new WmsTileFactory(wmsLayerConfig));
-        surfaceImage.setLevelSet(new LevelSet(levelSetConfig));
+        try {
+            WmsCapabilities wmsCapabilities = layerCapabilities.get(0).getServiceCapabilities();
 
-        // Add the tiled surface image to the layer on the main thread and notify the caller. Request a redraw to ensure
-        // that the image displays on all WorldWindows the layer may be attached to.
-        this.mainLoopHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                finalLayer.addRenderable(surfaceImage);
-                finalCallback.creationSucceeded(LayerFactory.this, finalLayer);
-                WorldWind.requestRedraw();
+            // Check if the server supports multiple layer request
+            Integer layerLimit = wmsCapabilities.getServiceInformation().getLayerLimit();
+            if (layerLimit != null && layerLimit < layerCapabilities.size()) {
+                throw new RuntimeException(
+                    Logger.makeMessage("LayerFactory", "createFromWmsAsync", "The number of layers specified exceeds the services limit"));
             }
-        });
+
+            WmsLayerConfig wmsLayerConfig = getLayerConfigFromWmsCapabilities(layerCapabilities);
+            LevelSetConfig levelSetConfig = getLevelSetConfigFromWmsCapabilities(layerCapabilities);
+
+            // Collect WMS Layer Titles to set the Layer Display Name
+            StringBuilder sb = null;
+            for (WmsLayerCapabilities layerCapability : layerCapabilities) {
+                if (sb == null) {
+                    sb = new StringBuilder(layerCapability.getTitle());
+                } else {
+                    sb.append(",").append(layerCapability.getTitle());
+                }
+            }
+            layer.setDisplayName(sb.toString());
+
+            final TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
+
+            surfaceImage.setTileFactory(new WmsTileFactory(wmsLayerConfig));
+            surfaceImage.setLevelSet(new LevelSet(levelSetConfig));
+
+            // Add the tiled surface image to the layer on the main thread and notify the caller. Request a redraw to ensure
+            // that the image displays on all WorldWindows the layer may be attached to.
+            this.mainLoopHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    finalLayer.addRenderable(surfaceImage);
+                    finalCallback.creationSucceeded(LayerFactory.this, finalLayer);
+                    WorldWind.requestRedraw();
+                }
+            });
+        } catch (final Throwable ex) {
+            this.mainLoopHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    finalCallback.creationFailed(LayerFactory.this, finalLayer, ex);
+                }
+            });
+        }
     }
 
     protected WmsCapabilities retrieveWmsCapabilities(String serviceAddress) throws Exception {
         InputStream inputStream = null;
         WmsCapabilities wmsCapabilities = null;
         try {
-
             // Build the appropriate request Uri given the provided service address
             Uri serviceUri = Uri.parse(serviceAddress).buildUpon()
                 .appendQueryParameter("VERSION", "1.3.0")
@@ -300,30 +324,16 @@ public class LayerFactory {
             throw new RuntimeException(
                 Logger.makeMessage("LayerFactory", "retrieveWmsCapabilities", "Unable to open connection and read from service address"));
         } finally {
-            if (inputStream != null) {
-                inputStream.close();
-            }
+            WWUtil.closeSilently(inputStream);
         }
 
         return wmsCapabilities;
     }
 
-    protected List<WmsLayerCapabilities> parseLayerNames(WmsCapabilities wmsCapabilities, List<String> layerNames) {
-        List<WmsLayerCapabilities> layers = new ArrayList<>();
-        for (String layerName : layerNames) {
-            WmsLayerCapabilities layerCapabilities = wmsCapabilities.getLayerByName(layerName);
-            if (layerCapabilities != null) {
-                layers.add(layerCapabilities);
-            }
-        }
-
-        return layers;
-    }
-
     protected WmsLayerConfig getLayerConfigFromWmsCapabilities(List<WmsLayerCapabilities> layerCapabilities) {
         // Construct the WmsTiledImage renderable from the WMS Capabilities properties
         WmsLayerConfig wmsLayerConfig = new WmsLayerConfig();
-        WmsCapabilities wmsCapabilities = layerCapabilities.iterator().next().getServiceCapabilities();
+        WmsCapabilities wmsCapabilities = layerCapabilities.get(0).getServiceCapabilities();
         String version = wmsCapabilities.getVersion();
         if (version.equals("1.3.0")) {
             wmsLayerConfig.wmsVersion = version;

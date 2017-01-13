@@ -9,7 +9,6 @@ import android.content.res.Resources;
 import android.support.test.filters.SmallTest;
 import android.support.test.runner.AndroidJUnit4;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,10 +54,7 @@ public class WmsCapabilitiesTest {
 
         this.wmsCapabilities130 = WmsCapabilities.getCapabilities(new BufferedInputStream(this.inputStream130));
         this.wmsCapabilities111 = WmsCapabilities.getCapabilities(new BufferedInputStream(this.inputStream111));
-    }
 
-    @After
-    public void shutdown() throws Exception {
         this.inputStream130.close();
         this.inputStream111.close();
     }
@@ -873,5 +869,18 @@ public class WmsCapabilitiesTest {
         assertNull("MaxHeight v1.1.1", maxHeight);
         assertNull("MaxWidth v1.1.1", maxWidth);
         assertNull("LayerLimit v1.1.1", layerLimit);
+    }
+
+    @Test
+    public void testScaleHint_Version111() {
+        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        double expectedMinScaleHint = 4000;
+        double expectedMaxScaleHint = 35000;
+
+        Double minScaleHint = wmsLayerCapabilities.getMinScaleHint();
+        Double maxScaleHint = wmsLayerCapabilities.getMaxScaleHint();
+
+        assertEquals("Min Scale Hint", expectedMinScaleHint, minScaleHint.doubleValue(), DELTA);
+        assertEquals("Max Scale Hint", expectedMaxScaleHint, maxScaleHint.doubleValue(), DELTA);
     }
 }
