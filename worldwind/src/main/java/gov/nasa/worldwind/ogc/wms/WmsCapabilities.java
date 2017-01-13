@@ -126,7 +126,7 @@ public class WmsCapabilities extends XmlModel {
             return null;
         }
 
-        WmsRequestDescription requestDescription = null;
+        WmsRequestOperation requestDescription = null;
         if (requestName.equals("GetCapabilities")) {
             requestDescription = capabilityInformation.getCapabilitiesInfo();
         } else if (requestName.equals("GetMap")) {

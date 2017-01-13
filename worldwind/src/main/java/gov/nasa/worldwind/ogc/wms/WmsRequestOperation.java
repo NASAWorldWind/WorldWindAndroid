@@ -11,13 +11,13 @@ import java.util.Set;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class WmsRequestDescription extends XmlModel {
+public class WmsRequestOperation extends XmlModel {
 
     protected Set<String> formats = new LinkedHashSet<>();
 
     protected Set<WmsDcpType> dcpTypes = new LinkedHashSet<>();
 
-    public WmsRequestDescription(String namespaceURI) {
+    public WmsRequestOperation(String namespaceURI) {
         super(namespaceURI);
     }
 

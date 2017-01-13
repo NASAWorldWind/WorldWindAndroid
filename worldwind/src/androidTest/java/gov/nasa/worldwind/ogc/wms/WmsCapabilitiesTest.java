@@ -883,4 +883,64 @@ public class WmsCapabilitiesTest {
         assertEquals("Min Scale Hint", expectedMinScaleHint, minScaleHint.doubleValue(), DELTA);
         assertEquals("Max Scale Hint", expectedMaxScaleHint, maxScaleHint.doubleValue(), DELTA);
     }
+
+    @Test
+    public void testGetCapabilitiesURL_Version130() {
+        WmsRequestOperation getCapabilities = this.wmsCapabilities130.getCapabilityInformation().getCapabilitiesInfo();
+        String expectedUrl = "http://hostname/path?";
+
+        String url = getCapabilities.getOnlineResource("Get").getHref();
+
+        assertEquals("GetCapabilities URL", expectedUrl, url);
+    }
+
+    @Test
+    public void testGetCapabilitiesURL_Version111() {
+        WmsRequestOperation getCapabilities = this.wmsCapabilities111.getCapabilityInformation().getCapabilitiesInfo();
+        String expectedUrl = "http://hostname:port/path";
+
+        String url = getCapabilities.getOnlineResource("Get").getHref();
+
+        assertEquals("GetCapabilities URL", expectedUrl, url);
+    }
+
+    @Test
+    public void testGetMapURL_Version130() {
+        WmsRequestOperation getMap = this.wmsCapabilities130.getCapabilityInformation().getMapInfo();
+        String expectedUrl = "http://hostname/path?";
+
+        String url = getMap.getOnlineResource("Get").getHref();
+
+        assertEquals("GetCapabilities URL", expectedUrl, url);
+    }
+
+    @Test
+    public void testGetMapURL_Version111() {
+        WmsRequestOperation getMap = this.wmsCapabilities111.getCapabilityInformation().getMapInfo();
+        String expectedUrl = "http://hostname:port/path";
+
+        String url = getMap.getOnlineResource("Get").getHref();
+
+        assertEquals("GetCapabilities URL", expectedUrl, url);
+    }
+
+    @Test
+    public void testGetFeatureInfoURL_Version130() {
+        WmsRequestOperation getFeatureInfo = this.wmsCapabilities130.getCapabilityInformation().getFeatureInfo();
+        String expectedUrl = "http://hostname/path?";
+
+        String url = getFeatureInfo.getOnlineResource("Get").getHref();
+
+        assertEquals("GetCapabilities URL", expectedUrl, url);
+    }
+
+    @Test
+    public void testGetFeatureInfoURL_Version111() {
+        WmsRequestOperation getFeatureInfo = this.wmsCapabilities111.getCapabilityInformation().getFeatureInfo();
+        String expectedUrl = "http://hostname:port/path";
+
+        String url = getFeatureInfo.getOnlineResource("Get").getHref();
+
+        assertEquals("GetCapabilities URL", expectedUrl, url);
+    }
 }

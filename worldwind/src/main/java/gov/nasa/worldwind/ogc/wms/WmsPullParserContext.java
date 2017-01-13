@@ -60,9 +60,9 @@ public class WmsPullParserContext extends XmlPullParserContext {
         this.registerParsableModel(new QName(this.namespaceUri, "Format"), new WmsFormat(this.namespaceUri));
 
         this.registerParsableModel(new QName(this.namespaceUri, "Get"), new NameStringModel(this.namespaceUri));
-        this.registerParsableModel(new QName(this.namespaceUri, "GetCapabilities"), new WmsRequestDescription(this.namespaceUri));
-        this.registerParsableModel(new QName(this.namespaceUri, "GetMap"), new WmsRequestDescription(this.namespaceUri));
-        this.registerParsableModel(new QName(this.namespaceUri, "GetFeatureInfo"), new WmsRequestDescription(this.namespaceUri));
+        this.registerParsableModel(new QName(this.namespaceUri, "GetCapabilities"), new WmsRequestOperation(this.namespaceUri));
+        this.registerParsableModel(new QName(this.namespaceUri, "GetMap"), new WmsRequestOperation(this.namespaceUri));
+        this.registerParsableModel(new QName(this.namespaceUri, "GetFeatureInfo"), new WmsRequestOperation(this.namespaceUri));
 
         this.registerParsableModel(new QName(this.namespaceUri, "HTTP"), new NameStringModel(this.namespaceUri));
 
@@ -87,6 +87,8 @@ public class WmsPullParserContext extends XmlPullParserContext {
 
         this.registerParsableModel(new QName(this.namespaceUri, "Post"), new NameStringModel(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "PostCode"), new XmlModel(this.namespaceUri));
+
+        this.registerParsableModel(new QName(this.namespaceUri, "Request"), new WmsRequestInformation(this.namespaceUri));
 
         this.registerParsableModel(new QName(this.namespaceUri, "Service"), new WmsServiceInformation(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "StateOrProvince"), new XmlModel(this.namespaceUri));
