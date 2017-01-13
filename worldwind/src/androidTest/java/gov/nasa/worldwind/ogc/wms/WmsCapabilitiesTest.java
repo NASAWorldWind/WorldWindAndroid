@@ -911,7 +911,7 @@ public class WmsCapabilitiesTest {
 
         String url = getMap.getOnlineResource("Get").getHref();
 
-        assertEquals("GetCapabilities URL", expectedUrl, url);
+        assertEquals("GetMap URL", expectedUrl, url);
     }
 
     @Test
@@ -921,7 +921,7 @@ public class WmsCapabilitiesTest {
 
         String url = getMap.getOnlineResource("Get").getHref();
 
-        assertEquals("GetCapabilities URL", expectedUrl, url);
+        assertEquals("GetMap URL", expectedUrl, url);
     }
 
     @Test
@@ -931,7 +931,7 @@ public class WmsCapabilitiesTest {
 
         String url = getFeatureInfo.getOnlineResource("Get").getHref();
 
-        assertEquals("GetCapabilities URL", expectedUrl, url);
+        assertEquals("GetFeatureInfo URL", expectedUrl, url);
     }
 
     @Test
@@ -941,6 +941,6 @@ public class WmsCapabilitiesTest {
 
         String url = getFeatureInfo.getOnlineResource("Get").getHref();
 
-        assertEquals("GetCapabilities URL", expectedUrl, url);
+        assertEquals("GetFeatureInfo URL", expectedUrl, url);
     }
 }
