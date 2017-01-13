@@ -7,102 +7,72 @@ package gov.nasa.worldwind.ogc.wms;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-
-import javax.xml.namespace.QName;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsCapabilityInformation extends XmlModel {
 
-    protected QName capabilities;
+    protected WmsRequestDescription capabilities;
 
-    protected QName map;
+    protected WmsRequestDescription map;
 
-    protected QName feature;
+    protected WmsRequestDescription feature;
 
-    protected QName exceptions;
+    protected List<WmsLayerCapabilities> layers = new ArrayList<>();
 
-    protected QName layers;
-
-    protected QName request;
+    protected Set<String> exceptions = new LinkedHashSet<>();
 
     public WmsCapabilityInformation(String namespaceUri) {
         super(namespaceUri);
-        this.initialize();
-    }
-
-    protected void initialize() {
-        this.capabilities = new QName(this.getNamespaceUri(), "GetCapabilities");
-        this.map = new QName(this.getNamespaceUri(), "GetMap");
-        this.feature = new QName(this.getNamespaceUri(), "GetFeatureInfo");
-        this.exceptions = new QName(this.getNamespaceUri(), "Exceptions");
-        this.layers = new QName(this.getNamespaceUri(), "Layer");
-        this.request = new QName(this.getNamespaceUri(), "Request");
     }
 
     public List<WmsLayerCapabilities> getLayerList() {
-        List<WmsLayerCapabilities> layers = (List<WmsLayerCapabilities>) this.getField(this.layers);
-        return layers != null ? layers : Collections.<WmsLayerCapabilities>emptyList();
+        return Collections.unmodifiableList(this.layers);
     }
 
     public Set<String> getImageFormats() {
-        XmlModel requests = (XmlModel) this.getField(this.request);
-        if (requests == null) {
-            return Collections.emptySet();
-        }
-        WmsRequestDescription mapInfo = (WmsRequestDescription) requests.getField(this.map);
-        if (mapInfo == null) {
-            return Collections.emptySet();
-        }
-
-        return mapInfo.getFormats();
+        return this.map.getFormats();
     }
 
-    // TODO add exception list
-
     public WmsRequestDescription getCapabilitiesInfo() {
-        XmlModel request = (XmlModel) this.getField(this.request);
-        if (request != null) {
-            return (WmsRequestDescription) request.getField(this.capabilities);
-        }
-        return null;
+        return this.capabilities;
     }
 
     public WmsRequestDescription getMapInfo() {
-        XmlModel request = (XmlModel) this.getField(this.request);
-        if (request != null) {
-            return (WmsRequestDescription) request.getField(this.map);
-        }
-        return null;
+        return this.map;
     }
 
     public WmsRequestDescription getFeatureInfo() {
-        XmlModel request = (XmlModel) this.getField(this.request);
-        if (request != null) {
-            return (WmsRequestDescription) request.getField(this.feature);
-        }
-        return null;
+        return this.feature;
     }
 
     @Override
-    public void setField(QName keyName, Object value) {
-
-        if (keyName.equals(this.layers)) {
-            List<WmsLayerCapabilities> layers = (List<WmsLayerCapabilities>) this.getField(this.layers);
-            if (layers == null) {
-                layers = new ArrayList<>();
-                super.setField(this.layers, layers);
+    public void setField(String keyName, Object value) {
+        // GetCapabilities, GetMap, and GetFeatureInfo are located in a Request element. We don't want to expose an
+        // additional Element parser so this a method to "skip" the Request element in order to access the desired fields
+        if (keyName.equals("Request")) {
+            Map<String, Object> requests = ((XmlModel) value).getFields();
+            for (Map.Entry<String, Object> request : requests.entrySet()) {
+                this.setField(request.getKey(), request.getValue());
             }
-
-            if (value instanceof WmsLayerCapabilities) {
-                layers.add((WmsLayerCapabilities) value);
-                return;
-            }
+            return;
         }
 
-        super.setField(keyName, value);
+        if (keyName.equals("GetCapabilities")) {
+            this.capabilities = (WmsRequestDescription) value;
+        } else if (keyName.equals("GetMap")) {
+            this.map = (WmsRequestDescription) value;
+        } else if (keyName.equals("GetFeatureInfo")) {
+            this.feature = (WmsRequestDescription) value;
+        } else if (keyName.equals("Exception")) {
+            this.exceptions.addAll(((WmsException) value).getExceptionFormats());
+        } else if (keyName.equals("Layer")) {
+            this.layers.add((WmsLayerCapabilities) value);
+        }
     }
 
     @Override

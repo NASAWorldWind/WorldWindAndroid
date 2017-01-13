@@ -1,37 +1,36 @@
 /*
- * Copyright (c) 2016 United States Government as represented by the Administrator of the
+ * Copyright (c) 2017 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
 package gov.nasa.worldwind.ogc.wms;
 
-import javax.xml.namespace.QName;
-
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsLayerIdentifier extends XmlModel {
 
-    protected QName authority;
+    protected String authority;
+
+    protected String identifier;
 
     public WmsLayerIdentifier(String namespaceUri) {
         super(namespaceUri);
-        this.initialize();
-    }
-
-    protected void initialize() {
-        this.authority = new QName("", "authority");
     }
 
     public String getIdentifier() {
-        return this.getCharactersContent();
+        return this.identifier;
     }
 
     public String getAuthority() {
-        Object o = this.getField(this.authority);
-        if (o instanceof String) {
-            return (String) o;
-        } else {
-            return null;
+        return this.authority;
+    }
+
+    @Override
+    public void setField(String keyName, Object value) {
+        if (keyName.equals("authority")) {
+            this.authority = value.toString();
+        } else if (keyName.equals(XmlModel.CHARACTERS_CONTENT)) {
+            this.identifier = value.toString();
         }
     }
 }

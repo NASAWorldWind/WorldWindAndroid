@@ -21,14 +21,13 @@ public class WmsPullParserContext extends XmlPullParserContext {
 
     @Override
     protected void initializeParsers() {
-
         super.initializeParsers();
 
         // Wms Element Registration
         this.registerParsableModel(new QName(this.namespaceUri, "Address"), new XmlModel(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "AddressType"), new XmlModel(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "Attribution"), new WmsLayerAttribution(this.namespaceUri));
-        this.registerParsableModel(new QName(this.namespaceUri, "AuthorityUrl"), new WmsAuthorityUrl(this.namespaceUri));
+        this.registerParsableModel(new QName(this.namespaceUri, "AuthorityURL"), new WmsAuthorityUrl(this.namespaceUri));
 
         this.registerParsableModel(new QName(this.namespaceUri, "BoundingBox"), new WmsBoundingBox(this.namespaceUri));
 
@@ -48,12 +47,14 @@ public class WmsPullParserContext extends XmlPullParserContext {
         this.registerParsableModel(new QName(this.namespaceUri, "DCPType"), new WmsDcpType(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "Dimension"), new WmsLayerDimension(this.namespaceUri));
 
-        this.registerParsableModel(new QName(this.namespaceUri, "Extent"), new WmsLayerExtent(this.namespaceUri));
+        this.registerParsableModel(new QName(this.namespaceUri, "Extent"), new WmsLayerDimension(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "EX_GeographicBoundingBox"), new WmsGeographicBoundingBox(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "westBoundLongitude"), new DoubleModel(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "eastBoundLongitude"), new DoubleModel(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "northBoundLatitude"), new DoubleModel(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "southBoundLatitude"), new DoubleModel(this.namespaceUri));
+
+        this.registerParsableModel(new QName(this.namespaceUri, "Exception"), new WmsException(this.namespaceUri));
 
         this.registerParsableModel(new QName(this.namespaceUri, "FeatureListURL"), new WmsLayerInfoUrl(this.namespaceUri));
         this.registerParsableModel(new QName(this.namespaceUri, "Format"), new WmsFormat(this.namespaceUri));

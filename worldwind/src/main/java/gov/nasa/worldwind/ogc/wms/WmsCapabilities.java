@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 United States Government as represented by the Administrator of the
+ * Copyright (c) 2017 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
@@ -13,33 +13,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.namespace.QName;
-
 import gov.nasa.worldwind.util.xml.XmlModel;
 import gov.nasa.worldwind.util.xml.XmlPullParserContext;
 
 public class WmsCapabilities extends XmlModel {
 
-    public static final QName VERSION = new QName("", "version");
+    protected String version;
 
-    public static final QName UPDATE_SEQUENCE = new QName("", "updateSequence");
+    protected String updateSequence;
 
-    protected QName capabilityInformation;
+    protected WmsCapabilityInformation capabilityInformation;
 
-    protected QName serviceInformation;
+    protected WmsServiceInformation serviceInformation;
 
     public WmsCapabilities(String namespaceUri) {
         super(namespaceUri);
-        this.initialize();
-    }
-
-    protected void initialize() {
-        this.capabilityInformation = new QName(this.getNamespaceUri(), "Capability");
-        this.serviceInformation = new QName(this.getNamespaceUri(), "Service");
     }
 
     public static WmsCapabilities getCapabilities(InputStream is) throws XmlPullParserException, IOException {
-
         // Initialize the pull parser context
         WmsPullParserContext ctx = new WmsPullParserContext(XmlPullParserContext.DEFAULT_NAMESPACE);
         ctx.setParserInput(is);
@@ -58,13 +49,6 @@ public class WmsCapabilities extends XmlModel {
      * @return an unordered list of the document's named layers.
      */
     public List<WmsLayerCapabilities> getNamedLayers() {
-
-        WmsCapabilityInformation capInfo = (WmsCapabilityInformation) this.getField(this.capabilityInformation);
-
-        if (capInfo == null) {
-            return null;
-        }
-
         List<WmsLayerCapabilities> namedLayers = new ArrayList<>();
 
         for (WmsLayerCapabilities layer : this.getCapabilityInformation().getLayerList()) {
@@ -75,7 +59,6 @@ public class WmsCapabilities extends XmlModel {
     }
 
     public WmsLayerCapabilities getLayerByName(String name) {
-
         if (name == null || name.isEmpty()) {
             return null;
         }
@@ -94,7 +77,7 @@ public class WmsCapabilities extends XmlModel {
     }
 
     public WmsCapabilityInformation getCapabilityInformation() {
-        return (WmsCapabilityInformation) this.getField(this.capabilityInformation);
+        return this.capabilityInformation;
     }
 
     /**
@@ -103,7 +86,7 @@ public class WmsCapabilities extends XmlModel {
      * @return the document's service information.
      */
     public WmsServiceInformation getServiceInformation() {
-        return (WmsServiceInformation) this.getField(this.serviceInformation);
+        return this.serviceInformation;
     }
 
     /**
@@ -112,7 +95,7 @@ public class WmsCapabilities extends XmlModel {
      * @return the document's version number.
      */
     public String getVersion() {
-        return this.getField(VERSION).toString();
+        return this.version;
     }
 
     /**
@@ -121,8 +104,7 @@ public class WmsCapabilities extends XmlModel {
      * @return the document's update sequence.
      */
     public String getUpdateSequence() {
-        Object o = this.getField(UPDATE_SEQUENCE);
-        return o != null ? o.toString() : null;
+        return this.updateSequence;
     }
 
     public Set<String> getImageFormats() {
@@ -135,7 +117,6 @@ public class WmsCapabilities extends XmlModel {
     }
 
     public String getRequestURL(String requestName, String requestMethod) {
-
         if (requestName == null || requestMethod == null) {
             return null;
         }
@@ -167,6 +148,19 @@ public class WmsCapabilities extends XmlModel {
     }
 
     @Override
+    public void setField(String keyName, Object value) {
+        if (keyName.equals("version")) {
+            this.version = value.toString();
+        } else if (keyName.equals("updateSequence")) {
+            this.updateSequence = value.toString();
+        } else if (keyName.equals("Service")) {
+            this.serviceInformation = (WmsServiceInformation) value;
+        } else if (keyName.equals("Capability")) {
+            this.capabilityInformation = (WmsCapabilityInformation) value;
+        }
+    }
+
+    @Override
     public String toString() // TODO: Complete this method
     {
         StringBuilder sb = new StringBuilder();
@@ -183,7 +177,6 @@ public class WmsCapabilities extends XmlModel {
         sb.append("\n");
 
         sb.append("LAYERS\n");
-
         for (WmsLayerCapabilities layerCaps : this.getNamedLayers()) {
             sb.append(layerCaps.toString()).append("\n");
         }

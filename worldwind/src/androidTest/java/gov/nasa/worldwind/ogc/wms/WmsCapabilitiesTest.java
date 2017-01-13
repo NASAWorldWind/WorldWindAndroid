@@ -22,8 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.namespace.QName;
-
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.test.R;
 
@@ -436,10 +434,8 @@ public class WmsCapabilitiesTest {
         String expectedAttributionLogoUrl = "http://www.university.edu/icons/logo.gif";
         WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities130.getLayerByName("ROADS_1M");
 
-        Set<WmsLayerAttribution> attributions = wmsLayerCapabilities.getAttributions();
-        WmsLayerAttribution attribution = attributions.iterator().next();
+        WmsLayerAttribution attribution = wmsLayerCapabilities.getAttribution();
 
-        assertEquals("Layer Attributions Count", 1, attributions.size());
         assertEquals("Layer Attributions Title", expectedAttributionTitle, attribution.getTitle());
         assertEquals("Layer Attributions Url", expectedAttributionUrl, attribution.getOnlineResource().getHref());
         assertEquals("Layer Attributions Logo Format", expectedAttributionLogoFormat, attribution.getLogoURL().getFormats().iterator().next());
@@ -454,10 +450,8 @@ public class WmsCapabilitiesTest {
         String expectedAttributionLogoUrl = "http://www.university.edu/icons/logo.gif";
         WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities111.getLayerByName("ROADS_1M");
 
-        Set<WmsLayerAttribution> attributions = wmsLayerCapabilities.getAttributions();
-        WmsLayerAttribution attribution = attributions.iterator().next();
+        WmsLayerAttribution attribution = wmsLayerCapabilities.getAttribution();
 
-        assertEquals("Layer Attributions Count", 1, attributions.size());
         assertEquals("Layer Attributions Title", expectedAttributionTitle, attribution.getTitle());
         assertEquals("Layer Attributions Url", expectedAttributionUrl, attribution.getOnlineResource().getHref());
         assertEquals("Layer Attributions Logo Format", expectedAttributionLogoFormat, attribution.getLogoURL().getFormats().iterator().next());
@@ -556,9 +550,8 @@ public class WmsCapabilitiesTest {
         Set<WmsLayerInfoUrl> metadataUrls = wmsLayerCapabilities.getMetadataUrls();
 
         for (WmsLayerInfoUrl metadataUrl : metadataUrls) {
-            String metadataUrlType = metadataUrl.getField(new QName("", "type")).toString();
-            assertTrue("Layer MetadataUrl Format", expectedMetadataUrlFormats.contains(metadataUrl.getFormat()));
-            assertTrue("Layer MetadataUrl Names", expectedMetadataUrlTypes.contains(metadataUrlType));
+            assertTrue("Layer MetadataUrl Format", expectedMetadataUrlFormats.contains(metadataUrl.getFormats().iterator().next()));
+            assertTrue("Layer MetadataUrl Type", expectedMetadataUrlTypes.contains(metadataUrl.getType()));
             assertTrue("Layer MetadataUrl Url", expectedMetadataUrlUrls.contains(metadataUrl.getOnlineResource().getHref()));
         }
         assertEquals("Layer MetadataUrl Count", expectedMetadataUrls, metadataUrls.size());
@@ -576,9 +569,8 @@ public class WmsCapabilitiesTest {
         Set<WmsLayerInfoUrl> metadataUrls = wmsLayerCapabilities.getMetadataUrls();
 
         for (WmsLayerInfoUrl metadataUrl : metadataUrls) {
-            String metadataUrlType = metadataUrl.getField(new QName("", "type")).toString();
-            assertTrue("Layer MetadataUrl Format", expectedMetadataUrlFormats.contains(metadataUrl.getFormat()));
-            assertTrue("Layer MetadataUrl Names", expectedMetadataUrlTypes.contains(metadataUrlType));
+            assertTrue("Layer MetadataUrl Format", expectedMetadataUrlFormats.contains(metadataUrl.getFormats().iterator().next()));
+            assertTrue("Layer MetadataUrl Names", expectedMetadataUrlTypes.contains(metadataUrl.getType()));
             assertTrue("Layer MetadataUrl Url", expectedMetadataUrlUrls.contains(metadataUrl.getOnlineResource().getHref()));
         }
         assertEquals("Layer MetadataUrl Count", expectedMetadataUrls, metadataUrls.size());
@@ -663,7 +655,7 @@ public class WmsCapabilitiesTest {
     }
 
     @Test
-    public void testNamedLayerProperties_GetGeographicBoundingBox_Version11() {
+    public void testNamedLayerProperties_GetGeographicBoundingBox_Version111() {
         double expectedGeographicBoundingBoxWestLong = -71.63;
         double expectedGeographicBoundingBoxEastLong = -70.78;
         double expectedGeographicBoundingBoxSouthLat = 41.75;
@@ -772,7 +764,7 @@ public class WmsCapabilitiesTest {
             "ServiceAbstract: Map Server maintained by Acme Corporation. Contact: webmaster@wmt.acme.com. High-quality maps showing            roadrunner nests and possible ambush locations.\n" +
             "Fees: none\n" +
             "AccessConstraints: none\n" +
-            "Keywords: ambush, bird, roadrunner, \n" +
+            "Keywords: bird, roadrunner, ambush, \n" +
             "OnlineResource: href: http://hostname/, type: simple\n" +
             "PersonPrimary: Jeff Smith\n" +
             "Organization: NASA\n" +
@@ -780,25 +772,22 @@ public class WmsCapabilitiesTest {
             "VoiceTelephone: +1 301 555-1212\n" +
             "FacsimileTelephone: none\n" +
             "ElectronicMailAddress: user@host.com\n" +
-            "{http://www.opengis.net/wms}ContactAddress\n" +
+            "AddressType: postal Address: NASA Goddard Space Flight Center City: Greenbelt StateOrProvince: MD PostCode: 20771 Country: USA\n" +
             "Max width = 2048 Max height = 2048\n" +
             "\n" +
             "Image Formats:\n" +
             "image/gif\n" +
             "image/png\n" +
             "image/jpeg\n" +
-            "Capabilities Info: GetCapabilities\n" +
-            "\tFormats: \ttext/xml, \n" +
+            "Capabilities Info: \tFormats: \ttext/xml, \n" +
             "\tDCPTypes:\n" +
             "\t\tHTTP, Get, href: http://hostname/path?, type: simpleHTTP, Post, href: http://hostname/path?, type: simple\n" +
             "\n" +
-            "Map Info: GetMap\n" +
-            "\tFormats: \timage/gif, \timage/png, \timage/jpeg, \n" +
+            "Map Info: \tFormats: \timage/gif, \timage/png, \timage/jpeg, \n" +
             "\tDCPTypes:\n" +
             "\t\tHTTP, Get, href: http://hostname/path?, type: simple\n" +
             "\n" +
-            "Feature Info: GetFeatureInfo\n" +
-            "\tFormats: \ttext/xml, \ttext/html, \ttext/plain, \n" +
+            "Feature Info: \tFormats: \ttext/xml, \ttext/plain, \ttext/html, \n" +
             "\tDCPTypes:\n" +
             "\t\tHTTP, Get, href: http://hostname/path?, type: simple\n" +
             "\n" +
@@ -827,33 +816,30 @@ public class WmsCapabilitiesTest {
             "ServiceAbstract: WMT Map Server maintained by Acme Corporation. Contact: webmaster@wmt.acme.com. High-quality maps            showing roadrunner nests and possible ambush locations.\n" +
             "Fees: none\n" +
             "AccessConstraints: none\n" +
-            "Keywords: ambush, bird, roadrunner, \n" +
+            "Keywords: bird, roadrunner, ambush, \n" +
             "OnlineResource: href: http://hostname/, type: simple\n" +
             "PersonPrimary: Jeff deLaBeaujardiere\n" +
             "Organization: NASA\n" +
             "Position: Computer Scientist\n" +
             "VoiceTelephone: +1 301 286-1569\n" +
-            "FacsimileTelephone: +1 301 286-1777\n" +
+            "FacsimileTelephone: none\n" +
             "ElectronicMailAddress: delabeau@iniki.gsfc.nasa.gov\n" +
-            "ContactAddress\n" +
+            "AddressType: postal Address: NASA Goddard Space Flight Center, Code 933 City: Greenbelt StateOrProvince: MD PostCode: 20771 Country: USA\n" +
             "Max width = null Max height = null\n" +
             "\n" +
             "Image Formats:\n" +
             "image/gif\n" +
             "image/png\n" +
             "image/jpeg\n" +
-            "Capabilities Info: GetCapabilities\n" +
-            "\tFormats: \tapplication/vnd.ogc.wms_xml, \n" +
+            "Capabilities Info: \tFormats: \tapplication/vnd.ogc.wms_xml, \n" +
             "\tDCPTypes:\n" +
             "\t\tHTTP, Get, href: http://hostname:port/path, type: simpleHTTP, Post, href: http://hostname:port/path, type: simple\n" +
             "\n" +
-            "Map Info: GetMap\n" +
-            "\tFormats: \timage/gif, \timage/png, \timage/jpeg, \n" +
+            "Map Info: \tFormats: \timage/gif, \timage/png, \timage/jpeg, \n" +
             "\tDCPTypes:\n" +
             "\t\tHTTP, Get, href: http://hostname:port/path, type: simple\n" +
             "\n" +
-            "Feature Info: GetFeatureInfo\n" +
-            "\tFormats: \tapplication/vnd.ogc.gml, \ttext/html, \ttext/plain, \n" +
+            "Feature Info: \tFormats: \tapplication/vnd.ogc.gml, \ttext/plain, \ttext/html, \n" +
             "\tDCPTypes:\n" +
             "\t\tHTTP, Get, href: http://hostname:port/path, type: simple\n" +
             "\n" +
@@ -867,7 +853,6 @@ public class WmsCapabilitiesTest {
             "LAYER Pressure: queryable = false\n" +
             "LAYER ozone_image: queryable = false\n" +
             "LAYER population: queryable = false\n";
-
 
         String actual = this.wmsCapabilities111.toString();
 

@@ -7,122 +7,91 @@ package gov.nasa.worldwind.ogc.wms;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
 
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.xml.DoubleModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsLayerCapabilities extends XmlModel {
 
-    protected QName layerAbstract;
+    // Properties of the Layer element
+    protected List<WmsLayerCapabilities> layers = new ArrayList<>();
 
-    protected QName attribution;
+    protected String name;
 
-    protected QName authorityUrl;
+    protected String title;
 
-    protected QName boundingBox;
+    protected String description;
 
-    protected QName crs;
+    protected WmsKeywords keywords;
 
-    protected QName dataUrl;
+    protected Set<WmsLayerStyle> styles = new LinkedHashSet<>();
 
-    protected QName dimension;
+    // The 1.3.0 Reference System
+    protected Set<String> availableCrs = new LinkedHashSet<>();
 
-    protected QName extent;
+    // The 1.1.1 Reference System
+    protected Set<String> availableSrs = new LinkedHashSet<>();
 
-//    protected QName extremeElevations;
+    protected WmsGeographicBoundingBox geographicBoundingBox;
 
-    protected QName featureListUrl;
+    protected Set<WmsBoundingBox> boundingBoxes = new LinkedHashSet<>();
 
-    protected QName geographicBoundingBox;
+    // The 1.3.0 Dimension Property
+    protected Set<WmsLayerDimension> dimensions = new LinkedHashSet<>();
 
-    protected QName identifier;
+    // The 1.1.1 Dimension Property
+    protected Set<WmsLayerDimension> extents = new LinkedHashSet<>();
 
-    protected QName keywordList;
+    protected WmsLayerAttribution attribution;
 
-    protected QName keyword;
+    protected Set<WmsAuthorityUrl> authorityUrls = new LinkedHashSet<>();
 
-    protected QName lastUpdate;
+    protected Set<WmsLayerIdentifier> identifiers = new LinkedHashSet<>();
 
-    protected QName latLonBoundingBox; // 1.1.1
+    protected Set<WmsLayerInfoUrl> metadataUrls = new LinkedHashSet<>();
 
-    protected QName layer;
+    protected Set<WmsLayerInfoUrl> dataUrls = new LinkedHashSet<>();
 
-    protected QName maxScaleDenominator;
+    protected Set<WmsLayerInfoUrl> featureListUrls = new LinkedHashSet<>();
 
-    protected QName metadataUrl;
+    // The 1.3.0 Scale Property
+    protected Double maxScaleDenominator;
 
-    protected QName minScaleDenominator;
+    // The 1.3.0 Scale Property
+    protected Double minScaleDenominator;
 
-    protected QName name;
+    // The 1.1.1 Scale Property
+    protected Double maxScaleHint;
 
-    protected QName scaleHint;
+    // The 1.1.1 Scale Property
+    protected Double minScaleHint;
 
-    protected QName srs;
+    // Properties of the Layer attributes
+    protected boolean queryable;
 
-    protected QName style;
+    protected Integer cascaded;
 
-    protected QName title;
+    protected Boolean opaque;
 
-    protected QName queryable;
+    protected Boolean noSubsets;
 
-    protected QName opaque;
+    protected Integer fixedWidth;
 
-    protected QName noSubsets;
-
-    protected QName fixedWidth;
-
-    protected QName fixedHeight;
-
-    protected QName cascaded;
+    protected Integer fixedHeight;
 
     public WmsLayerCapabilities(String namespaceURI) {
         super(namespaceURI);
-
-        this.initialize();
-    }
-
-    private void initialize() {
-        this.layerAbstract = new QName(this.getNamespaceUri(), "Abstract");
-        this.attribution = new QName(this.getNamespaceUri(), "Attribution");
-        this.authorityUrl = new QName(this.getNamespaceUri(), "AuthorityURL");
-        this.boundingBox = new QName(this.getNamespaceUri(), "BoundingBox");
-        this.crs = new QName(this.getNamespaceUri(), "CRS");
-        this.dataUrl = new QName(this.getNamespaceUri(), "DataURL");
-        this.dimension = new QName(this.getNamespaceUri(), "Dimension");
-        this.extent = new QName(this.getNamespaceUri(), "Extent");
-//        this.extremeElevations = new QName(this.getNamespaceUri(), "ExtremeElevations");
-        this.featureListUrl = new QName(this.getNamespaceUri(), "FeatureListURL");
-        this.geographicBoundingBox = new QName(this.getNamespaceUri(), "EX_GeographicBoundingBox");
-        this.identifier = new QName(this.getNamespaceUri(), "Identifier");
-        this.keywordList = new QName(this.getNamespaceUri(), "KeywordList");
-        this.keyword = new QName(this.getNamespaceUri(), "Keyword");
-        this.lastUpdate = new QName(this.getNamespaceUri(), "LastUpdate");
-        this.latLonBoundingBox = new QName(this.getNamespaceUri(), "LatLonBoundingBox");
-        this.layer = new QName(this.getNamespaceUri(), "Layer");
-        this.maxScaleDenominator = new QName(this.getNamespaceUri(), "MaxScaleDenominator");
-        this.metadataUrl = new QName(this.getNamespaceUri(), "MetadataURL");
-        this.minScaleDenominator = new QName(this.getNamespaceUri(), "MinScaleDenominator");
-        this.name = new QName(this.getNamespaceUri(), "Name");
-        this.scaleHint = new QName(this.getNamespaceUri(), "ScaleHint");
-        this.srs = new QName(this.getNamespaceUri(), "SRS");
-        this.style = new QName(this.getNamespaceUri(), "Style");
-        this.title = new QName(this.getNamespaceUri(), "Title");
-        this.queryable = new QName("", "queryable");
-        this.noSubsets = new QName("", "noSubsets");
-        this.fixedWidth = new QName("", "fixedWidth");
-        this.fixedHeight = new QName("", "fixedHeight");
-        this.cascaded = new QName("", "cascaded");
-        this.opaque = new QName("", "opaque");
     }
 
     public List<WmsLayerCapabilities> getNamedLayers() {
-        List<WmsLayerCapabilities> namedLayers = new ArrayList<WmsLayerCapabilities>();
+        List<WmsLayerCapabilities> namedLayers = new ArrayList<>();
 
         if (this.getName() != null)
             namedLayers.add(this);
@@ -163,201 +132,330 @@ public class WmsLayerCapabilities extends XmlModel {
         return null;
     }
 
-    public String getLastUpdate() {
-        return this.getChildCharacterValue(this.lastUpdate);
-    }
-
     public Double getMinScaleHint() {
-        Object o = this.getInheritedField(this.scaleHint);
-        if (o != null && o instanceof XmlModel) {
-            XmlModel scaleHint = (XmlModel) o;
-            return scaleHint.getDoubleAttributeValue(new QName("", "min"), true);
+        Double actualMinScaleHint = this.minScaleHint;
+
+        XmlModel parent = this.getParent();
+
+        while (actualMinScaleHint == null && parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                actualMinScaleHint = ((WmsLayerCapabilities) parent).minScaleHint;
+            }
+            parent = parent.getParent();
         }
-        return null;
+
+        return actualMinScaleHint;
     }
 
     public Double getMaxScaleHint() {
-        Object o = this.getInheritedField(this.scaleHint);
-        if (o != null && o instanceof XmlModel) {
-            XmlModel scaleHint = (XmlModel) o;
-            return scaleHint.getDoubleAttributeValue(new QName("", "max"), true);
+        Double actualMaxScaleHint = this.maxScaleHint;
+
+        XmlModel parent = this.getParent();
+
+        while (actualMaxScaleHint == null && parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                actualMaxScaleHint = ((WmsLayerCapabilities) parent).maxScaleHint;
+            }
+            parent = parent.getParent();
         }
-        return null;
+
+        return actualMaxScaleHint;
     }
 
     public Set<WmsLayerDimension> getDimensions() {
-        Set<WmsLayerDimension> dimensions = (Set<WmsLayerDimension>) this.getInheritedField(this.dimension);
-        return dimensions != null ? dimensions : null;
+        XmlModel parent = this.getParent();
+
+        while (parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                this.dimensions.addAll(((WmsLayerCapabilities) parent).dimensions);
+            }
+            parent = parent.getParent();
+        }
+
+        return Collections.unmodifiableSet(this.dimensions);
     }
 
-    public Set<WmsLayerExtent> getExtents() {
-        Set<WmsLayerExtent> extents = (Set<WmsLayerExtent>) this.getField(this.extent);
-        return extents != null ? extents : Collections.<WmsLayerExtent>emptySet();
+    public Set<WmsLayerDimension> getExtents() {
+        XmlModel parent = this.getParent();
+
+        while (parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                this.extents.addAll(((WmsLayerCapabilities) parent).extents);
+            }
+            parent = parent.getParent();
+        }
+
+        return Collections.unmodifiableSet(this.extents);
     }
 
-    public Boolean getCascaded() {
-        return this.getBooleanAttributeValue(this.cascaded, true);
+    public Integer getCascaded() {
+        Integer actualCascade = this.cascaded;
+
+        XmlModel parent = this.getParent();
+
+        while (actualCascade == null && parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                actualCascade = ((WmsLayerCapabilities) parent).cascaded;
+            }
+            parent = parent.getParent();
+        }
+
+        return actualCascade;
     }
 
     public Integer getFixedHeight() {
-        return this.getIntegerAttributeValue(this.fixedHeight, true);
+        Integer actualFixedHeight = this.fixedHeight;
+
+        XmlModel parent = this.getParent();
+
+        while (actualFixedHeight == null && parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                actualFixedHeight = ((WmsLayerCapabilities) parent).fixedHeight;
+            }
+            parent = parent.getParent();
+        }
+
+        return actualFixedHeight;
     }
 
     public Integer getFixedWidth() {
-        return this.getIntegerAttributeValue(this.fixedWidth, true);
+        Integer actualFixedWidth = this.fixedWidth;
+
+        XmlModel parent = this.getParent();
+
+        while (actualFixedWidth == null && parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                actualFixedWidth = ((WmsLayerCapabilities) parent).fixedWidth;
+            }
+            parent = parent.getParent();
+        }
+
+        return actualFixedWidth;
     }
 
     public Boolean isNoSubsets() {
-        return this.getBooleanAttributeValue(this.noSubsets, true);
+        Boolean actualNoSubsets = this.noSubsets;
+
+        XmlModel parent = this.getParent();
+
+        while (actualNoSubsets == null && parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                actualNoSubsets = ((WmsLayerCapabilities) parent).noSubsets;
+            }
+            parent = parent.getParent();
+        }
+
+        return actualNoSubsets;
     }
 
     public Boolean isOpaque() {
-        return this.getBooleanAttributeValue(this.opaque, true);
+        Boolean actualOpaque = this.opaque;
+
+        XmlModel parent = this.getParent();
+
+        while (actualOpaque == null && parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                actualOpaque = ((WmsLayerCapabilities) parent).opaque;
+            }
+            parent = parent.getParent();
+        }
+
+        return actualOpaque;
     }
 
-    public Boolean isQueryable() {
-        return this.getBooleanAttributeValue(this.queryable, true);
+    public boolean isQueryable() {
+        Boolean actualQueryable = this.queryable;
+
+        XmlModel parent = this.getParent();
+
+        while (actualQueryable == null && parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                actualQueryable = ((WmsLayerCapabilities) parent).opaque;
+            }
+            parent = parent.getParent();
+        }
+
+        return actualQueryable;
     }
 
-    public Set<WmsLayerAttribution> getAttributions() {
-        Set<WmsLayerAttribution> attributions = (Set<WmsLayerAttribution>) this.getInheritedField(this.attribution);
-        return attributions != null ? attributions : Collections.<WmsLayerAttribution>emptySet();
+    public WmsLayerAttribution getAttribution() {
+        WmsLayerAttribution actualAttribution = this.attribution;
+
+        XmlModel parent = this.getParent();
+
+        while (actualAttribution == null && parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                actualAttribution = ((WmsLayerCapabilities) parent).attribution;
+            }
+            parent = parent.getParent();
+        }
+
+        return actualAttribution;
     }
 
     public Set<WmsAuthorityUrl> getAuthorityUrls() {
-        Set<WmsAuthorityUrl> authorityUrls = new HashSet<>();
-        this.getAdditiveInheritedField(this.authorityUrl, authorityUrls);
-        return authorityUrls;
+        XmlModel parent = this.getParent();
+
+        while (parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                this.authorityUrls.addAll(((WmsLayerCapabilities) parent).authorityUrls);
+                break;
+            }
+            parent = parent.getParent();
+        }
+
+        return Collections.unmodifiableSet(this.authorityUrls);
     }
 
     public Set<WmsLayerIdentifier> getIdentifiers() {
-        Set<WmsLayerIdentifier> identifiers = (Set<WmsLayerIdentifier>) this.getField(this.identifier);
-        return identifiers != null ? identifiers : Collections.<WmsLayerIdentifier>emptySet();
+        return Collections.unmodifiableSet(this.identifiers);
     }
 
     public Set<WmsLayerInfoUrl> getMetadataUrls() {
-        Set<WmsLayerInfoUrl> metadataUrls = (Set<WmsLayerInfoUrl>) this.getField(this.metadataUrl);
-        return metadataUrls != null ? metadataUrls : metadataUrls;
+        return Collections.unmodifiableSet(this.metadataUrls);
     }
 
     public Set<WmsLayerInfoUrl> getFeatureListUrls() {
-        Set<WmsLayerInfoUrl> featureUrls = (Set<WmsLayerInfoUrl>) this.getField(this.featureListUrl);
-        return featureUrls != null ? featureUrls : Collections.<WmsLayerInfoUrl>emptySet();
+        return Collections.unmodifiableSet(this.featureListUrls);
     }
 
     public Set<WmsLayerInfoUrl> getDataUrls() {
-        Set<WmsLayerInfoUrl> dataUrls = (Set<WmsLayerInfoUrl>) this.getField(this.dataUrl);
-        return dataUrls != null ? dataUrls : Collections.<WmsLayerInfoUrl>emptySet();
+        return Collections.unmodifiableSet(this.dataUrls);
     }
 
     public List<WmsLayerCapabilities> getLayers() {
-        List<WmsLayerCapabilities> layers = (List<WmsLayerCapabilities>) this.getField(this.layer);
-        return layers != null ? layers : Collections.<WmsLayerCapabilities>emptyList();
+        return Collections.unmodifiableList(this.layers);
     }
 
     public Set<WmsLayerStyle> getStyles() {
-        Set<WmsLayerStyle> styles = new HashSet<>();
-        this.getAdditiveInheritedField(this.style, styles);
-        return styles;
+        XmlModel parent = this.getParent();
+
+        while (parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                this.styles.addAll(((WmsLayerCapabilities) parent).styles);
+                break;
+            }
+            parent = parent.getParent();
+        }
+
+        return Collections.unmodifiableSet(this.styles);
     }
 
     public Set<WmsBoundingBox> getBoundingBoxes() {
-        Set<WmsBoundingBox> boundingBoxes = (Set<WmsBoundingBox>) this.getInheritedField(this.boundingBox);
-        return boundingBoxes != null ? boundingBoxes : Collections.<WmsBoundingBox>emptySet();
+        XmlModel parent = this.getParent();
+
+        while (parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                this.boundingBoxes.addAll(((WmsLayerCapabilities) parent).boundingBoxes);
+                break;
+            }
+            parent = parent.getParent();
+        }
+
+        return Collections.unmodifiableSet(this.boundingBoxes);
     }
 
     public Sector getGeographicBoundingBox() {
-        WmsGeographicBoundingBox boundingBox = (WmsGeographicBoundingBox) this.getInheritedField(this.geographicBoundingBox);
+        WmsGeographicBoundingBox actualGeographicBoundingBox = this.geographicBoundingBox;
 
-        if (boundingBox == null) {
-            // try the 1.1.1 style
-            boundingBox = (WmsGeographicBoundingBox) this.getInheritedField(this.latLonBoundingBox);
+        XmlModel parent = this.getParent();
+
+        while (actualGeographicBoundingBox == null && parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                actualGeographicBoundingBox = ((WmsLayerCapabilities) parent).geographicBoundingBox;
+            }
+            parent = parent.getParent();
         }
 
-        if (boundingBox != null) {
-            Double minLon = boundingBox.getWestBound();
-            Double maxLon = boundingBox.getEastBound();
-            Double minLat = boundingBox.getSouthBound();
-            Double maxLat = boundingBox.getNorthBound();
-            if (minLon == null || maxLon == null || minLat == null || maxLat == null) {
-                return null;
-            }
-            return Sector.fromDegrees(minLat, minLon, maxLat - minLat, maxLon - minLon);
+        if (actualGeographicBoundingBox != null) {
+            return actualGeographicBoundingBox.getGeographicBoundingBox();
         }
         return null;
     }
 
     public Set<String> getKeywords() {
-        WmsKeywords keywords = (WmsKeywords) this.getField(this.keywordList);
-        if (keywords != null) {
-            return keywords.getKeywords();
-        } else {
-            return Collections.emptySet();
-        }
+        return this.keywords.getKeywords();
     }
 
     public String getLayerAbstract() {
-        return this.getChildCharacterValue(this.layerAbstract);
+        return this.description;
     }
 
     public Double getMaxScaleDenominator() {
-        DoubleModel model = (DoubleModel) this.getInheritedField(this.maxScaleDenominator);
-        if (model != null) {
-            return model.getValue();
-        } else {
-            return null;
+        Double actualMaxScaleDenominator = this.maxScaleDenominator;
+
+        XmlModel parent = this.getParent();
+
+        while (actualMaxScaleDenominator == null && parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                actualMaxScaleDenominator = ((WmsLayerCapabilities) parent).maxScaleDenominator;
+            }
+            parent = parent.getParent();
         }
+
+        return actualMaxScaleDenominator;
     }
 
     public Double getMinScaleDenominator() {
-        DoubleModel model = (DoubleModel) this.getInheritedField(this.minScaleDenominator);
-        if (model != null) {
-            return model.getValue();
-        } else {
-            return null;
+        Double actualMinScaleDenominator = this.minScaleDenominator;
+
+        XmlModel parent = this.getParent();
+
+        while (actualMinScaleDenominator == null && parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                actualMinScaleDenominator = ((WmsLayerCapabilities) parent).minScaleDenominator;
+            }
+            parent = parent.getParent();
         }
+
+        return actualMinScaleDenominator;
     }
 
     public String getName() {
-        return this.getChildCharacterValue(this.name);
-    }
-
-    protected void setName(String name) {
-        this.setChildCharacterValue(this.name, name);
+        return this.name;
     }
 
     public String getTitle() {
-        return this.getChildCharacterValue(this.title);
+        return this.title;
     }
 
-    protected void setTitle(String title) {
-        this.setChildCharacterValue(this.title, title);
+    public Set<String> getSrs() {
+        XmlModel parent = this.getParent();
+
+        while (parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                this.availableSrs.addAll(((WmsLayerCapabilities) parent).availableSrs);
+            }
+            parent = parent.getParent();
+        }
+
+        return Collections.unmodifiableSet(this.availableSrs);
     }
 
-    public Set<String> getSRS() {
-        Set<String> srs = new HashSet<>();
-        this.getAdditiveInheritedField(this.srs, srs);
-        return srs;
-    }
+    public Set<String> getCrs() {
+        XmlModel parent = this.getParent();
 
-    public Set<String> getCRS() {
-        Set<String> crs = new HashSet<>();
-        this.getAdditiveInheritedField(this.crs, crs);
-        return crs;
+        while (parent != null) {
+            if (parent instanceof WmsLayerCapabilities) {
+                this.availableCrs.addAll(((WmsLayerCapabilities) parent).availableCrs);
+            }
+            parent = parent.getParent();
+        }
+
+        return Collections.unmodifiableSet(this.availableCrs);
     }
 
     /**
      * Provides a WMS version agnostic reference system by returning the non-null reference system set. It is the
      * responsibility of the caller to understand which WMS version is being used.
      *
-     * @return
+     * @return a set of reference systems supported by this layer
      */
     public Set<String> getReferenceSystem() {
+        Set<String> rs = this.getCrs();
 
-        Set<String> rs = this.getCRS();
-
-        if (rs.size() == 0) {
-            rs = this.getSRS();
+        if (rs == null || rs.size() == 0) {
+            rs = this.getSrs();
         }
 
         return rs;
@@ -367,17 +465,16 @@ public class WmsLayerCapabilities extends XmlModel {
         if (coordSys == null)
             return false;
 
-        Set<String> crs = this.getCRS();
+        Set<String> crs = this.getCrs();
         if (crs != null && crs.contains(coordSys)) {
             return true;
         }
 
-        Set<String> srs = this.getSRS();
+        Set<String> srs = this.getSrs();
         return srs != null && srs.contains(coordSys);
     }
 
     public WmsCapabilities getServiceCapabilities() {
-
         XmlModel model = this;
 
         while (model != null) {
@@ -391,146 +488,84 @@ public class WmsLayerCapabilities extends XmlModel {
     }
 
     @Override
-    public void setField(QName keyName, Object value) {
-
-        if (keyName.equals(this.crs)) {
-            Set<String> crss = (Set<String>) this.getField(this.crs);
-            if (crss == null) {
-                crss = new HashSet<>();
-                super.setField(this.crs, crss);
-            }
-            crss.add(((XmlModel) value).getCharactersContent());
-        } else if (keyName.equals(this.srs)) {
-            Set<String> srss = (Set<String>) this.getField(this.srs);
-            if (srss == null) {
-                srss = new HashSet<>();
-                super.setField(this.srs, srss);
-            }
-            srss.add(((XmlModel) value).getCharactersContent());
-        } else if (keyName.equals(this.boundingBox)) {
-            Set<WmsBoundingBox> boundingBoxes = (Set<WmsBoundingBox>) this.getField(this.boundingBox);
-            if (boundingBoxes == null) {
-                boundingBoxes = new HashSet<>();
-                super.setField(this.boundingBox, boundingBoxes);
-            }
-            if (value instanceof WmsBoundingBox) {
-                boundingBoxes.add((WmsBoundingBox) value);
-            } else {
-                super.setField(keyName, value);
-            }
-        } else if (keyName.equals(this.layer)) {
-            List<WmsLayerCapabilities> layers = (List<WmsLayerCapabilities>) this.getField(this.layer);
-            if (layers == null) {
-                layers = new ArrayList<>();
-                super.setField(this.layer, layers);
-            }
-            if (value instanceof WmsLayerCapabilities) {
-                layers.add((WmsLayerCapabilities) value);
-            } else {
-                super.setField(keyName, value);
-            }
-        } else if (keyName.equals(this.dataUrl)) {
-            Set<WmsLayerInfoUrl> dataUrls = (Set<WmsLayerInfoUrl>) this.getField(this.dataUrl);
-            if (dataUrls == null) {
-                dataUrls = new HashSet<>();
-                super.setField(this.dataUrl, dataUrls);
-            }
-            if (value instanceof WmsLayerInfoUrl) {
-                dataUrls.add((WmsLayerInfoUrl) value);
-            } else {
-                super.setField(keyName, value);
-            }
-        } else if (keyName.equals(this.featureListUrl)) {
-            Set<WmsLayerInfoUrl> featureUrls = (Set<WmsLayerInfoUrl>) this.getField(this.featureListUrl);
-            if (featureUrls == null) {
-                featureUrls = new HashSet<>();
-                super.setField(this.dataUrl, featureUrls);
-            }
-            if (value instanceof WmsLayerInfoUrl) {
-                featureUrls.add((WmsLayerInfoUrl) value);
-            } else {
-                super.setField(keyName, value);
-            }
-        } else if (keyName.equals(this.metadataUrl)) {
-            Set<WmsLayerInfoUrl> metadataUrls = (Set<WmsLayerInfoUrl>) this.getField(this.metadataUrl);
-            if (metadataUrls == null) {
-                metadataUrls = new HashSet<>();
-                super.setField(this.metadataUrl, metadataUrls);
-            }
-            if (value instanceof WmsLayerInfoUrl) {
-                metadataUrls.add((WmsLayerInfoUrl) value);
-            } else {
-                super.setField(keyName, value);
-            }
-        } else if (keyName.equals(this.identifier)) {
-            Set<WmsLayerIdentifier> layerIdentifiers = (Set<WmsLayerIdentifier>) this.getField(this.identifier);
-            if (layerIdentifiers == null) {
-                layerIdentifiers = new HashSet<>();
-                super.setField(this.identifier, layerIdentifiers);
-            }
-            if (value instanceof WmsLayerIdentifier) {
-                layerIdentifiers.add((WmsLayerIdentifier) value);
-            } else {
-                super.setField(keyName, value);
-            }
-        } else if (keyName.equals(this.authorityUrl)) {
-            Set<WmsAuthorityUrl> authorityUrls = (Set<WmsAuthorityUrl>) this.getField(this.authorityUrl);
-            if (authorityUrls == null) {
-                authorityUrls = new HashSet<>();
-                super.setField(this.authorityUrl, authorityUrls);
-            }
-            if (value instanceof WmsLayerIdentifier) {
-                authorityUrls.add((WmsAuthorityUrl) value);
-            } else {
-                super.setField(keyName, value);
-            }
-        } else if (keyName.equals(this.attribution)) {
-            Set<WmsLayerAttribution> attributions = (Set<WmsLayerAttribution>) this.getField(this.attribution);
-            if (attributions == null) {
-                attributions = new HashSet<>();
-                super.setField(this.attribution, attributions);
-            }
-            if (value instanceof WmsLayerAttribution) {
-                attributions.add((WmsLayerAttribution) value);
-            } else {
-                super.setField(keyName, value);
-            }
-        } else if (keyName.equals(this.extent)) {
-            Set<WmsLayerExtent> extents = (Set<WmsLayerExtent>) this.getField(this.extent);
-            if (extents == null) {
-                extents = new HashSet<>();
-                super.setField(this.extent, extents);
-            }
-            if (value instanceof WmsLayerExtent) {
-                extents.add((WmsLayerExtent) value);
-            } else {
-                super.setField(keyName, value);
-            }
-        } else if (keyName.equals(this.dimension)) {
-            Set<WmsLayerDimension> dimensions = (Set<WmsLayerDimension>) this.getField(this.dimension);
-            if (dimensions == null) {
-                dimensions = new HashSet<>();
-                super.setField(this.dimension, dimensions);
-            }
-            if (value instanceof WmsLayerDimension) {
-                dimensions.add((WmsLayerDimension) value);
-            } else {
-                super.setField(keyName, value);
-            }
-        } else if (keyName.equals(this.style)) {
-            Set<WmsLayerStyle> styles = (Set<WmsLayerStyle>) this.getField(this.style);
-            if (styles == null) {
-                styles = new HashSet<>();
-                super.setField(this.style, styles);
-            }
-            if (value instanceof WmsLayerStyle) {
-                styles.add((WmsLayerStyle) value);
-            } else {
-                super.setField(keyName, value);
-            }
-        } else {
-            super.setField(keyName, value);
+    public void setField(String keyName, Object value) {
+        if (keyName.equals("Layer")) {
+            this.layers.add((WmsLayerCapabilities) value);
+        } else if (keyName.equals("Name")) {
+            this.name = ((XmlModel) value).getCharactersContent();
+        } else if (keyName.equals("Title")) {
+            this.title = ((XmlModel) value).getCharactersContent();
+        } else if (keyName.equals("Abstract")) {
+            this.description = ((XmlModel) value).getCharactersContent();
+        } else if (keyName.equals("KeywordList")) {
+            this.keywords = (WmsKeywords) value;
+        } else if (keyName.equals("Style")) {
+            this.styles.add((WmsLayerStyle) value);
+        } else if (keyName.equals("CRS")) {
+            this.availableCrs.add(((XmlModel) value).getCharactersContent());
+        } else if (keyName.equals("SRS")) {
+            this.availableSrs.add(((XmlModel) value).getCharactersContent());
+        } else if (keyName.equals("EX_GeographicBoundingBox")) {
+            this.geographicBoundingBox = (WmsGeographicBoundingBox) value;
+        } else if (keyName.equals("LatLonBoundingBox")) {
+            this.geographicBoundingBox = (WmsGeographicBoundingBox) value;
+        } else if (keyName.equals("BoundingBox")) {
+            this.boundingBoxes.add((WmsBoundingBox) value);
+        } else if (keyName.equals("Dimension")) {
+            this.dimensions.add((WmsLayerDimension) value);
+        } else if (keyName.equals("Extent")) {
+            this.extents.add((WmsLayerDimension) value);
+        } else if (keyName.equals("Attribution")) {
+            this.attribution = (WmsLayerAttribution) value;
+        } else if (keyName.equals("AuthorityURL")) {
+            this.authorityUrls.add((WmsAuthorityUrl) value);
+        } else if (keyName.equals("Identifier")) {
+            this.identifiers.add((WmsLayerIdentifier) value);
+        } else if (keyName.equals("MetadataURL")) {
+            this.metadataUrls.add((WmsLayerInfoUrl) value);
+        } else if (keyName.equals("DataURL")) {
+            this.dataUrls.add((WmsLayerInfoUrl) value);
+        } else if (keyName.equals("FeatureListURL")) {
+            this.featureListUrls.add((WmsLayerInfoUrl) value);
+        } else if (keyName.equals("MinScaleDenominator")) {
+            this.minScaleDenominator = ((DoubleModel) value).getValue();
+        } else if (keyName.equals("MaxScaleDenominator")) {
+            this.maxScaleDenominator = ((DoubleModel) value).getValue();
+        } else if (keyName.equals("ScaleHint")) {
+            XmlModel scaleHint = (XmlModel) value;
+            this.minScaleHint = scaleHint.getDoubleAttributeValue(new QName("", "min"), false);
+            this.maxScaleHint = scaleHint.getDoubleAttributeValue(new QName("", "max"), false);
+        } else if (keyName.equals("queryable")) {
+            this.queryable = this.parseBoolean(value);
+        } else if (keyName.equals("cascaded")) {
+            this.cascaded = this.parseInteger(value);
+        } else if (keyName.equals("opaque")) {
+            this.opaque = this.parseBoolean(value);
+        } else if (keyName.equals("noSubsets")) {
+            this.noSubsets = this.parseBoolean(value);
+        } else if (keyName.equals("fixedWidth")) {
+            this.fixedWidth = this.parseInteger(value);
+        } else if (keyName.equals("fixedHeight")) {
+            this.fixedHeight = this.parseInteger(value);
         }
+    }
+
+    protected Boolean parseBoolean(Object value) {
+        try {
+            return Boolean.parseBoolean(value.toString());
+        } catch (Exception e) {
+            Logger.makeMessage("WmsLayerCapabilities", "parseDouble", e.toString());
+        }
+        return null;
+    }
+
+    protected Integer parseInteger(Object value) {
+        try {
+            return Integer.parseInt(value.toString());
+        } catch (Exception e) {
+            Logger.makeMessage("WmsLayerCapabilities", "parseInteger", e.toString());
+        }
+        return null;
     }
 
     @Override

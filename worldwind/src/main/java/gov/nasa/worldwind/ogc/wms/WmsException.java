@@ -11,22 +11,22 @@ import java.util.Set;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class WmsKeywords extends XmlModel {
+public class WmsException extends XmlModel {
 
-    protected Set<String> keywords = new LinkedHashSet<>();
+    protected Set<String> exceptionFormats = new LinkedHashSet<>();
 
-    public WmsKeywords(String namespaceUri) {
+    public WmsException(String namespaceUri) {
         super(namespaceUri);
     }
 
-    public Set<String> getKeywords() {
-        return Collections.unmodifiableSet(keywords);
+    public Set<String> getExceptionFormats() {
+        return Collections.unmodifiableSet(this.exceptionFormats);
     }
 
     @Override
     public void setField(String keyName, Object value) {
-        if (keyName.equals("Keyword")) {
-            this.keywords.add(((XmlModel) value).getCharactersContent());
+        if (keyName.equals("Format")) {
+            this.exceptionFormats.add(((WmsFormat) value).getFormat());
         }
     }
 }

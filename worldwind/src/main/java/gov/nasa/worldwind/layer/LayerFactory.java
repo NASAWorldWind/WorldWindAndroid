@@ -51,7 +51,7 @@ public class LayerFactory {
 
     protected static final double DEFAULT_WMS_RADIANS_PER_PIXEL = 10.0 / WorldWind.WGS84_SEMI_MAJOR_AXIS;
 
-    protected List<String> compatibleImageFormats = Arrays.asList("image/png", "image/jpg", "image/gif", "image/bmp");
+    protected List<String> compatibleImageFormats = Arrays.asList("image/png", "image/jpg", "image/jpeg", "image/gif", "image/bmp");
 
     public Layer createFromGeoPackage(String pathName, Callback callback) {
         if (pathName == null) {
@@ -222,7 +222,6 @@ public class LayerFactory {
     }
 
     protected void createFromWmsAsync(String serviceAddress, List<String> layerNames, Layer layer, Callback callback) throws Exception {
-
         // Parse and read the WMS Capabilities document at the provided service address
         WmsCapabilities wmsCapabilities = retrieveWmsCapabilities(serviceAddress);
         List<WmsLayerCapabilities> layerCapabilities = parseLayerNames(wmsCapabilities, layerNames);
@@ -235,7 +234,6 @@ public class LayerFactory {
     }
 
     protected void createWmsLayer(List<WmsLayerCapabilities> layerCapabilities, Layer layer, Callback callback) {
-
         WmsCapabilities wmsCapabilities = layerCapabilities.iterator().next().getServiceCapabilities();
 
         // Check if the server supports multiple layer request
@@ -279,7 +277,6 @@ public class LayerFactory {
     }
 
     protected WmsCapabilities retrieveWmsCapabilities(String serviceAddress) throws Exception {
-
         InputStream inputStream = null;
         WmsCapabilities wmsCapabilities = null;
         try {
@@ -312,7 +309,6 @@ public class LayerFactory {
     }
 
     protected List<WmsLayerCapabilities> parseLayerNames(WmsCapabilities wmsCapabilities, List<String> layerNames) {
-
         List<WmsLayerCapabilities> layers = new ArrayList<>();
         for (String layerName : layerNames) {
             WmsLayerCapabilities layerCapabilities = wmsCapabilities.getLayerByName(layerName);
@@ -325,7 +321,6 @@ public class LayerFactory {
     }
 
     protected WmsLayerConfig getLayerConfigFromWmsCapabilities(List<WmsLayerCapabilities> layerCapabilities) {
-
         // Construct the WmsTiledImage renderable from the WMS Capabilities properties
         WmsLayerConfig wmsLayerConfig = new WmsLayerConfig();
         WmsCapabilities wmsCapabilities = layerCapabilities.iterator().next().getServiceCapabilities();
@@ -395,7 +390,6 @@ public class LayerFactory {
     }
 
     protected LevelSetConfig getLevelSetConfigFromWmsCapabilities(List<WmsLayerCapabilities> layerCapabilities) {
-
         LevelSetConfig levelSetConfig = new LevelSetConfig();
 
         double minScaleDenominator = Double.MAX_VALUE;

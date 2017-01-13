@@ -5,137 +5,113 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
+import java.util.Collections;
 import java.util.Set;
 
-import javax.xml.namespace.QName;
-
-import gov.nasa.worldwind.util.xml.IntegerModel;
+import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsServiceInformation extends XmlModel {
 
-    protected QName name;
+    protected String name;
 
-    protected QName title;
+    protected String title;
 
-    protected QName abstractDescription;
+    protected String description;
 
-    protected QName fees;
+    protected String fees;
 
-    protected QName accessConstraints;
+    protected String accessConstraints;
 
-    protected QName keywordList;
+    protected WmsKeywords keywords;
 
-    protected QName keyword;
+    protected WmsOnlineResource onlineResource;
 
-    protected QName onlineResource;
+    protected WmsContactInformation contactInformation;
 
-    protected QName contactInformation;
+    protected Integer maxWidth;
 
-    protected QName maxWidth;
+    protected Integer maxHeight;
 
-    protected QName maxHeight;
-
-    protected QName layerLimit;
+    protected Integer layerLimit;
 
     public WmsServiceInformation(String namespaceUri) {
         super(namespaceUri);
-
-        this.initialize();
-    }
-
-    private void initialize() {
-        this.name = new QName(this.getNamespaceUri(), "Name");
-        this.title = new QName(this.getNamespaceUri(), "Title");
-        this.abstractDescription = new QName(this.getNamespaceUri(), "Abstract");
-        this.fees = new QName(this.getNamespaceUri(), "Fees");
-        this.accessConstraints = new QName(this.getNamespaceUri(), "AccessConstraints");
-        this.keywordList = new QName(this.getNamespaceUri(), "KeywordList");
-        this.keyword = new QName(this.getNamespaceUri(), "Keyword");
-        this.onlineResource = new QName(this.getNamespaceUri(), "OnlineResource");
-        this.contactInformation = new QName(this.getNamespaceUri(), "ContactInformation");
-        this.maxWidth = new QName(this.getNamespaceUri(), "MaxWidth");
-        this.maxHeight = new QName(this.getNamespaceUri(), "MaxHeight");
-        this.layerLimit = new QName(this.getNamespaceUri(), "LayerLimit");
     }
 
     public WmsContactInformation getContactInformation() {
-        return (WmsContactInformation) this.getField(this.contactInformation);
-    }
-
-    protected void setContactInformation(WmsContactInformation contactInformation) {
-        this.setField(this.contactInformation, contactInformation);
+        return this.contactInformation;
     }
 
     public WmsOnlineResource getOnlineResource() {
-        return (WmsOnlineResource) this.getField(this.onlineResource);
-    }
-
-    protected void setOnlineResource(WmsOnlineResource onlineResource) {
-        this.setField(this.onlineResource, onlineResource);
+        return this.onlineResource;
     }
 
     public Set<String> getKeywords() {
-        return ((WmsKeywords) this.getField(this.keywordList)).getKeywords();
+        if (this.keywords != null) {
+            return this.keywords.getKeywords();
+        } else {
+            return Collections.emptySet();
+        }
     }
-
-//    protected void setKeywords(Set<String> keywords) {
-//        this.keywords = keywords;
-//    }
 
     public String getAccessConstraints() {
-        return this.getChildCharacterValue(this.accessConstraints);
-    }
-
-    protected void setAccessConstraints(String accessConstraints) {
-        this.setChildCharacterValue(this.accessConstraints, accessConstraints);
+        return this.accessConstraints;
     }
 
     public String getFees() {
-        return this.getChildCharacterValue(this.fees);
-    }
-
-    protected void setFees(String fees) {
-        this.setChildCharacterValue(this.fees, fees);
+        return this.fees;
     }
 
     public String getServiceAbstract() {
-        return this.getChildCharacterValue(this.abstractDescription);
-    }
-
-    protected void setServiceAbstract(String serviceAbstract) {
-        this.setChildCharacterValue(this.abstractDescription, serviceAbstract);
+        return this.description;
     }
 
     public String getServiceTitle() {
-        return this.getChildCharacterValue(this.title);
-    }
-
-    protected void setServiceTitle(String serviceTitle) {
-        this.setChildCharacterValue(this.title, serviceTitle);
+        return this.title;
     }
 
     public String getServiceName() {
-        return this.getChildCharacterValue(this.name);
-    }
-
-    protected void setServiceName(String serviceName) {
-        this.setChildCharacterValue(this.name, serviceName);
+        return this.name;
     }
 
     public Integer getMaxWidth() {
-        IntegerModel value = (IntegerModel) this.getField(this.maxWidth);
-        return value != null ? value.getValue() : null;
+        return this.maxWidth;
     }
 
     public Integer getMaxHeight() {
-        IntegerModel value = (IntegerModel) this.getField(this.maxHeight);
-        return value != null ? value.getValue() : null;
+        return this.maxHeight;
     }
 
     public Integer getLayerLimit() {
-        IntegerModel value = (IntegerModel) this.getField(this.layerLimit);
-        return value != null ? value.getValue() : null;
+        return this.layerLimit;
+    }
+
+    @Override
+    public void setField(String keyName, Object value) {
+        if (keyName.equals("Name")) {
+            this.name = ((XmlModel) value).getCharactersContent();
+        } else if (keyName.equals("Title")) {
+            this.title = ((XmlModel) value).getCharactersContent();
+        } else if (keyName.equals("Abstract")) {
+            this.description = ((XmlModel) value).getCharactersContent();
+        } else if (keyName.equals("KeywordList")) {
+            this.keywords = (WmsKeywords) value;
+        } else if (keyName.equals("OnlineResource")) {
+            this.onlineResource = (WmsOnlineResource) value;
+        } else if (keyName.equals("ContactInformation")) {
+            this.contactInformation = (WmsContactInformation) value;
+        } else if (keyName.equals("Fees")) {
+            this.fees = ((XmlModel) value).getCharactersContent();
+        } else if (keyName.equals("AccessConstraints")) {
+            this.accessConstraints = ((XmlModel) value).getCharactersContent();
+        } else if (keyName.equals("MaxWidth")) {
+            this.maxWidth = this.parseInt(value);
+        } else if (keyName.equals("MaxHeight")) {
+            this.maxHeight = this.parseInt(value);
+        } else if (keyName.equals("LayerLimit")) {
+            this.layerLimit = this.parseInt(value);
+        }
     }
 
     @Override
@@ -168,5 +144,14 @@ public class WmsServiceInformation extends XmlModel {
             }
         }
         sb.append("\n");
+    }
+
+    protected Integer parseInt(Object value) {
+        try {
+            return Integer.parseInt(((XmlModel) value).getCharactersContent());
+        } catch (Exception e) {
+            Logger.makeMessage("WmsServiceInformation", "parseInt", e.toString());
+        }
+        return null;
     }
 }
