@@ -5,26 +5,37 @@
 
 package gov.nasa.worldwind.util.xml;
 
+import gov.nasa.worldwind.util.Logger;
+
 public class IntegerModel extends XmlModel {
+
+    protected Integer value;
 
     public IntegerModel(String namespaceUri) {
         super(namespaceUri);
     }
 
     public Integer getValue() {
-
-        String textValue = this.getField(XmlModel.CHARACTERS_CONTENT).toString();
-
-        if (textValue == null) {
-            return null;
-        } else {
-            try {
-                return Integer.parseInt(textValue);
-            } catch (NumberFormatException ignore) {
-
-            }
-        }
-
-        return null;
+        return this.value;
     }
+
+    @Override
+    protected void setText(String value) {
+        try {
+            this.value = Integer.parseInt(value);
+        } catch (NumberFormatException ex) {
+            Logger.logMessage(Logger.ERROR, "IntegerModel", "setField", "Parsing error " + ex.toString());
+        }
+    }
+
+    //    @Override
+//    protected void setField(String keyName, Object value) {
+//        if (keyName.equals(XmlModel.CHARACTERS_CONTENT)) {
+//            try {
+//                this.value = Integer.parseInt(value.toString());
+//            } catch (NumberFormatException ex) {
+//                Logger.logMessage(Logger.ERROR, "IntegerModel", "setField", "Parsing error " + ex.toString());
+//            }
+//        }
+//    }
 }

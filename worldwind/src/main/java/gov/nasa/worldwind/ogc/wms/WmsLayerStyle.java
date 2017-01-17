@@ -8,6 +8,7 @@ package gov.nasa.worldwind.ogc.wms;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import gov.nasa.worldwind.util.xml.TextModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsLayerStyle extends XmlModel {
@@ -55,11 +56,11 @@ public class WmsLayerStyle extends XmlModel {
     @Override
     public void setField(String keyName, Object value) {
         if (keyName.equals("Name")) {
-            this.name = ((XmlModel) value).getCharactersContent();
+            this.name = ((TextModel) value).getValue();
         } else if (keyName.equals("Title")) {
-            this.title = ((XmlModel) value).getCharactersContent();
+            this.title = ((TextModel) value).getValue();
         } else if (keyName.equals("Abstract")) {
-            this.description = ((XmlModel) value).getCharactersContent();
+            this.description = ((TextModel) value).getValue();
         } else if (keyName.equals("LegendURL")) {
             this.legendUrl.add((WmsLogoUrl) value);
         } else if (keyName.equals("StyleSheetURL")) {

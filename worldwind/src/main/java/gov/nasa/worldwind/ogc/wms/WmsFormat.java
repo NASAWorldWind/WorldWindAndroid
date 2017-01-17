@@ -20,9 +20,14 @@ public class WmsFormat extends XmlModel {
     }
 
     @Override
-    public void setField(String keyName, Object value) {
-        if (keyName.equals(XmlModel.CHARACTERS_CONTENT)) {
-            this.format = value.toString().trim().toLowerCase();
-        }
+    protected void setText(String value) {
+        this.format = value.trim().toLowerCase();
     }
+//
+//    @Override
+//    public void setField(String keyName, Object value) {
+//        if (keyName.equals(XmlModel.CHARACTERS_CONTENT)) {
+//            this.format = value.toString().trim().toLowerCase();
+//        }
+//    }
 }

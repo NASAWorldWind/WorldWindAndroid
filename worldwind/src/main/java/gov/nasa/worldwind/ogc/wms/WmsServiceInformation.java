@@ -8,7 +8,8 @@ package gov.nasa.worldwind.ogc.wms;
 import java.util.Collections;
 import java.util.Set;
 
-import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.xml.IntegerModel;
+import gov.nasa.worldwind.util.xml.TextModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsServiceInformation extends XmlModel {
@@ -90,11 +91,11 @@ public class WmsServiceInformation extends XmlModel {
     @Override
     public void setField(String keyName, Object value) {
         if (keyName.equals("Name")) {
-            this.name = ((XmlModel) value).getCharactersContent();
+            this.name = ((TextModel) value).getValue();
         } else if (keyName.equals("Title")) {
-            this.title = ((XmlModel) value).getCharactersContent();
+            this.title = ((TextModel) value).getValue();
         } else if (keyName.equals("Abstract")) {
-            this.description = ((XmlModel) value).getCharactersContent();
+            this.description = ((TextModel) value).getValue();
         } else if (keyName.equals("KeywordList")) {
             this.keywords = (WmsKeywords) value;
         } else if (keyName.equals("OnlineResource")) {
@@ -102,15 +103,18 @@ public class WmsServiceInformation extends XmlModel {
         } else if (keyName.equals("ContactInformation")) {
             this.contactInformation = (WmsContactInformation) value;
         } else if (keyName.equals("Fees")) {
-            this.fees = ((XmlModel) value).getCharactersContent();
+            this.fees = ((TextModel) value).getValue();
         } else if (keyName.equals("AccessConstraints")) {
-            this.accessConstraints = ((XmlModel) value).getCharactersContent();
+            this.accessConstraints = ((TextModel) value).getValue();
         } else if (keyName.equals("MaxWidth")) {
-            this.maxWidth = this.parseInt(value);
+            IntegerModel integerModel = (IntegerModel) value;
+            this.maxWidth = integerModel.getValue();
         } else if (keyName.equals("MaxHeight")) {
-            this.maxHeight = this.parseInt(value);
+            IntegerModel integerModel = (IntegerModel) value;
+            this.maxHeight = integerModel.getValue();
         } else if (keyName.equals("LayerLimit")) {
-            this.layerLimit = this.parseInt(value);
+            IntegerModel integerModel = (IntegerModel) value;
+            this.layerLimit = integerModel.getValue();
         }
     }
 
@@ -144,14 +148,5 @@ public class WmsServiceInformation extends XmlModel {
             }
         }
         sb.append("\n");
-    }
-
-    protected Integer parseInt(Object value) {
-        try {
-            return Integer.parseInt(((XmlModel) value).getCharactersContent());
-        } catch (Exception e) {
-            Logger.makeMessage("WmsServiceInformation", "parseInt", e.toString());
-        }
-        return null;
     }
 }

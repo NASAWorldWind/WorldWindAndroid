@@ -5,8 +5,7 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
-import javax.xml.namespace.QName;
-
+import gov.nasa.worldwind.util.xml.TextModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsContactInformation extends XmlModel {
@@ -60,17 +59,17 @@ public class WmsContactInformation extends XmlModel {
     @Override
     public void setField(String keyName, Object value) {
         if (keyName.equals("ContactPosition")) {
-            this.contactPosition = ((XmlModel) value).getCharactersContent();
+            this.contactPosition = ((TextModel) value).getValue();
         } else if (keyName.equals("ContactVoiceTelephone")) {
-            this.contactVoiceTelephone = ((XmlModel) value).getCharactersContent();
+            this.contactVoiceTelephone = ((TextModel) value).getValue();
         } else if (keyName.equals("ContactFacsimileNumber")) {
-            this.contactFacsimileTelephone = ((XmlModel) value).getCharactersContent();
+            this.contactFacsimileTelephone = ((TextModel) value).getValue();
         } else if (keyName.equals("ContactElectronicMailAddress")) {
-            this.contactElectronicMailAddress = ((XmlModel) value).getCharactersContent();
+            this.contactElectronicMailAddress = ((TextModel) value).getValue();
         } else if (keyName.equals("ContactPersonPrimary")) {
-            XmlModel xmlModel = (XmlModel) value;
-            this.contactPerson = xmlModel.getChildCharacterValue(new QName(this.getNamespaceUri(), "ContactPerson"));
-            this.contactOrganization = xmlModel.getChildCharacterValue(new QName(this.getNamespaceUri(), "ContactOrganization"));
+            WmsContactPersonPrimary contactPersonPrimary = (WmsContactPersonPrimary) value;
+            this.contactPerson = contactPersonPrimary.person;
+            this.contactOrganization = contactPersonPrimary.organization;
         } else if (keyName.equals("ContactAddress")) {
             this.contactAddress = (WmsAddress) value;
         }

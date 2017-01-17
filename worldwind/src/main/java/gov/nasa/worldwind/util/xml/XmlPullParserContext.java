@@ -60,7 +60,7 @@ public class XmlPullParserContext {
 
         // If no model is specified use the default class and the provided QName namespace
         if (model == null) {
-            return new XmlModel(eventName.getNamespaceURI());
+            return this.getUnrecognizedElementModel();
         }
 
         try {
@@ -84,7 +84,7 @@ public class XmlPullParserContext {
     }
 
     public XmlModel getUnrecognizedElementModel() {
-        return new XmlModel(this.namespaceUri);
+        return new DefaultXmlModel(this.namespaceUri);
     }
 
     public boolean isStartElement(QName event) throws XmlPullParserException, IOException {

@@ -11,11 +11,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.namespace.QName;
-
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.xml.DoubleModel;
+import gov.nasa.worldwind.util.xml.TextModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsLayerCapabilities extends XmlModel {
@@ -492,19 +491,19 @@ public class WmsLayerCapabilities extends XmlModel {
         if (keyName.equals("Layer")) {
             this.layers.add((WmsLayerCapabilities) value);
         } else if (keyName.equals("Name")) {
-            this.name = ((XmlModel) value).getCharactersContent();
+            this.name = ((TextModel) value).getValue();
         } else if (keyName.equals("Title")) {
-            this.title = ((XmlModel) value).getCharactersContent();
+            this.title = ((TextModel) value).getValue();
         } else if (keyName.equals("Abstract")) {
-            this.description = ((XmlModel) value).getCharactersContent();
+            this.description = ((TextModel) value).getValue();
         } else if (keyName.equals("KeywordList")) {
             this.keywords = (WmsKeywords) value;
         } else if (keyName.equals("Style")) {
             this.styles.add((WmsLayerStyle) value);
         } else if (keyName.equals("CRS")) {
-            this.availableCrs.add(((XmlModel) value).getCharactersContent());
+            this.availableCrs.add(((TextModel) value).getValue());
         } else if (keyName.equals("SRS")) {
-            this.availableSrs.add(((XmlModel) value).getCharactersContent());
+            this.availableSrs.add(((TextModel) value).getValue());
         } else if (keyName.equals("EX_GeographicBoundingBox")) {
             this.geographicBoundingBox = (WmsGeographicBoundingBox) value;
         } else if (keyName.equals("LatLonBoundingBox")) {
@@ -532,9 +531,9 @@ public class WmsLayerCapabilities extends XmlModel {
         } else if (keyName.equals("MaxScaleDenominator")) {
             this.maxScaleDenominator = ((DoubleModel) value).getValue();
         } else if (keyName.equals("ScaleHint")) {
-            XmlModel scaleHint = (XmlModel) value;
-            this.minScaleHint = scaleHint.getDoubleAttributeValue(new QName("", "min"), false);
-            this.maxScaleHint = scaleHint.getDoubleAttributeValue(new QName("", "max"), false);
+            WmsScaleHint scaleHint = (WmsScaleHint) value;
+            this.minScaleHint = scaleHint.min;
+            this.maxScaleHint = scaleHint.max;
         } else if (keyName.equals("queryable")) {
             this.queryable = this.parseBoolean(value);
         } else if (keyName.equals("cascaded")) {

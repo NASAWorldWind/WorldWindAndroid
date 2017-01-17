@@ -5,6 +5,7 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
+import gov.nasa.worldwind.util.xml.TextModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsLayerAttribution extends XmlModel {
@@ -34,7 +35,7 @@ public class WmsLayerAttribution extends XmlModel {
     @Override
     public void setField(String keyName, Object value) {
         if (keyName.equals("Title")) {
-            this.title = ((XmlModel) value).getCharactersContent();
+            this.title = ((TextModel) value).getValue();
         } else if (keyName.equals("OnlineResource")) {
             this.onlineResource = (WmsOnlineResource) value;
         } else if (keyName.equals("LogoURL")) {

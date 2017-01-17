@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import gov.nasa.worldwind.util.xml.TextModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsKeywords extends XmlModel {
@@ -26,7 +27,7 @@ public class WmsKeywords extends XmlModel {
     @Override
     public void setField(String keyName, Object value) {
         if (keyName.equals("Keyword")) {
-            this.keywords.add(((XmlModel) value).getCharactersContent());
+            this.keywords.add(((TextModel) value).getValue());
         }
     }
 }

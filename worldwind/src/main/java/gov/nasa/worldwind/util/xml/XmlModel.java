@@ -9,23 +9,18 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.xml.namespace.QName;
 
 import gov.nasa.worldwind.util.Logger;
 
-public class XmlModel {
-
-    protected static final String CHARACTERS_CONTENT = "CharactersContent";
+public abstract class XmlModel {
 
     protected String namespaceUri = "";
 
-    protected Map<String, Object> fields;
-
     protected XmlModel parent;
+
+    protected StringBuilder characterContent;
 
     public XmlModel(String namespaceUri) {
         this.namespaceUri = namespaceUri;
@@ -53,7 +48,6 @@ public class XmlModel {
         }
 
         this.doParseEventAttributes(ctx);
-        // eliminated the symbol table and the exception call
 
         // Capture the start element name
         String startElementName = xpp.getName();
@@ -63,6 +57,9 @@ public class XmlModel {
             if (xpp.getEventType() == XmlPullParser.END_TAG
                 && xpp.getName() != null
                 && xpp.getName().equals(startElementName)) {
+                if (this.characterContent != null) {
+                    this.setText(this.characterContent.toString());
+                }
                 return this;
             }
 
@@ -113,20 +110,17 @@ public class XmlModel {
             s = s.replaceAll("\n", "").trim();
         }
 
-        StringBuilder sb = (StringBuilder) this.getField(CHARACTERS_CONTENT);
-        if (sb != null) {
-            sb.append(s);
+        if (this.characterContent == null) {
+            this.characterContent = new StringBuilder(s);
         } else {
-            this.setField(CHARACTERS_CONTENT, new StringBuilder(s));
+            this.characterContent.append(s);
         }
-
     }
 
     protected void doParseEventContent(XmlPullParserContext ctx) throws XmlPullParserException, IOException {
 
         XmlPullParser xpp = ctx.getParser();
 
-        // Override in subclass to parse an event's sub-elements.
         if (xpp.getEventType() == XmlPullParser.START_TAG) {
 
             QName qName = new QName(xpp.getNamespace(), xpp.getName());
@@ -134,11 +128,10 @@ public class XmlModel {
 
             if (model == null) {
 
-                // TODO log parser not found
+                Logger.logMessage(Logger.INFO, "XmlModel", "doParseEventContent", "Suitable model not registered");
 
                 model = ctx.getUnrecognizedElementModel();
 
-                // If the namespace of the context is updated, this registration will be lost
                 ctx.registerParsableModel(qName, model);
             }
 
@@ -148,19 +141,11 @@ public class XmlModel {
                 if (o == null) {
                     return;
                 } else {
-                    this.doAddEventContent(o, ctx);
+                    this.setField(xpp.getName(), o);
                 }
             }
 
         }
-
-    }
-
-    protected void doAddEventContent(Object o, XmlPullParserContext ctx) {
-
-        XmlPullParser xpp = ctx.getParser();
-
-        this.setField(new QName(xpp.getNamespace(), xpp.getName()), o);
 
     }
 
@@ -172,205 +157,12 @@ public class XmlModel {
         return this.parent;
     }
 
-    public void setField(QName keyName, Object value)
-    {
-        this.setField(keyName.getLocalPart(), value);
+    protected void setText(String value) {
+
     }
 
-    public void setField(String keyName, Object value)
-    {
-        if (this.fields == null)
-            this.fields = new HashMap<>();
+    protected void setField(String keyName, Object value) {
 
-        this.fields.put(keyName, value);
-    }
-
-    public void setFields(Map<String, Object> newFields)
-    {
-        if (this.fields == null)
-            this.fields = new HashMap<>();
-
-        for (Map.Entry<String, Object> nf : newFields.entrySet())
-        {
-            this.setField(nf.getKey(), nf.getValue());
-        }
-    }
-
-    public Object getField(QName keyName)
-    {
-        return this.fields != null ? this.getField(keyName.getLocalPart()) : null;
-    }
-
-    public Object getField(String keyName)
-    {
-        return this.fields != null ? this.fields.get(keyName) : null;
-    }
-
-    /**
-     * Searches the present level for the provided {@link QName} and returns. If the value isn't present on the current
-     * level, searches up the tree for a matching value and returns. If no value is found, null is returned. This method
-     * should be used when an inherited value that may not be present at the current level is requested.
-     *
-     * @param keyName the qualified name of the value to retrieve
-     *
-     * @return the value of the field at this level, or this first instance of the value while traversing up the tree
-     */
-    protected Object getInheritedField(QName keyName) {
-
-        XmlModel model = this;
-        Object value = null;
-
-        while (model != null && value == null) {
-            value = model.getField(keyName);
-            model = model.getParent();
-        }
-
-        return value;
-    }
-
-    protected <T> Collection<T> getAdditiveInheritedField(QName keyName, Collection<T> values) {
-
-        XmlModel model = this;
-        Object value = null;
-
-        while (model != null) {
-            value = model.getField(keyName);
-            if (value instanceof Collection) {
-                values.addAll((Collection<? extends T>) value);
-            }
-            model = model.getParent();
-        }
-
-        return values;
-    }
-
-    public boolean hasField(QName keyName)
-    {
-        return this.hasField(keyName.getLocalPart());
-    }
-
-    public boolean hasField(String keyName)
-    {
-        return this.fields != null && this.fields.containsKey(keyName);
-    }
-
-    public void removeField(String keyName)
-    {
-        if (this.fields != null)
-            this.fields.remove(keyName);
-    }
-
-    public boolean hasFields()
-    {
-        return this.fields != null;
-    }
-
-    public Map<String, Object> getFields()
-    {
-        return this.fields;
-    }
-
-    public String getCharactersContent() {
-        Object o = this.getField(CHARACTERS_CONTENT);
-        return o != null ? o.toString() : null;
-    }
-
-    public String getChildCharacterValue(QName name) {
-
-        XmlModel model = (XmlModel) this.getField(name);
-        if (model != null) {
-            Object o = model.getField(XmlModel.CHARACTERS_CONTENT);
-            if (o != null) {
-                return o.toString();
-            }
-        }
-
-        return null;
-    }
-
-    protected void setChildCharacterValue(QName name, String value) {
-
-        XmlModel model = (XmlModel) this.getField(name);
-
-        if (model != null) {
-            model.setField(XmlModel.CHARACTERS_CONTENT, value);
-        } else {
-            model = new XmlModel(this.getNamespaceUri());
-            model.setField(XmlModel.CHARACTERS_CONTENT, value);
-            this.setField(name, model);
-        }
-    }
-
-    public Double getDoubleAttributeValue(QName name, boolean inherited) {
-
-        Object o;
-        if (inherited) {
-            o = this.getInheritedField(name);
-        } else {
-            o = this.getField(name);
-        }
-
-        if (o != null) {
-            if (o instanceof StringBuilder || o instanceof String) {
-                try {
-                    return Double.parseDouble(o.toString());
-                } catch (Exception ignore) {
-                    return null;
-                }
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-
-    public Integer getIntegerAttributeValue(QName name, boolean inherited) {
-
-        Object o;
-        if (inherited) {
-            o = this.getInheritedField(name);
-        } else {
-            o = this.getField(name);
-        }
-
-        if (o != null) {
-            if (o instanceof StringBuilder || o instanceof String) {
-                try {
-                    return Integer.parseInt(o.toString());
-                } catch (Exception ignore) {
-                    return null;
-                }
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-
-    public Boolean getBooleanAttributeValue(QName name, boolean inherited) {
-
-        Object o;
-        if (inherited) {
-            o = this.getInheritedField(name);
-        } else {
-            o = this.getField(name);
-        }
-
-        if (o != null) {
-            if (o instanceof StringBuilder || o instanceof String) {
-                try {
-                    return Boolean.parseBoolean(o.toString());
-                } catch (Exception ignore) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
     }
 
 }

@@ -26,11 +26,14 @@ public class WmsLayerIdentifier extends XmlModel {
     }
 
     @Override
+    protected void setText(String value) {
+        this.identifier = value;
+    }
+
+    @Override
     public void setField(String keyName, Object value) {
         if (keyName.equals("authority")) {
             this.authority = value.toString();
-        } else if (keyName.equals(XmlModel.CHARACTERS_CONTENT)) {
-            this.identifier = value.toString();
         }
     }
 }
