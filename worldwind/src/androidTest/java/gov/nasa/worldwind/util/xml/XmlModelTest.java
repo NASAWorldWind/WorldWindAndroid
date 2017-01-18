@@ -10,8 +10,8 @@ import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.runner.RunWith;
 
-@RunWith(AndroidJUnit4.class)
-@SmallTest
+//@RunWith(AndroidJUnit4.class)
+//@SmallTest
 public class XmlModelTest {
 
     public static final String NAMESPACE = "";
