@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwind.util.xml;
 
-import android.util.Log;
 import android.util.Xml;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -13,7 +12,6 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +23,7 @@ public class XmlPullParserContext {
 
     protected XmlPullParser parser;
 
-    protected Map<QName, XmlModel> parsableModels = new HashMap<>();
+    protected Map<QName, Class<? extends XmlModel>> parsableModels = new HashMap<>();
 
     public XmlPullParserContext() {
     }
@@ -47,19 +45,17 @@ public class XmlPullParserContext {
      * @return the new parser, or null if no parser has been registered for the specified element name.
      */
     public XmlModel createParsableModel(QName eventName) {
-        XmlModel model = this.parsableModels.get(eventName);
+        Class<? extends XmlModel> clazz = this.parsableModels.get(eventName);
 
-        // If no model is specified use the default class and the provided QName namespace
-        if (model == null) {
-            model = this.getUnrecognizedModel();
+        if (clazz == null) {
+            clazz = this.getUnrecognizedModel(); // use the unrecognized model
         }
 
         try {
-            // create a duplicate instance using reflective utilities
-            return model.getClass().newInstance();
+            return clazz.newInstance(); // create a new instance using the default constructor
         } catch (Exception e) {
             Logger.logMessage(Logger.ERROR, "XmlPullParserContext", "createParsableModel",
-                "Exception invoking default constructor for " + model.getClass().getName(), e);
+                "Exception invoking default constructor for " + clazz.getName(), e);
         }
 
         return null;
@@ -69,12 +65,12 @@ public class XmlPullParserContext {
      * Registers a parser for a specified element name. A parser of the same type and namespace is returned when is
      * called for the same element name.
      */
-    public void registerParsableModel(QName elementName, XmlModel parsableModel) {
+    public void registerParsableModel(QName elementName, Class<? extends XmlModel> parsableModel) {
         this.parsableModels.put(elementName, parsableModel);
     }
 
-    protected XmlModel getUnrecognizedModel() {
-        return new DefaultXmlModel();
+    protected Class<? extends XmlModel> getUnrecognizedModel() {
+        return DefaultXmlModel.class;
     }
 
     public boolean isStartElement(QName event) throws XmlPullParserException, IOException {

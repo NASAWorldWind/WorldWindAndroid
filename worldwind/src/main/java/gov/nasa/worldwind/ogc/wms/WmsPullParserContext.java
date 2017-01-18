@@ -20,91 +20,90 @@ public class WmsPullParserContext extends XmlPullParserContext {
     }
 
     protected void registerParsableModels(String namespaceUri) {
-        // Wms Element Registration
-        this.registerParsableModel(new QName(namespaceUri, "Abstract"), new TextModel());
-        this.registerParsableModel(new QName(namespaceUri, "AccessConstraints"), new TextModel());
-        this.registerParsableModel(new QName(namespaceUri, "Address"), new TextModel());
-        this.registerParsableModel(new QName(namespaceUri, "AddressType"), new TextModel());
-        this.registerParsableModel(new QName(namespaceUri, "Attribution"), new WmsLayerAttribution());
-        this.registerParsableModel(new QName(namespaceUri, "AuthorityURL"), new WmsAuthorityUrl());
+        this.registerParsableModel(new QName(namespaceUri, "Abstract"), TextModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "AccessConstraints"), TextModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "Address"), TextModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "AddressType"), TextModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "Attribution"), WmsLayerAttribution.class);
+        this.registerParsableModel(new QName(namespaceUri, "AuthorityURL"), WmsAuthorityUrl.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "BoundingBox"), new WmsBoundingBox());
+        this.registerParsableModel(new QName(namespaceUri, "BoundingBox"), WmsBoundingBox.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "Capability"), new WmsCapabilityInformation());
-        this.registerParsableModel(new QName(namespaceUri, "City"), new TextModel());
-        this.registerParsableModel(new QName(namespaceUri, "ContactAddress"), new WmsAddress());
-        this.registerParsableModel(new QName(namespaceUri, "ContactElectronicMailAddress"), new TextModel());
-        this.registerParsableModel(new QName(namespaceUri, "ContactInformation"), new WmsContactInformation());
-        this.registerParsableModel(new QName(namespaceUri, "ContactOrganization"), new TextModel());
-        this.registerParsableModel(new QName(namespaceUri, "ContactPerson"), new TextModel());
-        this.registerParsableModel(new QName(namespaceUri, "ContactPersonPrimary"), new WmsContactPersonPrimary());
-        this.registerParsableModel(new QName(namespaceUri, "ContactPosition"), new TextModel());
-        this.registerParsableModel(new QName(namespaceUri, "ContactVoiceTelephone"), new TextModel());
-        this.registerParsableModel(new QName(namespaceUri, "Country"), new TextModel());
-        this.registerParsableModel(new QName(namespaceUri, "CRS"), new TextModel());
+        this.registerParsableModel(new QName(namespaceUri, "Capability"), WmsCapabilityInformation.class);
+        this.registerParsableModel(new QName(namespaceUri, "City"), TextModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "ContactAddress"), WmsAddress.class);
+        this.registerParsableModel(new QName(namespaceUri, "ContactElectronicMailAddress"), TextModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "ContactInformation"), WmsContactInformation.class);
+        this.registerParsableModel(new QName(namespaceUri, "ContactOrganization"), TextModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "ContactPerson"), TextModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "ContactPersonPrimary"), WmsContactPersonPrimary.class);
+        this.registerParsableModel(new QName(namespaceUri, "ContactPosition"), TextModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "ContactVoiceTelephone"), TextModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "Country"), TextModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "CRS"), TextModel.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "DataURL"), new WmsLayerInfoUrl());
-        this.registerParsableModel(new QName(namespaceUri, "DCPType"), new WmsDcpType());
-        this.registerParsableModel(new QName(namespaceUri, "Dimension"), new WmsLayerDimension());
+        this.registerParsableModel(new QName(namespaceUri, "DataURL"), WmsLayerInfoUrl.class);
+        this.registerParsableModel(new QName(namespaceUri, "DCPType"), WmsDcpType.class);
+        this.registerParsableModel(new QName(namespaceUri, "Dimension"), WmsLayerDimension.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "Extent"), new WmsLayerDimension());
-        this.registerParsableModel(new QName(namespaceUri, "EX_GeographicBoundingBox"), new WmsGeographicBoundingBox());
-        this.registerParsableModel(new QName(namespaceUri, "westBoundLongitude"), new DoubleModel());
-        this.registerParsableModel(new QName(namespaceUri, "eastBoundLongitude"), new DoubleModel());
-        this.registerParsableModel(new QName(namespaceUri, "northBoundLatitude"), new DoubleModel());
-        this.registerParsableModel(new QName(namespaceUri, "southBoundLatitude"), new DoubleModel());
+        this.registerParsableModel(new QName(namespaceUri, "Extent"), WmsLayerDimension.class);
+        this.registerParsableModel(new QName(namespaceUri, "EX_GeographicBoundingBox"), WmsGeographicBoundingBox.class);
+        this.registerParsableModel(new QName(namespaceUri, "westBoundLongitude"), DoubleModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "eastBoundLongitude"), DoubleModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "northBoundLatitude"), DoubleModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "southBoundLatitude"), DoubleModel.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "Exception"), new WmsException());
+        this.registerParsableModel(new QName(namespaceUri, "Exception"), WmsException.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "FeatureListURL"), new WmsLayerInfoUrl());
-        this.registerParsableModel(new QName(namespaceUri, "Fees"), new TextModel());
-        this.registerParsableModel(new QName(namespaceUri, "Format"), new WmsFormat());
+        this.registerParsableModel(new QName(namespaceUri, "FeatureListURL"), WmsLayerInfoUrl.class);
+        this.registerParsableModel(new QName(namespaceUri, "Fees"), TextModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "Format"), WmsFormat.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "Get"), new WmsDcpType.WmsDcpHttpProtocol());
-        this.registerParsableModel(new QName(namespaceUri, "GetCapabilities"), new WmsRequestOperation());
-        this.registerParsableModel(new QName(namespaceUri, "GetMap"), new WmsRequestOperation());
-        this.registerParsableModel(new QName(namespaceUri, "GetFeatureInfo"), new WmsRequestOperation());
+        this.registerParsableModel(new QName(namespaceUri, "Get"), WmsDcpType.WmsDcpHttpProtocol.class);
+        this.registerParsableModel(new QName(namespaceUri, "GetCapabilities"), WmsRequestOperation.class);
+        this.registerParsableModel(new QName(namespaceUri, "GetMap"), WmsRequestOperation.class);
+        this.registerParsableModel(new QName(namespaceUri, "GetFeatureInfo"), WmsRequestOperation.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "HTTP"), new WmsDcpType.WmsDcpHttp());
+        this.registerParsableModel(new QName(namespaceUri, "HTTP"), WmsDcpType.WmsDcpHttp.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "Identifier"), new WmsLayerIdentifier());
+        this.registerParsableModel(new QName(namespaceUri, "Identifier"), WmsLayerIdentifier.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "Keyword"), new TextModel());
-        this.registerParsableModel(new QName(namespaceUri, "KeywordList"), new WmsKeywords());
+        this.registerParsableModel(new QName(namespaceUri, "Keyword"), TextModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "KeywordList"), WmsKeywords.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "LatLonBoundingBox"), new WmsGeographicBoundingBox());
-        this.registerParsableModel(new QName(namespaceUri, "Layer"), new WmsLayerCapabilities());
-        this.registerParsableModel(new QName(namespaceUri, "LayerInfo"), new WmsLayerInfoUrl());
-        this.registerParsableModel(new QName(namespaceUri, "LayerLimit"), new IntegerModel());
-        this.registerParsableModel(new QName(namespaceUri, "LegendURL"), new WmsLogoUrl());
-        this.registerParsableModel(new QName(namespaceUri, "LogoURL"), new WmsLogoUrl());
+        this.registerParsableModel(new QName(namespaceUri, "LatLonBoundingBox"), WmsGeographicBoundingBox.class);
+        this.registerParsableModel(new QName(namespaceUri, "Layer"), WmsLayerCapabilities.class);
+        this.registerParsableModel(new QName(namespaceUri, "LayerInfo"), WmsLayerInfoUrl.class);
+        this.registerParsableModel(new QName(namespaceUri, "LayerLimit"), IntegerModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "LegendURL"), WmsLogoUrl.class);
+        this.registerParsableModel(new QName(namespaceUri, "LogoURL"), WmsLogoUrl.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "MaxHeight"), new IntegerModel());
-        this.registerParsableModel(new QName(namespaceUri, "MaxScaleDenominator"), new DoubleModel());
-        this.registerParsableModel(new QName(namespaceUri, "MaxWidth"), new IntegerModel());
-        this.registerParsableModel(new QName(namespaceUri, "MetadataURL"), new WmsLayerInfoUrl());
-        this.registerParsableModel(new QName(namespaceUri, "MinScaleDenominator"), new DoubleModel());
+        this.registerParsableModel(new QName(namespaceUri, "MaxHeight"), IntegerModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "MaxScaleDenominator"), DoubleModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "MaxWidth"), IntegerModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "MetadataURL"), WmsLayerInfoUrl.class);
+        this.registerParsableModel(new QName(namespaceUri, "MinScaleDenominator"), DoubleModel.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "Name"), new TextModel());
+        this.registerParsableModel(new QName(namespaceUri, "Name"), TextModel.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "OnlineResource"), new WmsOnlineResource());
+        this.registerParsableModel(new QName(namespaceUri, "OnlineResource"), WmsOnlineResource.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "Post"), new WmsDcpType.WmsDcpHttpProtocol());
-        this.registerParsableModel(new QName(namespaceUri, "PostCode"), new TextModel());
+        this.registerParsableModel(new QName(namespaceUri, "Post"), WmsDcpType.WmsDcpHttpProtocol.class);
+        this.registerParsableModel(new QName(namespaceUri, "PostCode"), TextModel.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "Request"), new WmsRequestInformation());
+        this.registerParsableModel(new QName(namespaceUri, "Request"), WmsRequestInformation.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "ScaleHint"), new WmsScaleHint());
-        this.registerParsableModel(new QName(namespaceUri, "Service"), new WmsServiceInformation());
-        this.registerParsableModel(new QName(namespaceUri, "SRS"), new TextModel());
-        this.registerParsableModel(new QName(namespaceUri, "StateOrProvince"), new TextModel());
-        this.registerParsableModel(new QName(namespaceUri, "Style"), new WmsLayerStyle());
-        this.registerParsableModel(new QName(namespaceUri, "StyleSheetURL"), new WmsLayerInfoUrl());
-        this.registerParsableModel(new QName(namespaceUri, "StyleURL"), new WmsLayerInfoUrl());
+        this.registerParsableModel(new QName(namespaceUri, "ScaleHint"), WmsScaleHint.class);
+        this.registerParsableModel(new QName(namespaceUri, "Service"), WmsServiceInformation.class);
+        this.registerParsableModel(new QName(namespaceUri, "SRS"), TextModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "StateOrProvince"), TextModel.class);
+        this.registerParsableModel(new QName(namespaceUri, "Style"), WmsLayerStyle.class);
+        this.registerParsableModel(new QName(namespaceUri, "StyleSheetURL"), WmsLayerInfoUrl.class);
+        this.registerParsableModel(new QName(namespaceUri, "StyleURL"), WmsLayerInfoUrl.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "Title"), new TextModel());
+        this.registerParsableModel(new QName(namespaceUri, "Title"), TextModel.class);
 
-        this.registerParsableModel(new QName(namespaceUri, "WMS_Capabilities"), new WmsCapabilities());
-        this.registerParsableModel(new QName(namespaceUri, "WMT_MS_Capabilities"), new WmsCapabilities());
+        this.registerParsableModel(new QName(namespaceUri, "WMS_Capabilities"), WmsCapabilities.class);
+        this.registerParsableModel(new QName(namespaceUri, "WMT_MS_Capabilities"), WmsCapabilities.class);
     }
 }
