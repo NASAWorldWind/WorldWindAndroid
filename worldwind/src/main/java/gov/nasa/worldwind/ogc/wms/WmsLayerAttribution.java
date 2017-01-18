@@ -16,7 +16,8 @@ public class WmsLayerAttribution extends XmlModel {
 
     protected WmsLogoUrl logoUrl;
 
-    public WmsLayerAttribution() {}
+    public WmsLayerAttribution() {
+    }
 
     public String getTitle() {
         return this.title;

@@ -36,7 +36,8 @@ public class WmsServiceInformation extends XmlModel {
 
     protected Integer layerLimit;
 
-    public WmsServiceInformation() {}
+    public WmsServiceInformation() {
+    }
 
     public WmsContactInformation getContactInformation() {
         return this.contactInformation;

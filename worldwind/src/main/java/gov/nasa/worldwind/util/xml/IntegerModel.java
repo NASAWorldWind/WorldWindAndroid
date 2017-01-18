@@ -27,15 +27,4 @@ public class IntegerModel extends XmlModel {
             Logger.logMessage(Logger.ERROR, "IntegerModel", "setField", "Parsing error " + ex.toString());
         }
     }
-
-    //    @Override
-//    protected void setField(String keyName, Object value) {
-//        if (keyName.equals(XmlModel.CHARACTERS_CONTENT)) {
-//            try {
-//                this.value = Integer.parseInt(value.toString());
-//            } catch (NumberFormatException ex) {
-//                Logger.logMessage(Logger.ERROR, "IntegerModel", "setField", "Parsing error " + ex.toString());
-//            }
-//        }
-//    }
 }

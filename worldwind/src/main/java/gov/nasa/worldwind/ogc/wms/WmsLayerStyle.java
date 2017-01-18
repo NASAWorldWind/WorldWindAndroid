@@ -25,7 +25,8 @@ public class WmsLayerStyle extends XmlModel {
 
     protected WmsLayerInfoUrl styleUrl;
 
-    public WmsLayerStyle() {}
+    public WmsLayerStyle() {
+    }
 
     public String getName() {
         return name;

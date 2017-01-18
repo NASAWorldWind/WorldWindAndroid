@@ -17,7 +17,8 @@ public class WmsRequestOperation extends XmlModel {
 
     protected Set<WmsDcpType> dcpTypes = new LinkedHashSet<>();
 
-    public WmsRequestOperation() {}
+    public WmsRequestOperation() {
+    }
 
     public WmsOnlineResource getOnlineResource(String requestMethod) {
         for (WmsDcpType dct : this.getDcpTypes()) {

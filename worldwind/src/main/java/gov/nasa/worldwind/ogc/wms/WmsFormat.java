@@ -11,7 +11,8 @@ public class WmsFormat extends XmlModel {
 
     protected String format;
 
-    public WmsFormat() {}
+    public WmsFormat() {
+    }
 
     public String getFormat() {
         return this.format;
@@ -21,11 +22,4 @@ public class WmsFormat extends XmlModel {
     protected void setText(String value) {
         this.format = value.trim().toLowerCase();
     }
-//
-//    @Override
-//    public void setField(String keyName, Object value) {
-//        if (keyName.equals(XmlModel.CHARACTERS_CONTENT)) {
-//            this.format = value.toString().trim().toLowerCase();
-//        }
-//    }
 }

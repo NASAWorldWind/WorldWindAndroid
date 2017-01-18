@@ -8,8 +8,7 @@ package gov.nasa.worldwind.ogc.wms;
 import gov.nasa.worldwind.util.xml.TextModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class WmsAddress extends XmlModel
-{
+public class WmsAddress extends XmlModel {
 
     protected String addressType;
 
@@ -23,36 +22,30 @@ public class WmsAddress extends XmlModel
 
     protected String country;
 
-    public WmsAddress()
-    {}
+    public WmsAddress() {
+    }
 
-    public String getAddressType()
-    {
+    public String getAddressType() {
         return this.addressType;
     }
 
-    public String getAddress()
-    {
+    public String getAddress() {
         return this.address;
     }
 
-    public String getCity()
-    {
+    public String getCity() {
         return this.city;
     }
 
-    public String getStateOrProvince()
-    {
+    public String getStateOrProvince() {
         return this.stateOrProvince;
     }
 
-    public String getPostCode()
-    {
+    public String getPostCode() {
         return this.postCode;
     }
 
-    public String getCountry()
-    {
+    public String getCountry() {
         return this.country;
     }
 

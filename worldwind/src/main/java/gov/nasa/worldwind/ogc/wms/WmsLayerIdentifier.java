@@ -13,7 +13,8 @@ public class WmsLayerIdentifier extends XmlModel {
 
     protected String identifier;
 
-    public WmsLayerIdentifier() {}
+    public WmsLayerIdentifier() {
+    }
 
     public String getIdentifier() {
         return this.identifier;

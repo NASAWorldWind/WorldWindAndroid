@@ -23,6 +23,14 @@ public abstract class XmlModel {
     public XmlModel() {
     }
 
+    public void setParent(XmlModel parent) {
+        this.parent = parent;
+    }
+
+    public XmlModel getParent() {
+        return this.parent;
+    }
+
     public Object read(XmlPullParserContext ctx) throws XmlPullParserException, IOException {
 
         if (ctx == null) {
@@ -116,14 +124,6 @@ public abstract class XmlModel {
 
         }
 
-    }
-
-    public void setParent(XmlModel parent) {
-        this.parent = parent;
-    }
-
-    public XmlModel getParent() {
-        return this.parent;
     }
 
     protected void setText(String value) {

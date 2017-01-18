@@ -15,7 +15,8 @@ public class WmsException extends XmlModel {
 
     protected Set<String> exceptionFormats = new LinkedHashSet<>();
 
-    public WmsException() {}
+    public WmsException() {
+    }
 
     public Set<String> getExceptionFormats() {
         return Collections.unmodifiableSet(this.exceptionFormats);

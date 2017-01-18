@@ -7,23 +7,20 @@ package gov.nasa.worldwind.ogc.wms;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class WmsOnlineResource extends XmlModel
-{
+public class WmsOnlineResource extends XmlModel {
 
     protected String type;
 
     protected String href;
 
-    public WmsOnlineResource()
-    {}
+    public WmsOnlineResource() {
+    }
 
-    public String getType()
-    {
+    public String getType() {
         return this.type;
     }
 
-    public String getHref()
-    {
+    public String getHref() {
         return this.href;
     }
 

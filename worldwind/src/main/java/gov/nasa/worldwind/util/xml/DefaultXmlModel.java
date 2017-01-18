@@ -15,12 +15,12 @@ public class DefaultXmlModel extends XmlModel {
     public DefaultXmlModel() {
     }
 
+    public Object getField(String keyName) {
+        return this.fields.get(keyName);
+    }
+
     @Override
     protected void setField(String keyName, Object value) {
         this.fields.put(keyName, value);
-    }
-
-    public Object getField(String keyName) {
-        return this.fields.get(keyName);
     }
 }

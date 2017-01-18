@@ -24,7 +24,8 @@ public class WmsLayerDimension extends XmlModel {
 
     protected Boolean current;
 
-    public WmsLayerDimension() {}
+    public WmsLayerDimension() {
+    }
 
     public String getName() {
         return this.name;

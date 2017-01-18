@@ -14,7 +14,8 @@ public class WmsContactPersonPrimary extends XmlModel {
 
     protected String organization;
 
-    public WmsContactPersonPrimary() {}
+    public WmsContactPersonPrimary() {
+    }
 
     @Override
     protected void setField(String keyName, Object value) {

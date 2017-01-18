@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Set;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
-import gov.nasa.worldwind.util.xml.XmlPullParserContext;
 
 public class WmsCapabilities extends XmlModel {
 

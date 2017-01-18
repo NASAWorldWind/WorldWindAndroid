@@ -10,7 +10,6 @@ import android.util.Xml;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +37,14 @@ public class XmlPullParserContext {
     }
 
     /**
+     * Registers a parser for a specified element name. A parser of the same type and namespace is returned when is
+     * called for the same element name.
+     */
+    public void registerParsableModel(QName elementName, Class<? extends XmlModel> parsableModel) {
+        this.parsableModels.put(elementName, parsableModel);
+    }
+
+    /**
      * Returns a new parser for a specified element name.
      *
      * @param eventName indicates the element name for which a parser is created.
@@ -61,22 +68,7 @@ public class XmlPullParserContext {
         return null;
     }
 
-    /**
-     * Registers a parser for a specified element name. A parser of the same type and namespace is returned when is
-     * called for the same element name.
-     */
-    public void registerParsableModel(QName elementName, Class<? extends XmlModel> parsableModel) {
-        this.parsableModels.put(elementName, parsableModel);
-    }
-
     protected Class<? extends XmlModel> getUnrecognizedModel() {
         return DefaultXmlModel.class;
-    }
-
-    public boolean isStartElement(QName event) throws XmlPullParserException, IOException {
-        return (this.getParser().getEventType() == XmlPullParser.START_TAG
-            && this.getParser().getName() != null
-            && this.getParser().getName().equals(event.getLocalPart())
-            && this.getParser().getNamespace().equals(event.getNamespaceURI()));
     }
 }

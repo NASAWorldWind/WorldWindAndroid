@@ -9,7 +9,8 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsRequestInformation extends XmlModel {
 
-    public WmsRequestInformation() {}
+    public WmsRequestInformation() {
+    }
 
     protected WmsRequestOperation getCapabilities;
 

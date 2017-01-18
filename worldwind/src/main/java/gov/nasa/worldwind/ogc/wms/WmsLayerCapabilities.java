@@ -85,7 +85,8 @@ public class WmsLayerCapabilities extends XmlModel {
 
     protected Integer fixedHeight;
 
-    public WmsLayerCapabilities() {}
+    public WmsLayerCapabilities() {
+    }
 
     public List<WmsLayerCapabilities> getNamedLayers() {
         List<WmsLayerCapabilities> namedLayers = new ArrayList<>();

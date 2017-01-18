@@ -24,7 +24,8 @@ public class WmsContactInformation extends XmlModel {
 
     protected String contactOrganization;
 
-    public WmsContactInformation() {}
+    public WmsContactInformation() {
+    }
 
     public String getPersonPrimary() {
         return this.contactPerson;
