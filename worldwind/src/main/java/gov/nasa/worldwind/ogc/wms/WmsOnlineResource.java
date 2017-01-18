@@ -38,15 +38,4 @@ public class WmsOnlineResource extends XmlModel
             this.href = value.toString();
         }
     }
-
-    @Override
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("href: ").append(this.getHref() != null ? this.getHref() : "null");
-        sb.append(", type: ").append(this.getType() != null ? this.getType() : "null");
-
-        return sb.toString();
-    }
 }

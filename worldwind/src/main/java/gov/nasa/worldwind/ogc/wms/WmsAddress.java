@@ -74,19 +74,4 @@ public class WmsAddress extends XmlModel
             this.country = ((TextModel) value).getValue();
         }
     }
-
-    @Override
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("AddressType: ").append(this.getAddressType() != null ? this.getAddressType() : "none").append(" ");
-        sb.append("Address: ").append(this.getAddress() != null ? this.getAddress() : "none").append(" ");
-        sb.append("City: ").append(this.getCity() != null ? this.getCity() : "none").append(" ");
-        sb.append("StateOrProvince: ").append(this.getStateOrProvince() != null ? this.getStateOrProvince() : "none").append(" ");
-        sb.append("PostCode: ").append(this.getPostCode() != null ? this.getPostCode() : "none").append(" ");
-        sb.append("Country: ").append(this.getCountry() != null ? this.getCountry() : "none");
-
-        return sb.toString();
-    }
 }

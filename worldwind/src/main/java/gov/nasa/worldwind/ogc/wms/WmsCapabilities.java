@@ -159,28 +159,4 @@ public class WmsCapabilities extends XmlModel {
             this.capabilityInformation = (WmsCapabilityInformation) value;
         }
     }
-
-    @Override
-    public String toString() // TODO: Complete this method
-    {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("Version: ").
-            append(this.getVersion() != null ? this.getVersion() : "none").append("\n");
-        sb.append("UpdateSequence: ").
-            append(this.getUpdateSequence() != null ? this.getUpdateSequence() : "none");
-        sb.append("\n");
-        sb.append(this.getServiceInformation() != null ? this.getServiceInformation() : "Service Information: none");
-        sb.append("\n");
-        sb.append(this.getCapabilityInformation() != null
-            ? this.getCapabilityInformation() : "Capability Information: none");
-        sb.append("\n");
-
-        sb.append("LAYERS\n");
-        for (WmsLayerCapabilities layerCaps : this.getNamedLayers()) {
-            sb.append(layerCaps.toString()).append("\n");
-        }
-
-        return sb.toString();
-    }
 }

@@ -49,21 +49,4 @@ public class WmsRequestOperation extends XmlModel {
             this.dcpTypes.add((WmsDcpType) value);
         }
     }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("\tFormats: ");
-        for (String format : this.getFormats()) {
-            sb.append("\t").append(format).append(", ");
-        }
-
-        sb.append("\n\tDCPTypes:\n");
-        for (WmsDcpType dcpt : this.getDcpTypes()) {
-            sb.append("\t\t").append(dcpt.toString()).append("\n");
-        }
-
-        return sb.toString();
-    }
 }

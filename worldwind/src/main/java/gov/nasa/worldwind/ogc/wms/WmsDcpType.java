@@ -98,17 +98,4 @@ public class WmsDcpType extends XmlModel {
             }
         }
     }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-
-        for (DcpInfo dcpi : this.getDcpInfos()) {
-            sb.append(dcpi.protocol).append(", ");
-            sb.append(dcpi.method).append(", ");
-            sb.append(dcpi.onlineResource.toString());
-        }
-
-        return sb.toString();
-    }
 }

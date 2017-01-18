@@ -78,27 +78,6 @@ public class WmsBoundingBox extends XmlModel {
         }
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(this.crs);
-        sb.append(": minx = ");
-        sb.append(this.minx);
-        sb.append(" miny = ");
-        sb.append(this.miny);
-        sb.append(" maxx = ");
-        sb.append(this.maxx);
-        sb.append(" maxy = ");
-        sb.append(this.maxy);
-        sb.append(" resx = ");
-        sb.append(this.resx);
-        sb.append(" resy = ");
-        sb.append(this.resy);
-
-        return sb.toString();
-    }
-
     protected Double parseDouble(String value) {
 
         Double parsedValue = null;

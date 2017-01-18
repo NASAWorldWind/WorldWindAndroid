@@ -74,21 +74,4 @@ public class WmsContactInformation extends XmlModel {
             this.contactAddress = (WmsAddress) value;
         }
     }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("PersonPrimary: ").append(this.getPersonPrimary() != null ? this.getPersonPrimary() : "none").append("\n");
-        sb.append("Organization: ").append(this.getOrganization() != null ? this.getOrganization() : "none").append("\n");
-        sb.append("Position: ").append(this.getPosition() != null ? this.getPosition() : "none").append("\n");
-        sb.append("VoiceTelephone: ").append(this.getVoiceTelephone() != null ? this.getVoiceTelephone() : "none").append("\n");
-        sb.append("FacsimileTelephone: ").append(
-            this.getFacsimileTelephone() != null ? this.getFacsimileTelephone() : "none").append("\n");
-        sb.append("ElectronicMailAddress: ").append(
-            this.getElectronicMailAddress() != null ? this.getElectronicMailAddress() : "none").append("\n");
-        sb.append(this.contactAddress != null ? this.contactAddress : "none");
-
-        return sb.toString();
-    }
 }

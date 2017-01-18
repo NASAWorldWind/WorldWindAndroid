@@ -117,36 +117,4 @@ public class WmsServiceInformation extends XmlModel {
             this.layerLimit = integerModel.getValue();
         }
     }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("ServiceName: ").append(this.getServiceName() != null ? this.getServiceName() : "none").append("\n");
-        sb.append("ServiceTitle: ").append(this.getServiceTitle() != null ? this.getServiceTitle() : "none").append("\n");
-        sb.append("ServiceAbstract: ").append(this.getServiceAbstract() != null ? this.getServiceAbstract() : "none").append(
-            "\n");
-        sb.append("Fees: ").append(this.getFees() != null ? this.getFees() : "none").append("\n");
-        sb.append("AccessConstraints: ").append(
-            this.getAccessConstraints() != null ? this.getAccessConstraints() : "none").append("\n");
-        this.keywordsToString(sb);
-        sb.append("OnlineResource: ").append(this.getOnlineResource() != null ? this.getOnlineResource() : "none").append("\n");
-        sb.append(this.getContactInformation() != null ? this.getContactInformation() : "none").append("\n");
-        sb.append("Max width = ").append(this.getMaxWidth());
-        sb.append(" Max height = ").append(this.getMaxHeight()).append("\n");
-
-        return sb.toString();
-    }
-
-    protected void keywordsToString(StringBuilder sb) {
-        sb.append("Keywords: ");
-        if (this.getKeywords().size() == 0)
-            sb.append(" none");
-        else {
-            for (String keyword : this.getKeywords()) {
-                sb.append(keyword != null ? keyword : "null").append(", ");
-            }
-        }
-        sb.append("\n");
-    }
 }

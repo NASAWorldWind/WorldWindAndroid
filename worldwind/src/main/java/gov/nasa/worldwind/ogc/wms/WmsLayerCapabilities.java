@@ -566,17 +566,4 @@ public class WmsLayerCapabilities extends XmlModel {
         }
         return null;
     }
-
-    @Override
-    public String toString() // TODO: Complete this method
-    {
-        StringBuilder sb = new StringBuilder("LAYER ");
-
-        if (this.getName() != null) {
-            sb.append(this.getName()).append(": ");
-        }
-        sb.append("queryable = ").append(this.isQueryable());
-
-        return sb.toString();
-    }
 }
