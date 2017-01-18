@@ -16,22 +16,11 @@ import gov.nasa.worldwind.util.Logger;
 
 public abstract class XmlModel {
 
-    protected String namespaceUri = "";
-
     protected XmlModel parent;
 
     protected StringBuilder characterContent;
 
-    public XmlModel(String namespaceUri) {
-        this.namespaceUri = namespaceUri;
-    }
-
-    public String getNamespaceUri() {
-        return this.namespaceUri;
-    }
-
-    public void setNamespaceUri(String namespaceUri) {
-        this.namespaceUri = namespaceUri;
+    public XmlModel() {
     }
 
     public Object read(XmlPullParserContext ctx) throws XmlPullParserException, IOException {
@@ -86,17 +75,6 @@ public abstract class XmlModel {
             attributeName = xpp.getAttributeName(i);
             attributeValue = xpp.getAttributeValue(i);
             this.setField(attributeName, attributeValue);
-
-            // Update the namespace based on the WMS version
-            if (attributeName.equalsIgnoreCase("version")) {
-                if (attributeValue.equalsIgnoreCase("1.3.0")) {
-                    this.setNamespaceUri(XmlPullParserContext.DEFAULT_NAMESPACE);
-                    ctx.setNamespaceUri(XmlPullParserContext.DEFAULT_NAMESPACE);
-                } else if (attributeValue.equalsIgnoreCase("1.1.1")) {
-                    this.setNamespaceUri("");
-                    ctx.setNamespaceUri("");
-                }
-            }
         }
 
     }
@@ -125,15 +103,6 @@ public abstract class XmlModel {
 
             QName qName = new QName(xpp.getNamespace(), xpp.getName());
             XmlModel model = ctx.createParsableModel(qName);
-
-            if (model == null) {
-
-                Logger.logMessage(Logger.INFO, "XmlModel", "doParseEventContent", "Suitable model not registered");
-
-                model = ctx.getUnrecognizedElementModel();
-
-                ctx.registerParsableModel(qName, model);
-            }
 
             if (model != null) {
                 model.setParent(this);

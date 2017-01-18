@@ -16,9 +16,7 @@ public class WmsKeywords extends XmlModel {
 
     protected Set<String> keywords = new LinkedHashSet<>();
 
-    public WmsKeywords(String namespaceUri) {
-        super(namespaceUri);
-    }
+    public WmsKeywords() {}
 
     public Set<String> getKeywords() {
         return Collections.unmodifiableSet(keywords);

@@ -13,9 +13,7 @@ public class WmsLayerIdentifier extends XmlModel {
 
     protected String identifier;
 
-    public WmsLayerIdentifier(String namespaceUri) {
-        super(namespaceUri);
-    }
+    public WmsLayerIdentifier() {}
 
     public String getIdentifier() {
         return this.identifier;

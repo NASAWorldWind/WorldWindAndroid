@@ -11,8 +11,7 @@ public class WmsAuthorityUrl extends WmsLayerInfoUrl {
 
     protected WmsOnlineResource onlineResource;
 
-    public WmsAuthorityUrl(String namespaceURI) {
-        super(namespaceURI);
+    public WmsAuthorityUrl() {
     }
 
     public String getName() {

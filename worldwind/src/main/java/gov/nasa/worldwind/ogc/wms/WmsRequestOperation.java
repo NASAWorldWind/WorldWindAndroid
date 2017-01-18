@@ -17,9 +17,7 @@ public class WmsRequestOperation extends XmlModel {
 
     protected Set<WmsDcpType> dcpTypes = new LinkedHashSet<>();
 
-    public WmsRequestOperation(String namespaceURI) {
-        super(namespaceURI);
-    }
+    public WmsRequestOperation() {}
 
     public WmsOnlineResource getOnlineResource(String requestMethod) {
         for (WmsDcpType dct : this.getDcpTypes()) {

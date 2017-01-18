@@ -22,9 +22,7 @@ public class WmsLogoUrl extends XmlModel {
 
     protected Integer height;
 
-    public WmsLogoUrl(String namespaceURI) {
-        super(namespaceURI);
-    }
+    public WmsLogoUrl() {}
 
     public Integer getWidth() {
         return this.width;

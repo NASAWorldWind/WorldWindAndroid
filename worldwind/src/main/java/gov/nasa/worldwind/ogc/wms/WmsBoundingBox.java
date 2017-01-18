@@ -24,9 +24,7 @@ public class WmsBoundingBox extends XmlModel {
 
     protected double resy;
 
-    public WmsBoundingBox(String namespaceURI) {
-        super(namespaceURI);
-    }
+    public WmsBoundingBox() {}
 
     public String getCRS() {
         return crs;

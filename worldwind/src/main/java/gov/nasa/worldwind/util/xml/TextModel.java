@@ -9,8 +9,7 @@ public class TextModel extends XmlModel {
 
     String value;
 
-    public TextModel(String namespaceUri) {
-        super(namespaceUri);
+    public TextModel() {
     }
 
     public String getValue() {

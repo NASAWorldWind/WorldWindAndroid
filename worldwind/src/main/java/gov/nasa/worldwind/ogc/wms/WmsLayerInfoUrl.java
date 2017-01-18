@@ -19,9 +19,7 @@ public class WmsLayerInfoUrl extends XmlModel {
 
     protected WmsOnlineResource onlineResource;
 
-    public WmsLayerInfoUrl(String namespaceUri) {
-        super(namespaceUri);
-    }
+    public WmsLayerInfoUrl() {}
 
     public WmsOnlineResource getOnlineResource() {
         return this.onlineResource;

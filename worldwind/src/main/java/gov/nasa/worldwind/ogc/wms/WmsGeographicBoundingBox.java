@@ -19,9 +19,7 @@ public class WmsGeographicBoundingBox extends XmlModel {
 
     protected double west = Double.NaN;
 
-    public WmsGeographicBoundingBox(String namespaceUri) {
-        super(namespaceUri);
-    }
+    public WmsGeographicBoundingBox() {}
 
     public Sector getGeographicBoundingBox() {
         double deltaLongitude = this.east - this.west;

@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.ogc.wms;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
-import gov.nasa.worldwind.util.xml.XmlPullParserContext;
 
 public class WmsOnlineResource extends XmlModel
 {
@@ -15,10 +14,8 @@ public class WmsOnlineResource extends XmlModel
 
     protected String href;
 
-    public WmsOnlineResource(String namespaceURI)
-    {
-        super(namespaceURI == null ? XmlPullParserContext.DEFAULT_NAMESPACE : namespaceURI);
-    }
+    public WmsOnlineResource()
+    {}
 
     public String getType()
     {

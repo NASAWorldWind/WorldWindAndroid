@@ -29,9 +29,7 @@ public class WmsDcpType extends XmlModel {
         }
     }
 
-    public WmsDcpType(String namespaceURI) {
-        super(namespaceURI);
-    }
+    public WmsDcpType() {}
 
     public List<DcpInfo> getDcpInfos() {
 
@@ -69,9 +67,7 @@ public class WmsDcpType extends XmlModel {
 
         protected WmsDcpHttpProtocol post;
 
-        public WmsDcpHttp(String namespaceUri) {
-            super(namespaceUri);
-        }
+        public WmsDcpHttp() {}
 
         @Override
         public void setField(String keyName, Object value) {
@@ -87,9 +83,7 @@ public class WmsDcpType extends XmlModel {
 
         protected WmsOnlineResource onlineResource;
 
-        public WmsDcpHttpProtocol(String namespaceUri) {
-            super(namespaceUri);
-        }
+        public WmsDcpHttpProtocol() {}
 
         @Override
         public void setField(String keyName, Object value) {

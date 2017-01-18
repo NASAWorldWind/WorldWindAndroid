@@ -12,8 +12,7 @@ public class DefaultXmlModel extends XmlModel {
 
     protected Map<String, Object> fields = new HashMap<>();
 
-    public DefaultXmlModel(String namespaceUri) {
-        super(namespaceUri);
+    public DefaultXmlModel() {
     }
 
     @Override

@@ -11,8 +11,7 @@ public class DoubleModel extends XmlModel {
 
     protected Double value;
 
-    public DoubleModel(String namespaceUri) {
-        super(namespaceUri);
+    public DoubleModel() {
     }
 
     public Double getValue() {

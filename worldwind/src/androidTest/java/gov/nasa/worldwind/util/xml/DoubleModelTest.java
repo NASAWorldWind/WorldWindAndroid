@@ -27,16 +27,15 @@ public class DoubleModelTest {
     @Test
     public void testGetValue() throws Exception {
 
-        String namespace = "";
         double elementValue = 3.14159018;
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<" + TEST_ELEMENT_NAME + ">\n" +
             "\t" + elementValue + "\n" +
             "</" + TEST_ELEMENT_NAME + ">";
         InputStream is = new ByteArrayInputStream(xml.getBytes());
-        XmlPullParserContext ctx = new XmlPullParserContext(namespace);
+        XmlPullParserContext ctx = new XmlPullParserContext();
         ctx.setParserInput(is);
-        DoubleModel doubleModel = new DoubleModel(namespace);
+        DoubleModel doubleModel = new DoubleModel();
 
         doubleModel.read(ctx);
 

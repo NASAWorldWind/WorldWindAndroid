@@ -24,9 +24,7 @@ public class WmsLayerDimension extends XmlModel {
 
     protected Boolean current;
 
-    public WmsLayerDimension(String defaultNamespaceUri) {
-        super(defaultNamespaceUri);
-    }
+    public WmsLayerDimension() {}
 
     public String getName() {
         return this.name;

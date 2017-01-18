@@ -14,9 +14,7 @@ public class WmsScaleHint extends XmlModel {
 
     protected Double max;
 
-    public WmsScaleHint(String namespaceUri) {
-        super(namespaceUri);
-    }
+    public WmsScaleHint() {}
 
     protected Double parseDouble(Object value) {
         try {

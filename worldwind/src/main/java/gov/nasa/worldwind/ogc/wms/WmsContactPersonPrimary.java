@@ -14,9 +14,7 @@ public class WmsContactPersonPrimary extends XmlModel {
 
     protected String organization;
 
-    public WmsContactPersonPrimary(String namespaceUri) {
-        super(namespaceUri);
-    }
+    public WmsContactPersonPrimary() {}
 
     @Override
     protected void setField(String keyName, Object value) {

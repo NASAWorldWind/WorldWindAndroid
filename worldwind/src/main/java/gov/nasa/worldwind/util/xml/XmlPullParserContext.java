@@ -19,28 +19,20 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
-public class XmlPullParserContext {
+import gov.nasa.worldwind.util.Logger;
 
-    public final static String DEFAULT_NAMESPACE = "http://www.opengis.net/wms";
+public class XmlPullParserContext {
 
     protected XmlPullParser parser;
 
-    protected Map<QName, XmlModel> parserModels = new HashMap<>();
+    protected Map<QName, XmlModel> parsableModels = new HashMap<>();
 
-    protected String namespaceUri;
-
-    public XmlPullParserContext(String namespaceUri) {
-        this.namespaceUri = namespaceUri;
-        this.initializeParsers();
+    public XmlPullParserContext() {
     }
 
     public void setParserInput(InputStream is) throws XmlPullParserException {
         this.parser = Xml.newPullParser();
         this.parser.setInput(is, null);
-    }
-
-    protected void initializeParsers() {
-
     }
 
     public XmlPullParser getParser() {
@@ -55,21 +47,19 @@ public class XmlPullParserContext {
      * @return the new parser, or null if no parser has been registered for the specified element name.
      */
     public XmlModel createParsableModel(QName eventName) {
-
-        XmlModel model = this.parserModels.get(eventName);
+        XmlModel model = this.parsableModels.get(eventName);
 
         // If no model is specified use the default class and the provided QName namespace
         if (model == null) {
-            return this.getUnrecognizedElementModel();
+            model = this.getUnrecognizedModel();
         }
 
         try {
             // create a duplicate instance using reflective utilities
-            Constructor<? extends XmlModel> ctor = model.getClass().getDeclaredConstructor(String.class);
-            return ctor.newInstance(eventName.getNamespaceURI());
+            return model.getClass().newInstance();
         } catch (Exception e) {
-            // TODO log error
-            Log.e("gov.nasa.worldwind", e.toString());
+            Logger.logMessage(Logger.ERROR, "XmlPullParserContext", "createParsableModel",
+                "Exception invoking default constructor for " + model.getClass().getName(), e);
         }
 
         return null;
@@ -80,11 +70,11 @@ public class XmlPullParserContext {
      * called for the same element name.
      */
     public void registerParsableModel(QName elementName, XmlModel parsableModel) {
-        this.parserModels.put(elementName, parsableModel);
+        this.parsableModels.put(elementName, parsableModel);
     }
 
-    public XmlModel getUnrecognizedElementModel() {
-        return new DefaultXmlModel(this.namespaceUri);
+    protected XmlModel getUnrecognizedModel() {
+        return new DefaultXmlModel();
     }
 
     public boolean isStartElement(QName event) throws XmlPullParserException, IOException {
@@ -92,15 +82,5 @@ public class XmlPullParserContext {
             && this.getParser().getName() != null
             && this.getParser().getName().equals(event.getLocalPart())
             && this.getParser().getNamespace().equals(event.getNamespaceURI()));
-    }
-
-    public String getNamespaceUri() {
-        return namespaceUri;
-    }
-
-    public void setNamespaceUri(String namespaceUri) {
-        this.namespaceUri = namespaceUri;
-        this.parserModels.clear();
-        this.initializeParsers();
     }
 }

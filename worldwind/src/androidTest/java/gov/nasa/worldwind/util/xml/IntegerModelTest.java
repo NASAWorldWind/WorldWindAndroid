@@ -25,16 +25,15 @@ public class IntegerModelTest {
     @Test
     public void testGetValue() throws Exception {
 
-        String namespace = "";
         int elementValue = 24601;
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<" + TEST_ELEMENT_NAME + ">\n" +
             "\t" + elementValue + "\n" +
             "</" + TEST_ELEMENT_NAME + ">";
         InputStream is = new ByteArrayInputStream(xml.getBytes());
-        XmlPullParserContext ctx = new XmlPullParserContext(namespace);
+        XmlPullParserContext ctx = new XmlPullParserContext();
         ctx.setParserInput(is);
-        IntegerModel integerModel = new IntegerModel(namespace);
+        IntegerModel integerModel = new IntegerModel();
 
         integerModel.read(ctx);
 

@@ -26,18 +26,16 @@ public class WmsCapabilities extends XmlModel {
 
     protected WmsServiceInformation serviceInformation;
 
-    public WmsCapabilities(String namespaceUri) {
-        super(namespaceUri);
+    public WmsCapabilities() {
     }
 
     public static WmsCapabilities getCapabilities(InputStream is) throws XmlPullParserException, IOException {
         // Initialize the pull parser context
-        WmsPullParserContext ctx = new WmsPullParserContext(XmlPullParserContext.DEFAULT_NAMESPACE);
+        WmsPullParserContext ctx = new WmsPullParserContext();
         ctx.setParserInput(is);
 
         // Parse the Xml document until a Wms service is discovered
-        WmsCapabilities wmsCapabilities = new WmsCapabilities(XmlPullParserContext.DEFAULT_NAMESPACE);
-
+        WmsCapabilities wmsCapabilities = new WmsCapabilities();
         wmsCapabilities.read(ctx);
 
         return wmsCapabilities;

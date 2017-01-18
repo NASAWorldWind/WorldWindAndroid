@@ -11,9 +11,7 @@ public class WmsFormat extends XmlModel {
 
     protected String format;
 
-    public WmsFormat(String namespaceUri) {
-        super(namespaceUri);
-    }
+    public WmsFormat() {}
 
     public String getFormat() {
         return this.format;

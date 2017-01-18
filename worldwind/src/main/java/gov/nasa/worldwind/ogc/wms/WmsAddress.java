@@ -23,10 +23,8 @@ public class WmsAddress extends XmlModel
 
     protected String country;
 
-    public WmsAddress(String namespaceURI)
-    {
-        super(namespaceURI);
-    }
+    public WmsAddress()
+    {}
 
     public String getAddressType()
     {

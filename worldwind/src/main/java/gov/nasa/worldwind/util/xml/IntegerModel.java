@@ -11,8 +11,8 @@ public class IntegerModel extends XmlModel {
 
     protected Integer value;
 
-    public IntegerModel(String namespaceUri) {
-        super(namespaceUri);
+    public IntegerModel() {
+
     }
 
     public Integer getValue() {

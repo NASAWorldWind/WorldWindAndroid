@@ -25,9 +25,7 @@ public class WmsCapabilityInformation extends XmlModel {
 
     protected Set<String> exceptions = new LinkedHashSet<>();
 
-    public WmsCapabilityInformation(String namespaceUri) {
-        super(namespaceUri);
-    }
+    public WmsCapabilityInformation() {}
 
     public List<WmsLayerCapabilities> getLayerList() {
         return Collections.unmodifiableList(this.layers);
