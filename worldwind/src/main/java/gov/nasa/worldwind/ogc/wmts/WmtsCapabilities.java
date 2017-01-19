@@ -21,6 +21,8 @@ public class WmtsCapabilities extends XmlModel {
 
     protected OwsServiceProvider serviceProvider;
 
+    protected OwsOperationsMetadata operationsMetadata;
+
     public static WmtsCapabilities getCapabilities(InputStream inputStream) throws Exception {
         XmlPullParser pullParser = Xml.newPullParser();
         pullParser.setInput(inputStream, null /*inputEncoding*/);
@@ -43,6 +45,8 @@ public class WmtsCapabilities extends XmlModel {
             this.serviceIdentification = (OwsServiceIdentification) value;
         } else if (keyName.equals("ServiceProvider")) {
             this.serviceProvider = (OwsServiceProvider) value;
+        } else if (keyName.equals("OperationsMetadata")) {
+            this.operationsMetadata = (OwsOperationsMetadata) value;
         }
     }
 }

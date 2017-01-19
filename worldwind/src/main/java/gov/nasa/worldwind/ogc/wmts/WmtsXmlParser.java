@@ -20,36 +20,66 @@ public class WmtsXmlParser extends XmlModelParser {
     }
 
     protected void registerParsers() {
+        this.registerWmtsXmlModels();
+        this.registerWmtsTextModels();
+    }
 
-        this.registerTxtModel(owsNamespace, "Title");
+    protected void registerWmtsXmlModels() {
+
+        this.registerXmlModel(owsNamespace, "Address", OwsAddress.class);
+
+        this.registerXmlModel(wmtsNamespace, "Capabilities", WmtsCapabilities.class);
+        this.registerXmlModel(owsNamespace, "ContactInfo", OwsContactInfo.class);
+
+        this.registerXmlModel(owsNamespace, "DCP", OwsDcp.class);
+
+        this.registerXmlModel(owsNamespace, "Get", OwsMethod.class);
+
+        this.registerXmlModel(owsNamespace, "HTTP", OwsHttp.class);
+
+        this.registerXmlModel(owsNamespace, "Keywords", OwsKeywords.class);
+
+        this.registerXmlModel(owsNamespace, "Operation", OwsOperation.class);
+        this.registerXmlModel(owsNamespace, "OperationsMetadata", OwsOperationsMetadata.class);
+
+        this.registerXmlModel(owsNamespace, "Phone", OwsPhone.class);
+        this.registerXmlModel(owsNamespace, "Post", OwsMethod.class);
+        this.registerXmlModel(owsNamespace, "ProviderSite", OwsProviderSite.class);
+
+        this.registerXmlModel(owsNamespace, "ServiceContact", OwsServiceContact.class);
+        this.registerXmlModel(owsNamespace, "ServiceIdentification", OwsServiceIdentification.class);
+        this.registerXmlModel(owsNamespace, "ServiceProvider", OwsServiceProvider.class);
+    }
+
+    protected void registerWmtsTextModels() {
+
         this.registerTxtModel(owsNamespace, "Abstract");
+        this.registerTxtModel(owsNamespace, "AccessConstraints");
+        this.registerTxtModel(owsNamespace, "AdministrativeArea");
+
+        this.registerTxtModel(owsNamespace, "City");
+        this.registerTxtModel(owsNamespace, "Country");
+
+        this.registerTxtModel(owsNamespace, "DeliveryPoint");
+
+        this.registerTxtModel(owsNamespace, "ElectronicMailAddress");
+
+        this.registerTxtModel(owsNamespace, "Facsimile");
+        this.registerTxtModel(owsNamespace, "Fees");
+
+        this.registerTxtModel(owsNamespace, "IndividualName");
+
         this.registerTxtModel(owsNamespace, "Keyword");
+
+        this.registerTxtModel(owsNamespace, "PositionName");
+        this.registerTxtModel(owsNamespace, "PostalCode");
+        this.registerTxtModel(owsNamespace, "ProviderName");
+
         this.registerTxtModel(owsNamespace, "ServiceType");
         this.registerTxtModel(owsNamespace, "ServiceTypeVersion");
-        this.registerTxtModel(owsNamespace, "Fees");
-        this.registerTxtModel(owsNamespace, "AccessConstraints");
-        this.registerTxtModel(owsNamespace, "ProviderName");
+
+        this.registerTxtModel(owsNamespace, "Title");
+
         this.registerTxtModel(owsNamespace, "Voice");
-        this.registerTxtModel(owsNamespace, "Facsimile");
-        this.registerTxtModel(owsNamespace, "DeliveryPoint");
-        this.registerTxtModel(owsNamespace, "City");
-        this.registerTxtModel(owsNamespace, "AdministrativeArea");
-        this.registerTxtModel(owsNamespace, "PostalCode");
-        this.registerTxtModel(owsNamespace, "Country");
-        this.registerTxtModel(owsNamespace, "ElectronicMailAddress");
-        this.registerTxtModel(owsNamespace, "IndividualName");
-        this.registerTxtModel(owsNamespace, "PositionName");
-        this.registerTxtModel(owsNamespace, "ProviderName");
-
-
-        this.registerXmlModel(owsNamespace, "ServiceIdentification", OwsServiceIdentification.class);
-        this.registerXmlModel(owsNamespace, "Keywords", OwsKeywords.class);
-        this.registerXmlModel(wmtsNamespace, "Capabilities", WmtsCapabilities.class);
-        this.registerXmlModel(owsNamespace, "Phone", OwsPhone.class);
-        this.registerXmlModel(owsNamespace, "Address", OwsAddress.class);
-        this.registerXmlModel(owsNamespace, "ContactInfo", OwsContactInfo.class);
-        this.registerXmlModel(owsNamespace, "ServiceContact", OwsServiceContact.class);
-        this.registerXmlModel(owsNamespace, "ProviderSite", OwsProviderSite.class);
-        this.registerXmlModel(owsNamespace, "ServiceProvider", OwsServiceProvider.class);
     }
 }

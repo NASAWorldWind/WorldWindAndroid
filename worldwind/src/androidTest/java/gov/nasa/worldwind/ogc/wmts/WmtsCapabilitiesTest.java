@@ -186,4 +186,30 @@ public class WmtsCapabilitiesTest {
         assertEquals("Service Provider Contact Address Country", expectedCountry, actualCountry);
         assertEquals("Service Provider Contact Address Email", expectedEmail, actualEmail);
     }
+
+    @Test
+    public void testGetOperationsMetadata_GetCapabilities() throws Exception {
+        OwsOperation getCapabilities = this.wmtsCapabilities.operationsMetadata.getCapabilities;
+        String expectedName = "GetCapabilities";
+        String expectedLink = "http://www.opengis.uab.es/cgi-bin/world/MiraMon5_0.cgi?";
+
+        String actualName = getCapabilities.name;
+        String actualLink = getCapabilities.dcp.getHref;
+
+        assertEquals("Operations Metadata GetCapabilities Name", expectedName, actualName);
+        assertEquals("Operations Metadata GetCapabilities Link", expectedLink, actualLink);
+    }
+
+    @Test
+    public void testGetOperationsMetadata_GetTile() throws Exception {
+        OwsOperation getTile = this.wmtsCapabilities.operationsMetadata.getTile;
+        String expectedName = "GetTile";
+        String expectedLink = "http://www.opengis.uab.es/cgi-bin/world/MiraMon5_0.cgi?";
+
+        String actualName = getTile.name;
+        String actualLink = getTile.dcp.getHref;
+
+        assertEquals("Operations Metadata GetTile Name", expectedName, actualName);
+        assertEquals("Operations Metadata GetTile Link", expectedLink, actualLink);
+    }
 }
