@@ -5,8 +5,7 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
-import gov.nasa.worldwind.util.xml.DoubleModel;
-import gov.nasa.worldwind.util.xml.IntegerModel;
+import gov.nasa.worldwind.util.xml.NumberModel;
 import gov.nasa.worldwind.util.xml.TextModel;
 import gov.nasa.worldwind.util.xml.XmlModelParser;
 
@@ -46,10 +45,10 @@ public class WmsXmlParser extends XmlModelParser {
 
         this.registerParsableModel(namespace, "Extent", WmsLayerDimension.class);
         this.registerParsableModel(namespace, "EX_GeographicBoundingBox", WmsGeographicBoundingBox.class);
-        this.registerParsableModel(namespace, "westBoundLongitude", DoubleModel.class);
-        this.registerParsableModel(namespace, "eastBoundLongitude", DoubleModel.class);
-        this.registerParsableModel(namespace, "northBoundLatitude", DoubleModel.class);
-        this.registerParsableModel(namespace, "southBoundLatitude", DoubleModel.class);
+        this.registerParsableModel(namespace, "westBoundLongitude", NumberModel.class);
+        this.registerParsableModel(namespace, "eastBoundLongitude", NumberModel.class);
+        this.registerParsableModel(namespace, "northBoundLatitude", NumberModel.class);
+        this.registerParsableModel(namespace, "southBoundLatitude", NumberModel.class);
 
         this.registerParsableModel(namespace, "Exception", WmsException.class);
 
@@ -72,15 +71,15 @@ public class WmsXmlParser extends XmlModelParser {
         this.registerParsableModel(namespace, "LatLonBoundingBox", WmsGeographicBoundingBox.class);
         this.registerParsableModel(namespace, "Layer", WmsLayerCapabilities.class);
         this.registerParsableModel(namespace, "LayerInfo", WmsLayerInfoUrl.class);
-        this.registerParsableModel(namespace, "LayerLimit", IntegerModel.class);
+        this.registerParsableModel(namespace, "LayerLimit", NumberModel.class);
         this.registerParsableModel(namespace, "LegendURL", WmsLogoUrl.class);
         this.registerParsableModel(namespace, "LogoURL", WmsLogoUrl.class);
 
-        this.registerParsableModel(namespace, "MaxHeight", IntegerModel.class);
-        this.registerParsableModel(namespace, "MaxScaleDenominator", DoubleModel.class);
-        this.registerParsableModel(namespace, "MaxWidth", IntegerModel.class);
+        this.registerParsableModel(namespace, "MaxHeight", NumberModel.class);
+        this.registerParsableModel(namespace, "MaxScaleDenominator", NumberModel.class);
+        this.registerParsableModel(namespace, "MaxWidth", NumberModel.class);
         this.registerParsableModel(namespace, "MetadataURL", WmsLayerInfoUrl.class);
-        this.registerParsableModel(namespace, "MinScaleDenominator", DoubleModel.class);
+        this.registerParsableModel(namespace, "MinScaleDenominator", NumberModel.class);
 
         this.registerParsableModel(namespace, "Name", TextModel.class);
 

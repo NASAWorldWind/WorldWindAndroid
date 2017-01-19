@@ -14,17 +14,14 @@ import org.junit.runner.RunWith;
 import org.xmlpull.v1.XmlPullParser;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
-import javax.xml.namespace.QName;
 
 import static junit.framework.Assert.assertEquals;
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-public class DoubleModelTest {
+public class NumberModelTest {
 
-    public static final String TEST_ELEMENT_NAME = "MyDoubleValue";
+    public static final String TEST_ELEMENT_NAME = "MyNumberValue";
 
     public static final double DELTA = 1e-9;
 
@@ -40,10 +37,10 @@ public class DoubleModelTest {
 
         XmlModelParser parser = new XmlModelParser();
         parser.setPullParser(xpp);
-        parser.registerParsableModel("", TEST_ELEMENT_NAME, DoubleModel.class);
+        parser.registerParsableModel("", TEST_ELEMENT_NAME, NumberModel.class);
         parser.parse();
 
-        DoubleModel doubleModel = (DoubleModel) parser.getParsedModel();
-        assertEquals("Double Value", elementValue, doubleModel.getValue(), DELTA);
+        NumberModel numberModel = (NumberModel) parser.getParsedModel();
+        assertEquals("Number Value", elementValue, numberModel.getValue().doubleValue(), DELTA);
     }
 }

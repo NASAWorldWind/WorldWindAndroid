@@ -13,7 +13,7 @@ import java.util.Set;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.util.Logger;
-import gov.nasa.worldwind.util.xml.DoubleModel;
+import gov.nasa.worldwind.util.xml.NumberModel;
 import gov.nasa.worldwind.util.xml.TextModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
@@ -526,9 +526,9 @@ public class WmsLayerCapabilities extends XmlModel {
         } else if (keyName.equals("FeatureListURL")) {
             this.featureListUrls.add((WmsLayerInfoUrl) value);
         } else if (keyName.equals("MinScaleDenominator")) {
-            this.minScaleDenominator = ((DoubleModel) value).getValue();
+            this.minScaleDenominator = ((NumberModel) value).getValue().doubleValue();
         } else if (keyName.equals("MaxScaleDenominator")) {
-            this.maxScaleDenominator = ((DoubleModel) value).getValue();
+            this.maxScaleDenominator = ((NumberModel) value).getValue().doubleValue();
         } else if (keyName.equals("ScaleHint")) {
             WmsScaleHint scaleHint = (WmsScaleHint) value;
             this.minScaleHint = scaleHint.min;

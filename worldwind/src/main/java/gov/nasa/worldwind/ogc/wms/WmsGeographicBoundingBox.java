@@ -6,7 +6,7 @@
 package gov.nasa.worldwind.ogc.wms;
 
 import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.util.xml.DoubleModel;
+import gov.nasa.worldwind.util.xml.NumberModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsGeographicBoundingBox extends XmlModel {
@@ -39,13 +39,13 @@ public class WmsGeographicBoundingBox extends XmlModel {
         } else if (keyName.equals("maxy")) {
             this.north = Double.parseDouble((String) value);
         } else if (keyName.equals("westBoundLongitude")) {
-            this.west = ((DoubleModel) value).getValue();
+            this.west = ((NumberModel) value).getValue().doubleValue();
         } else if (keyName.equals("southBoundLatitude")) {
-            this.south = ((DoubleModel) value).getValue();
+            this.south = ((NumberModel) value).getValue().doubleValue();
         } else if (keyName.equals("eastBoundLongitude")) {
-            this.east = ((DoubleModel) value).getValue();
+            this.east = ((NumberModel) value).getValue().doubleValue();
         } else if (keyName.equals("northBoundLatitude")) {
-            this.north = ((DoubleModel) value).getValue();
+            this.north = ((NumberModel) value).getValue().doubleValue();
         }
     }
 }

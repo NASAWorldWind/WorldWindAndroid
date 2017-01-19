@@ -8,7 +8,7 @@ package gov.nasa.worldwind.ogc.wms;
 import java.util.Collections;
 import java.util.Set;
 
-import gov.nasa.worldwind.util.xml.IntegerModel;
+import gov.nasa.worldwind.util.xml.NumberModel;
 import gov.nasa.worldwind.util.xml.TextModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
@@ -106,14 +106,11 @@ public class WmsServiceInformation extends XmlModel {
         } else if (keyName.equals("AccessConstraints")) {
             this.accessConstraints = ((TextModel) value).getValue();
         } else if (keyName.equals("MaxWidth")) {
-            IntegerModel integerModel = (IntegerModel) value;
-            this.maxWidth = integerModel.getValue();
+            this.maxWidth = ((NumberModel) value).getValue().intValue();
         } else if (keyName.equals("MaxHeight")) {
-            IntegerModel integerModel = (IntegerModel) value;
-            this.maxHeight = integerModel.getValue();
+            this.maxHeight = ((NumberModel) value).getValue().intValue();
         } else if (keyName.equals("LayerLimit")) {
-            IntegerModel integerModel = (IntegerModel) value;
-            this.layerLimit = integerModel.getValue();
+            this.layerLimit = ((NumberModel) value).getValue().intValue();
         }
     }
 }
