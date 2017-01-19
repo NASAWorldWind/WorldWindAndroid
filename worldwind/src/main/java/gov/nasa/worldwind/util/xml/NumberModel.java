@@ -12,25 +12,33 @@ import gov.nasa.worldwind.util.Logger;
 
 public class NumberModel extends XmlModel {
 
-    protected Number value;
+    protected StringBuilder text = new StringBuilder();
 
     public NumberModel() {
 
     }
 
     public Number getValue() {
-        return this.value;
+        try {
+            return NumberFormat.getInstance().parse(this.text.toString());
+        } catch (ParseException ex) {
+            Logger.logMessage(Logger.ERROR, "NumberModel", "parseField",
+                "Exception parsing number '" + this.text + "'", ex);
+            return null;
+        }
     }
 
     @Override
-    protected void setField(String keyName, Object value) {
-        if (keyName.equals(CHARACTERS_FIELD)) {
-            try {
-                this.value = NumberFormat.getInstance().parse(value.toString());
-            } catch (ParseException ex) {
-                Logger.logMessage(Logger.ERROR, "NumberModel", "setField",
-                    "Exception parsing number '" + value + "'", ex);
-            }
+    protected void parseText(String text) {
+        if (text == null || text.isEmpty()) {
+            return; // nothing to parse
         }
+
+        text = text.replaceAll("\n", "").trim();
+        if (text.isEmpty()) {
+            return; // nothing but whitespace
+        }
+
+        this.text.append(text);
     }
 }

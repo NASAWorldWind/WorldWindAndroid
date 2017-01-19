@@ -31,7 +31,7 @@ public class WmsRequestInformation extends XmlModel {
     }
 
     @Override
-    public void setField(String keyName, Object value) {
+    public void parseField(String keyName, Object value) {
         if (keyName.equals("GetCapabilities")) {
             this.getCapabilities = (WmsRequestOperation) value;
         } else if (keyName.equals("GetMap")) {

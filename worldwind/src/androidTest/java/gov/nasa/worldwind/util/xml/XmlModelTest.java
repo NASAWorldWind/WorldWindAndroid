@@ -56,13 +56,13 @@ public class XmlModelTest {
 //        }
 //
 //        @Override
-//        public void setField(QName keyName, Object value) {
+//        public void parseField(QName keyName, Object value) {
 //
 //            if (keyName.equals(NAME)) {
 //                Set<String> values = (Set<String>) this.getField(NAME);
 //                if (values == null) {
 //                    values = new HashSet<>();
-//                    super.setField(NAME, values);
+//                    super.parseField(NAME, values);
 //                }
 //                values.add(((XmlModel) value).getCharactersContent().toString());
 //            }

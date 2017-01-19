@@ -65,7 +65,7 @@ public class WmsLayerDimension extends XmlModel {
     }
 
     @Override
-    public void setField(String keyName, Object value) {
+    public void parseField(String keyName, Object value) {
         if (keyName.equals("name")) {
             this.name = value.toString();
         } else if (keyName.equals("units")) {

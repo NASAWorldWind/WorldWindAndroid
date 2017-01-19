@@ -53,7 +53,7 @@ public class WmsLayerStyle extends XmlModel {
     }
 
     @Override
-    public void setField(String keyName, Object value) {
+    public void parseField(String keyName, Object value) {
         if (keyName.equals("Name")) {
             this.name = ((TextModel) value).getValue();
         } else if (keyName.equals("Title")) {

@@ -486,7 +486,7 @@ public class WmsLayerCapabilities extends XmlModel {
     }
 
     @Override
-    public void setField(String keyName, Object value) {
+    public void parseField(String keyName, Object value) {
         if (keyName.equals("Layer")) {
             this.layers.add((WmsLayerCapabilities) value);
         } else if (keyName.equals("Name")) {

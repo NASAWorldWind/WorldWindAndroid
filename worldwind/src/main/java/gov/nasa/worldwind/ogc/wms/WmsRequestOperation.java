@@ -41,7 +41,7 @@ public class WmsRequestOperation extends XmlModel {
     }
 
     @Override
-    public void setField(String keyName, Object value) {
+    public void parseField(String keyName, Object value) {
         if (keyName.equals("Format")) {
             this.formats.add(((WmsFormat) value).getFormat());
         } else if (keyName.equals("DCPType")) {

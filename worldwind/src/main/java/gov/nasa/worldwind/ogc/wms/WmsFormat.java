@@ -9,19 +9,17 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsFormat extends XmlModel {
 
-    protected String format;
+    protected StringBuilder text = new StringBuilder();
 
     public WmsFormat() {
     }
 
     public String getFormat() {
-        return this.format;
+        return this.text.toString().trim().toLowerCase();
     }
 
     @Override
-    protected void setField(String keyName, Object value) {
-        if (keyName.equals(CHARACTERS_FIELD)) {
-            this.format = value.toString().trim().toLowerCase();
-        }
+    protected void parseText(String text) {
+        this.text.append(text);
     }
 }

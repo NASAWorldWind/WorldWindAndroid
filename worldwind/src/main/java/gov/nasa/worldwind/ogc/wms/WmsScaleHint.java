@@ -27,7 +27,7 @@ public class WmsScaleHint extends XmlModel {
     }
 
     @Override
-    protected void setField(String keyName, Object value) {
+    protected void parseField(String keyName, Object value) {
         if (keyName.equals("min")) {
             this.min = this.parseDouble(value);
         } else if (keyName.equals("max")) {

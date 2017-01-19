@@ -18,7 +18,7 @@ public class WmsContactPersonPrimary extends XmlModel {
     }
 
     @Override
-    protected void setField(String keyName, Object value) {
+    protected void parseField(String keyName, Object value) {
         if (keyName.equals("ContactPerson")) {
             TextModel textModel = (TextModel) value;
             this.person = textModel.getValue();

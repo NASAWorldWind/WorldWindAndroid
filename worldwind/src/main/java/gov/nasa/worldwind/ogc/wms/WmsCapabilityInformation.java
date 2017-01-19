@@ -49,7 +49,7 @@ public class WmsCapabilityInformation extends XmlModel {
     }
 
     @Override
-    public void setField(String keyName, Object value) {
+    public void parseField(String keyName, Object value) {
         if (keyName.equals("Request")) {
             WmsRequestInformation requestInformation = (WmsRequestInformation) value;
             this.capabilities = requestInformation.getCapabilities;

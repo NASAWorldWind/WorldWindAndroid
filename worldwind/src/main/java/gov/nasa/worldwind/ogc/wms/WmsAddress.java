@@ -50,7 +50,7 @@ public class WmsAddress extends XmlModel {
     }
 
     @Override
-    public void setField(String keyName, Object value) {
+    public void parseField(String keyName, Object value) {
         if (keyName.equals("Address")) {
             this.address = ((TextModel) value).getValue();
         } else if (keyName.equals("AddressType")) {

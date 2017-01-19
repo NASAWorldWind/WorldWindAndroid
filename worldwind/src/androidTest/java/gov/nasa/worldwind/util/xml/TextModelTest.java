@@ -19,15 +19,13 @@ import static junit.framework.Assert.assertEquals;
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-public class NumberModelTest {
+public class TextModelTest {
 
-    public static final String TEST_ELEMENT_NAME = "MyNumberValue";
-
-    public static final double DELTA = 1e-9;
+    public static final String TEST_ELEMENT_NAME = "MyTextValue";
 
     @Test
     public void testGetValue() throws Exception {
-        double elementValue = 3.14159018;
+        String elementValue = "3.14159018";
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<" + TEST_ELEMENT_NAME + ">\n" +
             "\t" + elementValue + "\n" +
@@ -37,10 +35,10 @@ public class NumberModelTest {
 
         XmlModelParser parser = new XmlModelParser();
         parser.setPullParser(xpp);
-        parser.registerParsableModel("", TEST_ELEMENT_NAME, NumberModel.class);
+        parser.registerParsableModel("", TEST_ELEMENT_NAME, TextModel.class);
         parser.parse();
 
-        NumberModel numberModel = (NumberModel) parser.getParsedModel();
-        assertEquals("Number Value", elementValue, numberModel.getValue().doubleValue(), DELTA);
+        TextModel textModel = (TextModel) parser.getParsedModel();
+        assertEquals("Text value", elementValue, textModel.getValue());
     }
 }

@@ -7,19 +7,29 @@ package gov.nasa.worldwind.util.xml;
 
 public class TextModel extends XmlModel {
 
-    protected String value;
+    protected StringBuilder text;
 
     public TextModel() {
     }
 
     public String getValue() {
-        return this.value;
+        return (this.text != null) ? this.text.toString() : null;
     }
 
     @Override
-    protected void setField(String keyName, Object value) {
-        if (keyName.equals(CHARACTERS_FIELD)) {
-            this.value = value.toString();
+    protected void parseText(String text) {
+        if (text == null || text.isEmpty()) {
+            return; // nothing to parse
         }
+
+        text = text.replaceAll("\n", "").trim();
+        if (text.isEmpty()) {
+            return; // nothing but whitespace
+        }
+
+        if (this.text == null) {
+            this.text = new StringBuilder();
+        }
+        this.text.append(text);
     }
 }

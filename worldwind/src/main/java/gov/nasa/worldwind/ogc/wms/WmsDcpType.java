@@ -54,7 +54,7 @@ public class WmsDcpType extends XmlModel {
     }
 
     @Override
-    public void setField(String keyName, Object value) {
+    public void parseField(String keyName, Object value) {
         if (keyName.equals("HTTP")) {
             WmsDcpHttp http = (WmsDcpHttp) value;
             this.get = http.get != null ? http.get.onlineResource : null;
@@ -72,7 +72,7 @@ public class WmsDcpType extends XmlModel {
         }
 
         @Override
-        public void setField(String keyName, Object value) {
+        public void parseField(String keyName, Object value) {
             if (keyName.equals("Get")) {
                 this.get = (WmsDcpHttpProtocol) value;
             } else if (keyName.equals("Post")) {
@@ -89,7 +89,7 @@ public class WmsDcpType extends XmlModel {
         }
 
         @Override
-        public void setField(String keyName, Object value) {
+        public void parseField(String keyName, Object value) {
             if (keyName.equals("OnlineResource")) {
                 this.onlineResource = (WmsOnlineResource) value;
             }

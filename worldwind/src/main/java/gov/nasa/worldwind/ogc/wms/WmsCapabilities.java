@@ -153,7 +153,7 @@ public class WmsCapabilities extends XmlModel {
     }
 
     @Override
-    public void setField(String keyName, Object value) {
+    public void parseField(String keyName, Object value) {
         if (keyName.equals("version")) {
             this.version = value.toString();
         } else if (keyName.equals("updateSequence")) {

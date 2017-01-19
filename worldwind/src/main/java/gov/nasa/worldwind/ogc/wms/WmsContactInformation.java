@@ -56,7 +56,7 @@ public class WmsContactInformation extends XmlModel {
     }
 
     @Override
-    public void setField(String keyName, Object value) {
+    public void parseField(String keyName, Object value) {
         if (keyName.equals("ContactPosition")) {
             this.contactPosition = ((TextModel) value).getValue();
         } else if (keyName.equals("ContactVoiceTelephone")) {

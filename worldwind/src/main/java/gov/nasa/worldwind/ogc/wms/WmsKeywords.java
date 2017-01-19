@@ -24,7 +24,7 @@ public class WmsKeywords extends XmlModel {
     }
 
     @Override
-    public void setField(String keyName, Object value) {
+    public void parseField(String keyName, Object value) {
         if (keyName.equals("Keyword")) {
             this.keywords.add(((TextModel) value).getValue());
         }

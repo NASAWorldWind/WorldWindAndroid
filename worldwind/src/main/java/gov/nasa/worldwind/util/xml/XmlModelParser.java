@@ -42,11 +42,11 @@ public class XmlModelParser {
             return; // nothing to parse
         }
 
-        if (this.xpp.getEventType() == XmlPullParser.START_DOCUMENT) {
-            this.xpp.next(); // skip the start document event
+        while (this.xpp.getEventType() != XmlPullParser.START_TAG) {
+            this.xpp.next(); // skip to the start of the first element
         }
 
-        this.parsedModel = this.parseElement();
+        this.parsedModel = this.parseElement(null /*parent*/);
     }
 
     public XmlModel getParsedModel() {
@@ -87,43 +87,29 @@ public class XmlModelParser {
         return DefaultXmlModel.class;
     }
 
-    protected XmlModel parseElement() throws XmlPullParserException, IOException {
-        // Set up to parse the element, its attributes, and its character data (if any).
-        String name = this.xpp.getName();
-        StringBuilder characters = null;
-
+    protected XmlModel parseElement(XmlModel parent) throws XmlPullParserException, IOException {
         // Create an instance of an XML model object associated with the element's namespace and tag name.
-        XmlModel model = this.createParsableModel(this.xpp.getNamespace(), name);
+        XmlModel model = this.createParsableModel(this.xpp.getNamespace(), this.xpp.getName());
+        model.setParent(parent);
 
         // Parse the element's attributes.
         for (int idx = 0, len = this.xpp.getAttributeCount(); idx < len; idx++) {
-            model.setField(this.xpp.getAttributeName(idx), this.xpp.getAttributeValue(idx));
+            String attrName = this.xpp.getAttributeName(idx);
+            String attrValue = this.xpp.getAttributeValue(idx);
+            model.parseField(attrName, attrValue);
         }
 
-        // Parse all subsequent events until we reach either the end of the document or the end of the element.
-        while (this.xpp.next() != XmlPullParser.END_DOCUMENT) {
+        // Parse the element's content until we reach either the end of the document or the end of the element.
+        while (this.xpp.next() != XmlPullParser.END_DOCUMENT
+            && this.xpp.getEventType() != XmlPullParser.END_TAG) {
+
             if (this.xpp.getEventType() == XmlPullParser.START_TAG) {
-                String childName = this.xpp.getName();
-                XmlModel childModel = this.parseElement(); // recursively parse the child element
-                childModel.setParent(model);
-                model.setField(childName, childModel);
-            } else if (this.xpp.getEventType() == XmlPullParser.END_TAG && this.xpp.getName().equals(name)) {
-                if (characters != null) { // we can notify the model of its character data only when the element is done
-                    model.setField(XmlModel.CHARACTERS_FIELD, characters.toString());
-                }
-                break; // stop parsing the element
+                String childName = this.xpp.getName(); // store the child name before recursively parsing
+                XmlModel childValue = this.parseElement(model); // recursively parse the child element
+                model.parseField(childName, childValue);
             } else if (this.xpp.getEventType() == XmlPullParser.TEXT) {
                 String text = this.xpp.getText();
-                if (text != null) {
-                    text = text.replaceAll("\n", "").trim();
-                    if (!text.isEmpty()) {
-                        if (characters == null) {
-                            characters = new StringBuilder(text);
-                        } else {
-                            characters.append(text);
-                        }
-                    }
-                }
+                model.parseText(text);
             }
         }
 

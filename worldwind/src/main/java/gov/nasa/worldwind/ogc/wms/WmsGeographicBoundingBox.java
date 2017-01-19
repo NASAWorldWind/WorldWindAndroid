@@ -29,7 +29,7 @@ public class WmsGeographicBoundingBox extends XmlModel {
     }
 
     @Override
-    public void setField(String keyName, Object value) {
+    public void parseField(String keyName, Object value) {
         if (keyName.equals("minx")) {
             this.west = Double.parseDouble((String) value);
         } else if (keyName.equals("miny")) {

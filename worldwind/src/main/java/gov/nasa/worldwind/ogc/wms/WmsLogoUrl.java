@@ -42,7 +42,7 @@ public class WmsLogoUrl extends XmlModel {
     }
 
     @Override
-    public void setField(String keyName, Object value) {
+    public void parseField(String keyName, Object value) {
         if (keyName.equals("Format")) {
             this.formats.add(((WmsFormat) value).getFormat());
         } else if (keyName.equals("OnlineResource")) {
@@ -51,13 +51,13 @@ public class WmsLogoUrl extends XmlModel {
             try {
                 this.width = Integer.parseInt(value.toString());
             } catch (NumberFormatException e) {
-                Logger.makeMessage("WmsLogoUrl", "setField", e.toString());
+                Logger.makeMessage("WmsLogoUrl", "parseField", e.toString());
             }
         } else if (keyName.equals("height")) {
             try {
                 this.height = Integer.parseInt(value.toString());
             } catch (NumberFormatException e) {
-                Logger.makeMessage("WmsLogoUrl", "setField", e.toString());
+                Logger.makeMessage("WmsLogoUrl", "parseField", e.toString());
             }
         }
     }

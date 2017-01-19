@@ -11,25 +11,28 @@ public class WmsLayerIdentifier extends XmlModel {
 
     protected String authority;
 
-    protected String identifier;
+    protected StringBuilder text = new StringBuilder();
 
     public WmsLayerIdentifier() {
-    }
-
-    public String getIdentifier() {
-        return this.identifier;
     }
 
     public String getAuthority() {
         return this.authority;
     }
 
+    public String getIdentifier() {
+        return this.text.toString();
+    }
+
     @Override
-    protected void setField(String keyName, Object value) {
+    protected void parseField(String keyName, Object value) {
         if (keyName.equals("authority")) {
             this.authority = value.toString();
-        } else if (keyName.equals(CHARACTERS_FIELD)) {
-            this.identifier = value.toString();
         }
+    }
+
+    @Override
+    protected void parseText(String text) {
+        this.text.append(text);
     }
 }

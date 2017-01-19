@@ -56,7 +56,7 @@ public class WmsBoundingBox extends XmlModel {
     }
 
     @Override
-    public void setField(String keyName, Object value) {
+    public void parseField(String keyName, Object value) {
         if (keyName.equals("CRS")) {
             // Convention is to be in upper case
             this.crs = ((String) value).toUpperCase();

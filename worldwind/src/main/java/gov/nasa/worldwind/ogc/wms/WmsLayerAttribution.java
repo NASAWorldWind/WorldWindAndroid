@@ -32,7 +32,7 @@ public class WmsLayerAttribution extends XmlModel {
     }
 
     @Override
-    public void setField(String keyName, Object value) {
+    public void parseField(String keyName, Object value) {
         if (keyName.equals("Title")) {
             this.title = ((TextModel) value).getValue();
         } else if (keyName.equals("OnlineResource")) {
