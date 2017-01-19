@@ -17,7 +17,9 @@ public class TextModel extends XmlModel {
     }
 
     @Override
-    protected void setText(String value) {
-        this.value = value;
+    protected void setField(String keyName, Object value) {
+        if (keyName.equals(CHARACTERS_FIELD)) {
+            this.value = value.toString();
+        }
     }
 }

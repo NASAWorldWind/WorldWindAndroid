@@ -20,11 +20,13 @@ public class IntegerModel extends XmlModel {
     }
 
     @Override
-    protected void setText(String value) {
-        try {
-            this.value = Integer.parseInt(value);
-        } catch (NumberFormatException ex) {
-            Logger.logMessage(Logger.ERROR, "IntegerModel", "setField", "Parsing error " + ex.toString());
+    protected void setField(String keyName, Object value) {
+        if (keyName.equals(CHARACTERS_FIELD)) {
+            try {
+                this.value = Integer.parseInt(value.toString());
+            } catch (NumberFormatException ex) {
+                Logger.logMessage(Logger.ERROR, "IntegerModel", "setField", "Parsing error " + ex.toString());
+            }
         }
     }
 }

@@ -7,12 +7,16 @@ package gov.nasa.worldwind.util.xml;
 
 import android.support.test.filters.SmallTest;
 import android.support.test.runner.AndroidJUnit4;
+import android.util.Xml;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xmlpull.v1.XmlPullParser;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+
+import javax.xml.namespace.QName;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -24,19 +28,20 @@ public class IntegerModelTest {
 
     @Test
     public void testGetValue() throws Exception {
-
         int elementValue = 24601;
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<" + TEST_ELEMENT_NAME + ">\n" +
             "\t" + elementValue + "\n" +
             "</" + TEST_ELEMENT_NAME + ">";
-        InputStream is = new ByteArrayInputStream(xml.getBytes());
-        XmlPullParserContext ctx = new XmlPullParserContext();
-        ctx.setParserInput(is);
-        IntegerModel integerModel = new IntegerModel();
+        XmlPullParser xpp = Xml.newPullParser();
+        xpp.setInput(new ByteArrayInputStream(xml.getBytes()), null /*inputEncoding*/);
 
-        integerModel.read(ctx);
+        XmlModelParser parser = new XmlModelParser();
+        parser.setPullParser(xpp);
+        parser.registerParsableModel("", TEST_ELEMENT_NAME, IntegerModel.class);
+        parser.parse();
 
+        IntegerModel integerModel = (IntegerModel) parser.getParsedModel();
         assertEquals("Integer Value", elementValue, integerModel.getValue().intValue());
     }
 }

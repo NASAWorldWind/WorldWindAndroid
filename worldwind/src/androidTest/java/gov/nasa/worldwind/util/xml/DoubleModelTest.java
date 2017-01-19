@@ -7,12 +7,16 @@ package gov.nasa.worldwind.util.xml;
 
 import android.support.test.filters.SmallTest;
 import android.support.test.runner.AndroidJUnit4;
+import android.util.Xml;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xmlpull.v1.XmlPullParser;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+
+import javax.xml.namespace.QName;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -26,19 +30,20 @@ public class DoubleModelTest {
 
     @Test
     public void testGetValue() throws Exception {
-
         double elementValue = 3.14159018;
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<" + TEST_ELEMENT_NAME + ">\n" +
             "\t" + elementValue + "\n" +
             "</" + TEST_ELEMENT_NAME + ">";
-        InputStream is = new ByteArrayInputStream(xml.getBytes());
-        XmlPullParserContext ctx = new XmlPullParserContext();
-        ctx.setParserInput(is);
-        DoubleModel doubleModel = new DoubleModel();
+        XmlPullParser xpp = Xml.newPullParser();
+        xpp.setInput(new ByteArrayInputStream(xml.getBytes()), null /*inputEncoding*/);
 
-        doubleModel.read(ctx);
+        XmlModelParser parser = new XmlModelParser();
+        parser.setPullParser(xpp);
+        parser.registerParsableModel("", TEST_ELEMENT_NAME, DoubleModel.class);
+        parser.parse();
 
+        DoubleModel doubleModel = (DoubleModel) parser.getParsedModel();
         assertEquals("Double Value", elementValue, doubleModel.getValue(), DELTA);
     }
 }

@@ -5,15 +5,18 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
-import org.xmlpull.v1.XmlPullParserException;
+import android.util.Xml;
 
-import java.io.IOException;
+import org.xmlpull.v1.XmlPullParser;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.xml.XmlModel;
+import gov.nasa.worldwind.util.xml.XmlModelParser;
 
 public class WmsCapabilities extends XmlModel {
 
@@ -28,16 +31,21 @@ public class WmsCapabilities extends XmlModel {
     public WmsCapabilities() {
     }
 
-    public static WmsCapabilities getCapabilities(InputStream is) throws XmlPullParserException, IOException {
-        // Initialize the pull parser context
-        WmsPullParserContext ctx = new WmsPullParserContext();
-        ctx.setParserInput(is);
+    public static WmsCapabilities getCapabilities(InputStream inputStream) throws Exception {
+        XmlPullParser pullParser = Xml.newPullParser();
+        pullParser.setInput(inputStream, null /*inputEncoding*/);
 
-        // Parse the Xml document until a Wms service is discovered
-        WmsCapabilities wmsCapabilities = new WmsCapabilities();
-        wmsCapabilities.read(ctx);
+        XmlModelParser modelParser = new WmsXmlParser();
+        modelParser.setPullParser(pullParser);
+        modelParser.parse();
 
-        return wmsCapabilities;
+        XmlModel model = modelParser.getParsedModel();
+        if (!(model instanceof WmsCapabilities)) {
+            throw new RuntimeException(
+                Logger.logMessage(Logger.ERROR, "WmsCapabilities", "getCapabilities", "Invalid WMS Capabilities input"));
+        }
+
+        return (WmsCapabilities) model;
     }
 
     /**

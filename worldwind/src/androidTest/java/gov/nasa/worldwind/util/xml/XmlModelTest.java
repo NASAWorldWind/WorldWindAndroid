@@ -5,11 +5,6 @@
 
 package gov.nasa.worldwind.util.xml;
 
-import android.support.test.filters.SmallTest;
-import android.support.test.runner.AndroidJUnit4;
-
-import org.junit.runner.RunWith;
-
 //@RunWith(AndroidJUnit4.class)
 //@SmallTest
 public class XmlModelTest {
@@ -44,7 +39,7 @@ public class XmlModelTest {
         "\t</LevelTwoC>\n" +
         "</LevelOne>";
 
-    protected XmlPullParserContext context;
+    protected XmlModelParser context;
 
     protected XmlModel root;
 
@@ -77,7 +72,7 @@ public class XmlModelTest {
 //    @Before
 //    public void setup() throws Exception {
 //
-//        this.context = new XmlPullParserContext(NAMESPACE);
+//        this.context = new XmlModelParser(NAMESPACE);
 //        this.context.registerParsableModel(new QName(NAMESPACE, "LevelThreeC"), new MultipleEntryElement(NAMESPACE));
 //        this.context.registerParsableModel(new QName(NAMESPACE, "LevelFourD"), new MultipleEntryElement(NAMESPACE));
 //        InputStream is = new ByteArrayInputStream(XML.getBytes());

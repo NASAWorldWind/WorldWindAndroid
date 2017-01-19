@@ -19,11 +19,13 @@ public class DoubleModel extends XmlModel {
     }
 
     @Override
-    protected void setText(String value) {
-        try {
-            this.value = Double.parseDouble(value);
-        } catch (NumberFormatException ex) {
-            Logger.logMessage(Logger.ERROR, "DoubleModel", "setField", "Parsing error " + ex.toString());
+    protected void setField(String keyName, Object value) {
+        if (keyName.equals(CHARACTERS_FIELD)) {
+            try {
+                this.value = Double.parseDouble(value.toString());
+            } catch (NumberFormatException ex) {
+                Logger.logMessage(Logger.ERROR, "DoubleModel", "setField", "Parsing error " + ex.toString());
+            }
         }
     }
 }
