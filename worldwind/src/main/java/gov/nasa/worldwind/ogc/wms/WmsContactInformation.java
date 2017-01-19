@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
-import gov.nasa.worldwind.util.xml.TextModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsContactInformation extends XmlModel {
@@ -58,13 +57,13 @@ public class WmsContactInformation extends XmlModel {
     @Override
     public void parseField(String keyName, Object value) {
         if (keyName.equals("ContactPosition")) {
-            this.contactPosition = ((TextModel) value).getValue();
+            this.contactPosition = (String) value;
         } else if (keyName.equals("ContactVoiceTelephone")) {
-            this.contactVoiceTelephone = ((TextModel) value).getValue();
+            this.contactVoiceTelephone = (String) value;
         } else if (keyName.equals("ContactFacsimileNumber")) {
-            this.contactFacsimileTelephone = ((TextModel) value).getValue();
+            this.contactFacsimileTelephone = (String) value;
         } else if (keyName.equals("ContactElectronicMailAddress")) {
-            this.contactElectronicMailAddress = ((TextModel) value).getValue();
+            this.contactElectronicMailAddress = (String) value;
         } else if (keyName.equals("ContactPersonPrimary")) {
             WmsContactPersonPrimary contactPersonPrimary = (WmsContactPersonPrimary) value;
             this.contactPerson = contactPersonPrimary.person;

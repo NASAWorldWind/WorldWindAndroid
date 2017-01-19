@@ -11,7 +11,9 @@ public class WmsLayerIdentifier extends XmlModel {
 
     protected String authority;
 
-    protected StringBuilder text = new StringBuilder();
+    protected String identifier;
+
+    protected StringBuilder text;
 
     public WmsLayerIdentifier() {
     }
@@ -21,18 +23,29 @@ public class WmsLayerIdentifier extends XmlModel {
     }
 
     public String getIdentifier() {
-        return this.text.toString();
+        if (this.text != null) {
+            this.identifier = this.text.toString().trim();
+        }
+
+        return this.identifier;
     }
 
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("authority")) {
-            this.authority = value.toString();
+            this.authority = (String) value;
         }
     }
 
     @Override
     protected void parseText(String text) {
+        if (text == null) {
+            return; // nothing to parse
+        }
+
+        if (this.text == null) {
+            this.text = new StringBuilder();
+        }
         this.text.append(text);
     }
 }

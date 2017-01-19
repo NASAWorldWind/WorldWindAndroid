@@ -25,7 +25,7 @@ public class WmsException extends XmlModel {
     @Override
     public void parseField(String keyName, Object value) {
         if (keyName.equals("Format")) {
-            this.exceptionFormats.add(((WmsFormat) value).getFormat());
+            this.exceptionFormats.add((String) value);
         }
     }
 }

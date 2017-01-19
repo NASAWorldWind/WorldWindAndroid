@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
-import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsLayerDimension extends XmlModel {
@@ -55,31 +54,22 @@ public class WmsLayerDimension extends XmlModel {
         return this.current;
     }
 
-    protected Boolean parseBoolean(Object value) {
-        try {
-            return Boolean.parseBoolean(value.toString());
-        } catch (Exception e) {
-            Logger.makeMessage("WmsLayerCapabilities", "parseDouble", e.toString());
-        }
-        return null;
-    }
-
     @Override
     public void parseField(String keyName, Object value) {
         if (keyName.equals("name")) {
-            this.name = value.toString();
+            this.name = (String) value;
         } else if (keyName.equals("units")) {
-            this.units = value.toString();
+            this.units = (String) value;
         } else if (keyName.equals("unitSymbol")) {
-            this.unitSymbol = value.toString();
+            this.unitSymbol = (String) value;
         } else if (keyName.equals("default")) {
-            this.defaultValue = value.toString();
+            this.defaultValue = (String) value;
         } else if (keyName.equals("multipleValues")) {
-            this.multipleValues = this.parseBoolean(value);
+            this.multipleValues = Boolean.parseBoolean((String) value);
         } else if (keyName.equals("nearestValue")) {
-            this.nearestValue = this.parseBoolean(value);
+            this.nearestValue = Boolean.parseBoolean((String) value);
         } else if (keyName.equals("current")) {
-            this.current = this.parseBoolean(value);
+            this.current = Boolean.parseBoolean((String) value);
         }
     }
 }

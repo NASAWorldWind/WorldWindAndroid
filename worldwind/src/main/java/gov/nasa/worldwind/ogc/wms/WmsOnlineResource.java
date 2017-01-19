@@ -27,9 +27,9 @@ public class WmsOnlineResource extends XmlModel {
     @Override
     public void parseField(String keyName, Object value) {
         if (keyName.equals("type")) {
-            this.type = value.toString();
+            this.type = (String) value;
         } else if (keyName.equals("href")) {
-            this.href = value.toString();
+            this.href = (String) value;
         }
     }
 }

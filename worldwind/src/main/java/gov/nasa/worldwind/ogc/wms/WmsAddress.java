@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
-import gov.nasa.worldwind.util.xml.TextModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsAddress extends XmlModel {
@@ -52,17 +51,17 @@ public class WmsAddress extends XmlModel {
     @Override
     public void parseField(String keyName, Object value) {
         if (keyName.equals("Address")) {
-            this.address = ((TextModel) value).getValue();
+            this.address = (String) value;
         } else if (keyName.equals("AddressType")) {
-            this.addressType = ((TextModel) value).getValue();
+            this.addressType = (String) value;
         } else if (keyName.equals("City")) {
-            this.city = ((TextModel) value).getValue();
+            this.city = (String) value;
         } else if (keyName.equals("StateOrProvince")) {
-            this.stateOrProvince = ((TextModel) value).getValue();
+            this.stateOrProvince = (String) value;
         } else if (keyName.equals("PostCode")) {
-            this.postCode = ((TextModel) value).getValue();
+            this.postCode = (String) value;
         } else if (keyName.equals("Country")) {
-            this.country = ((TextModel) value).getValue();
+            this.country = (String) value;
         }
     }
 }

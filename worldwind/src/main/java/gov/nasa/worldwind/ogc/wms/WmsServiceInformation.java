@@ -8,8 +8,6 @@ package gov.nasa.worldwind.ogc.wms;
 import java.util.Collections;
 import java.util.Set;
 
-import gov.nasa.worldwind.util.xml.NumberModel;
-import gov.nasa.worldwind.util.xml.TextModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsServiceInformation extends XmlModel {
@@ -90,11 +88,11 @@ public class WmsServiceInformation extends XmlModel {
     @Override
     public void parseField(String keyName, Object value) {
         if (keyName.equals("Name")) {
-            this.name = ((TextModel) value).getValue();
+            this.name = (String) value;
         } else if (keyName.equals("Title")) {
-            this.title = ((TextModel) value).getValue();
+            this.title = (String) value;
         } else if (keyName.equals("Abstract")) {
-            this.description = ((TextModel) value).getValue();
+            this.description = (String) value;
         } else if (keyName.equals("KeywordList")) {
             this.keywords = (WmsKeywords) value;
         } else if (keyName.equals("OnlineResource")) {
@@ -102,15 +100,15 @@ public class WmsServiceInformation extends XmlModel {
         } else if (keyName.equals("ContactInformation")) {
             this.contactInformation = (WmsContactInformation) value;
         } else if (keyName.equals("Fees")) {
-            this.fees = ((TextModel) value).getValue();
+            this.fees = (String) value;
         } else if (keyName.equals("AccessConstraints")) {
-            this.accessConstraints = ((TextModel) value).getValue();
+            this.accessConstraints = (String) value;
         } else if (keyName.equals("MaxWidth")) {
-            this.maxWidth = ((NumberModel) value).getValue().intValue();
+            this.maxWidth = Integer.parseInt((String) value);
         } else if (keyName.equals("MaxHeight")) {
-            this.maxHeight = ((NumberModel) value).getValue().intValue();
+            this.maxHeight = Integer.parseInt((String) value);
         } else if (keyName.equals("LayerLimit")) {
-            this.layerLimit = ((NumberModel) value).getValue().intValue();
+            this.layerLimit = Integer.parseInt((String) value);
         }
     }
 }

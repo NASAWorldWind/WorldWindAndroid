@@ -13,8 +13,6 @@ import java.util.Set;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.util.Logger;
-import gov.nasa.worldwind.util.xml.NumberModel;
-import gov.nasa.worldwind.util.xml.TextModel;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsLayerCapabilities extends XmlModel {
@@ -490,19 +488,19 @@ public class WmsLayerCapabilities extends XmlModel {
         if (keyName.equals("Layer")) {
             this.layers.add((WmsLayerCapabilities) value);
         } else if (keyName.equals("Name")) {
-            this.name = ((TextModel) value).getValue();
+            this.name = (String) value;
         } else if (keyName.equals("Title")) {
-            this.title = ((TextModel) value).getValue();
+            this.title = (String) value;
         } else if (keyName.equals("Abstract")) {
-            this.description = ((TextModel) value).getValue();
+            this.description = (String) value;
         } else if (keyName.equals("KeywordList")) {
             this.keywords = (WmsKeywords) value;
         } else if (keyName.equals("Style")) {
             this.styles.add((WmsLayerStyle) value);
         } else if (keyName.equals("CRS")) {
-            this.availableCrs.add(((TextModel) value).getValue());
+            this.availableCrs.add((String) value);
         } else if (keyName.equals("SRS")) {
-            this.availableSrs.add(((TextModel) value).getValue());
+            this.availableSrs.add((String) value);
         } else if (keyName.equals("EX_GeographicBoundingBox")) {
             this.geographicBoundingBox = (WmsGeographicBoundingBox) value;
         } else if (keyName.equals("LatLonBoundingBox")) {
@@ -526,43 +524,25 @@ public class WmsLayerCapabilities extends XmlModel {
         } else if (keyName.equals("FeatureListURL")) {
             this.featureListUrls.add((WmsLayerInfoUrl) value);
         } else if (keyName.equals("MinScaleDenominator")) {
-            this.minScaleDenominator = ((NumberModel) value).getValue().doubleValue();
+            this.minScaleDenominator = Double.parseDouble((String) value);
         } else if (keyName.equals("MaxScaleDenominator")) {
-            this.maxScaleDenominator = ((NumberModel) value).getValue().doubleValue();
+            this.maxScaleDenominator = Double.parseDouble((String) value);
         } else if (keyName.equals("ScaleHint")) {
             WmsScaleHint scaleHint = (WmsScaleHint) value;
             this.minScaleHint = scaleHint.min;
             this.maxScaleHint = scaleHint.max;
         } else if (keyName.equals("queryable")) {
-            this.queryable = this.parseBoolean(value);
+            this.queryable = Boolean.parseBoolean((String) value);
         } else if (keyName.equals("cascaded")) {
-            this.cascaded = this.parseInteger(value);
+            this.cascaded = Integer.parseInt((String) value);
         } else if (keyName.equals("opaque")) {
-            this.opaque = this.parseBoolean(value);
+            this.opaque = Boolean.parseBoolean((String) value);
         } else if (keyName.equals("noSubsets")) {
-            this.noSubsets = this.parseBoolean(value);
+            this.noSubsets = Boolean.parseBoolean((String) value);
         } else if (keyName.equals("fixedWidth")) {
-            this.fixedWidth = this.parseInteger(value);
+            this.fixedWidth = Integer.parseInt((String) value);
         } else if (keyName.equals("fixedHeight")) {
-            this.fixedHeight = this.parseInteger(value);
+            this.fixedHeight = Integer.parseInt((String) value);
         }
-    }
-
-    protected Boolean parseBoolean(Object value) {
-        try {
-            return Boolean.parseBoolean(value.toString());
-        } catch (Exception e) {
-            Logger.makeMessage("WmsLayerCapabilities", "parseDouble", e.toString());
-        }
-        return null;
-    }
-
-    protected Integer parseInteger(Object value) {
-        try {
-            return Integer.parseInt(value.toString());
-        } catch (Exception e) {
-            Logger.makeMessage("WmsLayerCapabilities", "parseInteger", e.toString());
-        }
-        return null;
     }
 }

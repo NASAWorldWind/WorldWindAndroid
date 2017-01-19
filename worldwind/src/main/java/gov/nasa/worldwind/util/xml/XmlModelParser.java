@@ -10,7 +10,9 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.namespace.QName;
 
@@ -20,9 +22,9 @@ public class XmlModelParser {
 
     protected XmlPullParser xpp;
 
-    protected XmlModel parsedModel;
+    protected Map<QName, Class<? extends XmlModel>> xmlModelRegistry = new HashMap<>();
 
-    protected Map<QName, Class<? extends XmlModel>> parsableModels = new HashMap<>();
+    protected Set<QName> txtModelRegistry = new HashSet<>();
 
     public XmlModelParser() {
     }
@@ -35,30 +37,29 @@ public class XmlModelParser {
         this.xpp = parser;
     }
 
-    public void parse() throws XmlPullParserException, IOException {
-        this.parsedModel = null;
-
+    public Object parse() throws XmlPullParserException, IOException {
         if (this.xpp == null) {
-            return; // nothing to parse
+            return null; // nothing to parse
         }
 
         while (this.xpp.getEventType() != XmlPullParser.START_TAG) {
             this.xpp.next(); // skip to the start of the first element
         }
 
-        this.parsedModel = this.parseElement(null /*parent*/);
-    }
-
-    public XmlModel getParsedModel() {
-        return this.parsedModel;
+        QName name = new QName(this.xpp.getNamespace(), this.xpp.getName());
+        return this.parseElement(name, null /*parent*/);
     }
 
     /**
      * Registers a xpp for a specified element name. A xpp of the same type and namespace is returned when is called for
      * the same element name.
      */
-    public void registerParsableModel(String namespace, String name, Class<? extends XmlModel> parsableModel) {
-        this.parsableModels.put(new QName(namespace, name), parsableModel);
+    public void registerXmlModel(String namespace, String name, Class<? extends XmlModel> parsableModel) {
+        this.xmlModelRegistry.put(new QName(namespace, name), parsableModel);
+    }
+
+    public void registerTxtModel(String namespace, String name) {
+        this.txtModelRegistry.add(new QName(namespace, name));
     }
 
     /**
@@ -66,8 +67,8 @@ public class XmlModelParser {
      *
      * @return the new xpp, or null if no xpp has been registered for the specified element name.
      */
-    public XmlModel createParsableModel(String namespace, String name) {
-        Class<? extends XmlModel> clazz = this.parsableModels.get(new QName(namespace, name));
+    protected XmlModel createXmlModel(QName name) {
+        Class<? extends XmlModel> clazz = this.xmlModelRegistry.get(name);
 
         if (clazz == null) {
             clazz = this.getUnrecognizedModel(); // use the unrecognized model
@@ -87,9 +88,17 @@ public class XmlModelParser {
         return DefaultXmlModel.class;
     }
 
-    protected XmlModel parseElement(XmlModel parent) throws XmlPullParserException, IOException {
+    protected Object parseElement(QName name, XmlModel parent) throws XmlPullParserException, IOException {
+        if (this.txtModelRegistry.contains(name)) {
+            return this.parseText(name);
+        } else {
+            return this.parseXmlModel(name, parent);
+        }
+    }
+
+    protected XmlModel parseXmlModel(QName name, XmlModel parent) throws XmlPullParserException, IOException {
         // Create an instance of an XML model object associated with the element's namespace and tag name.
-        XmlModel model = this.createParsableModel(this.xpp.getNamespace(), this.xpp.getName());
+        XmlModel model = this.createXmlModel(name);
         model.setParent(parent);
 
         // Parse the element's attributes.
@@ -104,9 +113,9 @@ public class XmlModelParser {
             && this.xpp.getEventType() != XmlPullParser.END_TAG) {
 
             if (this.xpp.getEventType() == XmlPullParser.START_TAG) {
-                String childName = this.xpp.getName(); // store the child name before recursively parsing
-                XmlModel childValue = this.parseElement(model); // recursively parse the child element
-                model.parseField(childName, childValue);
+                QName childName = new QName(this.xpp.getNamespace(), this.xpp.getName()); // store the child name before recursively parsing
+                Object childValue = this.parseElement(name, model /*parent*/); // recursively parse the child element
+                model.parseField(childName.getLocalPart(), childValue);
             } else if (this.xpp.getEventType() == XmlPullParser.TEXT) {
                 String text = this.xpp.getText();
                 model.parseText(text);
@@ -114,5 +123,25 @@ public class XmlModelParser {
         }
 
         return model;
+    }
+
+    protected String parseText(QName name) throws XmlPullParserException, IOException {
+        StringBuilder characters = new StringBuilder();
+
+        // Parse the element's content until we reach either the end of the document or the end of the element.
+        while (this.xpp.next() != XmlPullParser.END_DOCUMENT) {
+
+            if (this.xpp.getEventType() == XmlPullParser.TEXT) {
+                String text = this.xpp.getText();
+                if (text != null) {
+                    text = text.replaceAll("\n", "").trim();
+                    characters.append(text);
+                }
+            } else if (this.xpp.getEventType() == XmlPullParser.END_TAG && this.xpp.getName().equals(name.getLocalPart())) {
+                break; // we've reached the end of the text element
+            }
+        }
+
+        return characters.toString();
     }
 }

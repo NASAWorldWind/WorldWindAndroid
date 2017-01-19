@@ -35,10 +35,9 @@ public class TextModelTest {
 
         XmlModelParser parser = new XmlModelParser();
         parser.setPullParser(xpp);
-        parser.registerParsableModel("", TEST_ELEMENT_NAME, TextModel.class);
-        parser.parse();
+        parser.registerTxtModel("", TEST_ELEMENT_NAME);
+        Object result = parser.parse();
 
-        TextModel textModel = (TextModel) parser.getParsedModel();
-        assertEquals("Text value", elementValue, textModel.getValue());
+        assertEquals("Text value", elementValue, result);
     }
 }

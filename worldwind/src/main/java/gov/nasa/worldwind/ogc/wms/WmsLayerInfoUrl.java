@@ -37,11 +37,11 @@ public class WmsLayerInfoUrl extends XmlModel {
     @Override
     public void parseField(String keyName, Object value) {
         if (keyName.equals("Format")) {
-            this.formats.add(((WmsFormat) value).getFormat());
+            this.formats.add((String) value);
         } else if (keyName.equals("OnlineResource")) {
             this.onlineResource = (WmsOnlineResource) value;
         } else if (keyName.equals("type")) {
-            this.type = value.toString();
+            this.type = (String) value;
         }
     }
 }

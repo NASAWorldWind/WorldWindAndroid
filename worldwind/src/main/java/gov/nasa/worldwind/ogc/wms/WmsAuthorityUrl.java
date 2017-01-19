@@ -25,7 +25,7 @@ public class WmsAuthorityUrl extends WmsLayerInfoUrl {
     @Override
     public void parseField(String keyName, Object value) {
         if (keyName.equals("name")) {
-            this.name = value.toString();
+            this.name = (String) value;
         } else if (keyName.equals("OnlineResource")) {
             this.onlineResource = (WmsOnlineResource) value;
         }

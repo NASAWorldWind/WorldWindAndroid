@@ -37,15 +37,14 @@ public class WmsCapabilities extends XmlModel {
 
         XmlModelParser modelParser = new WmsXmlParser();
         modelParser.setPullParser(pullParser);
-        modelParser.parse();
 
-        XmlModel model = modelParser.getParsedModel();
-        if (!(model instanceof WmsCapabilities)) {
+        Object result = modelParser.parse();
+        if (!(result instanceof WmsCapabilities)) {
             throw new RuntimeException(
                 Logger.logMessage(Logger.ERROR, "WmsCapabilities", "getCapabilities", "Invalid WMS Capabilities input"));
         }
 
-        return (WmsCapabilities) model;
+        return (WmsCapabilities) result;
     }
 
     /**
@@ -155,9 +154,9 @@ public class WmsCapabilities extends XmlModel {
     @Override
     public void parseField(String keyName, Object value) {
         if (keyName.equals("version")) {
-            this.version = value.toString();
+            this.version = (String) value;
         } else if (keyName.equals("updateSequence")) {
-            this.updateSequence = value.toString();
+            this.updateSequence = (String) value;
         } else if (keyName.equals("Service")) {
             this.serviceInformation = (WmsServiceInformation) value;
         } else if (keyName.equals("Capability")) {

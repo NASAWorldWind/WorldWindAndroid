@@ -76,19 +76,4 @@ public class WmsBoundingBox extends XmlModel {
             this.resy = Double.parseDouble((String) value);
         }
     }
-
-    protected Double parseDouble(String value) {
-
-        Double parsedValue = null;
-
-        if (value != null && !value.isEmpty()) {
-            try {
-                parsedValue = Double.parseDouble(value);
-            } catch (NumberFormatException e) {
-                Logger.makeMessage("WmsBoundingBox", "parseDouble", e.toString());
-            }
-        }
-
-        return parsedValue;
-    }
 }

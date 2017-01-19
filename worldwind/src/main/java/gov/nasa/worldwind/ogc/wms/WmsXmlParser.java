@@ -5,102 +5,100 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
-import gov.nasa.worldwind.util.xml.NumberModel;
-import gov.nasa.worldwind.util.xml.TextModel;
 import gov.nasa.worldwind.util.xml.XmlModelParser;
 
 public class WmsXmlParser extends XmlModelParser {
 
     public WmsXmlParser() {
-        this.registerParsableModels(""); // WMS 1.1.1 namespace
-        this.registerParsableModels("http://www.opengis.net/wms"); // WMS 1.3.0 namespace
+        this.registerNamespace(""); // WMS 1.1.1 namespace
+        this.registerNamespace("http://www.opengis.net/wms"); // WMS 1.3.0 namespace
     }
 
-    protected void registerParsableModels(String namespace) {
-        this.registerParsableModel(namespace, "Abstract", TextModel.class);
-        this.registerParsableModel(namespace, "AccessConstraints", TextModel.class);
-        this.registerParsableModel(namespace, "Address", TextModel.class);
-        this.registerParsableModel(namespace, "AddressType", TextModel.class);
-        this.registerParsableModel(namespace, "Attribution", WmsLayerAttribution.class);
-        this.registerParsableModel(namespace, "AuthorityURL", WmsAuthorityUrl.class);
+    protected void registerNamespace(String namespace) {
+        this.registerTxtModel(namespace, "Abstract");
+        this.registerTxtModel(namespace, "AccessConstraints");
+        this.registerTxtModel(namespace, "Address");
+        this.registerTxtModel(namespace, "AddressType");
+        this.registerXmlModel(namespace, "Attribution", WmsLayerAttribution.class);
+        this.registerXmlModel(namespace, "AuthorityURL", WmsAuthorityUrl.class);
 
-        this.registerParsableModel(namespace, "BoundingBox", WmsBoundingBox.class);
+        this.registerXmlModel(namespace, "BoundingBox", WmsBoundingBox.class);
 
-        this.registerParsableModel(namespace, "Capability", WmsCapabilityInformation.class);
-        this.registerParsableModel(namespace, "City", TextModel.class);
-        this.registerParsableModel(namespace, "ContactAddress", WmsAddress.class);
-        this.registerParsableModel(namespace, "ContactElectronicMailAddress", TextModel.class);
-        this.registerParsableModel(namespace, "ContactInformation", WmsContactInformation.class);
-        this.registerParsableModel(namespace, "ContactOrganization", TextModel.class);
-        this.registerParsableModel(namespace, "ContactPerson", TextModel.class);
-        this.registerParsableModel(namespace, "ContactPersonPrimary", WmsContactPersonPrimary.class);
-        this.registerParsableModel(namespace, "ContactPosition", TextModel.class);
-        this.registerParsableModel(namespace, "ContactVoiceTelephone", TextModel.class);
-        this.registerParsableModel(namespace, "Country", TextModel.class);
-        this.registerParsableModel(namespace, "CRS", TextModel.class);
+        this.registerXmlModel(namespace, "Capability", WmsCapabilityInformation.class);
+        this.registerTxtModel(namespace, "City");
+        this.registerXmlModel(namespace, "ContactAddress", WmsAddress.class);
+        this.registerTxtModel(namespace, "ContactElectronicMailAddress");
+        this.registerXmlModel(namespace, "ContactInformation", WmsContactInformation.class);
+        this.registerTxtModel(namespace, "ContactOrganization");
+        this.registerTxtModel(namespace, "ContactPerson");
+        this.registerXmlModel(namespace, "ContactPersonPrimary", WmsContactPersonPrimary.class);
+        this.registerTxtModel(namespace, "ContactPosition");
+        this.registerTxtModel(namespace, "ContactVoiceTelephone");
+        this.registerTxtModel(namespace, "Country");
+        this.registerTxtModel(namespace, "CRS");
 
-        this.registerParsableModel(namespace, "DataURL", WmsLayerInfoUrl.class);
-        this.registerParsableModel(namespace, "DCPType", WmsDcpType.class);
-        this.registerParsableModel(namespace, "Dimension", WmsLayerDimension.class);
+        this.registerXmlModel(namespace, "DataURL", WmsLayerInfoUrl.class);
+        this.registerXmlModel(namespace, "DCPType", WmsDcpType.class);
+        this.registerXmlModel(namespace, "Dimension", WmsLayerDimension.class);
 
-        this.registerParsableModel(namespace, "Extent", WmsLayerDimension.class);
-        this.registerParsableModel(namespace, "EX_GeographicBoundingBox", WmsGeographicBoundingBox.class);
-        this.registerParsableModel(namespace, "westBoundLongitude", NumberModel.class);
-        this.registerParsableModel(namespace, "eastBoundLongitude", NumberModel.class);
-        this.registerParsableModel(namespace, "northBoundLatitude", NumberModel.class);
-        this.registerParsableModel(namespace, "southBoundLatitude", NumberModel.class);
+        this.registerXmlModel(namespace, "Extent", WmsLayerDimension.class);
+        this.registerXmlModel(namespace, "EX_GeographicBoundingBox", WmsGeographicBoundingBox.class);
+        this.registerTxtModel(namespace, "westBoundLongitude");
+        this.registerTxtModel(namespace, "eastBoundLongitude");
+        this.registerTxtModel(namespace, "northBoundLatitude");
+        this.registerTxtModel(namespace, "southBoundLatitude");
 
-        this.registerParsableModel(namespace, "Exception", WmsException.class);
+        this.registerXmlModel(namespace, "Exception", WmsException.class);
 
-        this.registerParsableModel(namespace, "FeatureListURL", WmsLayerInfoUrl.class);
-        this.registerParsableModel(namespace, "Fees", TextModel.class);
-        this.registerParsableModel(namespace, "Format", WmsFormat.class);
+        this.registerXmlModel(namespace, "FeatureListURL", WmsLayerInfoUrl.class);
+        this.registerTxtModel(namespace, "Fees");
+        this.registerTxtModel(namespace, "Format");
 
-        this.registerParsableModel(namespace, "Get", WmsDcpType.WmsDcpHttpProtocol.class);
-        this.registerParsableModel(namespace, "GetCapabilities", WmsRequestOperation.class);
-        this.registerParsableModel(namespace, "GetMap", WmsRequestOperation.class);
-        this.registerParsableModel(namespace, "GetFeatureInfo", WmsRequestOperation.class);
+        this.registerXmlModel(namespace, "Get", WmsDcpType.WmsDcpHttpProtocol.class);
+        this.registerXmlModel(namespace, "GetCapabilities", WmsRequestOperation.class);
+        this.registerXmlModel(namespace, "GetMap", WmsRequestOperation.class);
+        this.registerXmlModel(namespace, "GetFeatureInfo", WmsRequestOperation.class);
 
-        this.registerParsableModel(namespace, "HTTP", WmsDcpType.WmsDcpHttp.class);
+        this.registerXmlModel(namespace, "HTTP", WmsDcpType.WmsDcpHttp.class);
 
-        this.registerParsableModel(namespace, "Identifier", WmsLayerIdentifier.class);
+        this.registerXmlModel(namespace, "Identifier", WmsLayerIdentifier.class);
 
-        this.registerParsableModel(namespace, "Keyword", TextModel.class);
-        this.registerParsableModel(namespace, "KeywordList", WmsKeywords.class);
+        this.registerTxtModel(namespace, "Keyword");
+        this.registerXmlModel(namespace, "KeywordList", WmsKeywords.class);
 
-        this.registerParsableModel(namespace, "LatLonBoundingBox", WmsGeographicBoundingBox.class);
-        this.registerParsableModel(namespace, "Layer", WmsLayerCapabilities.class);
-        this.registerParsableModel(namespace, "LayerInfo", WmsLayerInfoUrl.class);
-        this.registerParsableModel(namespace, "LayerLimit", NumberModel.class);
-        this.registerParsableModel(namespace, "LegendURL", WmsLogoUrl.class);
-        this.registerParsableModel(namespace, "LogoURL", WmsLogoUrl.class);
+        this.registerXmlModel(namespace, "LatLonBoundingBox", WmsGeographicBoundingBox.class);
+        this.registerXmlModel(namespace, "Layer", WmsLayerCapabilities.class);
+        this.registerXmlModel(namespace, "LayerInfo", WmsLayerInfoUrl.class);
+        this.registerTxtModel(namespace, "LayerLimit");
+        this.registerXmlModel(namespace, "LegendURL", WmsLogoUrl.class);
+        this.registerXmlModel(namespace, "LogoURL", WmsLogoUrl.class);
 
-        this.registerParsableModel(namespace, "MaxHeight", NumberModel.class);
-        this.registerParsableModel(namespace, "MaxScaleDenominator", NumberModel.class);
-        this.registerParsableModel(namespace, "MaxWidth", NumberModel.class);
-        this.registerParsableModel(namespace, "MetadataURL", WmsLayerInfoUrl.class);
-        this.registerParsableModel(namespace, "MinScaleDenominator", NumberModel.class);
+        this.registerTxtModel(namespace, "MaxHeight");
+        this.registerTxtModel(namespace, "MaxScaleDenominator");
+        this.registerTxtModel(namespace, "MaxWidth");
+        this.registerXmlModel(namespace, "MetadataURL", WmsLayerInfoUrl.class);
+        this.registerTxtModel(namespace, "MinScaleDenominator");
 
-        this.registerParsableModel(namespace, "Name", TextModel.class);
+        this.registerTxtModel(namespace, "Name");
 
-        this.registerParsableModel(namespace, "OnlineResource", WmsOnlineResource.class);
+        this.registerXmlModel(namespace, "OnlineResource", WmsOnlineResource.class);
 
-        this.registerParsableModel(namespace, "Post", WmsDcpType.WmsDcpHttpProtocol.class);
-        this.registerParsableModel(namespace, "PostCode", TextModel.class);
+        this.registerXmlModel(namespace, "Post", WmsDcpType.WmsDcpHttpProtocol.class);
+        this.registerTxtModel(namespace, "PostCode");
 
-        this.registerParsableModel(namespace, "Request", WmsRequestInformation.class);
+        this.registerXmlModel(namespace, "Request", WmsRequestInformation.class);
 
-        this.registerParsableModel(namespace, "ScaleHint", WmsScaleHint.class);
-        this.registerParsableModel(namespace, "Service", WmsServiceInformation.class);
-        this.registerParsableModel(namespace, "SRS", TextModel.class);
-        this.registerParsableModel(namespace, "StateOrProvince", TextModel.class);
-        this.registerParsableModel(namespace, "Style", WmsLayerStyle.class);
-        this.registerParsableModel(namespace, "StyleSheetURL", WmsLayerInfoUrl.class);
-        this.registerParsableModel(namespace, "StyleURL", WmsLayerInfoUrl.class);
+        this.registerXmlModel(namespace, "ScaleHint", WmsScaleHint.class);
+        this.registerXmlModel(namespace, "Service", WmsServiceInformation.class);
+        this.registerTxtModel(namespace, "SRS");
+        this.registerTxtModel(namespace, "StateOrProvince");
+        this.registerXmlModel(namespace, "Style", WmsLayerStyle.class);
+        this.registerXmlModel(namespace, "StyleSheetURL", WmsLayerInfoUrl.class);
+        this.registerXmlModel(namespace, "StyleURL", WmsLayerInfoUrl.class);
 
-        this.registerParsableModel(namespace, "Title", TextModel.class);
+        this.registerTxtModel(namespace, "Title");
 
-        this.registerParsableModel(namespace, "WMS_Capabilities", WmsCapabilities.class);
-        this.registerParsableModel(namespace, "WMT_MS_Capabilities", WmsCapabilities.class);
+        this.registerXmlModel(namespace, "WMS_Capabilities", WmsCapabilities.class);
+        this.registerXmlModel(namespace, "WMT_MS_Capabilities", WmsCapabilities.class);
     }
 }

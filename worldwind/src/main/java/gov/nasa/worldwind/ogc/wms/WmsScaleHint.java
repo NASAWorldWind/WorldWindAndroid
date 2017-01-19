@@ -17,21 +17,12 @@ public class WmsScaleHint extends XmlModel {
     public WmsScaleHint() {
     }
 
-    protected Double parseDouble(Object value) {
-        try {
-            return Double.parseDouble(value.toString());
-        } catch (NumberFormatException ex) {
-            Logger.logMessage(Logger.ERROR, "WmsScaleHint", "parseDouble", "Parse error: " + ex.toString());
-        }
-        return null;
-    }
-
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("min")) {
-            this.min = this.parseDouble(value);
+            this.min = Double.parseDouble((String) value);
         } else if (keyName.equals("max")) {
-            this.max = this.parseDouble(value);
+            this.max = Double.parseDouble((String) value);
         }
     }
 }
