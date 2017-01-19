@@ -10,38 +10,28 @@ import java.util.Map;
 
 public class DefaultXmlModel extends XmlModel {
 
-    protected Map<String, Object> fields;
+    protected Map<String, Object> fields = new HashMap<>();
 
-    protected StringBuilder text;
+    protected String text;
 
     public DefaultXmlModel() {
     }
 
     public Object getField(String keyName) {
-        return (this.fields != null) ? this.fields.get(keyName) : null;
+        return this.fields.get(keyName);
     }
 
     public String getText() {
-        return (this.text != null) ? this.text.toString() : null;
+        return this.text;
     }
 
     @Override
     protected void parseField(String keyName, Object value) {
-        if (this.fields == null) {
-            this.fields = new HashMap<>();
-        }
         this.fields.put(keyName, value);
     }
 
     @Override
     protected void parseText(String text) {
-        if (text == null) {
-            return; // nothing to parse
-        }
-
-        if (this.text == null) {
-            this.text = new StringBuilder();
-        }
-        this.text.append(text);
+        this.text = text;
     }
 }

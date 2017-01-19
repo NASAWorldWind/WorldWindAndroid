@@ -81,9 +81,8 @@ public class XmlModelParser {
         } catch (Exception e) {
             Logger.logMessage(Logger.ERROR, "XmlModelParser", "createParsableModel",
                 "Exception invoking default constructor for " + clazz.getName(), e);
+            return null;
         }
-
-        return null;
     }
 
     protected Class<? extends XmlModel> getUnrecognizedModel() {
@@ -103,6 +102,9 @@ public class XmlModelParser {
         XmlModel model = this.createXmlModel(name);
         model.setParent(parent);
 
+        // Set up to accumulate the element's character data.
+        StringBuilder characters = null;
+
         // Parse the element's attributes.
         for (int idx = 0, len = this.xpp.getAttributeCount(); idx < len; idx++) {
             String attrName = this.xpp.getAttributeName(idx);
@@ -111,16 +113,21 @@ public class XmlModelParser {
         }
 
         // Parse the element's content until we reach either the end of the document or the end of the element.
-        while (this.xpp.next() != XmlPullParser.END_DOCUMENT
-            && this.xpp.getEventType() != XmlPullParser.END_TAG) {
-
+        while (this.xpp.next() != XmlPullParser.END_DOCUMENT) {
             if (this.xpp.getEventType() == XmlPullParser.START_TAG) {
                 QName childName = new QName(this.xpp.getNamespace(), this.xpp.getName()); // store the child name before recursively parsing
-                Object childValue = this.parseElement(childName, model /*parent*/); // recursively parse the child element
-                model.parseField(childName.getLocalPart(), childValue);
+                Object childValue = this.parseElement(childName, model /*parent*/); // recursively assemble the child element
+                model.parseField(childName.getLocalPart(), childValue); // parse the child element
             } else if (this.xpp.getEventType() == XmlPullParser.TEXT) {
                 String text = this.xpp.getText();
-                model.parseText(text);
+                characters = appendText(text, characters); // accumulate the element's character data
+            } else if (this.xpp.getEventType() == XmlPullParser.END_TAG) {
+                if (this.xpp.getName().equals(name.getLocalPart())) {
+                    if (characters != null) { // null if no character data encountered
+                        model.parseText(characters.toString()); // parse the element's character data
+                    }
+                    break; // reached the end of the element; stop parsing its content
+                }
             }
         }
 
@@ -128,22 +135,32 @@ public class XmlModelParser {
     }
 
     protected String parseText(QName name) throws XmlPullParserException, IOException {
+        // Set up to accumulate the element's character data.
         this.characters.delete(0, this.characters.length());
 
         // Parse the element's content until we reach either the end of the document or the end of the element.
         while (this.xpp.next() != XmlPullParser.END_DOCUMENT) {
-
             if (this.xpp.getEventType() == XmlPullParser.TEXT) {
                 String text = this.xpp.getText();
-                if (text != null) {
-                    text = text.replaceAll("\n", "").trim();
-                    this.characters.append(text);
+                appendText(text, this.characters);
+            } else if (this.xpp.getEventType() == XmlPullParser.END_TAG) {
+                if (this.xpp.getName().equals(name.getLocalPart())) {
+                    break; // reached the end of the element; stop parsing its content
                 }
-            } else if (this.xpp.getEventType() == XmlPullParser.END_TAG && this.xpp.getName().equals(name.getLocalPart())) {
-                break; // we've reached the end of the text element
             }
         }
 
         return this.characters.toString();
+    }
+
+    protected static StringBuilder appendText(String text, StringBuilder result) {
+        if (text != null && !text.isEmpty()) { // ignore empty text
+            text = text.replaceAll("\n", "").trim(); // suppress newlines and leading/trailing whitespace
+            if (!text.isEmpty()) { // ignore whitespace
+                return (result != null) ? result.append(text) : new StringBuilder(text);
+            }
+        }
+
+        return result;
     }
 }

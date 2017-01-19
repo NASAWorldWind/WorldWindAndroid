@@ -13,8 +13,6 @@ public class WmsLayerIdentifier extends XmlModel {
 
     protected String identifier;
 
-    protected StringBuilder text;
-
     public WmsLayerIdentifier() {
     }
 
@@ -23,10 +21,6 @@ public class WmsLayerIdentifier extends XmlModel {
     }
 
     public String getIdentifier() {
-        if (this.text != null) {
-            this.identifier = this.text.toString().trim();
-        }
-
         return this.identifier;
     }
 
@@ -39,13 +33,6 @@ public class WmsLayerIdentifier extends XmlModel {
 
     @Override
     protected void parseText(String text) {
-        if (text == null) {
-            return; // nothing to parse
-        }
-
-        if (this.text == null) {
-            this.text = new StringBuilder();
-        }
-        this.text.append(text);
+        this.identifier = text;
     }
 }
