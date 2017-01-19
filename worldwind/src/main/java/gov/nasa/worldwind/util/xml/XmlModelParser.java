@@ -26,6 +26,8 @@ public class XmlModelParser {
 
     protected Set<QName> txtModelRegistry = new HashSet<>();
 
+    protected StringBuilder characters = new StringBuilder();
+
     public XmlModelParser() {
     }
 
@@ -126,7 +128,7 @@ public class XmlModelParser {
     }
 
     protected String parseText(QName name) throws XmlPullParserException, IOException {
-        StringBuilder characters = new StringBuilder();
+        this.characters.delete(0, this.characters.length());
 
         // Parse the element's content until we reach either the end of the document or the end of the element.
         while (this.xpp.next() != XmlPullParser.END_DOCUMENT) {
@@ -135,13 +137,13 @@ public class XmlModelParser {
                 String text = this.xpp.getText();
                 if (text != null) {
                     text = text.replaceAll("\n", "").trim();
-                    characters.append(text);
+                    this.characters.append(text);
                 }
             } else if (this.xpp.getEventType() == XmlPullParser.END_TAG && this.xpp.getName().equals(name.getLocalPart())) {
                 break; // we've reached the end of the text element
             }
         }
 
-        return characters.toString();
+        return this.characters.toString();
     }
 }
