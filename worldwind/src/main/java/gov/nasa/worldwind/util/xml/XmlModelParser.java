@@ -114,7 +114,7 @@ public class XmlModelParser {
 
             if (this.xpp.getEventType() == XmlPullParser.START_TAG) {
                 QName childName = new QName(this.xpp.getNamespace(), this.xpp.getName()); // store the child name before recursively parsing
-                Object childValue = this.parseElement(name, model /*parent*/); // recursively parse the child element
+                Object childValue = this.parseElement(childName, model /*parent*/); // recursively parse the child element
                 model.parseField(childName.getLocalPart(), childValue);
             } else if (this.xpp.getEventType() == XmlPullParser.TEXT) {
                 String text = this.xpp.getText();
