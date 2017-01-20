@@ -7,14 +7,18 @@ package gov.nasa.worldwind.ogc.wmts;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class OwsMethod extends XmlModel {
+public class WmtsElementLink extends XmlModel {
 
     protected String href;
+
+    protected String format;
 
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("href")) {
             this.href = (String) value;
+        } else if (keyName.equals("format")) {
+            this.format = (String) value;
         }
     }
 }

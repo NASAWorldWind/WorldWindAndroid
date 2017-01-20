@@ -142,11 +142,7 @@ http://www.opengis.net/wmts/1.0 " version="1.0.0">
             </Style>
             <Format>image/png</Format>
             <TileMatrixSetLink>
-                <TileMatrixSet>World84-90_CRS_84
-                    <OtherElement>
-                        more text
-                    </OtherElement>
-                </TileMatrixSet>
+                <TileMatrixSet>World84-90_CRS_84</TileMatrixSet>
             </TileMatrixSetLink>
             <ResourceURL format="image/png" resourceType="tile"
                          template="http://www.opengis.uab.es/SITiled/world/AdminBoundaries/default/World84-90_CRS_84/{TileMatrix}/{TileRow}/{TileCol}.png"/>

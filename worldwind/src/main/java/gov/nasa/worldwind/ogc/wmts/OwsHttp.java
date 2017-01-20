@@ -16,9 +16,9 @@ public class OwsHttp extends XmlModel {
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("Get")) {
-            this.getHref = ((OwsMethod) value).href;
+            this.getHref = ((WmtsElementLink) value).href;
         } else if (keyName.equals("Post")) {
-            this.postHref = ((OwsMethod) value).href;
+            this.postHref = ((WmtsElementLink) value).href;
         }
     }
 }

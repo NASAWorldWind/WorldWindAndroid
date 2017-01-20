@@ -15,6 +15,8 @@ public class WmtsStyle extends XmlModel {
 
     protected boolean isDefault = false;
 
+    protected WmtsElementLink legendUrl;
+
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("Title")) {
@@ -23,6 +25,8 @@ public class WmtsStyle extends XmlModel {
             this.identifier = (String) value;
         } else if (keyName.equals("isDefault")) {
             this.isDefault = Boolean.parseBoolean((String) value);
+        } else if (keyName.equals("LegendURL")) {
+            this.legendUrl = (WmtsElementLink) value;
         }
     }
 }

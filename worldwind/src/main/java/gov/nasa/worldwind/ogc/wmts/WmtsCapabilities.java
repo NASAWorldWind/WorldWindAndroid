@@ -10,6 +10,8 @@ import android.util.Xml;
 import org.xmlpull.v1.XmlPullParser;
 
 import java.io.InputStream;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.xml.XmlModel;
@@ -22,6 +24,8 @@ public class WmtsCapabilities extends XmlModel {
     protected OwsServiceProvider serviceProvider;
 
     protected OwsOperationsMetadata operationsMetadata;
+
+    protected Set<WmtsLayer> layers = new LinkedHashSet<>();
 
     public static WmtsCapabilities getCapabilities(InputStream inputStream) throws Exception {
         XmlPullParser pullParser = Xml.newPullParser();
@@ -47,6 +51,10 @@ public class WmtsCapabilities extends XmlModel {
             this.serviceProvider = (OwsServiceProvider) value;
         } else if (keyName.equals("OperationsMetadata")) {
             this.operationsMetadata = (OwsOperationsMetadata) value;
+        } else if (keyName.equals("Layer")) {
+            this.layers.add((WmtsLayer) value);
+        } else if (keyName.equals("Contents")) {
+            this.layers.addAll(((WmtsContents) value).layers);
         }
     }
 }

@@ -14,14 +14,12 @@ public class WmtsContents extends XmlModel {
 
     protected List<WmtsLayer> layers = new ArrayList<>();
 
-    protected List<WmtsTileMatrixSet> matrixSets = new ArrayList<>();
+    // protected List<WmtsTileMatrixSet> matrixSets = new ArrayList<>();
 
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("Layer")) {
             this.layers.add((WmtsLayer) value);
-        } else if (keyName.equals("TileMatrixSet")) {
-            this.matrixSets.add((WmtsTileMatrixSet) value);
         }
     }
 }

@@ -9,12 +9,12 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmtsTileMatrixSetLink extends XmlModel {
 
-    protected String tileMatrixSetId;
+    protected String linkIdentifier;
 
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("TileMatrixSet")) {
-            this.tileMatrixSetId = ((WmtsTileMatrixSet) value).identifier;
+            this.linkIdentifier = ((WmtsTileMatrixSet) value).linkIdentifier;
         }
     }
 }

@@ -24,24 +24,19 @@ public class WmtsTileMatrixSet extends XmlModel {
 
     @Override
     protected void parseField(String keyName, Object value) {
-        if (keyName.equals("Identifier")) {
-            this.identifier = (String) value;
-        } else if (keyName.equals("SupportedCRS")) {
-            this.supportedCrs = (String) value;
-        } else if (keyName.equals("BoundingBox")) {
-            this.boundingBox = (OwsBoundingBox) value;
-        } else if (keyName.equals("TileMatrix")) {
-            this.tileMatrices.add((WmtsTileMatrix) value);
-        }
+//        if (keyName.equals("Identifier")) {
+//            this.identifier = (String) value;
+//        } else if (keyName.equals("SupportedCRS")) {
+//            this.supportedCrs = (String) value;
+//        } else if (keyName.equals("BoundingBox")) {
+//            this.boundingBox = (OwsBoundingBox) value;
+//        } else if (keyName.equals("TileMatrix")) {
+//            this.tileMatrices.add((WmtsTileMatrix) value);
+//        }
     }
 
     @Override
     protected void parseText(String text) {
-        text = text.replaceAll("\n", "");
-        text = text.replaceAll("\\s+", "");
-        if (text.isEmpty()) {
-            return;
-        }
-        this.linkIdentifier += text;
+        this.linkIdentifier = text;
     }
 }
