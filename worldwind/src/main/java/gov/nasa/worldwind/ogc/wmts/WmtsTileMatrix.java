@@ -9,7 +9,7 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmtsTileMatrix extends XmlModel {
 
-    protected int id;
+    protected String identifier;
 
     protected double scaleDenominator;
 
@@ -25,16 +25,6 @@ public class WmtsTileMatrix extends XmlModel {
 
     protected int matrixHeight;
 
-    public boolean isWwaCompatible() {
-        if (matrixWidth % 2 != 0) {
-            return false;
-        } else if (matrixHeight % 2 != 0) {
-            return false;
-        } else if ((matrixHeight * 2) != matrixWidth) {
-            return false;
-        } else return tileWidth == tileHeight;
-    }
-
     protected void parseTopLeftCorner(String value) {
         String[] values = value.split("\\s+");
 
@@ -49,7 +39,7 @@ public class WmtsTileMatrix extends XmlModel {
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("Identifier")) {
-            this.id = Integer.parseInt((String) value);
+            this.identifier = (String) value;
         } else if (keyName.equals("ScaleDenominator")) {
             this.scaleDenominator = Double.parseDouble((String) value);
         } else if (keyName.equals("TopLeftCorner")) {

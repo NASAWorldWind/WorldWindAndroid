@@ -18,12 +18,14 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import gov.nasa.worldwind.test.R;
 
 import static android.support.test.InstrumentationRegistry.getInstrumentation;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
@@ -435,5 +437,187 @@ public class WmtsCapabilitiesTest {
         assertEquals("Layer Two ResourceURL Two Format", expectedResourceUrlFormatTwo, actualResourceUrlFormatTwo);
         assertEquals("Layer Two ResourceURL Two ResourceType", expectedResourceUrlResourceTypeTwo, actualResourceUrlResourceTypeTwo);
         assertEquals("Layer Two ResourceURL Two Template", expectedResourceUrlTemplateTwo, actualResourceUrlTemplateTwo);
+    }
+
+    @Test
+    public void testGetTileMatrixSets_OverallSets() throws Exception {
+        Map<String, WmtsTileMatrixSet> matrixSetMap = this.wmtsCapabilities.matrixSetMap;
+        String setOneName = "WholeWorld_CRS_84";
+        String setTwoName = "World84-90_CRS_84";
+        int expectedCount = 2;
+
+        WmtsTileMatrixSet matrixSetOne = matrixSetMap.get(setOneName);
+        WmtsTileMatrixSet matrixSetTwo = matrixSetMap.get(setTwoName);
+        int actualCount = matrixSetMap.size();
+
+        assertNotNull("TileMatrixSet One", matrixSetOne);
+        assertNotNull("TileMatrixSet Two", matrixSetTwo);
+        assertEquals("TileMatrixSet Count", expectedCount, actualCount);
+    }
+
+    @Test
+    public void testGetTileMatrixSets_MatrixSetOne() throws Exception {
+        WmtsTileMatrixSet wmtsTileMatrixSet = this.wmtsCapabilities.matrixSetMap.get("WholeWorld_CRS_84");
+        String expectedIdentifier = "WholeWorld_CRS_84";
+        String expectedSupportedCRS = "urn:ogc:def:crs:OGC:1.3:CRS84";
+        String expectedWellKnownScaleSet = "urn:ogc:def:wkss:OGC:1.0:GlobalCRS84Pixel";
+        int expectedTileMatrixCount = 7;
+
+        String actualIdentifier = wmtsTileMatrixSet.identifier;
+        String actualSupportedCRS = wmtsTileMatrixSet.supportedCrs;
+        String actualWellKnownScaleSet = wmtsTileMatrixSet.wellKnownScaleSet;
+        int actualTileMatrixCount = wmtsTileMatrixSet.tileMatrices.size();
+
+        assertEquals("TileMatrixSet One Identifier", expectedIdentifier, actualIdentifier);
+        assertEquals("TileMatrixSet One SupportedCRS", expectedSupportedCRS, actualSupportedCRS);
+        assertEquals("TileMatrixSet One WellKnownScaleSet", expectedWellKnownScaleSet, actualWellKnownScaleSet);
+        assertEquals("TileMatrixSet One Count", expectedTileMatrixCount, actualTileMatrixCount);
+    }
+
+    @Test
+    public void testGetTileMatrixSets_MatrixSetTwo() throws Exception {
+        WmtsTileMatrixSet wmtsTileMatrixSet = this.wmtsCapabilities.matrixSetMap.get("World84-90_CRS_84");
+        String expectedIdentifier = "World84-90_CRS_84";
+        String expectedSupportedCRS = "urn:ogc:def:crs:OGC:1.3:CRS84";
+        String expectedWellKnownScaleSet = "urn:ogc:def:wkss:OGC:1.0:GlobalCRS84Pixel";
+        int expectedTileMatrixCount = 7;
+
+        String actualIdentifier = wmtsTileMatrixSet.identifier;
+        String actualSupportedCRS = wmtsTileMatrixSet.supportedCrs;
+        String actualWellKnownScaleSet = wmtsTileMatrixSet.wellKnownScaleSet;
+        int actualTileMatrixCount = wmtsTileMatrixSet.tileMatrices.size();
+
+        assertEquals("TileMatrixSet Two Identifier", expectedIdentifier, actualIdentifier);
+        assertEquals("TileMatrixSet Two SupportedCRS", expectedSupportedCRS, actualSupportedCRS);
+        assertEquals("TileMatrixSet Two WellKnownScaleSet", expectedWellKnownScaleSet, actualWellKnownScaleSet);
+        assertEquals("TileMatrixSet Two Count", expectedTileMatrixCount, actualTileMatrixCount);
+    }
+
+    @Test
+    public void testGetTileMatrixSets_TileMatrixSetOne_TileMatrixOne() throws Exception {
+        WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.matrixSetMap.get("WholeWorld_CRS_84").tileMatrices.iterator().next();
+        String expectedIdentifier = "2g";
+        double expectedScaleDenominator = 795139219.951954;
+        double expectedMinX = -180;
+        double expectedMaxY = 90;
+        int expectedTileWidth = 320;
+        int expectedTileHeight = 200;
+        int expectedMatrixWidth = 1;
+        int expectedMatrixHeight = 1;
+
+        String actualIdentifier = wmtsTileMatrix.identifier;
+        double actualScaleDenominator = wmtsTileMatrix.scaleDenominator;
+        double actualMinX = wmtsTileMatrix.minx;
+        double actualMaxY = wmtsTileMatrix.maxy;
+        int actualTileWidth = wmtsTileMatrix.tileWidth;
+        int actualTileHeight = wmtsTileMatrix.tileHeight;
+        int actualMatrixWidth = wmtsTileMatrix.matrixWidth;
+        int actualMatrixHeight = wmtsTileMatrix.matrixHeight;
+
+        assertEquals("TileMatrixSet One TileMatrix One Identifier", expectedIdentifier, actualIdentifier);
+        assertEquals("TileMatrixSet One TileMatrix One ScaleDenominator", expectedScaleDenominator, actualScaleDenominator, DELTA);
+        assertEquals("TileMatrixSet One TileMatrix One MinX", expectedMinX, actualMinX, DELTA);
+        assertEquals("TileMatrixSet One TileMatrix One MaxY", expectedMaxY, actualMaxY, DELTA);
+        assertEquals("TileMatrixSet One TileMatrix One TileWidth", expectedTileWidth, actualTileWidth);
+        assertEquals("TileMatrixSet One TileMatrix One TileHeight", expectedTileHeight, actualTileHeight);
+        assertEquals("TileMatrixSet One TileMatrix One MatrixWidth", expectedMatrixWidth, actualMatrixWidth);
+        assertEquals("TileMatrixSet One TileMatrix One MatrixHeight", expectedMatrixHeight, actualMatrixHeight);
+    }
+
+    @Test
+    public void testGetTileMatrixSets_TileMatrixSetOne_TileMatrixTwo() throws Exception {
+        Iterator<WmtsTileMatrix> tileMatrixIterator = this.wmtsCapabilities.matrixSetMap.get("WholeWorld_CRS_84").tileMatrices.iterator();
+        tileMatrixIterator.next();
+        WmtsTileMatrix wmtsTileMatrix = tileMatrixIterator.next();
+        String expectedIdentifier = "1g";
+        double expectedScaleDenominator = 397569609.975977;
+        double expectedMinX = -180;
+        double expectedMaxY = 90;
+        int expectedTileWidth = 320;
+        int expectedTileHeight = 200;
+        int expectedMatrixWidth = 2;
+        int expectedMatrixHeight = 1;
+
+        String actualIdentifier = wmtsTileMatrix.identifier;
+        double actualScaleDenominator = wmtsTileMatrix.scaleDenominator;
+        double actualMinX = wmtsTileMatrix.minx;
+        double actualMaxY = wmtsTileMatrix.maxy;
+        int actualTileWidth = wmtsTileMatrix.tileWidth;
+        int actualTileHeight = wmtsTileMatrix.tileHeight;
+        int actualMatrixWidth = wmtsTileMatrix.matrixWidth;
+        int actualMatrixHeight = wmtsTileMatrix.matrixHeight;
+
+        assertEquals("TileMatrixSet One TileMatrix Two Identifier", expectedIdentifier, actualIdentifier);
+        assertEquals("TileMatrixSet One TileMatrix Two ScaleDenominator", expectedScaleDenominator, actualScaleDenominator, DELTA);
+        assertEquals("TileMatrixSet One TileMatrix Two MinX", expectedMinX, actualMinX, DELTA);
+        assertEquals("TileMatrixSet One TileMatrix Two MaxY", expectedMaxY, actualMaxY, DELTA);
+        assertEquals("TileMatrixSet One TileMatrix Two TileWidth", expectedTileWidth, actualTileWidth);
+        assertEquals("TileMatrixSet One TileMatrix Two TileHeight", expectedTileHeight, actualTileHeight);
+        assertEquals("TileMatrixSet One TileMatrix Two MatrixWidth", expectedMatrixWidth, actualMatrixWidth);
+        assertEquals("TileMatrixSet One TileMatrix Two MatrixHeight", expectedMatrixHeight, actualMatrixHeight);
+    }
+
+    @Test
+    public void testGetTileMatrixSets_TileMatrixSetTwo_TileMatrixOne() throws Exception {
+        WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.matrixSetMap.get("World84-90_CRS_84").tileMatrices.iterator().next();
+        String expectedIdentifier = "2g";
+        double expectedScaleDenominator = 795139219.951954;
+        double expectedMinX = -180;
+        double expectedMaxY = 84;
+        int expectedTileWidth = 320;
+        int expectedTileHeight = 200;
+        int expectedMatrixWidth = 1;
+        int expectedMatrixHeight = 1;
+
+        String actualIdentifier = wmtsTileMatrix.identifier;
+        double actualScaleDenominator = wmtsTileMatrix.scaleDenominator;
+        double actualMinX = wmtsTileMatrix.minx;
+        double actualMaxY = wmtsTileMatrix.maxy;
+        int actualTileWidth = wmtsTileMatrix.tileWidth;
+        int actualTileHeight = wmtsTileMatrix.tileHeight;
+        int actualMatrixWidth = wmtsTileMatrix.matrixWidth;
+        int actualMatrixHeight = wmtsTileMatrix.matrixHeight;
+
+        assertEquals("TileMatrixSet Two TileMatrix One Identifier", expectedIdentifier, actualIdentifier);
+        assertEquals("TileMatrixSet Two TileMatrix One ScaleDenominator", expectedScaleDenominator, actualScaleDenominator, DELTA);
+        assertEquals("TileMatrixSet Two TileMatrix One MinX", expectedMinX, actualMinX, DELTA);
+        assertEquals("TileMatrixSet Two TileMatrix One MaxY", expectedMaxY, actualMaxY, DELTA);
+        assertEquals("TileMatrixSet Two TileMatrix One TileWidth", expectedTileWidth, actualTileWidth);
+        assertEquals("TileMatrixSet Two TileMatrix One TileHeight", expectedTileHeight, actualTileHeight);
+        assertEquals("TileMatrixSet Two TileMatrix One MatrixWidth", expectedMatrixWidth, actualMatrixWidth);
+        assertEquals("TileMatrixSet Two TileMatrix One MatrixHeight", expectedMatrixHeight, actualMatrixHeight);
+    }
+
+    @Test
+    public void testGetTileMatrixSets_TileMatrixSetTwo_TileMatrixTwo() throws Exception {
+        Iterator<WmtsTileMatrix> tileMatrixIterator = this.wmtsCapabilities.matrixSetMap.get("World84-90_CRS_84").tileMatrices.iterator();
+        tileMatrixIterator.next();
+        WmtsTileMatrix wmtsTileMatrix = tileMatrixIterator.next();
+        String expectedIdentifier = "1g";
+        double expectedScaleDenominator = 397569609.975977;
+        double expectedMinX = -180;
+        double expectedMaxY = 84;
+        int expectedTileWidth = 320;
+        int expectedTileHeight = 200;
+        int expectedMatrixWidth = 2;
+        int expectedMatrixHeight = 1;
+
+        String actualIdentifier = wmtsTileMatrix.identifier;
+        double actualScaleDenominator = wmtsTileMatrix.scaleDenominator;
+        double actualMinX = wmtsTileMatrix.minx;
+        double actualMaxY = wmtsTileMatrix.maxy;
+        int actualTileWidth = wmtsTileMatrix.tileWidth;
+        int actualTileHeight = wmtsTileMatrix.tileHeight;
+        int actualMatrixWidth = wmtsTileMatrix.matrixWidth;
+        int actualMatrixHeight = wmtsTileMatrix.matrixHeight;
+
+        assertEquals("TileMatrixSet Two TileMatrix Two Identifier", expectedIdentifier, actualIdentifier);
+        assertEquals("TileMatrixSet Two TileMatrix Two ScaleDenominator", expectedScaleDenominator, actualScaleDenominator, DELTA);
+        assertEquals("TileMatrixSet Two TileMatrix Two MinX", expectedMinX, actualMinX, DELTA);
+        assertEquals("TileMatrixSet Two TileMatrix Two MaxY", expectedMaxY, actualMaxY, DELTA);
+        assertEquals("TileMatrixSet Two TileMatrix Two TileWidth", expectedTileWidth, actualTileWidth);
+        assertEquals("TileMatrixSet Two TileMatrix Two TileHeight", expectedTileHeight, actualTileHeight);
+        assertEquals("TileMatrixSet Two TileMatrix Two MatrixWidth", expectedMatrixWidth, actualMatrixWidth);
+        assertEquals("TileMatrixSet Two TileMatrix One MatrixHeight", expectedMatrixHeight, actualMatrixHeight);
     }
 }

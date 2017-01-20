@@ -16,7 +16,7 @@ public class WmtsLayer extends XmlModel {
 
     protected String layerAbstract;
 
-    protected OwsWgs84BoundingBox boundingBox;
+    protected OwsBoundingBox boundingBox;
 
     protected String identifier;
 
@@ -39,7 +39,7 @@ public class WmtsLayer extends XmlModel {
         } else if (keyName.equals("Abstract")) {
             this.layerAbstract = (String) value;
         } else if (keyName.equals("WGS84BoundingBox")) {
-            this.boundingBox = (OwsWgs84BoundingBox) value;
+            this.boundingBox = (OwsBoundingBox) value;
         } else if (keyName.equals("Identifier")) {
             this.identifier = (String) value;
         } else if (keyName.equals("Metadata")) {

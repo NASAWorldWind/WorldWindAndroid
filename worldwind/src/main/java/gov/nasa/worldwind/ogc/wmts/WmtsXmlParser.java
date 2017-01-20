@@ -28,6 +28,8 @@ public class WmtsXmlParser extends XmlModelParser {
 
         this.registerXmlModel(owsNamespace, "Address", OwsAddress.class);
 
+        this.registerXmlModel(owsNamespace, "BoundingBox", OwsBoundingBox.class);
+
         this.registerXmlModel(wmtsNamespace, "Capabilities", WmtsCapabilities.class);
         this.registerXmlModel(owsNamespace, "ContactInfo", OwsContactInfo.class);
         this.registerXmlModel(wmtsNamespace, "Contents", WmtsContents.class);
@@ -48,6 +50,7 @@ public class WmtsXmlParser extends XmlModelParser {
         this.registerXmlModel(owsNamespace, "Operation", OwsOperation.class);
         this.registerXmlModel(owsNamespace, "OperationsMetadata", OwsOperationsMetadata.class);
 
+
         this.registerXmlModel(owsNamespace, "Phone", OwsPhone.class);
         this.registerXmlModel(owsNamespace, "Post", WmtsElementLink.class);
         this.registerXmlModel(owsNamespace, "ProviderSite", WmtsElementLink.class);
@@ -59,10 +62,11 @@ public class WmtsXmlParser extends XmlModelParser {
         this.registerXmlModel(owsNamespace, "ServiceProvider", OwsServiceProvider.class);
         this.registerXmlModel(wmtsNamespace, "Style", WmtsStyle.class);
 
+        this.registerXmlModel(wmtsNamespace, "TileMatrix", WmtsTileMatrix.class);
         this.registerXmlModel(wmtsNamespace, "TileMatrixSet", WmtsTileMatrixSet.class);
         this.registerXmlModel(wmtsNamespace, "TileMatrixSetLink", WmtsTileMatrixSetLink.class);
 
-        this.registerXmlModel(owsNamespace, "WGS84BoundingBox", OwsWgs84BoundingBox.class);
+        this.registerXmlModel(owsNamespace, "WGS84BoundingBox", OwsBoundingBox.class);
     }
 
     protected void registerWmtsTextModels() {
@@ -90,17 +94,27 @@ public class WmtsXmlParser extends XmlModelParser {
 
         this.registerTxtModel(owsNamespace, "LowerCorner");
 
+        this.registerTxtModel(wmtsNamespace, "MatrixHeight");
+        this.registerTxtModel(wmtsNamespace, "MatrixWidth");
+
         this.registerTxtModel(owsNamespace, "PositionName");
         this.registerTxtModel(owsNamespace, "PostalCode");
         this.registerTxtModel(owsNamespace, "ProviderName");
 
+        this.registerTxtModel(wmtsNamespace, "ScaleDenominator");
         this.registerTxtModel(owsNamespace, "ServiceType");
         this.registerTxtModel(owsNamespace, "ServiceTypeVersion");
+        this.registerTxtModel(owsNamespace, "SupportedCRS");
 
+        this.registerTxtModel(wmtsNamespace, "TileHeight");
+        this.registerTxtModel(wmtsNamespace, "TileWidth");
         this.registerTxtModel(owsNamespace, "Title");
+        this.registerTxtModel(wmtsNamespace, "TopLeftCorner");
 
         this.registerTxtModel(owsNamespace, "UpperCorner");
 
         this.registerTxtModel(owsNamespace, "Voice");
+
+        this.registerTxtModel(wmtsNamespace, "WellKnownScaleSet");
     }
 }

@@ -18,21 +18,25 @@ public class WmtsTileMatrixSet extends XmlModel {
 
     protected String supportedCrs;
 
+    protected String wellKnownScaleSet;
+
     protected OwsBoundingBox boundingBox;
 
     protected Set<WmtsTileMatrix> tileMatrices = new LinkedHashSet<>();
 
     @Override
     protected void parseField(String keyName, Object value) {
-//        if (keyName.equals("Identifier")) {
-//            this.identifier = (String) value;
-//        } else if (keyName.equals("SupportedCRS")) {
-//            this.supportedCrs = (String) value;
-//        } else if (keyName.equals("BoundingBox")) {
-//            this.boundingBox = (OwsBoundingBox) value;
-//        } else if (keyName.equals("TileMatrix")) {
-//            this.tileMatrices.add((WmtsTileMatrix) value);
-//        }
+        if (keyName.equals("Identifier")) {
+            this.identifier = (String) value;
+        } else if (keyName.equals("SupportedCRS")) {
+            this.supportedCrs = (String) value;
+        } else if (keyName.equals("WellKnownScaleSet")) {
+            this.wellKnownScaleSet = (String) value;
+        } else if (keyName.equals("BoundingBox")) {
+            this.boundingBox = (OwsBoundingBox) value;
+        } else if (keyName.equals("TileMatrix")) {
+            this.tileMatrices.add((WmtsTileMatrix) value);
+        }
     }
 
     @Override
