@@ -620,4 +620,66 @@ public class WmtsCapabilitiesTest {
         assertEquals("TileMatrixSet Two TileMatrix Two MatrixWidth", expectedMatrixWidth, actualMatrixWidth);
         assertEquals("TileMatrixSet Two TileMatrix One MatrixHeight", expectedMatrixHeight, actualMatrixHeight);
     }
+
+    @Test
+    public void testGetThemes_ParentTheme() throws Exception {
+        WmtsTheme parentTheme = this.wmtsCapabilities.themes.iterator().next();
+        String expectedTitle = "Foundation";
+        String expectedAbstract = "World reference data";
+        String expectedIdentifier = "Foundation";
+
+        String actualTitle = parentTheme.title;
+        String actualAbstract = parentTheme.themeAbstract;
+        String actualIdentifier = parentTheme.identifier;
+
+        assertEquals("Parent Theme Title", expectedTitle, actualTitle);
+        assertEquals("Parent Theme Abstract", expectedAbstract, actualAbstract);
+        assertEquals("Parent Theme Identifier", expectedIdentifier, actualIdentifier);
+    }
+
+    @Test
+    public void testGetThemes_ChildThemeOne() throws Exception {
+        Set<WmtsTheme> themeSet = this.wmtsCapabilities.themes.iterator().next().themes;
+        WmtsTheme theme = themeSet.iterator().next();
+        String expectedTitle = "Digital Elevation Model";
+        String expectedLayerRef = "etopo2";
+        String expectedIdentifier = "DEM";
+
+        String actualTitle = theme.title;
+        String actualLayerRef = theme.layerRefs.iterator().next();
+        String actualIdentifier = theme.identifier;
+
+        assertEquals("Child One Theme Title", expectedTitle, actualTitle);
+        assertEquals("Child One Theme LayerRef", expectedLayerRef, actualLayerRef);
+        assertEquals("Child One Theme Identifier", expectedIdentifier, actualIdentifier);
+    }
+
+    @Test
+    public void testGetThemes_ChildThemeTwo() throws Exception {
+        Set<WmtsTheme> themeSet = this.wmtsCapabilities.themes.iterator().next().themes;
+        Iterator<WmtsTheme> iterator = themeSet.iterator();
+        iterator.next();
+        WmtsTheme theme = iterator.next();
+        String expectedTitle = "Administrative Boundaries";
+        String expectedLayerRef = "AdminBoundaries";
+        String expectedIdentifier = "AdmBoundaries";
+
+        String actualTitle = theme.title;
+        String actualLayerRef = theme.layerRefs.iterator().next();
+        String actualIdentifier = theme.identifier;
+
+        assertEquals("Child Two Theme Title", expectedTitle, actualTitle);
+        assertEquals("Child Two Theme LayerRef", expectedLayerRef, actualLayerRef);
+        assertEquals("Child Two Theme Identifier", expectedIdentifier, actualIdentifier);
+    }
+
+    @Test
+    public void testGetServiceMetadataUrl() throws Exception {
+        WmtsElementLink serviceMetadataUrl = this.wmtsCapabilities.serviceMetadataUrls.iterator().next();
+        String expectedHref = "http://www.opengis.uab.es/SITiled/world/1.0.0/WMTSCapabilities.xml";
+
+        String actualHref = serviceMetadataUrl.href;
+
+        assertEquals("ServiceMetadataURL Href", expectedHref, actualHref);
+    }
 }

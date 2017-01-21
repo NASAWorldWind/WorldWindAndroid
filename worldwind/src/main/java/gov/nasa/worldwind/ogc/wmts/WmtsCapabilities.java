@@ -30,6 +30,10 @@ public class WmtsCapabilities extends XmlModel {
 
     protected Map<String, WmtsTileMatrixSet> matrixSetMap;
 
+    protected Set<WmtsTheme> themes = new LinkedHashSet<>();
+
+    protected Set<WmtsElementLink> serviceMetadataUrls = new LinkedHashSet<>();
+
     public static WmtsCapabilities getCapabilities(InputStream inputStream) throws Exception {
         XmlPullParser pullParser = Xml.newPullParser();
         pullParser.setInput(inputStream, null /*inputEncoding*/);
@@ -58,6 +62,10 @@ public class WmtsCapabilities extends XmlModel {
             WmtsContents wmtsContents = (WmtsContents) value;
             this.layers.addAll(wmtsContents.layers);
             this.matrixSetMap = wmtsContents.matrixSetMap;
+        } else if (keyName.equals("Themes")) {
+            this.themes.addAll(((WmtsThemes) value).themes);
+        } else if (keyName.equals("ServiceMetadataURL")) {
+            this.serviceMetadataUrls.add((WmtsElementLink) value);
         }
     }
 }

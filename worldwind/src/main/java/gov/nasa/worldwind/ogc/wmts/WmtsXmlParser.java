@@ -59,9 +59,12 @@ public class WmtsXmlParser extends XmlModelParser {
 
         this.registerXmlModel(owsNamespace, "ServiceContact", OwsServiceContact.class);
         this.registerXmlModel(owsNamespace, "ServiceIdentification", OwsServiceIdentification.class);
+        this.registerXmlModel(wmtsNamespace, "ServiceMetadataURL", WmtsElementLink.class);
         this.registerXmlModel(owsNamespace, "ServiceProvider", OwsServiceProvider.class);
         this.registerXmlModel(wmtsNamespace, "Style", WmtsStyle.class);
 
+        this.registerXmlModel(wmtsNamespace, "Theme", WmtsTheme.class);
+        this.registerXmlModel(wmtsNamespace, "Themes", WmtsThemes.class);
         this.registerXmlModel(wmtsNamespace, "TileMatrix", WmtsTileMatrix.class);
         this.registerXmlModel(wmtsNamespace, "TileMatrixSet", WmtsTileMatrixSet.class);
         this.registerXmlModel(wmtsNamespace, "TileMatrixSetLink", WmtsTileMatrixSetLink.class);
@@ -92,6 +95,7 @@ public class WmtsXmlParser extends XmlModelParser {
 
         this.registerTxtModel(owsNamespace, "Keyword");
 
+        this.registerTxtModel(wmtsNamespace, "LayerRef");
         this.registerTxtModel(owsNamespace, "LowerCorner");
 
         this.registerTxtModel(wmtsNamespace, "MatrixHeight");
