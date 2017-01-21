@@ -10,9 +10,10 @@ import android.util.Xml;
 import org.xmlpull.v1.XmlPullParser;
 
 import java.io.InputStream;
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.xml.XmlModel;
@@ -26,13 +27,13 @@ public class WmtsCapabilities extends XmlModel {
 
     protected OwsOperationsMetadata operationsMetadata;
 
-    protected Set<WmtsLayer> layers = new LinkedHashSet<>();
+    protected List<WmtsLayer> layers = new ArrayList<>();
 
     protected Map<String, WmtsTileMatrixSet> matrixSetMap;
 
-    protected Set<WmtsTheme> themes = new LinkedHashSet<>();
+    protected List<WmtsTheme> themes = new ArrayList<>();
 
-    protected Set<WmtsElementLink> serviceMetadataUrls = new LinkedHashSet<>();
+    protected List<WmtsElementLink> serviceMetadataUrls = new ArrayList<>();
 
     public static WmtsCapabilities getCapabilities(InputStream inputStream) throws Exception {
         XmlPullParser pullParser = Xml.newPullParser();
@@ -48,6 +49,42 @@ public class WmtsCapabilities extends XmlModel {
         }
 
         return (WmtsCapabilities) result;
+    }
+
+    public OwsOperationsMetadata getOperationsMetadata() {
+        return this.operationsMetadata;
+    }
+
+    public OwsServiceProvider getServiceProvider() {
+        return this.serviceProvider;
+    }
+
+    public OwsServiceIdentification getServiceIdentification() {
+        return this.serviceIdentification;
+    }
+
+    public List<WmtsLayer> getLayers() {
+        return Collections.unmodifiableList(this.layers);
+    }
+
+    public WmtsTileMatrixSet getTileMatrixSet(String identifier) {
+        return this.matrixSetMap.get(identifier);
+    }
+
+    public List<WmtsTileMatrixSet> getTileMatrixSets() {
+        List<WmtsTileMatrixSet> tileMatrixSets = new ArrayList<>();
+        for (Map.Entry<String, WmtsTileMatrixSet> tileMatrixSet : this.matrixSetMap.entrySet()) {
+            tileMatrixSets.add(tileMatrixSet.getValue());
+        }
+        return tileMatrixSets;
+    }
+
+    public List<WmtsTheme> getThemes() {
+        return Collections.unmodifiableList(this.themes);
+    }
+
+    public List<WmtsElementLink> getServiceMetadataUrls() {
+        return Collections.unmodifiableList(this.serviceMetadataUrls);
     }
 
     @Override

@@ -15,6 +15,18 @@ public class OwsServiceProvider extends XmlModel {
 
     protected OwsServiceContact serviceContact;
 
+    public String getProviderName() {
+        return this.providerName;
+    }
+
+    public String getSiteHref() {
+        return this.siteHref;
+    }
+
+    public OwsServiceContact getServiceContact() {
+        return this.serviceContact;
+    }
+
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("ProviderName")) {

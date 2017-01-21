@@ -17,6 +17,22 @@ public class WmtsStyle extends XmlModel {
 
     protected WmtsElementLink legendUrl;
 
+    public String getTitle() {
+        return this.title;
+    }
+
+    public String getIdentifier() {
+        return this.identifier;
+    }
+
+    public boolean isDefault() {
+        return this.isDefault;
+    }
+
+    public WmtsElementLink getLegendUrl() {
+        return this.legendUrl;
+    }
+
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("Title")) {

@@ -15,6 +15,18 @@ public class OwsServiceContact extends XmlModel {
 
     protected OwsContactInfo contactInfo;
 
+    public String getIndividualName() {
+        return this.individualName;
+    }
+
+    public String getPositionName() {
+        return this.positionName;
+    }
+
+    public OwsContactInfo getContactInfo() {
+        return this.contactInfo;
+    }
+
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("IndividualName")) {

@@ -13,6 +13,14 @@ public class WmtsElementLink extends XmlModel {
 
     protected String format;
 
+    public String getHref() {
+        return href;
+    }
+
+    public String getFormat() {
+        return format;
+    }
+
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("href")) {

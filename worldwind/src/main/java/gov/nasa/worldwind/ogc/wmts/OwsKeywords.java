@@ -5,14 +5,19 @@
 
 package gov.nasa.worldwind.ogc.wmts;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsKeywords extends XmlModel {
 
-    protected Set<String> keywords = new LinkedHashSet<>();
+    protected List<String> keywords = new ArrayList<>();
+
+    public List<String> getKeywords() {
+        return Collections.unmodifiableList(this.keywords);
+    }
 
     @Override
     protected void parseField(String keyName, Object value) {

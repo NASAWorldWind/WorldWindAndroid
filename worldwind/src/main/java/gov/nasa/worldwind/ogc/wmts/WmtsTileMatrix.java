@@ -25,6 +25,38 @@ public class WmtsTileMatrix extends XmlModel {
 
     protected int matrixHeight;
 
+    public String getIdentifier() {
+        return this.identifier;
+    }
+
+    public double getScaleDenominator() {
+        return this.scaleDenominator;
+    }
+
+    public double getMinx() {
+        return this.minx;
+    }
+
+    public double getMaxy() {
+        return this.maxy;
+    }
+
+    public int getTileWidth() {
+        return this.tileWidth;
+    }
+
+    public int getTileHeight() {
+        return this.tileHeight;
+    }
+
+    public int getMatrixWidth() {
+        return this.matrixWidth;
+    }
+
+    public int getMatrixHeight() {
+        return this.matrixHeight;
+    }
+
     protected void parseTopLeftCorner(String value) {
         String[] values = value.split("\\s+");
 

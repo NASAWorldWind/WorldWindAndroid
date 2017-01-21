@@ -19,6 +19,26 @@ public class OwsBoundingBox extends XmlModel {
 
     protected Double maxy;
 
+    public String getCrs() {
+        return this.crs;
+    }
+
+    public Double getMinX() {
+        return this.minx;
+    }
+
+    public Double getMaxX() {
+        return this.maxx;
+    }
+
+    public Double getMinY() {
+        return this.miny;
+    }
+
+    public Double getMaxY() {
+        return this.maxy;
+    }
+
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("crs")) {

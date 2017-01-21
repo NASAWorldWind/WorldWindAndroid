@@ -5,8 +5,8 @@
 
 package gov.nasa.worldwind.ogc.wmts;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
@@ -22,7 +22,31 @@ public class WmtsTileMatrixSet extends XmlModel {
 
     protected OwsBoundingBox boundingBox;
 
-    protected Set<WmtsTileMatrix> tileMatrices = new LinkedHashSet<>();
+    protected List<WmtsTileMatrix> tileMatrices = new ArrayList<>();
+
+    public String getIdentifier() {
+        return this.identifier;
+    }
+
+    public String getLinkIdentifier() {
+        return this.linkIdentifier;
+    }
+
+    public String getSupportedCrs() {
+        return this.supportedCrs;
+    }
+
+    public String getWellKnownScaleSet() {
+        return this.wellKnownScaleSet;
+    }
+
+    public OwsBoundingBox getBoundingBox() {
+        return this.boundingBox;
+    }
+
+    public List<WmtsTileMatrix> getTileMatrices() {
+        return this.tileMatrices;
+    }
 
     @Override
     protected void parseField(String keyName, Object value) {

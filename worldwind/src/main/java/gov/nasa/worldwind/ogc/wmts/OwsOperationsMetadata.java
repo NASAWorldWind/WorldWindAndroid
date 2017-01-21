@@ -15,6 +15,18 @@ public class OwsOperationsMetadata extends XmlModel {
 
     protected OwsOperation getFeatureInfo;
 
+    public OwsOperation getGetCapabilities() {
+        return this.getCapabilities;
+    }
+
+    public OwsOperation getGetTile() {
+        return this.getTile;
+    }
+
+    public OwsOperation getGetFeatureInfo() {
+        return this.getFeatureInfo;
+    }
+
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("Operation")) {

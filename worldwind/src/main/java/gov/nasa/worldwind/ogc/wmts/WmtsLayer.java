@@ -5,8 +5,9 @@
 
 package gov.nasa.worldwind.ogc.wmts;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
@@ -20,17 +21,57 @@ public class WmtsLayer extends XmlModel {
 
     protected String identifier;
 
-    protected Set<WmtsElementLink> metadata = new LinkedHashSet<>();
+    protected List<WmtsElementLink> metadata = new ArrayList<>();
 
-    protected Set<WmtsStyle> styles = new LinkedHashSet<>();
+    protected List<WmtsStyle> styles = new ArrayList<>();
 
-    protected Set<String> formats = new LinkedHashSet<>();
+    protected List<String> formats = new ArrayList<>();
 
-    protected Set<String> infoFormats = new LinkedHashSet<>();
+    protected List<String> infoFormats = new ArrayList<>();
 
-    protected Set<String> tileMatrixSetIds = new LinkedHashSet<>();
+    protected List<String> tileMatrixSetIds = new ArrayList<>();
 
-    protected Set<WmtsResourceUrl> resourceUrls = new LinkedHashSet<>();
+    protected List<WmtsResourceUrl> resourceUrls = new ArrayList<>();
+
+    public String getIdentifier() {
+        return this.identifier;
+    }
+
+    public String getTitle() {
+        return this.title;
+    }
+
+    public String getLayerAbstract() {
+        return this.layerAbstract;
+    }
+
+    public OwsBoundingBox getBoundingBox() {
+        return this.boundingBox;
+    }
+
+    public List<WmtsElementLink> getMetadata() {
+        return Collections.unmodifiableList(this.metadata);
+    }
+
+    public List<WmtsStyle> getStyles() {
+        return Collections.unmodifiableList(this.styles);
+    }
+
+    public List<String> getFormats() {
+        return Collections.unmodifiableList(this.formats);
+    }
+
+    public List<String> getInfoFormats() {
+        return Collections.unmodifiableList(this.infoFormats);
+    }
+
+    public List<String> getTileMatrixSetIds() {
+        return Collections.unmodifiableList(this.tileMatrixSetIds);
+    }
+
+    public List<WmtsResourceUrl> getResourceUrls() {
+        return Collections.unmodifiableList(this.resourceUrls);
+    }
 
     @Override
     protected void parseField(String keyName, Object value) {

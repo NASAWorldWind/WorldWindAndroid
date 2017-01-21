@@ -13,6 +13,14 @@ public class OwsOperation extends XmlModel {
 
     protected OwsDcp dcp;
 
+    public String getName() {
+        return this.name;
+    }
+
+    public OwsDcp getDcp() {
+        return this.dcp;
+    }
+
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("name")) {

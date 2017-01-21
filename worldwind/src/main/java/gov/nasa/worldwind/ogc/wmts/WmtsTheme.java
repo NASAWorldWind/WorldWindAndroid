@@ -5,8 +5,9 @@
 
 package gov.nasa.worldwind.ogc.wmts;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
@@ -18,9 +19,29 @@ public class WmtsTheme extends XmlModel {
 
     protected String identifier;
 
-    protected Set<WmtsTheme> themes = new LinkedHashSet<>();
+    protected List<WmtsTheme> themes = new ArrayList<>();
 
-    protected Set<String> layerRefs = new LinkedHashSet<>();
+    protected List<String> layerRefs = new ArrayList<>();
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getThemeAbstract() {
+        return this.themeAbstract;
+    }
+
+    public String getIdentifier() {
+        return this.identifier;
+    }
+
+    public List<WmtsTheme> getThemes() {
+        return Collections.unmodifiableList(this.themes);
+    }
+
+    public List<String> getLayerRefs() {
+        return Collections.unmodifiableList(this.layerRefs);
+    }
 
     @Override
     protected void parseField(String keyName, Object value) {

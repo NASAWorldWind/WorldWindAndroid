@@ -13,6 +13,14 @@ public class OwsDcp extends XmlModel {
 
     protected String postHref;
 
+    public String getGetHref() {
+        return this.getHref;
+    }
+
+    public String getPostHref() {
+        return this.postHref;
+    }
+
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("HTTP")) {

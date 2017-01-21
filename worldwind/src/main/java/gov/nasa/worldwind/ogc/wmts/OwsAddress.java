@@ -21,6 +21,30 @@ public class OwsAddress extends XmlModel {
 
     protected String email;
 
+    public String getDeliveryPoint() {
+        return this.deliveryPoint;
+    }
+
+    public String getCity() {
+        return this.city;
+    }
+
+    public String getAdministrativeArea() {
+        return this.administrativeArea;
+    }
+
+    public String getPostalCode() {
+        return this.postalCode;
+    }
+
+    public String getCountry() {
+        return this.country;
+    }
+
+    public String getEmail() {
+        return this.email;
+    }
+
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("DeliveryPoint")) {

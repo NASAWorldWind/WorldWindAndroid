@@ -5,14 +5,14 @@
 
 package gov.nasa.worldwind.ogc.wmts;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmtsThemes extends XmlModel {
 
-    protected Set<WmtsTheme> themes = new LinkedHashSet<>();
+    protected List<WmtsTheme> themes = new ArrayList<>();
 
     @Override
     protected void parseField(String keyName, Object value) {

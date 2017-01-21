@@ -5,6 +5,10 @@
 
 package gov.nasa.worldwind.ogc.wmts;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsServiceIdentification extends XmlModel {
@@ -13,7 +17,7 @@ public class OwsServiceIdentification extends XmlModel {
 
     protected String serviceAbstract;
 
-    protected OwsKeywords keywords;
+    protected List<String> keywords = new ArrayList<>();
 
     protected String serviceType;
 
@@ -23,6 +27,34 @@ public class OwsServiceIdentification extends XmlModel {
 
     protected String accessConstraints;
 
+    public String getTitle() {
+        return this.title;
+    }
+
+    public String getServiceAbstract() {
+        return this.serviceAbstract;
+    }
+
+    public List<String> getKeywords() {
+        return Collections.unmodifiableList(this.keywords);
+    }
+
+    public String getServiceType() {
+        return this.serviceType;
+    }
+
+    public String getServiceTypeVersion() {
+        return this.serviceTypeVersion;
+    }
+
+    public String getFees() {
+        return this.fees;
+    }
+
+    public String getAccessConstraints() {
+        return this.accessConstraints;
+    }
+
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("Title")) {
@@ -30,7 +62,7 @@ public class OwsServiceIdentification extends XmlModel {
         } else if (keyName.equals("Abstract")) {
             this.serviceAbstract = (String) value;
         } else if (keyName.equals("Keywords")) {
-            this.keywords = (OwsKeywords) value;
+            this.keywords.addAll(((OwsKeywords) value).getKeywords());
         } else if (keyName.equals("ServiceType")) {
             this.serviceType = (String) value;
         } else if (keyName.equals("ServiceTypeVersion")) {

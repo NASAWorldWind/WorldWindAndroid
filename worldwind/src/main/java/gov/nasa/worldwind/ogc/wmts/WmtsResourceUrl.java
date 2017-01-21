@@ -15,6 +15,18 @@ public class WmtsResourceUrl extends XmlModel {
 
     protected String template;
 
+    public String getFormat() {
+        return this.format;
+    }
+
+    public String getResourceType() {
+        return this.resourceType;
+    }
+
+    public String getTemplate() {
+        return this.template;
+    }
+
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("format")) {

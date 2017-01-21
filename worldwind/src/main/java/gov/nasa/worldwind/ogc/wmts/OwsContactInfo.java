@@ -13,6 +13,14 @@ public class OwsContactInfo extends XmlModel {
 
     protected OwsAddress address;
 
+    public OwsPhone getPhone() {
+        return this.phone;
+    }
+
+    public OwsAddress getAddress() {
+        return this.address;
+    }
+
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("Phone")) {

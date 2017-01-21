@@ -13,6 +13,14 @@ public class OwsPhone extends XmlModel {
 
     protected String fax;
 
+    public String getVoice() {
+        return this.voice;
+    }
+
+    public String getFax() {
+        return this.fax;
+    }
+
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("Voice")) {
