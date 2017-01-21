@@ -121,14 +121,15 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         @Override
         protected Void doInBackground(Void... notUsed) {
             // TIP: 10.0.2.2 is used to access the host development machine from emulator
-            final String WWSK_GWC = "http://10.0.2.2:8080/worldwind-geoserver/gwc/service/wms";  // GeoWebCache
-            final String WWSK_WMS = "http://10.0.2.2:8080/worldwind-geoserver/ows";  // WMS
-            final String SSGF =  "http://10.0.1.7:8080/worldwind-geoserver/ows";
+            final String WWSK_WMS = "http://10.0.2.2:8080/worldwind-geoserver/ows";             // WMS on emulator
+            final String WWSK_GWC = "http://10.0.2.2:8080/worldwind-geoserver/gwc/service/wms"; // GeoWebCache (GWC) on emulator
+            final String SSGF_WMS = "http://10.0.1.7:8080/worldwind-geoserver/ows";             // WMS on device
+            final String SSGF_GWC = "http://10.0.1.7:8080/worldwind-geoserver/gwc/service/wms"; // GWC on device
             final String TMIS =  "http://10.0.1.7:5000/WmsServer";
 
             try {
                 // Build a WMS server GetCapabilties request
-                String serverAddress = WWSK_GWC;
+                String serverAddress = WWSK_WMS;
                 Uri serviceUri = Uri.parse(serverAddress).buildUpon()
                     .appendQueryParameter("VERSION", "1.3.0")
                     .appendQueryParameter("SERVICE", "WMS")
