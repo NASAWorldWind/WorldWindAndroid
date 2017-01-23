@@ -305,6 +305,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_wms_layer_activity:
                 loadTutorial(WmsLayerFragment.class, "file:///android_asset/wms_layer_tutorial.html", R.string.title_wms_layer);
                 break;
+            case R.id.nav_wmts_layer_activity:
+                loadTutorial(WmtsLayerFragment.class, "file:///android_asset/wms_layer_tutorial.html", R.string.title_wmts_layer);
+                break;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

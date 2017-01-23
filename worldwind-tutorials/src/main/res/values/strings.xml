@@ -28,6 +28,7 @@
     <string name="title_show_tessellation">Show Tessellation</string>
     <string name="title_surface_image">Surface Image</string>
     <string name="title_wms_layer">WMS Layer</string>
+    <string name="title_wmts_layer">WMTS Layer</string>
 
     <string name="latitude">Latitude:</string>
     <string name="longitude">Longitude:</string>

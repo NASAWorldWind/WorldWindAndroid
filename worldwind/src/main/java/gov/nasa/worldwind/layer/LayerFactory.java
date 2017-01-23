@@ -33,10 +33,14 @@ import gov.nasa.worldwind.ogc.gpkg.GpkgTileMatrixSet;
 import gov.nasa.worldwind.ogc.gpkg.GpkgTileUserMetrics;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsLayerCapabilities;
+import gov.nasa.worldwind.ogc.wmts.WmtsCapabilities;
+import gov.nasa.worldwind.ogc.wmts.WmtsLayer;
+import gov.nasa.worldwind.ogc.wmts.WmtsTileFactory;
 import gov.nasa.worldwind.shape.TiledSurfaceImage;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.LevelSetConfig;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.TileFactory;
 import gov.nasa.worldwind.util.WWUtil;
 
 public class LayerFactory {
@@ -117,6 +121,24 @@ public class LayerFactory {
         layer.setPickEnabled(false);
 
         WmsAsyncTask task = new WmsAsyncTask(this, serviceAddress, layerNames, layer, callback);
+
+        try {
+            WorldWind.taskService().execute(task);
+        } catch (RejectedExecutionException logged) { // singleton task service is full; this should never happen but we check anyway
+            callback.creationFailed(this, layer, logged);
+        }
+
+        return layer;
+    }
+
+    public Layer createFromWmts(String serviceAddress, String layerIdentifier, Callback callback) {
+        // Create a layer in which to asynchronously populate with renderables for the GeoPackage contents.
+        RenderableLayer layer = new RenderableLayer();
+
+        // Disable picking for the layer; terrain surface picking is performed automatically by WorldWindow.
+        layer.setPickEnabled(false);
+
+        WmtsAsyncTask task = new WmtsAsyncTask(this, serviceAddress, layerIdentifier, layer, callback);
 
         try {
             WorldWind.taskService().execute(task);
@@ -231,7 +253,7 @@ public class LayerFactory {
 
     protected void createFromWmsAsync(String serviceAddress, List<String> layerNames, Layer layer, Callback callback) throws Exception {
         // Parse and read the WMS Capabilities document at the provided service address
-        WmsCapabilities wmsCapabilities = retrieveWmsCapabilities(serviceAddress);
+        WmsCapabilities wmsCapabilities = this.retrieveWmsCapabilities(serviceAddress);
         List<WmsLayerCapabilities> layerCapabilities = new ArrayList<>();
         for (String layerName : layerNames) {
             WmsLayerCapabilities layerCaps = wmsCapabilities.getLayerByName(layerName);
@@ -246,6 +268,19 @@ public class LayerFactory {
         }
 
         this.createWmsLayer(layerCapabilities, layer, callback);
+    }
+
+    protected void createFromWmtsAsync(String serviceAddress, String layerIdentifier, Layer layer, Callback callback) throws Exception {
+        // Parse and read the WMTS Capabilities document at the provided service address
+        WmtsCapabilities wmtsCapabilities = this.retrieveWmtsCapabilities(serviceAddress);
+
+        WmtsLayer wmtsLayer = wmtsCapabilities.getLayer(layerIdentifier);
+        if (wmtsLayer == null) {
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "createFromWmtsAsync", "The layer identifier specified was not found"));
+        }
+
+        this.createWmtsLayer(wmtsLayer, layer, callback);
     }
 
     protected void createWmsLayer(List<WmsLayerCapabilities> layerCapabilities, Layer layer, Callback callback) {
@@ -301,6 +336,51 @@ public class LayerFactory {
         }
     }
 
+    protected void createWmtsLayer(WmtsLayer wmtsLayer, Layer layer, Callback callback) {
+
+        final Callback finalCallback = callback;
+        final RenderableLayer finalLayer = (RenderableLayer) layer;
+
+        try {
+            TileFactory tileFactory = WmtsTileFactory.generateFactory(wmtsLayer);
+            if (tileFactory == null) {
+                throw new RuntimeException(
+                    Logger.makeMessage("LayerFactory", "createWmtsLayer", "No supported TileMatrixSets were found"));
+            }
+
+            WmtsTileFactory wmtsTileFactory = (WmtsTileFactory) tileFactory;
+            LevelSetConfig levelSetConfig = new LevelSetConfig(
+                new Sector().setFullSphere(),
+                90.0,
+                wmtsTileFactory.getNumberOfSupportedLevels(),
+                wmtsTileFactory.getTileWidth(),
+                wmtsTileFactory.getTileHeight());
+
+            final TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
+
+            surfaceImage.setTileFactory(tileFactory);
+            surfaceImage.setLevelSet(new LevelSet(levelSetConfig));
+
+            // Add the tiled surface image to the layer on the main thread and notify the caller. Request a redraw to ensure
+            // that the image displays on all WorldWindows the layer may be attached to.
+            this.mainLoopHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    finalLayer.addRenderable(surfaceImage);
+                    finalCallback.creationSucceeded(LayerFactory.this, finalLayer);
+                    WorldWind.requestRedraw();
+                }
+            });
+        } catch (final Throwable ex) {
+            this.mainLoopHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    finalCallback.creationFailed(LayerFactory.this, finalLayer, ex);
+                }
+            });
+        }
+    }
+
     protected WmsCapabilities retrieveWmsCapabilities(String serviceAddress) throws Exception {
         InputStream inputStream = null;
         WmsCapabilities wmsCapabilities = null;
@@ -328,6 +408,35 @@ public class LayerFactory {
         }
 
         return wmsCapabilities;
+    }
+
+    protected WmtsCapabilities retrieveWmtsCapabilities(String serviceAddress) throws Exception {
+        InputStream inputStream = null;
+        WmtsCapabilities wmtsCapabilities = null;
+        try {
+            // Build the appropriate request Uri given the provided service address
+            Uri serviceUri = Uri.parse(serviceAddress).buildUpon()
+                .appendQueryParameter("VERSION", "1.0.0")
+                .appendQueryParameter("SERVICE", "WMTS")
+                .appendQueryParameter("REQUEST", "GetCapabilities")
+                .build();
+
+            // Open the connection as an input stream
+            URLConnection conn = new URL(serviceUri.toString()).openConnection();
+            conn.setConnectTimeout(3000);
+            conn.setReadTimeout(30000);
+            inputStream = new BufferedInputStream(conn.getInputStream());
+
+            // Parse and read the input stream
+            wmtsCapabilities = WmtsCapabilities.getCapabilities(inputStream);
+        } catch (Exception e) {
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "retrieveWmsCapabilities", "Unable to open connection and read from service address"));
+        } finally {
+            WWUtil.closeSilently(inputStream);
+        }
+
+        return wmtsCapabilities;
     }
 
     protected WmsLayerConfig getLayerConfigFromWmsCapabilities(List<WmsLayerCapabilities> layerCapabilities) {
@@ -505,6 +614,41 @@ public class LayerFactory {
         public void run() {
             try {
                 this.factory.createFromWmsAsync(this.serviceAddress, this.layerNames, this.layer, this.callback);
+            } catch (final Throwable ex) {
+                this.factory.mainLoopHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.creationFailed(factory, layer, ex);
+                    }
+                });
+            }
+        }
+    }
+
+    protected static class WmtsAsyncTask implements Runnable {
+
+        protected LayerFactory factory;
+
+        protected String serviceAddress;
+
+        protected String layerName;
+
+        protected Layer layer;
+
+        protected Callback callback;
+
+        public WmtsAsyncTask(LayerFactory factory, String serviceAddress, String layerName, Layer layer, Callback callback) {
+            this.factory = factory;
+            this.serviceAddress = serviceAddress;
+            this.layerName = layerName;
+            this.layer = layer;
+            this.callback = callback;
+        }
+
+        @Override
+        public void run() {
+            try {
+                this.factory.createFromWmtsAsync(this.serviceAddress, this.layerName, this.layer, this.callback);
             } catch (final Throwable ex) {
                 this.factory.mainLoopHandler.post(new Runnable() {
                     @Override
