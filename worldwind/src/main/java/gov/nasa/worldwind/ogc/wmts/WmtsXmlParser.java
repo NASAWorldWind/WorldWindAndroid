@@ -27,16 +27,18 @@ public class WmtsXmlParser extends XmlModelParser {
     protected void registerWmtsXmlModels() {
 
         this.registerXmlModel(owsNamespace, "Address", OwsAddress.class);
+        this.registerXmlModel(owsNamespace, "AllowedValues", OwsAllowedValues.class);
 
         this.registerXmlModel(owsNamespace, "BoundingBox", OwsBoundingBox.class);
 
         this.registerXmlModel(wmtsNamespace, "Capabilities", WmtsCapabilities.class);
+        this.registerXmlModel(owsNamespace, "Constraint", OwsConstraint.class);
         this.registerXmlModel(owsNamespace, "ContactInfo", OwsContactInfo.class);
         this.registerXmlModel(wmtsNamespace, "Contents", WmtsContents.class);
 
         this.registerXmlModel(owsNamespace, "DCP", OwsDcp.class);
 
-        this.registerXmlModel(owsNamespace, "Get", WmtsElementLink.class);
+        this.registerXmlModel(owsNamespace, "Get", OwsHttpMethod.class);
 
         this.registerXmlModel(owsNamespace, "HTTP", OwsHttp.class);
 
@@ -52,7 +54,7 @@ public class WmtsXmlParser extends XmlModelParser {
 
 
         this.registerXmlModel(owsNamespace, "Phone", OwsPhone.class);
-        this.registerXmlModel(owsNamespace, "Post", WmtsElementLink.class);
+        this.registerXmlModel(owsNamespace, "Post", OwsHttpMethod.class);
         this.registerXmlModel(owsNamespace, "ProviderSite", WmtsElementLink.class);
 
         this.registerXmlModel(wmtsNamespace, "ResourceURL", WmtsResourceUrl.class);
@@ -117,6 +119,7 @@ public class WmtsXmlParser extends XmlModelParser {
 
         this.registerTxtModel(owsNamespace, "UpperCorner");
 
+        this.registerTxtModel(owsNamespace, "Value");
         this.registerTxtModel(owsNamespace, "Voice");
 
         this.registerTxtModel(wmtsNamespace, "WellKnownScaleSet");

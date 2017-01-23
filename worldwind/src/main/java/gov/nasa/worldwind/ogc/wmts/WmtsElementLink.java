@@ -14,11 +14,11 @@ public class WmtsElementLink extends XmlModel {
     protected String format;
 
     public String getHref() {
-        return href;
+        return this.href;
     }
 
     public String getFormat() {
-        return format;
+        return this.format;
     }
 
     @Override

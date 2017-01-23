@@ -659,4 +659,14 @@ public class WmtsCapabilitiesTest {
 
         assertEquals("ServiceMetadataURL Href", expectedHref, actualHref);
     }
+
+    @Test
+    public void testGetTileDcpSupportsKVP() throws Exception {
+        OwsOperation operation = this.wmtsCapabilities.getOperationsMetadata().getGetTile();
+        Boolean expectedValue = true;
+
+        Boolean actualValue = operation.getDcp().isGetMethodSupportKV();
+
+        assertEquals("DCP Register KVP Support", expectedValue, actualValue);
+    }
 }

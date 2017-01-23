@@ -63,6 +63,16 @@ public class WmtsCapabilities extends XmlModel {
         return this.serviceIdentification;
     }
 
+    public WmtsLayer getLayer(String identifier) {
+        for (WmtsLayer layer : this.layers) {
+            if (layer.getIdentifier().equals(identifier)) {
+                return layer;
+            }
+        }
+
+        return null;
+    }
+
     public List<WmtsLayer> getLayers() {
         return Collections.unmodifiableList(this.layers);
     }

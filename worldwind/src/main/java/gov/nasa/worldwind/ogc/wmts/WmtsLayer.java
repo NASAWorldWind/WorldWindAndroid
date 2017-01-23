@@ -73,6 +73,31 @@ public class WmtsLayer extends XmlModel {
         return Collections.unmodifiableList(this.resourceUrls);
     }
 
+    public WmtsCapabilities getCapabilities() {
+        XmlModel parent = this.getParent();
+        while (parent != null) {
+            if (parent instanceof WmtsCapabilities) {
+                return (WmtsCapabilities) parent;
+            }
+            parent = parent.getParent();
+        }
+
+        return null;
+    }
+
+    public List<WmtsTileMatrixSet> getTileMatrixSets() {
+        WmtsCapabilities wmtsCapabilities = this.getCapabilities();
+        List<WmtsTileMatrixSet> tileMatrixSets = wmtsCapabilities.getTileMatrixSets();
+        List<WmtsTileMatrixSet> matchingSets = new ArrayList<>();
+        for (WmtsTileMatrixSet tileMatrixSet : tileMatrixSets) {
+            if (this.getTileMatrixSetIds().contains(tileMatrixSet.getIdentifier())) {
+                matchingSets.add(tileMatrixSet);
+            }
+        }
+
+        return matchingSets;
+    }
+
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("Title")) {

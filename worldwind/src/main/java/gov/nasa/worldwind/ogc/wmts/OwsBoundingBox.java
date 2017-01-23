@@ -5,6 +5,7 @@
 
 package gov.nasa.worldwind.ogc.wmts;
 
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsBoundingBox extends XmlModel {
@@ -37,6 +38,10 @@ public class OwsBoundingBox extends XmlModel {
 
     public Double getMaxY() {
         return this.maxy;
+    }
+
+    public Sector getSector() {
+        return Sector.fromDegrees(this.miny, this.minx, (this.maxy - this.miny), (this.maxx - this.minx));
     }
 
     @Override

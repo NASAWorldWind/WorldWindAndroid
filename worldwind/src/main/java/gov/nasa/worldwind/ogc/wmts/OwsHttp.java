@@ -9,16 +9,24 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsHttp extends XmlModel {
 
-    protected String getHref;
+    protected OwsHttpMethod get;
 
-    protected String postHref;
+    protected OwsHttpMethod post;
+
+    public OwsHttpMethod getGetMethod() {
+        return this.get;
+    }
+
+    public OwsHttpMethod getPostMethod() {
+        return this.post;
+    }
 
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("Get")) {
-            this.getHref = ((WmtsElementLink) value).href;
+            this.get = (OwsHttpMethod) value;
         } else if (keyName.equals("Post")) {
-            this.postHref = ((WmtsElementLink) value).href;
+            this.post = (OwsHttpMethod) value;
         }
     }
 }

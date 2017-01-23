@@ -9,24 +9,44 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsDcp extends XmlModel {
 
-    protected String getHref;
+    protected OwsHttpMethod getMethod;
 
-    protected String postHref;
+    protected OwsHttpMethod postMethod;
 
     public String getGetHref() {
-        return this.getHref;
+        if (this.getMethod == null) {
+            return null;
+        }
+        return this.getMethod.getHref();
+    }
+
+    public Boolean isGetMethodSupportKV() {
+        if (this.getMethod == null) {
+            return null;
+        }
+        return this.getMethod.allowedValues.contains("KVP");
     }
 
     public String getPostHref() {
-        return this.postHref;
+        if (this.postMethod == null) {
+            return null;
+        }
+        return this.postMethod.getHref();
+    }
+
+    public Boolean isPostMethodSupportKV() {
+        if (this.postMethod == null) {
+            return null;
+        }
+        return this.postMethod.allowedValues.contains("KVP");
     }
 
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("HTTP")) {
             OwsHttp http = (OwsHttp) value;
-            this.getHref = http.getHref;
-            this.postHref = http.postHref;
+            this.getMethod = http.getGetMethod();
+            this.postMethod = http.getPostMethod();
         }
     }
 }
