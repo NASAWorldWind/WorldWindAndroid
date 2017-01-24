@@ -13,13 +13,15 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmtsLayer extends XmlModel {
 
+    protected String identifier;
+
     protected String title;
 
     protected String layerAbstract;
 
-    protected OwsBoundingBox boundingBox;
+    protected List<OwsBoundingBox> boundingBoxes = new ArrayList<>();
 
-    protected String identifier;
+    protected OwsBoundingBox wgs84BoundingBox;
 
     protected List<WmtsElementLink> metadata = new ArrayList<>();
 
@@ -33,6 +35,8 @@ public class WmtsLayer extends XmlModel {
 
     protected List<WmtsResourceUrl> resourceUrls = new ArrayList<>();
 
+    protected List<WmtsDimension> dimensions = new ArrayList<>();
+
     public String getIdentifier() {
         return this.identifier;
     }
@@ -45,8 +49,12 @@ public class WmtsLayer extends XmlModel {
         return this.layerAbstract;
     }
 
-    public OwsBoundingBox getBoundingBox() {
-        return this.boundingBox;
+    public OwsBoundingBox getWgs84BoundingBox() {
+        return this.wgs84BoundingBox;
+    }
+
+    public List<OwsBoundingBox> getBoundingBoxes() {
+        return Collections.unmodifiableList(this.boundingBoxes);
     }
 
     public List<WmtsElementLink> getMetadata() {
@@ -105,7 +113,7 @@ public class WmtsLayer extends XmlModel {
         } else if (keyName.equals("Abstract")) {
             this.layerAbstract = (String) value;
         } else if (keyName.equals("WGS84BoundingBox")) {
-            this.boundingBox = (OwsBoundingBox) value;
+            this.wgs84BoundingBox = (OwsBoundingBox) value;
         } else if (keyName.equals("Identifier")) {
             this.identifier = (String) value;
         } else if (keyName.equals("Metadata")) {
@@ -120,6 +128,10 @@ public class WmtsLayer extends XmlModel {
             this.tileMatrixSetIds.add(((WmtsTileMatrixSetLink) value).linkIdentifier);
         } else if (keyName.equals("ResourceURL")) {
             this.resourceUrls.add((WmtsResourceUrl) value);
+        } else if (keyName.equals("BoundingBox")) {
+            this.boundingBoxes.add((OwsBoundingBox) value);
+        } else if (keyName.equals("Dimension")) {
+            this.dimensions.add((WmtsDimension) value);
         }
     }
 }

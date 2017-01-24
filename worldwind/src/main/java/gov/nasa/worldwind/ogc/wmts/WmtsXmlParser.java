@@ -82,7 +82,9 @@ public class WmtsXmlParser extends XmlModelParser {
 
         this.registerTxtModel(owsNamespace, "City");
         this.registerTxtModel(owsNamespace, "Country");
+        this.registerTxtModel(wmtsNamespace, "Current");
 
+        this.registerTxtModel(wmtsNamespace, "Default");
         this.registerTxtModel(owsNamespace, "DeliveryPoint");
 
         this.registerTxtModel(owsNamespace, "ElectronicMailAddress");
@@ -105,6 +107,7 @@ public class WmtsXmlParser extends XmlModelParser {
 
         this.registerTxtModel(owsNamespace, "PositionName");
         this.registerTxtModel(owsNamespace, "PostalCode");
+        this.registerTxtModel(wmtsNamespace, "Profile");
         this.registerTxtModel(owsNamespace, "ProviderName");
 
         this.registerTxtModel(wmtsNamespace, "ScaleDenominator");
@@ -117,6 +120,8 @@ public class WmtsXmlParser extends XmlModelParser {
         this.registerTxtModel(owsNamespace, "Title");
         this.registerTxtModel(wmtsNamespace, "TopLeftCorner");
 
+        this.registerTxtModel(wmtsNamespace, "UnitSymbol");
+        this.registerTxtModel(wmtsNamespace, "UOM");
         this.registerTxtModel(owsNamespace, "UpperCorner");
 
         this.registerTxtModel(owsNamespace, "Value");

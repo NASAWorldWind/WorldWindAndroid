@@ -21,11 +21,13 @@ public class OwsServiceIdentification extends XmlModel {
 
     protected String serviceType;
 
-    protected String serviceTypeVersion;
+    protected List<String> serviceTypeVersions = new ArrayList<>();
+
+    protected List<String> profiles = new ArrayList<>();
 
     protected String fees;
 
-    protected String accessConstraints;
+    protected List<String> accessConstraints = new ArrayList<>();
 
     public String getTitle() {
         return this.title;
@@ -43,16 +45,16 @@ public class OwsServiceIdentification extends XmlModel {
         return this.serviceType;
     }
 
-    public String getServiceTypeVersion() {
-        return this.serviceTypeVersion;
+    public List<String> getServiceTypeVersions() {
+        return Collections.unmodifiableList(this.serviceTypeVersions);
     }
 
     public String getFees() {
         return this.fees;
     }
 
-    public String getAccessConstraints() {
-        return this.accessConstraints;
+    public List<String> getAccessConstraints() {
+        return Collections.unmodifiableList(this.accessConstraints);
     }
 
     @Override
@@ -66,11 +68,13 @@ public class OwsServiceIdentification extends XmlModel {
         } else if (keyName.equals("ServiceType")) {
             this.serviceType = (String) value;
         } else if (keyName.equals("ServiceTypeVersion")) {
-            this.serviceTypeVersion = (String) value;
+            this.serviceTypeVersions.add((String) value);
         } else if (keyName.equals("Fees")) {
             this.fees = (String) value;
         } else if (keyName.equals("AccessConstraints")) {
-            this.accessConstraints = (String) value;
+            this.accessConstraints.add((String) value);
+        } else if (keyName.equals("Profile")) {
+            this.profiles.add((String) value);
         }
     }
 }

@@ -5,6 +5,10 @@
 
 package gov.nasa.worldwind.ogc.wmts;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmtsStyle extends XmlModel {
@@ -15,7 +19,7 @@ public class WmtsStyle extends XmlModel {
 
     protected boolean isDefault = false;
 
-    protected WmtsElementLink legendUrl;
+    protected List<WmtsElementLink> legendUrls = new ArrayList<>();
 
     public String getTitle() {
         return this.title;
@@ -29,8 +33,8 @@ public class WmtsStyle extends XmlModel {
         return this.isDefault;
     }
 
-    public WmtsElementLink getLegendUrl() {
-        return this.legendUrl;
+    public List<WmtsElementLink> getLegendUrls() {
+        return Collections.unmodifiableList(this.legendUrls);
     }
 
     @Override
@@ -42,7 +46,7 @@ public class WmtsStyle extends XmlModel {
         } else if (keyName.equals("isDefault")) {
             this.isDefault = Boolean.parseBoolean((String) value);
         } else if (keyName.equals("LegendURL")) {
-            this.legendUrl = (WmtsElementLink) value;
+            this.legendUrls.add((WmtsElementLink) value);
         }
     }
 }

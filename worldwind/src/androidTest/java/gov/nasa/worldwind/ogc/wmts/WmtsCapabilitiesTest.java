@@ -88,7 +88,7 @@ public class WmtsCapabilitiesTest {
         OwsServiceIdentification serviceIdentification = this.wmtsCapabilities.getServiceIdentification();
         String expected = "1.0.0";
 
-        String actual = serviceIdentification.getServiceTypeVersion();
+        String actual = serviceIdentification.getServiceTypeVersions().get(0);
 
         assertEquals("Service Identification Type Version", expected, actual);
     }
@@ -108,7 +108,7 @@ public class WmtsCapabilitiesTest {
         OwsServiceIdentification serviceIdentification = this.wmtsCapabilities.getServiceIdentification();
         String expected = "none";
 
-        String actual = serviceIdentification.getAccessConstraints();
+        String actual = serviceIdentification.getAccessConstraints().get(0);
 
         assertEquals("Service Identification Access Constraints", expected, actual);
     }
@@ -256,15 +256,15 @@ public class WmtsCapabilitiesTest {
         double expectedMaxYTwo = 84;
 
         WmtsLayer layer = layers.get(0);
-        double actualMinXOne = layer.getBoundingBox().getMinX();
-        double actualMaxXOne = layer.getBoundingBox().getMaxX();
-        double actualMinYOne = layer.getBoundingBox().getMinY();
-        double actualMaxYOne = layer.getBoundingBox().getMaxY();
+        double actualMinXOne = layer.getWgs84BoundingBox().getMinX();
+        double actualMaxXOne = layer.getWgs84BoundingBox().getMaxX();
+        double actualMinYOne = layer.getWgs84BoundingBox().getMinY();
+        double actualMaxYOne = layer.getWgs84BoundingBox().getMaxY();
         layer = layers.get(1);
-        double actualMinXTwo = layer.getBoundingBox().getMinX();
-        double actualMaxXTwo = layer.getBoundingBox().getMaxX();
-        double actualMinYTwo = layer.getBoundingBox().getMinY();
-        double actualMaxYTwo = layer.getBoundingBox().getMaxY();
+        double actualMinXTwo = layer.getWgs84BoundingBox().getMinX();
+        double actualMaxXTwo = layer.getWgs84BoundingBox().getMaxX();
+        double actualMinYTwo = layer.getWgs84BoundingBox().getMinY();
+        double actualMaxYTwo = layer.getWgs84BoundingBox().getMaxY();
 
         assertEquals("Layer Bounding Box MinX Layer One", expectedMinXOne, actualMinXOne, DELTA);
         assertEquals("Layer Bounding Box MaxX Layer One", expectedMaxXOne, actualMaxXOne, DELTA);

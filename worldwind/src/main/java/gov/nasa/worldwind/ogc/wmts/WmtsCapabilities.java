@@ -21,6 +21,10 @@ import gov.nasa.worldwind.util.xml.XmlModelParser;
 
 public class WmtsCapabilities extends XmlModel {
 
+    protected String version;
+
+    protected String updateSequence;
+
     protected OwsServiceIdentification serviceIdentification;
 
     protected OwsServiceProvider serviceProvider;
@@ -113,6 +117,10 @@ public class WmtsCapabilities extends XmlModel {
             this.themes.addAll(((WmtsThemes) value).themes);
         } else if (keyName.equals("ServiceMetadataURL")) {
             this.serviceMetadataUrls.add((WmtsElementLink) value);
+        } else if (keyName.equals("version")) {
+            this.version = (String) value;
+        } else if (keyName.equals("updateSequence")) {
+            this.updateSequence = (String) value;
         }
     }
 }
