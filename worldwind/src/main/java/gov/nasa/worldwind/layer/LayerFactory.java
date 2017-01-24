@@ -33,14 +33,19 @@ import gov.nasa.worldwind.ogc.gpkg.GpkgTileMatrixSet;
 import gov.nasa.worldwind.ogc.gpkg.GpkgTileUserMetrics;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsLayerCapabilities;
+import gov.nasa.worldwind.ogc.wmts.OwsDcp;
+import gov.nasa.worldwind.ogc.wmts.OwsOperation;
+import gov.nasa.worldwind.ogc.wmts.OwsOperationsMetadata;
 import gov.nasa.worldwind.ogc.wmts.WmtsCapabilities;
 import gov.nasa.worldwind.ogc.wmts.WmtsLayer;
+import gov.nasa.worldwind.ogc.wmts.WmtsResourceUrl;
 import gov.nasa.worldwind.ogc.wmts.WmtsTileFactory;
+import gov.nasa.worldwind.ogc.wmts.WmtsTileMatrix;
+import gov.nasa.worldwind.ogc.wmts.WmtsTileMatrixSet;
 import gov.nasa.worldwind.shape.TiledSurfaceImage;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.LevelSetConfig;
 import gov.nasa.worldwind.util.Logger;
-import gov.nasa.worldwind.util.TileFactory;
 import gov.nasa.worldwind.util.WWUtil;
 
 public class LayerFactory {
@@ -60,6 +65,8 @@ public class LayerFactory {
     protected static final double DEFAULT_WMS_RADIANS_PER_PIXEL = 10.0 / WorldWind.WGS84_SEMI_MAJOR_AXIS;
 
     protected List<String> compatibleImageFormats = Arrays.asList("image/png", "image/jpg", "image/jpeg", "image/gif", "image/bmp");
+
+    protected List<String> compatibleCoordinateSystems = Arrays.asList("urn:ogc:def:crs:OGC:1.3:CRS84", "urn:ogc:def:crs:EPSG::4326");
 
     public Layer createFromGeoPackage(String pathName, Callback callback) {
         if (pathName == null) {
@@ -342,19 +349,18 @@ public class LayerFactory {
         final RenderableLayer finalLayer = (RenderableLayer) layer;
 
         try {
-            TileFactory tileFactory = WmtsTileFactory.generateFactory(wmtsLayer);
+            WmtsTileFactory tileFactory = this.getWmtsTileFactory(wmtsLayer);
             if (tileFactory == null) {
                 throw new RuntimeException(
                     Logger.makeMessage("LayerFactory", "createWmtsLayer", "No supported TileMatrixSets were found"));
             }
 
-            WmtsTileFactory wmtsTileFactory = (WmtsTileFactory) tileFactory;
             LevelSetConfig levelSetConfig = new LevelSetConfig(
                 new Sector().setFullSphere(),
                 90.0,
-                wmtsTileFactory.getNumberOfSupportedLevels(),
-                wmtsTileFactory.getTileWidth(),
-                wmtsTileFactory.getTileHeight());
+                tileFactory.getNumberOfLevels(),
+                tileFactory.getImageSize(),
+                tileFactory.getImageSize());
 
             final TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
 
@@ -508,6 +514,60 @@ public class LayerFactory {
         return wmsLayerConfig;
     }
 
+    protected WmtsTileFactory getWmtsTileFactory(WmtsLayer wmtsLayer) {
+
+        // Determine if there is TileMatrixSet which matches our Coordinate System compatibility and pyramid scheme
+        List<String> compatibleTileMatrixSets = this.determineCoordSysCompatibleTileMatrixSets(wmtsLayer);
+        if (compatibleTileMatrixSets.isEmpty()) {
+            // TODO log message
+            return null;
+        }
+        String compatibleTileMatrixSet = this.determinePyramidCompatibleTileMatrixSets(wmtsLayer.getCapabilities(), compatibleTileMatrixSets);
+        if (compatibleTileMatrixSet == null) {
+            //  TODO log message
+            return null;
+        }
+        List<String> compatibleTileMatrixIds = this.determineSuitableTileMatrices(wmtsLayer.getCapabilities().getTileMatrixSet(compatibleTileMatrixSet));
+
+        int imageSize = wmtsLayer.getCapabilities().getTileMatrixSet(compatibleTileMatrixSet).getTileMatrices().get(0).getTileHeight();
+
+        // First choice is a ResourceURL
+        List<WmtsResourceUrl> resourceUrls = wmtsLayer.getResourceUrls();
+        if (resourceUrls != null) {
+            // Attempt to find a supported image format
+            for (WmtsResourceUrl resourceUrl : resourceUrls) {
+                if (this.compatibleImageFormats.contains(resourceUrl.getFormat())) {
+                    return new WmtsTileFactory(resourceUrl.getTemplate(), compatibleTileMatrixIds, imageSize);
+                }
+            }
+        }
+
+        // Second choice is if the server supports KVP
+        if (this.determineKvpSupport(wmtsLayer)) {
+            String baseUrl = wmtsLayer.getCapabilities().getOperationsMetadata().getGetTile().getDcp().getGetHref();
+            if (baseUrl == null) {
+                // TODO log message
+                return null;
+            }
+
+            String imageFormat = null;
+            for (String compatibleImageFormat : this.compatibleImageFormats) {
+                if (wmtsLayer.getFormats().contains(compatibleImageFormat)) {
+                    imageFormat = compatibleImageFormat;
+                    break;
+                }
+            }
+            if (imageFormat == null) {
+                // TODO log message
+                return null;
+            }
+
+            return new WmtsTileFactory(baseUrl, wmtsLayer.getIdentifier(), imageFormat, compatibleTileMatrixSet, compatibleTileMatrixIds, imageSize);
+        }
+
+        return null;
+    }
+
     protected LevelSetConfig getLevelSetConfigFromWmsCapabilities(List<WmsLayerCapabilities> layerCapabilities) {
         LevelSetConfig levelSetConfig = new LevelSetConfig();
 
@@ -556,6 +616,78 @@ public class LayerFactory {
         }
 
         return levelSetConfig;
+    }
+
+    protected List<String> determineCoordSysCompatibleTileMatrixSets(WmtsLayer layer) {
+
+        List<String> compatibleTileMatrixSets = new ArrayList<>();
+
+        // Look for compatible coordinate system types
+        List<WmtsTileMatrixSet> tileMatrixSets = layer.getTileMatrixSets();
+        for (WmtsTileMatrixSet tileMatrixSet : tileMatrixSets) {
+            if (this.compatibleCoordinateSystems.contains(tileMatrixSet.getSupportedCrs())) {
+                compatibleTileMatrixSets.add(tileMatrixSet.getIdentifier());
+            }
+        }
+
+        return compatibleTileMatrixSets;
+    }
+
+    protected String determinePyramidCompatibleTileMatrixSets(WmtsCapabilities capabilities, List<String> tileMatrixSetIds) {
+
+        for (String tileMatrixSetId : tileMatrixSetIds) {
+            WmtsTileMatrixSet tileMatrixSet = capabilities.getTileMatrixSet(tileMatrixSetId);
+            int matchingMatrices = 0;
+            for (WmtsTileMatrix tileMatrix : tileMatrixSet.getTileMatrices()) {
+                if ((2 * tileMatrix.getMatrixHeight()) == tileMatrix.getMatrixWidth()
+                    && (tileMatrix.getMatrixWidth() % 2 == 0)
+                    && tileMatrix.getTileWidth() == tileMatrix.getTileHeight()) {
+
+                    matchingMatrices++;
+                }
+            }
+
+            if (matchingMatrices > 2) {
+                return tileMatrixSetId;
+            }
+        }
+
+        return null;
+    }
+
+    protected List<String> determineSuitableTileMatrices(WmtsTileMatrixSet tileMatrixSet) {
+        List<String> tileMatrixIds = new ArrayList<>();
+        for (WmtsTileMatrix tileMatrix : tileMatrixSet.getTileMatrices()) {
+            if ((2 * tileMatrix.getMatrixHeight()) == tileMatrix.getMatrixWidth()
+                && (tileMatrix.getMatrixWidth() % 2 == 0)
+                && tileMatrix.getTileWidth() == tileMatrix.getTileHeight()) {
+
+                if (tileMatrix.getMatrixHeight() >= 2) {
+                    tileMatrixIds.add(tileMatrix.getIdentifier());
+                }
+            }
+        }
+
+        return tileMatrixIds;
+    }
+
+    protected boolean determineKvpSupport(WmtsLayer layer) {
+
+        WmtsCapabilities capabilities = layer.getCapabilities();
+        OwsOperationsMetadata operationsMetadata = capabilities.getOperationsMetadata();
+        if (operationsMetadata == null) {
+            return false;
+        }
+        OwsOperation getTileOperation = operationsMetadata.getGetTile();
+        if (getTileOperation == null) {
+            return false;
+        }
+        OwsDcp dcp = getTileOperation.getDcp();
+        if (dcp == null) {
+            return false;
+        }
+        Boolean kvpSupport = dcp.isGetMethodSupportKV();
+        return !(kvpSupport == null || kvpSupport == false);
     }
 
     protected static class GeoPackageAsyncTask implements Runnable {
