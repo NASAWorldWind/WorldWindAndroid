@@ -37,6 +37,7 @@ public class WmtsXmlParser extends XmlModelParser {
         this.registerXmlModel(wmtsNamespace, "Contents", WmtsContents.class);
 
         this.registerXmlModel(owsNamespace, "DCP", OwsDcp.class);
+        this.registerXmlModel(wmtsNamespace, "Dimension", WmtsDimension.class);
 
         this.registerXmlModel(owsNamespace, "Get", OwsHttpMethod.class);
 
@@ -121,10 +122,11 @@ public class WmtsXmlParser extends XmlModelParser {
         this.registerTxtModel(wmtsNamespace, "TopLeftCorner");
 
         this.registerTxtModel(wmtsNamespace, "UnitSymbol");
-        this.registerTxtModel(wmtsNamespace, "UOM");
+        this.registerTxtModel(owsNamespace, "UOM");
         this.registerTxtModel(owsNamespace, "UpperCorner");
 
         this.registerTxtModel(owsNamespace, "Value");
+        this.registerTxtModel(wmtsNamespace, "Value");
         this.registerTxtModel(owsNamespace, "Voice");
 
         this.registerTxtModel(wmtsNamespace, "WellKnownScaleSet");

@@ -437,7 +437,7 @@ public class LayerFactory {
             wmtsCapabilities = WmtsCapabilities.getCapabilities(inputStream);
         } catch (Exception e) {
             throw new RuntimeException(
-                Logger.makeMessage("LayerFactory", "retrieveWmsCapabilities", "Unable to open connection and read from service address"));
+                Logger.makeMessage("LayerFactory", "retrieveWmsCapabilities", "Unable to open connection and read from service address " + e.toString()));
         } finally {
             WWUtil.closeSilently(inputStream);
         }
