@@ -11,6 +11,7 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.ImageTile;
 import gov.nasa.worldwind.util.Level;
+import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Tile;
 import gov.nasa.worldwind.util.TileFactory;
 
@@ -22,6 +23,8 @@ public class WmtsTileFactory implements TileFactory {
 
     public static String TILECOL_TEMPLATE = "{TileCol}";
 
+    protected Sector boundingBox;
+
     protected int[] rowHeight;
 
     protected String template;
@@ -30,23 +33,90 @@ public class WmtsTileFactory implements TileFactory {
 
     protected int imageSize;
 
-    public WmtsTileFactory(String kvpServiceAddress, String layer, String format, String tileMatrixSet,
+    public WmtsTileFactory(String kvpServiceAddress, String layerIdentifier, String format, String tileMatrixSetIdentifier,
                            List<String> tileMatrixIdentifiers, int imageSize) {
-        this.buildTemplate(kvpServiceAddress, layer, format, tileMatrixSet);
+        if (kvpServiceAddress == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmtsTileFactory", "constructor", "missingServiceAddress"));
+        }
+
+        if (layerIdentifier == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmtsTileFactory", "constructor", "missingLayerIdentifier"));
+        }
+
+        if (format == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmtsTileFactory", "constructor", "missingFormat"));
+        }
+
+        if (tileMatrixSetIdentifier == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmtsTileFactory", "constructor", "missingTileMatrixSetIdentifier"));
+        }
+
+        if (tileMatrixIdentifiers == null || tileMatrixIdentifiers.isEmpty()) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmtsTileFactory", "constructor", "missingTileMatrixIdentifiers"));
+        }
+
+        if (imageSize <= 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmtsTileFactory", "constructor", "invalidImageSize"));
+        }
+
+        this.buildTemplate(kvpServiceAddress, layerIdentifier, format, tileMatrixSetIdentifier);
         this.tileMatrixIdentifiers = tileMatrixIdentifiers;
         this.initializeRowHeight();
         this.imageSize = imageSize;
     }
 
-    public WmtsTileFactory(String template, List<String> tileMatrixIdentifiers, int imageSize) {
-        this.template = template;
+    public WmtsTileFactory(String template, String tileMatrixSetIdentifier, List<String> tileMatrixIdentifiers, int imageSize) {
+        if (template == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmtsTileFactory", "constructor", "missingServiceAddress"));
+        }
+
+        if (tileMatrixSetIdentifier == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmtsTileFactory", "constructor", "missingMatrixSetIdentifier"));
+        }
+
+        if (tileMatrixIdentifiers == null || tileMatrixIdentifiers.isEmpty()) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmtsTileFactory", "constructor", "missingMatrixIdentifiers"));
+        }
+
+        if (tileMatrixSetIdentifier == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmtsTileFactory", "constructor", "missingTileMatrixSetIdentifier"));
+        }
+
+        if (imageSize <= 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmtsTileFactory", "constructor", "invalidImageSize"));
+        }
+
+        this.template = template.replace("{TileMatrixSet}", tileMatrixSetIdentifier);
         this.tileMatrixIdentifiers = tileMatrixIdentifiers;
         this.initializeRowHeight();
         this.imageSize = imageSize;
+    }
+
+    public Sector getBoundingBox() {
+        return this.boundingBox;
+    }
+
+    public void setBoundingBox(Sector sector) {
+        this.boundingBox = sector;
     }
 
     @Override
     public Tile createTile(Sector sector, Level level, int row, int column) {
+
+        if (this.boundingBox != null && !this.boundingBox.intersects(sector)) {
+            return new ImageTile(sector, level, row, column);
+        }
 
         ImageTile tile = new ImageTile(sector, level, row, column);
 

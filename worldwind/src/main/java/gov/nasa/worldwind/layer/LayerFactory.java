@@ -33,6 +33,7 @@ import gov.nasa.worldwind.ogc.gpkg.GpkgTileMatrixSet;
 import gov.nasa.worldwind.ogc.gpkg.GpkgTileUserMetrics;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsLayerCapabilities;
+import gov.nasa.worldwind.ogc.wmts.OwsBoundingBox;
 import gov.nasa.worldwind.ogc.wmts.OwsDcp;
 import gov.nasa.worldwind.ogc.wmts.OwsOperation;
 import gov.nasa.worldwind.ogc.wmts.OwsOperationsMetadata;
@@ -66,7 +67,7 @@ public class LayerFactory {
 
     protected List<String> compatibleImageFormats = Arrays.asList("image/png", "image/jpg", "image/jpeg", "image/gif", "image/bmp");
 
-    protected List<String> compatibleCoordinateSystems = Arrays.asList("urn:ogc:def:crs:OGC:1.3:CRS84", "urn:ogc:def:crs:EPSG::4326");
+    protected List<String> compatibleCoordinateSystems = Arrays.asList("urn:ogc:def:crs:OGC:1.3:CRS84", "urn:ogc:def:crs:EPSG::4326", "http://www.opengis.net/def/crs/OGC/1.3/CRS84");
 
     public Layer createFromGeoPackage(String pathName, Callback callback) {
         if (pathName == null) {
@@ -139,6 +140,21 @@ public class LayerFactory {
     }
 
     public Layer createFromWmts(String serviceAddress, String layerIdentifier, Callback callback) {
+        if (serviceAddress == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWms", "missingServiceAddress"));
+        }
+
+        if (layerIdentifier == null || layerIdentifier.isEmpty()) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWms", "missingLayerNames"));
+        }
+
+        if (callback == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWms", "missingCallback"));
+        }
+
         // Create a layer in which to asynchronously populate with renderables for the GeoPackage contents.
         RenderableLayer layer = new RenderableLayer();
 
@@ -519,17 +535,19 @@ public class LayerFactory {
         // Determine if there is TileMatrixSet which matches our Coordinate System compatibility and pyramid scheme
         List<String> compatibleTileMatrixSets = this.determineCoordSysCompatibleTileMatrixSets(wmtsLayer);
         if (compatibleTileMatrixSets.isEmpty()) {
-            // TODO log message
-            return null;
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "getWmtsTileFactory", "Coordinate Systems Not Compatible"));
         }
-        String compatibleTileMatrixSet = this.determinePyramidCompatibleTileMatrixSets(wmtsLayer.getCapabilities(), compatibleTileMatrixSets);
+        String compatibleTileMatrixSet = this.determineTileSchemeCompatibleTileMatrixSets(wmtsLayer.getCapabilities(), compatibleTileMatrixSets);
         if (compatibleTileMatrixSet == null) {
-            //  TODO log message
-            return null;
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "getWmtsTileFactory", "Tile Schemes Not Compatible"));
         }
         List<String> compatibleTileMatrixIds = this.determineSuitableTileMatrices(wmtsLayer.getCapabilities().getTileMatrixSet(compatibleTileMatrixSet));
 
         int imageSize = wmtsLayer.getCapabilities().getTileMatrixSet(compatibleTileMatrixSet).getTileMatrices().get(0).getTileHeight();
+
+        WmtsTileFactory tileFactory = null;
 
         // First choice is a ResourceURL
         List<WmtsResourceUrl> resourceUrls = wmtsLayer.getResourceUrls();
@@ -537,17 +555,17 @@ public class LayerFactory {
             // Attempt to find a supported image format
             for (WmtsResourceUrl resourceUrl : resourceUrls) {
                 if (this.compatibleImageFormats.contains(resourceUrl.getFormat())) {
-                    return new WmtsTileFactory(resourceUrl.getTemplate(), compatibleTileMatrixIds, imageSize);
+                    tileFactory = new WmtsTileFactory(resourceUrl.getTemplate(), compatibleTileMatrixSet, compatibleTileMatrixIds, imageSize);
                 }
             }
         }
 
         // Second choice is if the server supports KVP
-        if (this.determineKvpSupport(wmtsLayer)) {
+        if (tileFactory == null && this.determineKvpSupport(wmtsLayer)) {
             String baseUrl = wmtsLayer.getCapabilities().getOperationsMetadata().getGetTile().getDcp().getGetHref();
             if (baseUrl == null) {
-                // TODO log message
-                return null;
+                throw new RuntimeException(
+                    Logger.makeMessage("LayerFactory", "getWmtsTileFactory", "No KVP GetTile HREF Defined"));
             }
 
             String imageFormat = null;
@@ -558,14 +576,23 @@ public class LayerFactory {
                 }
             }
             if (imageFormat == null) {
-                // TODO log message
-                return null;
+                throw new RuntimeException(
+                    Logger.makeMessage("LayerFactory", "getWmtsTileFactory", "Image Formats Not Compatible"));
             }
 
-            return new WmtsTileFactory(baseUrl, wmtsLayer.getIdentifier(), imageFormat, compatibleTileMatrixSet, compatibleTileMatrixIds, imageSize);
+            tileFactory = new WmtsTileFactory(baseUrl, wmtsLayer.getIdentifier(), imageFormat, compatibleTileMatrixSet, compatibleTileMatrixIds, imageSize);
+
         }
 
-        return null;
+        if (tileFactory != null) {
+            OwsBoundingBox boundingBox = wmtsLayer.getWgs84BoundingBox();
+            if (boundingBox != null) {
+                tileFactory.setBoundingBox(boundingBox.getSector());
+            }
+            return tileFactory;
+        }
+
+        return tileFactory;
     }
 
     protected LevelSetConfig getLevelSetConfigFromWmsCapabilities(List<WmsLayerCapabilities> layerCapabilities) {
@@ -633,7 +660,7 @@ public class LayerFactory {
         return compatibleTileMatrixSets;
     }
 
-    protected String determinePyramidCompatibleTileMatrixSets(WmtsCapabilities capabilities, List<String> tileMatrixSetIds) {
+    protected String determineTileSchemeCompatibleTileMatrixSets(WmtsCapabilities capabilities, List<String> tileMatrixSetIds) {
 
         for (String tileMatrixSetId : tileMatrixSetIds) {
             WmtsTileMatrixSet tileMatrixSet = capabilities.getTileMatrixSet(tileMatrixSetId);
