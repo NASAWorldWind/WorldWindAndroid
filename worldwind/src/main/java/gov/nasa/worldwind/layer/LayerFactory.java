@@ -580,7 +580,13 @@ public class LayerFactory {
                     Logger.makeMessage("LayerFactory", "getWmtsTileFactory", "Image Formats Not Compatible"));
             }
 
-            tileFactory = new WmtsTileFactory(baseUrl, wmtsLayer.getIdentifier(), imageFormat, compatibleTileMatrixSet, compatibleTileMatrixIds, imageSize);
+            String styleIdentifier = wmtsLayer.getStyles().get(0).getIdentifier();
+            if (styleIdentifier == null) {
+                throw new RuntimeException(
+                    Logger.makeMessage("LayerFactory", "getWmtsTileFactory", "No Style Identifier"));
+            }
+
+            tileFactory = new WmtsTileFactory(baseUrl, wmtsLayer.getIdentifier(), imageFormat, styleIdentifier, compatibleTileMatrixSet, compatibleTileMatrixIds, imageSize);
 
         }
 

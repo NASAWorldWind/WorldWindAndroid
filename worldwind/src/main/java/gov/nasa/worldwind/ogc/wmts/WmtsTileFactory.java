@@ -33,7 +33,7 @@ public class WmtsTileFactory implements TileFactory {
 
     protected int imageSize;
 
-    public WmtsTileFactory(String kvpServiceAddress, String layerIdentifier, String format, String tileMatrixSetIdentifier,
+    public WmtsTileFactory(String kvpServiceAddress, String layerIdentifier, String format, String styleIdentifier, String tileMatrixSetIdentifier,
                            List<String> tileMatrixIdentifiers, int imageSize) {
         if (kvpServiceAddress == null) {
             throw new IllegalArgumentException(
@@ -46,6 +46,11 @@ public class WmtsTileFactory implements TileFactory {
         }
 
         if (format == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmtsTileFactory", "constructor", "missingFormat"));
+        }
+
+        if (styleIdentifier == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "WmtsTileFactory", "constructor", "missingFormat"));
         }
@@ -65,7 +70,7 @@ public class WmtsTileFactory implements TileFactory {
                 Logger.logMessage(Logger.ERROR, "WmtsTileFactory", "constructor", "invalidImageSize"));
         }
 
-        this.buildTemplate(kvpServiceAddress, layerIdentifier, format, tileMatrixSetIdentifier);
+        this.buildTemplate(kvpServiceAddress, layerIdentifier, format, styleIdentifier, tileMatrixSetIdentifier);
         this.tileMatrixIdentifiers = tileMatrixIdentifiers;
         this.initializeRowHeight();
         this.imageSize = imageSize;
@@ -176,7 +181,7 @@ public class WmtsTileFactory implements TileFactory {
         }
     }
 
-    protected void buildTemplate(String kvpServiceAddress, String layer, String format, String tileMatrixSet) {
+    protected void buildTemplate(String kvpServiceAddress, String layer, String format, String styleIdentifier, String tileMatrixSet) {
         StringBuilder urlTemplate = new StringBuilder(kvpServiceAddress);
 
         int index = urlTemplate.indexOf("?");
@@ -193,7 +198,7 @@ public class WmtsTileFactory implements TileFactory {
         urlTemplate.append("REQUEST=GetTile&");
         urlTemplate.append("VERSION=1.0.0&");
         urlTemplate.append("LAYER=").append(layer).append("&");
-        urlTemplate.append("STYLE=default&");
+        urlTemplate.append("STYLE=").append(styleIdentifier).append("&");
         urlTemplate.append("FORMAT=").append(format).append("&");
         urlTemplate.append("TILEMATRIXSET=").append(tileMatrixSet).append("&");
         urlTemplate.append("TILEMATRIX=").append(TILEMATRIX_TEMPLATE).append("&");
