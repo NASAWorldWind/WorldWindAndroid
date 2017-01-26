@@ -6,8 +6,15 @@
 package gov.nasa.worldwind.ogc.wmts;
 
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
+/**
+ * An implementation of the OGC Web Services Common Bounding Box. The EPSG:4326 coordinate system axis ordering is
+ * explicitly handled, for all other coordinate systems the configuration assumes coordinate order to be x then y for
+ * the corner values. See the {@link OwsBoundingBox#parseCornerString(String)} for more information and implementation
+ * details.
+ */
 public class OwsBoundingBox extends XmlModel {
 
     protected String crs;
@@ -58,6 +65,14 @@ public class OwsBoundingBox extends XmlModel {
     protected void parseCornerString(String value) {
         String[] values = value.split("\\s+");
 
+        // Correct for coordinate ordering
+        // CRS84 orders coordinates in lon, lat (x, y), EPSG:4326 orders coordinates lat, lon (y, x)
+        if (this.crs != null && this.crs.equals("EPSG:4326")) {
+            String lat = values[0];
+            values[0] = values[1];
+            values[1] = lat;
+        }
+
         if (values.length == 2) {
             double x = Double.parseDouble(values[0]);
             double y = Double.parseDouble(values[1]);
@@ -66,7 +81,7 @@ public class OwsBoundingBox extends XmlModel {
             maxx = (maxx != null) ? Math.max(x, maxx) : x;
             maxy = (maxy != null) ? Math.max(y, maxy) : y;
         } else {
-            // TODO log message
+            Logger.logMessage(Logger.WARN, "OwsBoundingBox", "parseCornerString", "Error parsing value: " + value);
         }
     }
 }
