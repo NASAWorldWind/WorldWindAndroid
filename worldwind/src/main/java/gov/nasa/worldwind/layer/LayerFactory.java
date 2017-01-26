@@ -532,7 +532,7 @@ public class LayerFactory {
 
     protected WmtsTileFactory getWmtsTileFactory(WmtsLayer wmtsLayer) {
 
-        // Determine if there is TileMatrixSet which matches our Coordinate System compatibility and pyramid scheme
+        // Determine if there is a TileMatrixSet which matches our Coordinate System compatibility and tiling scheme
         List<String> compatibleTileMatrixSets = this.determineCoordSysCompatibleTileMatrixSets(wmtsLayer);
         if (compatibleTileMatrixSets.isEmpty()) {
             throw new RuntimeException(
@@ -652,7 +652,6 @@ public class LayerFactory {
     }
 
     protected List<String> determineCoordSysCompatibleTileMatrixSets(WmtsLayer layer) {
-
         List<String> compatibleTileMatrixSets = new ArrayList<>();
 
         // Look for compatible coordinate system types
@@ -667,7 +666,6 @@ public class LayerFactory {
     }
 
     protected String determineTileSchemeCompatibleTileMatrixSets(WmtsCapabilities capabilities, List<String> tileMatrixSetIds) {
-
         for (String tileMatrixSetId : tileMatrixSetIds) {
             WmtsTileMatrixSet tileMatrixSet = capabilities.getTileMatrixSet(tileMatrixSetId);
             int matchingMatrices = 0;
@@ -705,7 +703,6 @@ public class LayerFactory {
     }
 
     protected boolean determineKvpSupport(WmtsLayer layer) {
-
         WmtsCapabilities capabilities = layer.getCapabilities();
         OwsOperationsMetadata operationsMetadata = capabilities.getOperationsMetadata();
         if (operationsMetadata == null) {
