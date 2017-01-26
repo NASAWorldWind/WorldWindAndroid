@@ -33,8 +33,8 @@ public class WmtsTileFactory implements TileFactory {
 
     protected int imageSize;
 
-    public WmtsTileFactory(String kvpServiceAddress, String layerIdentifier, String format, String styleIdentifier, String tileMatrixSetIdentifier,
-                           List<String> tileMatrixIdentifiers, int imageSize) {
+    public WmtsTileFactory(String kvpServiceAddress, String layerIdentifier, String format, String styleIdentifier,
+                           String tileMatrixSetIdentifier, List<String> tileMatrixIdentifiers, int imageSize) {
         if (kvpServiceAddress == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "WmtsTileFactory", "constructor", "missingServiceAddress"));
@@ -71,9 +71,7 @@ public class WmtsTileFactory implements TileFactory {
         }
 
         this.buildTemplate(kvpServiceAddress, layerIdentifier, format, styleIdentifier, tileMatrixSetIdentifier);
-        this.tileMatrixIdentifiers = tileMatrixIdentifiers;
-        this.initializeRowHeight();
-        this.imageSize = imageSize;
+        this.initialize(tileMatrixIdentifiers, imageSize);
     }
 
     public WmtsTileFactory(String template, String tileMatrixSetIdentifier, List<String> tileMatrixIdentifiers, int imageSize) {
@@ -103,6 +101,10 @@ public class WmtsTileFactory implements TileFactory {
         }
 
         this.template = template.replace("{TileMatrixSet}", tileMatrixSetIdentifier);
+        this.initialize(tileMatrixIdentifiers, imageSize);
+    }
+
+    protected void initialize(List<String> tileMatrixIdentifiers, int imageSize) {
         this.tileMatrixIdentifiers = tileMatrixIdentifiers;
         this.initializeRowHeight();
         this.imageSize = imageSize;
@@ -118,7 +120,6 @@ public class WmtsTileFactory implements TileFactory {
 
     @Override
     public Tile createTile(Sector sector, Level level, int row, int column) {
-
         if (this.boundingBox != null && !this.boundingBox.intersects(sector)) {
             return new ImageTile(sector, level, row, column);
         }
@@ -126,6 +127,9 @@ public class WmtsTileFactory implements TileFactory {
         ImageTile tile = new ImageTile(sector, level, row, column);
 
         String urlString = this.urlForTile(level.levelNumber, row, column);
+        if (urlString == null) {
+            return new ImageTile(sector, level, row, column);
+        }
 
         tile.setImageSource(ImageSource.fromUrl(urlString));
 
@@ -133,24 +137,18 @@ public class WmtsTileFactory implements TileFactory {
     }
 
     public String urlForTile(int level, int row, int column) {
+        if (this.template == null || this.rowHeight == null || this.tileMatrixIdentifiers == null) {
+            Logger.logMessage(Logger.WARN, "WmtsTileFactory", "urlForTile", "null template, rowHeight, or tileMatrixIdentifiers");
+            return null;
+        }
 
         if (level < 0 || level >= this.rowHeight.length) {
-            // TODO log message
-            return null;
-        }
-
-        if (this.template == null || this.rowHeight == null) {
-            // TODO log message
-            return null;
-        }
-
-        if (level >= this.rowHeight.length) {
-            // TODO log message
+            Logger.logMessage(Logger.WARN, "WmtsTileFactory", "urlForTile", "invalid level for rowHeight: " + level);
             return null;
         }
 
         if (level >= this.tileMatrixIdentifiers.size()) {
-            // TODO log message
+            Logger.logMessage(Logger.WARN, "WmtsTileFactory", "urlForTile", "invalid level for tileMatrixIdentifiers: " + level);
             return null;
         }
 
