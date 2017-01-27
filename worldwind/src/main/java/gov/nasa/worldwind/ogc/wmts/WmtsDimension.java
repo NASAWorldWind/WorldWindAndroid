@@ -19,7 +19,7 @@ public class WmtsDimension extends XmlModel {
 
     protected String dimensionAbstract;
 
-    protected List<String> kewords = new ArrayList<>();
+    protected List<String> keywords = new ArrayList<>();
 
     protected String unitOfMeasure;
 
@@ -43,8 +43,8 @@ public class WmtsDimension extends XmlModel {
         return this.dimensionAbstract;
     }
 
-    public List<String> getKewords() {
-        return Collections.unmodifiableList(this.kewords);
+    public List<String> getKeywords() {
+        return Collections.unmodifiableList(this.keywords);
     }
 
     public String getUnitOfMeasure() {
@@ -76,7 +76,7 @@ public class WmtsDimension extends XmlModel {
         } else if (keyName.equals("Abstract")) {
             this.dimensionAbstract = (String) value;
         } else if (keyName.equals("Keywords")) {
-            this.kewords.addAll(((OwsKeywords) value).getKeywords());
+            this.keywords.addAll(((OwsKeywords) value).getKeywords());
         } else if (keyName.equals("UOM")) {
             this.unitOfMeasure = (String) value;
         } else if (keyName.equals("UnitSymbol")) {
