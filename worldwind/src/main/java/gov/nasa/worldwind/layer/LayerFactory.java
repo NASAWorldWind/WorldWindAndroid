@@ -745,8 +745,8 @@ public class LayerFactory {
         if (dcp == null) {
             return false;
         }
-        Boolean kvpSupport = dcp.isGetMethodSupportKV();
-        return !(kvpSupport == null || kvpSupport == false);
+
+        return !dcp.isGetMethodSupportKV();
     }
 
     protected static class GeoPackageAsyncTask implements Runnable {
