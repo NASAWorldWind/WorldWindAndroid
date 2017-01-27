@@ -9,46 +9,52 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-/**
- * An implementation of the OGC Web Services Common Bounding Box. The EPSG:4326 coordinate system axis ordering is
- * explicitly handled, for all other coordinate systems the configuration assumes coordinate order to be x then y for
- * the corner values. See the {@link OwsBoundingBox#parseCornerString(String)} for more information and implementation
- * details.
- */
 public class OwsBoundingBox extends XmlModel {
 
     protected String crs;
 
-    protected Double minx;
+    protected String lowerCorner;
 
-    protected Double maxx;
+    protected String upperCorner;
 
-    protected Double miny;
+    public String getLowerCorner() {
+        return this.lowerCorner;
+    }
 
-    protected Double maxy;
+    public String getUpperCorner() {
+        return this.upperCorner;
+    }
 
     public String getCrs() {
         return this.crs;
     }
 
-    public Double getMinX() {
-        return this.minx;
-    }
-
-    public Double getMaxX() {
-        return this.maxx;
-    }
-
-    public Double getMinY() {
-        return this.miny;
-    }
-
-    public Double getMaxY() {
-        return this.maxy;
-    }
-
     public Sector getSector() {
-        return Sector.fromDegrees(this.miny, this.minx, (this.maxy - this.miny), (this.maxx - this.minx));
+        if (this.crs == null) {
+            return null;
+        } else if (this.crs.equals("urn:ogc:def:crs:OGC:1.3:CRS84") || this.crs.equals("http://www.opengis.net/def/crs/OGC/1.3/CRS84")) {
+            double[] lowerLeft = this.parse2dCornerString(this.lowerCorner, true);
+            if (lowerLeft == null) {
+                return null;
+            }
+            double[] upperRight = this.parse2dCornerString(this.upperCorner, true);
+            if (upperRight == null) {
+                return null;
+            }
+            return new Sector(lowerLeft[1], lowerLeft[0], upperRight[1] - lowerLeft[1], upperRight[0] - lowerLeft[0]);
+        } else if (this.crs.equals("urn:ogc:def:crs:EPSG::4326")) {
+            double[] lowerLeft = this.parse2dCornerString(this.lowerCorner, false);
+            if (lowerLeft == null) {
+                return null;
+            }
+            double[] upperRight = this.parse2dCornerString(this.upperCorner, false);
+            if (upperRight == null) {
+                return null;
+            }
+            return new Sector(lowerLeft[1], lowerLeft[0], upperRight[1] - lowerLeft[1], upperRight[0] - lowerLeft[0]);
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -56,32 +62,26 @@ public class OwsBoundingBox extends XmlModel {
         if (keyName.equals("crs")) {
             this.crs = (String) value;
         } else if (keyName.equals("LowerCorner")) {
-            this.parseCornerString((String) value);
+            this.lowerCorner = (String) value;
         } else if (keyName.equals("UpperCorner")) {
-            this.parseCornerString((String) value);
+            this.upperCorner = (String) value;
         }
     }
 
-    protected void parseCornerString(String value) {
+    protected double[] parse2dCornerString(String value, boolean xIsFirstArgument) {
         String[] values = value.split("\\s+");
-
-        // Correct for coordinate ordering
-        // CRS84 orders coordinates in lon, lat (x, y), EPSG:4326 orders coordinates lat, lon (y, x)
-        if (this.crs != null && this.crs.equals("EPSG:4326")) {
-            String lat = values[0];
-            values[0] = values[1];
-            values[1] = lat;
-        }
 
         if (values.length == 2) {
             double x = Double.parseDouble(values[0]);
             double y = Double.parseDouble(values[1]);
-            minx = (minx != null) ? Math.min(x, minx) : x;
-            miny = (miny != null) ? Math.min(y, miny) : y;
-            maxx = (maxx != null) ? Math.max(x, maxx) : x;
-            maxy = (maxy != null) ? Math.max(y, maxy) : y;
+            if (xIsFirstArgument) {
+                return new double[]{x, y};
+            } else {
+                return new double[]{y, x};
+            }
         } else {
             Logger.logMessage(Logger.WARN, "OwsBoundingBox", "parseCornerString", "Error parsing value: " + value);
+            return null;
         }
     }
 }
