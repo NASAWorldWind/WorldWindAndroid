@@ -306,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 loadTutorial(WmsLayerFragment.class, "file:///android_asset/wms_layer_tutorial.html", R.string.title_wms_layer);
                 break;
             case R.id.nav_wmts_layer_activity:
-                loadTutorial(WmtsLayerFragment.class, "file:///android_asset/wms_layer_tutorial.html", R.string.title_wmts_layer);
+                loadTutorial(WmtsLayerFragment.class, "file:///android_asset/wmts_layer_tutorial.html", R.string.title_wmts_layer);
                 break;
         }
 

@@ -29,8 +29,8 @@ public class WmtsLayerFragment extends BasicGlobeFragment {
 
         // Create an OGC Web Map Tile Service (WMTS) layer to display Global Hillshade based on GMTED2010
         layerFactory.createFromWmts(
-            "https://tiles.geoservice.dlr.de/service/wmts",
-            "hillshade",
+            "https://tiles.geoservice.dlr.de/service/wmts", // WMTS server URL
+            "hillshade",                                    // WMTS layer identifier
             new LayerFactory.Callback() {
                 @Override
                 public void creationSucceeded(LayerFactory factory, Layer layer) {
