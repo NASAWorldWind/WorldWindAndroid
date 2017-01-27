@@ -114,6 +114,7 @@ public class WmtsLayer extends XmlModel {
             this.layerAbstract = (String) value;
         } else if (keyName.equals("WGS84BoundingBox")) {
             this.wgs84BoundingBox = (OwsBoundingBox) value;
+            this.wgs84BoundingBox.crs = "urn:ogc:def:crs:OGC:1.3:CRS84";
         } else if (keyName.equals("Identifier")) {
             this.identifier = (String) value;
         } else if (keyName.equals("Metadata")) {
