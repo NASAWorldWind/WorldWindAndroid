@@ -126,7 +126,7 @@ public class WmtsLayer extends XmlModel {
         } else if (keyName.equals("InfoFormat")) {
             this.infoFormats.add((String) value);
         } else if (keyName.equals("TileMatrixSetLink")) {
-            this.tileMatrixSetIds.add(((WmtsTileMatrixSetLink) value).linkIdentifier);
+            this.tileMatrixSetIds.add(((WmtsTileMatrixSetLink) value).getLinkIdentifier());
         } else if (keyName.equals("ResourceURL")) {
             this.resourceUrls.add((WmtsResourceUrl) value);
         } else if (keyName.equals("BoundingBox")) {

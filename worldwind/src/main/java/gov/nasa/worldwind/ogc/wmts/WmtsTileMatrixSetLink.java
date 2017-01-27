@@ -11,10 +11,14 @@ public class WmtsTileMatrixSetLink extends XmlModel {
 
     protected String linkIdentifier;
 
+    public String getLinkIdentifier() {
+        return this.linkIdentifier;
+    }
+
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("TileMatrixSet")) {
-            this.linkIdentifier = ((WmtsTileMatrixSet) value).linkIdentifier;
+            this.linkIdentifier = ((WmtsTileMatrixSet) value).getLinkIdentifier();
         }
     }
 }
