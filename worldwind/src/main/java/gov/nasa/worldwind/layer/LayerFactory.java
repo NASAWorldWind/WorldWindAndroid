@@ -382,7 +382,7 @@ public class LayerFactory {
             TileFactory tileFactory = this.createWmtsTileFactory(wmtsLayer, compatibleTileMatrixSet, compatibleTileMatrixIds);
             if (tileFactory == null) {
                 throw new RuntimeException(
-                    Logger.makeMessage("LayerFactory", "createWmtsLayer", "No supported TileMatrixSets were found"));
+                    Logger.makeMessage("LayerFactory", "createWmtsLayer", "Unable to create TileFactory"));
             }
 
             LevelSet levelSet = this.createWmtsLevelSet(wmtsLayer, compatibleTileMatrixSet, compatibleTileMatrixIds.size());
@@ -746,7 +746,7 @@ public class LayerFactory {
             return false;
         }
 
-        return !dcp.isGetMethodSupportKV();
+        return dcp.isGetMethodSupportKV();
     }
 
     protected static class GeoPackageAsyncTask implements Runnable {
