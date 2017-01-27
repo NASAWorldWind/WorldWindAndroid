@@ -47,6 +47,7 @@ import gov.nasa.worldwind.shape.TiledSurfaceImage;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.LevelSetConfig;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.TileFactory;
 import gov.nasa.worldwind.util.WWUtil;
 
 public class LayerFactory {
@@ -365,23 +366,31 @@ public class LayerFactory {
         final RenderableLayer finalLayer = (RenderableLayer) layer;
 
         try {
-            WmtsTileFactory tileFactory = this.getWmtsTileFactory(wmtsLayer);
+            // Determine if there is a TileMatrixSet which matches our Coordinate System compatibility and tiling scheme
+            List<String> compatibleTileMatrixSets = this.determineCoordSysCompatibleTileMatrixSets(wmtsLayer);
+            if (compatibleTileMatrixSets.isEmpty()) {
+                throw new RuntimeException(
+                    Logger.makeMessage("LayerFactory", "createWmtsLayer", "Coordinate Systems Not Compatible"));
+            }
+            String compatibleTileMatrixSet = this.determineTileSchemeCompatibleTileMatrixSets(wmtsLayer.getCapabilities(), compatibleTileMatrixSets);
+            if (compatibleTileMatrixSet == null) {
+                throw new RuntimeException(
+                    Logger.makeMessage("LayerFactory", "createWmtsLayer", "Tile Schemes Not Compatible"));
+            }
+            List<String> compatibleTileMatrixIds = this.determineSuitableTileMatrices(wmtsLayer.getCapabilities().getTileMatrixSet(compatibleTileMatrixSet));
+
+            TileFactory tileFactory = this.createWmtsTileFactory(wmtsLayer, compatibleTileMatrixSet, compatibleTileMatrixIds);
             if (tileFactory == null) {
                 throw new RuntimeException(
                     Logger.makeMessage("LayerFactory", "createWmtsLayer", "No supported TileMatrixSets were found"));
             }
 
-            LevelSetConfig levelSetConfig = new LevelSetConfig(
-                new Sector().setFullSphere(),
-                90.0,
-                tileFactory.getNumberOfLevels(),
-                tileFactory.getImageSize(),
-                tileFactory.getImageSize());
+            LevelSet levelSet = this.createWmtsLevelSet(wmtsLayer, compatibleTileMatrixSet, compatibleTileMatrixIds.size());
 
             final TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
 
             surfaceImage.setTileFactory(tileFactory);
-            surfaceImage.setLevelSet(new LevelSet(levelSetConfig));
+            surfaceImage.setLevelSet(levelSet);
 
             // Add the tiled surface image to the layer on the main thread and notify the caller. Request a redraw to ensure
             // that the image displays on all WorldWindows the layer may be attached to.
@@ -530,77 +539,6 @@ public class LayerFactory {
         return wmsLayerConfig;
     }
 
-    protected WmtsTileFactory getWmtsTileFactory(WmtsLayer wmtsLayer) {
-
-        // Determine if there is a TileMatrixSet which matches our Coordinate System compatibility and tiling scheme
-        List<String> compatibleTileMatrixSets = this.determineCoordSysCompatibleTileMatrixSets(wmtsLayer);
-        if (compatibleTileMatrixSets.isEmpty()) {
-            throw new RuntimeException(
-                Logger.makeMessage("LayerFactory", "getWmtsTileFactory", "Coordinate Systems Not Compatible"));
-        }
-        String compatibleTileMatrixSet = this.determineTileSchemeCompatibleTileMatrixSets(wmtsLayer.getCapabilities(), compatibleTileMatrixSets);
-        if (compatibleTileMatrixSet == null) {
-            throw new RuntimeException(
-                Logger.makeMessage("LayerFactory", "getWmtsTileFactory", "Tile Schemes Not Compatible"));
-        }
-        List<String> compatibleTileMatrixIds = this.determineSuitableTileMatrices(wmtsLayer.getCapabilities().getTileMatrixSet(compatibleTileMatrixSet));
-
-        int imageSize = wmtsLayer.getCapabilities().getTileMatrixSet(compatibleTileMatrixSet).getTileMatrices().get(0).getTileHeight();
-
-        WmtsTileFactory tileFactory = null;
-
-        // First choice is a ResourceURL
-        List<WmtsResourceUrl> resourceUrls = wmtsLayer.getResourceUrls();
-        if (resourceUrls != null) {
-            // Attempt to find a supported image format
-            for (WmtsResourceUrl resourceUrl : resourceUrls) {
-                if (this.compatibleImageFormats.contains(resourceUrl.getFormat())) {
-                    tileFactory = new WmtsTileFactory(resourceUrl.getTemplate(), compatibleTileMatrixSet, compatibleTileMatrixIds, imageSize);
-                }
-            }
-        }
-
-        // Second choice is if the server supports KVP
-        if (tileFactory == null && this.determineKvpSupport(wmtsLayer)) {
-            String baseUrl = wmtsLayer.getCapabilities().getOperationsMetadata().getGetTile().getDcp().getGetHref();
-            if (baseUrl == null) {
-                throw new RuntimeException(
-                    Logger.makeMessage("LayerFactory", "getWmtsTileFactory", "No KVP GetTile HREF Defined"));
-            }
-
-            String imageFormat = null;
-            for (String compatibleImageFormat : this.compatibleImageFormats) {
-                if (wmtsLayer.getFormats().contains(compatibleImageFormat)) {
-                    imageFormat = compatibleImageFormat;
-                    break;
-                }
-            }
-            if (imageFormat == null) {
-                throw new RuntimeException(
-                    Logger.makeMessage("LayerFactory", "getWmtsTileFactory", "Image Formats Not Compatible"));
-            }
-
-            String styleIdentifier = wmtsLayer.getStyles().get(0).getIdentifier();
-            if (styleIdentifier == null) {
-                throw new RuntimeException(
-                    Logger.makeMessage("LayerFactory", "getWmtsTileFactory", "No Style Identifier"));
-            }
-
-            tileFactory = new WmtsTileFactory(baseUrl, wmtsLayer.getIdentifier(), imageFormat, styleIdentifier, compatibleTileMatrixSet, compatibleTileMatrixIds, imageSize);
-
-        }
-
-        if (tileFactory != null) {
-            OwsBoundingBox boundingBox = wmtsLayer.getWgs84BoundingBox();
-            if (boundingBox != null) {
-                tileFactory.setBoundingBox(boundingBox.getSector());
-            }
-            return tileFactory;
-        }
-
-        return tileFactory;
-    }
-
     protected LevelSetConfig getLevelSetConfigFromWmsCapabilities(List<WmsLayerCapabilities> layerCapabilities) {
         LevelSetConfig levelSetConfig = new LevelSetConfig();
 
@@ -649,6 +587,97 @@ public class LayerFactory {
         }
 
         return levelSetConfig;
+    }
+
+    protected TileFactory createWmtsTileFactory(WmtsLayer wmtsLayer, String compatibleTileMatrixSet, List<String> compatibleTileMatrixIds) {
+        // First choice is a ResourceURL
+        List<WmtsResourceUrl> resourceUrls = wmtsLayer.getResourceUrls();
+        if (resourceUrls != null) {
+            // Attempt to find a supported image format
+            for (WmtsResourceUrl resourceUrl : resourceUrls) {
+                if (this.compatibleImageFormats.contains(resourceUrl.getFormat())) {
+                    String template = resourceUrl.getTemplate().replace("{TileMatrixSet}", compatibleTileMatrixSet);
+                    return new WmtsTileFactory(template, compatibleTileMatrixIds);
+                }
+            }
+        }
+
+        // Second choice is if the server supports KVP
+        if (this.determineKvpSupport(wmtsLayer)) {
+            String baseUrl = wmtsLayer.getCapabilities().getOperationsMetadata().getGetTile().getDcp().getGetHref();
+            if (baseUrl == null) {
+                throw new RuntimeException(
+                    Logger.makeMessage("LayerFactory", "getWmtsTileFactory", "No KVP GetTile HREF Defined"));
+            }
+
+            String imageFormat = null;
+            for (String compatibleImageFormat : this.compatibleImageFormats) {
+                if (wmtsLayer.getFormats().contains(compatibleImageFormat)) {
+                    imageFormat = compatibleImageFormat;
+                    break;
+                }
+            }
+            if (imageFormat == null) {
+                throw new RuntimeException(
+                    Logger.makeMessage("LayerFactory", "getWmtsTileFactory", "Image Formats Not Compatible"));
+            }
+
+            String styleIdentifier = wmtsLayer.getStyles().get(0).getIdentifier();
+            if (styleIdentifier == null) {
+                throw new RuntimeException(
+                    Logger.makeMessage("LayerFactory", "getWmtsTileFactory", "No Style Identifier"));
+            }
+            String template = this.buildWmtsKvpTemplate(baseUrl, wmtsLayer.getIdentifier(), imageFormat, styleIdentifier, compatibleTileMatrixSet);
+            return new WmtsTileFactory(template, compatibleTileMatrixIds);
+        }
+
+        return null;
+    }
+
+    protected LevelSet createWmtsLevelSet(WmtsLayer wmtsLayer, String compatibleTileMatrixSet, int levelCount) {
+        Sector boundingBox = null;
+        OwsBoundingBox wgs84BoundingBox = wmtsLayer.getWgs84BoundingBox();
+        if (wgs84BoundingBox == null) {
+            Logger.logMessage(Logger.WARN, "LayerFactory", "createWmtsLevelSet", "WGS84BoundingBox not defined for layer: " + wmtsLayer.getIdentifier());
+        } else {
+            boundingBox = wgs84BoundingBox.getSector();
+        }
+
+        WmtsTileMatrixSet tileMatrixSet = wmtsLayer.getCapabilities().getTileMatrixSet(compatibleTileMatrixSet);
+        if (tileMatrixSet == null) {
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "createWmtsLevelSet", "Compatible TileMatrixSet not found for: " + compatibleTileMatrixSet));
+        }
+        int imageSize = tileMatrixSet.getTileMatrices().get(0).getTileHeight();
+
+        return new LevelSet(boundingBox, 90.0, levelCount, imageSize, imageSize);
+    }
+
+    protected String buildWmtsKvpTemplate(String kvpServiceAddress, String layer, String format, String styleIdentifier, String tileMatrixSet) {
+        StringBuilder urlTemplate = new StringBuilder(kvpServiceAddress);
+
+        int index = urlTemplate.indexOf("?");
+        if (index < 0) { // if service address contains no query delimiter
+            urlTemplate.append("?"); // add one
+        } else if (index != urlTemplate.length() - 1) { // else if query delimiter not at end of string
+            index = urlTemplate.lastIndexOf("&");
+            if (index != urlTemplate.length() - 1) {
+                urlTemplate.append("&"); // add a parameter delimiter
+            }
+        }
+
+        urlTemplate.append("SERVICE=WMTS&");
+        urlTemplate.append("REQUEST=GetTile&");
+        urlTemplate.append("VERSION=1.0.0&");
+        urlTemplate.append("LAYER=").append(layer).append("&");
+        urlTemplate.append("STYLE=").append(styleIdentifier).append("&");
+        urlTemplate.append("FORMAT=").append(format).append("&");
+        urlTemplate.append("TILEMATRIXSET=").append(tileMatrixSet).append("&");
+        urlTemplate.append("TILEMATRIX=").append(WmtsTileFactory.TILEMATRIX_TEMPLATE).append("&");
+        urlTemplate.append("TILEROW=").append(WmtsTileFactory.TILEROW_TEMPLATE).append("&");
+        urlTemplate.append("TILECOL=").append(WmtsTileFactory.TILECOL_TEMPLATE);
+
+        return urlTemplate.toString();
     }
 
     protected List<String> determineCoordSysCompatibleTileMatrixSets(WmtsLayer layer) {
