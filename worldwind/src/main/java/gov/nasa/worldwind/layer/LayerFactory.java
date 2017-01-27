@@ -604,13 +604,8 @@ public class LayerFactory {
         }
 
         // Second choice is if the server supports KVP
-        if (this.determineKvpSupport(wmtsLayer)) {
-            String baseUrl = wmtsLayer.getCapabilities().getOperationsMetadata().getGetTile().getDcp().getGetHref();
-            if (baseUrl == null) {
-                throw new RuntimeException(
-                    Logger.makeMessage("LayerFactory", "getWmtsTileFactory", "No KVP GetTile HREF Defined"));
-            }
-
+        String baseUrl = this.determineKvpUrl(wmtsLayer);
+        if (baseUrl != null) {
             String imageFormat = null;
             for (String compatibleImageFormat : this.compatibleImageFormats) {
                 if (wmtsLayer.getFormats().contains(compatibleImageFormat)) {
@@ -630,9 +625,10 @@ public class LayerFactory {
             }
             String template = this.buildWmtsKvpTemplate(baseUrl, wmtsLayer.getIdentifier(), imageFormat, styleIdentifier, compatibleTileMatrixSet.tileMatrixSetId);
             return new WmtsTileFactory(template, compatibleTileMatrixSet.tileMatrices);
+        } else {
+            throw new RuntimeException(
+                Logger.makeMessage("LayerFactory", "getWmtsTileFactory", "No KVP Get Support"));
         }
-
-        return null;
     }
 
     protected LevelSet createWmtsLevelSet(WmtsLayer wmtsLayer, CompatibleTileMatrixSet compatibleTileMatrixSet) {
@@ -729,22 +725,26 @@ public class LayerFactory {
         return null;
     }
 
-    protected boolean determineKvpSupport(WmtsLayer layer) {
+    protected String determineKvpUrl(WmtsLayer layer) {
         WmtsCapabilities capabilities = layer.getCapabilities();
         OwsOperationsMetadata operationsMetadata = capabilities.getOperationsMetadata();
         if (operationsMetadata == null) {
-            return false;
+            return null;
         }
         OwsOperation getTileOperation = operationsMetadata.getGetTile();
         if (getTileOperation == null) {
-            return false;
+            return null;
         }
         OwsDcp dcp = getTileOperation.getDcp();
         if (dcp == null) {
-            return false;
+            return null;
         }
 
-        return dcp.isGetMethodSupportKV();
+        if (dcp.isGetMethodSupportKV()) {
+            return dcp.getGetHref();
+        } else {
+            return null;
+        }
     }
 
     protected static class GeoPackageAsyncTask implements Runnable {
