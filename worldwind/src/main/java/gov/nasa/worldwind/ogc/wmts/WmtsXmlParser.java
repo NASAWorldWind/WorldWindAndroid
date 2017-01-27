@@ -72,7 +72,7 @@ public class WmtsXmlParser extends XmlModelParser {
         this.registerXmlModel(wmtsNamespace, "TileMatrixSet", WmtsTileMatrixSet.class);
         this.registerXmlModel(wmtsNamespace, "TileMatrixSetLink", WmtsTileMatrixSetLink.class);
 
-        this.registerXmlModel(owsNamespace, "WGS84BoundingBox", OwsBoundingBox.class);
+        this.registerXmlModel(owsNamespace, "WGS84BoundingBox", OwsWgs84BoundingBox.class);
     }
 
     protected void registerWmtsTextModels() {
