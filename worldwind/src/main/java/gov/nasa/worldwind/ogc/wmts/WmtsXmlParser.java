@@ -78,6 +78,7 @@ public class WmtsXmlParser extends XmlModelParser {
     protected void registerWmtsTextModels() {
 
         this.registerTxtModel(owsNamespace, "Abstract");
+        this.registerTxtModel(wmtsNamespace, "Abstract");
         this.registerTxtModel(owsNamespace, "AccessConstraints");
         this.registerTxtModel(owsNamespace, "AdministrativeArea");
 
@@ -123,6 +124,7 @@ public class WmtsXmlParser extends XmlModelParser {
 
         this.registerTxtModel(wmtsNamespace, "UnitSymbol");
         this.registerTxtModel(owsNamespace, "UOM");
+        this.registerTxtModel(wmtsNamespace, "UOM");
         this.registerTxtModel(owsNamespace, "UpperCorner");
 
         this.registerTxtModel(owsNamespace, "Value");
