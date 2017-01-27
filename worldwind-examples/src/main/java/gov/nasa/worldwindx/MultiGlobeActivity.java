@@ -23,6 +23,7 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
  * This activity manifests two side-by-side globes with an adjustable splitter
  */
 public class MultiGlobeActivity extends AbstractMainActivity {
+
     /**
      * This protected member allows derived classes to override the resource used in setContentView.
      */
@@ -32,7 +33,6 @@ public class MultiGlobeActivity extends AbstractMainActivity {
      * The WorldWindow (GLSurfaceView) maintained by this activity
      */
     protected ArrayList<WorldWindow> worldWindows = new ArrayList<>();
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,12 +91,6 @@ public class MultiGlobeActivity extends AbstractMainActivity {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        // Checks the orientation of the screen
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            //Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
-        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            //Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
-        }
         deviceOrientation = newConfig.orientation;
         performLayout();
     }
@@ -136,7 +130,7 @@ public class MultiGlobeActivity extends AbstractMainActivity {
         private final ImageButton splitter;
         private final int splitterWeight;
 
-        public SplitterTouchListener(FrameLayout one, FrameLayout two, ImageButton splitter) {
+        SplitterTouchListener(FrameLayout one, FrameLayout two, ImageButton splitter) {
             this.one = one;
             this.two = two;
             this.splitter = splitter;
@@ -148,8 +142,8 @@ public class MultiGlobeActivity extends AbstractMainActivity {
          * get a chance to respond before the target view.
          *
          * @param v     The view the touch event has been dispatched to.
-         * @param event The MotionEvent object containing full information about
-         *              the event.
+         * @param event The MotionEvent object containing full information about the event.
+         *
          * @return True if the listener has consumed the event, false otherwise.
          */
         @Override
@@ -165,38 +159,37 @@ public class MultiGlobeActivity extends AbstractMainActivity {
                     // children based on the layout weights computed based on the splitter position.
                     LinearLayout.LayoutParams layout1 = (LinearLayout.LayoutParams) one.getLayoutParams();
                     LinearLayout.LayoutParams layout2 = (LinearLayout.LayoutParams) two.getLayoutParams();
-                    LinearLayout.LayoutParams layout3 = (LinearLayout.LayoutParams) splitter.getLayoutParams();
+                    LinearLayout.LayoutParams splitterLayout = (LinearLayout.LayoutParams) splitter.getLayoutParams();
 
                     int weightSum;
+                    float y;
                     if (deviceOrientation == Configuration.ORIENTATION_LANDSCAPE) {
                         // We're using the pixel values for the layout weights, with a fixed weight
                         // for the splitter.
                         weightSum = parent.getWidth();
-                        layout1.weight = Math.min(Math.max(0f, rawX - (splitterWeight / 2f)), weightSum - splitterWeight);
-                        layout2.weight = Math.min(Math.max(0f, weightSum - layout1.weight - splitterWeight), weightSum - splitterWeight);
-                        parent.setWeightSum(weightSum);
+                        y = rawX;
                     } else {
                         // We're using the pixel values for the layout weights, with a fixed weight
                         // for the splitter.  In portrait mode we have a header that we must account for.
                         int origin[] = new int[2];
                         parent.getLocationOnScreen(origin);
-                        float y = rawY - origin[1];
+                        y = rawY - origin[1];
                         weightSum = parent.getHeight();
-                        layout2.weight = Math.min(Math.max(0f, y - (splitterWeight / 2f)), weightSum - splitterWeight);
-                        layout1.weight = Math.min(Math.max(0f, weightSum - layout2.weight - splitterWeight), weightSum - splitterWeight);
-                        parent.setWeightSum(weightSum);
                     }
-                    layout3.weight = splitterWeight;
+
+                    //set layout locations based on y postion
+                    layout1.weight = Math.min(Math.max(0f, y - (splitterWeight / 2f)), weightSum - splitterWeight);
+                    layout2.weight = Math.min(Math.max(0f, weightSum - layout1.weight - splitterWeight), weightSum - splitterWeight);
+                    parent.setWeightSum(weightSum);
+                    splitterLayout.weight = splitterWeight;
 
                     one.setLayoutParams(layout1);
                     two.setLayoutParams(layout2);
-                    splitter.setLayoutParams(layout3);
-
-                    break;
+                    splitter.setLayoutParams(splitterLayout);
+                    return true;
             }
             return false;
         }
     }
-
 }
 
