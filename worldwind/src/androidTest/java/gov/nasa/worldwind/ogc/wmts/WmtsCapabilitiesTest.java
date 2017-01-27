@@ -256,15 +256,15 @@ public class WmtsCapabilitiesTest {
         double expectedMaxYTwo = 84;
 
         WmtsLayer layer = layers.get(0);
-        double actualMinXOne = layer.getWgs84BoundingBox().getMinX();
-        double actualMaxXOne = layer.getWgs84BoundingBox().getMaxX();
-        double actualMinYOne = layer.getWgs84BoundingBox().getMinY();
-        double actualMaxYOne = layer.getWgs84BoundingBox().getMaxY();
+        double actualMinXOne = layer.getWgs84BoundingBox().getSector().minLongitude();
+        double actualMaxXOne = layer.getWgs84BoundingBox().getSector().maxLongitude();
+        double actualMinYOne = layer.getWgs84BoundingBox().getSector().minLatitude();
+        double actualMaxYOne = layer.getWgs84BoundingBox().getSector().maxLatitude();
         layer = layers.get(1);
-        double actualMinXTwo = layer.getWgs84BoundingBox().getMinX();
-        double actualMaxXTwo = layer.getWgs84BoundingBox().getMaxX();
-        double actualMinYTwo = layer.getWgs84BoundingBox().getMinY();
-        double actualMaxYTwo = layer.getWgs84BoundingBox().getMaxY();
+        double actualMinXTwo = layer.getWgs84BoundingBox().getSector().minLongitude();
+        double actualMaxXTwo = layer.getWgs84BoundingBox().getSector().maxLongitude();
+        double actualMinYTwo = layer.getWgs84BoundingBox().getSector().minLatitude();
+        double actualMaxYTwo = layer.getWgs84BoundingBox().getSector().maxLatitude();
 
         assertEquals("Layer Bounding Box MinX Layer One", expectedMinXOne, actualMinXOne, DELTA);
         assertEquals("Layer Bounding Box MaxX Layer One", expectedMaxXOne, actualMaxXOne, DELTA);
