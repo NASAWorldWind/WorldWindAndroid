@@ -33,10 +33,10 @@ import gov.nasa.worldwind.ogc.gpkg.GpkgTileMatrixSet;
 import gov.nasa.worldwind.ogc.gpkg.GpkgTileUserMetrics;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsLayerCapabilities;
-import gov.nasa.worldwind.ogc.wmts.OwsBoundingBox;
 import gov.nasa.worldwind.ogc.wmts.OwsDcp;
 import gov.nasa.worldwind.ogc.wmts.OwsOperation;
 import gov.nasa.worldwind.ogc.wmts.OwsOperationsMetadata;
+import gov.nasa.worldwind.ogc.wmts.OwsWgs84BoundingBox;
 import gov.nasa.worldwind.ogc.wmts.WmtsCapabilities;
 import gov.nasa.worldwind.ogc.wmts.WmtsLayer;
 import gov.nasa.worldwind.ogc.wmts.WmtsResourceUrl;
@@ -633,7 +633,7 @@ public class LayerFactory {
 
     protected LevelSet createWmtsLevelSet(WmtsLayer wmtsLayer, CompatibleTileMatrixSet compatibleTileMatrixSet) {
         Sector boundingBox = null;
-        OwsBoundingBox wgs84BoundingBox = wmtsLayer.getWgs84BoundingBox();
+        OwsWgs84BoundingBox wgs84BoundingBox = wmtsLayer.getWgs84BoundingBox();
         if (wgs84BoundingBox == null) {
             Logger.logMessage(Logger.WARN, "LayerFactory", "createWmtsLevelSet", "WGS84BoundingBox not defined for layer: " + wmtsLayer.getIdentifier());
         } else {

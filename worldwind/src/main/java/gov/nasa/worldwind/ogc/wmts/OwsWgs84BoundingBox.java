@@ -5,20 +5,35 @@
 
 package gov.nasa.worldwind.ogc.wmts;
 
+import java.util.Arrays;
+
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.util.Logger;
 
 public class OwsWgs84BoundingBox extends OwsBoundingBox {
 
-    @Override
     public Sector getSector() {
-        double[] lowerLeft = this.parse2dCornerString(this.lowerCorner, true);
-        if (lowerLeft == null) {
+
+        String[] lowerValues = this.lowerCorner.split("\\s+");
+        String[] upperValues = this.upperCorner.split("\\s+");
+
+        if (lowerValues.length != 2 || upperValues.length != 2) {
+            Logger.logMessage(Logger.ERROR, "OwsWgs84BoundingBox", "getSector", "Error parsing the UpperCorner or " +
+                "LowerCorner values: " + this.lowerCorner + " and " + this.upperCorner);
             return null;
         }
-        double[] upperRight = this.parse2dCornerString(this.upperCorner, true);
-        if (upperRight == null) {
+
+        try {
+            double minLon = Double.parseDouble(lowerValues[0]);
+            double minLat = Double.parseDouble(lowerValues[1]);
+            double maxLon = Double.parseDouble(upperValues[0]);
+            double maxLat = Double.parseDouble(upperValues[1]);
+
+            return new Sector(minLat, minLon, maxLat - minLat, maxLon - minLon);
+        } catch (NumberFormatException ex) {
+            Logger.logMessage(Logger.ERROR, "OwsWgs84BoundingBox", "getSector", "Error parsing values from upper " +
+                "and lower corner: " + Arrays.toString(lowerValues) + " and " + Arrays.toString(upperValues));
             return null;
         }
-        return new Sector(lowerLeft[1], lowerLeft[0], upperRight[1] - lowerLeft[1], upperRight[0] - lowerLeft[0]);
     }
 }

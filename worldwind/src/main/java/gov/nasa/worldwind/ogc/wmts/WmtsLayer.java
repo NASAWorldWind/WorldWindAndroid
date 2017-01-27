@@ -21,7 +21,7 @@ public class WmtsLayer extends XmlModel {
 
     protected List<OwsBoundingBox> boundingBoxes = new ArrayList<>();
 
-    protected OwsBoundingBox wgs84BoundingBox;
+    protected OwsWgs84BoundingBox wgs84BoundingBox;
 
     protected List<WmtsElementLink> metadata = new ArrayList<>();
 
@@ -49,7 +49,7 @@ public class WmtsLayer extends XmlModel {
         return this.layerAbstract;
     }
 
-    public OwsBoundingBox getWgs84BoundingBox() {
+    public OwsWgs84BoundingBox getWgs84BoundingBox() {
         return this.wgs84BoundingBox;
     }
 
