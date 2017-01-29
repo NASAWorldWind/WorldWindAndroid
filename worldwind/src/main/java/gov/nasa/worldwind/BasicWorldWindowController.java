@@ -5,15 +5,16 @@
 
 package gov.nasa.worldwind;
 
+import android.content.Context;
+import android.support.v4.view.GestureDetectorCompat;
 import android.view.MotionEvent;
-
-import java.util.Arrays;
-import java.util.List;
 
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.LookAt;
+import gov.nasa.worldwind.gesture.FlingRecognizer;
 import gov.nasa.worldwind.gesture.GestureListener;
 import gov.nasa.worldwind.gesture.GestureRecognizer;
+import gov.nasa.worldwind.gesture.OnGestureHandler;
 import gov.nasa.worldwind.gesture.PanRecognizer;
 import gov.nasa.worldwind.gesture.PinchRecognizer;
 import gov.nasa.worldwind.gesture.RotationRecognizer;
@@ -35,25 +36,42 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
 
     protected int activeGestures;
 
-    protected GestureRecognizer panRecognizer = new PanRecognizer();
+    protected PanRecognizer panRecognizer = new PanRecognizer();
 
-    protected GestureRecognizer pinchRecognizer = new PinchRecognizer();
+    protected PinchRecognizer pinchRecognizer = new PinchRecognizer();
 
-    protected GestureRecognizer rotationRecognizer = new RotationRecognizer();
+    protected RotationRecognizer rotationRecognizer = new RotationRecognizer();
 
-    protected GestureRecognizer tiltRecognizer = new PanRecognizer();
+    protected FlingRecognizer flingRecognizer = new FlingRecognizer();
 
-    protected List<GestureRecognizer> allRecognizers = Arrays.asList(
-        this.panRecognizer, this.pinchRecognizer, this.rotationRecognizer, this.tiltRecognizer);
+    protected PanRecognizer tiltRecognizer = new PanRecognizer();
+
+    protected OnGestureHandler onGestureHandler = new OnGestureHandler();
+
+    protected GestureDetectorCompat mDetector;
+
+    protected GestureRecognizer allRecognizers[] = {panRecognizer,
+        pinchRecognizer,
+        rotationRecognizer,
+        tiltRecognizer,
+        flingRecognizer};
 
     public BasicWorldWindowController() {
-        this.panRecognizer.addListener(this);
-        this.pinchRecognizer.addListener(this);
-        this.rotationRecognizer.addListener(this);
-        this.tiltRecognizer.addListener(this);
+        this(null);
+    }
 
-        ((PanRecognizer) this.panRecognizer).setMaxNumberOfPointers(2);
-        ((PanRecognizer) this.tiltRecognizer).setMinNumberOfPointers(3); // TODO support for two-finger tilt gestures
+    public BasicWorldWindowController(Context context) {
+        for (GestureRecognizer recognizer : allRecognizers) {
+            recognizer.addListener(this);
+        }
+
+        if (context != null) {
+            onGestureHandler.setFlingRecognizer(flingRecognizer);
+            mDetector = new GestureDetectorCompat(context, onGestureHandler);
+        }
+
+        panRecognizer.setMaxNumberOfPointers(2);
+        tiltRecognizer.setMinNumberOfPointers(3); // TODO support for two-finger tilt gestures Issue #15
     }
 
     public WorldWindow getWorldWindow() {
@@ -68,9 +86,13 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         boolean handled = false;
+        if (mDetector != null) {
+            handled = mDetector.onTouchEvent(event);
+        }
 
-        for (int idx = 0, len = this.allRecognizers.size(); idx < len; idx++) {
-            handled |= this.allRecognizers.get(idx).onTouchEvent(event); // use or-assignment to indicate if any recognizer handled the event
+        for (GestureRecognizer gestureRecognizer : allRecognizers) {
+            // use or-assignment to indicate if any recognizer handled the event
+            handled |= gestureRecognizer.onTouchEvent(event);
         }
 
         return handled;
@@ -78,27 +100,41 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
 
     @Override
     public void gestureStateChanged(MotionEvent event, GestureRecognizer recognizer) {
-        if (recognizer == this.panRecognizer) {
-            this.handlePan(recognizer);
-        } else if (recognizer == this.pinchRecognizer) {
-            this.handlePinch(recognizer);
-        } else if (recognizer == this.rotationRecognizer) {
-            this.handleRotate(recognizer);
-        } else if (recognizer == this.tiltRecognizer) {
-            this.handleTilt(recognizer);
+        if (recognizer == panRecognizer) {
+            handlePan(recognizer);
+        } else if (recognizer == pinchRecognizer) {
+            handlePinch(recognizer);
+        } else if (recognizer == rotationRecognizer) {
+            handleRotate(recognizer);
+        } else if (recognizer == tiltRecognizer) {
+            handleTilt(recognizer);
+        } else if (recognizer == flingRecognizer) {
+            handleFling(recognizer);
+        }
+    }
+
+    private void handleFling(GestureRecognizer recognizer) {
+        int state = recognizer.getState();
+
+        if (state == WorldWind.BEGAN) {
+            gestureDidBegin();
+            flingRecognizer.fling(lookAt, wwd);
+        } else if (state == WorldWind.ENDED) {
+            gestureDidEnd();
         }
     }
 
     protected void handlePan(GestureRecognizer recognizer) {
         int state = recognizer.getState();
-        float dx = recognizer.getTranslationX();
-        float dy = recognizer.getTranslationY();
 
         if (state == WorldWind.BEGAN) {
             this.gestureDidBegin();
             this.lastX = 0;
             this.lastY = 0;
         } else if (state == WorldWind.CHANGED) {
+            float dx = recognizer.getTranslationX();
+            float dy = recognizer.getTranslationY();
+
             // Get the navigator's current position.
             double lat = this.lookAt.latitude;
             double lon = this.lookAt.longitude;
@@ -215,9 +251,6 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
         double maxRange = distanceToExtents * 2;
         lookAt.range = WWMath.clamp(lookAt.range, minRange, maxRange);
 
-        //double minTiltRange = distanceToExtents * 0.1;
-        //double maxTiltRange = distanceToExtents * 0.9;
-        //double tiltAmount = WWMath.clamp((lookAt.range - minTiltRange) / (maxTiltRange - minTiltRange), 0, 1);
         double maxTilt = 80;
         lookAt.tilt = WWMath.clamp(lookAt.tilt, 0, maxTilt);
     }
