@@ -13,9 +13,7 @@ public class WmtsTileMatrix extends XmlModel {
 
     protected double scaleDenominator;
 
-    protected double minx;
-
-    protected double maxy;
+    protected String topLeftCorner;
 
     protected int tileWidth;
 
@@ -33,12 +31,8 @@ public class WmtsTileMatrix extends XmlModel {
         return this.scaleDenominator;
     }
 
-    public double getMinx() {
-        return this.minx;
-    }
-
-    public double getMaxy() {
-        return this.maxy;
+    public String getTopLeftCorner() {
+        return this.topLeftCorner;
     }
 
     public int getTileWidth() {
@@ -57,17 +51,6 @@ public class WmtsTileMatrix extends XmlModel {
         return this.matrixHeight;
     }
 
-    protected void parseTopLeftCorner(String value) {
-        String[] values = value.split("\\s+");
-
-        if (values.length == 2) {
-            this.minx = Double.parseDouble(values[0]);
-            this.maxy = Double.parseDouble(values[1]);
-        } else {
-            // TODO log
-        }
-    }
-
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("Identifier")) {
@@ -75,7 +58,7 @@ public class WmtsTileMatrix extends XmlModel {
         } else if (keyName.equals("ScaleDenominator")) {
             this.scaleDenominator = Double.parseDouble((String) value);
         } else if (keyName.equals("TopLeftCorner")) {
-            this.parseTopLeftCorner((String) value);
+            this.topLeftCorner = (String) value;
         } else if (keyName.equals("TileWidth")) {
             this.tileWidth = Integer.parseInt((String) value);
         } else if (keyName.equals("TileHeight")) {

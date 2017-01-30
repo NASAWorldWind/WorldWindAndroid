@@ -481,8 +481,7 @@ public class WmtsCapabilitiesTest {
         WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.getTileMatrixSet("WholeWorld_CRS_84").getTileMatrices().get(0);
         String expectedIdentifier = "2g";
         double expectedScaleDenominator = 795139219.951954;
-        double expectedMinX = -180;
-        double expectedMaxY = 90;
+        String expectedTopLeftCorner = "-180 90";
         int expectedTileWidth = 320;
         int expectedTileHeight = 200;
         int expectedMatrixWidth = 1;
@@ -490,8 +489,7 @@ public class WmtsCapabilitiesTest {
 
         String actualIdentifier = wmtsTileMatrix.getIdentifier();
         double actualScaleDenominator = wmtsTileMatrix.getScaleDenominator();
-        double actualMinX = wmtsTileMatrix.getMinx();
-        double actualMaxY = wmtsTileMatrix.getMaxy();
+        String actualTopLeftCorner = wmtsTileMatrix.getTopLeftCorner();
         int actualTileWidth = wmtsTileMatrix.getTileWidth();
         int actualTileHeight = wmtsTileMatrix.getTileHeight();
         int actualMatrixWidth = wmtsTileMatrix.getMatrixWidth();
@@ -499,8 +497,7 @@ public class WmtsCapabilitiesTest {
 
         assertEquals("TileMatrixSet One TileMatrix One Identifier", expectedIdentifier, actualIdentifier);
         assertEquals("TileMatrixSet One TileMatrix One ScaleDenominator", expectedScaleDenominator, actualScaleDenominator, DELTA);
-        assertEquals("TileMatrixSet One TileMatrix One MinX", expectedMinX, actualMinX, DELTA);
-        assertEquals("TileMatrixSet One TileMatrix One MaxY", expectedMaxY, actualMaxY, DELTA);
+        assertEquals("TileMatrixSet One TileMatrix One TopLeftCorner", expectedTopLeftCorner, actualTopLeftCorner);
         assertEquals("TileMatrixSet One TileMatrix One TileWidth", expectedTileWidth, actualTileWidth);
         assertEquals("TileMatrixSet One TileMatrix One TileHeight", expectedTileHeight, actualTileHeight);
         assertEquals("TileMatrixSet One TileMatrix One MatrixWidth", expectedMatrixWidth, actualMatrixWidth);
@@ -514,8 +511,7 @@ public class WmtsCapabilitiesTest {
         WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.getTileMatrixSet("WholeWorld_CRS_84").getTileMatrices().get(1);
         String expectedIdentifier = "1g";
         double expectedScaleDenominator = 397569609.975977;
-        double expectedMinX = -180;
-        double expectedMaxY = 90;
+        String expectedTopLeftCorner = "-180 90";
         int expectedTileWidth = 320;
         int expectedTileHeight = 200;
         int expectedMatrixWidth = 2;
@@ -523,8 +519,7 @@ public class WmtsCapabilitiesTest {
 
         String actualIdentifier = wmtsTileMatrix.getIdentifier();
         double actualScaleDenominator = wmtsTileMatrix.getScaleDenominator();
-        double actualMinX = wmtsTileMatrix.getMinx();
-        double actualMaxY = wmtsTileMatrix.getMaxy();
+        String actualTopLeftCorner = wmtsTileMatrix.getTopLeftCorner();
         int actualTileWidth = wmtsTileMatrix.getTileWidth();
         int actualTileHeight = wmtsTileMatrix.getTileHeight();
         int actualMatrixWidth = wmtsTileMatrix.getMatrixWidth();
@@ -532,8 +527,7 @@ public class WmtsCapabilitiesTest {
 
         assertEquals("TileMatrixSet One TileMatrix Two Identifier", expectedIdentifier, actualIdentifier);
         assertEquals("TileMatrixSet One TileMatrix Two ScaleDenominator", expectedScaleDenominator, actualScaleDenominator, DELTA);
-        assertEquals("TileMatrixSet One TileMatrix Two MinX", expectedMinX, actualMinX, DELTA);
-        assertEquals("TileMatrixSet One TileMatrix Two MaxY", expectedMaxY, actualMaxY, DELTA);
+        assertEquals("TileMatrixSet One TileMatrix Two TopLeftCorner", expectedTopLeftCorner, actualTopLeftCorner);
         assertEquals("TileMatrixSet One TileMatrix Two TileWidth", expectedTileWidth, actualTileWidth);
         assertEquals("TileMatrixSet One TileMatrix Two TileHeight", expectedTileHeight, actualTileHeight);
         assertEquals("TileMatrixSet One TileMatrix Two MatrixWidth", expectedMatrixWidth, actualMatrixWidth);
@@ -545,8 +539,7 @@ public class WmtsCapabilitiesTest {
         WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.getTileMatrixSet("World84-90_CRS_84").getTileMatrices().get(0);
         String expectedIdentifier = "2g";
         double expectedScaleDenominator = 795139219.951954;
-        double expectedMinX = -180;
-        double expectedMaxY = 84;
+        String expectedTopLeftCorner = "-180 84";
         int expectedTileWidth = 320;
         int expectedTileHeight = 200;
         int expectedMatrixWidth = 1;
@@ -554,8 +547,7 @@ public class WmtsCapabilitiesTest {
 
         String actualIdentifier = wmtsTileMatrix.getIdentifier();
         double actualScaleDenominator = wmtsTileMatrix.getScaleDenominator();
-        double actualMinX = wmtsTileMatrix.getMinx();
-        double actualMaxY = wmtsTileMatrix.getMaxy();
+        String actualTopLeftCorner = wmtsTileMatrix.getTopLeftCorner();
         int actualTileWidth = wmtsTileMatrix.getTileWidth();
         int actualTileHeight = wmtsTileMatrix.getTileHeight();
         int actualMatrixWidth = wmtsTileMatrix.getMatrixWidth();
@@ -563,8 +555,7 @@ public class WmtsCapabilitiesTest {
 
         assertEquals("TileMatrixSet Two TileMatrix One Identifier", expectedIdentifier, actualIdentifier);
         assertEquals("TileMatrixSet Two TileMatrix One ScaleDenominator", expectedScaleDenominator, actualScaleDenominator, DELTA);
-        assertEquals("TileMatrixSet Two TileMatrix One MinX", expectedMinX, actualMinX, DELTA);
-        assertEquals("TileMatrixSet Two TileMatrix One MaxY", expectedMaxY, actualMaxY, DELTA);
+        assertEquals("TileMatrixSet Two TileMatrix One TopLeftCorner", expectedTopLeftCorner, actualTopLeftCorner);
         assertEquals("TileMatrixSet Two TileMatrix One TileWidth", expectedTileWidth, actualTileWidth);
         assertEquals("TileMatrixSet Two TileMatrix One TileHeight", expectedTileHeight, actualTileHeight);
         assertEquals("TileMatrixSet Two TileMatrix One MatrixWidth", expectedMatrixWidth, actualMatrixWidth);
@@ -576,8 +567,7 @@ public class WmtsCapabilitiesTest {
         WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.getTileMatrixSet("World84-90_CRS_84").getTileMatrices().get(1);
         String expectedIdentifier = "1g";
         double expectedScaleDenominator = 397569609.975977;
-        double expectedMinX = -180;
-        double expectedMaxY = 84;
+        String expectedTopLeftCorner = "-180 84";
         int expectedTileWidth = 320;
         int expectedTileHeight = 200;
         int expectedMatrixWidth = 2;
@@ -585,8 +575,7 @@ public class WmtsCapabilitiesTest {
 
         String actualIdentifier = wmtsTileMatrix.getIdentifier();
         double actualScaleDenominator = wmtsTileMatrix.getScaleDenominator();
-        double actualMinX = wmtsTileMatrix.getMinx();
-        double actualMaxY = wmtsTileMatrix.getMaxy();
+        String actualTopLeftCorner = wmtsTileMatrix.getTopLeftCorner();
         int actualTileWidth = wmtsTileMatrix.getTileWidth();
         int actualTileHeight = wmtsTileMatrix.getTileHeight();
         int actualMatrixWidth = wmtsTileMatrix.getMatrixWidth();
@@ -594,8 +583,7 @@ public class WmtsCapabilitiesTest {
 
         assertEquals("TileMatrixSet Two TileMatrix Two Identifier", expectedIdentifier, actualIdentifier);
         assertEquals("TileMatrixSet Two TileMatrix Two ScaleDenominator", expectedScaleDenominator, actualScaleDenominator, DELTA);
-        assertEquals("TileMatrixSet Two TileMatrix Two MinX", expectedMinX, actualMinX, DELTA);
-        assertEquals("TileMatrixSet Two TileMatrix Two MaxY", expectedMaxY, actualMaxY, DELTA);
+        assertEquals("TileMatrixSet Two TileMatrix Two TopLeftCorner", expectedTopLeftCorner, actualTopLeftCorner);
         assertEquals("TileMatrixSet Two TileMatrix Two TileWidth", expectedTileWidth, actualTileWidth);
         assertEquals("TileMatrixSet Two TileMatrix Two TileHeight", expectedTileHeight, actualTileHeight);
         assertEquals("TileMatrixSet Two TileMatrix Two MatrixWidth", expectedMatrixWidth, actualMatrixWidth);
