@@ -699,24 +699,36 @@ public class LayerFactory {
             compatibleSet.tileMatrixSetId = tileMatrixSetId;
             compatibleSet.tileMatrices.clear();
             WmtsTileMatrixSet tileMatrixSet = capabilities.getTileMatrixSet(tileMatrixSetId);
+            int previousHeight = 0;
             // Walk through the associated tile matrices and check for compatibility with WWA tiling scheme
             for (WmtsTileMatrix tileMatrix : tileMatrixSet.getTileMatrices()) {
-                // Aspect check
+
+                // Aspect and symmetry check of current matrix
                 if ((2 * tileMatrix.getMatrixHeight()) != tileMatrix.getMatrixWidth()) {
                     continue;
                     // Quad division check
-                } else if (tileMatrix.getMatrixWidth() % 2 != 0) {
+                } else if ((tileMatrix.getMatrixWidth() % 2 != 0) || (tileMatrix.getMatrixHeight() % 2 != 0)) {
                     continue;
                     // Square image check
                 } else if (tileMatrix.getTileHeight() != tileMatrix.getTileWidth()) {
                     continue;
                     // Minimum row check
-                } else if (tileMatrix.getMatrixHeight() >= 2) {
+                } else if (tileMatrix.getMatrixHeight() < 2) {
+                    continue;
+                }
+
+                // Ensure quad division behavior from previous tile matrix
+                if (previousHeight == 0) {
+                    previousHeight = tileMatrix.getMatrixHeight();
+                    compatibleSet.tileMatrices.add(tileMatrix.getIdentifier());
+                } else if ((2 * previousHeight) == tileMatrix.getMatrixHeight()) {
+                    previousHeight = tileMatrix.getMatrixHeight();
                     compatibleSet.tileMatrices.add(tileMatrix.getIdentifier());
                 }
+
             }
 
-            // Return a compatible tile matrix set
+            // Return the first compatible tile matrix set
             if (compatibleSet.tileMatrices.size() > 2) {
                 return compatibleSet;
             }
