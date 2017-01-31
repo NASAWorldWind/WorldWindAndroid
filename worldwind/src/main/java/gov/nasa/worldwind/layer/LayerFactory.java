@@ -140,6 +140,42 @@ public class LayerFactory {
         return layer;
     }
 
+    public Layer createFromWmsLayerCapabilities(WmsLayerCapabilities layerCapabilities, Callback callback) {
+        if (layerCapabilities == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missing layers"));
+        }
+
+        if (callback == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missingCallback"));
+        }
+
+        return this.createFromWmsLayerCapabilities(Collections.singletonList(layerCapabilities), callback);
+    }
+
+    public Layer createFromWmsLayerCapabilities(List<WmsLayerCapabilities> layerCapabilities, Callback callback) {
+        if (layerCapabilities == null || layerCapabilities.size() == 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missing layers"));
+        }
+
+        if (callback == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missingCallback"));
+        }
+
+        // Create a layer in which to asynchronously populate with renderables for the GeoPackage contents.
+        RenderableLayer layer = new RenderableLayer();
+
+        // Disable picking for the layer; terrain surface picking is performed automatically by WorldWindow.
+        layer.setPickEnabled(false);
+
+        this.createWmsLayer(layerCapabilities, layer, callback);
+
+        return layer;
+    }
+
     public Layer createFromWmts(String serviceAddress, String layerIdentifier, Callback callback) {
         if (serviceAddress == null) {
             throw new IllegalArgumentException(
@@ -173,38 +209,24 @@ public class LayerFactory {
         return layer;
     }
 
-    public Layer createFromWmsLayerCapabilities(WmsLayerCapabilities layerCapabilities, Callback callback) {
-        if (layerCapabilities == null) {
+    public Layer createFromWmtsLayer(WmtsLayer wmtsLayer, Callback callback) {
+        if (wmtsLayer == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missing layers"));
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmtsLayer", "missing layer"));
         }
 
         if (callback == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missingCallback"));
+                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmtsLayer", "missingCallback"));
         }
 
-        return this.createFromWmsLayerCapabilities(Collections.singletonList(layerCapabilities), callback);
-    }
-
-    public Layer createFromWmsLayerCapabilities(List<WmsLayerCapabilities> layerCapabilities, Callback callback) {
-        if (layerCapabilities == null || layerCapabilities.size() == 0) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missing layers"));
-        }
-
-        if (callback == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missingCallback"));
-        }
-
-        // Create a layer in which to asynchronously populate with renderables for the GeoPackage contents.
+        // Create a layer in which to asynchronously populate with renderables for the WMTS contents.
         RenderableLayer layer = new RenderableLayer();
 
         // Disable picking for the layer; terrain surface picking is performed automatically by WorldWindow.
         layer.setPickEnabled(false);
 
-        this.createWmsLayer(layerCapabilities, layer, callback);
+        this.createWmtsLayer(wmtsLayer, layer, callback);
 
         return layer;
     }
