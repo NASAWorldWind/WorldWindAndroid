@@ -9,19 +9,24 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsContactPersonPrimary extends XmlModel {
 
-    protected String person;
+    protected String contactPerson;
 
-    protected String organization;
+    protected String contactOrganization;
 
-    public WmsContactPersonPrimary() {
+    public String getContactPerson() {
+        return this.contactPerson;
+    }
+
+    public String getContactOrganization() {
+        return this.contactOrganization;
     }
 
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("ContactPerson")) {
-            this.person = (String) value;
+            this.contactPerson = (String) value;
         } else if (keyName.equals("ContactOrganization")) {
-            this.organization = (String) value;
+            this.contactOrganization = (String) value;
         }
     }
 }

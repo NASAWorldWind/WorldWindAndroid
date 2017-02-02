@@ -7,7 +7,7 @@ package gov.nasa.worldwind.ogc.wms;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class WmsLayerDimension extends XmlModel {
+public class WmsDimension extends XmlModel {
 
     protected String name;
 
@@ -23,7 +23,7 @@ public class WmsLayerDimension extends XmlModel {
 
     protected Boolean current;
 
-    public WmsLayerDimension() {
+    public WmsDimension() {
     }
 
     public String getName() {

@@ -5,9 +5,6 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsDcpType extends XmlModel {
@@ -16,41 +13,12 @@ public class WmsDcpType extends XmlModel {
 
     protected WmsOnlineResource post;
 
-    public static class DcpInfo {
-
-        protected String protocol;
-
-        protected String method;
-
-        protected WmsOnlineResource onlineResource;
-
-        public DcpInfo(String protocol) {
-            this.protocol = protocol;
-        }
+    public String getGetHref() {
+        return (this.get != null) ? this.get.getHref() : null;
     }
 
-    public WmsDcpType() {
-    }
-
-    public List<DcpInfo> getDcpInfos() {
-
-        List<DcpInfo> infos = new ArrayList<>();
-
-        if (get != null) {
-            DcpInfo dcpInfo = new DcpInfo("HTTP");
-            dcpInfo.method = "Get";
-            dcpInfo.onlineResource = this.get;
-            infos.add(dcpInfo);
-        }
-
-        if (post != null) {
-            DcpInfo dcpInfo = new DcpInfo("HTTP");
-            dcpInfo.method = "Post";
-            dcpInfo.onlineResource = this.post;
-            infos.add(dcpInfo);
-        }
-
-        return infos;
+    public String getPostHref() {
+        return (this.post != null) ? this.post.getHref() : null;
     }
 
     @Override

@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.ogc.wms;
 
 import android.content.res.Resources;
-import android.support.test.filters.SmallTest;
 import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
@@ -16,10 +15,8 @@ import org.junit.runner.RunWith;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.test.R;
@@ -32,7 +29,6 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
 @RunWith(AndroidJUnit4.class)
-@SmallTest
 public class WmsCapabilitiesTest {
 
     public static final double DELTA = 1e-9;
@@ -71,31 +67,29 @@ public class WmsCapabilitiesTest {
 
     @Test
     public void testGetImageFormats_Version130() {
-        Set<String> expectedValues = new HashSet<>();
-        expectedValues.addAll(Arrays.asList("image/gif", "image/png", "image/jpeg"));
+        List<String> expectedValues = Arrays.asList("image/gif", "image/png", "image/jpeg");
 
-        Set<String> actualValues = this.wmsCapabilities130.getImageFormats();
+        List<String> actualValues = this.wmsCapabilities130.getCapability().getRequest().getGetMap().getFormats();
 
-        assertEquals("Image Version", expectedValues, actualValues);
+        assertEquals("Image Formats", expectedValues, actualValues);
     }
 
     @Test
     public void testGetImageFormats_Version111() {
-        Set<String> expectedValues = new HashSet<>();
-        expectedValues.addAll(Arrays.asList("image/gif", "image/png", "image/jpeg"));
+        List<String> expectedValues = Arrays.asList("image/gif", "image/png", "image/jpeg");
 
-        Set<String> actualValues = this.wmsCapabilities111.getImageFormats();
+        List<String> actualValues = this.wmsCapabilities111.getCapability().getRequest().getGetMap().getFormats();
 
-        assertEquals("Image Version", expectedValues, actualValues);
+        assertEquals("Image Formats", expectedValues, actualValues);
     }
 
     @Test
     public void testGetServiceInformation_GetAbstract_Version130() {
         String expectedValue = "Map Server maintained by Acme Corporation. Contact: webmaster@wmt.acme.com. High-quality maps showing" +
             "            roadrunner nests and possible ambush locations.";
-        WmsServiceInformation serviceInformation = this.wmsCapabilities130.getServiceInformation();
+        WmsService serviceInformation = this.wmsCapabilities130.getService();
 
-        String serviceAbstract = serviceInformation.getServiceAbstract();
+        String serviceAbstract = serviceInformation.getAbstract();
 
         assertEquals("Service Abstract", expectedValue, serviceAbstract);
     }
@@ -104,9 +98,9 @@ public class WmsCapabilitiesTest {
     public void testGetServiceInformation_GetAbstract_Version111() {
         String expectedValue = "WMT Map Server maintained by Acme Corporation. Contact: webmaster@wmt.acme.com. High-quality maps" +
             "            showing roadrunner nests and possible ambush locations.";
-        WmsServiceInformation serviceInformation = this.wmsCapabilities111.getServiceInformation();
+        WmsService serviceInformation = this.wmsCapabilities111.getService();
 
-        String serviceAbstract = serviceInformation.getServiceAbstract();
+        String serviceAbstract = serviceInformation.getAbstract();
 
         assertEquals("Service Abstract", expectedValue, serviceAbstract);
     }
@@ -115,7 +109,7 @@ public class WmsCapabilitiesTest {
     public void testGetServiceInformation_GetName_Version130() {
         String expectedValue = "WMS";
 
-        String serviceName = this.wmsCapabilities130.getServiceInformation().getServiceName();
+        String serviceName = this.wmsCapabilities130.getService().getName();
 
         assertEquals("Service Name", expectedValue, serviceName);
     }
@@ -124,7 +118,7 @@ public class WmsCapabilitiesTest {
     public void testGetServiceInformation_GetName_Version111() {
         String expectedValue = "OGC:WMS";
 
-        String serviceName = this.wmsCapabilities111.getServiceInformation().getServiceName();
+        String serviceName = this.wmsCapabilities111.getService().getName();
 
         assertEquals("Service Name", expectedValue, serviceName);
     }
@@ -133,7 +127,7 @@ public class WmsCapabilitiesTest {
     public void testGetServiceInformation_GetTitle_Version130() {
         String expectedValue = "Acme Corp. Map Server";
 
-        String serviceTitle = this.wmsCapabilities130.getServiceInformation().getServiceTitle();
+        String serviceTitle = this.wmsCapabilities130.getService().getTitle();
 
         assertEquals("Service Title", expectedValue, serviceTitle);
     }
@@ -142,54 +136,46 @@ public class WmsCapabilitiesTest {
     public void testGetServiceInformation_GetTitle_Version111() {
         String expectedValue = "Acme Corp. Map Server";
 
-        String serviceTitle = this.wmsCapabilities111.getServiceInformation().getServiceTitle();
+        String serviceTitle = this.wmsCapabilities111.getService().getTitle();
 
         assertEquals("Service Title", expectedValue, serviceTitle);
     }
 
     @Test
     public void testGetServiceInformation_GetKeywords_Version130() {
-        Set<String> expectedKeywords = new HashSet<>();
-        expectedKeywords.addAll(Arrays.asList("bird", "roadrunner", "ambush"));
+        List<String> expectedKeywords = Arrays.asList("bird", "roadrunner", "ambush");
 
-        Set<String> keywords = this.wmsCapabilities130.getServiceInformation().getKeywords();
+        List<String> keywords = this.wmsCapabilities130.getService().getKeywordList();
 
         assertEquals("Service Keywords", expectedKeywords, keywords);
     }
 
     @Test
     public void testGetServiceInformation_GetKeywords_Version111() {
-        Set<String> expectedKeywords = new HashSet<>();
-        expectedKeywords.addAll(Arrays.asList("bird", "roadrunner", "ambush"));
+        List<String> expectedKeywords = Arrays.asList("bird", "roadrunner", "ambush");
 
-        Set<String> keywords = this.wmsCapabilities111.getServiceInformation().getKeywords();
+        List<String> keywords = this.wmsCapabilities111.getService().getKeywordList();
 
         assertEquals("Service Keywords", expectedKeywords, keywords);
     }
 
     @Test
     public void testGetServiceInformation_GetOnlineResource_Version130() {
-        String expectedLinkType = "simple";
         String expectedLink = "http://hostname/";
-        WmsServiceInformation serviceInformation = this.wmsCapabilities130.getServiceInformation();
+        WmsService serviceInformation = this.wmsCapabilities130.getService();
 
-        String linkType = serviceInformation.getOnlineResource().getType();
-        String link = serviceInformation.getOnlineResource().getHref();
+        String link = serviceInformation.getUrl();
 
-        assertEquals("Service Online Resource Link Type", expectedLinkType, linkType);
         assertEquals("Service Online Resource Link", expectedLink, link);
     }
 
     @Test
     public void testGetServiceInformation_GetOnlineResource_Version111() {
-        String expectedLinkType = "simple";
         String expectedLink = "http://hostname/";
-        WmsServiceInformation serviceInformation = this.wmsCapabilities111.getServiceInformation();
+        WmsService serviceInformation = this.wmsCapabilities111.getService();
 
-        String linkType = serviceInformation.getOnlineResource().getType();
-        String link = serviceInformation.getOnlineResource().getHref();
+        String link = serviceInformation.getUrl();
 
-        assertEquals("Service Online Resource Link Type", expectedLinkType, linkType);
         assertEquals("Service Online Resource Link", expectedLink, link);
     }
 
@@ -197,10 +183,10 @@ public class WmsCapabilitiesTest {
     public void testGetServiceInformation_GetContactPersonPrimary_Version130() {
         String expectedPerson = "Jeff Smith";
         String expectedOrganization = "NASA";
-        WmsContactInformation contactInformation = this.wmsCapabilities130.getServiceInformation().getContactInformation();
+        WmsContactInformation contactInformation = this.wmsCapabilities130.getService().getContactInformation();
 
-        String person = contactInformation.getPersonPrimary();
-        String organization = contactInformation.getOrganization();
+        String person = contactInformation.getContactPersonPrimary().getContactPerson();
+        String organization = contactInformation.getContactPersonPrimary().getContactOrganization();
 
         assertEquals("Service Contact Information Person Primary", expectedPerson, person);
         assertEquals("Service Contact Information Organization", expectedOrganization, organization);
@@ -210,10 +196,10 @@ public class WmsCapabilitiesTest {
     public void testGetServiceInformation_GetContactPersonPrimary_Version111() {
         String expectedPerson = "Jeff deLaBeaujardiere";
         String expectedOrganization = "NASA";
-        WmsContactInformation contactInformation = this.wmsCapabilities111.getServiceInformation().getContactInformation();
+        WmsContactInformation contactInformation = this.wmsCapabilities111.getService().getContactInformation();
 
-        String person = contactInformation.getPersonPrimary();
-        String organization = contactInformation.getOrganization();
+        String person = contactInformation.getContactPersonPrimary().getContactPerson();
+        String organization = contactInformation.getContactPersonPrimary().getContactOrganization();
 
         assertEquals("Service Contact Information Person Primary", expectedPerson, person);
         assertEquals("Service Contact Information Organization", expectedOrganization, organization);
@@ -227,7 +213,7 @@ public class WmsCapabilitiesTest {
         String expectedState = "MD";
         String expectedPostCode = "20771";
         String expectedCountry = "USA";
-        WmsAddress contactAddress = this.wmsCapabilities130.getServiceInformation().getContactInformation().getContactAddress();
+        WmsAddress contactAddress = this.wmsCapabilities130.getService().getContactInformation().getContactAddress();
 
         String addressType = contactAddress.getAddressType();
         String address = contactAddress.getAddress();
@@ -252,7 +238,7 @@ public class WmsCapabilitiesTest {
         String expectedState = "MD";
         String expectedPostCode = "20771";
         String expectedCountry = "USA";
-        WmsAddress contactAddress = this.wmsCapabilities111.getServiceInformation().getContactInformation().getContactAddress();
+        WmsAddress contactAddress = this.wmsCapabilities111.getService().getContactInformation().getContactAddress();
 
         String addressType = contactAddress.getAddressType();
         String address = contactAddress.getAddress();
@@ -273,7 +259,7 @@ public class WmsCapabilitiesTest {
     public void testGetServiceInformation_GetPhone_Version130() {
         String expectedValue = "+1 301 555-1212";
 
-        String voiceTelephone = this.wmsCapabilities130.getServiceInformation().getContactInformation().getVoiceTelephone();
+        String voiceTelephone = this.wmsCapabilities130.getService().getContactInformation().getVoiceTelephone();
 
         assertEquals("Service Phone", expectedValue, voiceTelephone);
     }
@@ -282,7 +268,7 @@ public class WmsCapabilitiesTest {
     public void testGetServiceInformation_GetPhone_Version111() {
         String expectedValue = "+1 301 286-1569";
 
-        String voiceTelephone = this.wmsCapabilities111.getServiceInformation().getContactInformation().getVoiceTelephone();
+        String voiceTelephone = this.wmsCapabilities111.getService().getContactInformation().getVoiceTelephone();
 
         assertEquals("Service Fees", expectedValue, voiceTelephone);
     }
@@ -291,7 +277,7 @@ public class WmsCapabilitiesTest {
     public void testGetServiceInformation_GetEmail_Version130() {
         String expectedValue = "user@host.com";
 
-        String fees = this.wmsCapabilities130.getServiceInformation().getContactInformation().getElectronicMailAddress();
+        String fees = this.wmsCapabilities130.getService().getContactInformation().getElectronicMailAddress();
 
         assertEquals("Service Email", expectedValue, fees);
     }
@@ -300,7 +286,7 @@ public class WmsCapabilitiesTest {
     public void testGetServiceInformation_GetEmail_Version111() {
         String expectedValue = "delabeau@iniki.gsfc.nasa.gov";
 
-        String fees = this.wmsCapabilities111.getServiceInformation().getContactInformation().getElectronicMailAddress();
+        String fees = this.wmsCapabilities111.getService().getContactInformation().getElectronicMailAddress();
 
         assertEquals("Service Email", expectedValue, fees);
     }
@@ -309,7 +295,7 @@ public class WmsCapabilitiesTest {
     public void testGetServiceInformation_GetFees_Version130() {
         String expectedValue = "none";
 
-        String fees = this.wmsCapabilities130.getServiceInformation().getFees();
+        String fees = this.wmsCapabilities130.getService().getFees();
 
         assertEquals("Service Fees", expectedValue, fees);
     }
@@ -318,7 +304,7 @@ public class WmsCapabilitiesTest {
     public void testGetServiceInformation_GetFees_Version111() {
         String expectedValue = "none";
 
-        String fees = this.wmsCapabilities111.getServiceInformation().getFees();
+        String fees = this.wmsCapabilities111.getService().getFees();
 
         assertEquals("Service Fees", expectedValue, fees);
     }
@@ -327,7 +313,7 @@ public class WmsCapabilitiesTest {
     public void testGetServiceInformation_GetAccessConstraints_Version130() {
         String expectedValue = "none";
 
-        String accessConstraints = this.wmsCapabilities130.getServiceInformation().getAccessConstraints();
+        String accessConstraints = this.wmsCapabilities130.getService().getAccessConstraints();
 
         assertEquals("Service Fees", expectedValue, accessConstraints);
     }
@@ -336,7 +322,7 @@ public class WmsCapabilitiesTest {
     public void testGetServiceInformation_GetAccessConstraints_Version111() {
         String expectedValue = "none";
 
-        String accessConstraints = this.wmsCapabilities111.getServiceInformation().getAccessConstraints();
+        String accessConstraints = this.wmsCapabilities111.getService().getAccessConstraints();
 
         assertEquals("Service Fees", expectedValue, accessConstraints);
     }
@@ -345,7 +331,7 @@ public class WmsCapabilitiesTest {
     public void testGetServiceInformation_GetLayerLimit_Version130() {
         int expectedValue = 16;
 
-        int layerLimit = this.wmsCapabilities130.getServiceInformation().getLayerLimit();
+        int layerLimit = this.wmsCapabilities130.getService().getLayerLimit();
 
         assertEquals("Service Layer Limit", expectedValue, layerLimit);
     }
@@ -355,8 +341,8 @@ public class WmsCapabilitiesTest {
         int expectedHeight = 2048;
         int expectedWidth = 2048;
 
-        int maxHeight = this.wmsCapabilities130.getServiceInformation().getMaxHeight();
-        int maxWidth = this.wmsCapabilities130.getServiceInformation().getMaxWidth();
+        int maxHeight = this.wmsCapabilities130.getService().getMaxHeight();
+        int maxWidth = this.wmsCapabilities130.getService().getMaxWidth();
 
         assertEquals("Service Max Height", expectedHeight, maxHeight);
         assertEquals("Service Max Width", expectedWidth, maxWidth);
@@ -368,7 +354,7 @@ public class WmsCapabilitiesTest {
             "Pressure", "ozone_image", "population");
 
         for (String layer : layersToTest) {
-            WmsLayerCapabilities wmsLayer = this.wmsCapabilities130.getLayerByName(layer);
+            WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName(layer);
 
             assertNotNull("Get Layer By Name " + layer, wmsLayer);
         }
@@ -380,7 +366,7 @@ public class WmsCapabilitiesTest {
             "Pressure", "ozone_image", "population");
 
         for (String layer : layersToTest) {
-            WmsLayerCapabilities wmsLayer = this.wmsCapabilities111.getLayerByName(layer);
+            WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName(layer);
 
             assertNotNull("Get Layer By Name " + layer, wmsLayer);
         }
@@ -392,9 +378,9 @@ public class WmsCapabilitiesTest {
             "Pressure", "ozone_image", "population");
         int initialSize = expectedLayers.size();
 
-        List<WmsLayerCapabilities> layers = this.wmsCapabilities130.getNamedLayers();
+        List<WmsLayer> layers = this.wmsCapabilities130.getNamedLayers();
         int foundCount = 0;
-        for (WmsLayerCapabilities layer : layers) {
+        for (WmsLayer layer : layers) {
             if (expectedLayers.contains(layer.getName())) {
                 foundCount++;
             }
@@ -410,9 +396,9 @@ public class WmsCapabilitiesTest {
             "Pressure", "ozone_image", "population");
         int initialSize = expectedLayers.size();
 
-        List<WmsLayerCapabilities> layers = this.wmsCapabilities111.getNamedLayers();
+        List<WmsLayer> layers = this.wmsCapabilities111.getNamedLayers();
         int foundCount = 0;
-        for (WmsLayerCapabilities layer : layers) {
+        for (WmsLayer layer : layers) {
             if (expectedLayers.contains(layer.getName())) {
                 foundCount++;
             }
@@ -428,14 +414,14 @@ public class WmsCapabilitiesTest {
         String expectedAttributionUrl = "http://www.university.edu/";
         String expectedAttributionLogoFormat = "image/gif";
         String expectedAttributionLogoUrl = "http://www.university.edu/icons/logo.gif";
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
 
-        WmsLayerAttribution attribution = wmsLayerCapabilities.getAttribution();
+        WmsAttribution attribution = wmsLayer.getAttribution();
 
         assertEquals("Layer Attributions Title", expectedAttributionTitle, attribution.getTitle());
-        assertEquals("Layer Attributions Url", expectedAttributionUrl, attribution.getOnlineResource().getHref());
+        assertEquals("Layer Attributions Url", expectedAttributionUrl, attribution.getUrl());
         assertEquals("Layer Attributions Logo Format", expectedAttributionLogoFormat, attribution.getLogoURL().getFormats().iterator().next());
-        assertEquals("Layer Attributions Logo Url", expectedAttributionLogoUrl, attribution.getLogoURL().getOnlineResource().getHref());
+        assertEquals("Layer Attributions Logo Url", expectedAttributionLogoUrl, attribution.getLogoURL().getUrl());
     }
 
     @Test
@@ -444,24 +430,24 @@ public class WmsCapabilitiesTest {
         String expectedAttributionUrl = "http://www.university.edu/";
         String expectedAttributionLogoFormat = "image/gif";
         String expectedAttributionLogoUrl = "http://www.university.edu/icons/logo.gif";
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
 
-        WmsLayerAttribution attribution = wmsLayerCapabilities.getAttribution();
+        WmsAttribution attribution = wmsLayer.getAttribution();
 
         assertEquals("Layer Attributions Title", expectedAttributionTitle, attribution.getTitle());
-        assertEquals("Layer Attributions Url", expectedAttributionUrl, attribution.getOnlineResource().getHref());
+        assertEquals("Layer Attributions Url", expectedAttributionUrl, attribution.getUrl());
         assertEquals("Layer Attributions Logo Format", expectedAttributionLogoFormat, attribution.getLogoURL().getFormats().iterator().next());
-        assertEquals("Layer Attributions Logo Url", expectedAttributionLogoUrl, attribution.getLogoURL().getOnlineResource().getHref());
+        assertEquals("Layer Attributions Logo Url", expectedAttributionLogoUrl, attribution.getLogoURL().getUrl());
     }
 
     @Test
     public void testNamedLayerProperties_GetTitleAbstract_Version130() {
         String expectedTitle = "Roads at 1:1M scale";
         String expectedAbstract = "Roads at a scale of 1 to 1 million.";
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
 
-        String title = wmsLayerCapabilities.getTitle();
-        String layerAbstract = wmsLayerCapabilities.getLayerAbstract();
+        String title = wmsLayer.getTitle();
+        String layerAbstract = wmsLayer.getAbstract();
 
         assertEquals("Layer Title", expectedTitle, title);
         assertEquals("Layer Abstract", expectedAbstract, layerAbstract);
@@ -471,10 +457,10 @@ public class WmsCapabilitiesTest {
     public void testNamedLayerProperties_GetTitleAbstract_Version111() {
         String expectedTitle = "Roads at 1:1M scale";
         String expectedAbstract = "Roads at a scale of 1 to 1 million.";
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
 
-        String title = wmsLayerCapabilities.getTitle();
-        String layerAbstract = wmsLayerCapabilities.getLayerAbstract();
+        String title = wmsLayer.getTitle();
+        String layerAbstract = wmsLayer.getAbstract();
 
         assertEquals("Layer Title", expectedTitle, title);
         assertEquals("Layer Abstract", expectedAbstract, layerAbstract);
@@ -482,22 +468,20 @@ public class WmsCapabilitiesTest {
 
     @Test
     public void testNamedLayerProperties_GetKeywords_Version130() {
-        Set<String> expectedKeywords = new HashSet<>();
-        expectedKeywords.addAll(Arrays.asList("road", "transportation", "atlas"));
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        List<String> expectedKeywords = Arrays.asList("road", "transportation", "atlas");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
 
-        Set<String> keywords = wmsLayerCapabilities.getKeywords();
+        List<String> keywords = wmsLayer.getKeywordList();
 
         assertEquals("Layer Keywords", expectedKeywords, keywords);
     }
 
     @Test
     public void testNamedLayerProperties_GetKeywords_Version111() {
-        Set<String> expectedKeywords = new HashSet<>();
-        expectedKeywords.addAll(Arrays.asList("road", "transportation", "atlas"));
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        List<String> expectedKeywords = Arrays.asList("road", "transportation", "atlas");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
 
-        Set<String> keywords = wmsLayerCapabilities.getKeywords();
+        List<String> keywords = wmsLayer.getKeywordList();
 
         assertEquals("Layer Keywords", expectedKeywords, keywords);
     }
@@ -507,11 +491,11 @@ public class WmsCapabilitiesTest {
         int expectedIdentities = 1;
         String expectedAuthority = "DIF_ID";
         String expectedIdentifier = "123456";
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
 
-        Set<WmsLayerIdentifier> identities = wmsLayerCapabilities.getIdentifiers();
-        String authority = identities.iterator().next().getAuthority();
-        String identifier = identities.iterator().next().getIdentifier();
+        List<WmsIdentifier> identities = wmsLayer.getIdentifiers();
+        String authority = identities.get(0).getAuthority();
+        String identifier = identities.get(0).getIdentifier();
 
         assertEquals("Layer Identifier Count", expectedIdentities, identities.size());
         assertEquals("Layer Authority", expectedAuthority, authority);
@@ -523,11 +507,11 @@ public class WmsCapabilitiesTest {
         int expectedIdentities = 1;
         String expectedAuthority = "DIF_ID";
         String expectedIdentifier = "123456";
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
 
-        Set<WmsLayerIdentifier> identities = wmsLayerCapabilities.getIdentifiers();
-        String authority = identities.iterator().next().getAuthority();
-        String identifier = identities.iterator().next().getIdentifier();
+        List<WmsIdentifier> identities = wmsLayer.getIdentifiers();
+        String authority = identities.get(0).getAuthority();
+        String identifier = identities.get(0).getIdentifier();
 
         assertEquals("Layer Identifier Count", expectedIdentities, identities.size());
         assertEquals("Layer Authority", expectedAuthority, authority);
@@ -541,14 +525,14 @@ public class WmsCapabilitiesTest {
         List<String> expectedMetadataUrlTypes = Arrays.asList("FGDC:1998", "ISO19115:2003");
         List<String> expectedMetadataUrlUrls = Arrays.asList("http://www.university.edu/metadata/roads.txt",
             "http://www.university.edu/metadata/roads.xml");
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
 
-        Set<WmsLayerInfoUrl> metadataUrls = wmsLayerCapabilities.getMetadataUrls();
+        List<WmsInfoUrl> metadataUrls = wmsLayer.getMetadataUrls();
 
-        for (WmsLayerInfoUrl metadataUrl : metadataUrls) {
+        for (WmsInfoUrl metadataUrl : metadataUrls) {
             assertTrue("Layer MetadataUrl Format", expectedMetadataUrlFormats.contains(metadataUrl.getFormats().iterator().next()));
             assertTrue("Layer MetadataUrl Type", expectedMetadataUrlTypes.contains(metadataUrl.getType()));
-            assertTrue("Layer MetadataUrl Url", expectedMetadataUrlUrls.contains(metadataUrl.getOnlineResource().getHref()));
+            assertTrue("Layer MetadataUrl Url", expectedMetadataUrlUrls.contains(metadataUrl.getUrl()));
         }
         assertEquals("Layer MetadataUrl Count", expectedMetadataUrls, metadataUrls.size());
     }
@@ -560,14 +544,14 @@ public class WmsCapabilitiesTest {
         List<String> expectedMetadataUrlTypes = Arrays.asList("FGDC", "FGDC");
         List<String> expectedMetadataUrlUrls = Arrays.asList("http://www.university.edu/metadata/roads.txt",
             "http://www.university.edu/metadata/roads.xml");
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
 
-        Set<WmsLayerInfoUrl> metadataUrls = wmsLayerCapabilities.getMetadataUrls();
+        List<WmsInfoUrl> metadataUrls = wmsLayer.getMetadataUrls();
 
-        for (WmsLayerInfoUrl metadataUrl : metadataUrls) {
+        for (WmsInfoUrl metadataUrl : metadataUrls) {
             assertTrue("Layer MetadataUrl Format", expectedMetadataUrlFormats.contains(metadataUrl.getFormats().iterator().next()));
             assertTrue("Layer MetadataUrl Names", expectedMetadataUrlTypes.contains(metadataUrl.getType()));
-            assertTrue("Layer MetadataUrl Url", expectedMetadataUrlUrls.contains(metadataUrl.getOnlineResource().getHref()));
+            assertTrue("Layer MetadataUrl Url", expectedMetadataUrlUrls.contains(metadataUrl.getUrl()));
         }
         assertEquals("Layer MetadataUrl Count", expectedMetadataUrls, metadataUrls.size());
     }
@@ -579,14 +563,14 @@ public class WmsCapabilitiesTest {
         List<String> expectedStyleTitles = Arrays.asList("Road atlas style", "USGS Topo Map Style");
         List<String> expectedStyleLegendUrl = Arrays.asList("http://www.university.edu/legends/atlas.gif",
             "http://www.university.edu/legends/usgs.gif");
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
 
-        Set<WmsLayerStyle> styles = wmsLayerCapabilities.getStyles();
+        List<WmsStyle> styles = wmsLayer.getStyles();
 
-        for (WmsLayerStyle style : styles) {
+        for (WmsStyle style : styles) {
             assertTrue("Layer Style Names", expectedStyleNames.contains(style.getName()));
             assertTrue("Layer Style Titles", expectedStyleTitles.contains(style.getTitle()));
-            String legendUrl = style.getLegendUrls().iterator().next().getOnlineResource().getHref();
+            String legendUrl = style.getLegendUrls().iterator().next().getUrl();
             assertTrue("Layer Style Legend Url", expectedStyleLegendUrl.contains(legendUrl));
         }
         assertEquals("Layer Style Count", expectedStyles, styles.size());
@@ -599,14 +583,14 @@ public class WmsCapabilitiesTest {
         List<String> expectedStyleTitles = Arrays.asList("Road atlas style", "USGS Topo Map Style");
         List<String> expectedStyleLegendUrl = Arrays.asList("http://www.university.edu/legends/atlas.gif",
             "http://www.university.edu/legends/usgs.gif");
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
 
-        Set<WmsLayerStyle> styles = wmsLayerCapabilities.getStyles();
+        List<WmsStyle> styles = wmsLayer.getStyles();
 
-        for (WmsLayerStyle style : styles) {
+        for (WmsStyle style : styles) {
             assertTrue("Layer Style Names", expectedStyleNames.contains(style.getName()));
             assertTrue("Layer Style Titles", expectedStyleTitles.contains(style.getTitle()));
-            String legendUrl = style.getLegendUrls().iterator().next().getOnlineResource().getHref();
+            String legendUrl = style.getLegendUrls().iterator().next().getUrl();
             assertTrue("Layer Style Legend Url", expectedStyleLegendUrl.contains(legendUrl));
         }
         assertEquals("Layer Style Count", expectedStyles, styles.size());
@@ -614,22 +598,20 @@ public class WmsCapabilitiesTest {
 
     @Test
     public void testNamedLayerProperties_GetReferenceSystems_Version130() {
-        Set<String> expectedCrsValues = new HashSet<>();
-        expectedCrsValues.addAll(Arrays.asList("EPSG:26986", "CRS:84"));
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        List<String> expectedCrsValues = Arrays.asList("EPSG:26986", "CRS:84");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
 
-        Set<String> referenceSystems = wmsLayerCapabilities.getReferenceSystem();
+        List<String> referenceSystems = wmsLayer.getReferenceSystems();
 
         assertEquals("Layer Reference System", expectedCrsValues, referenceSystems);
     }
 
     @Test
     public void testNamedLayerProperties_GetReferenceSystems_Version111() {
-        Set<String> expectedSrsValues = new HashSet<>();
-        expectedSrsValues.addAll(Arrays.asList("EPSG:26986", "EPSG:4326"));
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        List<String> expectedSrsValues = Arrays.asList("EPSG:26986", "EPSG:4326");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
 
-        Set<String> referenceSystems = wmsLayerCapabilities.getReferenceSystem();
+        List<String> referenceSystems = wmsLayer.getReferenceSystems();
 
         assertEquals("Layer Reference System", expectedSrsValues, referenceSystems);
     }
@@ -640,9 +622,9 @@ public class WmsCapabilitiesTest {
         double expectedGeographicBoundingBoxEastLong = -70.78;
         double expectedGeographicBoundingBoxSouthLat = 41.75;
         double expectedGeographicBoundingBoxNorthLat = 42.90;
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
 
-        Sector sector = wmsLayerCapabilities.getGeographicBoundingBox();
+        Sector sector = wmsLayer.getGeographicBoundingBox();
 
         assertEquals("Layer Geographic Bounding Box West", expectedGeographicBoundingBoxWestLong, sector.minLongitude());
         assertEquals("Layer Geographic Bounding Box East", expectedGeographicBoundingBoxEastLong, sector.maxLongitude());
@@ -656,9 +638,9 @@ public class WmsCapabilitiesTest {
         double expectedGeographicBoundingBoxEastLong = -70.78;
         double expectedGeographicBoundingBoxSouthLat = 41.75;
         double expectedGeographicBoundingBoxNorthLat = 42.90;
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
 
-        Sector sector = wmsLayerCapabilities.getGeographicBoundingBox();
+        Sector sector = wmsLayer.getGeographicBoundingBox();
 
         assertEquals("Layer Geographic Bounding Box West", expectedGeographicBoundingBoxWestLong, sector.minLongitude());
         assertEquals("Layer Geographic Bounding Box East", expectedGeographicBoundingBoxEastLong, sector.maxLongitude());
@@ -676,9 +658,9 @@ public class WmsCapabilitiesTest {
         double expectedEpsgBoundingBoxMiny = 834000;
         double expectedEpsgBoundingBoxMaxx = 285000;
         double expectedEpsgBoundingBoxMaxy = 962000;
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
 
-        Set<WmsBoundingBox> boxes = wmsLayerCapabilities.getBoundingBoxes();
+        List<WmsBoundingBox> boxes = wmsLayer.getBoundingBoxes();
         Iterator<WmsBoundingBox> boxIterator = boxes.iterator();
 
         while (boxIterator.hasNext()) {
@@ -714,9 +696,9 @@ public class WmsCapabilitiesTest {
         double expectedEpsgBoundingBoxMiny = 834000;
         double expectedEpsgBoundingBoxMaxx = 285000;
         double expectedEpsgBoundingBoxMaxy = 962000;
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
 
-        Set<WmsBoundingBox> boxes = wmsLayerCapabilities.getBoundingBoxes();
+        List<WmsBoundingBox> boxes = wmsLayer.getBoundingBoxes();
         Iterator<WmsBoundingBox> boxIterator = boxes.iterator();
 
         while (boxIterator.hasNext()) {
@@ -744,9 +726,9 @@ public class WmsCapabilitiesTest {
 
     @Test
     public void testServiceCapabilities() {
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
 
-        WmsCapabilities wmsCapabilities = wmsLayerCapabilities.getServiceCapabilities();
+        WmsCapabilities wmsCapabilities = wmsLayer.getCapability().getCapabilities();
 
         assertEquals("Layer Service Capabilities", this.wmsCapabilities130, wmsCapabilities);
     }
@@ -756,11 +738,11 @@ public class WmsCapabilitiesTest {
         // NOTE: Version 1.1.1 doesn't support the MaxHeight, MaxWidth, and LayerLimit elements, but this test is
         // to verify that null values are returned properly. This doesn't work with our specification resource for
         // 1.3.0 as the values are included and tested above
-        WmsServiceInformation wmsServiceInformation = this.wmsCapabilities111.getServiceInformation();
+        WmsService wmsService = this.wmsCapabilities111.getService();
 
-        Integer maxHeight = wmsServiceInformation.getMaxHeight();
-        Integer maxWidth = wmsServiceInformation.getMaxWidth();
-        Integer layerLimit = wmsServiceInformation.getLayerLimit();
+        Integer maxHeight = wmsService.getMaxHeight();
+        Integer maxWidth = wmsService.getMaxWidth();
+        Integer layerLimit = wmsService.getLayerLimit();
 
         assertNull("MaxHeight v1.1.1", maxHeight);
         assertNull("MaxWidth v1.1.1", maxWidth);
@@ -769,73 +751,73 @@ public class WmsCapabilitiesTest {
 
     @Test
     public void testScaleHint_Version111() {
-        WmsLayerCapabilities wmsLayerCapabilities = this.wmsCapabilities111.getLayerByName("ROADS_1M");
-        double expectedMinScaleHint = 4000;
-        double expectedMaxScaleHint = 35000;
+        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        Double expectedMinScaleHint = 4000d;
+        Double expectedMaxScaleHint = 35000d;
 
-        Double minScaleHint = wmsLayerCapabilities.getMinScaleHint();
-        Double maxScaleHint = wmsLayerCapabilities.getMaxScaleHint();
+        Double minScaleHint = wmsLayer.getScaleHint().getMin();
+        Double maxScaleHint = wmsLayer.getScaleHint().getMax();
 
-        assertEquals("Min Scale Hint", expectedMinScaleHint, minScaleHint.doubleValue(), DELTA);
-        assertEquals("Max Scale Hint", expectedMaxScaleHint, maxScaleHint.doubleValue(), DELTA);
+        assertEquals("Min Scale Hint", expectedMinScaleHint, minScaleHint, DELTA);
+        assertEquals("Max Scale Hint", expectedMaxScaleHint, maxScaleHint, DELTA);
     }
 
     @Test
     public void testGetCapabilitiesURL_Version130() {
-        WmsRequestOperation getCapabilities = this.wmsCapabilities130.getCapabilityInformation().getCapabilitiesInfo();
+        WmsRequestOperation getCapabilities = this.wmsCapabilities130.getCapability().getRequest().getGetCapabilities();
         String expectedUrl = "http://hostname/path?";
 
-        String url = getCapabilities.getOnlineResource("Get").getHref();
+        String url = getCapabilities.getGetUrl();
 
         assertEquals("GetCapabilities URL", expectedUrl, url);
     }
 
     @Test
     public void testGetCapabilitiesURL_Version111() {
-        WmsRequestOperation getCapabilities = this.wmsCapabilities111.getCapabilityInformation().getCapabilitiesInfo();
+        WmsRequestOperation getCapabilities = this.wmsCapabilities111.getCapability().getRequest().getGetCapabilities();
         String expectedUrl = "http://hostname:port/path";
 
-        String url = getCapabilities.getOnlineResource("Get").getHref();
+        String url = getCapabilities.getGetUrl();
 
         assertEquals("GetCapabilities URL", expectedUrl, url);
     }
 
     @Test
     public void testGetMapURL_Version130() {
-        WmsRequestOperation getMap = this.wmsCapabilities130.getCapabilityInformation().getMapInfo();
+        WmsRequestOperation getMap = this.wmsCapabilities130.getCapability().getRequest().getGetMap();
         String expectedUrl = "http://hostname/path?";
 
-        String url = getMap.getOnlineResource("Get").getHref();
+        String url = getMap.getGetUrl();
 
         assertEquals("GetMap URL", expectedUrl, url);
     }
 
     @Test
     public void testGetMapURL_Version111() {
-        WmsRequestOperation getMap = this.wmsCapabilities111.getCapabilityInformation().getMapInfo();
+        WmsRequestOperation getMap = this.wmsCapabilities111.getCapability().getRequest().getGetMap();
         String expectedUrl = "http://hostname:port/path";
 
-        String url = getMap.getOnlineResource("Get").getHref();
+        String url = getMap.getGetUrl();
 
         assertEquals("GetMap URL", expectedUrl, url);
     }
 
     @Test
     public void testGetFeatureInfoURL_Version130() {
-        WmsRequestOperation getFeatureInfo = this.wmsCapabilities130.getCapabilityInformation().getFeatureInfo();
+        WmsRequestOperation getFeatureInfo = this.wmsCapabilities130.getCapability().getRequest().getGetFeatureInfo();
         String expectedUrl = "http://hostname/path?";
 
-        String url = getFeatureInfo.getOnlineResource("Get").getHref();
+        String url = getFeatureInfo.getGetUrl();
 
         assertEquals("GetFeatureInfo URL", expectedUrl, url);
     }
 
     @Test
     public void testGetFeatureInfoURL_Version111() {
-        WmsRequestOperation getFeatureInfo = this.wmsCapabilities111.getCapabilityInformation().getFeatureInfo();
+        WmsRequestOperation getFeatureInfo = this.wmsCapabilities111.getCapability().getRequest().getGetFeatureInfo();
         String expectedUrl = "http://hostname:port/path";
 
-        String url = getFeatureInfo.getOnlineResource("Get").getHref();
+        String url = getFeatureInfo.getGetUrl();
 
         assertEquals("GetFeatureInfo URL", expectedUrl, url);
     }

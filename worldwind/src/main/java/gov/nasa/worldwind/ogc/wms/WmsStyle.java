@@ -5,12 +5,13 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class WmsLayerStyle extends XmlModel {
+public class WmsStyle extends XmlModel {
 
     protected String name;
 
@@ -18,37 +19,37 @@ public class WmsLayerStyle extends XmlModel {
 
     protected String description;
 
-    protected Set<WmsLogoUrl> legendUrl = new LinkedHashSet<>();
+    protected List<WmsLogoUrl> legendUrl = new ArrayList<>();
 
-    protected WmsLayerInfoUrl styleSheetUrl;
+    protected WmsInfoUrl styleSheetUrl;
 
-    protected WmsLayerInfoUrl styleUrl;
+    protected WmsInfoUrl styleUrl;
 
-    public WmsLayerStyle() {
+    public WmsStyle() {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public String getTitle() {
-        return title;
+        return this.title;
     }
 
     public String getAbstract() {
-        return description;
+        return this.description;
     }
 
-    public Set<WmsLogoUrl> getLegendUrls() {
-        return legendUrl;
+    public List<WmsLogoUrl> getLegendUrls() {
+        return Collections.unmodifiableList(this.legendUrl);
     }
 
-    public WmsLayerInfoUrl getStyleSheetUrl() {
-        return styleSheetUrl;
+    public WmsInfoUrl getStyleSheetUrl() {
+        return this.styleSheetUrl;
     }
 
-    public WmsLayerInfoUrl getStyleUrl() {
-        return styleUrl;
+    public WmsInfoUrl getStyleUrl() {
+        return this.styleUrl;
     }
 
     @Override
@@ -62,9 +63,9 @@ public class WmsLayerStyle extends XmlModel {
         } else if (keyName.equals("LegendURL")) {
             this.legendUrl.add((WmsLogoUrl) value);
         } else if (keyName.equals("StyleSheetURL")) {
-            this.styleSheetUrl = (WmsLayerInfoUrl) value;
+            this.styleSheetUrl = (WmsInfoUrl) value;
         } else if (keyName.equals("StyleURL")) {
-            this.styleUrl = (WmsLayerInfoUrl) value;
+            this.styleUrl = (WmsInfoUrl) value;
         }
     }
 }

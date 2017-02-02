@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
-import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsScaleHint extends XmlModel {
@@ -15,6 +14,14 @@ public class WmsScaleHint extends XmlModel {
     protected Double max;
 
     public WmsScaleHint() {
+    }
+
+    public Double getMin() {
+        return this.min;
+    }
+
+    public Double getMax() {
+        return this.max;
     }
 
     @Override

@@ -19,20 +19,7 @@ public class WmsContactInformation extends XmlModel {
 
     protected WmsAddress contactAddress;
 
-    protected String contactPerson;
-
-    protected String contactOrganization;
-
-    public WmsContactInformation() {
-    }
-
-    public String getPersonPrimary() {
-        return this.contactPerson;
-    }
-
-    public String getOrganization() {
-        return this.contactOrganization;
-    }
+    protected WmsContactPersonPrimary contactPersonPrimary;
 
     public String getPosition() {
         return this.contactPosition;
@@ -54,6 +41,10 @@ public class WmsContactInformation extends XmlModel {
         return this.contactAddress;
     }
 
+    public WmsContactPersonPrimary getContactPersonPrimary() {
+        return this.contactPersonPrimary;
+    }
+
     @Override
     public void parseField(String keyName, Object value) {
         if (keyName.equals("ContactPosition")) {
@@ -65,9 +56,7 @@ public class WmsContactInformation extends XmlModel {
         } else if (keyName.equals("ContactElectronicMailAddress")) {
             this.contactElectronicMailAddress = (String) value;
         } else if (keyName.equals("ContactPersonPrimary")) {
-            WmsContactPersonPrimary contactPersonPrimary = (WmsContactPersonPrimary) value;
-            this.contactPerson = contactPersonPrimary.person;
-            this.contactOrganization = contactPersonPrimary.organization;
+            this.contactPersonPrimary = (WmsContactPersonPrimary) value;
         } else if (keyName.equals("ContactAddress")) {
             this.contactAddress = (WmsAddress) value;
         }

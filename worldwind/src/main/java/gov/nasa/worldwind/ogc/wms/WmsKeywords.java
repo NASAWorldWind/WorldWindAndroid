@@ -5,21 +5,21 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsKeywords extends XmlModel {
 
-    protected Set<String> keywords = new LinkedHashSet<>();
+    protected List<String> keywords = new ArrayList<>();
 
     public WmsKeywords() {
     }
 
-    public Set<String> getKeywords() {
-        return Collections.unmodifiableSet(keywords);
+    public List<String> getKeywords() {
+        return Collections.unmodifiableList(this.keywords);
     }
 
     @Override

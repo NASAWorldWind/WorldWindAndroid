@@ -5,47 +5,51 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsRequestOperation extends XmlModel {
 
-    protected Set<String> formats = new LinkedHashSet<>();
+    protected String name;
 
-    protected Set<WmsDcpType> dcpTypes = new LinkedHashSet<>();
+    protected List<String> formats = new ArrayList<>();
+
+    protected String getUrl;
+
+    protected String postUrl;
 
     public WmsRequestOperation() {
     }
 
-    public WmsOnlineResource getOnlineResource(String requestMethod) {
-        for (WmsDcpType dct : this.getDcpTypes()) {
-            for (WmsDcpType.DcpInfo dcpInfo : dct.getDcpInfos()) {
-                if (dcpInfo.method.equals(requestMethod)) {
-                    return dcpInfo.onlineResource;
-                }
-            }
-        }
-
-        return null;
+    public List<String> getFormats() {
+        return Collections.unmodifiableList(this.formats);
     }
 
-    public Set<String> getFormats() {
-        return Collections.unmodifiableSet(this.formats);
+    public String getName() {
+        return this.name;
     }
 
-    public Set<WmsDcpType> getDcpTypes() {
-        return Collections.unmodifiableSet(this.dcpTypes);
+    public String getGetUrl() {
+        return this.getUrl;
+    }
+
+    public String getPostUrl() {
+        return this.postUrl;
     }
 
     @Override
     public void parseField(String keyName, Object value) {
-        if (keyName.equals("Format")) {
+        if (keyName.equals("name")) {
+            this.name = (String) value;
+        } else if (keyName.equals("Format")) {
             this.formats.add((String) value);
         } else if (keyName.equals("DCPType")) {
-            this.dcpTypes.add((WmsDcpType) value);
+            WmsDcpType dcpType = (WmsDcpType) value;
+            this.getUrl = dcpType.getGetHref();
+            this.postUrl = dcpType.getPostHref();
         }
     }
 }

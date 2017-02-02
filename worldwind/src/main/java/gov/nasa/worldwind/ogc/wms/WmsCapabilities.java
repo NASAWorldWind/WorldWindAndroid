@@ -12,7 +12,6 @@ import org.xmlpull.v1.XmlPullParser;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.xml.XmlModel;
@@ -24,9 +23,9 @@ public class WmsCapabilities extends XmlModel {
 
     protected String updateSequence;
 
-    protected WmsCapabilityInformation capabilityInformation;
+    protected WmsService service;
 
-    protected WmsServiceInformation serviceInformation;
+    protected WmsCapability capability;
 
     public WmsCapabilities() {
     }
@@ -41,7 +40,7 @@ public class WmsCapabilities extends XmlModel {
         Object result = modelParser.parse();
         if (!(result instanceof WmsCapabilities)) {
             throw new RuntimeException(
-                Logger.logMessage(Logger.ERROR, "WmsCapabilities", "getCapabilities", "Invalid WMS Capabilities input"));
+                Logger.logMessage(Logger.ERROR, "WmsCapabilities", "getCapability", "Invalid WMS Capabilities input"));
         }
 
         return (WmsCapabilities) result;
@@ -52,25 +51,25 @@ public class WmsCapabilities extends XmlModel {
      *
      * @return an unordered list of the document's named layers.
      */
-    public List<WmsLayerCapabilities> getNamedLayers() {
-        List<WmsLayerCapabilities> namedLayers = new ArrayList<>();
+    public List<WmsLayer> getNamedLayers() {
+        List<WmsLayer> namedLayers = new ArrayList<>();
 
-        for (WmsLayerCapabilities layer : this.getCapabilityInformation().getLayerList()) {
+        for (WmsLayer layer : this.getCapability().getLayers()) {
             namedLayers.addAll(layer.getNamedLayers());
         }
 
         return namedLayers;
     }
 
-    public WmsLayerCapabilities getLayerByName(String name) {
+    public WmsLayer getLayerByName(String name) {
         if (name == null || name.isEmpty()) {
             return null;
         }
 
-        List<WmsLayerCapabilities> namedLayers = this.getNamedLayers();
+        List<WmsLayer> namedLayers = this.getNamedLayers();
 
         if (namedLayers != null) {
-            for (WmsLayerCapabilities layer : namedLayers) {
+            for (WmsLayer layer : namedLayers) {
                 if (layer.getName().equals(name)) {
                     return layer;
                 }
@@ -80,8 +79,8 @@ public class WmsCapabilities extends XmlModel {
         return null;
     }
 
-    public WmsCapabilityInformation getCapabilityInformation() {
-        return this.capabilityInformation;
+    public WmsCapability getCapability() {
+        return this.capability;
     }
 
     /**
@@ -89,8 +88,8 @@ public class WmsCapabilities extends XmlModel {
      *
      * @return the document's service information.
      */
-    public WmsServiceInformation getServiceInformation() {
-        return this.serviceInformation;
+    public WmsService getService() {
+        return this.service;
     }
 
     /**
@@ -111,46 +110,6 @@ public class WmsCapabilities extends XmlModel {
         return this.updateSequence;
     }
 
-    public Set<String> getImageFormats() {
-        WmsCapabilityInformation capInfo = this.getCapabilityInformation();
-        if (capInfo == null) {
-            return null;
-        }
-
-        return capInfo.getImageFormats();
-    }
-
-    public String getRequestURL(String requestName, String requestMethod) {
-        if (requestName == null || requestMethod == null) {
-            return null;
-        }
-
-        WmsCapabilityInformation capabilityInformation = this.getCapabilityInformation();
-        if (capabilityInformation == null) {
-            return null;
-        }
-
-        WmsRequestOperation requestDescription = null;
-        if (requestName.equals("GetCapabilities")) {
-            requestDescription = capabilityInformation.getCapabilitiesInfo();
-        } else if (requestName.equals("GetMap")) {
-            requestDescription = capabilityInformation.getMapInfo();
-        } else if (requestName.equals("GetFeatureInfo")) {
-            requestDescription = capabilityInformation.getFeatureInfo();
-        }
-
-        if (requestDescription == null) {
-            return null;
-        }
-
-        WmsOnlineResource onlineResource = requestDescription.getOnlineResource(requestMethod);
-        if (onlineResource == null) {
-            return null;
-        }
-
-        return onlineResource.getHref();
-    }
-
     @Override
     public void parseField(String keyName, Object value) {
         if (keyName.equals("version")) {
@@ -158,9 +117,9 @@ public class WmsCapabilities extends XmlModel {
         } else if (keyName.equals("updateSequence")) {
             this.updateSequence = (String) value;
         } else if (keyName.equals("Service")) {
-            this.serviceInformation = (WmsServiceInformation) value;
+            this.service = (WmsService) value;
         } else if (keyName.equals("Capability")) {
-            this.capabilityInformation = (WmsCapabilityInformation) value;
+            this.capability = (WmsCapability) value;
         }
     }
 }

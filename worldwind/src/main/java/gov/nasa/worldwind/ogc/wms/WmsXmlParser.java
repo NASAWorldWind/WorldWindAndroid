@@ -19,12 +19,12 @@ public class WmsXmlParser extends XmlModelParser {
         this.registerTxtModel(namespace, "AccessConstraints");
         this.registerTxtModel(namespace, "Address");
         this.registerTxtModel(namespace, "AddressType");
-        this.registerXmlModel(namespace, "Attribution", WmsLayerAttribution.class);
+        this.registerXmlModel(namespace, "Attribution", WmsAttribution.class);
         this.registerXmlModel(namespace, "AuthorityURL", WmsAuthorityUrl.class);
 
         this.registerXmlModel(namespace, "BoundingBox", WmsBoundingBox.class);
 
-        this.registerXmlModel(namespace, "Capability", WmsCapabilityInformation.class);
+        this.registerXmlModel(namespace, "Capability", WmsCapability.class);
         this.registerTxtModel(namespace, "City");
         this.registerXmlModel(namespace, "ContactAddress", WmsAddress.class);
         this.registerTxtModel(namespace, "ContactElectronicMailAddress");
@@ -37,11 +37,11 @@ public class WmsXmlParser extends XmlModelParser {
         this.registerTxtModel(namespace, "Country");
         this.registerTxtModel(namespace, "CRS");
 
-        this.registerXmlModel(namespace, "DataURL", WmsLayerInfoUrl.class);
+        this.registerXmlModel(namespace, "DataURL", WmsInfoUrl.class);
         this.registerXmlModel(namespace, "DCPType", WmsDcpType.class);
-        this.registerXmlModel(namespace, "Dimension", WmsLayerDimension.class);
+        this.registerXmlModel(namespace, "Dimension", WmsDimension.class);
 
-        this.registerXmlModel(namespace, "Extent", WmsLayerDimension.class);
+        this.registerXmlModel(namespace, "Extent", WmsDimension.class);
         this.registerXmlModel(namespace, "EX_GeographicBoundingBox", WmsGeographicBoundingBox.class);
         this.registerTxtModel(namespace, "westBoundLongitude");
         this.registerTxtModel(namespace, "eastBoundLongitude");
@@ -50,7 +50,7 @@ public class WmsXmlParser extends XmlModelParser {
 
         this.registerXmlModel(namespace, "Exception", WmsException.class);
 
-        this.registerXmlModel(namespace, "FeatureListURL", WmsLayerInfoUrl.class);
+        this.registerXmlModel(namespace, "FeatureListURL", WmsInfoUrl.class);
         this.registerTxtModel(namespace, "Fees");
         this.registerTxtModel(namespace, "Format");
 
@@ -61,14 +61,14 @@ public class WmsXmlParser extends XmlModelParser {
 
         this.registerXmlModel(namespace, "HTTP", WmsDcpType.WmsDcpHttp.class);
 
-        this.registerXmlModel(namespace, "Identifier", WmsLayerIdentifier.class);
+        this.registerXmlModel(namespace, "Identifier", WmsIdentifier.class);
 
         this.registerTxtModel(namespace, "Keyword");
         this.registerXmlModel(namespace, "KeywordList", WmsKeywords.class);
 
         this.registerXmlModel(namespace, "LatLonBoundingBox", WmsGeographicBoundingBox.class);
-        this.registerXmlModel(namespace, "Layer", WmsLayerCapabilities.class);
-        this.registerXmlModel(namespace, "LayerInfo", WmsLayerInfoUrl.class);
+        this.registerXmlModel(namespace, "Layer", WmsLayer.class);
+        this.registerXmlModel(namespace, "LayerInfo", WmsInfoUrl.class);
         this.registerTxtModel(namespace, "LayerLimit");
         this.registerXmlModel(namespace, "LegendURL", WmsLogoUrl.class);
         this.registerXmlModel(namespace, "LogoURL", WmsLogoUrl.class);
@@ -76,7 +76,7 @@ public class WmsXmlParser extends XmlModelParser {
         this.registerTxtModel(namespace, "MaxHeight");
         this.registerTxtModel(namespace, "MaxScaleDenominator");
         this.registerTxtModel(namespace, "MaxWidth");
-        this.registerXmlModel(namespace, "MetadataURL", WmsLayerInfoUrl.class);
+        this.registerXmlModel(namespace, "MetadataURL", WmsInfoUrl.class);
         this.registerTxtModel(namespace, "MinScaleDenominator");
 
         this.registerTxtModel(namespace, "Name");
@@ -86,15 +86,15 @@ public class WmsXmlParser extends XmlModelParser {
         this.registerXmlModel(namespace, "Post", WmsDcpType.WmsDcpHttpProtocol.class);
         this.registerTxtModel(namespace, "PostCode");
 
-        this.registerXmlModel(namespace, "Request", WmsRequestInformation.class);
+        this.registerXmlModel(namespace, "Request", WmsRequest.class);
 
         this.registerXmlModel(namespace, "ScaleHint", WmsScaleHint.class);
-        this.registerXmlModel(namespace, "Service", WmsServiceInformation.class);
+        this.registerXmlModel(namespace, "Service", WmsService.class);
         this.registerTxtModel(namespace, "SRS");
         this.registerTxtModel(namespace, "StateOrProvince");
-        this.registerXmlModel(namespace, "Style", WmsLayerStyle.class);
-        this.registerXmlModel(namespace, "StyleSheetURL", WmsLayerInfoUrl.class);
-        this.registerXmlModel(namespace, "StyleURL", WmsLayerInfoUrl.class);
+        this.registerXmlModel(namespace, "Style", WmsStyle.class);
+        this.registerXmlModel(namespace, "StyleSheetURL", WmsInfoUrl.class);
+        this.registerXmlModel(namespace, "StyleURL", WmsInfoUrl.class);
 
         this.registerTxtModel(namespace, "Title");
 

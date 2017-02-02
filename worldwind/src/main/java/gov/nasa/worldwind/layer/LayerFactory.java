@@ -32,7 +32,7 @@ import gov.nasa.worldwind.ogc.gpkg.GpkgTileFactory;
 import gov.nasa.worldwind.ogc.gpkg.GpkgTileMatrixSet;
 import gov.nasa.worldwind.ogc.gpkg.GpkgTileUserMetrics;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
-import gov.nasa.worldwind.ogc.wms.WmsLayerCapabilities;
+import gov.nasa.worldwind.ogc.wms.WmsLayer;
 import gov.nasa.worldwind.ogc.wmts.OwsDcp;
 import gov.nasa.worldwind.ogc.wmts.OwsOperation;
 import gov.nasa.worldwind.ogc.wmts.OwsOperationsMetadata;
@@ -140,7 +140,7 @@ public class LayerFactory {
         return layer;
     }
 
-    public Layer createFromWmsLayerCapabilities(WmsLayerCapabilities layerCapabilities, Callback callback) {
+    public Layer createFromWmsLayerCapabilities(WmsLayer layerCapabilities, Callback callback) {
         if (layerCapabilities == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missing layers"));
@@ -154,7 +154,7 @@ public class LayerFactory {
         return this.createFromWmsLayerCapabilities(Collections.singletonList(layerCapabilities), callback);
     }
 
-    public Layer createFromWmsLayerCapabilities(List<WmsLayerCapabilities> layerCapabilities, Callback callback) {
+    public Layer createFromWmsLayerCapabilities(List<WmsLayer> layerCapabilities, Callback callback) {
         if (layerCapabilities == null || layerCapabilities.size() == 0) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LayerFactory", "createFromWmsLayerCapabilities", "missing layers"));
@@ -300,9 +300,9 @@ public class LayerFactory {
     protected void createFromWmsAsync(String serviceAddress, List<String> layerNames, Layer layer, Callback callback) throws Exception {
         // Parse and read the WMS Capabilities document at the provided service address
         WmsCapabilities wmsCapabilities = this.retrieveWmsCapabilities(serviceAddress);
-        List<WmsLayerCapabilities> layerCapabilities = new ArrayList<>();
+        List<WmsLayer> layerCapabilities = new ArrayList<>();
         for (String layerName : layerNames) {
-            WmsLayerCapabilities layerCaps = wmsCapabilities.getLayerByName(layerName);
+            WmsLayer layerCaps = wmsCapabilities.getLayerByName(layerName);
             if (layerCaps != null) {
                 layerCapabilities.add(layerCaps);
             }
@@ -329,15 +329,15 @@ public class LayerFactory {
         this.createWmtsLayer(wmtsLayer, layer, callback);
     }
 
-    protected void createWmsLayer(List<WmsLayerCapabilities> layerCapabilities, Layer layer, Callback callback) {
+    protected void createWmsLayer(List<WmsLayer> layerCapabilities, Layer layer, Callback callback) {
         final Callback finalCallback = callback;
         final RenderableLayer finalLayer = (RenderableLayer) layer;
 
         try {
-            WmsCapabilities wmsCapabilities = layerCapabilities.get(0).getServiceCapabilities();
+            WmsCapabilities wmsCapabilities = layerCapabilities.get(0).getCapability().getCapabilities();
 
             // Check if the server supports multiple layer request
-            Integer layerLimit = wmsCapabilities.getServiceInformation().getLayerLimit();
+            Integer layerLimit = wmsCapabilities.getService().getLayerLimit();
             if (layerLimit != null && layerLimit < layerCapabilities.size()) {
                 throw new RuntimeException(
                     Logger.makeMessage("LayerFactory", "createFromWmsAsync", "The number of layers specified exceeds the services limit"));
@@ -348,7 +348,7 @@ public class LayerFactory {
 
             // Collect WMS Layer Titles to set the Layer Display Name
             StringBuilder sb = null;
-            for (WmsLayerCapabilities layerCapability : layerCapabilities) {
+            for (WmsLayer layerCapability : layerCapabilities) {
                 if (sb == null) {
                     sb = new StringBuilder(layerCapability.getTitle());
                 } else {
@@ -493,10 +493,10 @@ public class LayerFactory {
         return wmtsCapabilities;
     }
 
-    protected WmsLayerConfig getLayerConfigFromWmsCapabilities(List<WmsLayerCapabilities> layerCapabilities) {
+    protected WmsLayerConfig getLayerConfigFromWmsCapabilities(List<WmsLayer> wmsLayers) {
         // Construct the WmsTiledImage renderable from the WMS Capabilities properties
         WmsLayerConfig wmsLayerConfig = new WmsLayerConfig();
-        WmsCapabilities wmsCapabilities = layerCapabilities.get(0).getServiceCapabilities();
+        WmsCapabilities wmsCapabilities = wmsLayers.get(0).getCapability().getCapabilities();
         String version = wmsCapabilities.getVersion();
         if (version.equals("1.3.0")) {
             wmsLayerConfig.wmsVersion = version;
@@ -507,7 +507,7 @@ public class LayerFactory {
                 Logger.makeMessage("LayerFactory", "getLayerConfigFromWmsCapabilities", "Version not compatible"));
         }
 
-        String requestUrl = wmsCapabilities.getRequestURL("GetMap", "Get");
+        String requestUrl = wmsCapabilities.getCapability().getRequest().getGetMap().getGetUrl();
         if (requestUrl == null) {
             throw new RuntimeException(
                 Logger.makeMessage("LayerFactory", "getLayerConfigFromWmsCapabilities", "Unable to resolve GetMap URL"));
@@ -518,19 +518,19 @@ public class LayerFactory {
 
         StringBuilder sb = null;
         Set<String> matchingCoordinateSystems = null;
-        for (WmsLayerCapabilities layerCapability : layerCapabilities) {
-            String layerName = layerCapability.getName();
+        for (WmsLayer wmsLayer : wmsLayers) {
+            String layerName = wmsLayer.getName();
             if (sb == null) {
                 sb = new StringBuilder(layerName);
             } else {
                 sb.append(",").append(layerName);
             }
-            Set<String> layerCoordinateSystems = layerCapability.getReferenceSystem();
+            List<String> wmsLayerCoordinateSystems = wmsLayer.getReferenceSystems();
             if (matchingCoordinateSystems == null) {
                 matchingCoordinateSystems = new HashSet<>();
-                matchingCoordinateSystems.addAll(layerCoordinateSystems);
+                matchingCoordinateSystems.addAll(wmsLayerCoordinateSystems);
             } else {
-                matchingCoordinateSystems.retainAll(layerCoordinateSystems);
+                matchingCoordinateSystems.retainAll(wmsLayerCoordinateSystems);
             }
         }
 
@@ -546,7 +546,7 @@ public class LayerFactory {
         }
 
         // Negotiate Image Formats
-        Set<String> imageFormats = wmsCapabilities.getImageFormats();
+        List<String> imageFormats = wmsCapabilities.getCapability().getRequest().getGetMap().getFormats();
         for (String compatibleImageFormat : this.compatibleImageFormats) {
             if (imageFormats.contains(compatibleImageFormat)) {
                 wmsLayerConfig.imageFormat = compatibleImageFormat;
@@ -562,18 +562,18 @@ public class LayerFactory {
         return wmsLayerConfig;
     }
 
-    protected LevelSetConfig getLevelSetConfigFromWmsCapabilities(List<WmsLayerCapabilities> layerCapabilities) {
+    protected LevelSetConfig getLevelSetConfigFromWmsCapabilities(List<WmsLayer> layerCapabilities) {
         LevelSetConfig levelSetConfig = new LevelSetConfig();
 
         double minScaleDenominator = Double.MAX_VALUE;
         double minScaleHint = Double.MAX_VALUE;
         Sector sector = new Sector();
-        for (WmsLayerCapabilities layerCapability : layerCapabilities) {
+        for (WmsLayer layerCapability : layerCapabilities) {
             Double layerMinScaleDenominator = layerCapability.getMinScaleDenominator();
             if (layerMinScaleDenominator != null) {
                 minScaleDenominator = Math.min(minScaleDenominator, layerMinScaleDenominator);
             }
-            Double layerMinScaleHint = layerCapability.getMinScaleHint();
+            Double layerMinScaleHint = layerCapability.getScaleHint().getMin();
             if (layerMinScaleHint != null) {
                 minScaleHint = Math.min(minScaleHint, layerMinScaleHint);
             }

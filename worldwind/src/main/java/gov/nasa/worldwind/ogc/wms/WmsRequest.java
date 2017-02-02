@@ -7,9 +7,9 @@ package gov.nasa.worldwind.ogc.wms;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class WmsRequestInformation extends XmlModel {
+public class WmsRequest extends XmlModel {
 
-    public WmsRequestInformation() {
+    public WmsRequest() {
     }
 
     protected WmsRequestOperation getCapabilities;

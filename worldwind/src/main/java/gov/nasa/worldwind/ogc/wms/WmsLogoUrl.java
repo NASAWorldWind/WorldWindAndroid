@@ -9,14 +9,13 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsLogoUrl extends XmlModel {
 
     protected Set<String> formats = new LinkedHashSet<>();
 
-    protected WmsOnlineResource onlineResource;
+    protected String url;
 
     protected Integer width;
 
@@ -37,8 +36,8 @@ public class WmsLogoUrl extends XmlModel {
         return Collections.unmodifiableSet(this.formats);
     }
 
-    public WmsOnlineResource getOnlineResource() {
-        return this.onlineResource;
+    public String getUrl() {
+        return this.url;
     }
 
     @Override
@@ -46,7 +45,7 @@ public class WmsLogoUrl extends XmlModel {
         if (keyName.equals("Format")) {
             this.formats.add((String) value);
         } else if (keyName.equals("OnlineResource")) {
-            this.onlineResource = (WmsOnlineResource) value;
+            this.url = ((WmsOnlineResource) value).getHref();
         } else if (keyName.equals("width")) {
             this.width = Integer.parseInt((String) value);
         } else if (keyName.equals("height")) {

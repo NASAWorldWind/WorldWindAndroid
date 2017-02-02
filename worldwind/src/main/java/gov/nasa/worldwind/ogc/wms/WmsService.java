@@ -5,12 +5,13 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class WmsServiceInformation extends XmlModel {
+public class WmsService extends XmlModel {
 
     protected String name;
 
@@ -22,9 +23,9 @@ public class WmsServiceInformation extends XmlModel {
 
     protected String accessConstraints;
 
-    protected WmsKeywords keywords;
+    protected List<String> keywordList = new ArrayList<>();
 
-    protected WmsOnlineResource onlineResource;
+    protected String url;
 
     protected WmsContactInformation contactInformation;
 
@@ -34,23 +35,19 @@ public class WmsServiceInformation extends XmlModel {
 
     protected Integer layerLimit;
 
-    public WmsServiceInformation() {
+    public WmsService() {
     }
 
     public WmsContactInformation getContactInformation() {
         return this.contactInformation;
     }
 
-    public WmsOnlineResource getOnlineResource() {
-        return this.onlineResource;
+    public String getUrl() {
+        return this.url;
     }
 
-    public Set<String> getKeywords() {
-        if (this.keywords != null) {
-            return this.keywords.getKeywords();
-        } else {
-            return Collections.emptySet();
-        }
+    public List<String> getKeywordList() {
+        return Collections.unmodifiableList(this.keywordList);
     }
 
     public String getAccessConstraints() {
@@ -61,15 +58,15 @@ public class WmsServiceInformation extends XmlModel {
         return this.fees;
     }
 
-    public String getServiceAbstract() {
+    public String getAbstract() {
         return this.description;
     }
 
-    public String getServiceTitle() {
+    public String getTitle() {
         return this.title;
     }
 
-    public String getServiceName() {
+    public String getName() {
         return this.name;
     }
 
@@ -94,9 +91,9 @@ public class WmsServiceInformation extends XmlModel {
         } else if (keyName.equals("Abstract")) {
             this.description = (String) value;
         } else if (keyName.equals("KeywordList")) {
-            this.keywords = (WmsKeywords) value;
+            this.keywordList.addAll(((WmsKeywords) value).getKeywords());
         } else if (keyName.equals("OnlineResource")) {
-            this.onlineResource = (WmsOnlineResource) value;
+            this.url = ((WmsOnlineResource) value).getHref();
         } else if (keyName.equals("ContactInformation")) {
             this.contactInformation = (WmsContactInformation) value;
         } else if (keyName.equals("Fees")) {

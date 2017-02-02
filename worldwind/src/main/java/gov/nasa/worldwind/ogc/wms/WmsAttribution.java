@@ -7,23 +7,23 @@ package gov.nasa.worldwind.ogc.wms;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class WmsLayerAttribution extends XmlModel {
+public class WmsAttribution extends XmlModel {
 
     protected String title;
 
-    protected WmsOnlineResource onlineResource;
+    protected String url;
 
     protected WmsLogoUrl logoUrl;
 
-    public WmsLayerAttribution() {
+    public WmsAttribution() {
     }
 
     public String getTitle() {
         return this.title;
     }
 
-    public WmsOnlineResource getOnlineResource() {
-        return this.onlineResource;
+    public String getUrl() {
+        return this.url;
     }
 
     public WmsLogoUrl getLogoURL() {
@@ -35,7 +35,7 @@ public class WmsLayerAttribution extends XmlModel {
         if (keyName.equals("Title")) {
             this.title = (String) value;
         } else if (keyName.equals("OnlineResource")) {
-            this.onlineResource = (WmsOnlineResource) value;
+            this.url = ((WmsOnlineResource) value).getHref();
         } else if (keyName.equals("LogoURL")) {
             this.logoUrl = (WmsLogoUrl) value;
         }

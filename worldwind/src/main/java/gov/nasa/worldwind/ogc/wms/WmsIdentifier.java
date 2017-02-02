@@ -7,13 +7,13 @@ package gov.nasa.worldwind.ogc.wms;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class WmsLayerIdentifier extends XmlModel {
+public class WmsIdentifier extends XmlModel {
 
     protected String authority;
 
     protected String identifier;
 
-    public WmsLayerIdentifier() {
+    public WmsIdentifier() {
     }
 
     public String getAuthority() {

@@ -5,29 +5,29 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class WmsLayerInfoUrl extends XmlModel {
+public class WmsInfoUrl extends XmlModel {
 
     protected String type;
 
-    protected Set<String> formats = new LinkedHashSet<>();
+    protected List<String> formats = new ArrayList<>();
 
-    protected WmsOnlineResource onlineResource;
+    protected String url;
 
-    public WmsLayerInfoUrl() {
+    public WmsInfoUrl() {
     }
 
-    public WmsOnlineResource getOnlineResource() {
-        return this.onlineResource;
+    public String getUrl() {
+        return this.url;
     }
 
-    public Set<String> getFormats() {
-        return Collections.unmodifiableSet(this.formats);
+    public List<String> getFormats() {
+        return Collections.unmodifiableList(this.formats);
     }
 
     public String getType() {
@@ -39,7 +39,7 @@ public class WmsLayerInfoUrl extends XmlModel {
         if (keyName.equals("Format")) {
             this.formats.add((String) value);
         } else if (keyName.equals("OnlineResource")) {
-            this.onlineResource = (WmsOnlineResource) value;
+            this.url = ((WmsOnlineResource) value).getHref();
         } else if (keyName.equals("type")) {
             this.type = (String) value;
         }

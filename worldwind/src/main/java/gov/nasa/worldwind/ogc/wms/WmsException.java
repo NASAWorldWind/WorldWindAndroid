@@ -5,27 +5,27 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsException extends XmlModel {
 
-    protected Set<String> exceptionFormats = new LinkedHashSet<>();
+    protected List<String> formats = new ArrayList<>();
 
     public WmsException() {
     }
 
-    public Set<String> getExceptionFormats() {
-        return Collections.unmodifiableSet(this.exceptionFormats);
+    public List<String> getFormats() {
+        return Collections.unmodifiableList(this.formats);
     }
 
     @Override
     public void parseField(String keyName, Object value) {
         if (keyName.equals("Format")) {
-            this.exceptionFormats.add((String) value);
+            this.formats.add((String) value);
         }
     }
 }
