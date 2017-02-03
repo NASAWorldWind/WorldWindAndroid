@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.ogc.wmts;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
@@ -44,7 +43,7 @@ public class WmtsDimension extends XmlModel {
     }
 
     public List<String> getKeywords() {
-        return Collections.unmodifiableList(this.keywords);
+        return this.keywords;
     }
 
     public String getUnitOfMeasure() {
@@ -64,7 +63,7 @@ public class WmtsDimension extends XmlModel {
     }
 
     public List<String> getValues() {
-        return Collections.unmodifiableList(this.values);
+        return this.values;
     }
 
     @Override

@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.ogc.wmts;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
@@ -36,11 +35,11 @@ public class WmtsTheme extends XmlModel {
     }
 
     public List<WmtsTheme> getThemes() {
-        return Collections.unmodifiableList(this.themes);
+        return this.themes;
     }
 
     public List<String> getLayerRefs() {
-        return Collections.unmodifiableList(this.layerRefs);
+        return this.layerRefs;
     }
 
     @Override

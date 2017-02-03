@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.ogc.wmts;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
@@ -22,7 +21,7 @@ public class OwsHttpMethod extends XmlModel {
     }
 
     public List<String> getAllowedValues() {
-        return Collections.unmodifiableList(this.allowedValues);
+        return this.allowedValues;
     }
 
     @Override

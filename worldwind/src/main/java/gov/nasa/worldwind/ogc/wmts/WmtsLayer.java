@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.ogc.wmts;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
@@ -54,31 +53,31 @@ public class WmtsLayer extends XmlModel {
     }
 
     public List<OwsBoundingBox> getBoundingBoxes() {
-        return Collections.unmodifiableList(this.boundingBoxes);
+        return this.boundingBoxes;
     }
 
     public List<WmtsElementLink> getMetadata() {
-        return Collections.unmodifiableList(this.metadata);
+        return this.metadata;
     }
 
     public List<WmtsStyle> getStyles() {
-        return Collections.unmodifiableList(this.styles);
+        return this.styles;
     }
 
     public List<String> getFormats() {
-        return Collections.unmodifiableList(this.formats);
+        return this.formats;
     }
 
     public List<String> getInfoFormats() {
-        return Collections.unmodifiableList(this.infoFormats);
+        return this.infoFormats;
     }
 
     public List<String> getTileMatrixSetIds() {
-        return Collections.unmodifiableList(this.tileMatrixSetIds);
+        return this.tileMatrixSetIds;
     }
 
     public List<WmtsResourceUrl> getResourceUrls() {
-        return Collections.unmodifiableList(this.resourceUrls);
+        return this.resourceUrls;
     }
 
     public WmtsCapabilities getCapabilities() {

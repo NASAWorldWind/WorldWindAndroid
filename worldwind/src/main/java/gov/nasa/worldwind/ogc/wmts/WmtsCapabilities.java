@@ -11,7 +11,6 @@ import org.xmlpull.v1.XmlPullParser;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -78,7 +77,7 @@ public class WmtsCapabilities extends XmlModel {
     }
 
     public List<WmtsLayer> getLayers() {
-        return Collections.unmodifiableList(this.layers);
+        return this.layers;
     }
 
     public WmtsTileMatrixSet getTileMatrixSet(String identifier) {
@@ -94,11 +93,11 @@ public class WmtsCapabilities extends XmlModel {
     }
 
     public List<WmtsTheme> getThemes() {
-        return Collections.unmodifiableList(this.themes);
+        return this.themes;
     }
 
     public List<WmtsElementLink> getServiceMetadataUrls() {
-        return Collections.unmodifiableList(this.serviceMetadataUrls);
+        return this.serviceMetadataUrls;
     }
 
     @Override

@@ -13,8 +13,6 @@ public class WmtsXmlParser extends XmlModelParser {
 
     protected String wmtsNamespace = "http://www.opengis.net/wmts/1.0";
 
-    protected String xlinkNamespace = "http://www.w3.org/1999/xlink";
-
     public WmtsXmlParser() {
         this.registerParsers();
     }

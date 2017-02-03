@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.ogc.wmts;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
@@ -16,7 +15,7 @@ public class OwsKeywords extends XmlModel {
     protected List<String> keywords = new ArrayList<>();
 
     public List<String> getKeywords() {
-        return Collections.unmodifiableList(this.keywords);
+        return this.keywords;
     }
 
     @Override
