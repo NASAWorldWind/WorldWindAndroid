@@ -739,7 +739,44 @@ public class LayerFactory {
                     continue;
                 }
 
-                // Ensure quad division behavior from previous tile matrix
+                // Parse top left corner values
+                String[] topLeftCornerValue = tileMatrix.getTopLeftCorner().split("\\s+");
+                if (topLeftCornerValue.length != 2) {
+                    continue;
+                }
+
+                // Convert Values
+                double[] topLeftCorner;
+                try {
+                    topLeftCorner = new double[]{
+                        Double.parseDouble(topLeftCornerValue[0]),
+                        Double.parseDouble(topLeftCornerValue[1])};
+                } catch (Exception e) {
+                    Logger.logMessage(Logger.WARN, "LayerFactory", "determineTileSchemeCompatibleTileMatrixSet",
+                        "Unable to parse TopLeftCorner values");
+                    continue;
+                }
+
+                // Check top left corner values
+                if (tileMatrixSet.getSupportedCrs().equals("urn:ogc:def:crs:OGC:1.3:CRS84")
+                    || tileMatrixSet.getSupportedCrs().equals("http://www.opengis.net/def/crs/OGC/1.3/CRS84")) {
+                    if (Math.abs(topLeftCorner[0] + 180) > 1e-9) {
+                        continue;
+                    } else if (Math.abs(topLeftCorner[1] - 90) > 1e-9) {
+                        continue;
+                    }
+                } else if (tileMatrixSet.getSupportedCrs().equals("urn:ogc:def:crs:EPSG::4326")) {
+                    if (Math.abs(topLeftCorner[1] + 180) > 1e-9) {
+                        continue;
+                    } else if (Math.abs(topLeftCorner[0] - 90) > 1e-9) {
+                        continue;
+                    }
+                } else {
+                    // The provided list of tile matrix set ids should adhere to either EPGS:4326 or CRS84
+                    continue;
+                }
+
+                // Ensure quad division behavior from previous tile matrix and add compatible tile matrix
                 if (previousHeight == 0) {
                     previousHeight = tileMatrix.getMatrixHeight();
                     compatibleSet.tileMatrices.add(tileMatrix.getIdentifier());
