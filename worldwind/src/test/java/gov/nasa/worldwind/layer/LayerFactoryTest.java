@@ -59,7 +59,7 @@ public class LayerFactoryTest {
     @Test
     public void testGetLayerConfigFromWmsCapabilities_Nominal() throws Exception {
         WmsCapabilities wmsCapabilities = getBoilerPlateWmsCapabilities();
-        WmsLayer wmsLayer = wmsCapabilities.getLayerByName(DEFAULT_LAYER_NAME);
+        WmsLayer wmsLayer = wmsCapabilities.getNamedLayer(DEFAULT_LAYER_NAME);
         List<WmsLayer> layerCapabilities = Arrays.asList(wmsLayer);
         LayerFactory layerFactory = new LayerFactory();
 
@@ -77,7 +77,7 @@ public class LayerFactoryTest {
         WmsCapabilities wmsCapabilities = getBoilerPlateWmsCapabilities();
         // Invalid WMS version
         PowerMockito.when(wmsCapabilities.getVersion()).thenReturn("1.2.1");
-        WmsLayer wmsLayer = wmsCapabilities.getLayerByName(DEFAULT_LAYER_NAME);
+        WmsLayer wmsLayer = wmsCapabilities.getNamedLayer(DEFAULT_LAYER_NAME);
         List<WmsLayer> layerCapabilities = Arrays.asList(wmsLayer);
         LayerFactory layerFactory = new LayerFactory();
 
@@ -94,7 +94,7 @@ public class LayerFactoryTest {
         WmsCapabilities wmsCapabilities = getBoilerPlateWmsCapabilities();
         // Invalid WMS version
         PowerMockito.when(wmsCapabilities.getCapability().getRequest().getGetMap().getGetUrl()).thenReturn(null);
-        WmsLayer wmsLayer = wmsCapabilities.getLayerByName(DEFAULT_LAYER_NAME);
+        WmsLayer wmsLayer = wmsCapabilities.getNamedLayer(DEFAULT_LAYER_NAME);
         List<WmsLayer> layerCapabilities = Arrays.asList(wmsLayer);
         LayerFactory layerFactory = new LayerFactory();
 
@@ -109,7 +109,7 @@ public class LayerFactoryTest {
     @Test
     public void testGetLayerConfigFromWmsCapabilities_OtherCoordinateSystem() throws Exception {
         WmsCapabilities wmsCapabilities = getBoilerPlateWmsCapabilities();
-        WmsLayer wmsLayer = wmsCapabilities.getLayerByName(DEFAULT_LAYER_NAME);
+        WmsLayer wmsLayer = wmsCapabilities.getNamedLayer(DEFAULT_LAYER_NAME);
         List<String> modifiedReferenceSystems = Arrays.asList("CRS:84");
         PowerMockito.when(wmsLayer.getReferenceSystems()).thenReturn(modifiedReferenceSystems);
         List<WmsLayer> layerCapabilities = Arrays.asList(wmsLayer);
@@ -123,7 +123,7 @@ public class LayerFactoryTest {
     @Test
     public void testGetLayerConfigFromWmsCapabilities_InvalidCoordinateSystem() throws Exception {
         WmsCapabilities wmsCapabilities = getBoilerPlateWmsCapabilities();
-        WmsLayer wmsLayer = wmsCapabilities.getLayerByName(DEFAULT_LAYER_NAME);
+        WmsLayer wmsLayer = wmsCapabilities.getNamedLayer(DEFAULT_LAYER_NAME);
         List<String> modifiedReferenceSystems = Arrays.asList("EPSG:1234");
         PowerMockito.when(wmsLayer.getReferenceSystems()).thenReturn(modifiedReferenceSystems);
         List<WmsLayer> layerCapabilities = Arrays.asList(wmsLayer);
@@ -140,7 +140,7 @@ public class LayerFactoryTest {
     @Test
     public void testGetLayerConfigFromWmsCapabilities_OtherImageFormat() throws Exception {
         WmsCapabilities wmsCapabilities = getBoilerPlateWmsCapabilities();
-        WmsLayer wmsLayer = wmsCapabilities.getLayerByName(DEFAULT_LAYER_NAME);
+        WmsLayer wmsLayer = wmsCapabilities.getNamedLayer(DEFAULT_LAYER_NAME);
         List<String> modifiedImageFormats = Arrays.asList("image/dds", "image/jpg");
         PowerMockito.when(wmsCapabilities.getCapability().getRequest().getGetMap().getFormats()).thenReturn(modifiedImageFormats);
         List<WmsLayer> layerCapabilities = Arrays.asList(wmsLayer);
@@ -154,7 +154,7 @@ public class LayerFactoryTest {
     @Test
     public void testGetLayerConfigFromWmsCapabilities_InvalidImageFormat() throws Exception {
         WmsCapabilities wmsCapabilities = getBoilerPlateWmsCapabilities();
-        WmsLayer wmsLayer = wmsCapabilities.getLayerByName(DEFAULT_LAYER_NAME);
+        WmsLayer wmsLayer = wmsCapabilities.getNamedLayer(DEFAULT_LAYER_NAME);
         List<String> modifiedImageFormats = Arrays.asList("image/dds", "image/never");
         PowerMockito.when(wmsCapabilities.getCapability().getRequest().getGetMap().getFormats()).thenReturn(modifiedImageFormats);
         List<WmsLayer> layerCapabilities = Arrays.asList(wmsLayer);
@@ -171,7 +171,7 @@ public class LayerFactoryTest {
     @Test
     public void testGetLevelSetConfigFromWmsCapabilities_Nominal() throws Exception {
         WmsCapabilities wmsCapabilities = getBoilerPlateWmsCapabilities();
-        WmsLayer wmsLayer = wmsCapabilities.getLayerByName(DEFAULT_LAYER_NAME);
+        WmsLayer wmsLayer = wmsCapabilities.getNamedLayer(DEFAULT_LAYER_NAME);
         List<WmsLayer> layerCapabilities = Arrays.asList(wmsLayer);
         LayerFactory layerFactory = new LayerFactory();
 
@@ -184,7 +184,7 @@ public class LayerFactoryTest {
     @Test
     public void testGetLevelSetConfigFromWmsCapabilities_CoarseScaleDenominator() throws Exception {
         WmsCapabilities wmsCapabilities = getBoilerPlateWmsCapabilities();
-        WmsLayer wmsLayer = wmsCapabilities.getLayerByName(DEFAULT_LAYER_NAME);
+        WmsLayer wmsLayer = wmsCapabilities.getNamedLayer(DEFAULT_LAYER_NAME);
         PowerMockito.when(wmsLayer.getMinScaleDenominator()).thenReturn(1e13);
         List<WmsLayer> layerCapabilities = Arrays.asList(wmsLayer);
         LayerFactory layerFactory = new LayerFactory();
@@ -197,7 +197,7 @@ public class LayerFactoryTest {
     @Test
     public void testGetLevelSetConfigFromWmsCapabilities_NullScaleDenominator() throws Exception {
         WmsCapabilities wmsCapabilities = getBoilerPlateWmsCapabilities();
-        WmsLayer wmsLayer = wmsCapabilities.getLayerByName(DEFAULT_LAYER_NAME);
+        WmsLayer wmsLayer = wmsCapabilities.getNamedLayer(DEFAULT_LAYER_NAME);
         PowerMockito.when(wmsLayer.getMinScaleDenominator()).thenReturn(null);
         PowerMockito.when(wmsLayer.getScaleHint().getMin()).thenReturn(null);
         List<WmsLayer> layerCapabilities = Arrays.asList(wmsLayer);
@@ -211,7 +211,7 @@ public class LayerFactoryTest {
     @Test
     public void testGetLevelSetConfigFromWmsCapabilities_CoarseScaleHint() throws Exception {
         WmsCapabilities wmsCapabilities = getBoilerPlateWmsCapabilities();
-        WmsLayer wmsLayer = wmsCapabilities.getLayerByName(DEFAULT_LAYER_NAME);
+        WmsLayer wmsLayer = wmsCapabilities.getNamedLayer(DEFAULT_LAYER_NAME);
         PowerMockito.when(wmsLayer.getMinScaleDenominator()).thenReturn(null);
         PowerMockito.when(wmsLayer.getScaleHint().getMin()).thenReturn(1336.34670162102);
         List<WmsLayer> layerCapabilities = Arrays.asList(wmsLayer);
@@ -255,7 +255,7 @@ public class LayerFactoryTest {
         WmsCapabilities mockedCapabilities = PowerMockito.mock(WmsCapabilities.class);
         PowerMockito.when(mockedCapabilities.getVersion()).thenReturn(DEFAULT_VERSION);
         PowerMockito.when(mockedCapabilities.getCapability()).thenReturn(mockedCapability);
-        PowerMockito.when(mockedCapabilities.getLayerByName(anyString())).thenReturn(mockedLayer);
+        PowerMockito.when(mockedCapabilities.getNamedLayer(anyString())).thenReturn(mockedLayer);
         PowerMockito.when(mockedLayer.getCapability()).thenReturn(mockedCapability);
         PowerMockito.when(mockedCapability.getCapabilities()).thenReturn(mockedCapabilities);
         return mockedCapabilities;

@@ -5,11 +5,29 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class WmsAuthorityUrl extends WmsInfoUrl {
 
     protected String name;
 
-    public WmsAuthorityUrl() {
+    protected String type;
+
+    protected List<String> formats = new ArrayList<>();
+
+    protected String url;
+
+    public String getUrl() {
+        return this.url;
+    }
+
+    public List<String> getFormats() {
+        return this.formats;
+    }
+
+    public String getType() {
+        return this.type;
     }
 
     public String getName() {
@@ -18,8 +36,13 @@ public class WmsAuthorityUrl extends WmsInfoUrl {
 
     @Override
     public void parseField(String keyName, Object value) {
-        super.parseField(keyName, value);
-        if (keyName.equals("name")) {
+        if (keyName.equals("Format")) {
+            this.formats.add((String) value);
+        } else if (keyName.equals("OnlineResource")) {
+            this.url = ((WmsOnlineResource) value).getHref();
+        } else if (keyName.equals("type")) {
+            this.type = (String) value;
+        } else if (keyName.equals("name")) {
             this.name = (String) value;
         }
     }

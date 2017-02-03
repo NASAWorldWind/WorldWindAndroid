@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.ogc.wms;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
@@ -41,7 +40,7 @@ public class WmsStyle extends XmlModel {
     }
 
     public List<WmsLogoUrl> getLegendUrls() {
-        return Collections.unmodifiableList(this.legendUrl);
+        return this.legendUrl;
     }
 
     public WmsInfoUrl getStyleSheetUrl() {

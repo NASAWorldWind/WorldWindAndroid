@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.ogc.wms;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
@@ -27,7 +26,7 @@ public class WmsCapability extends XmlModel {
     }
 
     public List<WmsLayer> getLayers() {
-        return Collections.unmodifiableList(this.layers);
+        return this.layers;
     }
 
     public WmsRequest getRequest() {

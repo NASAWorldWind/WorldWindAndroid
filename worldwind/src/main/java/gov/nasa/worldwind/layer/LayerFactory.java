@@ -302,7 +302,7 @@ public class LayerFactory {
         WmsCapabilities wmsCapabilities = this.retrieveWmsCapabilities(serviceAddress);
         List<WmsLayer> layerCapabilities = new ArrayList<>();
         for (String layerName : layerNames) {
-            WmsLayer layerCaps = wmsCapabilities.getLayerByName(layerName);
+            WmsLayer layerCaps = wmsCapabilities.getNamedLayer(layerName);
             if (layerCaps != null) {
                 layerCapabilities.add(layerCaps);
             }

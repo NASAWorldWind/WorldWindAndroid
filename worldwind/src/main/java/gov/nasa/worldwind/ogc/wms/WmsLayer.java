@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.ogc.wms;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +81,7 @@ public class WmsLayer extends XmlModel {
     public WmsLayer() {
     }
 
-    public List<WmsLayer> getNamedLayers() {
+    protected List<WmsLayer> getNamedLayers() {
         List<WmsLayer> namedLayers = new ArrayList<>();
 
         if (this.getName() != null)
@@ -95,23 +94,21 @@ public class WmsLayer extends XmlModel {
         return namedLayers;
     }
 
-    public WmsLayer getLayerByName(String name) {
-        if (name == null || name.isEmpty()) {
-            return null;
+    public List<WmsStyle> getStyles() {
+        XmlModel parent = this.getParent();
+
+        while (parent != null) {
+            if (parent instanceof WmsLayer) {
+                this.styles.addAll(((WmsLayer) parent).styles);
+                break;
+            }
+            parent = parent.getParent();
         }
 
-        if (this.getName() != null && this.getName().equals(name))
-            return this;
-
-        for (WmsLayer lc : this.getLayers()) {
-            if (lc.getName() != null && lc.getName().equals(name))
-                return lc;
-        }
-
-        return null;
+        return this.styles;
     }
 
-    public WmsStyle getStyleByName(String name) {
+    public WmsStyle getStyle(String name) {
         if (name == null || name.isEmpty()) {
             return null;
         }
@@ -140,6 +137,36 @@ public class WmsLayer extends XmlModel {
         return new WmsScaleHint(); // to prevent NPE on chained calls
     }
 
+    public Double getMaxScaleDenominator() {
+        Double actualMaxScaleDenominator = this.maxScaleDenominator;
+
+        XmlModel parent = this.getParent();
+
+        while (actualMaxScaleDenominator == null && parent != null) {
+            if (parent instanceof WmsLayer) {
+                actualMaxScaleDenominator = ((WmsLayer) parent).maxScaleDenominator;
+            }
+            parent = parent.getParent();
+        }
+
+        return actualMaxScaleDenominator;
+    }
+
+    public Double getMinScaleDenominator() {
+        Double actualMinScaleDenominator = this.minScaleDenominator;
+
+        XmlModel parent = this.getParent();
+
+        while (actualMinScaleDenominator == null && parent != null) {
+            if (parent instanceof WmsLayer) {
+                actualMinScaleDenominator = ((WmsLayer) parent).minScaleDenominator;
+            }
+            parent = parent.getParent();
+        }
+
+        return actualMinScaleDenominator;
+    }
+
     public List<WmsDimension> getDimensions() {
         XmlModel parent = this.getParent();
 
@@ -156,7 +183,7 @@ public class WmsLayer extends XmlModel {
             parent = parent.getParent();
         }
 
-        return Collections.unmodifiableList(new ArrayList<>(dimensionMap.values()));
+        return new ArrayList<>(dimensionMap.values());
     }
 
     public List<WmsDimension> getExtents() {
@@ -169,7 +196,7 @@ public class WmsLayer extends XmlModel {
             parent = parent.getParent();
         }
 
-        return Collections.unmodifiableList(this.extents);
+        return this.extents;
     }
 
     public Integer getCascaded() {
@@ -277,41 +304,27 @@ public class WmsLayer extends XmlModel {
             parent = parent.getParent();
         }
 
-        return Collections.unmodifiableList(this.authorityUrls);
+        return this.authorityUrls;
     }
 
     public List<WmsIdentifier> getIdentifiers() {
-        return Collections.unmodifiableList(this.identifiers);
+        return this.identifiers;
     }
 
     public List<WmsInfoUrl> getMetadataUrls() {
-        return Collections.unmodifiableList(this.metadataUrls);
+        return this.metadataUrls;
     }
 
     public List<WmsInfoUrl> getFeatureListUrls() {
-        return Collections.unmodifiableList(this.featureListUrls);
+        return this.featureListUrls;
     }
 
     public List<WmsInfoUrl> getDataUrls() {
-        return Collections.unmodifiableList(this.dataUrls);
+        return this.dataUrls;
     }
 
     public List<WmsLayer> getLayers() {
-        return Collections.unmodifiableList(this.layers);
-    }
-
-    public List<WmsStyle> getStyles() {
-        XmlModel parent = this.getParent();
-
-        while (parent != null) {
-            if (parent instanceof WmsLayer) {
-                this.styles.addAll(((WmsLayer) parent).styles);
-                break;
-            }
-            parent = parent.getParent();
-        }
-
-        return Collections.unmodifiableList(this.styles);
+        return this.layers;
     }
 
     public List<WmsBoundingBox> getBoundingBoxes() {
@@ -330,7 +343,7 @@ public class WmsLayer extends XmlModel {
             parent = parent.getParent();
         }
 
-        return Collections.unmodifiableList(new ArrayList<>(boundingBoxMap.values()));
+        return new ArrayList<>(boundingBoxMap.values());
     }
 
     public Sector getGeographicBoundingBox() {
@@ -352,41 +365,11 @@ public class WmsLayer extends XmlModel {
     }
 
     public List<String> getKeywordList() {
-        return Collections.unmodifiableList(this.keywordList);
+        return this.keywordList;
     }
 
     public String getAbstract() {
         return this.description;
-    }
-
-    public Double getMaxScaleDenominator() {
-        Double actualMaxScaleDenominator = this.maxScaleDenominator;
-
-        XmlModel parent = this.getParent();
-
-        while (actualMaxScaleDenominator == null && parent != null) {
-            if (parent instanceof WmsLayer) {
-                actualMaxScaleDenominator = ((WmsLayer) parent).maxScaleDenominator;
-            }
-            parent = parent.getParent();
-        }
-
-        return actualMaxScaleDenominator;
-    }
-
-    public Double getMinScaleDenominator() {
-        Double actualMinScaleDenominator = this.minScaleDenominator;
-
-        XmlModel parent = this.getParent();
-
-        while (actualMinScaleDenominator == null && parent != null) {
-            if (parent instanceof WmsLayer) {
-                actualMinScaleDenominator = ((WmsLayer) parent).minScaleDenominator;
-            }
-            parent = parent.getParent();
-        }
-
-        return actualMinScaleDenominator;
     }
 
     public String getName() {
@@ -407,7 +390,7 @@ public class WmsLayer extends XmlModel {
             parent = parent.getParent();
         }
 
-        return Collections.unmodifiableList(this.srses);
+        return this.srses;
     }
 
     public List<String> getCrses() {
@@ -420,7 +403,7 @@ public class WmsLayer extends XmlModel {
             parent = parent.getParent();
         }
 
-        return Collections.unmodifiableList(this.crses);
+        return this.crses;
     }
 
     /**

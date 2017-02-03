@@ -61,7 +61,7 @@ public class WmsCapabilities extends XmlModel {
         return namedLayers;
     }
 
-    public WmsLayer getLayerByName(String name) {
+    public WmsLayer getNamedLayer(String name) {
         if (name == null || name.isEmpty()) {
             return null;
         }

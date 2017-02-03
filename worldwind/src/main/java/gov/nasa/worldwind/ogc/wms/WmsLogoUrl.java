@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -33,7 +32,7 @@ public class WmsLogoUrl extends XmlModel {
     }
 
     public Set<String> getFormats() {
-        return Collections.unmodifiableSet(this.formats);
+        return this.formats;
     }
 
     public String getUrl() {

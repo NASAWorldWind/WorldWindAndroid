@@ -354,7 +354,7 @@ public class WmsCapabilitiesTest {
             "Pressure", "ozone_image", "population");
 
         for (String layer : layersToTest) {
-            WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName(layer);
+            WmsLayer wmsLayer = this.wmsCapabilities130.getNamedLayer(layer);
 
             assertNotNull("Get Layer By Name " + layer, wmsLayer);
         }
@@ -366,7 +366,7 @@ public class WmsCapabilitiesTest {
             "Pressure", "ozone_image", "population");
 
         for (String layer : layersToTest) {
-            WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName(layer);
+            WmsLayer wmsLayer = this.wmsCapabilities111.getNamedLayer(layer);
 
             assertNotNull("Get Layer By Name " + layer, wmsLayer);
         }
@@ -414,7 +414,7 @@ public class WmsCapabilitiesTest {
         String expectedAttributionUrl = "http://www.university.edu/";
         String expectedAttributionLogoFormat = "image/gif";
         String expectedAttributionLogoUrl = "http://www.university.edu/icons/logo.gif";
-        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getNamedLayer("ROADS_1M");
 
         WmsAttribution attribution = wmsLayer.getAttribution();
 
@@ -430,7 +430,7 @@ public class WmsCapabilitiesTest {
         String expectedAttributionUrl = "http://www.university.edu/";
         String expectedAttributionLogoFormat = "image/gif";
         String expectedAttributionLogoUrl = "http://www.university.edu/icons/logo.gif";
-        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getNamedLayer("ROADS_1M");
 
         WmsAttribution attribution = wmsLayer.getAttribution();
 
@@ -444,7 +444,7 @@ public class WmsCapabilitiesTest {
     public void testNamedLayerProperties_GetTitleAbstract_Version130() {
         String expectedTitle = "Roads at 1:1M scale";
         String expectedAbstract = "Roads at a scale of 1 to 1 million.";
-        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getNamedLayer("ROADS_1M");
 
         String title = wmsLayer.getTitle();
         String layerAbstract = wmsLayer.getAbstract();
@@ -457,7 +457,7 @@ public class WmsCapabilitiesTest {
     public void testNamedLayerProperties_GetTitleAbstract_Version111() {
         String expectedTitle = "Roads at 1:1M scale";
         String expectedAbstract = "Roads at a scale of 1 to 1 million.";
-        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getNamedLayer("ROADS_1M");
 
         String title = wmsLayer.getTitle();
         String layerAbstract = wmsLayer.getAbstract();
@@ -469,7 +469,7 @@ public class WmsCapabilitiesTest {
     @Test
     public void testNamedLayerProperties_GetKeywords_Version130() {
         List<String> expectedKeywords = Arrays.asList("road", "transportation", "atlas");
-        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getNamedLayer("ROADS_1M");
 
         List<String> keywords = wmsLayer.getKeywordList();
 
@@ -479,7 +479,7 @@ public class WmsCapabilitiesTest {
     @Test
     public void testNamedLayerProperties_GetKeywords_Version111() {
         List<String> expectedKeywords = Arrays.asList("road", "transportation", "atlas");
-        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getNamedLayer("ROADS_1M");
 
         List<String> keywords = wmsLayer.getKeywordList();
 
@@ -491,7 +491,7 @@ public class WmsCapabilitiesTest {
         int expectedIdentities = 1;
         String expectedAuthority = "DIF_ID";
         String expectedIdentifier = "123456";
-        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getNamedLayer("ROADS_1M");
 
         List<WmsIdentifier> identities = wmsLayer.getIdentifiers();
         String authority = identities.get(0).getAuthority();
@@ -507,7 +507,7 @@ public class WmsCapabilitiesTest {
         int expectedIdentities = 1;
         String expectedAuthority = "DIF_ID";
         String expectedIdentifier = "123456";
-        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getNamedLayer("ROADS_1M");
 
         List<WmsIdentifier> identities = wmsLayer.getIdentifiers();
         String authority = identities.get(0).getAuthority();
@@ -525,7 +525,7 @@ public class WmsCapabilitiesTest {
         List<String> expectedMetadataUrlTypes = Arrays.asList("FGDC:1998", "ISO19115:2003");
         List<String> expectedMetadataUrlUrls = Arrays.asList("http://www.university.edu/metadata/roads.txt",
             "http://www.university.edu/metadata/roads.xml");
-        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getNamedLayer("ROADS_1M");
 
         List<WmsInfoUrl> metadataUrls = wmsLayer.getMetadataUrls();
 
@@ -544,7 +544,7 @@ public class WmsCapabilitiesTest {
         List<String> expectedMetadataUrlTypes = Arrays.asList("FGDC", "FGDC");
         List<String> expectedMetadataUrlUrls = Arrays.asList("http://www.university.edu/metadata/roads.txt",
             "http://www.university.edu/metadata/roads.xml");
-        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getNamedLayer("ROADS_1M");
 
         List<WmsInfoUrl> metadataUrls = wmsLayer.getMetadataUrls();
 
@@ -563,7 +563,7 @@ public class WmsCapabilitiesTest {
         List<String> expectedStyleTitles = Arrays.asList("Road atlas style", "USGS Topo Map Style");
         List<String> expectedStyleLegendUrl = Arrays.asList("http://www.university.edu/legends/atlas.gif",
             "http://www.university.edu/legends/usgs.gif");
-        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getNamedLayer("ROADS_1M");
 
         List<WmsStyle> styles = wmsLayer.getStyles();
 
@@ -583,7 +583,7 @@ public class WmsCapabilitiesTest {
         List<String> expectedStyleTitles = Arrays.asList("Road atlas style", "USGS Topo Map Style");
         List<String> expectedStyleLegendUrl = Arrays.asList("http://www.university.edu/legends/atlas.gif",
             "http://www.university.edu/legends/usgs.gif");
-        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getNamedLayer("ROADS_1M");
 
         List<WmsStyle> styles = wmsLayer.getStyles();
 
@@ -599,7 +599,7 @@ public class WmsCapabilitiesTest {
     @Test
     public void testNamedLayerProperties_GetReferenceSystems_Version130() {
         List<String> expectedCrsValues = Arrays.asList("EPSG:26986", "CRS:84");
-        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getNamedLayer("ROADS_1M");
 
         List<String> referenceSystems = wmsLayer.getReferenceSystems();
 
@@ -609,7 +609,7 @@ public class WmsCapabilitiesTest {
     @Test
     public void testNamedLayerProperties_GetReferenceSystems_Version111() {
         List<String> expectedSrsValues = Arrays.asList("EPSG:26986", "EPSG:4326");
-        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getNamedLayer("ROADS_1M");
 
         List<String> referenceSystems = wmsLayer.getReferenceSystems();
 
@@ -622,7 +622,7 @@ public class WmsCapabilitiesTest {
         double expectedGeographicBoundingBoxEastLong = -70.78;
         double expectedGeographicBoundingBoxSouthLat = 41.75;
         double expectedGeographicBoundingBoxNorthLat = 42.90;
-        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getNamedLayer("ROADS_1M");
 
         Sector sector = wmsLayer.getGeographicBoundingBox();
 
@@ -638,7 +638,7 @@ public class WmsCapabilitiesTest {
         double expectedGeographicBoundingBoxEastLong = -70.78;
         double expectedGeographicBoundingBoxSouthLat = 41.75;
         double expectedGeographicBoundingBoxNorthLat = 42.90;
-        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getNamedLayer("ROADS_1M");
 
         Sector sector = wmsLayer.getGeographicBoundingBox();
 
@@ -658,7 +658,7 @@ public class WmsCapabilitiesTest {
         double expectedEpsgBoundingBoxMiny = 834000;
         double expectedEpsgBoundingBoxMaxx = 285000;
         double expectedEpsgBoundingBoxMaxy = 962000;
-        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getNamedLayer("ROADS_1M");
 
         List<WmsBoundingBox> boxes = wmsLayer.getBoundingBoxes();
         Iterator<WmsBoundingBox> boxIterator = boxes.iterator();
@@ -696,7 +696,7 @@ public class WmsCapabilitiesTest {
         double expectedEpsgBoundingBoxMiny = 834000;
         double expectedEpsgBoundingBoxMaxx = 285000;
         double expectedEpsgBoundingBoxMaxy = 962000;
-        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getNamedLayer("ROADS_1M");
 
         List<WmsBoundingBox> boxes = wmsLayer.getBoundingBoxes();
         Iterator<WmsBoundingBox> boxIterator = boxes.iterator();
@@ -726,7 +726,7 @@ public class WmsCapabilitiesTest {
 
     @Test
     public void testServiceCapabilities() {
-        WmsLayer wmsLayer = this.wmsCapabilities130.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities130.getNamedLayer("ROADS_1M");
 
         WmsCapabilities wmsCapabilities = wmsLayer.getCapability().getCapabilities();
 
@@ -751,7 +751,7 @@ public class WmsCapabilitiesTest {
 
     @Test
     public void testScaleHint_Version111() {
-        WmsLayer wmsLayer = this.wmsCapabilities111.getLayerByName("ROADS_1M");
+        WmsLayer wmsLayer = this.wmsCapabilities111.getNamedLayer("ROADS_1M");
         Double expectedMinScaleHint = 4000d;
         Double expectedMaxScaleHint = 35000d;
 

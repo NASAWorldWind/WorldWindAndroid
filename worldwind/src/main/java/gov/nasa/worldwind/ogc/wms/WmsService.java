@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.ogc.wms;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
@@ -47,7 +46,7 @@ public class WmsService extends XmlModel {
     }
 
     public List<String> getKeywordList() {
-        return Collections.unmodifiableList(this.keywordList);
+        return this.keywordList;
     }
 
     public String getAccessConstraints() {
