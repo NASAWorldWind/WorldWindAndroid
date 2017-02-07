@@ -8,27 +8,13 @@ package gov.nasa.worldwind.ogc.wmts;
 import java.util.ArrayList;
 import java.util.List;
 
-import gov.nasa.worldwind.util.xml.XmlModel;
-
-public class WmtsTheme extends XmlModel {
-
-    protected String title;
-
-    protected String themeAbstract;
+public class WmtsTheme extends OwsDescription {
 
     protected String identifier;
 
     protected List<WmtsTheme> themes = new ArrayList<>();
 
     protected List<String> layerRefs = new ArrayList<>();
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getThemeAbstract() {
-        return this.themeAbstract;
-    }
 
     public String getIdentifier() {
         return this.identifier;
@@ -44,11 +30,8 @@ public class WmtsTheme extends XmlModel {
 
     @Override
     protected void parseField(String keyName, Object value) {
-        if (keyName.equals("Title")) {
-            this.title = (String) value;
-        } else if (keyName.equals("Abstract")) {
-            this.themeAbstract = (String) value;
-        } else if (keyName.equals("Identifier")) {
+        super.parseField(keyName, value);
+        if (keyName.equals("Identifier")) {
             this.identifier = (String) value;
         } else if (keyName.equals("Theme")) {
             this.themes.add((WmtsTheme) value);

@@ -47,7 +47,7 @@ public class WmtsCapabilitiesTest {
         OwsServiceIdentification serviceIdentification = this.wmtsCapabilities.getServiceIdentification();
         String expected = "World example Web Map Tile Service";
 
-        String actual = serviceIdentification.getTitle();
+        String actual = serviceIdentification.getDefaultTitle();
 
         assertEquals("Service Identification Title", expected, actual);
     }
@@ -58,7 +58,7 @@ public class WmtsCapabilitiesTest {
         String expected = "Example service that contrains some world layers in the" +
             "            urn:ogc:def:wkss:OGC:1.0:GlobalCRS84Pixel Well-known scale set";
 
-        String actual = serviceIdentification.getServiceAbstract();
+        String actual = serviceIdentification.getDefaultAbstract();
 
         assertEquals("Service Identification Abstract", expected, actual);
     }
@@ -223,8 +223,8 @@ public class WmtsCapabilitiesTest {
         String expectedTitleOne = "etopo2";
         String expectedTitleTwo = "Administrative Boundaries";
 
-        String actualTitleOne = layer.get(0).getTitle();
-        String actualTitleTwo = layer.get(1).getTitle();
+        String actualTitleOne = layer.get(0).getDefaultTitle();
+        String actualTitleTwo = layer.get(1).getDefaultTitle();
 
         assertEquals("Layer Title One", expectedTitleOne, actualTitleOne);
         assertEquals("Layer Title Two", expectedTitleTwo, actualTitleTwo);
@@ -236,8 +236,8 @@ public class WmtsCapabilitiesTest {
         String expectedInAbstractOne = "1. The seafloor data between latitudes 64— North and 72— South";
         String expectedInAbstractTwo = " at scales to about 1:10,000,000. The data were ge";
 
-        String actualAbstractOne = layer.get(0).getLayerAbstract();
-        String actualAbstractTwo = layer.get(1).getLayerAbstract();
+        String actualAbstractOne = layer.get(0).getDefaultAbstract();
+        String actualAbstractTwo = layer.get(1).getDefaultAbstract();
 
         assertTrue("Layer Title One", actualAbstractOne.contains(expectedInAbstractOne));
         assertTrue("Layer Title Two", actualAbstractTwo.contains(expectedInAbstractTwo));
@@ -312,8 +312,8 @@ public class WmtsCapabilitiesTest {
         boolean expectedIsDefaultOne = true;
         boolean expectedIsDefaultTwo = true;
 
-        String actualTitleOne = layer.get(0).getStyles().get(0).getTitle();
-        String actualTitleTwo = layer.get(1).getStyles().get(0).getTitle();
+        String actualTitleOne = layer.get(0).getStyles().get(0).getDefaultTitle();
+        String actualTitleTwo = layer.get(1).getStyles().get(0).getDefaultTitle();
         String actualIdentifierOne = layer.get(0).getStyles().get(0).getIdentifier();
         String actualIdentifierTwo = layer.get(1).getStyles().get(0).getIdentifier();
         boolean actualIsDefaultOne = layer.get(0).getStyles().get(0).isDefault();
@@ -597,8 +597,8 @@ public class WmtsCapabilitiesTest {
         String expectedAbstract = "World reference data";
         String expectedIdentifier = "Foundation";
 
-        String actualTitle = parentTheme.getTitle();
-        String actualAbstract = parentTheme.getThemeAbstract();
+        String actualTitle = parentTheme.getDefaultTitle();
+        String actualAbstract = parentTheme.getDefaultAbstract();
         String actualIdentifier = parentTheme.getIdentifier();
 
         assertEquals("Parent Theme Title", expectedTitle, actualTitle);
@@ -613,7 +613,7 @@ public class WmtsCapabilitiesTest {
         String expectedLayerRef = "etopo2";
         String expectedIdentifier = "DEM";
 
-        String actualTitle = theme.title;
+        String actualTitle = theme.getDefaultTitle();
         String actualLayerRef = theme.layerRefs.iterator().next();
         String actualIdentifier = theme.identifier;
 
@@ -629,7 +629,7 @@ public class WmtsCapabilitiesTest {
         String expectedLayerRef = "AdminBoundaries";
         String expectedIdentifier = "AdmBoundaries";
 
-        String actualTitle = theme.title;
+        String actualTitle = theme.getDefaultTitle();
         String actualLayerRef = theme.layerRefs.iterator().next();
         String actualIdentifier = theme.identifier;
 

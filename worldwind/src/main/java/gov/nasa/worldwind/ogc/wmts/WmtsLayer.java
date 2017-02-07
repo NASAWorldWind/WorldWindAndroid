@@ -10,13 +10,9 @@ import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class WmtsLayer extends XmlModel {
+public class WmtsLayer extends OwsDescription {
 
     protected String identifier;
-
-    protected String title;
-
-    protected String layerAbstract;
 
     protected List<OwsBoundingBox> boundingBoxes = new ArrayList<>();
 
@@ -40,12 +36,8 @@ public class WmtsLayer extends XmlModel {
         return this.identifier;
     }
 
-    public String getTitle() {
-        return this.title;
-    }
-
-    public String getLayerAbstract() {
-        return this.layerAbstract;
+    public List<WmtsDimension> getDimensions() {
+        return this.dimensions;
     }
 
     public OwsWgs84BoundingBox getWgs84BoundingBox() {
@@ -107,11 +99,8 @@ public class WmtsLayer extends XmlModel {
 
     @Override
     protected void parseField(String keyName, Object value) {
-        if (keyName.equals("Title")) {
-            this.title = (String) value;
-        } else if (keyName.equals("Abstract")) {
-            this.layerAbstract = (String) value;
-        } else if (keyName.equals("WGS84BoundingBox")) {
+        super.parseField(keyName, value);
+        if (keyName.equals("WGS84BoundingBox")) {
             this.wgs84BoundingBox = (OwsWgs84BoundingBox) value;
         } else if (keyName.equals("Identifier")) {
             this.identifier = (String) value;

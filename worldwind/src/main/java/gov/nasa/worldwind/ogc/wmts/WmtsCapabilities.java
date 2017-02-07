@@ -54,6 +54,14 @@ public class WmtsCapabilities extends XmlModel {
         return (WmtsCapabilities) result;
     }
 
+    public String getVersion() {
+        return this.version;
+    }
+
+    public String getUpdateSequence() {
+        return this.updateSequence;
+    }
+
     public OwsOperationsMetadata getOperationsMetadata() {
         return this.operationsMetadata;
     }

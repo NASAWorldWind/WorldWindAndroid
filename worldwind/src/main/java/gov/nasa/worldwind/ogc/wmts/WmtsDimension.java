@@ -8,15 +8,9 @@ package gov.nasa.worldwind.ogc.wmts;
 import java.util.ArrayList;
 import java.util.List;
 
-import gov.nasa.worldwind.util.xml.XmlModel;
-
-public class WmtsDimension extends XmlModel {
+public class WmtsDimension extends OwsDescription {
 
     protected String identifier;
-
-    protected String title;
-
-    protected String dimensionAbstract;
 
     protected List<String> keywords = new ArrayList<>();
 
@@ -32,14 +26,6 @@ public class WmtsDimension extends XmlModel {
 
     public String getIdentifier() {
         return this.identifier;
-    }
-
-    public String getTitle() {
-        return this.title;
-    }
-
-    public String getDimensionAbstract() {
-        return this.dimensionAbstract;
     }
 
     public List<String> getKeywords() {
@@ -68,12 +54,9 @@ public class WmtsDimension extends XmlModel {
 
     @Override
     protected void parseField(String keyName, Object value) {
+        super.parseField(keyName, value);
         if (keyName.equals("Identifier")) {
             this.identifier = (String) value;
-        } else if (keyName.equals("Title")) {
-            this.title = (String) value;
-        } else if (keyName.equals("Abstract")) {
-            this.dimensionAbstract = (String) value;
         } else if (keyName.equals("Keywords")) {
             this.keywords.addAll(((OwsKeywords) value).getKeywords());
         } else if (keyName.equals("UOM")) {

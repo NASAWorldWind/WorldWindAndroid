@@ -24,6 +24,7 @@ public class WmtsXmlParser extends XmlModelParser {
 
     protected void registerWmtsXmlModels() {
 
+        this.registerXmlModel(owsNamespace, "Abstract", OwsDescriptionType.class);
         this.registerXmlModel(owsNamespace, "Address", OwsAddress.class);
         this.registerXmlModel(owsNamespace, "AllowedValues", OwsAllowedValues.class);
 
@@ -69,14 +70,13 @@ public class WmtsXmlParser extends XmlModelParser {
         this.registerXmlModel(wmtsNamespace, "TileMatrix", WmtsTileMatrix.class);
         this.registerXmlModel(wmtsNamespace, "TileMatrixSet", WmtsTileMatrixSet.class);
         this.registerXmlModel(wmtsNamespace, "TileMatrixSetLink", WmtsTileMatrixSetLink.class);
+        this.registerXmlModel(owsNamespace, "Title", OwsDescriptionType.class);
 
         this.registerXmlModel(owsNamespace, "WGS84BoundingBox", OwsWgs84BoundingBox.class);
     }
 
     protected void registerWmtsTextModels() {
 
-        this.registerTxtModel(owsNamespace, "Abstract");
-        this.registerTxtModel(wmtsNamespace, "Abstract");
         this.registerTxtModel(owsNamespace, "AccessConstraints");
         this.registerTxtModel(owsNamespace, "AdministrativeArea");
 
@@ -117,7 +117,6 @@ public class WmtsXmlParser extends XmlModelParser {
 
         this.registerTxtModel(wmtsNamespace, "TileHeight");
         this.registerTxtModel(wmtsNamespace, "TileWidth");
-        this.registerTxtModel(owsNamespace, "Title");
         this.registerTxtModel(wmtsNamespace, "TopLeftCorner");
 
         this.registerTxtModel(wmtsNamespace, "UnitSymbol");

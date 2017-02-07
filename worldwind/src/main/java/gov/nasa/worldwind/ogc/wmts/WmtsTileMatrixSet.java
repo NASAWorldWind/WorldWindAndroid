@@ -8,9 +8,7 @@ package gov.nasa.worldwind.ogc.wmts;
 import java.util.ArrayList;
 import java.util.List;
 
-import gov.nasa.worldwind.util.xml.XmlModel;
-
-public class WmtsTileMatrixSet extends XmlModel {
+public class WmtsTileMatrixSet extends OwsDescription {
 
     protected String identifier;
 
@@ -50,6 +48,7 @@ public class WmtsTileMatrixSet extends XmlModel {
 
     @Override
     protected void parseField(String keyName, Object value) {
+        super.parseField(keyName, value);
         if (keyName.equals("Identifier")) {
             this.identifier = (String) value;
         } else if (keyName.equals("SupportedCRS")) {

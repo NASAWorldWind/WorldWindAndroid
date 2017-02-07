@@ -8,13 +8,7 @@ package gov.nasa.worldwind.ogc.wmts;
 import java.util.ArrayList;
 import java.util.List;
 
-import gov.nasa.worldwind.util.xml.XmlModel;
-
-public class OwsServiceIdentification extends XmlModel {
-
-    protected String title;
-
-    protected String serviceAbstract;
+public class OwsServiceIdentification extends OwsDescription {
 
     protected List<String> keywords = new ArrayList<>();
 
@@ -27,14 +21,6 @@ public class OwsServiceIdentification extends XmlModel {
     protected String fees;
 
     protected List<String> accessConstraints = new ArrayList<>();
-
-    public String getTitle() {
-        return this.title;
-    }
-
-    public String getServiceAbstract() {
-        return this.serviceAbstract;
-    }
 
     public List<String> getKeywords() {
         return this.keywords;
@@ -58,11 +44,8 @@ public class OwsServiceIdentification extends XmlModel {
 
     @Override
     protected void parseField(String keyName, Object value) {
-        if (keyName.equals("Title")) {
-            this.title = (String) value;
-        } else if (keyName.equals("Abstract")) {
-            this.serviceAbstract = (String) value;
-        } else if (keyName.equals("Keywords")) {
+        super.parseField(keyName, value);
+        if (keyName.equals("Keywords")) {
             this.keywords.addAll(((OwsKeywords) value).getKeywords());
         } else if (keyName.equals("ServiceType")) {
             this.serviceType = (String) value;

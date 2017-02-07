@@ -5,9 +5,7 @@
 
 package gov.nasa.worldwind.ogc.wmts;
 
-import gov.nasa.worldwind.util.xml.XmlModel;
-
-public class WmtsTileMatrix extends XmlModel {
+public class WmtsTileMatrix extends OwsDescription {
 
     protected String identifier;
 
@@ -53,6 +51,7 @@ public class WmtsTileMatrix extends XmlModel {
 
     @Override
     protected void parseField(String keyName, Object value) {
+        super.parseField(keyName, value);
         if (keyName.equals("Identifier")) {
             this.identifier = (String) value;
         } else if (keyName.equals("ScaleDenominator")) {
