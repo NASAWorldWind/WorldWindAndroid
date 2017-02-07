@@ -11,7 +11,7 @@ public class OwsServiceProvider extends XmlModel {
 
     protected String providerName;
 
-    protected String siteHref;
+    protected String providerSiteUrl;
 
     protected OwsServiceContact serviceContact;
 
@@ -19,8 +19,8 @@ public class OwsServiceProvider extends XmlModel {
         return this.providerName;
     }
 
-    public String getSiteHref() {
-        return this.siteHref;
+    public String getProviderSiteUrl() {
+        return this.providerSiteUrl;
     }
 
     public OwsServiceContact getServiceContact() {
@@ -33,7 +33,7 @@ public class OwsServiceProvider extends XmlModel {
             this.providerName = (String) value;
         }
         if (keyName.equals("ProviderSite")) {
-            this.siteHref = ((WmtsElementLink) value).href;
+            this.providerSiteUrl = ((WmtsElementLink) value).href;
         }
         if (keyName.equals("ServiceContact")) {
             this.serviceContact = (OwsServiceContact) value;

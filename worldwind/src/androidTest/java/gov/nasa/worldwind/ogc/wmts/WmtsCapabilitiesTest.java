@@ -128,7 +128,7 @@ public class WmtsCapabilitiesTest {
         OwsServiceProvider serviceProvider = this.wmtsCapabilities.getServiceProvider();
         String expected = "http://www.creaf.uab.es/miramon";
 
-        String actual = serviceProvider.getSiteHref();
+        String actual = serviceProvider.getProviderSiteUrl();
 
         assertEquals("Service Provider Site Link", expected, actual);
     }
