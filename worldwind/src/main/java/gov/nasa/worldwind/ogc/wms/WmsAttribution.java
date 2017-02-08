@@ -35,7 +35,7 @@ public class WmsAttribution extends XmlModel {
         if (keyName.equals("Title")) {
             this.title = (String) value;
         } else if (keyName.equals("OnlineResource")) {
-            this.url = ((WmsOnlineResource) value).getHref();
+            this.url = ((WmsOnlineResource) value).getUrl();
         } else if (keyName.equals("LogoURL")) {
             this.logoUrl = (WmsLogoUrl) value;
         }

@@ -14,11 +14,11 @@ public class WmsDcpType extends XmlModel {
     protected WmsOnlineResource post;
 
     public String getGetHref() {
-        return (this.get != null) ? this.get.getHref() : null;
+        return (this.get != null) ? this.get.getUrl() : null;
     }
 
     public String getPostHref() {
-        return (this.post != null) ? this.post.getHref() : null;
+        return (this.post != null) ? this.post.getUrl() : null;
     }
 
     @Override

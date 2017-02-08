@@ -38,7 +38,7 @@ public class WmsInfoUrl extends XmlModel {
         if (keyName.equals("Format")) {
             this.formats.add((String) value);
         } else if (keyName.equals("OnlineResource")) {
-            this.url = ((WmsOnlineResource) value).getHref();
+            this.url = ((WmsOnlineResource) value).getUrl();
         } else if (keyName.equals("type")) {
             this.type = (String) value;
         }

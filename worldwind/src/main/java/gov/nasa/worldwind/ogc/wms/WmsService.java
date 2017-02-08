@@ -92,7 +92,7 @@ public class WmsService extends XmlModel {
         } else if (keyName.equals("KeywordList")) {
             this.keywordList.addAll(((WmsKeywords) value).getKeywords());
         } else if (keyName.equals("OnlineResource")) {
-            this.url = ((WmsOnlineResource) value).getHref();
+            this.url = ((WmsOnlineResource) value).getUrl();
         } else if (keyName.equals("ContactInformation")) {
             this.contactInformation = (WmsContactInformation) value;
         } else if (keyName.equals("Fees")) {
