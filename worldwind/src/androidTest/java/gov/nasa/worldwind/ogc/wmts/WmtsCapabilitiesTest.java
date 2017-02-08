@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.ogc.wmts;
 
 import android.content.res.Resources;
-import android.support.test.filters.SmallTest;
 import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
@@ -15,8 +14,8 @@ import org.junit.runner.RunWith;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import gov.nasa.worldwind.test.R;
@@ -27,7 +26,6 @@ import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
-@SmallTest
 public class WmtsCapabilitiesTest {
 
     protected static final double DELTA = 1e-9;
@@ -47,7 +45,7 @@ public class WmtsCapabilitiesTest {
         OwsServiceIdentification serviceIdentification = this.wmtsCapabilities.getServiceIdentification();
         String expected = "World example Web Map Tile Service";
 
-        String actual = serviceIdentification.getDefaultTitle();
+        String actual = serviceIdentification.getTitles().get(0).getValue();
 
         assertEquals("Service Identification Title", expected, actual);
     }
@@ -58,7 +56,7 @@ public class WmtsCapabilitiesTest {
         String expected = "Example service that contrains some world layers in the" +
             "            urn:ogc:def:wkss:OGC:1.0:GlobalCRS84Pixel Well-known scale set";
 
-        String actual = serviceIdentification.getDefaultAbstract();
+        String actual = serviceIdentification.getAbstracts().get(0).getValue();
 
         assertEquals("Service Identification Abstract", expected, actual);
     }
@@ -68,7 +66,10 @@ public class WmtsCapabilitiesTest {
         OwsServiceIdentification serviceIdentification = this.wmtsCapabilities.getServiceIdentification();
         List<String> expected = Arrays.asList("World", "Global", "Digital Elevation Model", "Administrative Boundaries");
 
-        List<String> actual = serviceIdentification.getKeywords();
+        List<String> actual = new ArrayList<>();
+        for (OwsLanguageString keyword : serviceIdentification.getKeywords()) {
+            actual.add(keyword.getValue());
+        }
 
         assertEquals("Service Identification Keywords", expected, actual);
     }
@@ -219,12 +220,12 @@ public class WmtsCapabilitiesTest {
 
     @Test
     public void testGetLayer_Title() throws Exception {
-        List<WmtsLayer> layer = this.wmtsCapabilities.getLayers();
+        List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedTitleOne = "etopo2";
         String expectedTitleTwo = "Administrative Boundaries";
 
-        String actualTitleOne = layer.get(0).getDefaultTitle();
-        String actualTitleTwo = layer.get(1).getDefaultTitle();
+        String actualTitleOne = layer.get(0).getTitles().get(0).getValue();
+        String actualTitleTwo = layer.get(1).getTitles().get(0).getValue();
 
         assertEquals("Layer Title One", expectedTitleOne, actualTitleOne);
         assertEquals("Layer Title Two", expectedTitleTwo, actualTitleTwo);
@@ -232,12 +233,12 @@ public class WmtsCapabilitiesTest {
 
     @Test
     public void testGetLayer_Abstract() throws Exception {
-        List<WmtsLayer> layer = this.wmtsCapabilities.getLayers();
+        List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedInAbstractOne = "1. The seafloor data between latitudes 64— North and 72— South";
         String expectedInAbstractTwo = " at scales to about 1:10,000,000. The data were ge";
 
-        String actualAbstractOne = layer.get(0).getDefaultAbstract();
-        String actualAbstractTwo = layer.get(1).getDefaultAbstract();
+        String actualAbstractOne = layer.get(0).getAbstracts().get(0).getValue();
+        String actualAbstractTwo = layer.get(1).getAbstracts().get(0).getValue();
 
         assertTrue("Layer Title One", actualAbstractOne.contains(expectedInAbstractOne));
         assertTrue("Layer Title Two", actualAbstractTwo.contains(expectedInAbstractTwo));
@@ -245,7 +246,7 @@ public class WmtsCapabilitiesTest {
 
     @Test
     public void testGetLayer_WGS84BoundingBox() throws Exception {
-        List<WmtsLayer> layers = this.wmtsCapabilities.getLayers();
+        List<WmtsLayer> layers = this.wmtsCapabilities.getContents().getLayers();
         double expectedMinXOne = -180;
         double expectedMaxXOne = 180;
         double expectedMinYOne = -90;
@@ -278,7 +279,7 @@ public class WmtsCapabilitiesTest {
 
     @Test
     public void testGetLayer_Identifier() throws Exception {
-        List<WmtsLayer> layer = this.wmtsCapabilities.getLayers();
+        List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedIdentifierOne = "etopo2";
         String expectedIdentifierTwo = "AdminBoundaries";
 
@@ -291,7 +292,7 @@ public class WmtsCapabilitiesTest {
 
     @Test
     public void testGetLayer_Metadata() throws Exception {
-        List<WmtsLayer> layer = this.wmtsCapabilities.getLayers();
+        List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedHrefOne = "http://www.opengis.uab.es/SITiled/world/etopo2/metadata.htm";
         String expectedHrefTwo = "http://www.opengis.uab.es/SITiled/world/AdminBoundaries/metadata.htm";
 
@@ -304,7 +305,7 @@ public class WmtsCapabilitiesTest {
 
     @Test
     public void testGetLayer_Styles() throws Exception {
-        List<WmtsLayer> layer = this.wmtsCapabilities.getLayers();
+        List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedTitleOne = "default";
         String expectedTitleTwo = "default";
         String expectedIdentifierOne = "default";
@@ -312,8 +313,8 @@ public class WmtsCapabilitiesTest {
         boolean expectedIsDefaultOne = true;
         boolean expectedIsDefaultTwo = true;
 
-        String actualTitleOne = layer.get(0).getStyles().get(0).getDefaultTitle();
-        String actualTitleTwo = layer.get(1).getStyles().get(0).getDefaultTitle();
+        String actualTitleOne = layer.get(0).getStyles().get(0).getTitles().get(0).getValue();
+        String actualTitleTwo = layer.get(1).getStyles().get(0).getTitles().get(0).getValue();
         String actualIdentifierOne = layer.get(0).getStyles().get(0).getIdentifier();
         String actualIdentifierTwo = layer.get(1).getStyles().get(0).getIdentifier();
         boolean actualIsDefaultOne = layer.get(0).getStyles().get(0).isDefault();
@@ -329,7 +330,7 @@ public class WmtsCapabilitiesTest {
 
     @Test
     public void testGetLayer_Formats() throws Exception {
-        List<WmtsLayer> layer = this.wmtsCapabilities.getLayers();
+        List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedFormatOne = "image/png";
         String expectedFormatTwo = "image/png";
         int expectedFormatSizeOne = 1;
@@ -350,17 +351,17 @@ public class WmtsCapabilitiesTest {
 
     @Test
     public void testGetLayer_TileMatrixSets() throws Exception {
-        List<WmtsLayer> layer = this.wmtsCapabilities.getLayers();
+        List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedTileMatrixSetOne = "WholeWorld_CRS_84";
         String expectedTileMatrixSetTwo = "World84-90_CRS_84";
         int expectedTileMatrixSetSizeOne = 1;
         int expectedTileMatrixSetSizeTwo = 1;
 
-        List<String> actualTileMatrixSetsOne = layer.get(0).getTileMatrixSetIds();
-        String actualTileMatrixSetOne = actualTileMatrixSetsOne.get(0);
+        List<WmtsTileMatrixSetLink> actualTileMatrixSetsOne = layer.get(0).getTileMatrixSetLinks();
+        String actualTileMatrixSetOne = actualTileMatrixSetsOne.get(0).getIdentifier();
         int actualTileMatrixSetSizeOne = actualTileMatrixSetsOne.size();
-        List<String> actualTileMatrixSetsTwo = layer.get(1).getTileMatrixSetIds();
-        String actualTileMatrixSetTwo = actualTileMatrixSetsTwo.iterator().next();
+        List<WmtsTileMatrixSetLink> actualTileMatrixSetsTwo = layer.get(1).getTileMatrixSetLinks();
+        String actualTileMatrixSetTwo = actualTileMatrixSetsTwo.get(0).getIdentifier();
         int actualTileMatrixSetSizeTwo = actualTileMatrixSetsTwo.size();
 
         assertEquals("Layer TileMatrixSet One", expectedTileMatrixSetOne, actualTileMatrixSetOne);
@@ -371,7 +372,7 @@ public class WmtsCapabilitiesTest {
 
     @Test
     public void testGetLayer_ResourceURLs_One() throws Exception {
-        List<WmtsLayer> layer = this.wmtsCapabilities.getLayers();
+        List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedResourceUrlFormatOne = "image/png";
         String expectedResourceUrlFormatTwo = "application/gml+xml; version=3.1";
         String expectedResourceUrlResourceTypeOne = "tile";
@@ -398,7 +399,7 @@ public class WmtsCapabilitiesTest {
 
     @Test
     public void testGetLayer_ResourceURLs_Two() throws Exception {
-        List<WmtsLayer> layer = this.wmtsCapabilities.getLayers();
+        List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedResourceUrlFormatOne = "image/png";
         String expectedResourceUrlFormatTwo = "application/gml+xml; version=3.1";
         String expectedResourceUrlResourceTypeOne = "tile";
@@ -429,9 +430,9 @@ public class WmtsCapabilitiesTest {
         String setTwoName = "World84-90_CRS_84";
         int expectedCount = 2;
 
-        WmtsTileMatrixSet matrixSetOne = this.wmtsCapabilities.getTileMatrixSet(setOneName);
-        WmtsTileMatrixSet matrixSetTwo = this.wmtsCapabilities.getTileMatrixSet(setTwoName);
-        int actualCount = this.wmtsCapabilities.getTileMatrixSets().size();
+        WmtsTileMatrixSet matrixSetOne = this.wmtsCapabilities.getContents().getTileMatrixSets().get(0);
+        WmtsTileMatrixSet matrixSetTwo = this.wmtsCapabilities.getContents().getTileMatrixSets().get(1);
+        int actualCount = this.wmtsCapabilities.getContents().getTileMatrixSets().size();
 
         assertNotNull("TileMatrixSet One", matrixSetOne);
         assertNotNull("TileMatrixSet Two", matrixSetTwo);
@@ -439,8 +440,8 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetTileMatrixSets_MatrixSetOne() throws Exception {
-        WmtsTileMatrixSet wmtsTileMatrixSet = this.wmtsCapabilities.getTileMatrixSet("WholeWorld_CRS_84");
+    public void testGetTileMatrixSets_MatrixSetZero() throws Exception {
+        WmtsTileMatrixSet wmtsTileMatrixSet = this.wmtsCapabilities.getContents().getTileMatrixSets().get(0);
         String expectedIdentifier = "WholeWorld_CRS_84";
         String expectedSupportedCRS = "urn:ogc:def:crs:OGC:1.3:CRS84";
         String expectedWellKnownScaleSet = "urn:ogc:def:wkss:OGC:1.0:GlobalCRS84Pixel";
@@ -458,8 +459,8 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetTileMatrixSets_MatrixSetTwo() throws Exception {
-        WmtsTileMatrixSet wmtsTileMatrixSet = this.wmtsCapabilities.getTileMatrixSet("World84-90_CRS_84");
+    public void testGetTileMatrixSets_MatrixSetOne() throws Exception {
+        WmtsTileMatrixSet wmtsTileMatrixSet = this.wmtsCapabilities.getContents().getTileMatrixSets().get(1);
         String expectedIdentifier = "World84-90_CRS_84";
         String expectedSupportedCRS = "urn:ogc:def:crs:OGC:1.3:CRS84";
         String expectedWellKnownScaleSet = "urn:ogc:def:wkss:OGC:1.0:GlobalCRS84Pixel";
@@ -477,8 +478,8 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetTileMatrixSets_TileMatrixSetOne_TileMatrixOne() throws Exception {
-        WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.getTileMatrixSet("WholeWorld_CRS_84").getTileMatrices().get(0);
+    public void testGetTileMatrixSets_TileMatrixSetZero_TileMatrixZero() throws Exception {
+        WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.getContents().getTileMatrixSets().get(0).getTileMatrices().get(0);
         String expectedIdentifier = "2g";
         double expectedScaleDenominator = 795139219.951954;
         String expectedTopLeftCorner = "-180 90";
@@ -505,10 +506,8 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetTileMatrixSets_TileMatrixSetOne_TileMatrixTwo() throws Exception {
-        Iterator<WmtsTileMatrix> tileMatrixIterator = this.wmtsCapabilities.getTileMatrixSet("WholeWorld_CRS_84").tileMatrices.iterator();
-        tileMatrixIterator.next();
-        WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.getTileMatrixSet("WholeWorld_CRS_84").getTileMatrices().get(1);
+    public void testGetTileMatrixSets_TileMatrixSetZero_TileMatrixOne() throws Exception {
+        WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.getContents().getTileMatrixSets().get(0).getTileMatrices().get(1);
         String expectedIdentifier = "1g";
         double expectedScaleDenominator = 397569609.975977;
         String expectedTopLeftCorner = "-180 90";
@@ -535,8 +534,8 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetTileMatrixSets_TileMatrixSetTwo_TileMatrixOne() throws Exception {
-        WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.getTileMatrixSet("World84-90_CRS_84").getTileMatrices().get(0);
+    public void testGetTileMatrixSets_TileMatrixSetOne_TileMatrixZero() throws Exception {
+        WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.getContents().getTileMatrixSets().get(1).getTileMatrices().get(0);
         String expectedIdentifier = "2g";
         double expectedScaleDenominator = 795139219.951954;
         String expectedTopLeftCorner = "-180 84";
@@ -563,8 +562,8 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetTileMatrixSets_TileMatrixSetTwo_TileMatrixTwo() throws Exception {
-        WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.getTileMatrixSet("World84-90_CRS_84").getTileMatrices().get(1);
+    public void testGetTileMatrixSets_TileMatrixSetOne_TileMatrixOne() throws Exception {
+        WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.getContents().getTileMatrixSets().get(1).getTileMatrices().get(1);
         String expectedIdentifier = "1g";
         double expectedScaleDenominator = 397569609.975977;
         String expectedTopLeftCorner = "-180 84";
@@ -597,8 +596,8 @@ public class WmtsCapabilitiesTest {
         String expectedAbstract = "World reference data";
         String expectedIdentifier = "Foundation";
 
-        String actualTitle = parentTheme.getDefaultTitle();
-        String actualAbstract = parentTheme.getDefaultAbstract();
+        String actualTitle = parentTheme.getTitles().get(0).getValue();
+        String actualAbstract = parentTheme.getAbstracts().get(0).getValue();
         String actualIdentifier = parentTheme.getIdentifier();
 
         assertEquals("Parent Theme Title", expectedTitle, actualTitle);
@@ -613,7 +612,7 @@ public class WmtsCapabilitiesTest {
         String expectedLayerRef = "etopo2";
         String expectedIdentifier = "DEM";
 
-        String actualTitle = theme.getDefaultTitle();
+        String actualTitle = theme.getTitles().get(0).getValue();
         String actualLayerRef = theme.layerRefs.iterator().next();
         String actualIdentifier = theme.identifier;
 
@@ -629,7 +628,7 @@ public class WmtsCapabilitiesTest {
         String expectedLayerRef = "AdminBoundaries";
         String expectedIdentifier = "AdmBoundaries";
 
-        String actualTitle = theme.getDefaultTitle();
+        String actualTitle = theme.getTitles().get(0).getValue();
         String actualLayerRef = theme.layerRefs.iterator().next();
         String actualIdentifier = theme.identifier;
 
@@ -656,5 +655,85 @@ public class WmtsCapabilitiesTest {
         Boolean actualValue = operation.getDcp().isGetMethodSupportKV();
 
         assertEquals("DCP Register KVP Support", expectedValue, actualValue);
+    }
+
+    @Test
+    public void testTileMatrixSetLimits_Count() throws Exception {
+        WmtsTileMatrixSetLimits tileMatrixSetLimits = this.wmtsCapabilities.getContents().getLayers().get(0)
+            .getTileMatrixSetLinks().get(0).getTileMatrixSetLimits();
+        int expectedTileMatrixLimits = 22;
+
+        int actualTileMatrixLimits = tileMatrixSetLimits.getTileMatrixLimits().size();
+
+        assertEquals("TileMatrixLimits Count", expectedTileMatrixLimits, actualTileMatrixLimits);
+    }
+
+    @Test
+    public void testTileMatrixSetLimits_TileMatixLimitZero() throws Exception {
+        WmtsTileMatrixLimits tileMatrixLimits = this.wmtsCapabilities.getContents().getLayers().get(0)
+            .getTileMatrixSetLinks().get(0).getTileMatrixSetLimits().getTileMatrixLimits().get(0);
+        String expectedTileMatrixIdentifier = "EPSG:4326:0";
+        int expectedMinTileRow = 0;
+        int expectedMaxTileRow = 0;
+        int expectedMinTileCol = 0;
+        int expectedMaxTileCol = 1;
+
+        String actualTileMatrixIdentifier = tileMatrixLimits.getTileMatrixIdentifier();
+        int actualMinTileRow = tileMatrixLimits.getMinTileRow();
+        int actualMaxTileRow = tileMatrixLimits.getMaxTileRow();
+        int actualMinTileCol = tileMatrixLimits.getMinTileCol();
+        int actualMaxTileCol = tileMatrixLimits.getMaxTileCol();
+
+        assertEquals("TileMatrixLimit 0 Identifier", expectedTileMatrixIdentifier, actualTileMatrixIdentifier);
+        assertEquals("TileMatrixLimit 0 MinTileRow", expectedMinTileRow, actualMinTileRow);
+        assertEquals("TileMatrixLimit 0 MaxTileRow", expectedMaxTileRow, actualMaxTileRow);
+        assertEquals("TileMatrixLimit 0 MinTileCol", expectedMinTileCol, actualMinTileCol);
+        assertEquals("TileMatrixLimit 0 MaxTileCol", expectedMaxTileCol, actualMaxTileCol);
+    }
+
+    @Test
+    public void testTileMatrixSetLimits_TileMatixLimitOne() throws Exception {
+        WmtsTileMatrixLimits tileMatrixLimits = this.wmtsCapabilities.getContents().getLayers().get(0)
+            .getTileMatrixSetLinks().get(0).getTileMatrixSetLimits().getTileMatrixLimits().get(1);
+        String expectedTileMatrixIdentifier = "EPSG:4326:1";
+        int expectedMinTileRow = 0;
+        int expectedMaxTileRow = 1;
+        int expectedMinTileCol = 0;
+        int expectedMaxTileCol = 3;
+
+        String actualTileMatrixIdentifier = tileMatrixLimits.getTileMatrixIdentifier();
+        int actualMinTileRow = tileMatrixLimits.getMinTileRow();
+        int actualMaxTileRow = tileMatrixLimits.getMaxTileRow();
+        int actualMinTileCol = tileMatrixLimits.getMinTileCol();
+        int actualMaxTileCol = tileMatrixLimits.getMaxTileCol();
+
+        assertEquals("TileMatrixLimit 0 Identifier", expectedTileMatrixIdentifier, actualTileMatrixIdentifier);
+        assertEquals("TileMatrixLimit 0 MinTileRow", expectedMinTileRow, actualMinTileRow);
+        assertEquals("TileMatrixLimit 0 MaxTileRow", expectedMaxTileRow, actualMaxTileRow);
+        assertEquals("TileMatrixLimit 0 MinTileCol", expectedMinTileCol, actualMinTileCol);
+        assertEquals("TileMatrixLimit 0 MaxTileCol", expectedMaxTileCol, actualMaxTileCol);
+    }
+
+    @Test
+    public void testTileMatrixSetLimits_TileMatixLimitNine() throws Exception {
+        WmtsTileMatrixLimits tileMatrixLimits = this.wmtsCapabilities.getContents().getLayers().get(0)
+            .getTileMatrixSetLinks().get(0).getTileMatrixSetLimits().getTileMatrixLimits().get(9);
+        String expectedTileMatrixIdentifier = "EPSG:4326:9";
+        int expectedMinTileRow = 18;
+        int expectedMaxTileRow = 511;
+        int expectedMinTileCol = 0;
+        int expectedMaxTileCol = 1023;
+
+        String actualTileMatrixIdentifier = tileMatrixLimits.getTileMatrixIdentifier();
+        int actualMinTileRow = tileMatrixLimits.getMinTileRow();
+        int actualMaxTileRow = tileMatrixLimits.getMaxTileRow();
+        int actualMinTileCol = tileMatrixLimits.getMinTileCol();
+        int actualMaxTileCol = tileMatrixLimits.getMaxTileCol();
+
+        assertEquals("TileMatrixLimit 0 Identifier", expectedTileMatrixIdentifier, actualTileMatrixIdentifier);
+        assertEquals("TileMatrixLimit 0 MinTileRow", expectedMinTileRow, actualMinTileRow);
+        assertEquals("TileMatrixLimit 0 MaxTileRow", expectedMaxTileRow, actualMaxTileRow);
+        assertEquals("TileMatrixLimit 0 MinTileCol", expectedMinTileCol, actualMinTileCol);
+        assertEquals("TileMatrixLimit 0 MaxTileCol", expectedMaxTileCol, actualMaxTileCol);
     }
 }

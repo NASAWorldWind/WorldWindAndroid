@@ -7,11 +7,14 @@ package gov.nasa.worldwind.ogc.wmts;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class OwsDescriptionType extends XmlModel {
+public class OwsLanguageString extends XmlModel {
 
     protected String lang;
 
     protected String value;
+
+    public OwsLanguageString() {
+    }
 
     public String getLang() {
         return this.lang;

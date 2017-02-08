@@ -9,16 +9,27 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmtsTileMatrixSetLink extends XmlModel {
 
-    protected String linkIdentifier;
+    protected String identifier;
 
-    public String getLinkIdentifier() {
-        return this.linkIdentifier;
+    protected WmtsTileMatrixSetLimits tileMatrixSetLimits;
+
+    public WmtsTileMatrixSetLink() {
+    }
+
+    public String getIdentifier() {
+        return this.identifier;
+    }
+
+    public WmtsTileMatrixSetLimits getTileMatrixSetLimits() {
+        return this.tileMatrixSetLimits;
     }
 
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("TileMatrixSet")) {
-            this.linkIdentifier = ((WmtsTileMatrixSet) value).getLinkIdentifier();
+            this.identifier = ((WmtsTileMatrixSet) value).getLinkIdentifier();
+        } else if (keyName.equals("TileMatrixSetLimits")) {
+            this.tileMatrixSetLimits = (WmtsTileMatrixSetLimits) value;
         }
     }
 }

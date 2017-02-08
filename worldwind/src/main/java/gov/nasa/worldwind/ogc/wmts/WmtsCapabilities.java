@@ -12,7 +12,6 @@ import org.xmlpull.v1.XmlPullParser;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.xml.XmlModel;
@@ -30,9 +29,7 @@ public class WmtsCapabilities extends XmlModel {
 
     protected OwsOperationsMetadata operationsMetadata;
 
-    protected List<WmtsLayer> layers = new ArrayList<>();
-
-    protected Map<String, WmtsTileMatrixSet> matrixSetMap;
+    protected WmtsContents contents;
 
     protected List<WmtsTheme> themes = new ArrayList<>();
 
@@ -74,30 +71,8 @@ public class WmtsCapabilities extends XmlModel {
         return this.serviceIdentification;
     }
 
-    public WmtsLayer getLayer(String identifier) {
-        for (WmtsLayer layer : this.layers) {
-            if (layer.getIdentifier().equals(identifier)) {
-                return layer;
-            }
-        }
-
-        return null;
-    }
-
-    public List<WmtsLayer> getLayers() {
-        return this.layers;
-    }
-
-    public WmtsTileMatrixSet getTileMatrixSet(String identifier) {
-        return this.matrixSetMap.get(identifier);
-    }
-
-    public List<WmtsTileMatrixSet> getTileMatrixSets() {
-        List<WmtsTileMatrixSet> tileMatrixSets = new ArrayList<>();
-        for (Map.Entry<String, WmtsTileMatrixSet> tileMatrixSet : this.matrixSetMap.entrySet()) {
-            tileMatrixSets.add(tileMatrixSet.getValue());
-        }
-        return tileMatrixSets;
+    public WmtsContents getContents() {
+        return this.contents;
     }
 
     public List<WmtsTheme> getThemes() {
@@ -106,6 +81,34 @@ public class WmtsCapabilities extends XmlModel {
 
     public List<WmtsElementLink> getServiceMetadataUrls() {
         return this.serviceMetadataUrls;
+    }
+
+    public List<WmtsLayer> getLayers() {
+        return this.getContents().getLayers();
+    }
+
+    public WmtsLayer getLayer(String identifier) {
+        for (WmtsLayer layer : this.getContents().getLayers()) {
+            if (layer.getIdentifier().equals(identifier)) {
+                return layer;
+            }
+        }
+
+        return null;
+    }
+
+    public List<WmtsTileMatrixSet> getTileMatrixSets() {
+        return this.getContents().getTileMatrixSets();
+    }
+
+    public WmtsTileMatrixSet getTileMatrixSet(String identifier) {
+        for (WmtsTileMatrixSet tileMatrixSet : this.getContents().getTileMatrixSets()) {
+            if (tileMatrixSet.getIdentifier().equals(identifier)) {
+                return tileMatrixSet;
+            }
+        }
+
+        return null;
     }
 
     @Override
@@ -117,9 +120,7 @@ public class WmtsCapabilities extends XmlModel {
         } else if (keyName.equals("OperationsMetadata")) {
             this.operationsMetadata = (OwsOperationsMetadata) value;
         } else if (keyName.equals("Contents")) {
-            WmtsContents wmtsContents = (WmtsContents) value;
-            this.layers.addAll(wmtsContents.layers);
-            this.matrixSetMap = wmtsContents.matrixSetMap;
+            this.contents = (WmtsContents) value;
         } else if (keyName.equals("Themes")) {
             this.themes.addAll(((WmtsThemes) value).themes);
         } else if (keyName.equals("ServiceMetadataURL")) {

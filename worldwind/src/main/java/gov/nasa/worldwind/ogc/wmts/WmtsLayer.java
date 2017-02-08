@@ -26,11 +26,14 @@ public class WmtsLayer extends OwsDescription {
 
     protected List<String> infoFormats = new ArrayList<>();
 
-    protected List<String> tileMatrixSetIds = new ArrayList<>();
+    protected List<WmtsTileMatrixSetLink> tileMatrixSetLinks = new ArrayList<>();
 
     protected List<WmtsResourceUrl> resourceUrls = new ArrayList<>();
 
     protected List<WmtsDimension> dimensions = new ArrayList<>();
+
+    public WmtsLayer() {
+    }
 
     public String getIdentifier() {
         return this.identifier;
@@ -64,8 +67,8 @@ public class WmtsLayer extends OwsDescription {
         return this.infoFormats;
     }
 
-    public List<String> getTileMatrixSetIds() {
-        return this.tileMatrixSetIds;
+    public List<WmtsTileMatrixSetLink> getTileMatrixSetLinks() {
+        return this.tileMatrixSetLinks;
     }
 
     public List<WmtsResourceUrl> getResourceUrls() {
@@ -84,17 +87,17 @@ public class WmtsLayer extends OwsDescription {
         return null;
     }
 
-    public List<WmtsTileMatrixSet> getTileMatrixSets() {
-        WmtsCapabilities wmtsCapabilities = this.getCapabilities();
-        List<WmtsTileMatrixSet> tileMatrixSets = wmtsCapabilities.getTileMatrixSets();
-        List<WmtsTileMatrixSet> matchingSets = new ArrayList<>();
-        for (WmtsTileMatrixSet tileMatrixSet : tileMatrixSets) {
-            if (this.getTileMatrixSetIds().contains(tileMatrixSet.getIdentifier())) {
-                matchingSets.add(tileMatrixSet);
+    public List<WmtsTileMatrixSet> getLayerSupportedTileMatrixSets() {
+        List<WmtsTileMatrixSet> associatedTileMatrixSets = new ArrayList<>();
+        for (WmtsTileMatrixSetLink tileMatrixSetLink : this.getTileMatrixSetLinks()) {
+            for (WmtsTileMatrixSet tileMatrixSet : this.getCapabilities().getTileMatrixSets()) {
+                if (tileMatrixSet.getIdentifier().equals(tileMatrixSetLink.getIdentifier())) {
+                    associatedTileMatrixSets.add(tileMatrixSet);
+                }
             }
         }
 
-        return matchingSets;
+        return associatedTileMatrixSets;
     }
 
     @Override
@@ -113,7 +116,7 @@ public class WmtsLayer extends OwsDescription {
         } else if (keyName.equals("InfoFormat")) {
             this.infoFormats.add((String) value);
         } else if (keyName.equals("TileMatrixSetLink")) {
-            this.tileMatrixSetIds.add(((WmtsTileMatrixSetLink) value).getLinkIdentifier());
+            this.tileMatrixSetLinks.add((WmtsTileMatrixSetLink) value);
         } else if (keyName.equals("ResourceURL")) {
             this.resourceUrls.add((WmtsResourceUrl) value);
         } else if (keyName.equals("BoundingBox")) {

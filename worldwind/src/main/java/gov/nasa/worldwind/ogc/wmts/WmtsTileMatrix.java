@@ -9,6 +9,8 @@ public class WmtsTileMatrix extends OwsDescription {
 
     protected String identifier;
 
+    protected String limitIdentifier;
+
     protected double scaleDenominator;
 
     protected String topLeftCorner;
@@ -20,6 +22,9 @@ public class WmtsTileMatrix extends OwsDescription {
     protected int matrixWidth;
 
     protected int matrixHeight;
+
+    public WmtsTileMatrix() {
+    }
 
     public String getIdentifier() {
         return this.identifier;
@@ -49,6 +54,10 @@ public class WmtsTileMatrix extends OwsDescription {
         return this.matrixHeight;
     }
 
+    public String getLimitIdentifier() {
+        return this.limitIdentifier;
+    }
+
     @Override
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
@@ -67,5 +76,10 @@ public class WmtsTileMatrix extends OwsDescription {
         } else if (keyName.equals("MatrixHeight")) {
             this.matrixHeight = Integer.parseInt((String) value);
         }
+    }
+
+    @Override
+    protected void parseText(String text) {
+        this.limitIdentifier = text;
     }
 }

@@ -16,6 +16,9 @@ public class WmtsStyle extends OwsDescription {
 
     protected List<WmtsElementLink> legendUrls = new ArrayList<>();
 
+    public WmtsStyle() {
+    }
+
     public String getIdentifier() {
         return this.identifier;
     }

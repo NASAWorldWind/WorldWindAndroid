@@ -10,18 +10,21 @@ import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class OwsKeywords extends XmlModel {
+public class WmtsTileMatrixSetLimits extends XmlModel {
 
-    protected List<OwsLanguageString> keywords = new ArrayList<>();
+    protected List<WmtsTileMatrixLimits> tileMatrixLimits = new ArrayList<>();
 
-    public List<OwsLanguageString> getKeywords() {
-        return this.keywords;
+    public WmtsTileMatrixSetLimits() {
+    }
+
+    public List<WmtsTileMatrixLimits> getTileMatrixLimits() {
+        return this.tileMatrixLimits;
     }
 
     @Override
     protected void parseField(String keyName, Object value) {
-        if (keyName.equals("Keyword")) {
-            this.keywords.add((OwsLanguageString) value);
+        if (keyName.equals("TileMatrixLimits")) {
+            this.tileMatrixLimits.add((WmtsTileMatrixLimits) value);
         }
     }
 }

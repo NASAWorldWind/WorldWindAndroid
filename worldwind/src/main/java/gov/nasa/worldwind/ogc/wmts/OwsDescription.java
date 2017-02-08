@@ -5,49 +5,39 @@
 
 package gov.nasa.worldwind.ogc.wmts;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsDescription extends XmlModel {
 
-    protected Map<String, String> titles = new HashMap<>();
+    protected List<OwsLanguageString> titles = new ArrayList<>();
 
-    protected Map<String, String> abstracts = new HashMap<>();
+    protected List<OwsLanguageString> abstracts = new ArrayList<>();
 
-    public Map<String, String> getTitles() {
+    protected List<OwsLanguageString> keywords = new ArrayList<>();
+
+    public List<OwsLanguageString> getTitles() {
         return this.titles;
     }
 
-    public Map<String, String> getAbstracts() {
+    public List<OwsLanguageString> getAbstracts() {
         return this.abstracts;
     }
 
-    public String getTitle(String language) {
-        return this.titles.get(language);
-    }
-
-    public String getAbstract(String language) {
-        return this.abstracts.get(language);
-    }
-
-    public String getDefaultTitle() {
-        return this.titles.get(null);
-    }
-
-    public String getDefaultAbstract() {
-        return this.abstracts.get(null);
+    public List<OwsLanguageString> getKeywords() {
+        return this.keywords;
     }
 
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("Title")) {
-            OwsDescriptionType field = (OwsDescriptionType) value;
-            this.titles.put(field.getLang(), field.getValue());
+            this.titles.add((OwsLanguageString) value);
         } else if (keyName.equals("Abstract")) {
-            OwsDescriptionType field = (OwsDescriptionType) value;
-            this.abstracts.put(field.getLang(), field.getValue());
+            this.abstracts.add((OwsLanguageString) value);
+        } else if (keyName.equals("Keywords")) {
+            this.keywords.addAll(((OwsKeywords) value).getKeywords());
         }
     }
 }

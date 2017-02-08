@@ -22,6 +22,9 @@ public class WmtsTileMatrixSet extends OwsDescription {
 
     protected List<WmtsTileMatrix> tileMatrices = new ArrayList<>();
 
+    public WmtsTileMatrixSet() {
+    }
+
     public String getIdentifier() {
         return this.identifier;
     }

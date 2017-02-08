@@ -16,6 +16,9 @@ public class WmtsTheme extends OwsDescription {
 
     protected List<String> layerRefs = new ArrayList<>();
 
+    public WmtsTheme() {
+    }
+
     public String getIdentifier() {
         return this.identifier;
     }

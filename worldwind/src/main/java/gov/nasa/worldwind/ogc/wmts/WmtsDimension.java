@@ -12,8 +12,6 @@ public class WmtsDimension extends OwsDescription {
 
     protected String identifier;
 
-    protected List<String> keywords = new ArrayList<>();
-
     protected String unitOfMeasure;
 
     protected String unitSymbol;
@@ -24,12 +22,11 @@ public class WmtsDimension extends OwsDescription {
 
     protected List<String> values = new ArrayList<>();
 
-    public String getIdentifier() {
-        return this.identifier;
+    public WmtsDimension() {
     }
 
-    public List<String> getKeywords() {
-        return this.keywords;
+    public String getIdentifier() {
+        return this.identifier;
     }
 
     public String getUnitOfMeasure() {
@@ -57,8 +54,6 @@ public class WmtsDimension extends OwsDescription {
         super.parseField(keyName, value);
         if (keyName.equals("Identifier")) {
             this.identifier = (String) value;
-        } else if (keyName.equals("Keywords")) {
-            this.keywords.addAll(((OwsKeywords) value).getKeywords());
         } else if (keyName.equals("UOM")) {
             this.unitOfMeasure = (String) value;
         } else if (keyName.equals("UnitSymbol")) {

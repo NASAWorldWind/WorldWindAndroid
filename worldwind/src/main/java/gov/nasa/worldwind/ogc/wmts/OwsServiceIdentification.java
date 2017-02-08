@@ -10,8 +10,6 @@ import java.util.List;
 
 public class OwsServiceIdentification extends OwsDescription {
 
-    protected List<String> keywords = new ArrayList<>();
-
     protected String serviceType;
 
     protected List<String> serviceTypeVersions = new ArrayList<>();
@@ -22,8 +20,7 @@ public class OwsServiceIdentification extends OwsDescription {
 
     protected List<String> accessConstraints = new ArrayList<>();
 
-    public List<String> getKeywords() {
-        return this.keywords;
+    public OwsServiceIdentification() {
     }
 
     public String getServiceType() {
@@ -45,9 +42,7 @@ public class OwsServiceIdentification extends OwsDescription {
     @Override
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
-        if (keyName.equals("Keywords")) {
-            this.keywords.addAll(((OwsKeywords) value).getKeywords());
-        } else if (keyName.equals("ServiceType")) {
+        if (keyName.equals("ServiceType")) {
             this.serviceType = (String) value;
         } else if (keyName.equals("ServiceTypeVersion")) {
             this.serviceTypeVersions.add((String) value);

@@ -703,7 +703,7 @@ public class LayerFactory {
         List<String> compatibleTileMatrixSets = new ArrayList<>();
 
         // Look for compatible coordinate system types
-        List<WmtsTileMatrixSet> tileMatrixSets = layer.getTileMatrixSets();
+        List<WmtsTileMatrixSet> tileMatrixSets = layer.getLayerSupportedTileMatrixSets();
         for (WmtsTileMatrixSet tileMatrixSet : tileMatrixSets) {
             if (this.compatibleCoordinateSystems.contains(tileMatrixSet.getSupportedCrs())) {
                 compatibleTileMatrixSets.add(tileMatrixSet.getIdentifier());

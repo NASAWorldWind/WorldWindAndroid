@@ -24,7 +24,7 @@ public class WmtsXmlParser extends XmlModelParser {
 
     protected void registerWmtsXmlModels() {
 
-        this.registerXmlModel(owsNamespace, "Abstract", OwsDescriptionType.class);
+        this.registerXmlModel(owsNamespace, "Abstract", OwsLanguageString.class);
         this.registerXmlModel(owsNamespace, "Address", OwsAddress.class);
         this.registerXmlModel(owsNamespace, "AllowedValues", OwsAllowedValues.class);
 
@@ -42,6 +42,7 @@ public class WmtsXmlParser extends XmlModelParser {
 
         this.registerXmlModel(owsNamespace, "HTTP", OwsHttp.class);
 
+        this.registerXmlModel(owsNamespace, "Keyword", OwsLanguageString.class);
         this.registerXmlModel(owsNamespace, "Keywords", OwsKeywords.class);
 
         this.registerXmlModel(wmtsNamespace, "Layer", WmtsLayer.class);
@@ -51,7 +52,6 @@ public class WmtsXmlParser extends XmlModelParser {
 
         this.registerXmlModel(owsNamespace, "Operation", OwsOperation.class);
         this.registerXmlModel(owsNamespace, "OperationsMetadata", OwsOperationsMetadata.class);
-
 
         this.registerXmlModel(owsNamespace, "Phone", OwsPhone.class);
         this.registerXmlModel(owsNamespace, "Post", OwsHttpMethod.class);
@@ -68,9 +68,11 @@ public class WmtsXmlParser extends XmlModelParser {
         this.registerXmlModel(wmtsNamespace, "Theme", WmtsTheme.class);
         this.registerXmlModel(wmtsNamespace, "Themes", WmtsThemes.class);
         this.registerXmlModel(wmtsNamespace, "TileMatrix", WmtsTileMatrix.class);
+        this.registerXmlModel(wmtsNamespace, "TileMatrixLimits", WmtsTileMatrixLimits.class);
         this.registerXmlModel(wmtsNamespace, "TileMatrixSet", WmtsTileMatrixSet.class);
+        this.registerXmlModel(wmtsNamespace, "TileMatrixSetLimits", WmtsTileMatrixSetLimits.class);
         this.registerXmlModel(wmtsNamespace, "TileMatrixSetLink", WmtsTileMatrixSetLink.class);
-        this.registerXmlModel(owsNamespace, "Title", OwsDescriptionType.class);
+        this.registerXmlModel(owsNamespace, "Title", OwsLanguageString.class);
 
         this.registerXmlModel(owsNamespace, "WGS84BoundingBox", OwsWgs84BoundingBox.class);
     }
@@ -97,13 +99,15 @@ public class WmtsXmlParser extends XmlModelParser {
         this.registerTxtModel(owsNamespace, "IndividualName");
         this.registerTxtModel(wmtsNamespace, "InfoFormat");
 
-        this.registerTxtModel(owsNamespace, "Keyword");
-
         this.registerTxtModel(wmtsNamespace, "LayerRef");
         this.registerTxtModel(owsNamespace, "LowerCorner");
 
         this.registerTxtModel(wmtsNamespace, "MatrixHeight");
         this.registerTxtModel(wmtsNamespace, "MatrixWidth");
+        this.registerTxtModel(wmtsNamespace, "MaxTileCol");
+        this.registerTxtModel(wmtsNamespace, "MaxTileRow");
+        this.registerTxtModel(wmtsNamespace, "MinTileCol");
+        this.registerTxtModel(wmtsNamespace, "MinTileRow");
 
         this.registerTxtModel(owsNamespace, "PositionName");
         this.registerTxtModel(owsNamespace, "PostalCode");
