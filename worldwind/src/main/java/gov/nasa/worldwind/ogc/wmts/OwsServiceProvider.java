@@ -33,7 +33,7 @@ public class OwsServiceProvider extends XmlModel {
             this.providerName = (String) value;
         }
         if (keyName.equals("ProviderSite")) {
-            this.providerSiteUrl = ((WmtsElementLink) value).href;
+            this.providerSiteUrl = ((WmtsElementLink) value).getUrl();
         }
         if (keyName.equals("ServiceContact")) {
             this.serviceContact = (OwsServiceContact) value;

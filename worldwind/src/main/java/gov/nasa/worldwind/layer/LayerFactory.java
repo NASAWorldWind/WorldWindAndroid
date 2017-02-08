@@ -812,7 +812,7 @@ public class LayerFactory {
         }
 
         if (dcp.isGetMethodSupportKV()) {
-            return dcp.getGetHref();
+            return dcp.getGetUrl();
         } else {
             return null;
         }

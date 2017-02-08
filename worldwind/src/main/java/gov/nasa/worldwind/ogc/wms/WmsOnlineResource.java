@@ -11,7 +11,7 @@ public class WmsOnlineResource extends XmlModel {
 
     protected String type;
 
-    protected String href;
+    protected String url;
 
     public WmsOnlineResource() {
     }
@@ -20,8 +20,8 @@ public class WmsOnlineResource extends XmlModel {
         return this.type;
     }
 
-    public String getHref() {
-        return this.href;
+    public String getUrl() {
+        return this.url;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class WmsOnlineResource extends XmlModel {
         if (keyName.equals("type")) {
             this.type = (String) value;
         } else if (keyName.equals("href")) {
-            this.href = (String) value;
+            this.url = (String) value;
         }
     }
 }

@@ -13,11 +13,11 @@ public class OwsDcp extends XmlModel {
 
     protected OwsHttpMethod postMethod;
 
-    public String getGetHref() {
+    public String getGetUrl() {
         if (this.getMethod == null) {
             return null;
         }
-        return this.getMethod.getHref();
+        return this.getMethod.getUrl();
     }
 
     public Boolean isGetMethodSupportKV() {
@@ -27,11 +27,11 @@ public class OwsDcp extends XmlModel {
         return this.getMethod.allowedValues.contains("KVP");
     }
 
-    public String getPostHref() {
+    public String getPostUrl() {
         if (this.postMethod == null) {
             return null;
         }
-        return this.postMethod.getHref();
+        return this.postMethod.getUrl();
     }
 
     public Boolean isPostMethodSupportKV() {

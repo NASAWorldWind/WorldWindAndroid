@@ -199,7 +199,7 @@ public class WmtsCapabilitiesTest {
         String expectedLink = "http://www.opengis.uab.es/cgi-bin/world/MiraMon5_0.cgi?";
 
         String actualName = getCapabilities.getName();
-        String actualLink = getCapabilities.getDcp().getGetHref();
+        String actualLink = getCapabilities.getDcp().getGetUrl();
 
         assertEquals("Operations Metadata GetCapabilities Name", expectedName, actualName);
         assertEquals("Operations Metadata GetCapabilities Link", expectedLink, actualLink);
@@ -212,7 +212,7 @@ public class WmtsCapabilitiesTest {
         String expectedLink = "http://www.opengis.uab.es/cgi-bin/world/MiraMon5_0.cgi?";
 
         String actualName = getTile.getName();
-        String actualLink = getTile.getDcp().getGetHref();
+        String actualLink = getTile.getDcp().getGetUrl();
 
         assertEquals("Operations Metadata GetTile Name", expectedName, actualName);
         assertEquals("Operations Metadata GetTile Link", expectedLink, actualLink);
@@ -296,8 +296,8 @@ public class WmtsCapabilitiesTest {
         String expectedHrefOne = "http://www.opengis.uab.es/SITiled/world/etopo2/metadata.htm";
         String expectedHrefTwo = "http://www.opengis.uab.es/SITiled/world/AdminBoundaries/metadata.htm";
 
-        String actualHrefOne = layer.get(0).getMetadata().get(0).getHref();
-        String actualHrefTwo = layer.get(1).getMetadata().get(0).getHref();
+        String actualHrefOne = layer.get(0).getMetadata().get(0).getUrl();
+        String actualHrefTwo = layer.get(1).getMetadata().get(0).getUrl();
 
         assertEquals("Layer Metadata Href One", expectedHrefOne, actualHrefOne);
         assertEquals("Layer Metadata Href Two", expectedHrefTwo, actualHrefTwo);
@@ -642,7 +642,7 @@ public class WmtsCapabilitiesTest {
         WmtsElementLink serviceMetadataUrl = this.wmtsCapabilities.serviceMetadataUrls.iterator().next();
         String expectedHref = "http://www.opengis.uab.es/SITiled/world/1.0.0/WMTSCapabilities.xml";
 
-        String actualHref = serviceMetadataUrl.href;
+        String actualHref = serviceMetadataUrl.getUrl();
 
         assertEquals("ServiceMetadataURL Href", expectedHref, actualHref);
     }

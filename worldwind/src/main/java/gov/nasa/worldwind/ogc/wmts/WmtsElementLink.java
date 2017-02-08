@@ -9,12 +9,12 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmtsElementLink extends XmlModel {
 
-    protected String href;
+    protected String url;
 
     protected String format;
 
-    public String getHref() {
-        return this.href;
+    public String getUrl() {
+        return this.url;
     }
 
     public String getFormat() {
@@ -24,7 +24,7 @@ public class WmtsElementLink extends XmlModel {
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("href")) {
-            this.href = (String) value;
+            this.url = (String) value;
         } else if (keyName.equals("format")) {
             this.format = (String) value;
         }

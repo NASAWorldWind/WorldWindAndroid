@@ -12,12 +12,12 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsHttpMethod extends XmlModel {
 
-    protected String href;
+    protected String url;
 
     protected List<String> allowedValues = new ArrayList<>();
 
-    public String getHref() {
-        return this.href;
+    public String getUrl() {
+        return this.url;
     }
 
     public List<String> getAllowedValues() {
@@ -27,7 +27,7 @@ public class OwsHttpMethod extends XmlModel {
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("href")) {
-            this.href = (String) value;
+            this.url = (String) value;
         } else if (keyName.equals("Constraint")) {
             List<OwsAllowedValues> allowedValues = ((OwsConstraint) value).getAllowedValues();
             for (OwsAllowedValues allowedValue : allowedValues) {
