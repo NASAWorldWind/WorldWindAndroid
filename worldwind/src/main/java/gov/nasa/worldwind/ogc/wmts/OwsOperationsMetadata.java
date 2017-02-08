@@ -5,39 +5,46 @@
 
 package gov.nasa.worldwind.ogc.wmts;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsOperationsMetadata extends XmlModel {
 
-    protected OwsOperation getCapabilities;
+    protected List<OwsOperation> operations = new ArrayList<>();
 
-    protected OwsOperation getTile;
+    public OwsOperationsMetadata() {
+    }
 
-    protected OwsOperation getFeatureInfo;
+    public List<OwsOperation> getOperations() {
+        return this.operations;
+    }
 
     public OwsOperation getGetCapabilities() {
-        return this.getCapabilities;
+        for (OwsOperation operation : this.operations) {
+            if (operation.getName().equals("GetCapabilities")) {
+                return operation;
+            }
+        }
+
+        return null;
     }
 
     public OwsOperation getGetTile() {
-        return this.getTile;
-    }
+        for (OwsOperation operation : this.operations) {
+            if (operation.getName().equals("GetTile")) {
+                return operation;
+            }
+        }
 
-    public OwsOperation getGetFeatureInfo() {
-        return this.getFeatureInfo;
+        return null;
     }
 
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("Operation")) {
-            OwsOperation operation = (OwsOperation) value;
-            if (operation.name.equals("GetCapabilities")) {
-                this.getCapabilities = operation;
-            } else if (operation.name.equals("GetTile")) {
-                this.getTile = operation;
-            } else if (operation.name.equals("GetFeatureInfo")) {
-                this.getFeatureInfo = operation;
-            }
+            this.operations.add((OwsOperation) value);
         }
     }
 }
