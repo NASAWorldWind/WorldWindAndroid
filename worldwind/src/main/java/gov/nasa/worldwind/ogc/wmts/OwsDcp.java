@@ -13,32 +13,15 @@ public class OwsDcp extends XmlModel {
 
     protected OwsHttpMethod postMethod;
 
-    public String getGetUrl() {
-        if (this.getMethod == null) {
-            return null;
-        }
-        return this.getMethod.getUrl();
+    public OwsDcp() {
     }
 
-    public Boolean isGetMethodSupportKV() {
-        if (this.getMethod == null) {
-            return null;
-        }
-        return this.getMethod.allowedValues.contains("KVP");
+    public OwsHttpMethod getGetMethod() {
+        return this.getMethod;
     }
 
-    public String getPostUrl() {
-        if (this.postMethod == null) {
-            return null;
-        }
-        return this.postMethod.getUrl();
-    }
-
-    public Boolean isPostMethodSupportKV() {
-        if (this.postMethod == null) {
-            return null;
-        }
-        return this.postMethod.allowedValues.contains("KVP");
+    public OwsHttpMethod getPostMethod() {
+        return this.postMethod;
     }
 
     @Override

@@ -16,6 +16,9 @@ public class OwsHttpMethod extends XmlModel {
 
     protected List<String> allowedValues = new ArrayList<>();
 
+    public OwsHttpMethod() {
+    }
+
     public String getUrl() {
         return this.url;
     }

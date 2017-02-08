@@ -13,6 +13,9 @@ public class OwsOperation extends XmlModel {
 
     protected OwsDcp dcp;
 
+    public OwsOperation() {
+    }
+
     public String getName() {
         return this.name;
     }

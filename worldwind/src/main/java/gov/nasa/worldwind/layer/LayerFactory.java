@@ -34,6 +34,7 @@ import gov.nasa.worldwind.ogc.gpkg.GpkgTileUserMetrics;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsLayer;
 import gov.nasa.worldwind.ogc.wmts.OwsDcp;
+import gov.nasa.worldwind.ogc.wmts.OwsHttpMethod;
 import gov.nasa.worldwind.ogc.wmts.OwsOperation;
 import gov.nasa.worldwind.ogc.wmts.OwsOperationsMetadata;
 import gov.nasa.worldwind.ogc.wmts.OwsWgs84BoundingBox;
@@ -811,8 +812,14 @@ public class LayerFactory {
             return null;
         }
 
-        if (dcp.isGetMethodSupportKV()) {
-            return dcp.getGetUrl();
+        OwsHttpMethod getMethod = dcp.getGetMethod();
+        if (getMethod == null) {
+            return null;
+        }
+
+        List<String> allowedValues = getMethod.getAllowedValues();
+        if (allowedValues != null && allowedValues.contains("KVP")) {
+            return getMethod.getUrl();
         } else {
             return null;
         }

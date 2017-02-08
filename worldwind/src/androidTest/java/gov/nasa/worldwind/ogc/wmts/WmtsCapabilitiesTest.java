@@ -199,7 +199,7 @@ public class WmtsCapabilitiesTest {
         String expectedLink = "http://www.opengis.uab.es/cgi-bin/world/MiraMon5_0.cgi?";
 
         String actualName = getCapabilities.getName();
-        String actualLink = getCapabilities.getDcp().getGetUrl();
+        String actualLink = getCapabilities.getDcp().getGetMethod().getUrl();
 
         assertEquals("Operations Metadata GetCapabilities Name", expectedName, actualName);
         assertEquals("Operations Metadata GetCapabilities Link", expectedLink, actualLink);
@@ -212,7 +212,7 @@ public class WmtsCapabilitiesTest {
         String expectedLink = "http://www.opengis.uab.es/cgi-bin/world/MiraMon5_0.cgi?";
 
         String actualName = getTile.getName();
-        String actualLink = getTile.getDcp().getGetUrl();
+        String actualLink = getTile.getDcp().getGetMethod().getUrl();
 
         assertEquals("Operations Metadata GetTile Name", expectedName, actualName);
         assertEquals("Operations Metadata GetTile Link", expectedLink, actualLink);
@@ -652,7 +652,7 @@ public class WmtsCapabilitiesTest {
         OwsOperation operation = this.wmtsCapabilities.getOperationsMetadata().getGetTile();
         Boolean expectedValue = true;
 
-        Boolean actualValue = operation.getDcp().isGetMethodSupportKV();
+        Boolean actualValue = operation.getDcp().getGetMethod().getAllowedValues().contains("KVP");
 
         assertEquals("DCP Register KVP Support", expectedValue, actualValue);
     }
