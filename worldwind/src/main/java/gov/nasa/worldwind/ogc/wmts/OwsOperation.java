@@ -5,13 +5,16 @@
 
 package gov.nasa.worldwind.ogc.wmts;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsOperation extends XmlModel {
 
     protected String name;
 
-    protected OwsDcp dcp;
+    protected List<OwsDcp> dcps = new ArrayList<>();
 
     public OwsOperation() {
     }
@@ -20,8 +23,8 @@ public class OwsOperation extends XmlModel {
         return this.name;
     }
 
-    public OwsDcp getDcp() {
-        return this.dcp;
+    public List<OwsDcp> getDcps() {
+        return this.dcps;
     }
 
     @Override
@@ -29,7 +32,7 @@ public class OwsOperation extends XmlModel {
         if (keyName.equals("name")) {
             this.name = (String) value;
         } else if (keyName.equals("DCP")) {
-            this.dcp = (OwsDcp) value;
+            this.dcps.add((OwsDcp) value);
         }
     }
 }

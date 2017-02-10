@@ -5,22 +5,25 @@
 
 package gov.nasa.worldwind.ogc.wmts;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsDcp extends XmlModel {
 
-    protected OwsHttpMethod getMethod;
+    protected List<OwsHttpMethod> getMethod = new ArrayList<>();
 
-    protected OwsHttpMethod postMethod;
+    protected List<OwsHttpMethod> postMethod = new ArrayList<>();
 
     public OwsDcp() {
     }
 
-    public OwsHttpMethod getGetMethod() {
+    public List<OwsHttpMethod> getGetMethods() {
         return this.getMethod;
     }
 
-    public OwsHttpMethod getPostMethod() {
+    public List<OwsHttpMethod> getPostMethods() {
         return this.postMethod;
     }
 
@@ -28,8 +31,8 @@ public class OwsDcp extends XmlModel {
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("HTTP")) {
             OwsHttp http = (OwsHttp) value;
-            this.getMethod = http.getGetMethod();
-            this.postMethod = http.getPostMethod();
+            this.getMethod.addAll(http.getGetMethods());
+            this.postMethod.addAll(http.getPostMethods());
         }
     }
 }

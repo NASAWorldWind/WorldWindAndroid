@@ -33,6 +33,7 @@ import gov.nasa.worldwind.ogc.gpkg.GpkgTileMatrixSet;
 import gov.nasa.worldwind.ogc.gpkg.GpkgTileUserMetrics;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsLayer;
+import gov.nasa.worldwind.ogc.wmts.OwsConstraint;
 import gov.nasa.worldwind.ogc.wmts.OwsDcp;
 import gov.nasa.worldwind.ogc.wmts.OwsHttpMethod;
 import gov.nasa.worldwind.ogc.wmts.OwsOperation;
@@ -797,6 +798,15 @@ public class LayerFactory {
         return null;
     }
 
+    /**
+     * Conducts a simple search through the {@link WmtsLayer}s distributed computing platform resources for a URL which
+     * supports KVP queries to the WMTS. This method only looks at the first entry of every array of the layers 'GET'
+     * retrieval methods.
+     *
+     * @param layer the {@link WmtsLayer} to search for KVP support
+     *
+     * @return the URL for the supported KVP or null if KVP or 'GET' method isn't provided by the layer
+     */
     protected String determineKvpUrl(WmtsLayer layer) {
         WmtsCapabilities capabilities = layer.getCapabilities();
         OwsOperationsMetadata operationsMetadata = capabilities.getOperationsMetadata();
@@ -807,19 +817,24 @@ public class LayerFactory {
         if (getTileOperation == null) {
             return null;
         }
-        OwsDcp dcp = getTileOperation.getDcp();
-        if (dcp == null) {
+        List<OwsDcp> dcp = getTileOperation.getDcps();
+        if (dcp == null || dcp.isEmpty()) {
             return null;
         }
 
-        OwsHttpMethod getMethod = dcp.getGetMethod();
-        if (getMethod == null) {
+        List<OwsHttpMethod> getMethods = dcp.get(0).getGetMethods();
+        if (getMethods == null || getMethods.isEmpty()) {
             return null;
         }
 
-        List<String> allowedValues = getMethod.getAllowedValues();
+        List<OwsConstraint> constraints = getMethods.get(0).getConstraints();
+        if (constraints == null || constraints.isEmpty()) {
+            return null;
+        }
+
+        List<String> allowedValues = constraints.get(0).getAllowedValues();
         if (allowedValues != null && allowedValues.contains("KVP")) {
-            return getMethod.getUrl();
+            return getMethods.get(0).getUrl();
         } else {
             return null;
         }

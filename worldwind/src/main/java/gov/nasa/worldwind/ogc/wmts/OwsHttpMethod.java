@@ -14,7 +14,7 @@ public class OwsHttpMethod extends XmlModel {
 
     protected String url;
 
-    protected List<String> allowedValues = new ArrayList<>();
+    protected List<OwsConstraint> constraints = new ArrayList<>();
 
     public OwsHttpMethod() {
     }
@@ -23,8 +23,8 @@ public class OwsHttpMethod extends XmlModel {
         return this.url;
     }
 
-    public List<String> getAllowedValues() {
-        return this.allowedValues;
+    public List<OwsConstraint> getConstraints() {
+        return this.constraints;
     }
 
     @Override
@@ -32,10 +32,7 @@ public class OwsHttpMethod extends XmlModel {
         if (keyName.equals("href")) {
             this.url = (String) value;
         } else if (keyName.equals("Constraint")) {
-            List<OwsAllowedValues> allowedValues = ((OwsConstraint) value).getAllowedValues();
-            for (OwsAllowedValues allowedValue : allowedValues) {
-                this.allowedValues.addAll(allowedValue.getAllowedValues());
-            }
+            this.constraints.add((OwsConstraint) value);
         }
     }
 }

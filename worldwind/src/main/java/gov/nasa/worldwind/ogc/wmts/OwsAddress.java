@@ -5,23 +5,29 @@
 
 package gov.nasa.worldwind.ogc.wmts;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsAddress extends XmlModel {
 
-    protected String deliveryPoint;
+    protected List<String> deliveryPoint = new ArrayList<>();
 
     protected String city;
 
     protected String administrativeArea;
 
-    protected String postalCode;
+    protected List<String> postalCode = new ArrayList<>();
 
-    protected String country;
+    protected List<String> country = new ArrayList<>();
 
-    protected String email;
+    protected List<String> email = new ArrayList<>();
 
-    public String getDeliveryPoint() {
+    public OwsAddress() {
+    }
+
+    public List<String> getDeliveryPoints() {
         return this.deliveryPoint;
     }
 
@@ -33,32 +39,32 @@ public class OwsAddress extends XmlModel {
         return this.administrativeArea;
     }
 
-    public String getPostalCode() {
+    public List<String> getPostalCodes() {
         return this.postalCode;
     }
 
-    public String getCountry() {
+    public List<String> getCountries() {
         return this.country;
     }
 
-    public String getEmail() {
+    public List<String> getElectronicMailAddresses() {
         return this.email;
     }
 
     @Override
     protected void parseField(String keyName, Object value) {
         if (keyName.equals("DeliveryPoint")) {
-            this.deliveryPoint = (String) value;
+            this.deliveryPoint.add((String) value);
         } else if (keyName.equals("City")) {
             this.city = (String) value;
         } else if (keyName.equals("AdministrativeArea")) {
             this.administrativeArea = (String) value;
         } else if (keyName.equals("PostalCode")) {
-            this.postalCode = (String) value;
+            this.postalCode.add((String) value);
         } else if (keyName.equals("Country")) {
-            this.country = (String) value;
+            this.country.add((String) value);
         } else if (keyName.equals("ElectronicMailAddress")) {
-            this.email = (String) value;
+            this.email.add((String) value);
         }
     }
 }

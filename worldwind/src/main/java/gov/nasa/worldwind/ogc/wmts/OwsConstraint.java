@@ -12,24 +12,29 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsConstraint extends XmlModel {
 
-    protected String encoding;
+    protected String name;
 
-    protected List<OwsAllowedValues> allowedValues = new ArrayList<>();
+    protected List<String> allowedValues = new ArrayList<>();
 
-    public String getEncoding() {
-        return this.encoding;
+    public OwsConstraint() {
     }
 
-    public List<OwsAllowedValues> getAllowedValues() {
+    public String getName() {
+        return this.name;
+    }
+
+    public List<String> getAllowedValues() {
         return this.allowedValues;
     }
 
     @Override
     protected void parseField(String keyName, Object value) {
-        if (keyName.equals("encoding")) {
-            this.encoding = (String) value;
+        if (keyName.equals("name")) {
+            this.name = (String) value;
         } else if (keyName.equals("AllowedValues")) {
-            this.allowedValues.add((OwsAllowedValues) value);
+            this.allowedValues.addAll(((OwsAllowedValues) value).getAllowedValues());
+        } else if (keyName.equals("AnyValue")) {
+            this.allowedValues.add("AnyValue");
         }
     }
 }

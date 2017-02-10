@@ -177,12 +177,12 @@ public class WmtsCapabilitiesTest {
         String expectedCountry = "Spain";
         String expectedEmail = "joan.maso@uab.es";
 
-        String actualDeliveryPoint = contactInfo.getAddress().getDeliveryPoint();
+        String actualDeliveryPoint = contactInfo.getAddress().getDeliveryPoints().get(0);
         String actualCity = contactInfo.getAddress().getCity();
         String actualAdministrativeArea = contactInfo.getAddress().getAdministrativeArea();
-        String actualPostalCode = contactInfo.getAddress().getPostalCode();
-        String actualCountry = contactInfo.getAddress().getCountry();
-        String actualEmail = contactInfo.getAddress().getEmail();
+        String actualPostalCode = contactInfo.getAddress().getPostalCodes().get(0);
+        String actualCountry = contactInfo.getAddress().getCountries().get(0);
+        String actualEmail = contactInfo.getAddress().getElectronicMailAddresses().get(0);
 
         assertEquals("Service Provider Contact Address Delivery Point", expectedDeliveryPoint, actualDeliveryPoint);
         assertEquals("Service Provider Contact Address City", expectedCity, actualCity);
@@ -199,7 +199,7 @@ public class WmtsCapabilitiesTest {
         String expectedLink = "http://www.opengis.uab.es/cgi-bin/world/MiraMon5_0.cgi?";
 
         String actualName = getCapabilities.getName();
-        String actualLink = getCapabilities.getDcp().getGetMethod().getUrl();
+        String actualLink = getCapabilities.getDcps().get(0).getGetMethods().get(0).getUrl();
 
         assertEquals("Operations Metadata GetCapabilities Name", expectedName, actualName);
         assertEquals("Operations Metadata GetCapabilities Link", expectedLink, actualLink);
@@ -212,7 +212,7 @@ public class WmtsCapabilitiesTest {
         String expectedLink = "http://www.opengis.uab.es/cgi-bin/world/MiraMon5_0.cgi?";
 
         String actualName = getTile.getName();
-        String actualLink = getTile.getDcp().getGetMethod().getUrl();
+        String actualLink = getTile.getDcps().get(0).getGetMethods().get(0).getUrl();
 
         assertEquals("Operations Metadata GetTile Name", expectedName, actualName);
         assertEquals("Operations Metadata GetTile Link", expectedLink, actualLink);
@@ -652,7 +652,7 @@ public class WmtsCapabilitiesTest {
         OwsOperation operation = this.wmtsCapabilities.getOperationsMetadata().getGetTile();
         Boolean expectedValue = true;
 
-        Boolean actualValue = operation.getDcp().getGetMethod().getAllowedValues().contains("KVP");
+        Boolean actualValue = operation.getDcps().get(0).getGetMethods().get(0).getConstraints().get(0).getAllowedValues().contains("KVP");
 
         assertEquals("DCP Register KVP Support", expectedValue, actualValue);
     }

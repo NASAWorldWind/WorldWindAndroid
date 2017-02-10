@@ -14,6 +14,9 @@ public class OwsAllowedValues extends XmlModel {
 
     protected List<String> allowedValues = new ArrayList<>();
 
+    public OwsAllowedValues() {
+    }
+
     public List<String> getAllowedValues() {
         return this.allowedValues;
     }
