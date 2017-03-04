@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="worldwind-androidTest" type="AndroidTestRunConfigurationType" factoryName="Android Tests">
     <module name="worldwind" />
@@ -44,3 +45,4 @@
     <method />
   </configuration>
 </component>
+

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="worldwind-examples" type="AndroidRunConfigurationType" factoryName="Android Application" activateToolWindowBeforeRun="false">
     <module name="worldwind-examples" />
@@ -34,3 +35,4 @@
     <method />
   </configuration>
 </component>
+
