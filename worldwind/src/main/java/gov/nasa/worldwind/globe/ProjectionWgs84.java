@@ -464,6 +464,7 @@ public class ProjectionWgs84 implements GeographicProjection {
         //
         // Note that the parameter n from in equations 5.70 and 5.71 is omitted here. For an ellipsoidal globe this
         // parameter is always 1, so its square and its product with any other value simplifies to the identity.
+        // Note for the 3rd edition this equation is 6.70 and 6.71 in Section 6.2.3
 
         double vx = line.direction.x;
         double vy = line.direction.y;
@@ -483,12 +484,24 @@ public class ProjectionWgs84 implements GeographicProjection {
 
         if (d < 0) {
             return false;
-        } else {
-            double t = (-b - Math.sqrt(d)) / (2 * a);
-            result.x = sx + vx * t;
-            result.y = sy + vy * t;
-            result.z = sz + vz * t;
-            return true;
         }
+
+        double rootd = Math.sqrt(d);
+
+        // check if all intersections occur in the opposite direction of the provided ray
+        if (b > rootd) {
+            return false;
+        }
+
+        double t = (-b - rootd) / (2 * a);
+        // check if nearest intersection is in the opposite direction of the provided ray
+        if (t < 0) {
+            t = (-b + rootd) / (2 * a);
+        }
+
+        result.x = sx + vx * t;
+        result.y = sy + vy * t;
+        result.z = sz + vz * t;
+        return true;
     }
 }
