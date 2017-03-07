@@ -18,6 +18,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.HashMap;
 import java.util.Map;
 
+import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
@@ -25,8 +26,10 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.util.Logger;
 
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -242,6 +245,58 @@ public class ProjectionWgs84Test {
         assertEquals("x", x, vec.x, 1e-6);
         assertEquals("y", y, vec.y, 1e-6);
         assertEquals("z", z, vec.z, 1e-6);
+    }
+
+    /**
+     * This test case was provided by the COE EMP team. Visually, it is obvious the Line in this examples has a
+     * direction and origin that will not intersect the ellipsoid.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testEmpBackwardInstance() throws Exception {
+        ProjectionWgs84 wgs84 = new ProjectionWgs84();
+        Line ray = new Line(new Vec3(990474.8037403631, 3007310.9566306924, 5583923.602748461), new Vec3(-0.1741204769506282, 0.9711294099374702, -0.16306357245254538));
+
+        boolean intersection = wgs84.intersect(this.globe, ray, null, new Vec3());
+
+        assertFalse("EMP backward intersection", intersection);
+    }
+
+    /**
+     * An instance which is easily visualized for understanding the backwards intersection instance.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSimpleBackwardsIntersection() throws Exception {
+        ProjectionWgs84 wgs84 = new ProjectionWgs84();
+        Globe mockedGlobe = PowerMockito.mock(Globe.class);
+        PowerMockito.when(mockedGlobe.getEquatorialRadius()).thenReturn(1.0);
+        PowerMockito.when(mockedGlobe.getPolarRadius()).thenReturn(1.0);
+        Line ray = new Line(new Vec3(0.8, 0.8, 0.0), new Vec3(0.0, 1.0, 0.0));
+
+        boolean intersection = wgs84.intersect(mockedGlobe, ray, null, new Vec3());
+
+        assertFalse("simple backwards intersection", intersection);
+    }
+
+    /**
+     * An instance which is easily visualized for understanding the forwards intersection instance.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSimpleIntersection() throws Exception {
+        ProjectionWgs84 wgs84 = new ProjectionWgs84();
+        Globe mockedGlobe = PowerMockito.mock(Globe.class);
+        PowerMockito.when(mockedGlobe.getEquatorialRadius()).thenReturn(1.0);
+        PowerMockito.when(mockedGlobe.getPolarRadius()).thenReturn(1.0);
+        Line ray = new Line(new Vec3(0.8, 0.8, 0.0), new Vec3(0.0, -1.0, 0.0));
+
+        boolean intersection = wgs84.intersect(mockedGlobe, ray, null, new Vec3());
+
+        assertTrue("simple intersection", intersection);
     }
 
     //////////////////////////////////////////
