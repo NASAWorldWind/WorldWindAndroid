@@ -299,6 +299,52 @@ public class ProjectionWgs84Test {
         assertTrue("simple intersection", intersection);
     }
 
+    /**
+     * An instance which demonstrates two intersections, but the closest, or first surface intersection position is
+     * desired.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSimpleTwoIntersection() throws Exception {
+        ProjectionWgs84 wgs84 = new ProjectionWgs84();
+        Globe mockedGlobe = PowerMockito.mock(Globe.class);
+        PowerMockito.when(mockedGlobe.getEquatorialRadius()).thenReturn(1.0);
+        PowerMockito.when(mockedGlobe.getPolarRadius()).thenReturn(1.0);
+        Line ray = new Line(new Vec3(-1.0, 2.0, 0.0), new Vec3(1.0, -1.0, 0.0).normalize());
+        Vec3 result = new Vec3();
+        double errorThreshold = 1e-9;
+
+        boolean intersection = wgs84.intersect(mockedGlobe, ray, null, result);
+
+        assertTrue("simple intersection", intersection);
+        assertEquals("nearest calculated intersection x", 0.0, result.x, errorThreshold);
+        assertEquals("nearest calculated intersection y", 1.0, result.y, errorThreshold);
+    }
+
+    /**
+     * An instance which demonstrates two intersections with a ray originating within the ellipsoid.
+     *
+     * @throws Exception
+     */
+    @Ignore("unknown if this is an acceptable possibility")
+    @Test
+    public void testSimpleTwoIntersectionInternal() throws Exception {
+        ProjectionWgs84 wgs84 = new ProjectionWgs84();
+        Globe mockedGlobe = PowerMockito.mock(Globe.class);
+        PowerMockito.when(mockedGlobe.getEquatorialRadius()).thenReturn(1.0);
+        PowerMockito.when(mockedGlobe.getPolarRadius()).thenReturn(1.0);
+        Line ray = new Line(new Vec3(-0.8, 0, 0.0), new Vec3(1.0, 0.0, 0.0).normalize());
+        Vec3 result = new Vec3();
+        double errorThreshold = 1e-9;
+
+        boolean intersection = wgs84.intersect(mockedGlobe, ray, null, result);
+
+        assertTrue("simple internal intersection", intersection);
+        assertEquals("forward calculated intersection x", 1.0, result.x, errorThreshold);
+        assertEquals("forward calculated intersection y", 0.0, result.y, errorThreshold);
+    }
+
     //////////////////////////////////////////
     //           Helper Methods
     //////////////////////////////////////////
