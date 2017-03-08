@@ -327,7 +327,6 @@ public class ProjectionWgs84Test {
      *
      * @throws Exception
      */
-    @Ignore("unknown if this is an acceptable possibility")
     @Test
     public void testSimpleTwoIntersectionInternal() throws Exception {
         ProjectionWgs84 wgs84 = new ProjectionWgs84();
