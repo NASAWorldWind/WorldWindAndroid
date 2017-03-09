@@ -205,7 +205,7 @@ public class LayerFactoryTest {
 
         LevelSetConfig levelSetConfig = layerFactory.getLevelSetConfigFromWmsCapabilities(layerCapabilities);
 
-        assertEquals("Number of Levels", 13, levelSetConfig.numLevels);
+        assertEquals("Number of Levels", 20, levelSetConfig.numLevels);
     }
 
     @Test
