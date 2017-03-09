@@ -66,11 +66,11 @@ public class LayerFactory {
 
     protected Handler mainLoopHandler = new Handler(Looper.getMainLooper());
 
-    protected static final double DEFAULT_WMS_RADIANS_PER_PIXEL = 10.0 / WorldWind.WGS84_SEMI_MAJOR_AXIS;
-
     protected List<String> compatibleImageFormats = Arrays.asList("image/png", "image/jpg", "image/jpeg", "image/gif", "image/bmp");
 
     protected List<String> compatibleCoordinateSystems = Arrays.asList("urn:ogc:def:crs:OGC:1.3:CRS84", "urn:ogc:def:crs:EPSG::4326", "http://www.opengis.net/def/crs/OGC/1.3/CRS84");
+
+    protected static final int DEFAULT_WMS_NUM_LEVELS = 20;
 
     public Layer createFromGeoPackage(String pathName, Callback callback) {
         if (pathName == null) {
@@ -607,8 +607,7 @@ public class LayerFactory {
             levelSetConfig.numLevels = levelSetConfig.numLevelsForMinResolution(minRadiansPerPixel);
         } else {
             // Default scale configuration when no minimum scale denominator or scale hint is provided.
-            double defaultRadiansPerPixel = DEFAULT_WMS_RADIANS_PER_PIXEL;
-            levelSetConfig.numLevels = levelSetConfig.numLevelsForResolution(defaultRadiansPerPixel);
+            levelSetConfig.numLevels = DEFAULT_WMS_NUM_LEVELS;
         }
 
         return levelSetConfig;
