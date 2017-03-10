@@ -460,9 +460,9 @@ public class ProjectionWgs84 implements GeographicProjection {
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "intersect", "missingResult"));
         }
 
-        // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition", Section 5.2.3.
+        // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Third Edition", Section 6.2.3.
         //
-        // Note that the parameter n from in equations 5.70 and 5.71 is omitted here. For an ellipsoidal globe this
+        // Note that the parameter n from in equations 6.70 and 6.71 is omitted here. For an ellipsoidal globe this
         // parameter is always 1, so its square and its product with any other value simplifies to the identity.
 
         double vx = line.direction.x;
@@ -483,12 +483,27 @@ public class ProjectionWgs84 implements GeographicProjection {
 
         if (d < 0) {
             return false;
-        } else {
-            double t = (-b - Math.sqrt(d)) / (2 * a);
+        }
+
+        double t = (-b - Math.sqrt(d)) / (2 * a);
+        // check if the nearest intersection point is in front of the origin of the ray
+        if (t > 0) {
             result.x = sx + vx * t;
             result.y = sy + vy * t;
             result.z = sz + vz * t;
             return true;
         }
+
+        t = (-b + Math.sqrt(d)) / (2 * a);
+        // check if the second intersection point is in front of the origin of the ray
+        if (t > 0) {
+            result.x = sx + vx * t;
+            result.y = sy + vy * t;
+            result.z = sz + vz * t;
+            return true;
+        }
+
+        // the intersection points were behind the origin of the provided line
+        return false;
     }
 }

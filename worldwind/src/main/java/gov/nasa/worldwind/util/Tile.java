@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.util;
 
+import android.util.DisplayMetrics;
+
 import java.util.Collection;
 
 import gov.nasa.worldwind.geom.BoundingBox;
@@ -259,8 +261,15 @@ public class Tile {
         double distance = this.distanceTo(rc);
         double texelSize = this.level.texelHeight * rc.globe.getEquatorialRadius();
         double pixelSize = rc.pixelSizeAtDistance(distance);
+        double densityFactor = 1.0;
 
-        return texelSize > pixelSize * detailFactor;
+        // Adjust the subdivision factory when the display density is low. Values of detailFactor have been calibrated
+        // against high density devices. Low density devices need roughly half the detailFactor.
+        if (rc.resources.getDisplayMetrics().densityDpi <= DisplayMetrics.DENSITY_MEDIUM) {
+            densityFactor = 0.5;
+        }
+
+        return texelSize > (pixelSize * detailFactor * densityFactor);
     }
 
     /**

@@ -1,118 +1,67 @@
 /*
- * Copyright (c) 2016 United States Government as represented by the Administrator of the
+ * Copyright (c) 2017 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
 package gov.nasa.worldwind.ogc.wms;
 
-import javax.xml.namespace.QName;
-
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class WmsAddress extends XmlModel
-{
+public class WmsAddress extends XmlModel {
 
-    protected QName addressType;
+    protected String addressType;
 
-    protected QName address;
+    protected String address;
 
-    protected QName city;
+    protected String city;
 
-    protected QName stateOrProvince;
+    protected String stateOrProvince;
 
-    protected QName postCode;
+    protected String postCode;
 
-    protected QName country;
+    protected String country;
 
-    public WmsAddress(String namespaceURI)
-    {
-        super(namespaceURI);
-
-        this.initialize();
+    public WmsAddress() {
     }
 
-    protected void initialize()
-    {
-        this.addressType = new QName(this.getNamespaceUri(), "AddressType");
-        this.address = new QName(this.getNamespaceUri(), "Address");
-        this.city = new QName(this.getNamespaceUri(), "City");
-        this.stateOrProvince = new QName(this.getNamespaceUri(), "StateOrProvince");
-        this.postCode = new QName(this.getNamespaceUri(), "PostCode");
-        this.country = new QName(this.getNamespaceUri(), "Country");
+    public String getAddressType() {
+        return this.addressType;
     }
 
-    public String getAddressType()
-    {
-        return this.getChildCharacterValue(this.addressType);
+    public String getAddress() {
+        return this.address;
     }
 
-    protected void setAddressType(String addressType)
-    {
-        this.setChildCharacterValue(this.addressType, addressType);
+    public String getCity() {
+        return this.city;
     }
 
-    public String getAddress()
-    {
-        return this.getChildCharacterValue(this.address);
+    public String getStateOrProvince() {
+        return this.stateOrProvince;
     }
 
-    protected void setAddress(String address)
-    {
-        this.setChildCharacterValue(this.address, address);
+    public String getPostCode() {
+        return this.postCode;
     }
 
-    public String getCity()
-    {
-        return this.getChildCharacterValue(this.city);
-    }
-
-    protected void setCity(String city)
-    {
-        this.setChildCharacterValue(this.city, city);
-    }
-
-    public String getStateOrProvince()
-    {
-        return this.getChildCharacterValue(this.stateOrProvince);
-    }
-
-    protected void setStateOrProvince(String stateOrProvince)
-    {
-        this.setChildCharacterValue(this.stateOrProvince, stateOrProvince);
-    }
-
-    public String getPostCode()
-    {
-        return this.getChildCharacterValue(this.postCode);
-    }
-
-    protected void setPostCode(String postCode)
-    {
-        this.setChildCharacterValue(this.postCode, postCode);
-    }
-
-    public String getCountry()
-    {
-        return this.getChildCharacterValue(this.country);
-    }
-
-    protected void setCountry(String country)
-    {
-        this.setChildCharacterValue(this.country, country);
+    public String getCountry() {
+        return this.country;
     }
 
     @Override
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("AddressType: ").append(this.getAddressType() != null ? this.getAddressType() : "none").append(" ");
-        sb.append("Address: ").append(this.getAddress() != null ? this.getAddress() : "none").append(" ");
-        sb.append("City: ").append(this.getCity() != null ? this.getCity() : "none").append(" ");
-        sb.append("StateOrProvince: ").append(this.getStateOrProvince() != null ? this.getStateOrProvince() : "none").append(" ");
-        sb.append("PostCode: ").append(this.getPostCode() != null ? this.getPostCode() : "none").append(" ");
-        sb.append("Country: ").append(this.getCountry() != null ? this.getCountry() : "none");
-
-        return sb.toString();
+    public void parseField(String keyName, Object value) {
+        if (keyName.equals("Address")) {
+            this.address = (String) value;
+        } else if (keyName.equals("AddressType")) {
+            this.addressType = (String) value;
+        } else if (keyName.equals("City")) {
+            this.city = (String) value;
+        } else if (keyName.equals("StateOrProvince")) {
+            this.stateOrProvince = (String) value;
+        } else if (keyName.equals("PostCode")) {
+            this.postCode = (String) value;
+        } else if (keyName.equals("Country")) {
+            this.country = (String) value;
+        }
     }
 }

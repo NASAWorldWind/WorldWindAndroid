@@ -310,7 +310,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
                 Logger.logMessage(Logger.ERROR, "WorldWindow", "removeNavigatorListener", "missingListener"));
         }
 
-        this.navigatorEvents.addNavigatorListener(listener);
+        this.navigatorEvents.removeNavigatorListener(listener);
     }
 
     public long getNavigatorStoppedDelay() {

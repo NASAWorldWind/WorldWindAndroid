@@ -3,8 +3,7 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-precision mediump float;
-precision mediump int;
+precision mediump int; /* fragMode is used in both shaders, so we must use a common precision */
 
 const int FRAGMODE_PRIMARY = 1;
 const int FRAGMODE_SECONDARY = 2;

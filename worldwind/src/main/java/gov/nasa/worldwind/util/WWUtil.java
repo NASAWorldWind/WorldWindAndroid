@@ -18,6 +18,8 @@ import java.net.URL;
 
 public class WWUtil {
 
+    protected static final char LINE_SEPARATOR = '\n';
+
     /**
      * Closes a specified Closeable, suppressing any checked exceptions. This has no effect if the closeable is null.
      *
@@ -73,7 +75,7 @@ public class WWUtil {
             String line;
 
             while ((line = reader.readLine()) != null) {
-                sb.append(line);
+                sb.append(line).append(LINE_SEPARATOR);
             }
 
             return sb.toString();

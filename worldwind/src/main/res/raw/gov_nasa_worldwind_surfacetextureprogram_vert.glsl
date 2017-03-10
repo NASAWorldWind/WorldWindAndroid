@@ -3,8 +3,6 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-precision mediump float;
-
 uniform bool enableTexture;
 uniform mat4 mvpMatrix;
 uniform mat3 texCoordMatrix[2];

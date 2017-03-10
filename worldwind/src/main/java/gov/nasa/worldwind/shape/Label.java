@@ -57,6 +57,17 @@ public class Label extends AbstractRenderable implements Highlightable, Movable 
     protected String text;
 
     /**
+     * The label's rotation in degrees clockwise.
+     */
+    protected double rotation;
+
+    /**
+     * The label's rotation mode. Defaults to WorldWind.RELATIVE_TO_SCREEN.
+     */
+    @WorldWind.OrientationMode
+    protected int rotationMode = WorldWind.RELATIVE_TO_SCREEN;
+
+    /**
      * The label's normal attributes.
      */
     protected TextAttributes attributes;
@@ -204,6 +215,67 @@ public class Label extends AbstractRenderable implements Highlightable, Movable 
      */
     public Label setText(String text) {
         this.text = text;
+        return this;
+    }
+
+    /**
+     * Indicates the rotation applied to this label. The rotation represents clockwise clockwise degrees relative to
+     * this label's labelRotationMode.
+     *
+     * @return this label's rotation amount in degrees, or zero if this label has no rotation relative to its
+     * orientation reference
+     *
+     * @see #getRotationMode()
+     */
+    public double getRotation() {
+        return this.rotation;
+    }
+
+    /**
+     * Sets the amount of rotation applied to this label. The rotation represents clockwise degrees relative to this
+     * label's labelRotationMode.
+     *
+     * @param degrees this label's new rotation amount in degrees, or zero to apply no rotation relative to this label's
+     *                orientation reference
+     *
+     * @return this label with its rotation set to the specified value
+     *
+     * @see #setRotationMode(int)
+     */
+    public Label setRotation(double degrees) {
+        this.rotation = degrees;
+        return this;
+    }
+
+    /**
+     * Indicates the orientation mode used to interpret this label's rotation. Label rotation may be either relative to
+     * the screen or relative to the globe, as indicated by the following allowable values: <ul> <li>{@code
+     * WorldWind.RELATIVE_TO_SCREEN} - The label's orientation is fixed relative to the screen. Rotation indicates
+     * clockwise degrees relative to the screen's vertical axis. This is the default mode.</li> <li>{@code
+     * WorldWind.RELATIVE_TO_GLOBE} - The label's orientation is fixed relative to the globe. Rotation indicates
+     * clockwise degrees relative to North.</li> </ul>
+     *
+     * @return this label's rotation mode
+     */
+    @WorldWind.OrientationMode
+    public int getRotationMode() {
+        return this.rotationMode;
+    }
+
+    /**
+     * Sets the orientation mode this label uses to interpret its rotation. Label rotation may be either relative to the
+     * screen or relative to the globe, as indicated by the following allowable values: <ul> <li>{@code
+     * WorldWind.RELATIVE_TO_SCREEN} - The label's orientation is fixed relative to the screen. Rotation indicates
+     * clockwise degrees relative to the screen's vertical axis. This is the default mode.</li> <li>{@code
+     * WorldWind.RELATIVE_TO_GLOBE} - The label's orientation is fixed relative to the globe. Rotation indicates
+     * clockwise degrees relative to North.</li> </ul>
+     *
+     * @param orientationMode the orientation mode used to interpret this label's rotation
+     *
+     * @return this label with its rotation mode set to the specified value
+     */
+    public Label setRotationMode(@WorldWind.OrientationMode int orientationMode) {
+        this.rotationMode = orientationMode;
         return this;
     }
 
@@ -366,9 +438,11 @@ public class Label extends AbstractRenderable implements Highlightable, Movable 
             return;
         }
 
-        // Apply the label's translation and scale according to its text size and text offset. The text offset is
-        // defined with its origin at the text's bottom-left corner and axes that extend up and to the right from the
-        // origin point.
+        // Initialize the unit square transform to the identity matrix.
+        renderData.unitSquareTransform.setToIdentity();
+
+        // Apply the label's translation according to its text size and text offset. The text offset is defined with its
+        // origin at the text's bottom-left corner and axes that extend up and to the right from the origin point.
         int w = texture.getWidth();
         int h = texture.getHeight();
         this.activeAttributes.textOffset.offsetForSize(w, h, renderData.offset);
@@ -376,7 +450,19 @@ public class Label extends AbstractRenderable implements Highlightable, Movable 
             renderData.screenPlacePoint.x - renderData.offset.x,
             renderData.screenPlacePoint.y - renderData.offset.y,
             renderData.screenPlacePoint.z);
-        renderData.unitSquareTransform.setScale(w, h, 1);
+
+        // Apply the label's rotation according to its rotation value and orientation mode. The rotation is applied
+        // such that the text rotates around the text offset point.
+        double rotation = (this.rotationMode == WorldWind.RELATIVE_TO_GLOBE) ?
+            (rc.camera.heading - this.rotation) : -this.rotation;
+        if (rotation != 0) {
+            renderData.unitSquareTransform.multiplyByTranslation(renderData.offset.x, renderData.offset.y, 0);
+            renderData.unitSquareTransform.multiplyByRotation(0, 0, 1, rotation);
+            renderData.unitSquareTransform.multiplyByTranslation(-renderData.offset.x, -renderData.offset.y, 0);
+        }
+
+        // Apply the label's translation and scale according to its text size.
+        renderData.unitSquareTransform.multiplyByScale(w, h, 1);
 
         WWMath.boundingRectForUnitSquare(renderData.unitSquareTransform, renderData.screenBounds);
         if (!rc.frustum.intersectsViewport(renderData.screenBounds)) {

@@ -1,39 +1,49 @@
 /*
- * Copyright (c) 2016 United States Government as represented by the Administrator of the
+ * Copyright (c) 2017 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
 package gov.nasa.worldwind.ogc.wms;
 
-import org.xmlpull.v1.XmlPullParser;
+import java.util.ArrayList;
+import java.util.List;
 
-import gov.nasa.worldwind.util.xml.XmlPullParserContext;
+public class WmsAuthorityUrl extends WmsInfoUrl {
 
-public class WmsAuthorityUrl extends WmsLayerInfoUrl {
+    protected String name;
 
-    protected String authority;
+    protected String type;
 
-    public WmsAuthorityUrl(String namespaceURI) {
-        super(namespaceURI);
+    protected List<String> formats = new ArrayList<>();
+
+    protected String url;
+
+    public String getUrl() {
+        return this.url;
+    }
+
+    public List<String> getFormats() {
+        return this.formats;
+    }
+
+    public String getType() {
+        return this.type;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     @Override
-    protected void doParseEventAttributes(XmlPullParserContext ctx) {
-
-        XmlPullParser xpp = ctx.getParser();
-
-        String authorityValue = xpp.getAttributeValue(this.getNamespaceUri(), "authority");
-
-        if (authorityValue != null && !authorityValue.isEmpty()) {
-            this.setAuthority(authorityValue.trim());
+    public void parseField(String keyName, Object value) {
+        if (keyName.equals("Format")) {
+            this.formats.add((String) value);
+        } else if (keyName.equals("OnlineResource")) {
+            this.url = ((WmsOnlineResource) value).getUrl();
+        } else if (keyName.equals("type")) {
+            this.type = (String) value;
+        } else if (keyName.equals("name")) {
+            this.name = (String) value;
         }
-    }
-
-    public String getAuthority() {
-        return authority;
-    }
-
-    protected void setAuthority(String authority) {
-        this.authority = authority;
     }
 }

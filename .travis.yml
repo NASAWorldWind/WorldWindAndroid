@@ -13,10 +13,10 @@ jdk:
 
 android:
   components:
-    - platform-tools      # latest SDK platform-tools is v23.0.1 (but lint wants 24.0.1 for NewApi check)
+    - platform-tools      # latest SDK platform-tools
     - tools               # latest SDK tools
     - android-24          # SDK version used to compile the project
-    - build-tools-24.0.3  # build tools used by the project
+    - build-tools-25.0.2  # build tools used by the project
     - extra-android-support
     - extra-android-m2repository
 
