@@ -31,15 +31,13 @@ public interface GeographicProjection {
      * @param latitude  the position's latitude in degrees
      * @param longitude the position's longitude in degrees
      * @param altitude  the position's altitude in meters
-     * @param offset    an offset to apply to the Cartesian output. Typically only projections that are continuous apply
-     *                  to this offset. Others ignore it. May be null to indicate no offset is applied.
      * @param result    a pre-allocated {@link Vec3} in which to store the computed X, Y and Z Cartesian coordinates
      *
      * @return the result argument, set to the computed Cartesian coordinates
      *
      * @throws IllegalArgumentException If any argument is null
      */
-    Vec3 geographicToCartesian(Globe globe, double latitude, double longitude, double altitude, Vec3 offset, Vec3 result);
+    Vec3 geographicToCartesian(Globe globe, double latitude, double longitude, double altitude, Vec3 result);
 
     /**
      * @param globe
@@ -60,7 +58,7 @@ public interface GeographicProjection {
      *
      * @return
      */
-    Matrix4 geographicToCartesianTransform(Globe globe, double latitude, double longitude, double altitude, Vec3 offset, Matrix4 result);
+    Matrix4 geographicToCartesianTransform(Globe globe, double latitude, double longitude, double altitude, Matrix4 result);
 
     /**
      * @param globe
@@ -69,15 +67,14 @@ public interface GeographicProjection {
      * @param numLon
      * @param elevations
      * @param origin
-     * @param offset
      * @param result
      * @param stride
      * @param pos
      *
      * @return
      */
-    float[] geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon, double[] elevations,
-                                      Vec3 origin, Vec3 offset, float[] result, int stride, int pos);
+    float[] geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon, float[] elevations,
+                                      Vec3 origin, float[] result, int stride, int pos);
 
     /**
      * Converts a Cartesian point to a geographic position.
@@ -86,17 +83,15 @@ public interface GeographicProjection {
      * @param x      the Cartesian point's X component
      * @param y      the Cartesian point's Y component
      * @param z      the Cartesian point's Z component
-     * @param offset an offset to apply to the Cartesian output. Typically only projections that are continuous apply to
-     *               this offset. Others ignore it. May be null to indicate no offset is applied.
      * @param result a pre-allocated {@link Position} in which to store the computed geographic position
      *
      * @return the result argument, set to the computed geographic position
      *
      * @throws IllegalArgumentException if the result is null
      */
-    Position cartesianToGeographic(Globe globe, double x, double y, double z, Vec3 offset, Position result);
+    Position cartesianToGeographic(Globe globe, double x, double y, double z, Position result);
 
-    Matrix4 cartesianToLocalTransform(Globe globe, double x, double y, double z, Vec3 offset, Matrix4 result);
+    Matrix4 cartesianToLocalTransform(Globe globe, double x, double y, double z, Matrix4 result);
 
     /**
      * Computes the first intersection of a specified globe and line. The line is interpreted as a ray; intersection
@@ -104,13 +99,11 @@ public interface GeographicProjection {
      *
      * @param globe  the globe this projection is applied to
      * @param line   the line to intersect with the globe
-     * @param offset an offset to apply to the Cartesian output. Typically only projections that are continuous apply to
-     *               this offset. Others ignore it. May be null to indicate no offset is applied.
      * @param result a pre-allocated {@link Vec3} in which to return the computed point
      *
      * @return true if the ray intersects the globe, otherwise false
      *
      * @throws IllegalArgumentException If any of the globe, line or result are null
      */
-    boolean intersect(Globe globe, Line line, Vec3 offset, Vec3 result);
+    boolean intersect(Globe globe, Line line, Vec3 result);
 }

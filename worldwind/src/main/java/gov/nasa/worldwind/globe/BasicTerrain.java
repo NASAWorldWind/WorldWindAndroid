@@ -15,43 +15,15 @@ import gov.nasa.worldwind.util.Logger;
 
 public class BasicTerrain implements Terrain {
 
-    protected Globe globe;
-
-    protected double verticalExaggeration = 1;
+    protected List<TerrainTile> tiles = new ArrayList<>();
 
     protected Sector sector = new Sector();
-
-    protected List<TerrainTile> tiles = new ArrayList<>();
 
     protected short[] triStripElements;
 
     private Vec3 intersectPoint = new Vec3();
 
-    private Vec3 normal = new Vec3();
-
     public BasicTerrain() {
-    }
-
-    public Globe getGlobe() {
-        return this.globe;
-    }
-
-    public void setGlobe(Globe globe) {
-        this.globe = globe;
-    }
-
-    @Override
-    public double getVerticalExaggeration() {
-        return this.verticalExaggeration;
-    }
-
-    public void setVerticalExaggeration(double verticalExaggeration) {
-        this.verticalExaggeration = verticalExaggeration;
-    }
-
-    @Override
-    public Sector getSector() {
-        return this.sector;
     }
 
     public void addTile(TerrainTile tile) {
@@ -65,19 +37,18 @@ public class BasicTerrain implements Terrain {
     }
 
     public void clear() {
-        this.globe = null;
-        this.verticalExaggeration = 1;
-        this.sector.setEmpty();
-        this.tiles.clear();
         this.triStripElements = null;
-    }
-
-    public short[] getTriStripElements() {
-        return this.triStripElements;
+        this.tiles.clear();
+        this.sector.setEmpty();
     }
 
     public void setTriStripElements(short[] elements) {
         this.triStripElements = elements;
+    }
+
+    @Override
+    public Sector getSector() {
+        return this.sector;
     }
 
     @Override
@@ -118,7 +89,7 @@ public class BasicTerrain implements Terrain {
     }
 
     @Override
-    public boolean surfacePoint(double latitude, double longitude, double offset, Vec3 result) {
+    public boolean surfacePoint(double latitude, double longitude, Vec3 result) {
         if (result == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicTerrain", "surfacePoint", "missingResult"));
@@ -157,14 +128,6 @@ public class BasicTerrain implements Terrain {
                 result.x = (points[i00] * f00) + (points[i10] * f10) + (points[i01] * f01) + (points[i11] * f11);
                 result.y = (points[i00 + 1] * f00) + (points[i10 + 1] * f10) + (points[i01 + 1] * f01) + (points[i11 + 1] * f11);
                 result.z = (points[i00 + 2] * f00) + (points[i10 + 2] * f10) + (points[i01 + 2] * f01) + (points[i11 + 2] * f11);
-
-                // Translate the point along a the vector 'offset' meters relative to the tile's surface.
-                if (offset != 0) {
-                    this.globe.geographicToCartesianNormal(latitude, longitude, this.normal);
-                    result.x += this.normal.x * offset;
-                    result.y += this.normal.y * offset;
-                    result.z += this.normal.z * offset;
-                }
 
                 // Translate the surface point from the tile's local coordinate system to Cartesian coordinates.
                 result.x += tile.vertexOrigin.x;

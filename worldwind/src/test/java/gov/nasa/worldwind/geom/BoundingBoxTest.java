@@ -53,8 +53,8 @@ public class BoundingBoxTest {
         // Set the bounding box to the small sector with no elevation.
         // We expect the center of the bounding box to be very close to our point and the
         // z value should be half of the min/max elevation delta.
-        double minElevation = 0;
-        double maxElevation = 100;
+        float minElevation = 0;
+        float maxElevation = 100;
         boundingBox.setToSector(smallSector, globe, minElevation, maxElevation);
 
         assertEquals("small center x", point.x, boundingBox.center.x, 1e-1);
@@ -78,9 +78,8 @@ public class BoundingBoxTest {
     public void testIntersectsFrustum() throws Exception {
         BoundingBox boundingBox = new BoundingBox();
         Globe globe = new GlobeWgs84();
-        double radius = globe.getEquatorialRadius();
-        double minElevation = 0;
-        double maxElevation = 1000;
+        float minElevation = 0;
+        float maxElevation = 1000;
         Sector sector = Sector.fromDegrees(-0.5, -0.5, 1d, 1d);
         boundingBox.setToSector(sector, globe, minElevation, maxElevation);
 
@@ -93,8 +92,8 @@ public class BoundingBoxTest {
         BoundingBox boundingBox = new BoundingBox();
         Globe globe = new GlobeWgs84();
         double radius = globe.getEquatorialRadius();
-        double minElevation = 0;
-        double maxElevation = 1000;
+        float minElevation = 0;
+        float maxElevation = 1000;
         Sector sector = Sector.fromDegrees(-0.5, -0.5, 1d, 1d);
         boundingBox.setToSector(sector, globe, minElevation, maxElevation);
         Vec3 point = globe.geographicToCartesian(0, 0, 0, new Vec3());

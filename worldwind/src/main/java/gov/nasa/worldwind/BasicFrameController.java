@@ -46,7 +46,7 @@ public class BasicFrameController implements FrameController {
     }
 
     protected void tessellateTerrain(RenderContext rc) {
-        Tessellator tess = rc.globe.getTessellator();
+        Tessellator tess = rc.terrainTessellator;
         tess.tessellate(rc);
     }
 

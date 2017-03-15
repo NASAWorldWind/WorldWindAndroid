@@ -42,11 +42,6 @@ public class BasicGlobe implements Globe {
      */
     protected GeographicProjection projection;
 
-    /**
-     *
-     */
-    protected Tessellator tessellator;
-
     private Matrix4 modelview = new Matrix4();
 
     private Matrix4 origin = new Matrix4();
@@ -90,7 +85,6 @@ public class BasicGlobe implements Globe {
         this.polarRadius = semiMajorAxis * (1 - f);
         this.eccentricitySquared = 2 * f - f * f;
         this.projection = projection;
-        this.tessellator = new BasicTessellator();
     }
 
     @Override
@@ -137,28 +131,13 @@ public class BasicGlobe implements Globe {
     }
 
     @Override
-    public Tessellator getTessellator() {
-        return tessellator;
-    }
-
-    @Override
-    public void setTessellator(Tessellator tessellator) {
-        if (tessellator == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicGlobe", "setTessellator", "missingTessellator"));
-        }
-
-        this.tessellator = tessellator;
-    }
-
-    @Override
     public Vec3 geographicToCartesian(double latitude, double longitude, double altitude, Vec3 result) {
         if (result == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesian", "missingResult"));
         }
 
-        return this.projection.geographicToCartesian(this, latitude, longitude, altitude, null, result);
+        return this.projection.geographicToCartesian(this, latitude, longitude, altitude, result);
     }
 
     @Override
@@ -178,11 +157,11 @@ public class BasicGlobe implements Globe {
                 Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianTransform", "missingResult"));
         }
 
-        return this.projection.geographicToCartesianTransform(this, latitude, longitude, altitude, null, result);
+        return this.projection.geographicToCartesianTransform(this, latitude, longitude, altitude, result);
     }
 
     @Override
-    public float[] geographicToCartesianGrid(Sector sector, int numLat, int numLon, double[] elevations,
+    public float[] geographicToCartesianGrid(Sector sector, int numLat, int numLon, float[] elevations,
                                              Vec3 origin, float[] result, int stride, int pos) {
         if (sector == null) {
             throw new IllegalArgumentException(
@@ -205,7 +184,7 @@ public class BasicGlobe implements Globe {
                 Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingResult"));
         }
 
-        return this.projection.geographicToCartesianGrid(this, sector, numLat, numLon, elevations, origin, null,
+        return this.projection.geographicToCartesianGrid(this, sector, numLat, numLon, elevations, origin,
             result, stride, pos);
     }
 
@@ -216,7 +195,7 @@ public class BasicGlobe implements Globe {
                 Logger.logMessage(Logger.ERROR, "BasicGlobe", "cartesianToGeographic", "missingResult"));
         }
 
-        return this.projection.cartesianToGeographic(this, x, y, z, null, result);
+        return this.projection.cartesianToGeographic(this, x, y, z, result);
     }
 
     @Override
@@ -226,7 +205,7 @@ public class BasicGlobe implements Globe {
                 Logger.logMessage(Logger.ERROR, "BasicGlobe", "cartesianToLocalTransform", "missingResult"));
         }
 
-        return this.projection.cartesianToLocalTransform(this, x, y, z, null, result);
+        return this.projection.cartesianToLocalTransform(this, x, y, z, result);
     }
 
     @Override
@@ -394,6 +373,6 @@ public class BasicGlobe implements Globe {
                 Logger.logMessage(Logger.ERROR, "BasicGlobe", "intersect", "missingResult"));
         }
 
-        return this.projection.intersect(this, line, null, result);
+        return this.projection.intersect(this, line, result);
     }
 }

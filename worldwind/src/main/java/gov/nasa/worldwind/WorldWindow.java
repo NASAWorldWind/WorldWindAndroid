@@ -34,9 +34,11 @@ import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.geom.Viewport;
+import gov.nasa.worldwind.globe.BasicTessellator;
 import gov.nasa.worldwind.globe.GeographicProjection;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.GlobeWgs84;
+import gov.nasa.worldwind.globe.Tessellator;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.render.RenderResourceCache;
@@ -67,6 +69,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     protected Globe globe = new GlobeWgs84();
 
     protected LayerList layers = new LayerList();
+
+    protected Tessellator tessellator = new BasicTessellator();
 
     protected double verticalExaggeration = 1;
 
@@ -238,6 +242,19 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         }
 
         this.globe = globe;
+    }
+
+    public Tessellator getTessellator() {
+        return this.tessellator;
+    }
+
+    public void setTessellator(Tessellator tessellator) {
+        if (tessellator == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "setTessellator", "missingTessellator"));
+        }
+
+        this.tessellator = tessellator;
     }
 
     public LayerList getLayers() {
@@ -886,6 +903,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Setup the render context according to the World Window's current state.
         this.rc.globe = this.globe;
+        this.rc.terrainTessellator = this.tessellator;
         this.rc.layers = this.layers;
         this.rc.verticalExaggeration = this.verticalExaggeration;
         this.rc.fieldOfView = this.fieldOfView;

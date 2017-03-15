@@ -36,7 +36,7 @@ public class ProjectionWgs84 implements GeographicProjection {
     }
 
     @Override
-    public Vec3 geographicToCartesian(Globe globe, double latitude, double longitude, double altitude, Vec3 offset, Vec3 result) {
+    public Vec3 geographicToCartesian(Globe globe, double latitude, double longitude, double altitude, Vec3 result) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesian", "missingGlobe"));
@@ -94,7 +94,7 @@ public class ProjectionWgs84 implements GeographicProjection {
     }
 
     @Override
-    public Matrix4 geographicToCartesianTransform(Globe globe, double latitude, double longitude, double altitude, Vec3 offset, Matrix4 result) {
+    public Matrix4 geographicToCartesianTransform(Globe globe, double latitude, double longitude, double altitude, Matrix4 result) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianTransform", "missingGlobe"));
@@ -179,9 +179,8 @@ public class ProjectionWgs84 implements GeographicProjection {
     }
 
     @Override
-    public float[] geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon,
-                                             double[] elevations, Vec3 origin, Vec3 offset,
-                                             float[] result, int stride, int pos) {
+    public float[] geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon, float[] elevations,
+                                             Vec3 origin, float[] result, int stride, int pos) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianGrid", "missingGlobe"));
@@ -264,7 +263,7 @@ public class ProjectionWgs84 implements GeographicProjection {
 
     @SuppressWarnings({"UnnecessaryLocalVariable", "SuspiciousNameCombination"})
     @Override
-    public Position cartesianToGeographic(Globe globe, double x, double y, double z, Vec3 offset, Position result) {
+    public Position cartesianToGeographic(Globe globe, double x, double y, double z, Position result) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "cartesianToGeographic", "missingGlobe"));
@@ -367,7 +366,7 @@ public class ProjectionWgs84 implements GeographicProjection {
     }
 
     @Override
-    public Matrix4 cartesianToLocalTransform(Globe globe, double x, double y, double z, Vec3 offset, Matrix4 result) {
+    public Matrix4 cartesianToLocalTransform(Globe globe, double x, double y, double z, Matrix4 result) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "cartesianToLocalTransform", "missingGlobe"));
@@ -378,7 +377,7 @@ public class ProjectionWgs84 implements GeographicProjection {
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "cartesianToLocalTransform", "missingResult"));
         }
 
-        Position pos = this.cartesianToGeographic(globe, x, y, z, offset, this.scratchPos);
+        Position pos = this.cartesianToGeographic(globe, x, y, z, this.scratchPos);
         double radLat = Math.toRadians(pos.latitude);
         double radLon = Math.toRadians(pos.longitude);
         double cosLat = Math.cos(radLat);
@@ -444,7 +443,7 @@ public class ProjectionWgs84 implements GeographicProjection {
     }
 
     @Override
-    public boolean intersect(Globe globe, Line line, Vec3 offset, Vec3 result) {
+    public boolean intersect(Globe globe, Line line, Vec3 result) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "cartesianToGeographic", "missingGlobe"));

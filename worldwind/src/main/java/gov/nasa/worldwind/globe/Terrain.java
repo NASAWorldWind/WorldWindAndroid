@@ -10,31 +10,25 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 
 /**
- * Surface of a planet or celestial object. Models the geometric surface defined by an ellipsoidal globe and its
- * associated elevations. A terrain uses the Cartesian coordinate system specified by the globe's {@link
- * GeographicProjection}, and therefore may model either an ellipsoid or an arbitrary 2D projection.
+ * Surface of a planet or celestial object.
+ * <p>
+ * Models the geometric surface defined by an ellipsoidal globe and its
+ * associated elevations. Terrain uses the Cartesian coordinate system specified by a {@code GeographicProjection} and
+ * is capable of representing both a 3D ellipsoid and a 2D map projection, though not simultaneously.
  * <p/>
- * Implementations of this interface may model a subset of the globe's surface, and at an arbitrary (or varying)
- * resolution. Unless the terrain implementation is known to represent a pre-determined region of the Globe's surface,
- * method such as intersect and surfacePoint are not guaranteed to compute the desired Cartesian coordinate.
- * Additionally, the results of these methods must be interpreted as representing an arbitrary resolution, unless the
- * terrain implementation is known to represent a pre-determined resolution.
+ * <h3>Caching Terrain Queries</h3>
+ * <p>
+ * Terrain implementations typically model a subset of the globe's surface at varying
+ * resolution. In this case results from the methods {@code intersect} and {@code surfacePoint} cannot be cached. Either
+ * method may fail to compute a result when the terrain surface has no geometry in the region queried, and even if
+ * computation is successful the result is based on an unknown resolution. However, if the terrain implementation is
+ * known to model a pre-determined resolution and region of interest results from the methods {@code intersect} and
+ * {@code surfacePoint} may be cached.
+ * </p>
+ *
+ * @see GeographicProjection
  */
 public interface Terrain {
-
-    /**
-     * Indicates the globe modeled by this terrain.
-     *
-     * @return the terrain's globe
-     */
-    Globe getGlobe();
-
-    /**
-     * Indicates the geometric surface's vertical exaggeration.
-     *
-     * @return the terrain's vertical exaggeration
-     */
-    double getVerticalExaggeration();
 
     /**
      * Indicates the geographic rectangular region that contains this terrain. The returned sector may contain
@@ -65,12 +59,11 @@ public interface Terrain {
      *
      * @param latitude  the location's latitude in degrees
      * @param longitude the location's longitude in degrees
-     * @param offset    a vertical offset in meters applied to the terrain height
      * @param result    a pre-allocated {@link Vec3} in which to store the computed X, Y and Z Cartesian coordinates
      *
      * @return true if the geographic location is on the terrain surface, otherwise false
      *
      * @throws IllegalArgumentException if the result is null
      */
-    boolean surfacePoint(double latitude, double longitude, double offset, Vec3 result);
+    boolean surfacePoint(double latitude, double longitude, Vec3 result);
 }

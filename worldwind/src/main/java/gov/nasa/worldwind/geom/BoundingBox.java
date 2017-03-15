@@ -223,7 +223,7 @@ public class BoundingBox {
      *
      * @throws IllegalArgumentException If either the specified sector or globe is null or undefined.
      */
-    public BoundingBox setToSector(Sector sector, Globe globe, double minElevation, double maxElevation) {
+    public BoundingBox setToSector(Sector sector, Globe globe, float minElevation, float maxElevation) {
         if (sector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BoundingBox", "setToSector", "missingSector"));
@@ -241,7 +241,7 @@ public class BoundingBox {
         int count = numLat * numLon;
         int stride = 3;
 
-        double[] elevations = new double[count];
+        float[] elevations = new float[count];
         Arrays.fill(elevations, maxElevation);
         elevations[0] = elevations[2] = elevations[6] = elevations[8] = minElevation;
 

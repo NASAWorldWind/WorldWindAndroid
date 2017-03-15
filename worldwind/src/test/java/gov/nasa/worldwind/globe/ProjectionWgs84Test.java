@@ -85,7 +85,7 @@ public class ProjectionWgs84Test {
             Vec3 v = (Vec3) station.getValue()[1];
             Vec3 result = new Vec3();
 
-            wgs84.geographicToCartesian(globe, p.latitude, p.longitude, p.altitude, null, result);
+            wgs84.geographicToCartesian(globe, p.latitude, p.longitude, p.altitude, result);
 
             // Note: we must rotate the axis to match the WW coord system to the WGS coord system
             // WW: Y is polar axis, X and Z line on the equatorial plane with X +/-90 and Z +/-180
@@ -111,8 +111,8 @@ public class ProjectionWgs84Test {
         Vec3 vec = new Vec3();
         Position pos = new Position();
 
-        wgs84.geographicToCartesian(globe, lat, lon, alt, null, vec);
-        wgs84.cartesianToGeographic(globe, vec.x, vec.y, vec.z, null, pos);
+        wgs84.geographicToCartesian(globe, lat, lon, alt, vec);
+        wgs84.cartesianToGeographic(globe, vec.x, vec.y, vec.z, pos);
 
         assertEquals("lat", lat, pos.latitude, 1e-6);
         assertEquals("lon", lon, pos.longitude, 1e-6);
@@ -172,7 +172,7 @@ public class ProjectionWgs84Test {
         expected.multiplyByRotation(1, 0, 0, -lat);
         expected.multiplyByTranslation(0, 0, Rn);
 
-        Matrix4 result = wgs84.geographicToCartesianTransform(globe, lat, lon, alt, null, new Matrix4());
+        Matrix4 result = wgs84.geographicToCartesianTransform(globe, lat, lon, alt, new Matrix4());
 
         assertArrayEquals(expected.m, result.m, 1e-6);
     }
@@ -186,13 +186,13 @@ public class ProjectionWgs84Test {
         int numLat = 17;
         int numLon = 33;
         int count = numLat * numLon * stride;
-        double[] elevations = new double[count];
+        float[] elevations = new float[count];
         Sector sector = new Sector();
         Vec3 referencePoint = new Vec3();
         Vec3 offset = new Vec3();
         float[] result = new float[count];
 
-        wgs84.geographicToCartesianGrid(globe, sector, numLat, numLon, elevations, referencePoint, offset, result, stride, 0);
+        wgs84.geographicToCartesianGrid(globe, sector, numLat, numLon, elevations, referencePoint, result, stride, 0);
 
         fail("The test case is a stub.");
 
@@ -215,7 +215,7 @@ public class ProjectionWgs84Test {
 
             // Note: we must rotate the axis to match the WW coord system to the WGS ECEF coord system
             // WW: Y is polar axis, X and Z line on the equatorial plane with X coincident with +/-90 and Z +/-180
-            wgs84.cartesianToGeographic(globe, v.x, v.y, v.z, null, result);
+            wgs84.cartesianToGeographic(globe, v.x, v.y, v.z, result);
 
             assertEquals(station.getKey(), Location.normalizeLatitude(p.latitude), result.latitude, 1e-6);
             assertEquals(station.getKey(), Location.normalizeLongitude(p.longitude), result.longitude, 1e-6);
@@ -239,8 +239,8 @@ public class ProjectionWgs84Test {
         Vec3 vec = new Vec3();
         Position pos = new Position();
 
-        wgs84.cartesianToGeographic(globe, x, y, z, null, pos);
-        wgs84.geographicToCartesian(globe, pos.latitude, pos.longitude, pos.altitude, null, vec);
+        wgs84.cartesianToGeographic(globe, x, y, z, pos);
+        wgs84.geographicToCartesian(globe, pos.latitude, pos.longitude, pos.altitude, vec);
 
         assertEquals("x", x, vec.x, 1e-6);
         assertEquals("y", y, vec.y, 1e-6);
@@ -258,7 +258,7 @@ public class ProjectionWgs84Test {
         ProjectionWgs84 wgs84 = new ProjectionWgs84();
         Line ray = new Line(new Vec3(990474.8037403631, 3007310.9566306924, 5583923.602748461), new Vec3(-0.1741204769506282, 0.9711294099374702, -0.16306357245254538));
 
-        boolean intersection = wgs84.intersect(this.globe, ray, null, new Vec3());
+        boolean intersection = wgs84.intersect(this.globe, ray, new Vec3());
 
         assertFalse("EMP backward intersection", intersection);
     }
@@ -276,7 +276,7 @@ public class ProjectionWgs84Test {
         PowerMockito.when(mockedGlobe.getPolarRadius()).thenReturn(1.0);
         Line ray = new Line(new Vec3(0.8, 0.8, 0.0), new Vec3(0.0, 1.0, 0.0));
 
-        boolean intersection = wgs84.intersect(mockedGlobe, ray, null, new Vec3());
+        boolean intersection = wgs84.intersect(mockedGlobe, ray, new Vec3());
 
         assertFalse("simple backwards intersection", intersection);
     }
@@ -294,7 +294,7 @@ public class ProjectionWgs84Test {
         PowerMockito.when(mockedGlobe.getPolarRadius()).thenReturn(1.0);
         Line ray = new Line(new Vec3(0.8, 0.8, 0.0), new Vec3(0.0, -1.0, 0.0));
 
-        boolean intersection = wgs84.intersect(mockedGlobe, ray, null, new Vec3());
+        boolean intersection = wgs84.intersect(mockedGlobe, ray, new Vec3());
 
         assertTrue("simple intersection", intersection);
     }
@@ -315,7 +315,7 @@ public class ProjectionWgs84Test {
         Vec3 result = new Vec3();
         double errorThreshold = 1e-9;
 
-        boolean intersection = wgs84.intersect(mockedGlobe, ray, null, result);
+        boolean intersection = wgs84.intersect(mockedGlobe, ray, result);
 
         assertTrue("simple intersection", intersection);
         assertEquals("nearest calculated intersection x", 0.0, result.x, errorThreshold);
@@ -337,7 +337,7 @@ public class ProjectionWgs84Test {
         Vec3 result = new Vec3();
         double errorThreshold = 1e-9;
 
-        boolean intersection = wgs84.intersect(mockedGlobe, ray, null, result);
+        boolean intersection = wgs84.intersect(mockedGlobe, ray, result);
 
         assertTrue("simple internal intersection", intersection);
         assertEquals("forward calculated intersection x", 1.0, result.x, errorThreshold);

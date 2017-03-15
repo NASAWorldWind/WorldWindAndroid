@@ -78,7 +78,6 @@ public class BasicTerrainTest {
 
         // Create the terrain object used by the test
         this.terrain = new BasicTerrain();
-        ((BasicTerrain) this.terrain).setGlobe(this.globe);
 
         // Add a terrain tile used to the mocked terrain
         LevelSet levelSet = new LevelSet(new Sector().setFullSphere(), 1.0, 1, 5, 5); // tiles with 5x5 vertices
@@ -101,24 +100,6 @@ public class BasicTerrainTest {
     }
 
     @Test
-    public void testGetGlobe() throws Exception {
-        Globe expected = this.globe;
-
-        Globe actual = this.terrain.getGlobe();
-
-        assertEquals("globe", expected, actual);
-    }
-
-    @Test
-    public void testGetVerticalExaggeration() throws Exception {
-        double expected = 1.0;
-
-        double actual = this.terrain.getVerticalExaggeration();
-
-        assertEquals("vertical exaggeration", expected, actual, 0);
-    }
-
-    @Test
     public void testGetSector() throws Exception {
         Sector expected = new Sector(0, 0, 1, 1);
 
@@ -137,7 +118,7 @@ public class BasicTerrainTest {
         boolean expectedReturn = true;
 
         Vec3 actual = new Vec3();
-        boolean actualReturn = this.terrain.surfacePoint(lat, lon, alt, actual);
+        boolean actualReturn = this.terrain.surfacePoint(lat, lon, actual);
 
         assertEquals("surfacePoint Southwest corner x", expected.x, actual.x, TOLERANCE);
         assertEquals("surfacePoint Southwest corner y", expected.y, actual.y, TOLERANCE);
@@ -155,7 +136,7 @@ public class BasicTerrainTest {
         boolean expectedReturn = true;
 
         Vec3 actual = new Vec3();
-        boolean actualReturn = this.terrain.surfacePoint(lat, lon, alt, actual);
+        boolean actualReturn = this.terrain.surfacePoint(lat, lon, actual);
 
         assertEquals("surfacePoint Southeast corner x", expected.x, actual.x, TOLERANCE);
         assertEquals("surfacePoint Southeast corner y", expected.y, actual.y, TOLERANCE);
@@ -173,7 +154,7 @@ public class BasicTerrainTest {
         boolean expectedReturn = true;
 
         Vec3 actual = new Vec3();
-        boolean actualReturn = this.terrain.surfacePoint(lat, lon, alt, actual);
+        boolean actualReturn = this.terrain.surfacePoint(lat, lon, actual);
 
         assertEquals("surfacePoint Northwest corner x", expected.x, actual.x, TOLERANCE);
         assertEquals("surfacePoint Northwest corner y", expected.y, actual.y, TOLERANCE);
@@ -191,7 +172,7 @@ public class BasicTerrainTest {
         boolean expectedReturn = true;
 
         Vec3 actual = new Vec3();
-        boolean actualReturn = this.terrain.surfacePoint(lat, lon, alt, actual);
+        boolean actualReturn = this.terrain.surfacePoint(lat, lon, actual);
 
         assertEquals("surfacePoint Northeast corner x", expected.x, actual.x, TOLERANCE);
         assertEquals("surfacePoint Northeast corner y", expected.y, actual.y, TOLERANCE);
@@ -209,7 +190,7 @@ public class BasicTerrainTest {
         boolean expectedReturn = true;
 
         Vec3 actual = new Vec3();
-        boolean actualReturn = this.terrain.surfacePoint(lat, lon, alt, actual);
+        boolean actualReturn = this.terrain.surfacePoint(lat, lon, actual);
 
         assertEquals("surfacePoint South edge x", expected.x, actual.x, TOLERANCE);
         assertEquals("surfacePoint South edge y", expected.y, actual.y, TOLERANCE);
@@ -227,7 +208,7 @@ public class BasicTerrainTest {
         boolean expectedReturn = true;
 
         Vec3 actual = new Vec3();
-        boolean actualReturn = this.terrain.surfacePoint(lat, lon, alt, actual);
+        boolean actualReturn = this.terrain.surfacePoint(lat, lon, actual);
 
         assertEquals("surfacePoint North edge x", expected.x, actual.x, TOLERANCE);
         assertEquals("surfacePoint North edge y", expected.y, actual.y, TOLERANCE);
@@ -245,7 +226,7 @@ public class BasicTerrainTest {
         boolean expectedReturn = true;
 
         Vec3 actual = new Vec3();
-        boolean actualReturn = this.terrain.surfacePoint(lat, lon, alt, actual);
+        boolean actualReturn = this.terrain.surfacePoint(lat, lon, actual);
 
         assertEquals("surfacePoint West edge x", expected.x, actual.x, TOLERANCE);
         assertEquals("surfacePoint West edge y", expected.y, actual.y, TOLERANCE);
@@ -263,7 +244,7 @@ public class BasicTerrainTest {
         boolean expectedReturn = true;
 
         Vec3 actual = new Vec3();
-        boolean actualReturn = this.terrain.surfacePoint(lat, lon, alt, actual);
+        boolean actualReturn = this.terrain.surfacePoint(lat, lon, actual);
 
         assertEquals("surfacePoint East edge x", expected.x, actual.x, TOLERANCE);
         assertEquals("surfacePoint East edge y", expected.y, actual.y, TOLERANCE);
@@ -282,7 +263,7 @@ public class BasicTerrainTest {
         boolean expectedReturn = true;
 
         Vec3 actual = new Vec3();
-        boolean actualReturn = this.terrain.surfacePoint(0.125, 0.125, 0.0, actual);
+        boolean actualReturn = this.terrain.surfacePoint(0.125, 0.125, actual);
 
         assertEquals("surfacePoint Southwest cell x", expected.x, actual.x, TOLERANCE);
         assertEquals("surfacePoint Southwest cell y", expected.y, actual.y, TOLERANCE);
@@ -301,7 +282,7 @@ public class BasicTerrainTest {
         boolean expectedReturn = true;
 
         Vec3 actual = new Vec3();
-        boolean actualReturn = this.terrain.surfacePoint(0.125, 0.875, 0.0, actual);
+        boolean actualReturn = this.terrain.surfacePoint(0.125, 0.875, actual);
 
         assertEquals("surfacePoint Southeast cell x", expected.x, actual.x, TOLERANCE);
         assertEquals("surfacePoint Southeast cell y", expected.y, actual.y, TOLERANCE);
@@ -320,7 +301,7 @@ public class BasicTerrainTest {
         boolean expectedReturn = true;
 
         Vec3 actual = new Vec3();
-        boolean actualReturn = this.terrain.surfacePoint(0.875, 0.125, 0.0, actual);
+        boolean actualReturn = this.terrain.surfacePoint(0.875, 0.125, actual);
 
         assertEquals("surfacePoint Northwest cell x", expected.x, actual.x, TOLERANCE);
         assertEquals("surfacePoint Northwest cell y", expected.y, actual.y, TOLERANCE);
@@ -339,7 +320,7 @@ public class BasicTerrainTest {
         boolean expectedReturn = true;
 
         Vec3 actual = new Vec3();
-        boolean actualReturn = this.terrain.surfacePoint(0.875, 0.875, 0.0, actual);
+        boolean actualReturn = this.terrain.surfacePoint(0.875, 0.875, actual);
 
         assertEquals("surfacePoint Northeast cell x", expected.x, actual.x, TOLERANCE);
         assertEquals("surfacePoint Northeast cell y", expected.y, actual.y, TOLERANCE);
@@ -357,7 +338,7 @@ public class BasicTerrainTest {
         boolean expectedReturn = true;
 
         Vec3 actual = new Vec3();
-        boolean actualReturn = this.terrain.surfacePoint(lat, lon, alt, actual);
+        boolean actualReturn = this.terrain.surfacePoint(lat, lon, actual);
 
         assertEquals("surfacePoint centroid x", expected.x, actual.x, TOLERANCE);
         assertEquals("surfacePoint centroid y", expected.y, actual.y, TOLERANCE);

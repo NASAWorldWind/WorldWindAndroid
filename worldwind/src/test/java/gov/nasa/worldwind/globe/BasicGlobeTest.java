@@ -183,7 +183,7 @@ public class BasicGlobeTest {
 
         this.globe.geographicToCartesian(latitude, longitude, altitude, result);
 
-        verify(mockedProjection).geographicToCartesian(globe, latitude, longitude, altitude, null, result);
+        verify(mockedProjection).geographicToCartesian(globe, latitude, longitude, altitude, result);
     }
 
     /**
@@ -216,7 +216,7 @@ public class BasicGlobeTest {
 
         globe.geographicToCartesianTransform(latitude, longitude, altitude, result);
 
-        verify(mockedProjection).geographicToCartesianTransform(globe, latitude, longitude, altitude, null, result);
+        verify(mockedProjection).geographicToCartesianTransform(globe, latitude, longitude, altitude, result);
     }
 
     /**
@@ -230,7 +230,7 @@ public class BasicGlobeTest {
         int numLat = 17;
         int numLon = 33;
         int count = numLat * numLon * stride;
-        double[] elevations = new double[count];
+        float[] elevations = new float[count];
         Sector sector = new Sector();
         Vec3 referencePoint = new Vec3();
         float[] result = new float[count];
@@ -238,7 +238,7 @@ public class BasicGlobeTest {
         globe.geographicToCartesianGrid(sector, numLat, numLon, elevations, referencePoint, result, stride, 0);
 
         verify(mockedProjection).geographicToCartesianGrid(globe, sector, numLat, numLon, elevations,
-            referencePoint, null, result, stride, 0);
+            referencePoint, result, stride, 0);
     }
 
     /**
@@ -255,7 +255,7 @@ public class BasicGlobeTest {
 
         globe.cartesianToGeographic(x, y, z, result);
 
-        verify(mockedProjection).cartesianToGeographic(globe, x, y, z, null, result);
+        verify(mockedProjection).cartesianToGeographic(globe, x, y, z, result);
     }
 
     ////////////////////

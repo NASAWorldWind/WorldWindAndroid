@@ -27,6 +27,7 @@ import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.geom.Viewport;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.Terrain;
+import gov.nasa.worldwind.globe.Tessellator;
 import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.shape.TextAttributes;
@@ -41,6 +42,8 @@ public class RenderContext {
     private static final int MAX_PICKED_OBJECT_ID = 0xFFFFFF;
 
     public Globe globe;
+
+    public Tessellator terrainTessellator;
 
     public Terrain terrain;
 
@@ -102,11 +105,14 @@ public class RenderContext {
 
     private Map<Object, Object> userProperties = new HashMap<>();
 
+    private Vec3 scratchVector = new Vec3();
+
     public RenderContext() {
     }
 
     public void reset() {
         this.globe = null;
+        this.terrainTessellator = null;
         this.terrain = null;
         this.layers = null;
         this.currentLayer = null;
@@ -364,13 +370,20 @@ public class RenderContext {
                     return this.globe.geographicToCartesian(latitude, longitude, altitude * this.verticalExaggeration, result);
                 }
             case WorldWind.CLAMP_TO_GROUND:
-                if (this.terrain != null && this.terrain.surfacePoint(latitude, longitude, 0, result)) {
+                if (this.terrain != null && this.terrain.surfacePoint(latitude, longitude, result)) {
                     return result; // found a point on the terrain
                 } else if (this.globe != null) {
+                    // TODO use elevation model height as a fallback
                     return this.globe.geographicToCartesian(latitude, longitude, 0, result);
                 }
             case WorldWind.RELATIVE_TO_GROUND:
-                if (this.terrain != null && this.terrain.surfacePoint(latitude, longitude, altitude, result)) {
+                if (this.terrain != null && this.terrain.surfacePoint(latitude, longitude, result)) {
+                    if (altitude != 0) { // Offset along the normal vector at the terrain surface point.
+                        this.globe.geographicToCartesianNormal(latitude, longitude, this.scratchVector);
+                        result.x += this.scratchVector.x * altitude;
+                        result.y += this.scratchVector.y * altitude;
+                        result.z += this.scratchVector.z * altitude;
+                    }
                     return result; // found a point relative to the terrain
                 } else if (this.globe != null) {
                     // TODO use elevation model height as a fallback
