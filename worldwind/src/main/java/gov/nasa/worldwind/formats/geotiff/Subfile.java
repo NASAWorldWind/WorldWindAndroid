@@ -446,9 +446,13 @@ public class Subfile {
             result.put(this.buffer.array(), this.offsets[i], this.byteCounts[i]);
         }
 
-        // TODO handle compression modes
-
-        return result;
+        if (this.getCompression() == 1) {
+            // no compression
+            return result;
+        } else {
+            throw new UnsupportedOperationException(
+                Logger.logMessage(Logger.ERROR, "Subfile", "getData", "compression type not supported"));
+        }
     }
 
     protected double calculateRational(ByteBuffer buffer) {
