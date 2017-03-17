@@ -365,4 +365,53 @@ public class GeoTiffTest {
         assertEquals("x resolution", expectedValue, xResolution, delta);
         assertEquals("y resolution", expectedValue, yResolution, delta);
     }
+
+    @Test
+    public void testTileCombination() throws Exception {
+        ByteBuffer raw = ByteBuffer.allocate(6912);
+        Subfile file = new Subfile(raw, 0);
+        file.tileWidth = 16;
+        file.tileLength = 16;
+        file.imageWidth = 40;
+        file.imageLength = 40;
+        file.samplesPerPixel = 3;
+        file.bitsPerSample = new int[]{8, 8, 8};
+        file.offsets = new int[]{0, 768, 768 * 2, 768 * 3, 768 * 4, 768 * 5, 768 * 6, 768 * 7, 768 * 8};
+        for (int bOffset = 0; bOffset < file.offsets.length; bOffset++) {
+            byte[] bytes = new byte[768];
+            Arrays.fill(bytes, (byte) bOffset);
+            raw.put(bytes, 0, 768);
+        }
+        ByteBuffer result = ByteBuffer.allocate(6912);
+        byte expectedTile0 = 0;
+        byte expectedTile1 = 1;
+        byte expectedTile2 = 2;
+        byte expectedTile3 = 3;
+        byte expectedTile4 = 4;
+        byte expectedTile5 = 5;
+        byte expectedTile6 = 6;
+        byte expectedTile7 = 7;
+        byte expectedTile8 = 8;
+
+        file.combineTiles(result);
+        byte actualTile0 = result.get((6 + 16 * 0 + (6 + 16 * 0) * 40) * 3);
+        byte actualTile1 = result.get((6 + 16 * 1 + (6 + 16 * 0) * 40) * 3);
+        byte actualTile2 = result.get((6 + 16 * 2 + (6 + 16 * 0) * 40) * 3);
+        byte actualTile3 = result.get((6 + 16 * 0 + (6 + 16 * 1) * 40) * 3);
+        byte actualTile4 = result.get((6 + 16 * 1 + (6 + 16 * 1) * 40) * 3);
+        byte actualTile5 = result.get((6 + 16 * 2 + (6 + 16 * 1) * 40) * 3);
+        byte actualTile6 = result.get((6 + 16 * 0 + (6 + 16 * 2) * 40) * 3);
+        byte actualTile7 = result.get((6 + 16 * 1 + (6 + 16 * 2) * 40) * 3);
+        byte actualTile8 = result.get((6 + 16 * 2 + (6 + 16 * 2) * 40) * 3);
+
+        assertEquals("tile 0 value", expectedTile0, actualTile0);
+        assertEquals("tile 1 value", expectedTile1, actualTile1);
+        assertEquals("tile 2 value", expectedTile2, actualTile2);
+        assertEquals("tile 3 value", expectedTile3, actualTile3);
+        assertEquals("tile 4 value", expectedTile4, actualTile4);
+        assertEquals("tile 5 value", expectedTile5, actualTile5);
+        assertEquals("tile 6 value", expectedTile6, actualTile6);
+        assertEquals("tile 7 value", expectedTile7, actualTile7);
+        assertEquals("tile 8 value", expectedTile8, actualTile8);
+    }
 }

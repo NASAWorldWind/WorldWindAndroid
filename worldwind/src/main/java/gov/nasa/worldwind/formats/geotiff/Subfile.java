@@ -99,7 +99,6 @@ public class Subfile {
     protected int tileLength = 0;
 
     // 339
-    @SAMPLE_FORMAT
     protected int[] sampleFormat = {UNSIGNED_INT};
 
     public Subfile(ByteBuffer buffer, int offset) {
@@ -449,20 +448,83 @@ public class Subfile {
         // set the result ByteBuffer to our datas byte order
         result.order(this.buffer.order());
 
-        // use the provided buffer to extract the image strips or tiles from the tiff buffer
-        this.getOffsets(); // ensure the arrays have been initiated
+        // TODO handle compression
+        if (this.fields.containsKey(273)) {
+            this.combineStrips(result);
+        } else {
+            this.combineTiles(result);
+        }
+
+        return result;
+    }
+
+    protected void combineStrips(ByteBuffer result) {
+        // this works when the data is not compressed and may work when it is compressed as well
         for (int i = 0; i < this.offsets.length; i++) {
             result.put(this.buffer.array(), this.offsets[i], this.byteCounts[i]);
         }
+    }
 
-        // TODO handle compression
+    protected void combineTiles(ByteBuffer result) {
+        // this works when the data is not compressed, but it will cause problems if it is compressed and needs to be
+        // decompressed as this detiles the tiles, each tile should be decompressed prior to this operation
+        int tilesAcross = (this.imageWidth + this.tileWidth - 1) / this.tileWidth;
+        // int tilesDown = (this.imageLength + this.tileLength - 1) / this.tileLength;
+        int currentTileRow = 0;
+        int currentTileCol = 0;
+        int tileIndex = 0;
+        int tilePixelRow = 0;
+        int tilePixelCol = 0;
+        int tilePixelIndex = 0;
+        int totalBytesPerSample = this.getTotalBytesPerPixel();
+        int offsetIndex = 0;
+        byte[] rawBytes = this.buffer.array();
+        for (int pixelRow = 0; pixelRow < this.imageLength; pixelRow++) {
+            currentTileRow = floorDiv(pixelRow, this.tileLength);
+            tilePixelRow = pixelRow - currentTileRow * this.tileLength;
+            for (int pixelCol = 0; pixelCol < this.imageWidth; pixelCol++) {
+                currentTileCol = floorDiv(pixelCol, this.tileWidth);
+                tileIndex = (currentTileRow * tilesAcross) + currentTileCol;
 
-        return result;
+                // offset byte row/column
+                tilePixelCol = pixelCol - currentTileCol * this.tileWidth;
+                tilePixelIndex = (tilePixelRow * this.tileWidth + tilePixelCol) * totalBytesPerSample;
+
+                offsetIndex = this.offsets[tileIndex] + tilePixelIndex;
+
+                result.put(rawBytes, offsetIndex, totalBytesPerSample);
+            }
+        }
+    }
+
+    protected int getTotalBytesPerPixel() {
+        int totalBytesPerSample = 0;
+        for (int i = 0; i < this.bitsPerSample.length; i++) {
+            totalBytesPerSample += this.bitsPerSample[i];
+        }
+        return totalBytesPerSample / 8;
     }
 
     protected double calculateRational(ByteBuffer buffer) {
         long numerator = GeoTiff.readDWord(buffer);
         long denominator = GeoTiff.readDWord(buffer);
         return numerator / denominator;
+    }
+
+    /**
+     * Borrowed from 1.8 Math package
+     *
+     * @param x
+     * @param y
+     *
+     * @return
+     */
+    private static int floorDiv(int x, int y) {
+        int r = x / y;
+        // if the signs are different and modulo not zero, round down
+        if ((x ^ y) < 0 && (r * y != x)) {
+            r--;
+        }
+        return r;
     }
 }
