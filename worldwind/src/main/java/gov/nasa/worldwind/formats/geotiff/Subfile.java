@@ -65,6 +65,9 @@ public class Subfile {
     // 283
     protected double yResolution = 0;
 
+    // 284
+    protected int planarConfiguration = 1;
+
     // 296
     protected int resolutionUnit = 2;
 
@@ -201,6 +204,15 @@ public class Subfile {
         }
 
         return this.yResolution;
+    }
+
+    public int getPlanarConfiguration() {
+        Field field = this.fields.get(284);
+        if (field != null) {
+            this.planarConfiguration = GeoTiff.readWord(field.getDataBuffer());
+        }
+
+        return this.planarConfiguration;
     }
 
     public int getResolutionUnit() {
