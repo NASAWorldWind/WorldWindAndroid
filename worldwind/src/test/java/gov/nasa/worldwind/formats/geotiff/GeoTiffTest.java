@@ -366,6 +366,15 @@ public class GeoTiffTest {
         assertEquals("y resolution", expectedValue, yResolution, delta);
     }
 
+    /**
+     * Tiff 6.0 provides two mechanisms for storing chunked imagery data, strips and tiles. This test ensures the {@link
+     * Subfile}s method for converting the individual tiles to a single image buffer is functioning properly. The test
+     * uses a 3x3 grid of 16x16 pixels with 3 samples per pixel and 8 bits per sample. The tiles are stored in tiles
+     * and referenced by the tileOffset field. For this test, the original tiles use byte values indicating their tile
+     * index in the tileOffset array. This method also tests that overlap of a tile past the image border is considered.
+     *
+     * @throws Exception
+     */
     @Test
     public void testTileCombination() throws Exception {
         ByteBuffer raw = ByteBuffer.allocate(6912);
@@ -376,9 +385,11 @@ public class GeoTiffTest {
         file.imageLength = 40;
         file.samplesPerPixel = 3;
         file.bitsPerSample = new int[]{8, 8, 8};
+        // canned continuous offsets
         file.offsets = new int[]{0, 768, 768 * 2, 768 * 3, 768 * 4, 768 * 5, 768 * 6, 768 * 7, 768 * 8};
         for (int bOffset = 0; bOffset < file.offsets.length; bOffset++) {
             byte[] bytes = new byte[768];
+            // each chunk of tiles should use the value of their index
             Arrays.fill(bytes, (byte) bOffset);
             raw.put(bytes, 0, 768);
         }
@@ -394,6 +405,7 @@ public class GeoTiffTest {
         byte expectedTile8 = 8;
 
         file.combineTiles(result);
+        // sample the result 37.5% through the tile in each tile of the grid
         byte actualTile0 = result.get((6 + 16 * 0 + (6 + 16 * 0) * 40) * 3);
         byte actualTile1 = result.get((6 + 16 * 1 + (6 + 16 * 0) * 40) * 3);
         byte actualTile2 = result.get((6 + 16 * 2 + (6 + 16 * 0) * 40) * 3);
