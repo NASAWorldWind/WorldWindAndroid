@@ -72,6 +72,7 @@ public class GeoTiff {
 
     protected void parseIfds(int offset) {
         Subfile ifd = new Subfile(this.buffer, offset);
+        this.buffer.position(offset);
         this.parseIfdFields(ifd);
         this.subfiles.add(ifd);
 
