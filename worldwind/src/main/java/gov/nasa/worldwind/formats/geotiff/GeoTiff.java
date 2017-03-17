@@ -36,7 +36,7 @@ public class GeoTiff {
     }
 
     protected void checkAndSetByteOrder() {
-        // Check Endianess
+        // check byte order
         this.buffer.clear();
         char posOne = (char) this.buffer.get();
         char posTwo = (char) this.buffer.get();
@@ -49,7 +49,7 @@ public class GeoTiff {
                 Logger.logMessage(Logger.ERROR, "GeoTiff", "checkAndSetByteOrder", "noncompliantByteOrder"));
         }
 
-        // Check the version
+        // check the version
         int version = this.readWord();
         if (version != 42) {
             throw new RuntimeException(
@@ -59,7 +59,7 @@ public class GeoTiff {
 
     public void parseFile() {
         this.buffer.position(4);
-        this.parseIfds(this.readLimitedDWord());
+        this.parseSubfiles(this.readLimitedDWord());
     }
 
     public List<Subfile> getSubfiles() {
@@ -70,21 +70,21 @@ public class GeoTiff {
         return this.subfiles;
     }
 
-    protected void parseIfds(int offset) {
+    protected void parseSubfiles(int offset) {
         Subfile ifd = new Subfile(this.buffer, offset);
         this.buffer.position(offset);
-        this.parseIfdFields(ifd);
+        this.parseSubfileFields(ifd);
         this.subfiles.add(ifd);
 
         // check if there are more IFDs
         int nextIfdOffset = this.readLimitedDWord();
         if (nextIfdOffset != 0) {
             this.buffer.position(nextIfdOffset);
-            this.parseIfds(nextIfdOffset);
+            this.parseSubfiles(nextIfdOffset);
         }
     }
 
-    protected void parseIfdFields(Subfile ifd) {
+    protected void parseSubfileFields(Subfile ifd) {
         int entries = this.readWord();
 
         for (int i = 0; i < entries; i++) {
@@ -109,6 +109,8 @@ public class GeoTiff {
 
             ifd.fields.put(field.tag, field);
         }
+
+        ifd.populateDefinedFields();
     }
 
     protected int readWord() {

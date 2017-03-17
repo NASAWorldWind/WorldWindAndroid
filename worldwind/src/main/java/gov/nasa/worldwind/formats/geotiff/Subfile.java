@@ -5,6 +5,10 @@
 
 package gov.nasa.worldwind.formats.geotiff;
 
+import android.support.annotation.IntDef;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,13 +17,19 @@ import gov.nasa.worldwind.util.Logger;
 
 public class Subfile {
 
-    public static final int SAMPLE_FORMAT_UNSIGNED_INT = 1;
+    public static final int UNSIGNED_INT = 1;
 
-    public static final int SAMPLE_FORMAT_TWOS_COMP_SIGNED_INT = 2;
+    public static final int TWOS_COMP_SIGNED_INT = 2;
 
-    public static final int SAMPLE_FORMAT_FLOATING_POINT = 3;
+    public static final int FLOATING_POINT = 3;
 
-    public static final int SAMPLE_FORMAT_UNDEFINED = 4;
+    public static final int UNDEFINED = 4;
+
+    @IntDef({UNSIGNED_INT, TWOS_COMP_SIGNED_INT, FLOATING_POINT, UNDEFINED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SAMPLE_FORMAT {
+
+    }
 
     /**
      * A {@link ByteBuffer} of the entire Tiff file of which this Subfile is a part of.
@@ -89,7 +99,8 @@ public class Subfile {
     protected int tileLength = 0;
 
     // 339
-    protected int[] sampleFormat = {SAMPLE_FORMAT_UNSIGNED_INT};
+    @SAMPLE_FORMAT
+    protected int[] sampleFormat = {UNSIGNED_INT};
 
     public Subfile(ByteBuffer buffer, int offset) {
         this.buffer = buffer;
@@ -100,17 +111,13 @@ public class Subfile {
         return this.fields;
     }
 
-    public int getNewSubfileType() {
+    protected void populateDefinedFields() {
         Field field = this.fields.get(254);
         if (field != null) {
             this.newSubfileType = GeoTiff.readLimitedDWord(field.getDataBuffer());
         }
 
-        return this.newSubfileType;
-    }
-
-    public int getImageWidth() {
-        Field field = this.fields.get(256);
+        field = this.fields.get(256);
         if (field != null) {
             if (field.type == ValueType.USHORT) {
                 this.imageWidth = GeoTiff.readWord(field.getDataBuffer());
@@ -118,18 +125,14 @@ public class Subfile {
                 this.imageWidth = GeoTiff.readLimitedDWord(field.getDataBuffer());
             } else {
                 throw new RuntimeException(
-                    Logger.logMessage(Logger.ERROR, "Subfile", "populateDefaults", "invalid image width type"));
+                    Logger.logMessage(Logger.ERROR, "Subfile", "populateDefinedFields", "invalid image width type"));
             }
         } else {
             throw new RuntimeException(
-                Logger.logMessage(Logger.ERROR, "Subfile", "populateDefaults", "invalid tiff format - image width missing"));
+                Logger.logMessage(Logger.ERROR, "Subfile", "populateDefinedFields", "invalid tiff format - image width missing"));
         }
 
-        return this.imageWidth;
-    }
-
-    public int getImageLength() {
-        Field field = this.fields.get(257);
+        field = this.fields.get(257);
         if (field != null) {
             if (field.type == ValueType.USHORT) {
                 this.imageLength = GeoTiff.readWord(field.getDataBuffer());
@@ -137,18 +140,14 @@ public class Subfile {
                 this.imageLength = GeoTiff.readLimitedDWord(field.getDataBuffer());
             } else {
                 throw new RuntimeException(
-                    Logger.logMessage(Logger.ERROR, "Subfile", "populateDefaults", "invalid image length type"));
+                    Logger.logMessage(Logger.ERROR, "Subfile", "populateDefinedFields", "invalid image length type"));
             }
         } else {
             throw new RuntimeException(
-                Logger.logMessage(Logger.ERROR, "Subfile", "populateDefaults", "invalid tiff format - image length missing"));
+                Logger.logMessage(Logger.ERROR, "Subfile", "populateDefinedFields", "invalid tiff format - image length missing"));
         }
 
-        return this.imageLength;
-    }
-
-    public int[] getBitsPerSample() {
-        Field field = this.fields.get(258);
+        field = this.fields.get(258);
         if (field != null) {
             this.bitsPerSample = new int[field.count];
             for (int i = 0; i < field.count; i++) {
@@ -156,141 +155,139 @@ public class Subfile {
             }
         }
 
-        return this.bitsPerSample;
-    }
-
-    public int getCompression() {
-        Field field = this.fields.get(259);
+        field = this.fields.get(259);
         if (field != null) {
             this.compression = GeoTiff.readWord(field.getDataBuffer());
+            if (this.compression != 1) {
+                throw new UnsupportedOperationException(
+                    Logger.logMessage(Logger.ERROR, "Subfile", "populateDefineFields", "compressed images are not supported"));
+            }
         }
 
-        return this.compression;
-    }
-
-    public int getPhotometricInterpretation() {
-        Field field = this.fields.get(262);
+        field = this.fields.get(262);
         if (field != null) {
             this.photometricInterpretation = GeoTiff.readWord(field.getDataBuffer());
         } else {
-            throw new RuntimeException("invalid tiff format - photometricinterpretation missing");
+            throw new RuntimeException(
+                Logger.logMessage(Logger.ERROR, "Subfile", "populatedDefinedFields", "photometricinterpretation missing"));
         }
 
-        return this.photometricInterpretation;
-    }
-
-    public int getSamplesPerPixel() {
-        Field field = this.fields.get(277);
+        field = this.fields.get(277);
         if (field != null) {
             this.samplesPerPixel = GeoTiff.readWord(field.getDataBuffer());
         }
 
-        return this.samplesPerPixel;
-    }
-
-    public double getXResolution() {
-        Field field = this.fields.get(282);
+        field = this.fields.get(282);
         if (field != null) {
             this.xResolution = this.calculateRational(field.getDataBuffer());
         }
 
-        return this.xResolution;
-    }
-
-    public double getYResolution() {
-        Field field = this.fields.get(283);
+        field = this.fields.get(283);
         if (field != null) {
             this.yResolution = this.calculateRational(field.getDataBuffer());
         }
 
-        return this.yResolution;
-    }
-
-    public int getPlanarConfiguration() {
-        Field field = this.fields.get(284);
+        field = this.fields.get(284);
         if (field != null) {
             this.planarConfiguration = GeoTiff.readWord(field.getDataBuffer());
+            if (this.planarConfiguration != 1) {
+                throw new UnsupportedOperationException(
+                    Logger.logMessage(Logger.ERROR, "Subfile", "populateDefinedFields", "planar configurations other than 1 are not supported"));
+            }
         }
 
-        return this.planarConfiguration;
-    }
-
-    public int getResolutionUnit() {
-        Field field = this.fields.get(296);
+        field = this.fields.get(296);
         if (field != null) {
             this.resolutionUnit = GeoTiff.readWord(field.getDataBuffer());
         }
 
-        return this.resolutionUnit;
-    }
-
-    public int[] getOffsets() {
-        if (this.offsets == null) {
-            if (this.fields.containsKey(273)) {
-                this.populateStripMetadata();
-            } else {
-                this.populateTileMetadata();
-            }
-        }
-
-        return this.offsets;
-    }
-
-    public int[] getByteCounts() {
-        if (this.byteCounts == null) {
-            if (this.fields.containsKey(273)) {
-                this.populateStripMetadata();
-            } else {
-                this.populateTileMetadata();
-            }
-        }
-
-        return this.byteCounts;
-    }
-
-    public int getRowsPerStrip() {
-        this.getOffsets(); // ensures the property is initialized
-
-        if (this.tileWidth == 0) {
-            return this.rowsPerStrip;
+        if (this.fields.containsKey(273)) {
+            this.populateStripFields();
+        } else if (this.fields.containsKey(324)) {
+            this.populateTileFields();
         } else {
-            return -1;
+            throw new RuntimeException(
+                Logger.logMessage(Logger.ERROR, "Subfile", "populateDefinedFields", "no image offsets provided"));
         }
-    }
 
-    public int getTileWidth() {
-        this.getOffsets(); // ensures the property is initialized
-
-        if (this.tileWidth != 0) {
-            return this.tileWidth;
-        } else {
-            return -1;
-        }
-    }
-
-    public int getTileLength() {
-        this.getOffsets(); // ensures the property is initialized
-
-        if (this.tileLength != 0) {
-            return this.tileLength;
-        } else {
-            return -1;
-        }
-    }
-
-    public int[] getSampleFormat() {
-        Field field = this.fields.get(339);
+        field = this.fields.get(339);
         if (field != null) {
             this.sampleFormat = new int[field.count];
             for (int i = 0; i < field.count; i++) {
                 this.sampleFormat[i] = GeoTiff.readWord(field.getDataBuffer());
             }
         }
+    }
 
+    public int getNewSubfileType() {
+        return this.newSubfileType;
+    }
+
+    public int getImageWidth() {
+        return this.imageWidth;
+    }
+
+    public int getImageLength() {
+        return this.imageLength;
+    }
+
+    public int[] getBitsPerSample() {
+        return this.bitsPerSample;
+    }
+
+    public int getCompression() {
+        return this.compression;
+    }
+
+    public int getPhotometricInterpretation() {
+        return this.photometricInterpretation;
+    }
+
+    public int getSamplesPerPixel() {
+        return this.samplesPerPixel;
+    }
+
+    public double getXResolution() {
+        return this.xResolution;
+    }
+
+    public double getYResolution() {
+        return this.yResolution;
+    }
+
+    public int getPlanarConfiguration() {
+        return this.planarConfiguration;
+    }
+
+    public int getResolutionUnit() {
+        return this.resolutionUnit;
+    }
+
+    public int[] getOffsets() {
+        return this.offsets;
+    }
+
+    public int[] getByteCounts() {
+        return this.byteCounts;
+    }
+
+    public int getRowsPerStrip() {
+        return this.rowsPerStrip;
+    }
+
+    public int getTileWidth() {
+        return this.tileWidth;
+    }
+
+    public int getTileLength() {
+        return this.tileLength;
+    }
+
+    public int[] getSampleFormat() {
         return this.sampleFormat;
     }
 
-    protected void populateStripMetadata() {
+    protected void populateStripFields() {
         Field field = this.fields.get(273);
 
         if (field != null) {
@@ -303,7 +300,7 @@ public class Subfile {
                     this.offsets[i] = GeoTiff.readLimitedDWord(data);
                 } else {
                     throw new RuntimeException(
-                        Logger.logMessage(Logger.ERROR, "Strip", "populateDefaults", "invalid offset type"));
+                        Logger.logMessage(Logger.ERROR, "Strip", "populateStripFields", "invalid offset type"));
                 }
             }
         } else {
@@ -318,7 +315,7 @@ public class Subfile {
                 this.rowsPerStrip = GeoTiff.readLimitedDWord(field.getDataBuffer());
             } else {
                 throw new RuntimeException(
-                    Logger.logMessage(Logger.ERROR, "Strip", "populateDefaults", "invalid rowsperstrip type"));
+                    Logger.logMessage(Logger.ERROR, "Strip", "populateStripFields", "invalid rowsperstrip type"));
             }
         }
 
@@ -333,7 +330,7 @@ public class Subfile {
                     this.byteCounts[i] = GeoTiff.readLimitedDWord(data);
                 } else {
                     throw new RuntimeException(
-                        Logger.logMessage(Logger.ERROR, "Strip", "populateDefaults", "invalid byteCounts type"));
+                        Logger.logMessage(Logger.ERROR, "Strip", "populateStripFields", "invalid byteCounts type"));
                 }
             }
         } else {
@@ -341,7 +338,7 @@ public class Subfile {
         }
     }
 
-    protected void populateTileMetadata() {
+    protected void populateTileFields() {
         Field field = this.fields.get(324);
 
         if (field != null) {
@@ -354,12 +351,12 @@ public class Subfile {
                     this.offsets[i] = GeoTiff.readLimitedDWord(data);
                 } else {
                     throw new RuntimeException(
-                        Logger.logMessage(Logger.ERROR, "Subfile", "populateTileMetadata", "invalid offset type"));
+                        Logger.logMessage(Logger.ERROR, "Subfile", "populateTileFields", "invalid offset type"));
                 }
             }
         } else {
             throw new RuntimeException(
-                Logger.logMessage(Logger.ERROR, "Subfile", "populateTileMetadata", "missing offset"));
+                Logger.logMessage(Logger.ERROR, "Subfile", "populateTileFields", "missing offset"));
         }
 
         field = this.fields.get(325);
@@ -373,12 +370,12 @@ public class Subfile {
                     this.byteCounts[i] = GeoTiff.readLimitedDWord(data);
                 } else {
                     throw new RuntimeException(
-                        Logger.logMessage(Logger.ERROR, "Subfile", "populateTileMetadata", "invalid byteCounts type"));
+                        Logger.logMessage(Logger.ERROR, "Subfile", "populateTileFields", "invalid byteCounts type"));
                 }
             }
         } else {
             throw new RuntimeException(
-                Logger.logMessage(Logger.ERROR, "Subfile", "populateTileMetadata", "invalid tiff format - byteCounts missing"));
+                Logger.logMessage(Logger.ERROR, "Subfile", "populateTileFields", "invalid tiff format - byteCounts missing"));
         }
 
         field = this.fields.get(322);
@@ -389,11 +386,11 @@ public class Subfile {
                 this.tileWidth = GeoTiff.readLimitedDWord(field.getDataBuffer());
             } else {
                 throw new RuntimeException(
-                    Logger.logMessage(Logger.ERROR, "Subfile", "populateTileMetadata", "invalid tileWidth type"));
+                    Logger.logMessage(Logger.ERROR, "Subfile", "populateTileFields", "invalid tileWidth type"));
             }
         } else {
             throw new RuntimeException(
-                Logger.logMessage(Logger.ERROR, "Subfile", "populateTileMetadata", "missing tilewidth field"));
+                Logger.logMessage(Logger.ERROR, "Subfile", "populateTileFields", "missing tilewidth field"));
         }
 
         field = this.fields.get(323);
@@ -404,11 +401,11 @@ public class Subfile {
                 this.tileLength = GeoTiff.readLimitedDWord(field.getDataBuffer());
             } else {
                 throw new RuntimeException(
-                    Logger.logMessage(Logger.ERROR, "Subfile", "populateTileMetadata", "invalid tileLength type"));
+                    Logger.logMessage(Logger.ERROR, "Subfile", "populateTileFields", "invalid tileLength type"));
             }
         } else {
             throw new RuntimeException(
-                Logger.logMessage(Logger.ERROR, "Subfile", "populateTileMetadata", "missing tileLength field"));
+                Logger.logMessage(Logger.ERROR, "Subfile", "populateTileFields", "missing tileLength field"));
         }
     }
 
@@ -458,13 +455,9 @@ public class Subfile {
             result.put(this.buffer.array(), this.offsets[i], this.byteCounts[i]);
         }
 
-        if (this.getCompression() == 1) {
-            // no compression
-            return result;
-        } else {
-            throw new UnsupportedOperationException(
-                Logger.logMessage(Logger.ERROR, "Subfile", "getData", "compression type not supported"));
-        }
+        // TODO handle compression
+
+        return result;
     }
 
     protected double calculateRational(ByteBuffer buffer) {
