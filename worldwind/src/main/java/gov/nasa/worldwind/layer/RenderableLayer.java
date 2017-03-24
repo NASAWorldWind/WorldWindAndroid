@@ -80,10 +80,10 @@ public class RenderableLayer extends AbstractLayer implements Iterable<Renderabl
 
     public int indexOfRenderableNamed(String name) {
 
-        for (int i = 0; i < this.renderables.size(); i++) {
-            String renderableName = this.renderables.get(i).getDisplayName();
+        for (int idx = 0, len = this.renderables.size(); idx < len; idx++) {
+            String renderableName = this.renderables.get(idx).getDisplayName();
             if ((renderableName == null) ? (name == null) : renderableName.equals(name)) {
-                return i;
+                return idx;
             }
         }
 
@@ -92,12 +92,12 @@ public class RenderableLayer extends AbstractLayer implements Iterable<Renderabl
 
     public int indexOfRenderableWithProperty(Object key, Object value) {
 
-        for (int i = 0; i < this.renderables.size(); i++) {
-            Renderable renderable = this.renderables.get(i);
+        for (int idx = 0, len = this.renderables.size(); idx < len; idx++) {
+            Renderable renderable = this.renderables.get(idx);
             if (renderable.hasUserProperty(key)) {
                 Object layerValue = renderable.getUserProperty(key);
                 if ((layerValue == null) ? (value == null) : layerValue.equals(value)) {
-                    return i;
+                    return idx;
                 }
             }
         }
