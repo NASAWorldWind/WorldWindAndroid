@@ -5,6 +5,7 @@
 
 package gov.nasa.worldwind.geom;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -13,21 +14,37 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.globe.Globe;
-import gov.nasa.worldwind.globe.GlobeWgs84;
+import gov.nasa.worldwind.globe.ProjectionWgs84;
 import gov.nasa.worldwind.util.Logger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 @RunWith(PowerMockRunner.class) // Support for mocking static methods
 @PrepareForTest(Logger.class)   // We mock the Logger class to avoid its calls to android.util.log
 public class BoundingBoxTest {
+
+    /**
+     * The globe used in the tests, created in setUp(), released in tearDown().
+     */
+    private Globe globe = null;
 
     @Before
     public void setUp() throws Exception {
         // To accommodate WorldWind exception handling, we must mock all
         // the static methods in Logger to avoid calls to android.util.log
         PowerMockito.mockStatic(Logger.class);
+        // Create the globe object used by the test
+        globe = new Globe(WorldWind.WGS84_ELLIPSOID, new ProjectionWgs84());
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        // Release the globe object
+        globe = null;
     }
 
     @Test
@@ -42,7 +59,6 @@ public class BoundingBoxTest {
         BoundingBox boundingBox = new BoundingBox();
         double centerLat = 0;
         double centerLon = 0;
-        Globe globe = new GlobeWgs84();
         // Create a very, very small sector.
         Sector smallSector = sectorFromCentroid(centerLat, centerLon, 0.0001, 0.0001);
         // Create a large sector.
@@ -77,7 +93,6 @@ public class BoundingBoxTest {
     @Test
     public void testIntersectsFrustum() throws Exception {
         BoundingBox boundingBox = new BoundingBox();
-        Globe globe = new GlobeWgs84();
         float minElevation = 0;
         float maxElevation = 1000;
         Sector sector = Sector.fromDegrees(-0.5, -0.5, 1d, 1d);
@@ -90,7 +105,6 @@ public class BoundingBoxTest {
     @Test
     public void testDistanceTo() throws Exception {
         BoundingBox boundingBox = new BoundingBox();
-        Globe globe = new GlobeWgs84();
         double radius = globe.getEquatorialRadius();
         float minElevation = 0;
         float maxElevation = 1000;

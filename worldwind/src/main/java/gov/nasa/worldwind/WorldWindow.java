@@ -35,9 +35,8 @@ import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.geom.Viewport;
 import gov.nasa.worldwind.globe.BasicTessellator;
-import gov.nasa.worldwind.globe.GeographicProjection;
 import gov.nasa.worldwind.globe.Globe;
-import gov.nasa.worldwind.globe.GlobeWgs84;
+import gov.nasa.worldwind.globe.ProjectionWgs84;
 import gov.nasa.worldwind.globe.Tessellator;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.render.RenderContext;
@@ -64,9 +63,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     protected static final int MSG_ID_SET_DEPTH_BITS = 4;
 
     /**
-     * Indicates the planet or celestial object displayed by this World Window.
+     * Planet or celestial object displayed by this World Window.
      */
-    protected Globe globe = new GlobeWgs84();
+    protected Globe globe = new Globe(WorldWind.WGS84_ELLIPSOID, new ProjectionWgs84());
 
     protected LayerList layers = new LayerList();
 
@@ -218,8 +217,10 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     /**
-     * Indicates the planet or celestial object displayed by this World Window. The Cartesian coordinate system is
-     * specified by the globe's {@link GeographicProjection}. Defaults to {@link GlobeWgs84}.
+     * Indicates the planet or celestial object displayed by this World Window. Defines the reference ellipsoid and
+     * elevation models. Globe expresses its ellipsoidal parameters and elevation values in meters.
+     * <p>
+     * World Window's globe is initially configured with the WGS 84 reference ellipsoid.
      *
      * @return the globe displayed by this World Window
      */
@@ -228,12 +229,12 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     /**
-     * Sets the planet or celestial object displayed by this World Window. The Cartesian coordinate system is specified
-     * by the globe's {@link GeographicProjection}.
+     * Sets the planet or celestial object displayed by this World Window. Defines the reference ellipsoid and
+     * elevation models. Globe expresses its ellipsoidal parameters and elevation values in meters.
      *
      * @param globe the globe to display
      *
-     * @throws IllegalArgumentException if the globe is null
+     * @throws IllegalArgumentException If the globe is null
      */
     public void setGlobe(Globe globe) {
         if (globe == null) {
@@ -1037,8 +1038,11 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // TODO adjust the clip plane distances based on the navigator's orientation - shorter distances when the
         // TODO horizon is not in view
         // TODO parameterize the object altitude for horizon distance
-        double near = this.navigator.getAltitude() * 0.5;
-        double far = this.globe.horizonDistance(this.navigator.getAltitude(), 160000);
+        double eyeAltitude = this.navigator.getAltitude();
+        double eyeHorizon = this.globe.horizonDistance(eyeAltitude);
+        double atmosphereHorizon = this.globe.horizonDistance(160000);
+        double near = eyeAltitude * 0.5;
+        double far = eyeHorizon + atmosphereHorizon;
 
         // Computes the near clip distance that provides a minimum resolution at the far clip plane, based on the OpenGL
         // context's depth buffer precision.

@@ -204,7 +204,7 @@ public class ProjectionWgs84 implements GeographicProjection {
 
         if (result == null || result.length < numPoints * stride + pos) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingResult"));
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianGrid", "missingResult"));
         }
 
         double minLat = Math.toRadians(sector.minLatitude());

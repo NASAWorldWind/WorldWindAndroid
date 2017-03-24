@@ -5,7 +5,6 @@
 
 package gov.nasa.worldwind.globe;
 
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -18,6 +17,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.HashMap;
 import java.util.Map;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Matrix4;
@@ -46,7 +46,7 @@ public class ProjectionWgs84Test {
         PowerMockito.mockStatic(Logger.class);
 
         // Create a globe with a WGS84 definition.
-        this.globe = new GlobeWgs84();
+        this.globe = new Globe(WorldWind.WGS84_ELLIPSOID, new ProjectionWgs84());
     }
 
     @After
@@ -94,7 +94,6 @@ public class ProjectionWgs84Test {
             assertEquals(station.getKey(), v.y, result.y, 1e-3);
             assertEquals(station.getKey(), v.z, result.z, 1e-3);
         }
-
     }
 
     /**
@@ -195,7 +194,6 @@ public class ProjectionWgs84Test {
         wgs84.geographicToCartesianGrid(globe, sector, numLat, numLon, elevations, referencePoint, result, stride, 0);
 
         fail("The test case is a stub.");
-
     }
 
     /**
@@ -220,9 +218,7 @@ public class ProjectionWgs84Test {
             assertEquals(station.getKey(), Location.normalizeLatitude(p.latitude), result.latitude, 1e-6);
             assertEquals(station.getKey(), Location.normalizeLongitude(p.longitude), result.longitude, 1e-6);
             assertEquals(station.getKey(), p.altitude, result.altitude, 1e-3);
-
         }
-
     }
 
     /**
@@ -368,7 +364,6 @@ public class ProjectionWgs84Test {
     public static Vec3 fromEcef(double xEcef, double yEcef, double zEcef) {
         return new Vec3(yEcef, zEcef, xEcef);
     }
-
 
     /**
      * Returns a Map of station names with Position and Vec3 pairs.

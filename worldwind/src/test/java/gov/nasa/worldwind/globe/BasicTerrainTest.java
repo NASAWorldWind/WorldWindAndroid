@@ -13,6 +13,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.util.LevelSet;
@@ -74,7 +75,7 @@ public class BasicTerrainTest {
         PowerMockito.mockStatic(Logger.class);
 
         // Create the globe object used by the test
-        this.globe = new GlobeWgs84();
+        this.globe = new Globe(WorldWind.WGS84_ELLIPSOID, new ProjectionWgs84());
 
         // Create the terrain object used by the test
         this.terrain = new BasicTerrain();

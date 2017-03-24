@@ -51,6 +51,7 @@ public class Logger {
         messageTable.put("missingColor", "The color is null");
         messageTable.put("missingConfig", "The configuration is null");
         messageTable.put("missingCoordinateSystem", "The coordinate system is null");
+        messageTable.put("missingEllipsoid", "The ellipsoid is null");
         messageTable.put("missingFactory", "The factory is null");
         messageTable.put("missingFormat", "The format is null");
         messageTable.put("missingFrameMetrics", "The frame metrics argument is null");
@@ -84,7 +85,6 @@ public class Logger {
         messageTable.put("missingSector", "The sector is null");
         messageTable.put("missingServiceAddress", "The service address is null");
         messageTable.put("missingSource", "The source is null");
-        messageTable.put("missingTessellator", "The tessellator is null");
         messageTable.put("missingTile", "The tile is null");
         messageTable.put("missingTileFactory", "The tile factory is null");
         messageTable.put("missingTileUrlFactory", "The tile url factory is null");
