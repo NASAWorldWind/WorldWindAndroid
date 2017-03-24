@@ -258,7 +258,7 @@ public class Tile {
      * @return true if the tile should be subdivided, otherwise false
      */
     public boolean mustSubdivide(RenderContext rc, double detailFactor) {
-        double distance = this.distanceTo(rc);
+        double distance = this.distanceToCamera(rc);
         double texelSize = this.level.texelHeight * rc.globe.getEquatorialRadius();
         double pixelSize = rc.pixelSizeAtDistance(distance);
         double densityFactor = 1.0;
@@ -371,17 +371,13 @@ public class Tile {
     }
 
     /**
-     * Calculates the distance to this Tile from the {@link gov.nasa.worldwind.geom.Camera} provided by the {@link
-     * RenderContext}. If the camera is located above the tile, the altitude of the camera is returned, otherwise the
-     * minimum distance to one of nine points oriented in a grid across the tile is returned.
+     * Calculates the distance from this tile to the camera point associated with the specified render context.
      *
-     * @param rc the {@link RenderContext} which provides the current {@link gov.nasa.worldwind.globe.Globe} and {@link
-     *           gov.nasa.worldwind.geom.Camera}
+     * @param rc the render context which provides the current camera point
      *
-     * @return the distance in meters from the tile
+     * @return the distance in meters
      */
-    protected double distanceTo(RenderContext rc) {
-
+    protected double distanceToCamera(RenderContext rc) {
         if (this.sector.contains(rc.camera.latitude, rc.camera.longitude)) {
             return rc.camera.altitude;
         }
@@ -390,17 +386,17 @@ public class Tile {
             this.samplePoints = rc.globe.geographicToCartesianGrid(this.sector, 3, 3, null, null, new float[27], 3, 0);
         }
 
-        double distance = Double.MAX_VALUE;
+        double minDistanceSq = Double.MAX_VALUE;
         for (int i = 0, len = this.samplePoints.length; i < len; i += 3) {
             double dx = rc.cameraPoint.x - this.samplePoints[i];
             double dy = rc.cameraPoint.y - this.samplePoints[i + 1];
             double dz = rc.cameraPoint.z - this.samplePoints[i + 2];
-            double pointDistance = dx * dx + dy * dy + dz * dz;
-            if (pointDistance < distance) {
-                distance = pointDistance;
+            double distanceSq = (dx * dx) + (dy * dy) + (dz * dz);
+            if (minDistanceSq > distanceSq) {
+                minDistanceSq = distanceSq;
             }
         }
 
-        return Math.sqrt(distance);
+        return Math.sqrt(minDistanceSq);
     }
 }
