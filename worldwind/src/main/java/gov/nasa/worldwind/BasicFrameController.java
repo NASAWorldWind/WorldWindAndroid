@@ -33,7 +33,7 @@ public class BasicFrameController implements FrameController {
 
     @Override
     public void renderFrame(RenderContext rc) {
-        rc.globe.getTessellator().tessellate(rc);
+        rc.terrainTessellator.tessellate(rc);
 
         if (rc.pickMode) {
             this.renderTerrainPickedObject(rc);
