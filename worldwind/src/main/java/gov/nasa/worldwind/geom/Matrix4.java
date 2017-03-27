@@ -1325,6 +1325,39 @@ public class Matrix4 {
     }
 
     /**
+     * Returns this viewing matrix's heading angle in degrees. The roll argument enables the caller to disambiguate
+     * heading and roll when the two rotation axes for heading and roll are parallel, causing gimbal lock.
+     * <p>
+     * The result of this method is undefined if this matrix is not a viewing matrix.
+     *
+     * @param roll the viewing matrix's roll angle in degrees, or 0 if the roll angle is unknown
+     *
+     * @return the extracted heading angle in degrees
+     */
+    public double extractHeading(double roll) {
+        double rad = Math.toRadians(roll);
+        double cr = Math.cos(rad);
+        double sr = Math.sin(rad);
+
+        double ch = (cr * this.m[0]) - (sr * this.m[4]);
+        double sh = (sr * this.m[5]) - (cr * this.m[1]);
+        return Math.toDegrees(Math.atan2(sh, ch));
+    }
+
+    /**
+     * Returns this viewing matrix's tilt angle in degrees.
+     * <p>
+     * The result of this method is undefined if this matrix is not a viewing matrix.
+     *
+     * @return the extracted heading angle in degrees
+     */
+    public double extractTilt() {
+        double ct = this.m[10];
+        double st = Math.sqrt(m[2] * m[2] + m[6] * m[6]);
+        return Math.toDegrees(Math.atan2(st, ct));
+    }
+
+    /**
      * Returns this symmetric matrix's eigenvectors. The eigenvectors are returned in the specified result arguments in
      * order of descending magnitude (most prominent to least prominent). Each eigenvector has length equal to its
      * corresponding eigenvalue.

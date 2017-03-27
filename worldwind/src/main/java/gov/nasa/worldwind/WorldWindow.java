@@ -123,8 +123,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         }
     });
 
-    private Camera scratchCamera = new Camera();
-
     private Matrix4 scratchModelview = new Matrix4();
 
     private Matrix4 scratchProjection = new Matrix4();
@@ -1059,8 +1057,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // Compute a perspective projection matrix given the World Window's viewport, field of view, and clip distances.
         projection.setToPerspectiveProjection(this.viewport.width, this.viewport.height, this.fieldOfView, near, far);
 
-        // Compute a Cartesian viewing matrix using this Navigator's properties as a Camera.
-        this.navigator.getAsCamera(this.globe, this.scratchCamera);
-        this.globe.cameraToCartesianTransform(this.scratchCamera, modelview).invertOrthonormal();
+        // Compute a Cartesian transform matrix from the Navigator.
+        this.navigator.getAsViewingMatrix(this.globe, modelview);
     }
 }

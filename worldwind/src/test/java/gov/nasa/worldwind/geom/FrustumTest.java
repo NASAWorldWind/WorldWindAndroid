@@ -200,9 +200,7 @@ public class FrustumTest {
 
         // Compute a Cartesian viewing matrix using this Navigator's properties as a Camera.
         Matrix4 modelview = new Matrix4();
-        Camera scratchCamera = new Camera();
-        navigator.getAsCamera(globe, scratchCamera);
-        globe.cameraToCartesianTransform(scratchCamera, modelview).invertOrthonormal();
+        navigator.getAsViewingMatrix(globe, modelview);
 
         // Compute the Frustum
         Frustum frustum = new Frustum();
@@ -250,9 +248,7 @@ public class FrustumTest {
 
         // Compute a Cartesian viewing matrix using this Navigator's properties as a Camera.
         Matrix4 modelview = new Matrix4();
-        Camera scratchCamera = new Camera();
-        navigator.getAsCamera(globe, scratchCamera);
-        globe.cameraToCartesianTransform(scratchCamera, modelview).invertOrthonormal();
+        navigator.getAsViewingMatrix(globe, modelview);
 
         // Compute the Frustum
         Frustum frustum = new Frustum();
