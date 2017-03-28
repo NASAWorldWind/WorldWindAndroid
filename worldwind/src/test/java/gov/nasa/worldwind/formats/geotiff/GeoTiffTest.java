@@ -378,7 +378,8 @@ public class GeoTiffTest {
     @Test
     public void testTileCombination() throws Exception {
         ByteBuffer raw = ByteBuffer.allocate(6912);
-        Subfile file = new Subfile(raw, 0);
+        Subfile file = new Subfile();
+        file.buffer = raw;
         file.tileWidth = 16;
         file.tileLength = 16;
         file.imageWidth = 40;

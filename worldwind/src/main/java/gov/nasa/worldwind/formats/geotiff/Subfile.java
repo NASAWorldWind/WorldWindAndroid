@@ -101,9 +101,44 @@ public class Subfile {
     // 339
     protected int[] sampleFormat = {UNSIGNED_INT};
 
+    /**
+     * Empty Subfile constructor. Will not provide parsed default values.
+     */
+    public Subfile() {
+
+    }
+
     public Subfile(ByteBuffer buffer, int offset) {
         this.buffer = buffer;
         this.offset = offset;
+
+        int entries = GeoTiff.readWord(this.buffer);
+
+        for (int i = 0; i < entries; i++) {
+            Field field = new Field();
+            field.subfile = this;
+            field.offset = this.buffer.position();
+            field.tag = GeoTiff.readWord(this.buffer);
+            field.type = ValueType.decode(GeoTiff.readWord(this.buffer));
+            field.count = GeoTiff.readLimitedDWord(this.buffer);
+
+            // Check if the data is available in the last four bytes of the field entry or if we need to read the pointer
+            int size = field.count * field.type.getSizeInBytes();
+
+            if (size > 4) {
+                field.dataOffset = GeoTiff.readLimitedDWord(this.buffer);
+            } else {
+                field.dataOffset = this.buffer.position();
+            }
+            this.buffer.position(field.dataOffset);
+            field.sliceBuffer(this.buffer);
+            this.buffer.position(field.offset + 12); // move the buffer position to the end of the field
+
+            this.fields.put(field.tag, field);
+        }
+
+        this.populateDefinedFields();
+
     }
 
     public Map<Integer, Field> getFields() {

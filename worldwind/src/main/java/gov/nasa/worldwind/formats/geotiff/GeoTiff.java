@@ -68,9 +68,8 @@ public class GeoTiff {
     }
 
     protected void parseSubfiles(int offset) {
-        Subfile ifd = new Subfile(this.buffer, offset);
         this.buffer.position(offset);
-        this.parseSubfileFields(ifd);
+        Subfile ifd = new Subfile(this.buffer, offset);
         this.subfiles.add(ifd);
 
         // check if there are more IFDs
@@ -79,35 +78,6 @@ public class GeoTiff {
             this.buffer.position(nextIfdOffset);
             this.parseSubfiles(nextIfdOffset);
         }
-    }
-
-    protected void parseSubfileFields(Subfile ifd) {
-        int entries = readWord(this.buffer);
-
-        for (int i = 0; i < entries; i++) {
-            Field field = new Field();
-            field.subfile = ifd;
-            field.offset = this.buffer.position();
-            field.tag = readWord(this.buffer);
-            field.type = ValueType.decode(readWord(this.buffer));
-            field.count = readLimitedDWord(this.buffer);
-
-            // Check if the data is available in the last four bytes of the field entry or if we need to read the pointer
-            int size = field.count * field.type.getSizeInBytes();
-
-            if (size > 4) {
-                field.dataOffset = readLimitedDWord(this.buffer);
-            } else {
-                field.dataOffset = this.buffer.position();
-            }
-            this.buffer.position(field.dataOffset);
-            field.sliceBuffer(this.buffer);
-            this.buffer.position(field.offset + 12); // move the buffer position to the end of the field
-
-            ifd.fields.put(field.tag, field);
-        }
-
-        ifd.populateDefinedFields();
     }
 
     protected static int readWord(ByteBuffer buffer) {
