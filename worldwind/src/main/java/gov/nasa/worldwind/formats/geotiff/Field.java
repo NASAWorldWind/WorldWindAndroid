@@ -58,8 +58,10 @@ public class Field {
      * @param original
      */
     protected void sliceBuffer(ByteBuffer original) {
-        int limit = this.type.getSizeInBytes() * this.count;
-        this.data = (ByteBuffer) original.slice().order(original.order()).limit(limit);
+        int originalLimit = original.limit();
+        original.limit(this.dataOffset + this.type.getSizeInBytes() * this.count);
+        this.data = original.slice().order(original.order());
+        original.limit(originalLimit);
     }
 
     public ByteBuffer getDataBuffer() {

@@ -46,25 +46,22 @@ public class GeoTiff {
             this.buffer.order(ByteOrder.BIG_ENDIAN);
         } else {
             throw new RuntimeException(
-                Logger.logMessage(Logger.ERROR, "GeoTiff", "checkAndSetByteOrder", "noncompliantByteOrder"));
+                Logger.logMessage(Logger.ERROR, "GeoTiff", "checkAndSetByteOrder", "Tiff byte order incompatible"));
         }
 
         // check the version
-        int version = this.readWord();
+        int version = readWord(this.buffer);
         if (version != 42) {
             throw new RuntimeException(
-                Logger.logMessage(Logger.ERROR, "GeoTiff", "checkAndSetByteOrder", "noncompliantVersion"));
+                Logger.logMessage(Logger.ERROR, "GeoTiff", "checkAndSetByteOrder", "Tiff version incompatible"));
         }
-    }
-
-    public void parseFile() {
-        this.buffer.position(4);
-        this.parseSubfiles(this.readLimitedDWord());
     }
 
     public List<Subfile> getSubfiles() {
         if (this.subfiles.isEmpty()) {
-            this.parseFile();
+            this.buffer.position(4);
+            int ifdOffset = readLimitedDWord(this.buffer);
+            this.parseSubfiles(ifdOffset);
         }
 
         return this.subfiles;
@@ -77,7 +74,7 @@ public class GeoTiff {
         this.subfiles.add(ifd);
 
         // check if there are more IFDs
-        int nextIfdOffset = this.readLimitedDWord();
+        int nextIfdOffset = readLimitedDWord(this.buffer);
         if (nextIfdOffset != 0) {
             this.buffer.position(nextIfdOffset);
             this.parseSubfiles(nextIfdOffset);
@@ -85,21 +82,21 @@ public class GeoTiff {
     }
 
     protected void parseSubfileFields(Subfile ifd) {
-        int entries = this.readWord();
+        int entries = readWord(this.buffer);
 
         for (int i = 0; i < entries; i++) {
             Field field = new Field();
             field.subfile = ifd;
             field.offset = this.buffer.position();
-            field.tag = this.readWord();
-            field.type = ValueType.decode(this.readWord());
-            field.count = this.readLimitedDWord();
+            field.tag = readWord(this.buffer);
+            field.type = ValueType.decode(readWord(this.buffer));
+            field.count = readLimitedDWord(this.buffer);
 
             // Check if the data is available in the last four bytes of the field entry or if we need to read the pointer
             int size = field.count * field.type.getSizeInBytes();
 
             if (size > 4) {
-                field.dataOffset = this.readLimitedDWord();
+                field.dataOffset = readLimitedDWord(this.buffer);
             } else {
                 field.dataOffset = this.buffer.position();
             }
@@ -113,23 +110,15 @@ public class GeoTiff {
         ifd.populateDefinedFields();
     }
 
-    protected int readWord() {
-        return readWord(this.buffer);
-    }
-
-    protected int readLimitedDWord() {
-        return readLimitedDWord(this.buffer);
-    }
-
-    public static int readWord(ByteBuffer buffer) {
+    protected static int readWord(ByteBuffer buffer) {
         return buffer.getShort() & 0xFFFF;
     }
 
-    public static long readDWord(ByteBuffer buffer) {
+    protected static long readDWord(ByteBuffer buffer) {
         return buffer.getInt() & 0xFFFFFFFFL;
     }
 
-    public static int readLimitedDWord(ByteBuffer buffer) {
+    protected static int readLimitedDWord(ByteBuffer buffer) {
         long val = readDWord(buffer);
         if (val > Integer.MAX_VALUE) {
             throw new RuntimeException(

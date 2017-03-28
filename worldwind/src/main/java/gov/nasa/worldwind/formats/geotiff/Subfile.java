@@ -461,8 +461,11 @@ public class Subfile {
     protected void combineStrips(ByteBuffer result) {
         // this works when the data is not compressed and may work when it is compressed as well
         for (int i = 0; i < this.offsets.length; i++) {
-            result.put(this.buffer.array(), this.offsets[i], this.byteCounts[i]);
+            this.buffer.limit(this.offsets[i] + this.byteCounts[i]);
+            this.buffer.position(this.offsets[i]);
+            result.put(this.buffer);
         }
+        this.buffer.clear();
     }
 
     protected void combineTiles(ByteBuffer result) {
@@ -478,7 +481,6 @@ public class Subfile {
         int tilePixelIndex = 0;
         int totalBytesPerSample = this.getTotalBytesPerPixel();
         int offsetIndex = 0;
-        byte[] rawBytes = this.buffer.array();
         for (int pixelRow = 0; pixelRow < this.imageLength; pixelRow++) {
             currentTileRow = floorDiv(pixelRow, this.tileLength);
             tilePixelRow = pixelRow - currentTileRow * this.tileLength;
@@ -491,10 +493,12 @@ public class Subfile {
                 tilePixelIndex = (tilePixelRow * this.tileWidth + tilePixelCol) * totalBytesPerSample;
 
                 offsetIndex = this.offsets[tileIndex] + tilePixelIndex;
-
-                result.put(rawBytes, offsetIndex, totalBytesPerSample);
+                this.buffer.limit(offsetIndex + totalBytesPerSample);
+                this.buffer.position(offsetIndex);
+                result.put(this.buffer);
             }
         }
+        this.buffer.clear();
     }
 
     protected int getTotalBytesPerPixel() {
