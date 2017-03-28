@@ -3,11 +3,11 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-package gov.nasa.worldwind.formats.geotiff;
+package gov.nasa.worldwind.formats.tiff;
 
 import gov.nasa.worldwind.util.Logger;
 
-public enum ValueType {
+public enum Type {
 
     UBYTE,
     ASCII,
@@ -22,7 +22,7 @@ public enum ValueType {
     FLOAT,
     DOUBLE;
 
-    public static ValueType decode(int type) {
+    public static Type decode(int type) {
         switch (type) {
             case 1:
                 return UBYTE;
@@ -50,7 +50,7 @@ public enum ValueType {
                 return DOUBLE;
             default:
                 throw new IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ValueType", "decode", "invalid type"));
+                    Logger.logMessage(Logger.ERROR, "Type", "decode", "invalid type"));
         }
     }
 
@@ -82,7 +82,7 @@ public enum ValueType {
                 return 8;
             default:
                 throw new RuntimeException(
-                    Logger.logMessage(Logger.ERROR, "ValueType", "getSizeInBytes", "invalid type"));
+                    Logger.logMessage(Logger.ERROR, "Type", "getSizeInBytes", "invalid type"));
         }
     }
 
@@ -114,7 +114,7 @@ public enum ValueType {
                 return 12;
             default:
                 throw new RuntimeException(
-                    Logger.logMessage(Logger.ERROR, "ValueType", "getSizeInBytes", "invalid type"));
+                    Logger.logMessage(Logger.ERROR, "Type", "getSizeInBytes", "invalid type"));
         }
     }
 

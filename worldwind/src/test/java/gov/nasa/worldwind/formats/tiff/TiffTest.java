@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-package gov.nasa.worldwind.formats.geotiff;
+package gov.nasa.worldwind.formats.tiff;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +23,7 @@ import static junit.framework.Assert.assertTrue;
 
 @RunWith(PowerMockRunner.class) // Support for mocking static methods
 @PrepareForTest(Logger.class)   // We mock the Logger class to avoid its calls to android.util.log
-public class GeoTiffTest {
+public class TiffTest {
 
     protected byte[] geotiffData;
 
@@ -54,8 +54,8 @@ public class GeoTiffTest {
 
     @Test
     public void testImageWidthAndLength_GeoTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.geotiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expected = 512;
 
         int actualWidth = file.getImageWidth();
@@ -67,8 +67,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetOffsets_GeoTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.geotiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         // the first twelve values and the last
         int[] expectedOffsets = {930, 9122, 17314, 25506, 33698, 41890, 50082, 58274, 66466, 74658, 82850, 91042, 517026};
 
@@ -83,8 +83,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetDataSize_GeoTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.geotiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedSize = 524288;
 
         int actualSize = file.getDataSize();
@@ -94,8 +94,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetData_Execution_GeoTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.geotiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         ByteBuffer data = ByteBuffer.allocate(file.getDataSize());
         int expectedPosition = file.getDataSize();
 
@@ -106,8 +106,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetBitsPerSample_GeoTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.geotiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedBitsPerSample = 16;
         int expectedComponentsPerPixel = 1;
 
@@ -119,8 +119,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetByteCounts_GeoTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.geotiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int[] expectedByteCounts = {8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192};
 
         int[] actualByteCounts = file.getByteCounts();
@@ -134,8 +134,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetCompression_GeoTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.geotiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 1;
 
         int actualValue = file.getCompression();
@@ -145,8 +145,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetPhotometricInterpretation_GeoTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.geotiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 1;
 
         int actualValue = file.getPhotometricInterpretation();
@@ -156,8 +156,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetResolutionUnit_GeoTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.geotiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 2;
 
         int actualValue = file.getResolutionUnit();
@@ -166,8 +166,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetRowsPerStrip_GeoTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.geotiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 8;
 
         int actualValue = file.getRowsPerStrip();
@@ -177,8 +177,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetSampleFormat_GeoTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.geotiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedSampleFormat = 2;
         int expectedComponentsPerPixel = 1;
 
@@ -190,8 +190,8 @@ public class GeoTiffTest {
 
     @Test
     public void testSamplesPerPixel_GeoTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.geotiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 1;
 
         int actualValue = file.samplesPerPixel;
@@ -201,8 +201,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetResolutions_GeoTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.geotiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         double delta = 1e-9;
         double expectedValue = 72.0;
 
@@ -215,8 +215,8 @@ public class GeoTiffTest {
 
     @Test
     public void testImageWidthAndLength_BlendTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.blendtiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedWidth = 640;
         int expectedLength = 400;
 
@@ -229,8 +229,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetOffsets_BlendTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.blendtiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int[] expectedOffsets = {8, 40968, 81928, 122888, 163848, 204808, 245768};
 
         int[] actualOffsets = file.getOffsets();
@@ -240,8 +240,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetDataSize_BlendTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.blendtiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedSize = 256000;
 
         int actualSize = file.getDataSize();
@@ -251,8 +251,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetData_Execution_BlendTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.blendtiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         ByteBuffer data = ByteBuffer.allocate(file.getDataSize());
         int expectedPosition = file.getDataSize();
 
@@ -263,8 +263,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetBitsPerSample_BlendTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.blendtiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedBitsPerSample = 8;
         int expectedComponentsPerPixel = 1;
 
@@ -276,8 +276,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetByteCounts_BlendTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.blendtiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int[] expectedByteCounts = {40960, 40960, 40960, 40960, 40960, 40960, 10240};
 
         int[] actualByteCounts = file.getByteCounts();
@@ -287,8 +287,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetCompression_BlendTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.blendtiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 1;
 
         int actualValue = file.getCompression();
@@ -298,8 +298,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetPhotometricInterpretation_BlendTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.blendtiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 1;
 
         int actualValue = file.getPhotometricInterpretation();
@@ -309,8 +309,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetResolutionUnit_BlendTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.blendtiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 2;
 
         int actualValue = file.getResolutionUnit();
@@ -319,8 +319,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetRowsPerStrip_BlendTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.blendtiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 64;
 
         int actualValue = file.getRowsPerStrip();
@@ -330,8 +330,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetSampleFormat_BlendTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.blendtiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedSampleFormat = 1;
         int expectedComponentsPerPixel = 1;
 
@@ -343,8 +343,8 @@ public class GeoTiffTest {
 
     @Test
     public void testSamplesPerPixel_BlendTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.blendtiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 1;
 
         int actualValue = file.samplesPerPixel;
@@ -354,8 +354,8 @@ public class GeoTiffTest {
 
     @Test
     public void testGetResolutions_BlendTiff() throws Exception {
-        GeoTiff geoTiff = new GeoTiff(ByteBuffer.wrap(this.blendtiffData));
-        Subfile file = geoTiff.getSubfiles().get(0);
+        Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
+        Subfile file = tiff.getSubfiles().get(0);
         double delta = 1e-9;
         double expectedValue = 96.0;
 

@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-package gov.nasa.worldwind.formats.geotiff;
+package gov.nasa.worldwind.formats.tiff;
 
 import java.nio.ByteBuffer;
 
@@ -27,7 +27,7 @@ public class Field {
     /**
      * The Tiff specification field type.
      */
-    protected ValueType type;
+    protected Type type;
 
     /**
      * The Tiff specification length of the field in the units specified of {@link Field#type}.

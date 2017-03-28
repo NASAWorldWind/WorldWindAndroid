@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-package gov.nasa.worldwind.formats.geotiff;
+package gov.nasa.worldwind.formats.tiff;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -12,7 +12,7 @@ import java.util.List;
 
 import gov.nasa.worldwind.util.Logger;
 
-public class GeoTiff {
+public class Tiff {
 
     /**
      * The {@link Subfile} contained within this Tiff.
@@ -24,10 +24,10 @@ public class GeoTiff {
      */
     protected ByteBuffer buffer;
 
-    public GeoTiff(ByteBuffer buffer) {
+    public Tiff(ByteBuffer buffer) {
         if (buffer == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "GeoTiff", "constructor", "missingBuffer"));
+                Logger.logMessage(Logger.ERROR, "Tiff", "constructor", "missingBuffer"));
         }
 
         this.buffer = buffer;
@@ -46,14 +46,14 @@ public class GeoTiff {
             this.buffer.order(ByteOrder.BIG_ENDIAN);
         } else {
             throw new RuntimeException(
-                Logger.logMessage(Logger.ERROR, "GeoTiff", "checkAndSetByteOrder", "Tiff byte order incompatible"));
+                Logger.logMessage(Logger.ERROR, "Tiff", "checkAndSetByteOrder", "Tiff byte order incompatible"));
         }
 
         // check the version
         int version = readWord(this.buffer);
         if (version != 42) {
             throw new RuntimeException(
-                Logger.logMessage(Logger.ERROR, "GeoTiff", "checkAndSetByteOrder", "Tiff version incompatible"));
+                Logger.logMessage(Logger.ERROR, "Tiff", "checkAndSetByteOrder", "Tiff version incompatible"));
         }
     }
 
@@ -92,7 +92,7 @@ public class GeoTiff {
         long val = readDWord(buffer);
         if (val > Integer.MAX_VALUE) {
             throw new RuntimeException(
-                Logger.logMessage(Logger.ERROR, "GeoTiff", "readLimitedDWord", "value exceeds signed integer range"));
+                Logger.logMessage(Logger.ERROR, "Tiff", "readLimitedDWord", "value exceeds signed integer range"));
         } else {
             return (int) val;
         }
