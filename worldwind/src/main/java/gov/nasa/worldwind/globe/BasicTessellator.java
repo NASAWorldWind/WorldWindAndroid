@@ -12,6 +12,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import gov.nasa.worldwind.draw.BasicDrawableTerrain;
@@ -64,6 +65,8 @@ public class BasicTessellator implements Tessellator, TileFactory {
     protected String levelSetVertexTexCoordKey = this.getClass().getName() + ".vertexTexCoordKey";
 
     protected String levelSetElementKey = this.getClass().getName() + ".elementKey";
+
+    private float[] elevationModelHeight;
 
     public BasicTessellator() {
     }
@@ -145,12 +148,8 @@ public class BasicTessellator implements Tessellator, TileFactory {
     }
 
     protected void addTile(RenderContext rc, TerrainTile tile) {
-        // Assemble the terrain tile's vertex points when necessary.
-        if (this.mustAssembleTilePoints(rc, tile)) {
-            this.assembleTilePoints(rc, tile);
-        }
-
-        // Add the terrain tile to the currently active terrain.
+        // Assemble the terrain tile's vertex points and add the terrain tile.
+        this.assembleTilePoints(rc, tile);
         this.currentTerrain.addTile(tile);
 
         // Prepare a drawable for the terrain tile for processing on the OpenGL thread.
@@ -184,13 +183,16 @@ public class BasicTessellator implements Tessellator, TileFactory {
         drawable.elements = this.levelSetElementBuffer;
     }
 
-    public boolean mustAssembleTilePoints(RenderContext rc, TerrainTile tile) {
-        return tile.getVertexPoints() == null;
-    }
-
     protected void assembleTilePoints(RenderContext rc, TerrainTile tile) {
+        long timestamp = rc.globe.getElevationModel().getTimestamp();
+        double exaggeration = rc.verticalExaggeration;
         int numLat = tile.level.tileWidth;
         int numLon = tile.level.tileHeight;
+
+        if (tile.getVertexPointTimestamp() == timestamp &&
+            tile.getVertexPointExaggeration() == exaggeration) {
+            return; // no need to update the tile
+        }
 
         Vec3 origin = tile.getVertexOrigin();
         if (origin == null) {
@@ -202,11 +204,26 @@ public class BasicTessellator implements Tessellator, TileFactory {
             points = new float[numLat * numLon * 3];
         }
 
+        float[] heights = this.elevationModelHeight;
+        if (heights == null) {
+            heights = this.elevationModelHeight = new float[numLat * numLon];
+        } else {
+            Arrays.fill(heights, 0);
+        }
+
         Globe globe = rc.globe;
+        globe.getElevationModel().getHeight(tile, heights);
+
+        for (int idx = 0, len = heights.length; idx < len; idx++) {
+            heights[idx] *= exaggeration;
+        }
+
         globe.geographicToCartesian(tile.sector.centroidLatitude(), tile.sector.centroidLongitude(), 0, origin);
-        globe.geographicToCartesianGrid(tile.sector, numLat, numLon, null, origin, points, 3, 0);
+        globe.geographicToCartesianGrid(tile.sector, numLat, numLon, heights, origin, points, 3, 0);
         tile.setVertexOrigin(origin);
         tile.setVertexPoints(points);
+        tile.setVertexPointTimestamp(timestamp);
+        tile.setVertexPointExaggeration(exaggeration);
     }
 
     protected void assembleLevelSetBuffers(RenderContext rc) {

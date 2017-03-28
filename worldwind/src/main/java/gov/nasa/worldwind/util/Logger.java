@@ -51,6 +51,7 @@ public class Logger {
         messageTable.put("missingColor", "The color is null");
         messageTable.put("missingConfig", "The configuration is null");
         messageTable.put("missingCoordinateSystem", "The coordinate system is null");
+        messageTable.put("missingCoverage", "The coverage is null");
         messageTable.put("missingEllipsoid", "The ellipsoid is null");
         messageTable.put("missingFactory", "The factory is null");
         messageTable.put("missingFormat", "The format is null");
@@ -69,6 +70,7 @@ public class Logger {
         messageTable.put("missingLocation", "The location is null");
         messageTable.put("missingLookAt", "The look-at is null");
         messageTable.put("missingMatrix", "The matrix is null");
+        messageTable.put("missingModel", "The model is null");
         messageTable.put("missingName", "The name is null");
         messageTable.put("missingOffset", "The offset name is null");
         messageTable.put("missingPathName", "The path name is null");

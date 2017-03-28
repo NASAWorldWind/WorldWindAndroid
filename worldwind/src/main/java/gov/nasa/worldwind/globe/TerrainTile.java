@@ -29,6 +29,12 @@ public class TerrainTile extends Tile {
 
     protected String vertexPointKey;
 
+    private long vertexPointTimestamp;
+
+    private double vertexPointExaggeration;
+
+    private boolean mustUpdateBufferObject;
+
     /**
      * {@inheritDoc}
      */
@@ -51,6 +57,7 @@ public class TerrainTile extends Tile {
 
     public void setVertexPoints(float[] vertexPoints) {
         this.vertexPoints = vertexPoints;
+        this.mustUpdateBufferObject = true;
     }
 
     public BufferObject getVertexPointBuffer(RenderContext rc) {
@@ -58,10 +65,14 @@ public class TerrainTile extends Tile {
             return null;
         }
 
-        BufferObject bufferObject = rc.getBufferObject(this.vertexPointKey);
-        if (bufferObject != null) {
-            return bufferObject;
+        if (!this.mustUpdateBufferObject) {
+            BufferObject bufferObject = rc.getBufferObject(this.vertexPointKey);
+            if (bufferObject != null) {
+                return bufferObject;
+            }
         }
+
+        this.mustUpdateBufferObject = false;
 
         // TODO consider a pool of terrain tiles
         // TODO consider a pool of terrain tile vertex buffers
@@ -70,5 +81,21 @@ public class TerrainTile extends Tile {
         buffer.put(this.vertexPoints).rewind();
 
         return rc.putBufferObject(this.vertexPointKey, new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer));
+    }
+
+    protected long getVertexPointTimestamp() {
+        return vertexPointTimestamp;
+    }
+
+    protected void setVertexPointTimestamp(long millis) {
+        this.vertexPointTimestamp = millis;
+    }
+
+    protected double getVertexPointExaggeration() {
+        return vertexPointExaggeration;
+    }
+
+    protected void setVertexPointExaggeration(double verticalExaggeration) {
+        this.vertexPointExaggeration = verticalExaggeration;
     }
 }

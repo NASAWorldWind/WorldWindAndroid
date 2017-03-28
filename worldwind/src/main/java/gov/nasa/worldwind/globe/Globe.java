@@ -24,6 +24,8 @@ public class Globe {
      */
     protected Ellipsoid ellipsoid = new Ellipsoid();
 
+    protected ElevationModel elevationModel = new ElevationModel();
+
     /**
      * Indicates the geographic projection used by this globe. The projection specifies this globe's Cartesian
      * coordinate system.
@@ -124,6 +126,14 @@ public class Globe {
      */
     public double getEccentricitySquared() {
         return this.ellipsoid.eccentricitySquared();
+    }
+
+    public ElevationModel getElevationModel() {
+        return elevationModel;
+    }
+
+    public void setElevationModel(ElevationModel elevationModel) {
+        this.elevationModel = elevationModel;
     }
 
     /**

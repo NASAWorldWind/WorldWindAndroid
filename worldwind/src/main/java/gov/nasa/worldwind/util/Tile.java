@@ -57,6 +57,10 @@ public class Tile {
      */
     protected float[] samplePoints;
 
+    private long extentTimestamp;
+
+    private double extentExaggeration;
+
     /**
      * Constructs a tile with a specified sector, level, row and column.
      *
@@ -364,6 +368,14 @@ public class Tile {
     protected BoundingBox getExtent(RenderContext rc) {
         if (this.extent == null) {
             this.extent = new BoundingBox();
+        }
+
+        long timestamp = rc.globe.getElevationModel().getTimestamp();
+        double exaggeration = rc.verticalExaggeration;
+        if (this.extentTimestamp != timestamp ||
+            this.extentExaggeration != exaggeration) {
+            this.extentTimestamp = timestamp;
+            this.extentExaggeration = exaggeration;
             this.extent.setToSector(this.sector, rc.globe, 0, 0);
         }
 
