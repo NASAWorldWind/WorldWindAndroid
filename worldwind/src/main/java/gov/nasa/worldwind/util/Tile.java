@@ -376,7 +376,7 @@ public class Tile {
             this.extentExaggeration != exaggeration) {
             this.extentTimestamp = timestamp;
             this.extentExaggeration = exaggeration;
-            this.extent.setToSector(this.sector, rc.globe, 0, 0);
+            this.extent.setToSector(this.sector, rc.globe, 0, 0); // TODO min and max elevation
         }
 
         return this.extent;

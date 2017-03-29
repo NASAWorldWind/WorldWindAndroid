@@ -21,6 +21,18 @@ public class Level {
     public final int levelNumber;
 
     /**
+     * The width in pixels of the image represented by all tiles in this level set, or the number of sample points in
+     * the longitudinal direction of this level set.
+     */
+    public final int levelWidth;
+
+    /**
+     * The height in pixels of the image represented by all tiles in this level set, or the number of sample points in
+     * the latitudinal direction of this level set.
+     */
+    public final int levelHeight;
+
+    /**
      * The geographic width and height in degrees of tiles within this level.
      */
     public final double tileDelta;
@@ -60,6 +72,8 @@ public class Level {
 
         this.parent = parent;
         this.levelNumber = levelNumber;
+        this.levelWidth = (int) Math.round(parent.tileWidth * 360 / tileDelta);
+        this.levelHeight = (int) Math.round(parent.tileHeight * 180 / tileDelta);
         this.tileDelta = tileDelta;
         this.tileWidth = parent.tileWidth;
         this.tileHeight = parent.tileHeight;

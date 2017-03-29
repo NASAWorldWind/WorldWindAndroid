@@ -195,7 +195,9 @@ public class LevelSet {
         double level = Math.log(firstLevelDegreesPerPixel / degreesPerPixel) / Math.log(2); // fractional level address
         int levelNumber = (int) Math.round(level); // nearest neighbor level
 
-        if (levelNumber < this.levels.length) {
+        if (levelNumber < 0) {
+            return this.levels[0]; // unable to match the resolution; return the first level
+        } else if (levelNumber < this.levels.length) {
             return this.levels[levelNumber]; // nearest neighbor level is in this level set
         } else {
             return this.levels[this.levels.length - 1]; // unable to match the resolution; return the last level
