@@ -28,11 +28,13 @@ public interface ElevationCoverage {
 
     boolean hasUserProperty(Object key);
 
+    boolean hasCoverage(double latitude, double longitude);
+
     boolean hasCoverage(Sector sector);
 
-    float getHeight(double latitude, double longitude);
+    boolean getHeight(double latitude, double longitude, float[] result);
 
-    float[] getHeight(Tile tile, float[] result);
+    boolean getHeightGrid(Sector gridSector, int gridWidth, int gridHeight, double radiansPerPixel, float[] result);
 
-    float[] getHeightLimits(Tile tile, float[] result);
+    boolean getHeightLimits(Sector sector, double radiansPerPixel, float[] result);
 }

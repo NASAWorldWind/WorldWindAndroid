@@ -10,7 +10,6 @@ import java.util.Iterator;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.util.Logger;
-import gov.nasa.worldwind.util.Tile;
 
 public class ElevationModel implements Iterable<ElevationCoverage> {
 
@@ -133,6 +132,31 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
         return this.coverages.iterator();
     }
 
+    public long getTimestamp() {
+        long maxTimestamp = 0;
+
+        for (int idx = 0, len = this.coverages.size(); idx < len; idx++) {
+            ElevationCoverage coverage = this.coverages.get(idx);
+            long timestamp = coverage.getTimestamp();
+            if (maxTimestamp < timestamp) {
+                maxTimestamp = timestamp;
+            }
+        }
+
+        return maxTimestamp;
+    }
+
+    public boolean hasCoverage(double latitude, double longitude) {
+        for (int idx = 0, len = this.coverages.size(); idx < len; idx++) {
+            ElevationCoverage coverage = this.coverages.get(idx);
+            if (coverage.hasCoverage(latitude, longitude)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public boolean hasCoverage(Sector sector) {
         if (sector == null) {
             throw new IllegalArgumentException(
@@ -149,55 +173,47 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
         return false;
     }
 
-    public long getTimestamp() {
-        long maxTimestamp = 0;
-
-        for (int idx = 0, len = this.coverages.size(); idx < len; idx++) {
-            ElevationCoverage coverage = this.coverages.get(idx);
-            long timestamp = coverage.getTimestamp();
-            if (maxTimestamp < timestamp) {
-                maxTimestamp = timestamp;
-            }
-        }
-
-        return maxTimestamp;
-    }
-
-    public float getHeight(double latitude, double longitude) {
-        for (int idx = this.coverages.size() - 1; idx >= 0; idx--) {
-            ElevationCoverage coverage = this.coverages.get(idx);
-            float height = coverage.getHeight(latitude, longitude);
-            if (!Float.isNaN(height)) {
-                return height;
-            }
-        }
-
-        return Float.NaN;
-    }
-
-    public float[] getHeight(Tile tile, float[] result) {
-        if (tile == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeight", "missingTile"));
-        }
-
+    public boolean getHeight(double latitude, double longitude, float[] result) {
         if (result == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeight", "missingResult"));
         }
 
-        for (int idx = 0, len = this.coverages.size(); idx < len; idx++) {
+        for (int idx = this.coverages.size() - 1; idx >= 0; idx--) {
             ElevationCoverage coverage = this.coverages.get(idx);
-            coverage.getHeight(tile, result);
+            if (coverage.getHeight(latitude, longitude, result)) {
+                return true;
+            }
         }
 
-        return result;
+        return false;
     }
 
-    public float[] getHeightLimits(Tile tile, float[] result) {
-        if (tile == null) {
+    public boolean getHeightGrid(Sector gridSector, int gridWidth, int gridHeight, double radiansPerPixel, float[] result) {
+        if (gridSector == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeightLimits", "missingTile"));
+                Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeightGrid", "missingSector"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeightGrid", "missingResult"));
+        }
+
+        boolean any = false;
+
+        for (int idx = 0, len = this.coverages.size(); idx < len; idx++) {
+            ElevationCoverage coverage = this.coverages.get(idx);
+            any |= coverage.getHeightGrid(gridSector, gridWidth, gridHeight, radiansPerPixel, result);
+        }
+
+        return any;
+    }
+
+    public boolean getHeightLimits(Sector sector, double radiansPerPixel, float[] result) {
+        if (sector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeightLimits", "missingSector"));
         }
 
         if (result == null) {
@@ -205,19 +221,13 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
                 Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeightLimits", "missingResult"));
         }
 
+        boolean any = false;
+
         for (int idx = 0, len = this.coverages.size(); idx < len; idx++) {
             ElevationCoverage coverage = this.coverages.get(idx);
-            coverage.getHeightLimits(tile, this.coverageLimits);
-
-            if (result[0] > this.coverageLimits[0]) {
-                result[0] = this.coverageLimits[0];
-            }
-
-            if (result[1] < this.coverageLimits[1]) {
-                result[1] = this.coverageLimits[1];
-            }
+            any |= coverage.getHeightLimits(sector, radiansPerPixel, this.coverageLimits);
         }
 
-        return result;
+        return any;
     }
 }

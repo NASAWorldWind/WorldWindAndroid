@@ -8,6 +8,8 @@ package gov.nasa.worldwind.globe;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.LongSparseArray;
+import android.util.SparseIntArray;
 
 import java.net.SocketTimeoutException;
 import java.nio.ShortBuffer;
@@ -40,14 +42,8 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
 
     protected Handler coverageHandler;
 
-    private int fetchRow = -1;
-
-    private int fetchCol = -1;
-
-    private ShortBuffer fetchCoverage;
-
     public TiledElevationCoverage() {
-        this.tileCache = new LruMemoryCache<>(400);
+        this.tileCache = new LruMemoryCache<>(200);
         this.coverageCache = new LruMemoryCache<>(1024 * 1024 * 4);
         this.coverageRetriever = new ElevationRetriever(4);
         this.coverageHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
@@ -83,6 +79,11 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
     }
 
     @Override
+    public boolean hasCoverage(double latitude, double longitude) {
+        return this.levelSet.sector.contains(latitude, longitude);
+    }
+
+    @Override
     public boolean hasCoverage(Sector sector) {
         if (sector == null) {
             throw new IllegalArgumentException(
@@ -93,129 +94,87 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
     }
 
     @Override
-    public float getHeight(double latitude, double longitude) {
-        return 0; // TODO
+    protected boolean doGetHeight(double latitude, double longitude, float[] result) {
+        return false; // TODO
     }
 
     @Override
-    public float[] getHeight(Tile tile, float[] result) {
-        if (tile == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "TiledElevationCoverage", "getHeight", "missingTile"));
-        }
+    protected boolean doGetHeightGrid(Sector gridSector, int gridWidth, int gridHeight, double radiansPerPixel, float[] result) {
+        TileBlock tileBlock = new TileBlock();
 
-        if (result == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "TiledElevationCoverage", "getHeight", "missingResult"));
-        }
-
-        Level level = this.levelSet.levelForResolution(tile.level.texelHeight);
-        this.sampleHeight(level, tile, result);
-
-        return result;
-    }
-
-    @Override
-    public float[] getHeightLimits(Tile tile, float[] result) {
-        return new float[2]; // TODO
-    }
-
-    protected void sampleHeight(Level level, Tile tile, float[] result) {
-        double minLat = tile.sector.minLatitude();
-        double maxLat = tile.sector.maxLatitude();
-        double minLon = tile.sector.minLongitude();
-        double maxLon = tile.sector.maxLongitude();
-        double deltaLat = tile.sector.deltaLatitude() / (tile.level.tileHeight - 1);
-        double deltaLon = tile.sector.deltaLongitude() / (tile.level.tileWidth - 1);
-        int index = 0;
-
-        for (double j = 0, lat = minLat; j < tile.level.tileHeight; j += 1, lat += deltaLat) {
-            if (j == tile.level.tileHeight - 1) {
-                lat = maxLat; // explicitly set the last lat to the max latitude ensure alignment
-            }
-
-            for (double i = 0, lon = minLon; i < tile.level.tileWidth; i += 1, lon += deltaLon) {
-                if (i == tile.level.tileWidth - 1) {
-                    lon = maxLon; // explicitly set the last lon to the max longitude ensure alignment
-                }
-
-                if (this.levelSet.sector.contains(lat, lon)) { // ignore locations outside of the model
-                    float height = this.sampleHeight(level, lat, lon);
-                    if (!Float.isNaN(height)) {
-                        result[index] = height;
-                    }
-                }
-
-                index++;
-            }
-        }
-    }
-
-    protected float sampleHeight(Level level, double latitude, double longitude) {
-        double s = (longitude + 180) / 360;
-        double t = (latitude + 90) / 180;
-        TexelBlock tex = new TexelBlock();
-
+        Level level = this.levelSet.levelForResolution(radiansPerPixel);
         while (level != null) {
-            double tMin = 1.0 / (2.0 * level.levelHeight);
-            double tMax = 1.0 - tMin;
-            double u = level.levelWidth * WWMath.fract(s); // wrap the horizontal coordinate
-            double v = level.levelHeight * WWMath.clamp(t, tMin, tMax); // clamp the vertical coordinate to the level edge
 
-            int i0 = WWMath.mod((int) Math.floor(u - 0.5), level.levelWidth);
-            int j0 = (int) WWMath.clamp(Math.floor(v - 0.5), 0, level.levelHeight - 1);
-
-            int i1 = WWMath.mod((i0 + 1), level.levelWidth);
-            int j1 = (int) WWMath.clamp(j0 + 1, 0, level.levelHeight - 1);
-
-            float a = (float) WWMath.fract(u - 0.5);
-            float b = (float) WWMath.fract(v - 0.5);
-
-            if (this.readTexelBlock(level, i0, j0, i1, j1, tex)) {
-                return tex.linear(a, b);
+            if (this.fetchTileBlock(gridSector, gridWidth, gridHeight, level, tileBlock)) {
+                this.sampleTileBlock(gridSector, gridWidth, gridHeight, tileBlock, result);
+                return true;
             }
 
-            level = level.previousLevel();
-        }
-
-        return Float.NaN;
-    }
-
-    protected boolean readTexelBlock(Level level, int i0, int j0, int i1, int j1, TexelBlock result) {
-        int tileWidth = level.tileWidth;
-        int tileHeight = level.tileHeight;
-        int col0 = (int) Math.floor(i0 / tileWidth);
-        int col1 = (int) Math.floor(i1 / tileWidth);
-        int row0 = (int) Math.floor(j0 / tileHeight);
-        int row1 = (int) Math.floor(j1 / tileHeight);
-        ShortBuffer i0j0, i1j0, i0j1, i1j1;
-
-        if (row0 == row1 && col0 == col1 && row0 == this.fetchRow && col0 == this.fetchCol) {
-            i0j0 = i1j0 = i0j1 = i1j1 = this.fetchCoverage; // use results from previous fetch
-        } else if (row0 == row1 && col0 == col1) {
-            i0j0 = i1j0 = i0j1 = i1j1 = this.fetchImage(level, row0, col0); // only need to fetch one coverage
-            this.fetchRow = row0;
-            this.fetchCol = col0;
-            this.fetchCoverage = i0j0; // note the results for subsequent lookups
-        } else {
-            i0j0 = this.fetchImage(level, row0, col0);
-            i1j0 = this.fetchImage(level, row0, col1);
-            i0j1 = this.fetchImage(level, row1, col0);
-            i1j1 = this.fetchImage(level, row1, col1);
-        }
-
-        if (i0j0 != null && i1j0 != null && i0j1 != null && i1j1 != null) {
-            result.i0j0 = this.texel(i0j0, i0 % tileWidth, j0 % tileHeight);
-            result.i1j0 = this.texel(i1j0, i1 % tileWidth, j0 % tileHeight);
-            result.i0j1 = this.texel(i0j1, i0 % tileWidth, j1 % tileHeight);
-            result.i1j1 = this.texel(i1j1, i1 % tileWidth, j1 % tileHeight);
-            return true;
+            level = level.previousLevel(); // try a lower resolution ancestor level
         }
 
         return false;
     }
 
-    protected ShortBuffer fetchImage(Level level, int row, int column) {
+    @Override
+    protected boolean doGetHeightLimits(Sector sector, double radiansPerPixel, float[] result) {
+        return false; // TODO
+    }
+
+    protected boolean fetchTileBlock(Sector gridSector, int gridWidth, int gridHeight, Level level, TileBlock result) {
+        int levelWidth = level.levelWidth;
+        int levelHeight = level.levelHeight;
+        int tileWidth = level.tileWidth;
+        int tileHeight = level.tileHeight;
+        double tMin = 1.0 / (2.0 * levelHeight);
+        double tMax = 1.0 - tMin;
+
+        result.level = level;
+        result.clear();
+
+        double lon = gridSector.minLongitude();
+        double deltaLon = gridSector.deltaLongitude() / (gridWidth - 1);
+        for (int uidx = 0; uidx < gridWidth; uidx++, lon += deltaLon) {
+            double s = (lon + 180) / 360;
+            double u = levelWidth * WWMath.fract(s); // wrap the horizontal coordinate
+            int i0 = WWMath.mod((int) Math.floor(u - 0.5), levelWidth);
+            int i1 = WWMath.mod((i0 + 1), levelWidth);
+            int col0 = (int) Math.floor(i0 / tileWidth);
+            int col1 = (int) Math.floor(i1 / tileWidth);
+            result.cols.append(col0, 0);
+            result.cols.append(col1, 0);
+        }
+
+        double lat = gridSector.minLatitude();
+        double deltaLat = gridSector.deltaLatitude() / (gridHeight - 1);
+        for (double vidx = 0; vidx < gridHeight; vidx++, lat += deltaLat) {
+            double t = (lat + 90) / 180;
+            double v = levelHeight * WWMath.clamp(t, tMin, tMax); // clamp the vertical coordinate to the level edge
+            int j0 = (int) WWMath.clamp(Math.floor(v - 0.5), 0, levelHeight - 1);
+            int j1 = (int) WWMath.clamp(j0 + 1, 0, levelHeight - 1);
+            int row0 = (int) Math.floor(j0 / tileHeight);
+            int row1 = (int) Math.floor(j1 / tileHeight);
+            result.rows.append(row0, 0);
+            result.rows.append(row1, 0);
+        }
+
+        for (int ridx = 0, rlen = result.rows.size(); ridx < rlen; ridx++) {
+            for (int cidx = 0, clen = result.cols.size(); cidx < clen; cidx++) {
+                int row = result.rows.keyAt(ridx);
+                int col = result.cols.keyAt(cidx);
+                ShortBuffer array = this.fetchTileArray(level, row, col);
+                if (array != null) {
+                    result.putTileArray(row, col, array);
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    protected ShortBuffer fetchTileArray(Level level, int row, int column) {
         long key = tileKey(level, row, column);
         Tile tile = this.tileCache.get(key);
         if (tile == null) {
@@ -247,6 +206,50 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         double minLon = -180 + column * level.tileDelta;
 
         return new Sector(minLat, minLon, level.tileDelta, level.tileDelta);
+    }
+
+    protected void sampleTileBlock(Sector gridSector, int gridWidth, int gridHeight, TileBlock tileBlock, float[] result) {
+        int levelWidth = tileBlock.level.levelWidth;
+        int levelHeight = tileBlock.level.levelHeight;
+        int tileWidth = tileBlock.level.tileWidth;
+        int tileHeight = tileBlock.level.tileHeight;
+        double tMin = 1.0 / (2.0 * levelHeight);
+        double tMax = 1.0 - tMin;
+        int index = 0;
+
+        double lat = gridSector.minLatitude();
+        double deltaLat = gridSector.deltaLatitude() / (gridHeight - 1);
+        for (double vidx = 0; vidx < gridHeight; vidx++, lat += deltaLat) {
+            double t = (lat + 90) / 180;
+            double v = levelHeight * WWMath.clamp(t, tMin, tMax); // clamp the vertical coordinate to the level edge
+            float b = (float) WWMath.fract(v - 0.5);
+            int j0 = (int) WWMath.clamp(Math.floor(v - 0.5), 0, levelHeight - 1);
+            int j1 = (int) WWMath.clamp(j0 + 1, 0, levelHeight - 1);
+            int row0 = (int) Math.floor(j0 / tileHeight);
+            int row1 = (int) Math.floor(j1 / tileHeight);
+
+            double lon = gridSector.minLongitude();
+            double deltaLon = gridSector.deltaLongitude() / (gridWidth - 1);
+            for (int uidx = 0; uidx < gridWidth; uidx++, lon += deltaLon) {
+                double s = (lon + 180) / 360;
+                double u = levelWidth * WWMath.fract(s); // wrap the horizontal coordinate
+                float a = (float) WWMath.fract(u - 0.5);
+                int i0 = WWMath.mod((int) Math.floor(u - 0.5), levelWidth);
+                int i1 = WWMath.mod((i0 + 1), levelWidth);
+                int col0 = (int) Math.floor(i0 / tileWidth);
+                int col1 = (int) Math.floor(i1 / tileWidth);
+
+                float i0j0 = tileBlock.readTexel(row0, col0, i0 % tileWidth, j0 % tileHeight);
+                float i1j0 = tileBlock.readTexel(row0, col1, i1 % tileWidth, j0 % tileHeight);
+                float i0j1 = tileBlock.readTexel(row1, col0, i0 % tileWidth, j1 % tileHeight);
+                float i1j1 = tileBlock.readTexel(row1, col1, i1 % tileWidth, j1 % tileHeight);
+
+                result[index++] = (1 - a) * (1 - b) * i0j0 +
+                    a * (1 - b) * i1j0 +
+                    (1 - a) * b * i0j1 +
+                    a * b * i1j1;
+            }
+        }
     }
 
     public void retrievalSucceeded(Retriever retriever, ImageSource key, Void unused, ShortBuffer value) {
@@ -285,26 +288,46 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         }
     }
 
-    protected float texel(ShortBuffer buffer, int i, int j) {
-        j = this.levelSet.tileHeight - j - 1; // flip the vertical coordinate origin
-        return buffer.get(i + j * this.levelSet.tileWidth);
-    }
+    protected static class TileBlock {
 
-    protected static class TexelBlock {
+        public Level level;
 
-        public float i0j0;
+        public SparseIntArray rows = new SparseIntArray();
 
-        public float i1j0;
+        public SparseIntArray cols = new SparseIntArray();
 
-        public float i0j1;
+        public LongSparseArray<ShortBuffer> arrays = new LongSparseArray<>();
 
-        public float i1j1;
+        private int texelRow = -1;
 
-        public float linear(float a, float b) {
-            return (1 - a) * (1 - b) * i0j0 +
-                a * (1 - b) * i1j0 +
-                (1 - a) * b * i0j1 +
-                a * b * i1j1;
+        private int texelCol = -1;
+
+        private ShortBuffer texelArray;
+
+        public void clear() {
+            this.rows.clear();
+            this.cols.clear();
+            this.arrays.clear();
+            this.texelRow = -1;
+            this.texelCol = -1;
+            this.texelArray = null;
+        }
+
+        public void putTileArray(int row, int column, ShortBuffer array) {
+            long key = tileKey(this.level, row, column);
+            this.arrays.put(key, array);
+        }
+
+        public float readTexel(int row, int column, int i, int j) {
+            if (this.texelRow != row || this.texelCol != column) {
+                long key = tileKey(this.level, row, column);
+                this.texelRow = row;
+                this.texelCol = column;
+                this.texelArray = this.arrays.get(key);
+            }
+
+            j = this.level.tileHeight - j - 1; // flip the vertical coordinate origin
+            return this.texelArray.get(i + j * this.level.tileWidth);
         }
     }
 }

@@ -8,6 +8,9 @@ package gov.nasa.worldwind.globe;
 import java.util.HashMap;
 import java.util.Map;
 
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.util.Logger;
+
 public abstract class AbstractElevationCoverage implements ElevationCoverage {
 
     protected String displayName;
@@ -75,4 +78,74 @@ public abstract class AbstractElevationCoverage implements ElevationCoverage {
     public boolean hasUserProperty(Object key) {
         return (this.userProperties != null) && this.userProperties.containsKey(key);
     }
+
+    @Override
+    public boolean getHeight(double latitude, double longitude, float[] result) {
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "AbstractElevationCoverage", "getHeight", "missingResult"));
+        }
+
+        if (!this.isEnabled()) {
+            return false;
+        }
+
+        if (!this.hasCoverage(latitude, longitude)) {
+            return false;
+        }
+
+        return this.doGetHeight(latitude, longitude, result);
+    }
+
+    @Override
+    public boolean getHeightGrid(Sector gridSector, int gridWidth, int gridHeight, double radiansPerPixel, float[] result) {
+        if (gridSector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "AbstractElevationCoverage", "getHeightGrid", "missingSector"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "AbstractElevationCoverage", "getHeightGrid", "missingResult"));
+        }
+
+        if (!this.isEnabled()) {
+            return false;
+        }
+
+        if (!this.hasCoverage(gridSector)) {
+            return false;
+        }
+
+        return this.doGetHeightGrid(gridSector, gridWidth, gridHeight, radiansPerPixel, result);
+    }
+
+    @Override
+    public boolean getHeightLimits(Sector sector, double radiansPerPixel, float[] result) {
+        if (sector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "AbstractElevationCoverage", "getHeightLimits", "missingSector"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "AbstractElevationCoverage", "getHeightLimits", "missingResult"));
+        }
+
+        if (!this.isEnabled()) {
+            return false;
+        }
+
+        if (!this.hasCoverage(sector)) {
+            return false;
+        }
+
+        return this.doGetHeightLimits(sector, radiansPerPixel, result);
+    }
+
+    protected abstract boolean doGetHeight(double latitude, double longitude, float[] result);
+
+    protected abstract boolean doGetHeightGrid(Sector gridSector, int gridWidth, int gridHeight, double radiansPerPixel, float[] result);
+
+    protected abstract boolean doGetHeightLimits(Sector sector, double radiansPerPixel, float[] result);
 }

@@ -168,19 +168,19 @@ public class BasicTessellator implements Tessellator, TileFactory {
     }
 
     protected void prepareTile(RenderContext rc, TerrainTile tile) {
-        int numLat = tile.level.tileWidth;
-        int numLon = tile.level.tileHeight;
+        int tileWidth = tile.level.tileWidth;
+        int tileHeight = tile.level.tileHeight;
 
         long elevationTimestamp = rc.globe.getElevationModel().getTimestamp();
         if (elevationTimestamp != tile.getHeightTimestamp()) {
 
             float[] heights = tile.getHeights();
             if (heights == null) {
-                heights = new float[numLat * numLon];
+                heights = new float[tileWidth * tileHeight];
             }
 
             Arrays.fill(heights, 0);
-            rc.globe.getElevationModel().getHeight(tile, heights);
+            rc.globe.getElevationModel().getHeightGrid(tile.sector, tileWidth, tileHeight, tile.level.texelHeight, heights);
             tile.setHeights(heights);
         }
 
@@ -191,11 +191,11 @@ public class BasicTessellator implements Tessellator, TileFactory {
             Vec3 origin = tile.getOrigin();
             float[] points = tile.getPoints();
             if (points == null) {
-                points = new float[numLat * numLon * 3];
+                points = new float[tileWidth * tileHeight * 3];
             }
 
             rc.globe.geographicToCartesian(tile.sector.centroidLatitude(), tile.sector.centroidLongitude(), 0, origin);
-            rc.globe.geographicToCartesianGrid(tile.sector, numLat, numLon, tile.getHeights(), (float) verticalExaggeration, origin, points, 3, 0);
+            rc.globe.geographicToCartesianGrid(tile.sector, tileWidth, tileHeight, tile.getHeights(), (float) verticalExaggeration, origin, points, 3, 0);
             tile.setOrigin(origin);
             tile.setPoints(points);
         }
