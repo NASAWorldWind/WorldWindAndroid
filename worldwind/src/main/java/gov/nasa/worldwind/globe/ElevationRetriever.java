@@ -15,29 +15,28 @@ import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 
 import gov.nasa.worldwind.render.ImageSource;
-import gov.nasa.worldwind.render.ImageTile;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Retriever;
 import gov.nasa.worldwind.util.WWUtil;
 
-public class ElevationRetriever extends Retriever<ImageTile, Void, ShortBuffer> {
+public class ElevationRetriever extends Retriever<ImageSource, Void, ShortBuffer> {
 
     public ElevationRetriever(int maxSimultaneousRetrievals) {
         super(maxSimultaneousRetrievals);
     }
 
     @Override
-    protected void retrieveAsync(ImageTile tile, Void unused, Callback<ImageTile, Void, ShortBuffer> callback) {
+    protected void retrieveAsync(ImageSource key, Void unused, Callback<ImageSource, Void, ShortBuffer> callback) {
         try {
-            ShortBuffer buffer = this.decodeCoverage(tile.getImageSource());
+            ShortBuffer buffer = this.decodeCoverage(key);
 
             if (buffer != null) {
-                callback.retrievalSucceeded(this, tile, unused, buffer);
+                callback.retrievalSucceeded(this, key, unused, buffer);
             } else {
-                callback.retrievalFailed(this, tile, null); // failed but no exception
+                callback.retrievalFailed(this, key, null); // failed but no exception
             }
         } catch (Throwable logged) {
-            callback.retrievalFailed(this, tile, logged); // failed with exception
+            callback.retrievalFailed(this, key, logged); // failed with exception
         }
     }
 

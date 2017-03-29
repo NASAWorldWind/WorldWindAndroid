@@ -15,6 +15,7 @@ import java.util.Locale;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.ImageTile;
 import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.LevelSet;
@@ -25,27 +26,30 @@ import gov.nasa.worldwind.util.Tile;
 import gov.nasa.worldwind.util.TileFactory;
 import gov.nasa.worldwind.util.WWMath;
 
-public class TiledElevationCoverage extends AbstractElevationCoverage implements Retriever.Callback<ImageTile, Void, ShortBuffer> {
+public class TiledElevationCoverage extends AbstractElevationCoverage implements Retriever.Callback<ImageSource, Void, ShortBuffer> {
 
     protected TileFactory tileFactory;
 
     protected LevelSet levelSet = new LevelSet(); // empty level set
 
-    protected ElevationRetriever coverageRetriever;
+    protected LruMemoryCache<Long, Tile> tileCache;
 
-    protected LruMemoryCache<Long, ShortBuffer> coverageCache;
+    protected LruMemoryCache<ImageSource, ShortBuffer> coverageCache;
+
+    protected ElevationRetriever coverageRetriever;
 
     protected Handler coverageHandler;
 
-    private int lastReadRow = -1;
+    private int fetchRow = -1;
 
-    private int lastReadCol = -1;
+    private int fetchCol = -1;
 
-    private ShortBuffer lastReadCoverage;
+    private ShortBuffer fetchCoverage;
 
     public TiledElevationCoverage() {
-        this.coverageRetriever = new ElevationRetriever(4);
+        this.tileCache = new LruMemoryCache<>(400);
         this.coverageCache = new LruMemoryCache<>(1024 * 1024 * 4);
+        this.coverageRetriever = new ElevationRetriever(4);
         this.coverageHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
             @Override
             public boolean handleMessage(Message msg) {
@@ -150,86 +154,83 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
     protected float sampleHeight(double latitude, double longitude, Level level) {
         double s = (longitude + 180) / 360;
         double t = (latitude + 90) / 180;
-        float[] samples = new float[4];
+        TexelBlock tex = new TexelBlock();
 
         while (level != null) {
+            double tMin = 1.0 / (2.0 * level.levelHeight);
+            double tMax = 1.0 - tMin;
             double u = level.levelWidth * WWMath.fract(s); // wrap the horizontal coordinate
-            int u0 = WWMath.mod((int) Math.floor(u - 0.5), level.levelWidth);
-            int u1 = WWMath.mod((u0 + 1), level.levelWidth);
-            float uf = (float) WWMath.fract(u - 0.5);
-
-            double tMin = 1 / (2 * level.levelHeight);
-            double tMax = 1 - tMin;
-            double vMin = 0;
-            double vMax = level.levelWidth - 1;
             double v = level.levelHeight * WWMath.clamp(t, tMin, tMax); // clamp the vertical coordinate to the level edge
-            int v0 = (int) WWMath.clamp(Math.floor(v - 0.5), vMin, vMax);
-            int v1 = (int) WWMath.clamp(v0 + 1, vMin, vMax);
-            float vf = (float) WWMath.fract(v - 0.5);
 
-            if (this.readCoverage(u0, v0, u1, v1, level, samples)) {
-                return (1 - uf) * (1 - vf) * samples[0] +
-                    uf * (1 - vf) * samples[1] +
-                    (1 - uf) * vf * samples[2] +
-                    uf * vf * samples[3];
-            } else {
-                level = level.previousLevel();
+            int i0 = WWMath.mod((int) Math.floor(u - 0.5), level.levelWidth);
+            int j0 = (int) WWMath.clamp(Math.floor(v - 0.5), 0, level.levelHeight - 1);
+
+            int i1 = WWMath.mod((i0 + 1), level.levelWidth);
+            int j1 = (int) WWMath.clamp(j0 + 1, 0, level.levelHeight - 1);
+
+            float a = (float) WWMath.fract(u - 0.5);
+            float b = (float) WWMath.fract(v - 0.5);
+
+            if (this.readTexelBlock(level, i0, j0, i1, j1, tex)) {
+                return tex.linear(a, b);
             }
+
+            level = level.previousLevel();
         }
 
         return Float.NaN;
     }
 
-    protected boolean readCoverage(int u0, int v0, int u1, int v1, Level level, float[] result) {
+    protected boolean readTexelBlock(Level level, int i0, int j0, int i1, int j1, TexelBlock result) {
         int tileWidth = level.tileWidth;
         int tileHeight = level.tileHeight;
-        int rowi = (int) Math.floor(v0 / tileHeight);
-        int rowj = (int) Math.floor(v1 / tileHeight);
-        int coli = (int) Math.floor(u0 / tileWidth);
-        int colj = (int) Math.floor(u1 / tileWidth);
-        ShortBuffer ii, ij, ji, jj;
+        int col0 = (int) Math.floor(i0 / tileWidth);
+        int col1 = (int) Math.floor(i1 / tileWidth);
+        int row0 = (int) Math.floor(j0 / tileHeight);
+        int row1 = (int) Math.floor(j1 / tileHeight);
+        ShortBuffer i0j0, i1j0, i0j1, i1j1;
 
-        if (rowi == rowj && coli == colj && rowi == this.lastReadRow && coli == this.lastReadCol) {
-            ii = ij = ji = jj = this.lastReadCoverage; // use results from previous lookup
-        } else if (rowi == rowj && coli == colj) {
-            ii = ij = ji = jj = this.lookupCoverage(level, rowi, coli); // only need to lookup one image
-            this.lastReadRow = rowi;
-            this.lastReadCol = coli;
-            this.lastReadCoverage = ii; // note the results for subsequent lookups
+        if (row0 == row1 && col0 == col1 && row0 == this.fetchRow && col0 == this.fetchCol) {
+            i0j0 = i1j0 = i0j1 = i1j1 = this.fetchCoverage; // use results from previous fetch
+        } else if (row0 == row1 && col0 == col1) {
+            i0j0 = i1j0 = i0j1 = i1j1 = this.fetchImage(level, row0, col0); // only need to fetch one coverage
+            this.fetchRow = row0;
+            this.fetchCol = col0;
+            this.fetchCoverage = i0j0; // note the results for subsequent lookups
         } else {
-            ii = this.lookupCoverage(level, rowi, coli);
-            ij = this.lookupCoverage(level, rowi, colj);
-            ji = this.lookupCoverage(level, rowj, coli);
-            jj = this.lookupCoverage(level, rowj, colj);
+            i0j0 = this.fetchImage(level, row0, col0);
+            i1j0 = this.fetchImage(level, row0, col1);
+            i0j1 = this.fetchImage(level, row1, col0);
+            i1j1 = this.fetchImage(level, row1, col1);
         }
 
-        if (ii != null && ij != null && ji != null && jj != null) {
-            result[0] = this.coverageValue(ii, u0 % tileWidth, v0 % tileHeight);
-            result[1] = this.coverageValue(ij, u1 % tileWidth, v0 % tileHeight);
-            result[2] = this.coverageValue(ji, u0 % tileWidth, v1 % tileHeight);
-            result[3] = this.coverageValue(jj, u1 % tileWidth, v1 % tileHeight);
+        if (i0j0 != null && i1j0 != null && i0j1 != null && i1j1 != null) {
+            result.i0j0 = this.texel(i0j0, i0 % tileWidth, j0 % tileHeight);
+            result.i1j0 = this.texel(i1j0, i1 % tileWidth, j0 % tileHeight);
+            result.i0j1 = this.texel(i0j1, i0 % tileWidth, j1 % tileHeight);
+            result.i1j1 = this.texel(i1j1, i1 % tileWidth, j1 % tileHeight);
             return true;
         }
 
         return false;
     }
 
-    protected ShortBuffer lookupCoverage(Level level, int row, int column) {
+    protected ShortBuffer fetchImage(Level level, int row, int column) {
         long key = tileKey(level, row, column);
-        ShortBuffer coverage = this.coverageCache.get(key);
-
-        if (coverage == null) {
+        Tile tile = this.tileCache.get(key);
+        if (tile == null) {
             Sector sector = tileSector(level, row, column);
-            ImageTile tile = (ImageTile) this.tileFactory.createTile(sector, level, row, column);
-            this.coverageRetriever.retrieve(tile, null, this);
+            tile = this.tileFactory.createTile(sector, level, row, column);
+            this.tileCache.put(key, tile, 1);
+        }
+
+        ImageSource source = ((ImageTile) tile).getImageSource();
+        ShortBuffer coverage = this.coverageCache.get(source);
+        if (coverage == null) {
+            this.coverageRetriever.retrieve(source, null, this);
         }
 
         return coverage;
-    }
-
-    protected float coverageValue(ShortBuffer buffer, int x, int y) {
-        y = this.levelSet.tileHeight - y - 1; // flip the y coordinate origin to the lower left corner
-        return buffer.get(x + y * this.levelSet.tileWidth);
     }
 
     protected static long tileKey(Level level, int row, int column) {
@@ -248,8 +249,8 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         return new Sector(minLat, minLon, level.tileDelta, level.tileDelta);
     }
 
-    public void retrievalSucceeded(Retriever retriever, ImageTile tile, Void unused, ShortBuffer value) {
-        final long finalKey = tileKey(tile.level, tile.row, tile.column);
+    public void retrievalSucceeded(Retriever retriever, ImageSource key, Void unused, ShortBuffer value) {
+        final ImageSource finalKey = key;
         final ShortBuffer finalValue = value;
 
         this.coverageHandler.post(new Runnable() {
@@ -262,25 +263,48 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         });
 
         if (Logger.isLoggable(Logger.INFO)) {
-            Logger.log(Logger.INFO, "Coverage retrieval succeeded \'" + tile.getImageSource() + "\'");
+            Logger.log(Logger.INFO, "Coverage retrieval succeeded \'" + key + "\'");
         }
     }
 
     @Override
-    public void retrievalFailed(Retriever retriever, ImageTile tile, Throwable ex) {
+    public void retrievalFailed(Retriever retriever, ImageSource key, Throwable ex) {
         if (ex instanceof SocketTimeoutException) { // log socket timeout exceptions while suppressing the stack trace
-            Logger.log(Logger.ERROR, "Socket timeout retrieving coverage \'" + tile.getImageSource() + "\'");
+            Logger.log(Logger.ERROR, "Socket timeout retrieving coverage \'" + key + "\'");
         } else if (ex != null) { // log checked exceptions with the entire stack trace
-            Logger.log(Logger.ERROR, "Coverage retrieval failed with exception \'" + tile.getImageSource() + "\'", ex);
+            Logger.log(Logger.ERROR, "Coverage retrieval failed with exception \'" + key + "\'", ex);
         } else {
-            Logger.log(Logger.ERROR, "Coverage retrieval failed \'" + tile.getImageSource() + "\'");
+            Logger.log(Logger.ERROR, "Coverage retrieval failed \'" + key + "\'");
         }
     }
 
     @Override
-    public void retrievalRejected(Retriever retriever, ImageTile tile) {
+    public void retrievalRejected(Retriever retriever, ImageSource key) {
         if (Logger.isLoggable(Logger.DEBUG)) {
-            Logger.log(Logger.DEBUG, "Coverage retrieval rejected \'" + tile.getImageSource() + "\'");
+            Logger.log(Logger.DEBUG, "Coverage retrieval rejected \'" + key + "\'");
+        }
+    }
+
+    protected float texel(ShortBuffer buffer, int i, int j) {
+        j = this.levelSet.tileHeight - j - 1; // flip the vertical coordinate origin
+        return buffer.get(i + j * this.levelSet.tileWidth);
+    }
+
+    protected static class TexelBlock {
+
+        public float i0j0;
+
+        public float i1j0;
+
+        public float i0j1;
+
+        public float i1j1;
+
+        public float linear(float a, float b) {
+            return (1 - a) * (1 - b) * i0j0 +
+                a * (1 - b) * i1j0 +
+                (1 - a) * b * i0j1 +
+                a * b * i1j1;
         }
     }
 }
