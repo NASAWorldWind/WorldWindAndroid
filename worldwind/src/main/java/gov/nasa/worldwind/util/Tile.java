@@ -395,7 +395,7 @@ public class Tile {
         }
 
         if (this.samplePoints == null) {
-            this.samplePoints = rc.globe.geographicToCartesianGrid(this.sector, 3, 3, null, null, new float[27], 3, 0);
+            this.samplePoints = rc.globe.geographicToCartesianGrid(this.sector, 3, 3, null, 1.0f, null, new float[27], 3, 0);
         }
 
         double minDistanceSq = Double.MAX_VALUE;

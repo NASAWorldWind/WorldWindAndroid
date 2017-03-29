@@ -14,6 +14,7 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import gov.nasa.worldwind.draw.BasicDrawableTerrain;
 import gov.nasa.worldwind.geom.Range;
@@ -65,8 +66,6 @@ public class BasicTessellator implements Tessellator, TileFactory {
     protected String levelSetVertexTexCoordKey = this.getClass().getName() + ".vertexTexCoordKey";
 
     protected String levelSetElementKey = this.getClass().getName() + ".elementKey";
-
-    private float[] elevationModelHeight;
 
     public BasicTessellator() {
     }
@@ -148,8 +147,8 @@ public class BasicTessellator implements Tessellator, TileFactory {
     }
 
     protected void addTile(RenderContext rc, TerrainTile tile) {
-        // Assemble the terrain tile's vertex points and add the terrain tile.
-        this.assembleTilePoints(rc, tile);
+        // Prepare the terrain tile and add it.
+        this.prepareTile(rc, tile);
         this.currentTerrain.addTile(tile);
 
         // Prepare a drawable for the terrain tile for processing on the OpenGL thread.
@@ -168,62 +167,56 @@ public class BasicTessellator implements Tessellator, TileFactory {
         this.levelSetTriStripElements = null;
     }
 
+    protected void prepareTile(RenderContext rc, TerrainTile tile) {
+        int numLat = tile.level.tileWidth;
+        int numLon = tile.level.tileHeight;
+
+        long elevationTimestamp = rc.globe.getElevationModel().getTimestamp();
+        if (elevationTimestamp != tile.getHeightTimestamp()) {
+
+            float[] heights = tile.getHeights();
+            if (heights == null) {
+                heights = new float[numLat * numLon];
+            }
+
+            Arrays.fill(heights, 0);
+            rc.globe.getElevationModel().getHeight(tile, heights);
+            tile.setHeights(heights);
+        }
+
+        double verticalExaggeration = rc.verticalExaggeration;
+        if (verticalExaggeration != tile.getVerticalExaggeration() ||
+            elevationTimestamp != tile.getHeightTimestamp()) {
+
+            Vec3 origin = tile.getOrigin();
+            float[] points = tile.getPoints();
+            if (points == null) {
+                points = new float[numLat * numLon * 3];
+            }
+
+            rc.globe.geographicToCartesian(tile.sector.centroidLatitude(), tile.sector.centroidLongitude(), 0, origin);
+            rc.globe.geographicToCartesianGrid(tile.sector, numLat, numLon, tile.getHeights(), (float) verticalExaggeration, origin, points, 3, 0);
+            tile.setOrigin(origin);
+            tile.setPoints(points);
+        }
+
+        tile.setHeightTimestamp(elevationTimestamp);
+        tile.setVerticalExaggeration(verticalExaggeration);
+    }
+
     protected void prepareDrawableTerrain(RenderContext rc, TerrainTile tile, BasicDrawableTerrain drawable) {
         // Assemble the drawable's geographic sector and Cartesian vertex origin.
         drawable.sector.set(tile.sector);
-        drawable.vertexOrigin.set(tile.vertexOrigin);
+        drawable.vertexOrigin.set(tile.origin);
 
         // Assemble the drawable's element buffer ranges.
         drawable.lineElementRange.set(this.levelSetLineElementRange);
         drawable.triStripElementRange.set(this.levelSetTriStripElementRange);
 
         // Assemble the drawable's OpenGL buffer objects.
-        drawable.vertexPoints = tile.getVertexPointBuffer(rc);
+        drawable.vertexPoints = tile.getPointBuffer(rc);
         drawable.vertexTexCoords = this.levelSetVertexTexCoordBuffer;
         drawable.elements = this.levelSetElementBuffer;
-    }
-
-    protected void assembleTilePoints(RenderContext rc, TerrainTile tile) {
-        long timestamp = rc.globe.getElevationModel().getTimestamp();
-        double exaggeration = rc.verticalExaggeration;
-        int numLat = tile.level.tileWidth;
-        int numLon = tile.level.tileHeight;
-
-        if (tile.getVertexPointTimestamp() == timestamp &&
-            tile.getVertexPointExaggeration() == exaggeration) {
-            return; // no need to update the tile
-        }
-
-        Vec3 origin = tile.getVertexOrigin();
-        if (origin == null) {
-            origin = new Vec3();
-        }
-
-        float[] points = tile.getVertexPoints();
-        if (points == null) {
-            points = new float[numLat * numLon * 3];
-        }
-
-        float[] heights = this.elevationModelHeight;
-        if (heights == null) {
-            heights = this.elevationModelHeight = new float[numLat * numLon];
-        } else {
-            Arrays.fill(heights, 0);
-        }
-
-        Globe globe = rc.globe;
-        globe.getElevationModel().getHeight(tile, heights);
-
-        for (int idx = 0, len = heights.length; idx < len; idx++) {
-            heights[idx] *= exaggeration;
-        }
-
-        globe.geographicToCartesian(tile.sector.centroidLatitude(), tile.sector.centroidLongitude(), 0, origin);
-        globe.geographicToCartesianGrid(tile.sector, numLat, numLon, heights, origin, points, 3, 0);
-        tile.setVertexOrigin(origin);
-        tile.setVertexPoints(points);
-        tile.setVertexPointTimestamp(timestamp);
-        tile.setVertexPointExaggeration(exaggeration);
     }
 
     protected void assembleLevelSetBuffers(RenderContext rc) {

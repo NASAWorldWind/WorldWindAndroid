@@ -186,12 +186,13 @@ public class ProjectionWgs84Test {
         int numLon = 33;
         int count = numLat * numLon * stride;
         float[] elevations = new float[count];
+        float verticalExaggeration = 1.0f;
         Sector sector = new Sector();
         Vec3 referencePoint = new Vec3();
         Vec3 offset = new Vec3();
         float[] result = new float[count];
 
-        wgs84.geographicToCartesianGrid(globe, sector, numLat, numLon, elevations, referencePoint, result, stride, 0);
+        wgs84.geographicToCartesianGrid(globe, sector, numLat, numLon, elevations, verticalExaggeration, referencePoint, result, stride, 0);
 
         fail("The test case is a stub.");
     }

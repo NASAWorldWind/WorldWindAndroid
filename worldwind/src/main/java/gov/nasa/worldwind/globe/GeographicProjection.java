@@ -65,7 +65,7 @@ public interface GeographicProjection {
      * @param sector
      * @param numLat
      * @param numLon
-     * @param elevations
+     * @param height
      * @param origin
      * @param result
      * @param stride
@@ -73,7 +73,7 @@ public interface GeographicProjection {
      *
      * @return
      */
-    float[] geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon, float[] elevations,
+    float[] geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon, float[] height, float verticalExaggeration,
                                       Vec3 origin, float[] result, int stride, int pos);
 
     /**

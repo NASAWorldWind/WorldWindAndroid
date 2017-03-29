@@ -110,7 +110,7 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         }
 
         Level level = this.levelSet.levelForResolution(tile.level.texelHeight);
-        this.sampleHeight(tile, level, result);
+        this.sampleHeight(level, tile, result);
 
         return result;
     }
@@ -120,7 +120,7 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         return new float[2]; // TODO
     }
 
-    protected void sampleHeight(Tile tile, Level level, float[] result) {
+    protected void sampleHeight(Level level, Tile tile, float[] result) {
         double minLat = tile.sector.minLatitude();
         double maxLat = tile.sector.maxLatitude();
         double minLon = tile.sector.minLongitude();
@@ -140,7 +140,7 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
                 }
 
                 if (this.levelSet.sector.contains(lat, lon)) { // ignore locations outside of the model
-                    float height = this.sampleHeight(lat, lon, level);
+                    float height = this.sampleHeight(level, lat, lon);
                     if (!Float.isNaN(height)) {
                         result[index] = height;
                     }
@@ -151,7 +151,7 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         }
     }
 
-    protected float sampleHeight(double latitude, double longitude, Level level) {
+    protected float sampleHeight(Level level, double latitude, double longitude) {
         double s = (longitude + 180) / 360;
         double t = (latitude + 90) / 180;
         TexelBlock tex = new TexelBlock();

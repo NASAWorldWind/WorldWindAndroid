@@ -37,7 +37,7 @@ public class AtmosphereLayer extends AbstractLayer {
 
     private Sector fullSphereSector = new Sector().setFullSphere();
 
-    private static final String VERTEX_POINTS_KEY = AtmosphereLayer.class.getName() + ".vertexPoints";
+    private static final String VERTEX_POINTS_KEY = AtmosphereLayer.class.getName() + ".points";
 
     private static final String TRI_STRIP_ELEMENTS_KEY = AtmosphereLayer.class.getName() + ".triStripElements";
 
@@ -153,11 +153,11 @@ public class AtmosphereLayer extends AbstractLayer {
 
     protected BufferObject assembleVertexPoints(RenderContext rc, int numLat, int numLon, float altitude) {
         int count = numLat * numLon;
-        float[] elevations = new float[count];
-        Arrays.fill(elevations, altitude);
+        float[] altitudes = new float[count];
+        Arrays.fill(altitudes, altitude);
 
         float[] points = new float[count * 3];
-        rc.globe.geographicToCartesianGrid(this.fullSphereSector, numLat, numLon, elevations, null, points, 3, 0);
+        rc.globe.geographicToCartesianGrid(this.fullSphereSector, numLat, numLon, altitudes, 1.0f, null, points, 3, 0);
 
         int size = points.length * 4;
         FloatBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();

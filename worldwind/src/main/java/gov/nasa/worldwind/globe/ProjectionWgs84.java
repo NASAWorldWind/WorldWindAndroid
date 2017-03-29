@@ -179,7 +179,7 @@ public class ProjectionWgs84 implements GeographicProjection {
     }
 
     @Override
-    public float[] geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon, float[] elevations,
+    public float[] geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon, float[] height, float verticalExaggeration,
                                              Vec3 origin, float[] result, int stride, int pos) {
         if (globe == null) {
             throw new IllegalArgumentException(
@@ -197,7 +197,7 @@ public class ProjectionWgs84 implements GeographicProjection {
         }
 
         int numPoints = numLat * numLon;
-        if (elevations != null && elevations.length < numPoints) {
+        if (height != null && height.length < numPoints) {
             throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "ProjectionWgs84",
                 "geographicToCartesianGrid", "missingArray"));
         }
@@ -221,7 +221,7 @@ public class ProjectionWgs84 implements GeographicProjection {
         double[] sinLon = new double[numLon];
 
         int latIndex, lonIndex, elevIndex = 0;
-        double lat, lon, elev;
+        double lat, lon, hgt;
         double xOffset = (origin != null) ? -origin.x : 0;
         double yOffset = (origin != null) ? -origin.y : 0;
         double zOffset = (origin != null) ? -origin.z : 0;
@@ -250,10 +250,10 @@ public class ProjectionWgs84 implements GeographicProjection {
             rpm = eqr / Math.sqrt(1.0 - ec2 * sinLat * sinLat);
 
             for (lonIndex = 0; lonIndex < numLon; lonIndex++) {
-                elev = (elevations != null) ? elevations[elevIndex++] : 0;
-                result[pos] = (float) ((elev + rpm) * cosLat * sinLon[lonIndex] + xOffset);
-                result[pos + 1] = (float) ((elev + rpm * (1.0 - ec2)) * sinLat + yOffset);
-                result[pos + 2] = (float) ((elev + rpm) * cosLat * cosLon[lonIndex] + zOffset);
+                hgt = (height != null) ? height[elevIndex++] * verticalExaggeration : 0;
+                result[pos] = (float) ((hgt + rpm) * cosLat * sinLon[lonIndex] + xOffset);
+                result[pos + 1] = (float) ((hgt + rpm * (1.0 - ec2)) * sinLat + yOffset);
+                result[pos + 2] = (float) ((hgt + rpm) * cosLat * cosLon[lonIndex] + zOffset);
                 pos += stride;
             }
         }

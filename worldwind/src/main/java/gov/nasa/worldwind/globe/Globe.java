@@ -226,7 +226,7 @@ public class Globe {
      * @param sector
      * @param numLat
      * @param numLon
-     * @param elevations
+     * @param height
      * @param origin
      * @param result
      * @param stride
@@ -236,7 +236,7 @@ public class Globe {
      *
      * @throws IllegalArgumentException if any argument is null,
      */
-    public float[] geographicToCartesianGrid(Sector sector, int numLat, int numLon, float[] elevations,
+    public float[] geographicToCartesianGrid(Sector sector, int numLat, int numLon, float[] height, float verticalExaggeration,
                                              Vec3 origin, float[] result, int stride, int pos) {
         if (sector == null) {
             throw new IllegalArgumentException(
@@ -249,7 +249,7 @@ public class Globe {
         }
 
         int numPoints = numLat * numLon;
-        if (elevations != null && elevations.length < numPoints) {
+        if (height != null && height.length < numPoints) {
             throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Globe",
                 "geographicToCartesianGrid", "missingArray"));
         }
@@ -259,8 +259,8 @@ public class Globe {
                 Logger.logMessage(Logger.ERROR, "Globe", "geographicToCartesianGrid", "missingResult"));
         }
 
-        return this.projection.geographicToCartesianGrid(this, sector, numLat, numLon, elevations, origin,
-            result, stride, pos);
+        return this.projection.geographicToCartesianGrid(this, sector, numLat, numLon, height, verticalExaggeration,
+            origin, result, stride, pos);
     }
 
     /**

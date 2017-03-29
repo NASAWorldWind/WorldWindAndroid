@@ -10,12 +10,14 @@ import android.opengl.GLES20;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.Locale;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Level;
+import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Tile;
 
 /**
@@ -23,79 +25,84 @@ import gov.nasa.worldwind.util.Tile;
  */
 public class TerrainTile extends Tile {
 
-    protected Vec3 vertexOrigin = new Vec3();
+    protected float[] heights;
 
-    protected float[] vertexPoints;
+    protected float[] points;
 
-    protected String vertexPointKey;
+    protected Vec3 origin = new Vec3();
 
-    private long vertexPointTimestamp;
+    private long heightTimestamp;
 
-    private double vertexPointExaggeration;
+    private double verticalExaggeration;
 
-    private boolean mustUpdateBufferObject;
+    private String pointBufferKey;
+
+    private long pointSequence;
 
     /**
      * {@inheritDoc}
      */
     public TerrainTile(Sector sector, Level level, int row, int column) {
         super(sector, level, row, column);
-        this.vertexPointKey = this.getClass().getName() + ".vertexPoint." + this.tileKey;
     }
 
-    public Vec3 getVertexOrigin() {
-        return this.vertexOrigin;
+    public float[] getHeights() {
+        return heights;
     }
 
-    public void setVertexOrigin(Vec3 vertexOrigin) {
-        this.vertexOrigin = vertexOrigin;
+    public void setHeights(float[] heights) {
+        this.heights = heights;
     }
 
-    public float[] getVertexPoints() {
-        return this.vertexPoints;
+    protected long getHeightTimestamp() {
+        return heightTimestamp;
     }
 
-    public void setVertexPoints(float[] vertexPoints) {
-        this.vertexPoints = vertexPoints;
-        this.mustUpdateBufferObject = true;
+    protected void setHeightTimestamp(long timestampMillis) {
+        this.heightTimestamp = timestampMillis;
     }
 
-    public BufferObject getVertexPointBuffer(RenderContext rc) {
-        if (this.vertexPoints == null) {
+    public float[] getPoints() {
+        return this.points;
+    }
+
+    public void setPoints(float[] points) {
+        this.points = points;
+        this.pointBufferKey = "TerrainTile.points." + this.tileKey + "." + (this.pointSequence++);
+    }
+
+    public Vec3 getOrigin() {
+        return this.origin;
+    }
+
+    public void setOrigin(Vec3 origin) {
+        this.origin = origin;
+    }
+
+    protected double getVerticalExaggeration() {
+        return verticalExaggeration;
+    }
+
+    protected void setVerticalExaggeration(double verticalExaggeration) {
+        this.verticalExaggeration = verticalExaggeration;
+    }
+
+    public BufferObject getPointBuffer(RenderContext rc) {
+        if (this.points == null) {
             return null;
         }
 
-        if (!this.mustUpdateBufferObject) {
-            BufferObject bufferObject = rc.getBufferObject(this.vertexPointKey);
-            if (bufferObject != null) {
-                return bufferObject;
-            }
+        BufferObject bufferObject = rc.getBufferObject(this.pointBufferKey);
+        if (bufferObject != null) {
+            return bufferObject;
         }
-
-        this.mustUpdateBufferObject = false;
 
         // TODO consider a pool of terrain tiles
         // TODO consider a pool of terrain tile vertex buffers
-        int size = this.vertexPoints.length * 4;
+        int size = this.points.length * 4;
         FloatBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        buffer.put(this.vertexPoints).rewind();
+        buffer.put(this.points).rewind();
 
-        return rc.putBufferObject(this.vertexPointKey, new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer));
-    }
-
-    protected long getVertexPointTimestamp() {
-        return vertexPointTimestamp;
-    }
-
-    protected void setVertexPointTimestamp(long millis) {
-        this.vertexPointTimestamp = millis;
-    }
-
-    protected double getVertexPointExaggeration() {
-        return vertexPointExaggeration;
-    }
-
-    protected void setVertexPointExaggeration(double verticalExaggeration) {
-        this.vertexPointExaggeration = verticalExaggeration;
+        return rc.putBufferObject(this.pointBufferKey, new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer));
     }
 }

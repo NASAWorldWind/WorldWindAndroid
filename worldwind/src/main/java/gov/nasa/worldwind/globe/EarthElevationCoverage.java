@@ -14,6 +14,7 @@ public class EarthElevationCoverage extends TiledElevationCoverage {
 
     public EarthElevationCoverage() {
         LevelSetConfig levelSetConfig = new LevelSetConfig();
+        levelSetConfig.firstLevelDelta = 180;
         levelSetConfig.numLevels = 15;
         this.setLevelSet(new LevelSet(levelSetConfig));
 

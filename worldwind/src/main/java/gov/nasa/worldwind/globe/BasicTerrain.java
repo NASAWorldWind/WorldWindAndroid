@@ -68,21 +68,21 @@ public class BasicTerrain implements Terrain {
         for (int idx = 0, len = this.tiles.size(); idx < len; idx++) {
             // Translate the line to the terrain tile's local coordinate system.
             TerrainTile tile = this.tiles.get(idx);
-            line.origin.subtract(tile.vertexOrigin);
+            line.origin.subtract(tile.origin);
 
             // Compute the first intersection of the terrain tile with the line. The line is interpreted as a ray;
             // intersection points behind the line's origin are ignored. Store the nearest intersection found so far
             // in the result argument.
-            if (line.triStripIntersection(tile.vertexPoints, 3, this.triStripElements, this.triStripElements.length, this.intersectPoint)) {
+            if (line.triStripIntersection(tile.points, 3, this.triStripElements, this.triStripElements.length, this.intersectPoint)) {
                 double dist2 = line.origin.distanceToSquared(this.intersectPoint);
                 if (minDist2 > dist2) {
                     minDist2 = dist2;
-                    result.set(this.intersectPoint).add(tile.vertexOrigin);
+                    result.set(this.intersectPoint).add(tile.origin);
                 }
             }
 
             // Restore the line's origin to it's previous coordinate system.
-            line.origin.add(tile.vertexOrigin);
+            line.origin.add(tile.origin);
         }
 
         return minDist2 != Double.POSITIVE_INFINITY;
@@ -114,7 +114,7 @@ public class BasicTerrain implements Terrain {
 
                 // Compute the location in the tile's local coordinate system. Perform a bilinear interpolation of
                 // the cell's four points based on the fractional portion of the location's parameterized coordinates.
-                // Tile coordinates are organized in the vertexPoints array in row major order, starting at the tile's
+                // Tile coordinates are organized in the points array in row major order, starting at the tile's
                 // Southwest corner.
                 int i00 = (si + ti * tileWidth) * 3;       // lower left coordinate
                 int i10 = i00 + 3;                         // lower right coordinate
@@ -124,15 +124,15 @@ public class BasicTerrain implements Terrain {
                 double f10 = sf * (1 - tf);
                 double f01 = (1 - sf) * tf;
                 double f11 = sf * tf;
-                float[] points = tile.vertexPoints;
+                float[] points = tile.points;
                 result.x = (points[i00] * f00) + (points[i10] * f10) + (points[i01] * f01) + (points[i11] * f11);
                 result.y = (points[i00 + 1] * f00) + (points[i10 + 1] * f10) + (points[i01 + 1] * f01) + (points[i11 + 1] * f11);
                 result.z = (points[i00 + 2] * f00) + (points[i10 + 2] * f10) + (points[i01 + 2] * f01) + (points[i11 + 2] * f11);
 
                 // Translate the surface point from the tile's local coordinate system to Cartesian coordinates.
-                result.x += tile.vertexOrigin.x;
-                result.y += tile.vertexOrigin.y;
-                result.z += tile.vertexOrigin.z;
+                result.x += tile.origin.x;
+                result.y += tile.origin.y;
+                result.z += tile.origin.z;
 
                 return true;
             }
