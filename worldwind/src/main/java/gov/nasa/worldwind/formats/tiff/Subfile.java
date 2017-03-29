@@ -474,8 +474,7 @@ public class Subfile {
                 Logger.logMessage(Logger.ERROR, "Subfile", "getUncompressedImage", "null buffer"));
         }
 
-        int size = result.capacity() - result.position();
-        if (size < this.getDataSize()) {
+        if (result.remaining() < this.getDataSize()) {
             throw new RuntimeException(
                 Logger.logMessage(Logger.ERROR, "Subfile", "getUncompressedImage", "inadequate buffer size"));
         }
