@@ -34,7 +34,7 @@ public interface ElevationCoverage {
 
     boolean getHeight(double latitude, double longitude, float[] result);
 
-    void getHeightGrid(Sector gridSector, int gridWidth, int gridHeight, double radiansPerPixel, float[] result);
+    void getHeightGrid(Sector gridSector, int gridWidth, int gridHeight, float[] result);
 
-    void getHeightLimits(Sector sector, double radiansPerPixel, float[] result);
+    void getHeightLimits(Sector sector, float[] result);
 }

@@ -187,7 +187,7 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
         return false;
     }
 
-    public void getHeightGrid(Sector gridSector, int gridWidth, int gridHeight, double radiansPerPixel, float[] result) {
+    public void getHeightGrid(Sector gridSector, int gridWidth, int gridHeight, float[] result) {
         if (gridSector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeightGrid", "missingSector"));
@@ -200,11 +200,11 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
 
         for (int idx = 0, len = this.coverages.size(); idx < len; idx++) {
             ElevationCoverage coverage = this.coverages.get(idx);
-            coverage.getHeightGrid(gridSector, gridWidth, gridHeight, radiansPerPixel, result);
+            coverage.getHeightGrid(gridSector, gridWidth, gridHeight, result);
         }
     }
 
-    public void getHeightLimits(Sector sector, double radiansPerPixel, float[] result) {
+    public void getHeightLimits(Sector sector, float[] result) {
         if (sector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeightLimits", "missingSector"));
@@ -217,7 +217,7 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
 
         for (int idx = 0, len = this.coverages.size(); idx < len; idx++) {
             ElevationCoverage coverage = this.coverages.get(idx);
-            coverage.getHeightLimits(sector, radiansPerPixel, result);
+            coverage.getHeightLimits(sector, result);
         }
     }
 }

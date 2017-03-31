@@ -380,7 +380,7 @@ public class Tile {
         long elevationTimestamp = rc.globe.getElevationModel().getTimestamp();
         if (elevationTimestamp != this.heightLimitsTimestamp) {
             Arrays.fill(this.heightLimits, 0);
-            rc.globe.getElevationModel().getHeightLimits(this.sector, this.level.texelHeight, this.heightLimits);
+            rc.globe.getElevationModel().getHeightLimits(this.sector, this.heightLimits);
         }
 
         double verticalExaggeration = rc.verticalExaggeration;

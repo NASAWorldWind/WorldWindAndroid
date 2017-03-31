@@ -98,7 +98,7 @@ public abstract class AbstractElevationCoverage implements ElevationCoverage {
     }
 
     @Override
-    public void getHeightGrid(Sector gridSector, int gridWidth, int gridHeight, double radiansPerPixel, float[] result) {
+    public void getHeightGrid(Sector gridSector, int gridWidth, int gridHeight, float[] result) {
         if (gridSector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "AbstractElevationCoverage", "getHeightGrid", "missingSector"));
@@ -117,11 +117,11 @@ public abstract class AbstractElevationCoverage implements ElevationCoverage {
             return;
         }
 
-        this.doGetHeightGrid(gridSector, gridWidth, gridHeight, radiansPerPixel, result);
+        this.doGetHeightGrid(gridSector, gridWidth, gridHeight, result);
     }
 
     @Override
-    public void getHeightLimits(Sector sector, double radiansPerPixel, float[] result) {
+    public void getHeightLimits(Sector sector, float[] result) {
         if (sector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "AbstractElevationCoverage", "getHeightLimits", "missingSector"));
@@ -140,12 +140,12 @@ public abstract class AbstractElevationCoverage implements ElevationCoverage {
             return;
         }
 
-        this.doGetHeightLimits(sector, radiansPerPixel, result);
+        this.doGetHeightLimits(sector, result);
     }
 
     protected abstract boolean doGetHeight(double latitude, double longitude, float[] result);
 
-    protected abstract void doGetHeightGrid(Sector gridSector, int gridWidth, int gridHeight, double radiansPerPixel, float[] result);
+    protected abstract void doGetHeightGrid(Sector gridSector, int gridWidth, int gridHeight, float[] result);
 
-    protected abstract void doGetHeightLimits(Sector sector, double radiansPerPixel, float[] result);
+    protected abstract void doGetHeightLimits(Sector sector, float[] result);
 }

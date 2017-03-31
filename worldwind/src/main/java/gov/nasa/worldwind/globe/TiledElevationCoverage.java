@@ -36,15 +36,19 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
 
     protected LruMemoryCache<Long, Tile> tileCache;
 
-    protected LruMemoryCache<ImageSource, ShortBuffer> coverageCache;
+    protected LruMemoryCache<ImageSource, short[]> coverageCache;
 
     protected ElevationRetriever coverageRetriever;
 
     protected Handler coverageHandler;
 
+    protected boolean enableRetrieval;
+
+    protected static final int GET_HEIGHT_LIMIT_SAMPLES = 8;
+
     public TiledElevationCoverage() {
         this.tileCache = new LruMemoryCache<>(200);
-        this.coverageCache = new LruMemoryCache<>(1024 * 1024 * 4);
+        this.coverageCache = new LruMemoryCache<>(1024 * 1024 * 8);
         this.coverageRetriever = new ElevationRetriever(4);
         this.coverageHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
             @Override
@@ -93,17 +97,29 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         return this.levelSet.sector.intersects(sector);
     }
 
+    protected boolean isEnableRetrieval() {
+        return this.enableRetrieval;
+    }
+
+    protected void setEnableRetrieval(boolean enable) {
+        this.enableRetrieval = enable;
+    }
+
     @Override
     protected boolean doGetHeight(double latitude, double longitude, float[] result) {
         return false; // TODO
     }
 
     @Override
-    protected void doGetHeightGrid(Sector gridSector, int gridWidth, int gridHeight, double radiansPerPixel, float[] result) {
+    protected void doGetHeightGrid(Sector gridSector, int gridWidth, int gridHeight, float[] result) {
+        double radiansPerSample = Math.toRadians(gridSector.deltaLatitude()) / gridHeight;
+        Level targetLevel = this.levelSet.levelForResolution(radiansPerSample);
         TileBlock tileBlock = new TileBlock();
 
-        Level level = this.levelSet.levelForResolution(radiansPerPixel);
+        Level level = targetLevel;
         while (level != null) {
+
+            this.setEnableRetrieval(level.equals(targetLevel) || level.isFirstLevel()); // enable retrieval of the target level and the first level
 
             if (this.fetchTileBlock(gridSector, gridWidth, gridHeight, level, tileBlock)) {
                 this.readHeightGrid(gridSector, gridWidth, gridHeight, tileBlock, result);
@@ -115,11 +131,15 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
     }
 
     @Override
-    protected void doGetHeightLimits(Sector sector, double radiansPerPixel, float[] result) {
+    protected void doGetHeightLimits(Sector sector, float[] result) {
+        double radiansPerSample = Math.toRadians(sector.deltaLatitude()) / GET_HEIGHT_LIMIT_SAMPLES;
+        Level targetLevel = this.levelSet.levelForResolution(radiansPerSample);
         TileBlock tileBlock = new TileBlock();
 
-        Level level = this.levelSet.levelForResolution(radiansPerPixel);
+        Level level = targetLevel;
         while (level != null) {
+
+            this.setEnableRetrieval(level.equals(targetLevel) || level.isFirstLevel()); // enable retrieval of the target level and the first level
 
             if (this.fetchTileBlock(sector, level, tileBlock)) {
                 this.scanHeightLimits(sector, tileBlock, result);
@@ -183,12 +203,10 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
             for (int cidx = 0, clen = result.cols.size(); cidx < clen; cidx++) {
                 int row = result.rows.keyAt(ridx);
                 int col = result.cols.keyAt(cidx);
-                ImageTile tile = this.fetchTile(level, row, col);
-                ShortBuffer tileArray = this.coverageCache.get(tile.getImageSource());
+                short[] tileArray = this.fetchTileArray(level, row, col);
                 if (tileArray != null) {
                     result.putTileArray(row, col, tileArray);
                 } else {
-                    this.coverageRetriever.retrieve(tile.getImageSource(), null, this);
                     return false;
                 }
             }
@@ -211,8 +229,7 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
 
         for (int row = minRow; row <= maxRow; row++) {
             for (int col = minCol; col <= maxCol; col++) {
-                ImageTile tile = this.fetchTile(level, row, col);
-                ShortBuffer tileArray = this.coverageCache.get(tile.getImageSource());
+                short[] tileArray = this.fetchTileArray(level, row, col);
                 if (tileArray != null) {
                     result.rows.put(row, 0);
                     result.cols.put(col, 0);
@@ -226,7 +243,7 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         return true;
     }
 
-    protected ImageTile fetchTile(Level level, int row, int column) {
+    protected short[] fetchTileArray(Level level, int row, int column) {
         long key = tileKey(level, row, column);
         Tile tile = this.tileCache.get(key);
 
@@ -236,7 +253,13 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
             this.tileCache.put(key, tile, 1);
         }
 
-        return (ImageTile) tile;
+        ImageSource tileSource = ((ImageTile) tile).getImageSource();
+        short[] tileArray = this.coverageCache.get(tileSource);
+        if (tileArray == null && this.isEnableRetrieval()) {
+            this.coverageRetriever.retrieve(tileSource, null, this);
+        }
+
+        return tileArray;
     }
 
     protected static long tileKey(Level level, int row, int column) {
@@ -333,19 +356,25 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
             int row = tileBlock.rows.keyAt(ridx);
             int rowjMin = row * tileHeight;
             int rowjMax = rowjMin + tileHeight - 1;
-            int j0 = (int) WWMath.clamp(jMin, rowjMin, rowjMax);
-            int j1 = (int) WWMath.clamp(jMax, rowjMin, rowjMax);
+            int j0 = (int) WWMath.clamp(jMin, rowjMin, rowjMax) % tileHeight;
+            int j1 = (int) WWMath.clamp(jMax, rowjMin, rowjMax) % tileHeight;
 
             for (int cidx = 0, clen = tileBlock.cols.size(); cidx < clen; cidx++) {
                 int col = tileBlock.cols.keyAt(cidx);
                 int coliMin = col * tileWidth;
                 int coliMax = coliMin + tileWidth - 1;
-                int i0 = (int) WWMath.clamp(iMin, coliMin, coliMax);
-                int i1 = (int) WWMath.clamp(iMax, coliMin, coliMax);
+                int i0 = (int) WWMath.clamp(iMin, coliMin, coliMax) % tileWidth;
+                int i1 = (int) WWMath.clamp(iMax, coliMin, coliMax) % tileWidth;
+
+                short[] tileArray = tileBlock.getTileArray(row, col);
 
                 for (int j = j0; j <= j1; j++) {
                     for (int i = i0; i <= i1; i++) {
-                        float texel = tileBlock.readTexel(row, col, i % tileWidth, j % tileHeight);
+
+                        int jp = tileHeight - j - 1; // flip the vertical coordinate origin
+                        int pos = i + jp * tileWidth;
+                        short texel = tileArray[pos];
+
                         if (result[0] > texel) {
                             result[0] = texel;
                         }
@@ -360,19 +389,20 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
 
     public void retrievalSucceeded(Retriever retriever, ImageSource key, Void unused, ShortBuffer value) {
         final ImageSource finalKey = key;
-        final ShortBuffer finalValue = value;
+        final short[] finalArray = new short[value.remaining()];
+        value.get(finalArray);
 
         this.coverageHandler.post(new Runnable() {
             @Override
             public void run() {
-                coverageCache.put(finalKey, finalValue, finalValue.capacity() * 2);
+                coverageCache.put(finalKey, finalArray, finalArray.length * 2);
                 updateTimestamp();
                 WorldWind.requestRedraw();
             }
         });
 
-        if (Logger.isLoggable(Logger.INFO)) {
-            Logger.log(Logger.INFO, "Coverage retrieval succeeded \'" + key + "\'");
+        if (Logger.isLoggable(Logger.DEBUG)) {
+            Logger.log(Logger.DEBUG, "Coverage retrieval succeeded \'" + key + "\'");
         }
     }
 
@@ -402,13 +432,13 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
 
         public SparseIntArray cols = new SparseIntArray();
 
-        public LongSparseArray<ShortBuffer> arrays = new LongSparseArray<>();
+        public LongSparseArray<short[]> arrays = new LongSparseArray<>();
 
         private int texelRow = -1;
 
         private int texelCol = -1;
 
-        private ShortBuffer texelArray;
+        private short[] texelArray;
 
         public void clear() {
             this.rows.clear();
@@ -419,12 +449,12 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
             this.texelArray = null;
         }
 
-        public void putTileArray(int row, int column, ShortBuffer array) {
+        public void putTileArray(int row, int column, short[] array) {
             long key = tileKey(this.level, row, column);
             this.arrays.put(key, array);
         }
 
-        public float readTexel(int row, int column, int i, int j) {
+        public short[] getTileArray(int row, int column) {
             if (this.texelRow != row || this.texelCol != column) {
                 long key = tileKey(this.level, row, column);
                 this.texelRow = row;
@@ -432,8 +462,14 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
                 this.texelArray = this.arrays.get(key);
             }
 
+            return this.texelArray;
+        }
+
+        public float readTexel(int row, int column, int i, int j) {
             j = this.level.tileHeight - j - 1; // flip the vertical coordinate origin
-            return this.texelArray.get(i + j * this.level.tileWidth);
+            short[] array = this.getTileArray(row, column);
+            int pos = i + j * this.level.tileWidth;
+            return array[pos];
         }
     }
 }

@@ -180,7 +180,7 @@ public class BasicTessellator implements Tessellator, TileFactory {
             }
 
             Arrays.fill(heights, 0);
-            rc.globe.getElevationModel().getHeightGrid(tile.sector, tileWidth, tileHeight, tile.level.texelHeight, heights);
+            rc.globe.getElevationModel().getHeightGrid(tile.sector, tileWidth, tileHeight, heights);
             tile.setHeights(heights);
         }
 
