@@ -43,7 +43,7 @@ public class DrawContext {
 
     public DrawableQueue drawableQueue;
 
-    public DrawableList drawableTerrain;
+    public DrawableQueue drawableTerrain;
 
     public PickedObjectList pickedObjects;
 

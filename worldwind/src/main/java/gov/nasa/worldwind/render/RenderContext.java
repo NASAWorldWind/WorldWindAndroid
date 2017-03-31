@@ -77,7 +77,7 @@ public class RenderContext {
 
     public DrawableQueue drawableQueue;
 
-    public DrawableList drawableTerrain;
+    public DrawableQueue drawableTerrain;
 
     public PickedObjectList pickedObjects;
 
@@ -466,15 +466,19 @@ public class RenderContext {
         }
     }
 
-    public void offerDrawableTerrain(DrawableTerrain drawable) {
+    public void offerDrawableTerrain(DrawableTerrain drawable, double cameraDistance) {
         if (this.drawableTerrain != null) {
-            this.drawableTerrain.offerDrawable(drawable);
+            this.drawableTerrain.offerDrawable(drawable, WorldWind.SURFACE_DRAWABLE, cameraDistance); // order by increasing distance to the viewer
         }
     }
 
     public void sortDrawables() {
         if (this.drawableQueue != null) {
             this.drawableQueue.sortDrawables();
+        }
+
+        if (this.drawableTerrain != null) {
+            this.drawableTerrain.sortDrawables();
         }
     }
 

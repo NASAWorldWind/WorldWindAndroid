@@ -157,7 +157,7 @@ public class AtmosphereLayer extends AbstractLayer {
         Arrays.fill(altitudes, altitude);
 
         float[] points = new float[count * 3];
-        rc.globe.geographicToCartesianGrid(this.fullSphereSector, numLat, numLon, altitudes, 1.0f, null, points, 3, 0);
+        rc.globe.geographicToCartesianGrid(this.fullSphereSector, numLat, numLon, altitudes, 1.0f, null, points, 0, 0);
 
         int size = points.length * 4;
         FloatBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();

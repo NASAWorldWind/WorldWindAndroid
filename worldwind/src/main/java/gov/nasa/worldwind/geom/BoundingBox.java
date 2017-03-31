@@ -241,14 +241,13 @@ public class BoundingBox {
         int numLat = 3;
         int numLon = 3;
         int count = numLat * numLon;
-        int stride = 3;
 
         float[] heights = new float[count];
         Arrays.fill(heights, maxHeight);
         heights[0] = heights[2] = heights[6] = heights[8] = minHeight;
 
-        float[] points = new float[count * stride];
-        globe.geographicToCartesianGrid(sector, numLat, numLon, heights, 1.0f, null, points, stride, 0);
+        float[] points = new float[count * 3];
+        globe.geographicToCartesianGrid(sector, numLat, numLon, heights, 1.0f, null, points, 0, 0);
 
         // Compute the local coordinate axes. Since we know this box is bounding a geographic sector, we use the
         // local coordinate axes at its centroid as the box axes. Using these axes results in a box that has +-10%
@@ -267,7 +266,7 @@ public class BoundingBox {
         double sExtremes[] = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
         double tExtremes[] = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
         Vec3 p = new Vec3();
-        for (int idx = 0, len = points.length; idx < len; idx += stride) {
+        for (int idx = 0, len = points.length; idx < len; idx += 3) {
             p.set(points[idx], points[idx + 1], points[idx + 2]);
             adjustExtremes(this.r, rExtremes, this.s, sExtremes, this.t, tExtremes, p);
         }

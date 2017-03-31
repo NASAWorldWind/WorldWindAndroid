@@ -185,15 +185,6 @@ public class Globe {
         return this.projection.geographicToCartesian(this, latitude, longitude, altitude, result);
     }
 
-    /**
-     * @param latitude
-     * @param longitude
-     * @param result
-     *
-     * @return
-     *
-     * @throws IllegalArgumentException if the result is null
-     */
     public Vec3 geographicToCartesianNormal(double latitude, double longitude, Vec3 result) {
         if (result == null) {
             throw new IllegalArgumentException(
@@ -203,16 +194,6 @@ public class Globe {
         return this.projection.geographicToCartesianNormal(this, latitude, longitude, result);
     }
 
-    /**
-     * @param latitude
-     * @param longitude
-     * @param altitude
-     * @param result
-     *
-     * @return
-     *
-     * @throws IllegalArgumentException if the result is null
-     */
     public Matrix4 geographicToCartesianTransform(double latitude, double longitude, double altitude, Matrix4 result) {
         if (result == null) {
             throw new IllegalArgumentException(
@@ -222,45 +203,52 @@ public class Globe {
         return this.projection.geographicToCartesianTransform(this, latitude, longitude, altitude, result);
     }
 
-    /**
-     * @param sector
-     * @param numLat
-     * @param numLon
-     * @param height
-     * @param origin
-     * @param result
-     * @param stride
-     * @param pos
-     *
-     * @return
-     *
-     * @throws IllegalArgumentException if any argument is null,
-     */
     public float[] geographicToCartesianGrid(Sector sector, int numLat, int numLon, float[] height, float verticalExaggeration,
-                                             Vec3 origin, float[] result, int stride, int pos) {
+                                             Vec3 origin, float[] result, int offset, int rowStride) {
         if (sector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Globe", "geographicToCartesianGrid", "missingSector"));
         }
 
         if (numLat < 1 || numLon < 1) {
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Globe",
-                "geographicToCartesianGrid", "Number of latitude or longitude locations is less than one"));
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "geographicToCartesianGrid",
+                    "Number of latitude or longitude locations is less than one"));
         }
 
         int numPoints = numLat * numLon;
         if (height != null && height.length < numPoints) {
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Globe",
-                "geographicToCartesianGrid", "missingArray"));
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "geographicToCartesianGrid", "missingArray"));
         }
 
-        if (result == null || result.length < numPoints * stride + pos) {
+        if (result == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Globe", "geographicToCartesianGrid", "missingResult"));
         }
 
         return this.projection.geographicToCartesianGrid(this, sector, numLat, numLon, height, verticalExaggeration,
-            origin, result, stride, pos);
+            origin, result, offset, rowStride);
+    }
+
+    public float[] geographicToCartesianBorder(Sector sector, int numLat, int numLon, float height,
+                                               Vec3 origin, float[] result) {
+        if (sector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "geographicToCartesianBorder", "missingSector"));
+        }
+
+        if (numLat < 1 || numLon < 1) {
+            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Globe",
+                "geographicToCartesianBorder", "Number of latitude or longitude locations is less than one"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "geographicToCartesianBorder", "missingResult"));
+        }
+
+        return this.projection.geographicToCartesianBorder(this, sector, numLat, numLon, height, origin, result);
     }
 
     /**

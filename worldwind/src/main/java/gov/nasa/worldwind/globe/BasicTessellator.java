@@ -155,7 +155,7 @@ public class BasicTessellator implements Tessellator, TileFactory {
         Pool<BasicDrawableTerrain> pool = rc.getDrawablePool(BasicDrawableTerrain.class);
         BasicDrawableTerrain drawable = BasicDrawableTerrain.obtain(pool);
         this.prepareDrawableTerrain(rc, tile, drawable);
-        rc.offerDrawableTerrain(drawable);
+        rc.offerDrawableTerrain(drawable, tile.getDistanceToCamera());
     }
 
     protected void invalidateTiles() {
@@ -189,13 +189,20 @@ public class BasicTessellator implements Tessellator, TileFactory {
             elevationTimestamp != tile.getHeightTimestamp()) {
 
             Vec3 origin = tile.getOrigin();
+            float[] heights = tile.getHeights();
+            float[] heightLimits = tile.getHeightLimits();
             float[] points = tile.getPoints();
+            float borderHeight = (float) (heightLimits[0] * verticalExaggeration);
+
             if (points == null) {
-                points = new float[tileWidth * tileHeight * 3];
+                int numPoints = (tileWidth + 2) * (tileHeight + 2) * 3;
+                points = new float[numPoints];
             }
 
+            int rowStride = (tileWidth + 2) * 3;
             rc.globe.geographicToCartesian(tile.sector.centroidLatitude(), tile.sector.centroidLongitude(), 0, origin);
-            rc.globe.geographicToCartesianGrid(tile.sector, tileWidth, tileHeight, tile.getHeights(), (float) verticalExaggeration, origin, points, 3, 0);
+            rc.globe.geographicToCartesianGrid(tile.sector, tileWidth, tileHeight, heights, (float) verticalExaggeration, origin, points, rowStride + 3, rowStride);
+            rc.globe.geographicToCartesianBorder(tile.sector, tileWidth + 2, tileHeight + 2, borderHeight, origin, points);
             tile.setOrigin(origin);
             tile.setPoints(points);
         }
@@ -220,13 +227,13 @@ public class BasicTessellator implements Tessellator, TileFactory {
     }
 
     protected void assembleLevelSetBuffers(RenderContext rc) {
-        int numLat = this.levelSet.tileHeight;
-        int numLon = this.levelSet.tileWidth;
+        int numLat = this.levelSet.tileHeight + 2;
+        int numLon = this.levelSet.tileWidth + 2;
 
         // Assemble the level set's vertex tex coords.
         if (this.levelSetVertexTexCoords == null) {
             this.levelSetVertexTexCoords = new float[numLat * numLon * 2];
-            this.assembleVertexTexCoords(numLat, numLon, this.levelSetVertexTexCoords, 2, 0);
+            this.assembleVertexTexCoords(numLat, numLon, this.levelSetVertexTexCoords);
         }
 
         // Assemble the level set's line elements.
@@ -265,27 +272,35 @@ public class BasicTessellator implements Tessellator, TileFactory {
         }
     }
 
-    protected float[] assembleVertexTexCoords(int numLat, int numLon, float[] result, int stride, int pos) {
-        float ds = 1f / (numLon > 1 ? numLon - 1 : 1);
-        float dt = 1f / (numLat > 1 ? numLat - 1 : 1);
-        float[] st = new float[2];
-        int sIndex, tIndex;
+    protected float[] assembleVertexTexCoords(int numLat, int numLon, float[] result) {
+        float ds = 1f / (numLon > 1 ? numLon - 3 : 1);
+        float dt = 1f / (numLat > 1 ? numLat - 3 : 1);
+        float s = 0;
+        float t = 0;
+        int sidx, tidx, resultIdx = 0;
 
         // Iterate over the number of latitude and longitude vertices, computing the parameterized S and T coordinates
         // corresponding to each vertex.
-        for (tIndex = 0, st[1] = 0; tIndex < numLat; tIndex++, st[1] += dt) {
-            if (tIndex == numLat - 1) {
-                st[1] = 1; // explicitly set the last T coordinate to 1 to ensure alignment
+        for (tidx = 0; tidx < numLat; tidx++) {
+            if (tidx < 2) {
+                t = 0; // explicitly set the first T coordinate to 0 to ensure alignment
+            } else if (tidx < numLat - 2) {
+                t += dt;
+            } else {
+                t = 1; // explicitly set the last T coordinate to 1 to ensure alignment
             }
 
-            for (sIndex = 0, st[0] = 0; sIndex < numLon; sIndex++, st[0] += ds) {
-                if (sIndex == numLon - 1) {
-                    st[0] = 1; // explicitly set the last S coordinate to 1 to ensure alignment
+            for (sidx = 0; sidx < numLon; sidx++) {
+                if (sidx < 2) {
+                    s = 0; // explicitly set the first S coordinate to 0 to ensure alignment
+                } else if (sidx < numLon - 2) {
+                    s += ds;
+                } else {
+                    s = 1; // explicitly set the last S coordinate to 1 to ensure alignment
                 }
 
-                result[pos] = st[0];
-                result[pos + 1] = st[1];
-                pos += stride;
+                result[resultIdx++] = s;
+                result[resultIdx++] = t;
             }
         }
 

@@ -10,14 +10,12 @@ import android.opengl.GLES20;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.util.Locale;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Level;
-import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Tile;
 
 /**
@@ -46,12 +44,24 @@ public class TerrainTile extends Tile {
         super(sector, level, row, column);
     }
 
+    public double getDistanceToCamera() {
+        return distanceToCamera;
+    }
+
     public float[] getHeights() {
         return heights;
     }
 
     public void setHeights(float[] heights) {
         this.heights = heights;
+    }
+
+    public float[] getHeightLimits() {
+        return heightLimits;
+    }
+
+    public void setHeightLimits(float[] heightLimits) {
+        this.heightLimits = heightLimits;
     }
 
     protected long getHeightTimestamp() {

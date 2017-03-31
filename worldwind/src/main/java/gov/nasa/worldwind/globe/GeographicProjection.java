@@ -39,42 +39,15 @@ public interface GeographicProjection {
      */
     Vec3 geographicToCartesian(Globe globe, double latitude, double longitude, double altitude, Vec3 result);
 
-    /**
-     * @param globe
-     * @param latitude
-     * @param longitude
-     * @param result
-     *
-     * @return
-     */
     Vec3 geographicToCartesianNormal(Globe globe, double latitude, double longitude, Vec3 result);
 
-    /**
-     * @param globe
-     * @param latitude
-     * @param longitude
-     * @param altitude
-     * @param result
-     *
-     * @return
-     */
     Matrix4 geographicToCartesianTransform(Globe globe, double latitude, double longitude, double altitude, Matrix4 result);
 
-    /**
-     * @param globe
-     * @param sector
-     * @param numLat
-     * @param numLon
-     * @param height
-     * @param origin
-     * @param result
-     * @param stride
-     * @param pos
-     *
-     * @return
-     */
     float[] geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon, float[] height, float verticalExaggeration,
-                                      Vec3 origin, float[] result, int stride, int pos);
+                                      Vec3 origin, float[] result, int offset, int rowStride);
+
+    float[] geographicToCartesianBorder(Globe globe, Sector sector, int numLat, int numLon, float height,
+                                        Vec3 origin, float[] result);
 
     /**
      * Converts a Cartesian point to a geographic position.

@@ -12,6 +12,7 @@ import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.WWMath;
 
 public class BasicTerrain implements Terrain {
 
@@ -107,19 +108,21 @@ public class BasicTerrain implements Terrain {
                 int tileHeight = tile.level.tileHeight;
                 double s = (longitude - sector.minLongitude()) / sector.deltaLongitude() * (tileWidth - 1);
                 double t = (latitude - sector.minLatitude()) / sector.deltaLatitude() * (tileHeight - 1);
-                double sf = (s < tileWidth - 1) ? (s - (int) s) : 1;
-                double tf = (t < tileHeight - 1) ? (t - (int) t) : 1;
-                int si = (s < tileWidth - 1) ? (int) s : (tileWidth - 2);
-                int ti = (t < tileHeight - 1) ? (int) t : (tileHeight - 2);
+                double sf = (s < tileWidth - 1) ? WWMath.fract(s) : 1;
+                double tf = (t < tileHeight - 1) ? WWMath.fract(t) : 1;
+                int si = (s < tileWidth - 1) ? (int) (s + 1) : (tileWidth - 1);
+                int ti = (t < tileHeight - 1) ? (int) (t + 1) : (tileHeight - 1);
 
                 // Compute the location in the tile's local coordinate system. Perform a bilinear interpolation of
                 // the cell's four points based on the fractional portion of the location's parameterized coordinates.
                 // Tile coordinates are organized in the points array in row major order, starting at the tile's
-                // Southwest corner.
-                int i00 = (si + ti * tileWidth) * 3;       // lower left coordinate
-                int i10 = i00 + 3;                         // lower right coordinate
-                int i01 = (si + (ti + 1) * tileWidth) * 3; // upper left coordinate
-                int i11 = i01 + 3;                         // upper right coordinate
+                // Southwest corner. Account for the tile's border vertices, which are embedded in the points array but
+                // must be ignored for this computation.
+                int tileRowStride = tileWidth + 2;
+                int i00 = (si + ti * tileRowStride) * 3;       // lower left coordinate
+                int i10 = i00 + 3;                             // lower right coordinate
+                int i01 = (si + (ti + 1) * tileRowStride) * 3; // upper left coordinate
+                int i11 = i01 + 3;                             // upper right coordinate
                 double f00 = (1 - sf) * (1 - tf);
                 double f10 = sf * (1 - tf);
                 double f01 = (1 - sf) * tf;

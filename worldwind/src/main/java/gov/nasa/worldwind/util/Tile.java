@@ -58,11 +58,13 @@ public class Tile {
      */
     protected float[] samplePoints;
 
-    private float[] heightLimits;
+    protected float[] heightLimits;
 
-    private long heightLimitsTimestamp;
+    protected long heightLimitsTimestamp;
 
-    private double extentExaggeration;
+    protected double extentExaggeration;
+
+    protected double distanceToCamera;
 
     /**
      * Constructs a tile with a specified sector, level, row and column.
@@ -265,9 +267,9 @@ public class Tile {
      * @return true if the tile should be subdivided, otherwise false
      */
     public boolean mustSubdivide(RenderContext rc, double detailFactor) {
-        double distance = this.distanceToCamera(rc);
+        this.distanceToCamera = this.distanceToCamera(rc);
         double texelSize = this.level.texelHeight * rc.globe.getEquatorialRadius();
-        double pixelSize = rc.pixelSizeAtDistance(distance);
+        double pixelSize = rc.pixelSizeAtDistance(this.distanceToCamera);
         double densityFactor = 1.0;
 
         // Adjust the subdivision factory when the display density is low. Values of detailFactor have been calibrated
@@ -410,7 +412,7 @@ public class Tile {
         }
 
         if (this.samplePoints == null) {
-            this.samplePoints = rc.globe.geographicToCartesianGrid(this.sector, 3, 3, null, 1.0f, null, new float[27], 3, 0);
+            this.samplePoints = rc.globe.geographicToCartesianGrid(this.sector, 3, 3, null, 1.0f, null, new float[27], 0, 0);
         }
 
         double minDistanceSq = Double.MAX_VALUE;
