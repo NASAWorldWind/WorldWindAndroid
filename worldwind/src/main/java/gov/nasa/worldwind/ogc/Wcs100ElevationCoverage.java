@@ -5,6 +5,7 @@
 
 package gov.nasa.worldwind.ogc;
 
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globe.TiledElevationCoverage;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.LevelSetConfig;
@@ -16,7 +17,7 @@ import gov.nasa.worldwind.util.Logger;
  */
 public class Wcs100ElevationCoverage extends TiledElevationCoverage {
 
-    public Wcs100ElevationCoverage(String serviceAddress, String coverage) {
+    public Wcs100ElevationCoverage(String serviceAddress, String coverage, Sector sector) {
         if (serviceAddress == null) {
             throw new IllegalArgumentException(
                 Logger.makeMessage("Wcs100ElevationCoverage", "constructor", "missingServiceAddress"));
@@ -27,8 +28,12 @@ public class Wcs100ElevationCoverage extends TiledElevationCoverage {
                 Logger.makeMessage("Wcs100ElevationCoverage", "constructor", "The coverage is null"));
         }
 
-        LevelSetConfig levelSetConfig = new LevelSetConfig();
-        levelSetConfig.numLevels = 15;
+        if (sector == null) {
+            throw new IllegalArgumentException(
+                Logger.makeMessage("Wcs100ElevationCoverage", "constructor", "The sector is null"));
+        }
+
+        LevelSetConfig levelSetConfig = new LevelSetConfig(sector, 90.0, 15, 256, 256);
         this.setLevelSet(new LevelSet(levelSetConfig));
 
         this.setTileFactory(new Wcs100TileFactory(serviceAddress, coverage));
