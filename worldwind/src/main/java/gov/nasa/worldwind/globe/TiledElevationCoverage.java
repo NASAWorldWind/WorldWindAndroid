@@ -135,6 +135,10 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         int levelHeight = level.levelHeight;
         int tileWidth = level.tileWidth;
         int tileHeight = level.tileHeight;
+        double levelMinLat = level.parent.sector.minLatitude();
+        double levelMaxLat = level.parent.sector.maxLatitude();
+        double levelMinLon = level.parent.sector.minLongitude();
+        double levelMaxLon = level.parent.sector.maxLongitude();
         double tMin = 1.0 / (2.0 * levelHeight);
         double tMax = 1.0 - tMin;
 
@@ -144,12 +148,16 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         double lon = gridSector.minLongitude();
         double deltaLon = gridSector.deltaLongitude() / (gridWidth - 1);
         for (int uidx = 0; uidx < gridWidth; uidx++, lon += deltaLon) {
+            if (lon < levelMinLon || lon > levelMaxLon) {
+                continue;
+            }
+
             double s = (lon + 180) / 360;
             double u = levelWidth * WWMath.fract(s); // wrap the horizontal coordinate
             int i0 = WWMath.mod((int) Math.floor(u - 0.5), levelWidth);
             int i1 = WWMath.mod((i0 + 1), levelWidth);
-            int col0 = (int) Math.floor(i0 / tileWidth);
-            int col1 = (int) Math.floor(i1 / tileWidth);
+            int col0 = i0 / tileWidth;
+            int col1 = i1 / tileWidth;
             result.cols.append(col0, 0);
             result.cols.append(col1, 0);
         }
@@ -157,12 +165,16 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         double lat = gridSector.minLatitude();
         double deltaLat = gridSector.deltaLatitude() / (gridHeight - 1);
         for (double vidx = 0; vidx < gridHeight; vidx++, lat += deltaLat) {
+            if (lat < levelMinLat || lat > levelMaxLat) {
+                continue;
+            }
+
             double t = (lat + 90) / 180;
             double v = levelHeight * WWMath.clamp(t, tMin, tMax); // clamp the vertical coordinate to the level edge
             int j0 = (int) WWMath.clamp(Math.floor(v - 0.5), 0, levelHeight - 1);
             int j1 = (int) WWMath.clamp(j0 + 1, 0, levelHeight - 1);
-            int row0 = (int) Math.floor(j0 / tileHeight);
-            int row1 = (int) Math.floor(j1 / tileHeight);
+            int row0 = j0 / tileHeight;
+            int row1 = j1 / tileHeight;
             result.rows.append(row0, 0);
             result.rows.append(row1, 0);
         }
@@ -186,10 +198,13 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
     }
 
     protected boolean fetchTileBlock(Sector sector, Level level, TileBlock result) {
-        int minRow = Tile.computeRow(level.tileDelta, sector.minLatitude());
-        int maxRow = Tile.computeLastRow(level.tileDelta, sector.maxLatitude());
-        int minCol = Tile.computeColumn(level.tileDelta, sector.minLongitude());
-        int maxCol = Tile.computeLastColumn(level.tileDelta, sector.maxLongitude());
+        Sector intersection = new Sector(level.parent.sector);
+        intersection.intersect(sector);
+
+        int minRow = Tile.computeRow(level.tileDelta, intersection.minLatitude());
+        int maxRow = Tile.computeLastRow(level.tileDelta, intersection.maxLatitude());
+        int minCol = Tile.computeColumn(level.tileDelta, intersection.minLongitude());
+        int maxCol = Tile.computeLastColumn(level.tileDelta, intersection.maxLongitude());
 
         result.level = level;
         result.clear();
@@ -245,6 +260,10 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         int levelHeight = tileBlock.level.levelHeight;
         int tileWidth = tileBlock.level.tileWidth;
         int tileHeight = tileBlock.level.tileHeight;
+        double levelMinLat = tileBlock.level.parent.sector.minLatitude();
+        double levelMaxLat = tileBlock.level.parent.sector.maxLatitude();
+        double levelMinLon = tileBlock.level.parent.sector.minLongitude();
+        double levelMaxLon = tileBlock.level.parent.sector.maxLongitude();
         double tMin = 1.0 / (2.0 * levelHeight);
         double tMax = 1.0 - tMin;
         int index = 0;
@@ -252,24 +271,32 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         double lat = gridSector.minLatitude();
         double deltaLat = gridSector.deltaLatitude() / (gridHeight - 1);
         for (double vidx = 0; vidx < gridHeight; vidx++, lat += deltaLat) {
+            if (lat < levelMinLat || lat > levelMaxLat) {
+                continue;
+            }
+
             double t = (lat + 90) / 180;
             double v = levelHeight * WWMath.clamp(t, tMin, tMax); // clamp the vertical coordinate to the level edge
             float b = (float) WWMath.fract(v - 0.5);
             int j0 = (int) WWMath.clamp(Math.floor(v - 0.5), 0, levelHeight - 1);
             int j1 = (int) WWMath.clamp(j0 + 1, 0, levelHeight - 1);
-            int row0 = (int) Math.floor(j0 / tileHeight);
-            int row1 = (int) Math.floor(j1 / tileHeight);
+            int row0 = j0 / tileHeight;
+            int row1 = j1 / tileHeight;
 
             double lon = gridSector.minLongitude();
             double deltaLon = gridSector.deltaLongitude() / (gridWidth - 1);
             for (int uidx = 0; uidx < gridWidth; uidx++, lon += deltaLon) {
+                if (lon < levelMinLon || lon > levelMaxLon) {
+                    continue;
+                }
+
                 double s = (lon + 180) / 360;
                 double u = levelWidth * WWMath.fract(s); // wrap the horizontal coordinate
                 float a = (float) WWMath.fract(u - 0.5);
                 int i0 = WWMath.mod((int) Math.floor(u - 0.5), levelWidth);
                 int i1 = WWMath.mod((i0 + 1), levelWidth);
-                int col0 = (int) Math.floor(i0 / tileWidth);
-                int col1 = (int) Math.floor(i1 / tileWidth);
+                int col0 = i0 / tileWidth;
+                int col1 = i1 / tileWidth;
 
                 float i0j0 = tileBlock.readTexel(row0, col0, i0 % tileWidth, j0 % tileHeight);
                 float i1j0 = tileBlock.readTexel(row0, col1, i1 % tileWidth, j0 % tileHeight);
@@ -290,10 +317,13 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         int tileWidth = tileBlock.level.tileWidth;
         int tileHeight = tileBlock.level.tileHeight;
 
-        double sMin = (sector.minLongitude() + 180) / 360;
-        double sMax = (sector.maxLongitude() + 180) / 360;
-        double tMin = (sector.minLatitude() + 90) / 180;
-        double tMax = (sector.maxLatitude() + 90) / 180;
+        Sector intersection = new Sector(tileBlock.level.parent.sector);
+        intersection.intersect(sector);
+
+        double sMin = (intersection.minLongitude() + 180) / 360;
+        double sMax = (intersection.maxLongitude() + 180) / 360;
+        double tMin = (intersection.minLatitude() + 90) / 180;
+        double tMax = (intersection.maxLatitude() + 90) / 180;
         int iMin = (int) WWMath.clamp(sMin * levelWidth, 0, levelWidth - 1);
         int iMax = (int) WWMath.clamp(sMax * levelWidth, 0, levelWidth - 1);
         int jMin = (int) WWMath.clamp(tMin * levelHeight, 0, levelHeight - 1);
