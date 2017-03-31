@@ -40,7 +40,7 @@ public class BasicElevationCoverage extends TiledElevationCoverage {
         }
 
         LevelSetConfig levelSetConfig = new LevelSetConfig();
-        levelSetConfig.numLevels = 15;
+        levelSetConfig.numLevels = 13;
         this.setLevelSet(new LevelSet(levelSetConfig));
 
         WmsLayerConfig layerConfig = new WmsLayerConfig();
