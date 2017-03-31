@@ -369,13 +369,16 @@ public class Tile {
     }
 
     protected BoundingBox getExtent(RenderContext rc) {
+        if (this.heightLimits == null) {
+            this.heightLimits = new float[2];
+        }
+
+        if (this.extent == null) {
+            this.extent = new BoundingBox();
+        }
+
         long elevationTimestamp = rc.globe.getElevationModel().getTimestamp();
         if (elevationTimestamp != this.heightLimitsTimestamp) {
-
-            if (this.heightLimits == null) {
-                this.heightLimits = new float[2];
-            }
-
             Arrays.fill(this.heightLimits, 0);
             rc.globe.getElevationModel().getHeightLimits(this.sector, this.level.texelHeight, this.heightLimits);
         }
@@ -383,11 +386,6 @@ public class Tile {
         double verticalExaggeration = rc.verticalExaggeration;
         if (verticalExaggeration != this.extentExaggeration ||
             elevationTimestamp != this.heightLimitsTimestamp) {
-
-            if (this.extent == null) {
-                this.extent = new BoundingBox();
-            }
-
             float minHeight = (float) (this.heightLimits[0] * verticalExaggeration);
             float maxHeight = (float) (this.heightLimits[1] * verticalExaggeration);
             this.extent.setToSector(this.sector, rc.globe, minHeight, maxHeight);
