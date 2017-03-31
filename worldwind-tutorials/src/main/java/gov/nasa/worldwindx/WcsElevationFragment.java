@@ -25,15 +25,17 @@ public class WcsElevationFragment extends BasicGlobeFragment {
         // Let the super class (BasicGlobeFragment) do the creation
         WorldWindow wwd = super.createWorldWindow();
 
+        // Specify the bounding sector - provided by the WCS
+        Sector coverageSector = Sector.fromDegrees(-83.0, -180.0, 173.0, 360.0);
+        // Specify the number of levels to match data resolution
+        int numberOfLevels = 12;
         // Specify the version 1.0.0 WCS address
         String serviceAddress = "https://worldwind26.arc.nasa.gov/wcs";
         // Specify the coverage name
         String coverage = "aster_v2";
-        // Specify the bounding sector - provided by the WCS
-        Sector coverageSector = Sector.fromDegrees(-83.0, -180.0, 173.0, 360.0);
 
         // Create an elevation coverage from a version 1.0.0 WCS
-        Wcs100ElevationCoverage aster = new Wcs100ElevationCoverage(serviceAddress, coverage, coverageSector);
+        Wcs100ElevationCoverage aster = new Wcs100ElevationCoverage(coverageSector, numberOfLevels, serviceAddress, coverage);
 
         // Add the coverage to the Globes elevation model
         wwd.getGlobe().getElevationModel().addCoverage(aster);
