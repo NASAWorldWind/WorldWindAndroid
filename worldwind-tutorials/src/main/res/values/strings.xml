@@ -29,6 +29,7 @@
     <string name="title_surface_image">Surface Image</string>
     <string name="title_wms_layer">WMS Layer</string>
     <string name="title_wmts_layer">WMTS Layer</string>
+    <string name="title_wcs_elevation_coverage">WCS Elevation Coverage</string>
 
     <string name="latitude">Latitude:</string>
     <string name="longitude">Longitude:</string>

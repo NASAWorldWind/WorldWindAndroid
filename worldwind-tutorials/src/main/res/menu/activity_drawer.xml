@@ -20,6 +20,10 @@
             android:icon="@android:drawable/ic_menu_mapmode"
             android:title="WMTS Layer"/>
         <item
+            android:id="@+id/nav_wcs_elevation_activity"
+            android:icon="@android:drawable/ic_menu_mapmode"
+            android:title="WCS Elevation Coverage"/>
+        <item
             android:id="@+id/nav_geopackage_activity"
             android:icon="@android:drawable/ic_menu_mapmode"
             android:title="@string/title_geopackage"/>
