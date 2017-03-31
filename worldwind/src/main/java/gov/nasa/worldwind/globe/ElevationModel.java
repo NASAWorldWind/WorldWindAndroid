@@ -15,8 +15,6 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
 
     protected ArrayList<ElevationCoverage> coverages = new ArrayList<>();
 
-    private float[] coverageLimits = new float[2];
-
     public ElevationModel() {
     }
 
@@ -189,7 +187,7 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
         return false;
     }
 
-    public boolean getHeightGrid(Sector gridSector, int gridWidth, int gridHeight, double radiansPerPixel, float[] result) {
+    public void getHeightGrid(Sector gridSector, int gridWidth, int gridHeight, double radiansPerPixel, float[] result) {
         if (gridSector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeightGrid", "missingSector"));
@@ -200,17 +198,13 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
                 Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeightGrid", "missingResult"));
         }
 
-        boolean any = false;
-
         for (int idx = 0, len = this.coverages.size(); idx < len; idx++) {
             ElevationCoverage coverage = this.coverages.get(idx);
-            any |= coverage.getHeightGrid(gridSector, gridWidth, gridHeight, radiansPerPixel, result);
+            coverage.getHeightGrid(gridSector, gridWidth, gridHeight, radiansPerPixel, result);
         }
-
-        return any;
     }
 
-    public boolean getHeightLimits(Sector sector, double radiansPerPixel, float[] result) {
+    public void getHeightLimits(Sector sector, double radiansPerPixel, float[] result) {
         if (sector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeightLimits", "missingSector"));
@@ -221,13 +215,9 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
                 Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeightLimits", "missingResult"));
         }
 
-        boolean any = false;
-
         for (int idx = 0, len = this.coverages.size(); idx < len; idx++) {
             ElevationCoverage coverage = this.coverages.get(idx);
-            any |= coverage.getHeightLimits(sector, radiansPerPixel, this.coverageLimits);
+            coverage.getHeightLimits(sector, radiansPerPixel, result);
         }
-
-        return any;
     }
 }

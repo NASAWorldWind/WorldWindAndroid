@@ -7,6 +7,7 @@ package gov.nasa.worldwind.util;
 
 import android.util.DisplayMetrics;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import gov.nasa.worldwind.geom.BoundingBox;
@@ -57,7 +58,9 @@ public class Tile {
      */
     protected float[] samplePoints;
 
-    private long extentTimestamp;
+    private float[] heightLimits;
+
+    private long heightLimitsTimestamp;
 
     private double extentExaggeration;
 
@@ -366,18 +369,32 @@ public class Tile {
     }
 
     protected BoundingBox getExtent(RenderContext rc) {
-        if (this.extent == null) {
-            this.extent = new BoundingBox();
+        long elevationTimestamp = rc.globe.getElevationModel().getTimestamp();
+        if (elevationTimestamp != this.heightLimitsTimestamp) {
+
+            if (this.heightLimits == null) {
+                this.heightLimits = new float[2];
+            }
+
+            Arrays.fill(this.heightLimits, 0);
+            rc.globe.getElevationModel().getHeightLimits(this.sector, this.level.texelHeight, this.heightLimits);
         }
 
-        long timestamp = rc.globe.getElevationModel().getTimestamp();
-        double exaggeration = rc.verticalExaggeration;
-        if (this.extentTimestamp != timestamp ||
-            this.extentExaggeration != exaggeration) {
-            this.extentTimestamp = timestamp;
-            this.extentExaggeration = exaggeration;
-            this.extent.setToSector(this.sector, rc.globe, 0, 0); // TODO min and max elevation
+        double verticalExaggeration = rc.verticalExaggeration;
+        if (verticalExaggeration != this.extentExaggeration ||
+            elevationTimestamp != this.heightLimitsTimestamp) {
+
+            if (this.extent == null) {
+                this.extent = new BoundingBox();
+            }
+
+            float minHeight = (float) (this.heightLimits[0] * verticalExaggeration);
+            float maxHeight = (float) (this.heightLimits[1] * verticalExaggeration);
+            this.extent.setToSector(this.sector, rc.globe, minHeight, maxHeight);
         }
+
+        this.heightLimitsTimestamp = elevationTimestamp;
+        this.extentExaggeration = verticalExaggeration;
 
         return this.extent;
     }

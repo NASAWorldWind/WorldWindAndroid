@@ -99,26 +99,35 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
     }
 
     @Override
-    protected boolean doGetHeightGrid(Sector gridSector, int gridWidth, int gridHeight, double radiansPerPixel, float[] result) {
+    protected void doGetHeightGrid(Sector gridSector, int gridWidth, int gridHeight, double radiansPerPixel, float[] result) {
         TileBlock tileBlock = new TileBlock();
 
         Level level = this.levelSet.levelForResolution(radiansPerPixel);
         while (level != null) {
 
             if (this.fetchTileBlock(gridSector, gridWidth, gridHeight, level, tileBlock)) {
-                this.sampleTileBlock(gridSector, gridWidth, gridHeight, tileBlock, result);
-                return true;
+                this.readHeightGrid(gridSector, gridWidth, gridHeight, tileBlock, result);
+                return;
             }
 
             level = level.previousLevel(); // try a lower resolution ancestor level
         }
-
-        return false;
     }
 
     @Override
-    protected boolean doGetHeightLimits(Sector sector, double radiansPerPixel, float[] result) {
-        return false; // TODO
+    protected void doGetHeightLimits(Sector sector, double radiansPerPixel, float[] result) {
+        TileBlock tileBlock = new TileBlock();
+
+        Level level = this.levelSet.levelForResolution(radiansPerPixel);
+        while (level != null) {
+
+            if (this.fetchTileBlock(sector, level, tileBlock)) {
+                this.scanHeightLimits(sector, tileBlock, result);
+                return;
+            }
+
+            level = level.previousLevel(); // try a lower resolution ancestor level
+        }
     }
 
     protected boolean fetchTileBlock(Sector gridSector, int gridWidth, int gridHeight, Level level, TileBlock result) {
@@ -162,9 +171,37 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
             for (int cidx = 0, clen = result.cols.size(); cidx < clen; cidx++) {
                 int row = result.rows.keyAt(ridx);
                 int col = result.cols.keyAt(cidx);
-                ShortBuffer array = this.fetchTileArray(level, row, col);
-                if (array != null) {
-                    result.putTileArray(row, col, array);
+                ImageTile tile = this.fetchTile(level, row, col);
+                ShortBuffer tileArray = this.coverageCache.get(tile.getImageSource());
+                if (tileArray != null) {
+                    result.putTileArray(row, col, tileArray);
+                } else {
+                    this.coverageRetriever.retrieve(tile.getImageSource(), null, this);
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    protected boolean fetchTileBlock(Sector sector, Level level, TileBlock result) {
+        int minRow = Tile.computeRow(level.tileDelta, sector.minLatitude());
+        int maxRow = Tile.computeLastRow(level.tileDelta, sector.maxLatitude());
+        int minCol = Tile.computeColumn(level.tileDelta, sector.minLongitude());
+        int maxCol = Tile.computeLastColumn(level.tileDelta, sector.maxLongitude());
+
+        result.level = level;
+        result.clear();
+
+        for (int row = minRow; row <= maxRow; row++) {
+            for (int col = minCol; col <= maxCol; col++) {
+                ImageTile tile = this.fetchTile(level, row, col);
+                ShortBuffer tileArray = this.coverageCache.get(tile.getImageSource());
+                if (tileArray != null) {
+                    result.rows.put(row, 0);
+                    result.cols.put(col, 0);
+                    result.putTileArray(row, col, tileArray);
                 } else {
                     return false;
                 }
@@ -174,22 +211,17 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         return true;
     }
 
-    protected ShortBuffer fetchTileArray(Level level, int row, int column) {
+    protected ImageTile fetchTile(Level level, int row, int column) {
         long key = tileKey(level, row, column);
         Tile tile = this.tileCache.get(key);
+
         if (tile == null) {
             Sector sector = tileSector(level, row, column);
             tile = this.tileFactory.createTile(sector, level, row, column);
             this.tileCache.put(key, tile, 1);
         }
 
-        ImageSource source = ((ImageTile) tile).getImageSource();
-        ShortBuffer coverage = this.coverageCache.get(source);
-        if (coverage == null) {
-            this.coverageRetriever.retrieve(source, null, this);
-        }
-
-        return coverage;
+        return (ImageTile) tile;
     }
 
     protected static long tileKey(Level level, int row, int column) {
@@ -208,7 +240,7 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         return new Sector(minLat, minLon, level.tileDelta, level.tileDelta);
     }
 
-    protected void sampleTileBlock(Sector gridSector, int gridWidth, int gridHeight, TileBlock tileBlock, float[] result) {
+    protected void readHeightGrid(Sector gridSector, int gridWidth, int gridHeight, TileBlock tileBlock, float[] result) {
         int levelWidth = tileBlock.level.levelWidth;
         int levelHeight = tileBlock.level.levelHeight;
         int tileWidth = tileBlock.level.tileWidth;
@@ -248,6 +280,50 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
                     a * (1 - b) * i1j0 +
                     (1 - a) * b * i0j1 +
                     a * b * i1j1;
+            }
+        }
+    }
+
+    protected void scanHeightLimits(Sector sector, TileBlock tileBlock, float[] result) {
+        int levelWidth = tileBlock.level.levelWidth;
+        int levelHeight = tileBlock.level.levelHeight;
+        int tileWidth = tileBlock.level.tileWidth;
+        int tileHeight = tileBlock.level.tileHeight;
+
+        double sMin = (sector.minLongitude() + 180) / 360;
+        double sMax = (sector.maxLongitude() + 180) / 360;
+        double tMin = (sector.minLatitude() + 90) / 180;
+        double tMax = (sector.maxLatitude() + 90) / 180;
+        int iMin = (int) WWMath.clamp(sMin * levelWidth, 0, levelWidth - 1);
+        int iMax = (int) WWMath.clamp(sMax * levelWidth, 0, levelWidth - 1);
+        int jMin = (int) WWMath.clamp(tMin * levelHeight, 0, levelHeight - 1);
+        int jMax = (int) WWMath.clamp(tMax * levelHeight, 0, levelHeight - 1);
+
+        for (int ridx = 0, rlen = tileBlock.rows.size(); ridx < rlen; ridx++) {
+            int row = tileBlock.rows.keyAt(ridx);
+            int rowjMin = row * tileHeight;
+            int rowjMax = rowjMin + tileHeight - 1;
+            int j0 = (int) WWMath.clamp(jMin, rowjMin, rowjMax);
+            int j1 = (int) WWMath.clamp(jMax, rowjMin, rowjMax);
+
+            for (int cidx = 0, clen = tileBlock.cols.size(); cidx < clen; cidx++) {
+                int col = tileBlock.cols.keyAt(cidx);
+                int coliMin = col * tileWidth;
+                int coliMax = coliMin + tileWidth - 1;
+                int i0 = (int) WWMath.clamp(iMin, coliMin, coliMax);
+                int i1 = (int) WWMath.clamp(iMax, coliMin, coliMax);
+
+                for (int j = j0; j <= j1; j++) {
+                    for (int i = i0; i <= i1; i++) {
+                        float texel = tileBlock.readTexel(row, col, i % tileWidth, j % tileHeight);
+                        if (result[0] > texel) {
+                            result[0] = texel;
+                        }
+                        if (result[1] < texel) {
+                            result[1] = texel;
+                        }
+                    }
+                }
             }
         }
     }
@@ -331,4 +407,3 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         }
     }
 }
-
