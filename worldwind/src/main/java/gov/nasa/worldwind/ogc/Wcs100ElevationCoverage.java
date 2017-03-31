@@ -12,11 +12,25 @@ import gov.nasa.worldwind.util.LevelSetConfig;
 import gov.nasa.worldwind.util.Logger;
 
 /**
- * A simple interface for providing WCS elevation values from a version 1.0.0 WCS. This class assumes the server has
- * been configured to provide "image/tiff" data in single band two's singed integer complement 2 byte values in meters.
+ * Generates terrain from OGC Web Coverage Service (WCS) version 1.0.0.
+ * <p/>
+ * Wcs100ElevationCoverage requires the service address, coverage name, and bounding sector of the coverage. Get
+ * Coverage requests generated for retrieving data will use the WCS version 1.0.0 specification and be limited to the
+ * "image/tiff" format and EPSG:4326 coordinate system. Wcs100ElevationCoverage does not conduct and version, coordinate
+ * system, or version coordination and assumes the server will support parameters detailed here. The default LevelSet
+ * level limit is 15.
  */
 public class Wcs100ElevationCoverage extends TiledElevationCoverage {
 
+    /**
+     * Constructs a WCS Elevation Coverage given the provided service address, coverage name, and sector.
+     *
+     * @param serviceAddress the WCS service address
+     * @param coverage       the coverage name
+     * @param sector         the coverage bounding sector
+     *
+     * @throws IllegalArgumentException If any argument is null
+     */
     public Wcs100ElevationCoverage(String serviceAddress, String coverage, Sector sector) {
         if (serviceAddress == null) {
             throw new IllegalArgumentException(
