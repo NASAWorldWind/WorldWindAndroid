@@ -64,6 +64,10 @@ public class DrawableQueue {
         }
     }
 
+    public Drawable getDrawable(int index) {
+        return (index < this.size) ? this.entries[index].drawable : null;
+    }
+
     public Drawable peekDrawable() {
         return (this.position < this.size) ? this.entries[this.position].drawable : null;
     }
