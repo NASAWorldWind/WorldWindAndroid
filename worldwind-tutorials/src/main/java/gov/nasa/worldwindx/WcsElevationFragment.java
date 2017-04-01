@@ -37,6 +37,9 @@ public class WcsElevationFragment extends BasicGlobeFragment {
         // Create an elevation coverage from a version 1.0.0 WCS
         Wcs100ElevationCoverage aster = new Wcs100ElevationCoverage(coverageSector, numberOfLevels, serviceAddress, coverage);
 
+        // Remove any existing coverages from the Globe
+        wwd.getGlobe().getElevationModel().clearCoverages();
+
         // Add the coverage to the Globes elevation model
         wwd.getGlobe().getElevationModel().addCoverage(aster);
 

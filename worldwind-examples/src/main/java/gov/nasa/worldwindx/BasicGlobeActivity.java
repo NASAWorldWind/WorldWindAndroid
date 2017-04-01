@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.widget.FrameLayout;
 
 import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.globe.BasicElevationCoverage;
 import gov.nasa.worldwind.layer.BackgroundLayer;
 import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
 import gov.nasa.worldwindx.experimental.AtmosphereLayer;
@@ -53,6 +54,9 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         this.wwd.getLayers().addLayer(new BackgroundLayer());
         this.wwd.getLayers().addLayer(new BlueMarbleLandsatLayer());
         this.wwd.getLayers().addLayer(new AtmosphereLayer());
+
+        // Setup the World Window's elevation coverages.
+        this.wwd.getGlobe().getElevationModel().addCoverage(new BasicElevationCoverage());
     }
 
     @Override
