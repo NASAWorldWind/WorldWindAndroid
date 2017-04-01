@@ -86,10 +86,13 @@ public class BasicTerrainTest {
         ((BasicTerrain) this.terrain).addTile(tile);
 
         // Populate the terrain tile's geometry
+        int tileWidth = tile.level.tileWidth;
+        int tileHeight = tile.level.tileHeight;
+        int rowStride = (tileWidth + 2) * 3;
+        float[] points = new float[(tileWidth + 2) * (tileHeight + 2) * 3];
         Vec3 tileOrigin = this.globe.geographicToCartesian(0.5, 0.5, 0.0, new Vec3());
-        float[] points = new float[tile.level.tileWidth * tile.level.tileHeight * 3];
-        this.globe.geographicToCartesianGrid(tile.sector, tile.level.tileWidth, tile.level.tileHeight,
-            null, 1.0f, tileOrigin, points, 3, 0);
+        this.globe.geographicToCartesianGrid(tile.sector, tileWidth, tileHeight, null, 1.0f, tileOrigin, points, rowStride + 3, rowStride);
+        this.globe.geographicToCartesianBorder(tile.sector, tileWidth + 2, tileHeight + 2, 0.0f, tileOrigin, points);
         tile.setOrigin(tileOrigin);
         tile.setPoints(points);
     }
