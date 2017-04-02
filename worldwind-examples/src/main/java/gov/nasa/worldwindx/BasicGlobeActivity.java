@@ -34,7 +34,8 @@ import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.layer.LayerFactory;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
-import gov.nasa.worldwind.ogc.wms.WmsLayerCapabilities;
+import gov.nasa.worldwind.ogc.wms.WmsLayer;
+import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 import gov.nasa.worldwindx.support.LayerManager;
 
@@ -125,60 +126,68 @@ public class BasicGlobeActivity extends AbstractMainActivity {
             final String WWSK_GWC = "http://10.0.2.2:8080/worldwind-geoserver/gwc/service/wms"; // GeoWebCache (GWC) on emulator
             final String SSGF_WMS = "http://10.0.1.7:8080/worldwind-geoserver/ows";             // WMS on device
             final String SSGF_GWC = "http://10.0.1.7:8080/worldwind-geoserver/gwc/service/wms"; // GWC on device
-            final String TMIS =  "http://10.0.1.7:5000/WmsServer";
+            final String APACHE_WMS = "http://192.168.1.219:8080/worldwind-geoserver/ows";             // WMS on emulator
+            final String APACHE_GWC = "http://192.168.1.219:8080/worldwind-geoserver/gwc/service/wms"; // GeoWebCache (GWC) on emulator
+            final String COBRA_WMS = "http://192.168.1.222:8080/worldwind-geoserver/ows";             // WMS on emulator
+            final String COBRA_GWC = "http://192.168.1.222:8080/worldwind-geoserver/gwc/service/wms"; // GeoWebCache (GWC) on emulator
+            final String TMIS = "http://10.0.1.7:5000/WmsServer";
 
+            // Build a WMS server GetCapabilties request
+            String serverAddress = APACHE_WMS;
+            Uri serviceUri = Uri.parse(serverAddress).buildUpon()
+                .appendQueryParameter("VERSION", "1.3.0")
+                .appendQueryParameter("SERVICE", "WMS")
+                .appendQueryParameter("REQUEST", "GetCapabilities")
+                .build();
+
+            // Connect and read capabilities document
+            InputStream inputStream = null;
             try {
-                // Build a WMS server GetCapabilties request
-                String serverAddress = WWSK_WMS;
-                Uri serviceUri = Uri.parse(serverAddress).buildUpon()
-                    .appendQueryParameter("VERSION", "1.3.0")
-                    .appendQueryParameter("SERVICE", "WMS")
-                    .appendQueryParameter("REQUEST", "GetCapabilities")
-                    .build();
-
-                // Connect and read capabilities document
                 URLConnection conn = new URL(serviceUri.toString()).openConnection();
                 conn.setConnectTimeout(3000);
                 conn.setReadTimeout(30000);
-                InputStream inputStream = new BufferedInputStream(conn.getInputStream());
-
-                // Parse the capabilities
-                WmsCapabilities wmsCapabilities = WmsCapabilities.getCapabilities(inputStream);
-                List<WmsLayerCapabilities> namedLayers = wmsCapabilities.getNamedLayers();
-
-                // Setup the factory that will create WMS layers from the capabilities
-                LayerFactory layerFactory = new LayerFactory();
-                LayerFactory.Callback callback = new LayerFactory.Callback() {
-                    @Override
-                    public void creationSucceeded(LayerFactory factory, Layer layer) {
-                        getLayerManager().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, layer);
-                    }
-
-                    @Override
-                    public void creationFailed(LayerFactory factory, Layer layer, Throwable ex) {
-                        Log.e("gov.nasa.worldwind", "WMS layer creation failed: " + layer.toString(), ex);
-                    }
-                };
-
-                // Create all the WMS layers
-                for (WmsLayerCapabilities layerCaps : namedLayers) {
-                    // Set the new layer's properties from the layer capabilities;
-                    // the callback will add the layer to the layer list.
-                    // TODO: Why is serverAddress needed, isn't the layer caps sufficient?
-                    Layer layer = layerFactory.createFromWms(serverAddress, layerCaps.getName(), callback);
-                    layer.setDisplayName("> SSGF - " + layerCaps.getTitle());
-                    layer.putUserProperty("BBOX", layerCaps.getGeographicBoundingBox()); // TODO: use for highlighting layers in view
-                    layer.putUserProperty("MAX_SCALE_DENOM", layerCaps.getMaxScaleDenominator()); // TODO: use for sorting the layers
-                    layer.putUserProperty("MIN_SCALE_DENOM", layerCaps.getMinScaleDenominator()); // TODO: use for sorting the layers
-                    layer.setEnabled(false);
-                }
+                inputStream = new BufferedInputStream(conn.getInputStream());
             } catch (IOException e) {
                 e.printStackTrace();
-            } catch (XmlPullParserException e) {
-                e.printStackTrace();
+                return null;
             }
 
-            return null;
+            // Parse the capabilities
+            List<WmsLayer> namedLayers = null;
+            try {
+                WmsCapabilities capabilities = WmsCapabilities.getCapabilities(inputStream);
+                namedLayers = capabilities.getNamedLayers();
+            } catch (Exception ex) {
+                Log.e("gov.nasa.worldwind", "Exception attempting to get WMS capabilities from: " + serviceUri.toString());
+                return null;
+            }
+
+            // Setup the factory that will create WMS layers from the capabilities
+            LayerFactory layerFactory = new LayerFactory();
+            LayerFactory.Callback callback = new LayerFactory.Callback() {
+                @Override
+                public void creationSucceeded(LayerFactory factory, Layer layer) {
+                    getLayerManager().addLayerBeforeNamed(AtmosphereLayer.LAYER_NAME, layer);
+                }
+
+                @Override
+                public void creationFailed(LayerFactory factory, Layer layer, Throwable ex) {
+                    Log.e("gov.nasa.worldwind", "WMS layer creation failed: " + layer.toString(), ex);
+                }
+            };
+
+            // Create all the WMS layers
+            for (WmsLayer layerCaps : namedLayers) {
+                // The callback will add the layer to the layer list.
+                Layer layer = layerFactory.createFromWmsLayerCapabilities(layerCaps, callback);
+                layer.setDisplayName("> SSGF - " + layerCaps.getTitle());
+                layer.putUserProperty("BBOX", layerCaps.getGeographicBoundingBox()); // TODO: use for highlighting layers in view
+                layer.putUserProperty("MAX_SCALE_DENOM", layerCaps.getMaxScaleDenominator()); // TODO: use for sorting the layers
+                layer.putUserProperty("MIN_SCALE_DENOM", layerCaps.getMinScaleDenominator()); // TODO: use for sorting the layers
+                layer.setEnabled(false);
+            }
+
+            return null; // Void object
         }
 
         /**
