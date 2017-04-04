@@ -135,7 +135,8 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
     protected void updateOverlayContents(LookAt lookAt, Camera camera) {
         latView.setText(formatLatitude(lookAt.latitude));
         lonView.setText(formatLongitude(lookAt.longitude));
-        altView.setText(formatAltitude(camera.altitude));
+        //altView.setText(formatAltitude(camera.altitude));
+        altView.setText(formatElevation(lookAt.altitude));
     }
 
     /**
@@ -164,5 +165,10 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
         return String.format("Eye: %,.0f %s",
             (altitude < 100000 ? altitude : altitude / 1000),
             (altitude < 100000 ? "m" : "km"));
+    }
+    protected String formatElevation(double elevation) {
+        return String.format("Elev: %,.0f %s",
+            (elevation < 100000 ? elevation : elevation / 1000),
+            (elevation < 100000 ? "m" : "km"));
     }
 }
