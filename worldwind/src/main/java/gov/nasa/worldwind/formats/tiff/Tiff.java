@@ -35,6 +35,10 @@ public class Tiff {
         this.checkAndSetByteOrder();
     }
 
+    public ByteBuffer getBuffer() {
+        return this.buffer.duplicate();
+    }
+
     protected void checkAndSetByteOrder() {
         // check byte order
         this.buffer.clear();

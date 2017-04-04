@@ -141,6 +141,10 @@ public class Subfile {
 
     }
 
+    public ByteBuffer getBuffer() {
+        return this.buffer.duplicate();
+    }
+
     public Map<Integer, Field> getFields() {
         return this.fields;
     }
