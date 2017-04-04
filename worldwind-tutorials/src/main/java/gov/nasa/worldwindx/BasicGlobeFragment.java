@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.globe.BasicElevationCoverage;
 import gov.nasa.worldwind.layer.BackgroundLayer;
 import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
 
@@ -33,6 +34,8 @@ public class BasicGlobeFragment extends Fragment {
         // Setup the World Window's layers.
         this.wwd.getLayers().addLayer(new BackgroundLayer());
         this.wwd.getLayers().addLayer(new BlueMarbleLandsatLayer());
+        // Setup the World Window's elevation coverages.
+        this.wwd.getGlobe().getElevationModel().addCoverage(new BasicElevationCoverage());
         return this.wwd;
     }
 

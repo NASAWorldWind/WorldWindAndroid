@@ -6,7 +6,11 @@
 package gov.nasa.worldwind;
 
 import gov.nasa.worldwind.geom.Camera;
+import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.LookAt;
+import gov.nasa.worldwind.geom.Matrix4;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.util.Logger;
 
@@ -25,6 +29,16 @@ public class Navigator {
     protected double roll;
 
     private Camera scratchCamera = new Camera();
+
+    private Matrix4 modelview = new Matrix4();
+
+    private Matrix4 origin = new Matrix4();
+
+    private Vec3 originPoint = new Vec3();
+
+    private Position originPos = new Position();
+
+    private Line forwardRay = new Line();
 
     public Navigator() {
     }
@@ -138,7 +152,7 @@ public class Navigator {
         }
 
         this.getAsCamera(globe, this.scratchCamera); // get this navigator's properties as a Camera
-        globe.cameraToLookAt(this.scratchCamera, result); // convert the Camera to a LookAt
+        this.cameraToLookAt(globe, this.scratchCamera, result); // convert the Camera to a LookAt
 
         return result;
     }
@@ -154,9 +168,104 @@ public class Navigator {
                 Logger.logMessage(Logger.ERROR, "Navigator", "setAsLookAt", "missingLookAt"));
         }
 
-        globe.lookAtToCamera(lookAt, this.scratchCamera); // convert the LookAt to a Camera
+        this.lookAtToCamera(globe, lookAt, this.scratchCamera); // convert the LookAt to a Camera
         this.setAsCamera(globe, this.scratchCamera); // set this navigator's properties as a Camera
 
         return this;
+    }
+
+    public Matrix4 getAsViewingMatrix(Globe globe, Matrix4 result) {
+        if (globe == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Navigator", "getAsViewingMatrix", "missingGlobe"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Navigator", "getAsViewingMatrix", "missingResult"));
+        }
+
+        this.getAsCamera(globe, this.scratchCamera); // get this navigator's properties as a Camera
+        this.cameraToViewingMatrix(globe, this.scratchCamera, result); // convert the Camera to a viewing matrix
+
+        return result;
+    }
+
+    protected LookAt cameraToLookAt(Globe globe, Camera camera, LookAt result) {
+        this.cameraToViewingMatrix(globe, camera, this.modelview);
+        this.modelview.extractEyePoint(this.forwardRay.origin);
+        this.modelview.extractForwardVector(this.forwardRay.direction);
+
+        if (!globe.intersect(this.forwardRay, this.originPoint)) {
+            double horizon = globe.horizonDistance(camera.altitude);
+            this.forwardRay.pointAt(horizon, this.originPoint);
+        }
+
+        globe.cartesianToGeographic(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.originPos);
+        globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
+        this.modelview.multiplyByMatrix(this.origin);
+
+        result.latitude = this.originPos.latitude;
+        result.longitude = this.originPos.longitude;
+        result.altitude = this.originPos.altitude;
+        result.range = -this.modelview.m[11];
+        result.heading = this.modelview.extractHeading(camera.roll); // disambiguate heading and roll
+        result.tilt = this.modelview.extractTilt();
+        result.roll = camera.roll; // roll passes straight through
+
+        return result;
+    }
+
+    protected Matrix4 cameraToViewingMatrix(Globe globe, Camera camera, Matrix4 result) {
+        // TODO interpret altitude mode other than absolute
+        // Transform by the local cartesian transform at the camera's position.
+        globe.geographicToCartesianTransform(camera.latitude, camera.longitude, camera.altitude, result);
+
+        // Transform by the heading, tilt and roll.
+        result.multiplyByRotation(0, 0, 1, -camera.heading); // rotate clockwise about the Z axis
+        result.multiplyByRotation(1, 0, 0, camera.tilt); // rotate counter-clockwise about the X axis
+        result.multiplyByRotation(0, 0, 1, camera.roll); // rotate counter-clockwise about the Z axis (again)
+
+        // Make the transform a viewing matrix.
+        result.invertOrthonormal();
+
+        return result;
+    }
+
+    protected Camera lookAtToCamera(Globe globe, LookAt lookAt, Camera result) {
+        this.lookAtToViewingTransform(globe, lookAt, this.modelview);
+        this.modelview.extractEyePoint(this.originPoint);
+
+        globe.cartesianToGeographic(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.originPos);
+        globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
+        this.modelview.multiplyByMatrix(this.origin);
+
+        result.latitude = this.originPos.latitude;
+        result.longitude = this.originPos.longitude;
+        result.altitude = this.originPos.altitude;
+        result.heading = this.modelview.extractHeading(lookAt.roll); // disambiguate heading and roll
+        result.tilt = this.modelview.extractTilt();
+        result.roll = lookAt.roll; // roll passes straight through
+
+        return result;
+    }
+
+    protected Matrix4 lookAtToViewingTransform(Globe globe, LookAt lookAt, Matrix4 result) {
+        // TODO interpret altitude mode other than absolute
+        // Transform by the local cartesian transform at the look-at's position.
+        globe.geographicToCartesianTransform(lookAt.latitude, lookAt.longitude, lookAt.altitude, result);
+
+        // Transform by the heading and tilt.
+        result.multiplyByRotation(0, 0, 1, -lookAt.heading); // rotate clockwise about the Z axis
+        result.multiplyByRotation(1, 0, 0, lookAt.tilt); // rotate counter-clockwise about the X axis
+        result.multiplyByRotation(0, 0, 1, lookAt.roll); // rotate counter-clockwise about the Z axis (again)
+
+        // Transform by the range.
+        result.multiplyByTranslation(0, 0, lookAt.range);
+
+        // Make the transform a viewing matrix.
+        result.invertOrthonormal();
+
+        return result;
     }
 }

@@ -29,7 +29,7 @@ public class Frame {
 
     public final DrawableQueue drawableQueue = new DrawableQueue();
 
-    public final DrawableList drawableTerrain = new DrawableList();
+    public final DrawableQueue drawableTerrain = new DrawableQueue();
 
     public PickedObjectList pickedObjects;
 

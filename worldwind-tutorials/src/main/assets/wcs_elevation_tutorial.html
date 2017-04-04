@@ -1,0 +1,85 @@
+<!--
+  ~ Copyright (c) 2017 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration. All Rights Reserved.
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>WMS Layer Tutorial</title>
+    <script src="file:///android_asset/codemirror-5.16.0/lib/codemirror.js" type="text/javascript"></script>
+    <script src="file:///android_asset/codemirror-5.16.0/mode/clike/clike.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/codemirror-5.16.0/lib/codemirror.css"/>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/override.css"/>
+</head>
+<body>
+<h1>WCS Elevation Coverage Tutorial</h1>
+<p>
+    Demonstrates how to add a WCS Elevation coverage.</p>
+<p>
+    This tutorial demonstrates how to add Aster elevation data from a WCS.</p>
+
+<h2>Example</h2>
+<h3>WcsElevationFragment.java</h3>
+<p>
+    The WcsElevationFragment class extends the BasicGlobeFragment and overrides the createWorldWindow method. Here we
+    use the Wcs100ElevationCoverage class to load Aster elevation data. Once the coverage is added to the elevation
+    model, the Wcs100ElevationCoverage class will request elevation data via the WCS specification and generate terrain.
+</p>
+<div style="border-top: 1px solid black; border-bottom: 1px solid black;">
+    <textarea id="java-code">
+package gov.nasa.worldwindx;
+...
+public class WcsElevationFragment extends BasicGlobeFragment {
+
+    /**
+     * Creates a new WorldWindow (GLSurfaceView) object with a WCS Elevation Coverage
+     *
+     * @return The WorldWindow object containing the globe.
+     */
+    @Override
+    public WorldWindow createWorldWindow() {
+        // Let the super class (BasicGlobeFragment) do the creation
+        WorldWindow wwd = super.createWorldWindow();
+
+        // Specify the version 1.0.0 WCS address
+        String serviceAddress = "https://worldwind26.arc.nasa.gov/wcs";
+        // Specify the coverage name
+        String coverage = "aster_v2";
+        // Specify the bounding sector - provided by the WCS
+        Sector coverageSector = Sector.fromDegrees(-83.0, -180.0, 173.0, 360.0);
+
+        // Create an elevation coverage from a version 1.0.0 WCS
+        Wcs100ElevationCoverage aster = new Wcs100ElevationCoverage(serviceAddress, coverage, coverageSector);
+
+        // Remove any existing coverages from the Globe
+        wwd.getGlobe().getElevationModel().clearCoverages();
+
+        // Add the coverage to the Globes elevation model
+        wwd.getGlobe().getElevationModel().addCoverage(aster);
+
+        // Position the camera to look at the Sangre de Cristo Mountains
+        this.positionView(wwd);
+
+        return wwd;
+    }
+}
+    </textarea>
+</div>
+
+<script type="text/javascript">
+      var javaEditor = CodeMirror.fromTextArea(document.getElementById("java-code"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        mode: "text/x-java",
+        readOnly: true
+      });
+
+
+
+
+
+</script>
+</body>
+</html>

@@ -23,52 +23,96 @@ import gov.nasa.worldwind.util.Tile;
  */
 public class TerrainTile extends Tile {
 
-    protected Vec3 vertexOrigin = new Vec3();
+    protected float[] heights;
 
-    protected float[] vertexPoints;
+    protected float[] points;
 
-    protected String vertexPointKey;
+    protected Vec3 origin = new Vec3();
+
+    private long heightTimestamp;
+
+    private double verticalExaggeration;
+
+    private String pointBufferKey;
+
+    private long pointSequence;
 
     /**
      * {@inheritDoc}
      */
     public TerrainTile(Sector sector, Level level, int row, int column) {
         super(sector, level, row, column);
-        this.vertexPointKey = this.getClass().getName() + ".vertexPoint." + this.tileKey;
     }
 
-    public Vec3 getVertexOrigin() {
-        return this.vertexOrigin;
+    public double getDistanceToCamera() {
+        return distanceToCamera;
     }
 
-    public void setVertexOrigin(Vec3 vertexOrigin) {
-        this.vertexOrigin = vertexOrigin;
+    public float[] getHeights() {
+        return heights;
     }
 
-    public float[] getVertexPoints() {
-        return this.vertexPoints;
+    public void setHeights(float[] heights) {
+        this.heights = heights;
     }
 
-    public void setVertexPoints(float[] vertexPoints) {
-        this.vertexPoints = vertexPoints;
+    public float[] getHeightLimits() {
+        return heightLimits;
     }
 
-    public BufferObject getVertexPointBuffer(RenderContext rc) {
-        if (this.vertexPoints == null) {
+    public void setHeightLimits(float[] heightLimits) {
+        this.heightLimits = heightLimits;
+    }
+
+    protected long getHeightTimestamp() {
+        return heightTimestamp;
+    }
+
+    protected void setHeightTimestamp(long timestampMillis) {
+        this.heightTimestamp = timestampMillis;
+    }
+
+    public float[] getPoints() {
+        return this.points;
+    }
+
+    public void setPoints(float[] points) {
+        this.points = points;
+        this.pointBufferKey = "TerrainTile.points." + this.tileKey + "." + (this.pointSequence++);
+    }
+
+    public Vec3 getOrigin() {
+        return this.origin;
+    }
+
+    public void setOrigin(Vec3 origin) {
+        this.origin = origin;
+    }
+
+    protected double getVerticalExaggeration() {
+        return verticalExaggeration;
+    }
+
+    protected void setVerticalExaggeration(double verticalExaggeration) {
+        this.verticalExaggeration = verticalExaggeration;
+    }
+
+    public BufferObject getPointBuffer(RenderContext rc) {
+        if (this.points == null) {
             return null;
         }
 
-        BufferObject bufferObject = rc.getBufferObject(this.vertexPointKey);
+        BufferObject bufferObject = rc.getBufferObject(this.pointBufferKey);
         if (bufferObject != null) {
             return bufferObject;
         }
 
         // TODO consider a pool of terrain tiles
         // TODO consider a pool of terrain tile vertex buffers
-        int size = this.vertexPoints.length * 4;
+        int size = this.points.length * 4;
         FloatBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        buffer.put(this.vertexPoints).rewind();
+        buffer.put(this.points).rewind();
 
-        return rc.putBufferObject(this.vertexPointKey, new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer));
+        return rc.putBufferObject(this.pointBufferKey, new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer));
     }
 }

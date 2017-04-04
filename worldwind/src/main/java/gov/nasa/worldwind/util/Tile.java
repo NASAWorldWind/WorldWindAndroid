@@ -7,6 +7,7 @@ package gov.nasa.worldwind.util;
 
 import android.util.DisplayMetrics;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import gov.nasa.worldwind.geom.BoundingBox;
@@ -56,6 +57,14 @@ public class Tile {
      * tile.
      */
     protected float[] samplePoints;
+
+    protected float[] heightLimits;
+
+    protected long heightLimitsTimestamp;
+
+    protected double extentExaggeration;
+
+    protected double distanceToCamera;
 
     /**
      * Constructs a tile with a specified sector, level, row and column.
@@ -258,9 +267,9 @@ public class Tile {
      * @return true if the tile should be subdivided, otherwise false
      */
     public boolean mustSubdivide(RenderContext rc, double detailFactor) {
-        double distance = this.distanceTo(rc);
+        this.distanceToCamera = this.distanceToCamera(rc);
         double texelSize = this.level.texelHeight * rc.globe.getEquatorialRadius();
-        double pixelSize = rc.pixelSizeAtDistance(distance);
+        double pixelSize = rc.pixelSizeAtDistance(this.distanceToCamera);
         double densityFactor = 1.0;
 
         // Adjust the subdivision factory when the display density is low. Values of detailFactor have been calibrated
@@ -362,45 +371,61 @@ public class Tile {
     }
 
     protected BoundingBox getExtent(RenderContext rc) {
+        if (this.heightLimits == null) {
+            this.heightLimits = new float[2];
+        }
+
         if (this.extent == null) {
             this.extent = new BoundingBox();
-            this.extent.setToSector(this.sector, rc.globe, 0, 0);
         }
+
+        long elevationTimestamp = rc.globe.getElevationModel().getTimestamp();
+        if (elevationTimestamp != this.heightLimitsTimestamp) {
+            Arrays.fill(this.heightLimits, 0);
+            rc.globe.getElevationModel().getHeightLimits(this.sector, this.heightLimits);
+        }
+
+        double verticalExaggeration = rc.verticalExaggeration;
+        if (verticalExaggeration != this.extentExaggeration ||
+            elevationTimestamp != this.heightLimitsTimestamp) {
+            float minHeight = (float) (this.heightLimits[0] * verticalExaggeration);
+            float maxHeight = (float) (this.heightLimits[1] * verticalExaggeration);
+            this.extent.setToSector(this.sector, rc.globe, minHeight, maxHeight);
+        }
+
+        this.heightLimitsTimestamp = elevationTimestamp;
+        this.extentExaggeration = verticalExaggeration;
 
         return this.extent;
     }
 
     /**
-     * Calculates the distance to this Tile from the {@link gov.nasa.worldwind.geom.Camera} provided by the {@link
-     * RenderContext}. If the camera is located above the tile, the altitude of the camera is returned, otherwise the
-     * minimum distance to one of nine points oriented in a grid across the tile is returned.
+     * Calculates the distance from this tile to the camera point associated with the specified render context.
      *
-     * @param rc the {@link RenderContext} which provides the current {@link gov.nasa.worldwind.globe.Globe} and {@link
-     *           gov.nasa.worldwind.geom.Camera}
+     * @param rc the render context which provides the current camera point
      *
-     * @return the distance in meters from the tile
+     * @return the distance in meters
      */
-    protected double distanceTo(RenderContext rc) {
-
+    protected double distanceToCamera(RenderContext rc) {
         if (this.sector.contains(rc.camera.latitude, rc.camera.longitude)) {
             return rc.camera.altitude;
         }
 
         if (this.samplePoints == null) {
-            this.samplePoints = rc.globe.geographicToCartesianGrid(this.sector, 3, 3, null, null, new float[27], 3, 0);
+            this.samplePoints = rc.globe.geographicToCartesianGrid(this.sector, 3, 3, null, 1.0f, null, new float[27], 0, 0);
         }
 
-        double distance = Double.MAX_VALUE;
+        double minDistanceSq = Double.MAX_VALUE;
         for (int i = 0, len = this.samplePoints.length; i < len; i += 3) {
             double dx = rc.cameraPoint.x - this.samplePoints[i];
             double dy = rc.cameraPoint.y - this.samplePoints[i + 1];
             double dz = rc.cameraPoint.z - this.samplePoints[i + 2];
-            double pointDistance = dx * dx + dy * dy + dz * dz;
-            if (pointDistance < distance) {
-                distance = pointDistance;
+            double distanceSq = (dx * dx) + (dy * dy) + (dz * dz);
+            if (minDistanceSq > distanceSq) {
+                minDistanceSq = distanceSq;
             }
         }
 
-        return Math.sqrt(distance);
+        return Math.sqrt(minDistanceSq);
     }
 }

@@ -8,6 +8,7 @@ package gov.nasa.worldwind.layer;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Logger;
 
 public class LayerList implements Iterable<Layer> {
@@ -73,10 +74,10 @@ public class LayerList implements Iterable<Layer> {
 
     public int indexOfLayerNamed(String name) {
 
-        for (int i = 0; i < this.layers.size(); i++) {
-            String layerName = this.layers.get(i).getDisplayName();
+        for (int idx = 0, len = this.layers.size(); idx < len; idx++) {
+            String layerName = this.layers.get(idx).getDisplayName();
             if ((layerName == null) ? (name == null) : layerName.equals(name)) {
-                return i;
+                return idx;
             }
         }
 
@@ -85,12 +86,12 @@ public class LayerList implements Iterable<Layer> {
 
     public int indexOfLayerWithProperty(Object key, Object value) {
 
-        for (int i = 0; i < this.layers.size(); i++) {
-            Layer layer = this.layers.get(i);
+        for (int idx = 0, len = this.layers.size(); idx < len; idx++) {
+            Layer layer = this.layers.get(idx);
             if (layer.hasUserProperty(key)) {
                 Object layerValue = layer.getUserProperty(key);
                 if ((layerValue == null) ? (value == null) : layerValue.equals(value)) {
-                    return i;
+                    return idx;
                 }
             }
         }
@@ -197,5 +198,20 @@ public class LayerList implements Iterable<Layer> {
     @Override
     public Iterator<Layer> iterator() {
         return this.layers.iterator();
+    }
+
+    public void render(RenderContext rc) {
+        for (int idx = 0, len = this.layers.size(); idx < len; idx++) {
+            rc.currentLayer = this.layers.get(idx);
+            try {
+                rc.currentLayer.render(rc);
+            } catch (Exception e) {
+                Logger.logMessage(Logger.ERROR, "LayerList", "render",
+                    "Exception while rendering layer \'" + rc.currentLayer.getDisplayName() + "\'", e);
+                // Keep going. Draw the remaining layers.
+            }
+        }
+
+        rc.currentLayer = null;
     }
 }

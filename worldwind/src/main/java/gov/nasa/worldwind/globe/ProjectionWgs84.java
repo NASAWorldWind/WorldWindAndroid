@@ -36,7 +36,7 @@ public class ProjectionWgs84 implements GeographicProjection {
     }
 
     @Override
-    public Vec3 geographicToCartesian(Globe globe, double latitude, double longitude, double altitude, Vec3 offset, Vec3 result) {
+    public Vec3 geographicToCartesian(Globe globe, double latitude, double longitude, double altitude, Vec3 result) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesian", "missingGlobe"));
@@ -94,7 +94,7 @@ public class ProjectionWgs84 implements GeographicProjection {
     }
 
     @Override
-    public Matrix4 geographicToCartesianTransform(Globe globe, double latitude, double longitude, double altitude, Vec3 offset, Matrix4 result) {
+    public Matrix4 geographicToCartesianTransform(Globe globe, double latitude, double longitude, double altitude, Matrix4 result) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianTransform", "missingGlobe"));
@@ -179,9 +179,8 @@ public class ProjectionWgs84 implements GeographicProjection {
     }
 
     @Override
-    public float[] geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon,
-                                             double[] elevations, Vec3 origin, Vec3 offset,
-                                             float[] result, int stride, int pos) {
+    public float[] geographicToCartesianGrid(Globe globe, Sector sector, int numLat, int numLon, float[] height, float verticalExaggeration,
+                                             Vec3 origin, float[] result, int offset, int rowStride) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianGrid", "missingGlobe"));
@@ -193,19 +192,20 @@ public class ProjectionWgs84 implements GeographicProjection {
         }
 
         if (numLat < 1 || numLon < 1) {
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "ProjectionWgs84",
-                "geographicToCartesianGrid", "Number of latitude or longitude locations is less than one"));
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianGrid",
+                    "Number of latitude or longitude locations is less than one"));
         }
 
         int numPoints = numLat * numLon;
-        if (elevations != null && elevations.length < numPoints) {
-            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "ProjectionWgs84",
-                "geographicToCartesianGrid", "missingArray"));
+        if (height != null && height.length < numPoints) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianGrid", "missingArray"));
         }
 
-        if (result == null || result.length < numPoints * stride + pos) {
+        if (result == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingResult"));
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianGrid", "missingResult"));
         }
 
         double minLat = Math.toRadians(sector.minLatitude());
@@ -222,7 +222,7 @@ public class ProjectionWgs84 implements GeographicProjection {
         double[] sinLon = new double[numLon];
 
         int latIndex, lonIndex, elevIndex = 0;
-        double lat, lon, elev;
+        double lat, lon, hgt;
         double xOffset = (origin != null) ? -origin.x : 0;
         double yOffset = (origin != null) ? -origin.y : 0;
         double zOffset = (origin != null) ? -origin.z : 0;
@@ -238,6 +238,11 @@ public class ProjectionWgs84 implements GeographicProjection {
             sinLon[lonIndex] = Math.sin(lon);
         }
 
+        int rowIndex = offset;
+        if (rowStride == 0) {
+            rowStride = numLon * 3;
+        }
+
         // Iterate over the latitude and longitude coordinates in the specified sector, computing the Cartesian
         // point corresponding to each latitude and longitude.
         for (latIndex = 0, lat = minLat; latIndex < numLat; latIndex++, lat += deltaLat) {
@@ -250,12 +255,92 @@ public class ProjectionWgs84 implements GeographicProjection {
             sinLat = Math.sin(lat);
             rpm = eqr / Math.sqrt(1.0 - ec2 * sinLat * sinLat);
 
+            int colIndex = rowIndex;
             for (lonIndex = 0; lonIndex < numLon; lonIndex++) {
-                elev = (elevations != null) ? elevations[elevIndex++] : 0;
-                result[pos] = (float) ((elev + rpm) * cosLat * sinLon[lonIndex] + xOffset);
-                result[pos + 1] = (float) ((elev + rpm * (1.0 - ec2)) * sinLat + yOffset);
-                result[pos + 2] = (float) ((elev + rpm) * cosLat * cosLon[lonIndex] + zOffset);
-                pos += stride;
+                hgt = (height != null) ? height[elevIndex++] * verticalExaggeration : 0;
+                result[colIndex++] = (float) ((hgt + rpm) * cosLat * sinLon[lonIndex] + xOffset);
+                result[colIndex++] = (float) ((hgt + rpm * (1.0 - ec2)) * sinLat + yOffset);
+                result[colIndex++] = (float) ((hgt + rpm) * cosLat * cosLon[lonIndex] + zOffset);
+            }
+
+            rowIndex += rowStride;
+        }
+
+        return result;
+    }
+
+    public float[] geographicToCartesianBorder(Globe globe, Sector sector, int numLat, int numLon, float height,
+                                               Vec3 origin, float[] result) {
+        if (sector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianBorder", "missingSector"));
+        }
+
+        if (numLat < 1 || numLon < 1) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianBorder",
+                    "Number of latitude or longitude locations is less than one"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianBorder", "missingResult"));
+        }
+
+        double minLat = Math.toRadians(sector.minLatitude());
+        double maxLat = Math.toRadians(sector.maxLatitude());
+        double minLon = Math.toRadians(sector.minLongitude());
+        double maxLon = Math.toRadians(sector.maxLongitude());
+        double deltaLat = (maxLat - minLat) / (numLat > 1 ? numLat - 3 : 1);
+        double deltaLon = (maxLon - minLon) / (numLon > 1 ? numLon - 3 : 1);
+        double lat = minLat;
+        double lon = minLon;
+
+        double eqr = globe.getEquatorialRadius();
+        double ec2 = globe.getEccentricitySquared();
+
+        double xOffset = (origin != null) ? -origin.x : 0;
+        double yOffset = (origin != null) ? -origin.y : 0;
+        double zOffset = (origin != null) ? -origin.z : 0;
+        int resultIndex = 0;
+
+        // Iterate over the edges of the specified sector, computing the Cartesian point at designated latitude and
+        // longitude around the border.
+        for (int latIndex = 0; latIndex < numLat; latIndex++) {
+            if (latIndex < 2) {
+                lat = minLat; // explicitly set the first lat to the min latitude to ensure alignment
+            } else if (latIndex < numLat - 2) {
+                lat += deltaLat;
+            } else {
+                lat = maxLat; // explicitly set the last lat to the max latitude to ensure alignment
+            }
+
+            // Latitude is constant for each row. Values that are a function of latitude can be computed once per row.
+            double cosLat = Math.cos(lat);
+            double sinLat = Math.sin(lat);
+            double rpm = eqr / Math.sqrt(1.0 - ec2 * sinLat * sinLat);
+
+            for (int lonIndex = 0; lonIndex < numLon; lonIndex++) {
+                if (lonIndex < 2) {
+                    lon = minLon; // explicitly set the first lon to the min longitude to ensure alignment
+                } else if (lonIndex < numLon - 2) {
+                    lon += deltaLon;
+                } else {
+                    lon = maxLon; // explicitly set the last lon to the max longitude to ensure alignment
+                }
+
+                double cosLon = Math.cos(lon);
+                double sinLon = Math.sin(lon);
+
+                result[resultIndex++] = (float) ((height + rpm) * cosLat * sinLon + xOffset);
+                result[resultIndex++] = (float) ((height + rpm * (1.0 - ec2)) * sinLat + yOffset);
+                result[resultIndex++] = (float) ((height + rpm) * cosLat * cosLon + zOffset);
+
+                if (lonIndex == 0 && latIndex != 0 && latIndex != numLat - 1) {
+                    int skip = numLon - 2;
+                    lonIndex += skip;
+                    resultIndex += skip * 3;
+                }
             }
         }
 
@@ -264,7 +349,7 @@ public class ProjectionWgs84 implements GeographicProjection {
 
     @SuppressWarnings({"UnnecessaryLocalVariable", "SuspiciousNameCombination"})
     @Override
-    public Position cartesianToGeographic(Globe globe, double x, double y, double z, Vec3 offset, Position result) {
+    public Position cartesianToGeographic(Globe globe, double x, double y, double z, Position result) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "cartesianToGeographic", "missingGlobe"));
@@ -367,7 +452,7 @@ public class ProjectionWgs84 implements GeographicProjection {
     }
 
     @Override
-    public Matrix4 cartesianToLocalTransform(Globe globe, double x, double y, double z, Vec3 offset, Matrix4 result) {
+    public Matrix4 cartesianToLocalTransform(Globe globe, double x, double y, double z, Matrix4 result) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "cartesianToLocalTransform", "missingGlobe"));
@@ -378,7 +463,7 @@ public class ProjectionWgs84 implements GeographicProjection {
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "cartesianToLocalTransform", "missingResult"));
         }
 
-        Position pos = this.cartesianToGeographic(globe, x, y, z, offset, this.scratchPos);
+        Position pos = this.cartesianToGeographic(globe, x, y, z, this.scratchPos);
         double radLat = Math.toRadians(pos.latitude);
         double radLon = Math.toRadians(pos.longitude);
         double cosLat = Math.cos(radLat);
@@ -444,7 +529,7 @@ public class ProjectionWgs84 implements GeographicProjection {
     }
 
     @Override
-    public boolean intersect(Globe globe, Line line, Vec3 offset, Vec3 result) {
+    public boolean intersect(Globe globe, Line line, Vec3 result) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "cartesianToGeographic", "missingGlobe"));

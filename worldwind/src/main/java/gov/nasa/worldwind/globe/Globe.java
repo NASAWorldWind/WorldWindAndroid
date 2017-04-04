@@ -5,36 +5,98 @@
 
 package gov.nasa.worldwind.globe;
 
-import gov.nasa.worldwind.geom.Camera;
+import gov.nasa.worldwind.geom.Ellipsoid;
 import gov.nasa.worldwind.geom.Line;
-import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.util.Logger;
 
 /**
- * Planet or celestial object that can be modeled by an ellipsoid. Implementations of this interface specify the
- * ellipsoidal parameters and projection appropriate for a specific planet or celestial object.
- * <p/>
- * A globe uses the Cartesian coordinate system specified by its {@link GeographicProjection}. All Cartesian coordinates
- * and elevations are in meters.
+ * Planet or celestial object approximated by a reference ellipsoid and elevation models. Globe expresses its
+ * ellipsoidal parameters and elevation values in meters.
  */
-public interface Globe {
+public class Globe {
+
+    /**
+     * The globe's reference ellipsoid defining the globe's equatorial radius and polar radius.
+     */
+    protected Ellipsoid ellipsoid = new Ellipsoid();
+
+    protected ElevationModel elevationModel = new ElevationModel();
+
+    /**
+     * Indicates the geographic projection used by this globe. The projection specifies this globe's Cartesian
+     * coordinate system.
+     */
+    protected GeographicProjection projection;
+
+    /**
+     * Constructs a globe with a specified reference ellipsoid and projection.
+     *
+     * @param ellipsoid  the reference ellipsoid defining the globe's equatorial radius and polar radius
+     * @param projection the geographic projection used by the globe, specifies the globe's Cartesian coordinate system
+     *
+     * @throws IllegalArgumentException If the ellipsoid is null
+     */
+    public Globe(Ellipsoid ellipsoid, GeographicProjection projection) {
+        if (ellipsoid == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "setProjection", "missingEllipsoid"));
+        }
+
+        if (projection == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "setProjection", "missingProjection"));
+        }
+
+        this.ellipsoid.set(ellipsoid);
+        this.projection = projection;
+    }
+
+    /**
+     * Indicates the reference ellipsoid defining this globe's equatorial radius and polar radius.
+     *
+     * @return this globe's reference ellipsoid
+     */
+    public Ellipsoid getEllipsoid() {
+        return this.ellipsoid;
+    }
+
+    /**
+     * Sets the reference ellipsoid that defines this globe's equatorial radius and polar radius.
+     *
+     * @param ellipsoid the new reference ellipsoid
+     *
+     * @throws IllegalArgumentException If the ellipsoid is null
+     */
+    public void setEllipsoid(Ellipsoid ellipsoid) {
+        if (ellipsoid == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "setEllipsoid", "missingEllipsoid"));
+        }
+
+        this.ellipsoid.set(ellipsoid);
+    }
 
     /**
      * Indicates the radius in meters of the globe's ellipsoid at the equator.
      *
      * @return the radius at the equator, in meters.
      */
-    double getEquatorialRadius();
+    public double getEquatorialRadius() {
+        return this.ellipsoid.semiMajorAxis();
+    }
 
     /**
      * Indicates the radius in meters of the globe's ellipsoid at the poles.
      *
      * @return the radius at the poles, in meters.
      */
-    double getPolarRadius();
+    public double getPolarRadius() {
+        return this.ellipsoid.semiMinorAxis();
+    }
 
     /**
      * Indicates the radius in meters of the globe's ellipsoid at a specified location.
@@ -44,7 +106,17 @@ public interface Globe {
      *
      * @return the radius in meters of the globe's ellipsoid at the specified location
      */
-    double getRadiusAt(double latitude, double longitude);
+    public double getRadiusAt(double latitude, double longitude) {
+        // The radius for an ellipsoidal globe is a function of its latitude. The following solution was derived by
+        // observing that the length of the ellipsoidal point at the specified latitude and longitude indicates the
+        // radius at that location. The formula for the length of the ellipsoidal point was then converted into the
+        // simplified form below.
+
+        double sinLat = Math.sin(Math.toRadians(latitude));
+        double ec2 = this.ellipsoid.eccentricitySquared();
+        double rpm = this.ellipsoid.semiMajorAxis() / Math.sqrt(1 - ec2 * sinLat * sinLat);
+        return rpm * Math.sqrt(1 + (ec2 * ec2 - 2 * ec2) * sinLat * sinLat);
+    }
 
     /**
      * Indicates the eccentricity squared parameter of the globe's ellipsoid. This is equivalent to <code>2*f -
@@ -52,7 +124,17 @@ public interface Globe {
      *
      * @return the eccentricity squared parameter of the globe's ellipsoid.
      */
-    double getEccentricitySquared();
+    public double getEccentricitySquared() {
+        return this.ellipsoid.eccentricitySquared();
+    }
+
+    public ElevationModel getElevationModel() {
+        return elevationModel;
+    }
+
+    public void setElevationModel(ElevationModel elevationModel) {
+        this.elevationModel = elevationModel;
+    }
 
     /**
      * Indicates the geographic projection used by this globe. The projection specifies this globe's Cartesian
@@ -60,7 +142,9 @@ public interface Globe {
      *
      * @return the globe's projection
      */
-    GeographicProjection getProjection();
+    public GeographicProjection getProjection() {
+        return projection;
+    }
 
     /**
      * Sets the geographic projection used by this globe. The projection specifies this globe's Cartesian coordinate
@@ -70,17 +154,14 @@ public interface Globe {
      *
      * @throws IllegalArgumentException if the projection is null
      */
-    void setProjection(GeographicProjection projection);
+    public void setProjection(GeographicProjection projection) {
+        if (projection == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "setProjection", "missingProjection"));
+        }
 
-    /**
-     * @return
-     */
-    Tessellator getTessellator();
-
-    /**
-     * @param tessellator
-     */
-    void setTessellator(Tessellator tessellator);
+        this.projection = projection;
+    }
 
     /**
      * Converts a geographic position to Cartesian coordinates. This globe's projection specifies the Cartesian
@@ -95,47 +176,80 @@ public interface Globe {
      *
      * @throws IllegalArgumentException if the result is null
      */
-    Vec3 geographicToCartesian(double latitude, double longitude, double altitude, Vec3 result);
+    public Vec3 geographicToCartesian(double latitude, double longitude, double altitude, Vec3 result) {
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "geographicToCartesian", "missingResult"));
+        }
 
-    /**
-     * @param latitude
-     * @param longitude
-     * @param result
-     *
-     * @return
-     *
-     * @throws IllegalArgumentException if the result is null
-     */
-    Vec3 geographicToCartesianNormal(double latitude, double longitude, Vec3 result);
+        return this.projection.geographicToCartesian(this, latitude, longitude, altitude, result);
+    }
 
-    /**
-     * @param latitude
-     * @param longitude
-     * @param altitude
-     * @param result
-     *
-     * @return
-     *
-     * @throws IllegalArgumentException if the result is null
-     */
-    Matrix4 geographicToCartesianTransform(double latitude, double longitude, double altitude, Matrix4 result);
+    public Vec3 geographicToCartesianNormal(double latitude, double longitude, Vec3 result) {
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "geographicToCartesianNormal", "missingResult"));
+        }
 
-    /**
-     * @param sector
-     * @param numLat
-     * @param numLon
-     * @param elevations
-     * @param origin
-     * @param result
-     * @param stride
-     * @param pos
-     *
-     * @return
-     *
-     * @throws IllegalArgumentException if any argument is null,
-     */
-    float[] geographicToCartesianGrid(Sector sector, int numLat, int numLon, double[] elevations, Vec3 origin,
-                                          float[] result, int stride, int pos);
+        return this.projection.geographicToCartesianNormal(this, latitude, longitude, result);
+    }
+
+    public Matrix4 geographicToCartesianTransform(double latitude, double longitude, double altitude, Matrix4 result) {
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "geographicToCartesianTransform", "missingResult"));
+        }
+
+        return this.projection.geographicToCartesianTransform(this, latitude, longitude, altitude, result);
+    }
+
+    public float[] geographicToCartesianGrid(Sector sector, int numLat, int numLon, float[] height, float verticalExaggeration,
+                                             Vec3 origin, float[] result, int offset, int rowStride) {
+        if (sector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "geographicToCartesianGrid", "missingSector"));
+        }
+
+        if (numLat < 1 || numLon < 1) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "geographicToCartesianGrid",
+                    "Number of latitude or longitude locations is less than one"));
+        }
+
+        int numPoints = numLat * numLon;
+        if (height != null && height.length < numPoints) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "geographicToCartesianGrid", "missingArray"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "geographicToCartesianGrid", "missingResult"));
+        }
+
+        return this.projection.geographicToCartesianGrid(this, sector, numLat, numLon, height, verticalExaggeration,
+            origin, result, offset, rowStride);
+    }
+
+    public float[] geographicToCartesianBorder(Sector sector, int numLat, int numLon, float height,
+                                               Vec3 origin, float[] result) {
+        if (sector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "geographicToCartesianBorder", "missingSector"));
+        }
+
+        if (numLat < 1 || numLon < 1) {
+            throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Globe",
+                "geographicToCartesianBorder", "Number of latitude or longitude locations is less than one"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "geographicToCartesianBorder", "missingResult"));
+        }
+
+        return this.projection.geographicToCartesianBorder(this, sector, numLat, numLon, height, origin, result);
+    }
 
     /**
      * Converts a Cartesian point to a geographic position. This globe's projection specifies the Cartesian coordinate
@@ -150,40 +264,37 @@ public interface Globe {
      *
      * @throws IllegalArgumentException if the result is null
      */
-    Position cartesianToGeographic(double x, double y, double z, Position result);
+    public Position cartesianToGeographic(double x, double y, double z, Position result) {
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "cartesianToGeographic", "missingResult"));
+        }
 
-    Matrix4 cartesianToLocalTransform(double x, double y, double z, Matrix4 result);
+        return this.projection.cartesianToGeographic(this, x, y, z, result);
+    }
 
-    Matrix4 cameraToCartesianTransform(Camera camera, Matrix4 result);
+    public Matrix4 cartesianToLocalTransform(double x, double y, double z, Matrix4 result) {
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "cartesianToLocalTransform", "missingResult"));
+        }
 
-    LookAt cameraToLookAt(Camera camera, LookAt result);
-
-    Matrix4 lookAtToCartesianTransform(LookAt lookAt, Matrix4 result);
-
-    Camera lookAtToCamera(LookAt lookAt, Camera result);
-
-    /**
-     * Indicates the distance to the globe's horizon from a specified eye altitude. The result of this method is
-     * undefined if the eye altitude is negative.
-     *
-     * @param eyeAltitude the eye altitude in meters
-     *
-     * @return the distance in meters
-     */
-    double horizonDistance(double eyeAltitude);
+        return this.projection.cartesianToLocalTransform(this, x, y, z, result);
+    }
 
     /**
-     * Indicates the distance to an object passing over the globe's horizon from a specified eye altitude. This computes
-     * the distance at which a point at objectAltitude is on the threshold of passing beyond the globe's horizon, and
-     * would thereafter be occluded by the globe. The result of this method is undefined if either altitude is
-     * negative.
+     * Indicates the distance to the globe's horizon from a specified height above the globe's ellipsoid. The result of
+     * this method is undefined if the height is negative.
      *
-     * @param eyeAltitude    the eye altitude in meters
-     * @param objectAltitude the object altitude in meters
+     * @param height the viewer's height above the globe's ellipsoid in meters
      *
-     * @return the distance in meters
+     * @return the horizon distance in meters
      */
-    double horizonDistance(double eyeAltitude, double objectAltitude);
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    public double horizonDistance(double height) {
+        double r = this.ellipsoid.semiMajorAxis();
+        return Math.sqrt(height * (2 * r + height));
+    }
 
     /**
      * Computes the first intersection of this globe with a specified line. The line is interpreted as a ray;
@@ -196,5 +307,17 @@ public interface Globe {
      *
      * @throws IllegalArgumentException If either argument is null
      */
-    boolean intersect(Line line, Vec3 result);
+    public boolean intersect(Line line, Vec3 result) {
+        if (line == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "intersect", "missingLine"));
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Globe", "intersect", "missingResult"));
+        }
+
+        return this.projection.intersect(this, line, result);
+    }
 }

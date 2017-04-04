@@ -7,6 +7,7 @@ package gov.nasa.worldwind.geom;
 
 import junit.framework.Assert;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,7 +18,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import gov.nasa.worldwind.Navigator;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.globe.Globe;
-import gov.nasa.worldwind.globe.GlobeWgs84;
+import gov.nasa.worldwind.globe.ProjectionWgs84;
 import gov.nasa.worldwind.util.Logger;
 
 import static org.junit.Assert.assertEquals;
@@ -37,17 +38,19 @@ public class FrustumTest {
         // To accommodate WorldWind exception handling, we must mock all
         // the static methods in Logger to avoid calls to android.util.log
         PowerMockito.mockStatic(Logger.class);
-
-        // Create a globe with a WGS84 definition.
-        this.globe = new GlobeWgs84();
+        // Create the globe object used by the test
+        globe = new Globe(WorldWind.WGS84_ELLIPSOID, new ProjectionWgs84());
     }
 
+    @After
+    public void tearDown() throws Exception {
+        // Release the globe object
+        globe = null;
+    }
 
     @Test
     public void testConstructor_Default() throws Exception {
-        /**
-         * Constructs a new unit frustum with each of its planes 1 meter from the center.
-         */
+        // Constructs a new unit frustum with each of its planes 1 meter from the center.
         Frustum frustum = new Frustum();
 
         assertNotNull(frustum);
@@ -136,7 +139,6 @@ public class FrustumTest {
         assertFalse("on right side", frustum.containsPoint(new Vec3(-1, 0, 0)));
         assertFalse("on near", frustum.containsPoint(new Vec3(0, 0, -1)));
         assertFalse("on far", frustum.containsPoint(new Vec3(0, 0, 1)));
-
     }
 
     @Test
@@ -173,7 +175,6 @@ public class FrustumTest {
         assertFalse("outside top", frustum.intersectsSegment(new Vec3(0, 2, 0), new Vec3(0, 1.0000001, 0)));
         assertFalse("outside near", frustum.intersectsSegment(new Vec3(0, 0, -2), new Vec3(0, 0, -1.0000001)));
         assertFalse("outside far", frustum.intersectsSegment(new Vec3(0, 0, 2), new Vec3(0, 0, 1.0000001)));
-
     }
 
     @Test
@@ -188,20 +189,18 @@ public class FrustumTest {
         // Setup a Navigator, looking near Oxnard Airport.
         LookAt lookAt = new LookAt().set(34.15, -119.15, 0, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
         Navigator navigator = new Navigator();
-        navigator.setAsLookAt(this.globe, lookAt);
+        navigator.setAsLookAt(globe, lookAt);
 
         // Compute a perspective projection matrix given the viewport, field of view, and clip distances.
         Viewport viewport = new Viewport(0, 0, 100, 100);  // screen coordinates
         double nearDistance = navigator.getAltitude() * 0.75;
-        double farDistance = this.globe.horizonDistance(navigator.getAltitude(), 160000);
+        double farDistance = globe.horizonDistance(navigator.getAltitude()) + globe.horizonDistance(160000);
         Matrix4 projection = new Matrix4();
         projection.setToPerspectiveProjection(viewport.width, viewport.height, 45d /*fovy*/, nearDistance, farDistance);
 
         // Compute a Cartesian viewing matrix using this Navigator's properties as a Camera.
         Matrix4 modelview = new Matrix4();
-        Camera scratchCamera = new Camera();
-        navigator.getAsCamera(this.globe, scratchCamera);
-        this.globe.cameraToCartesianTransform(scratchCamera, modelview).invertOrthonormal();
+        navigator.getAsViewingMatrix(globe, modelview);
 
         // Compute the Frustum
         Frustum frustum = new Frustum();
@@ -237,21 +236,19 @@ public class FrustumTest {
         // Setup a Navigator, looking near Oxnard Airport.
         LookAt lookAt = new LookAt().set(34.15, -119.15, 0, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
         Navigator navigator = new Navigator();
-        navigator.setAsLookAt(this.globe, lookAt);
+        navigator.setAsLookAt(globe, lookAt);
 
         // Compute a perspective projection matrix given the viewport, field of view, and clip distances.
         Viewport viewport = new Viewport(0, 0, 100, 100);  // screen coordinates
         Viewport pickViewport = new Viewport(49, 49, 3, 3); // 3x3 viewport centered on a pick point
         double nearDistance = navigator.getAltitude() * 0.75;
-        double farDistance = this.globe.horizonDistance(navigator.getAltitude(), 160000);
+        double farDistance = globe.horizonDistance(navigator.getAltitude()) + globe.horizonDistance(160000);
         Matrix4 projection = new Matrix4();
         projection.setToPerspectiveProjection(viewport.width, viewport.height, 45d /*fovy*/, nearDistance, farDistance);
 
         // Compute a Cartesian viewing matrix using this Navigator's properties as a Camera.
         Matrix4 modelview = new Matrix4();
-        Camera scratchCamera = new Camera();
-        navigator.getAsCamera(this.globe, scratchCamera);
-        this.globe.cameraToCartesianTransform(scratchCamera, modelview).invertOrthonormal();
+        navigator.getAsViewingMatrix(globe, modelview);
 
         // Compute the Frustum
         Frustum frustum = new Frustum();
@@ -297,5 +294,4 @@ public class FrustumTest {
             ", viewport=" + frustum.viewport +
             '}';
     }
-
 }

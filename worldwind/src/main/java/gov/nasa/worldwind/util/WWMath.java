@@ -56,6 +56,17 @@ public class WWMath {
     }
 
     /**
+     * Returns the fractional part of a specified number
+     *
+     * @param value the number whose fractional part to compute
+     *
+     * @return The fractional part of the specified number: value - floor(value)
+     */
+    public static double fract(double value) {
+        return value - Math.floor(value);
+    }
+
+    /**
      * Computes the linear interpolation of two values according to a specified fractional amount. The fractional amount
      * is interpreted as a relative proportion of the two values, where 0.0 indicates the first value, 0.5 indicates a
      * 50/50 mix of the two values, and 1.0 indicates the second value.
@@ -135,6 +146,19 @@ public class WWMath {
         // necessary when we have added 360 degrees to either angle in order to interpolate along the shortest arc.
         double angle = (1 - amount) * angle1 + amount * angle2;
         return normalizeAngle360(angle);
+    }
+
+    /**
+     * Returns the integer modulus of a specified number. This differs from the % operator in that the result is
+     * always positive when the modulus is positive. For example -1 % 10 = -1, whereas mod(-1, 10) = 1.
+     *
+     * @param value   the integer number whose modulus to compute
+     * @param modulus the modulus
+     *
+     * @return the remainder after dividing the number by the modulus
+     */
+    public static int mod(int value, int modulus) {
+        return ((value % modulus) + modulus) % modulus;
     }
 
     /**

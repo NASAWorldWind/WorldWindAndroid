@@ -207,23 +207,25 @@ public class BoundingBox {
     }
 
     /**
-     * Sets this bounding box such that it contains a specified sector on a specified globe with min and max elevation.
+     * Sets this bounding box such that it contains a specified sector on a specified globe with min and max terrain
+     * height.
      * <p/>
      * To create a bounding box that contains the sector at mean sea level, specify zero for the minimum and maximum
-     * elevations. To create a bounding box that contains the terrain surface in this sector, specify the actual minimum
-     * and maximum elevation values associated with the sector, multiplied by the model's vertical exaggeration.
+     * height. To create a bounding box that contains the terrain surface in this sector, specify the actual minimum and
+     * maximum height values associated with the terrain in the sector, multiplied by the scene's vertical
+     * exaggeration.
      * <p/>
      *
-     * @param sector       The sector for which to create the bounding box.
-     * @param globe        The globe associated with the sector.
-     * @param minElevation The minimum elevation within the sector.
-     * @param maxElevation The maximum elevation within the sector.
+     * @param sector    the sector for which to create the bounding box
+     * @param globe     the globe associated with the sector
+     * @param minHeight the minimum terrain height within the sector
+     * @param maxHeight the maximum terrain height within the sector
      *
-     * @return This bounding box set to contain the specified sector.
+     * @return this bounding box set to contain the specified sector
      *
-     * @throws IllegalArgumentException If either the specified sector or globe is null or undefined.
+     * @throws IllegalArgumentException If any argument is null
      */
-    public BoundingBox setToSector(Sector sector, Globe globe, double minElevation, double maxElevation) {
+    public BoundingBox setToSector(Sector sector, Globe globe, float minHeight, float maxHeight) {
         if (sector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "BoundingBox", "setToSector", "missingSector"));
@@ -239,14 +241,13 @@ public class BoundingBox {
         int numLat = 3;
         int numLon = 3;
         int count = numLat * numLon;
-        int stride = 3;
 
-        double[] elevations = new double[count];
-        Arrays.fill(elevations, maxElevation);
-        elevations[0] = elevations[2] = elevations[6] = elevations[8] = minElevation;
+        float[] heights = new float[count];
+        Arrays.fill(heights, maxHeight);
+        heights[0] = heights[2] = heights[6] = heights[8] = minHeight;
 
-        float[] points = new float[count * stride];
-        globe.geographicToCartesianGrid(sector, numLat, numLon, elevations, null, points, stride, 0);
+        float[] points = new float[count * 3];
+        globe.geographicToCartesianGrid(sector, numLat, numLon, heights, 1.0f, null, points, 0, 0);
 
         // Compute the local coordinate axes. Since we know this box is bounding a geographic sector, we use the
         // local coordinate axes at its centroid as the box axes. Using these axes results in a box that has +-10%
@@ -265,7 +266,7 @@ public class BoundingBox {
         double sExtremes[] = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
         double tExtremes[] = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
         Vec3 p = new Vec3();
-        for (int idx = 0, len = points.length; idx < len; idx += stride) {
+        for (int idx = 0, len = points.length; idx < len; idx += 3) {
             p.set(points[idx], points[idx + 1], points[idx + 2]);
             adjustExtremes(this.r, rExtremes, this.s, sExtremes, this.t, tExtremes, p);
         }

@@ -14,8 +14,6 @@ import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableSurfaceColor;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec3;
-import gov.nasa.worldwind.globe.Tessellator;
-import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.RenderContext;
@@ -35,19 +33,14 @@ public class BasicFrameController implements FrameController {
 
     @Override
     public void renderFrame(RenderContext rc) {
-        this.tessellateTerrain(rc);
+        rc.terrainTessellator.tessellate(rc);
 
         if (rc.pickMode) {
             this.renderTerrainPickedObject(rc);
         }
 
-        this.renderLayers(rc);
-        this.prepareDrawables(rc);
-    }
-
-    protected void tessellateTerrain(RenderContext rc) {
-        Tessellator tess = rc.globe.getTessellator();
-        tess.tessellate(rc);
+        rc.layers.render(rc);
+        rc.sortDrawables();
     }
 
     protected void renderTerrainPickedObject(RenderContext rc) {
@@ -70,29 +63,11 @@ public class BasicFrameController implements FrameController {
 
         // If the pick ray intersects the terrain, enqueue a picked object that associates the terrain drawable with its
         // picked object ID and the intersection position.
-        if (this.resolveTerrainPickPosition(rc, this.pickPos)) {
+        if (rc.pickRay != null && rc.terrain.intersect(rc.pickRay, this.pickPoint)) {
+            rc.globe.cartesianToGeographic(this.pickPoint.x, this.pickPoint.y, this.pickPoint.z, this.pickPos);
+            this.pickPos.altitude = 0; // report the actual altitude, which may not lie on the terrain's surface
             rc.offerPickedObject(PickedObject.fromTerrain(pickedObjectId, this.pickPos));
         }
-    }
-
-    protected void renderLayers(RenderContext rc) {
-        LayerList layers = rc.layers;
-        for (int idx = 0, len = layers.count(); idx < len; idx++) {
-            rc.currentLayer = layers.getLayer(idx);
-            try {
-                rc.currentLayer.render(rc);
-            } catch (Exception e) {
-                Logger.logMessage(Logger.ERROR, "BasicFrameController", "drawLayers",
-                    "Exception while rendering layer \'" + rc.currentLayer.getDisplayName() + "\'", e);
-                // Keep going. Draw the remaining layers.
-            }
-        }
-
-        rc.currentLayer = null;
-    }
-
-    protected void prepareDrawables(RenderContext rc) {
-        rc.sortDrawables();
     }
 
     @Override
@@ -175,15 +150,5 @@ public class BasicFrameController implements FrameController {
 
         // Remove all picked objects not marked as on top.
         dc.pickedObjects.keepTopObjects();
-    }
-
-    protected boolean resolveTerrainPickPosition(RenderContext rc, Position result) {
-        if (rc.pickRay != null && rc.terrain.intersect(rc.pickRay, this.pickPoint)) {
-            result = rc.globe.cartesianToGeographic(this.pickPoint.x, this.pickPoint.y, this.pickPoint.z, result);
-            result.altitude = 0; // report the actual altitude, which does necessarily match the Cartesian surface
-            return true;
-        }
-
-        return false;
     }
 }

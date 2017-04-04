@@ -45,12 +45,15 @@ public class Logger {
         messageTable.put("invalidWidthOrHeight", "The width or the height is invalid");
         messageTable.put("missingArray", "The array is null or insufficient length");
         messageTable.put("missingBitmap", "The bitmap is null");
+        messageTable.put("missingBuffer", "The buffer is null");
         messageTable.put("missingCache", "The cache is null");
         messageTable.put("missingCallback", "The callback is null");
         messageTable.put("missingCamera", "The camera is null");
         messageTable.put("missingColor", "The color is null");
         messageTable.put("missingConfig", "The configuration is null");
         messageTable.put("missingCoordinateSystem", "The coordinate system is null");
+        messageTable.put("missingCoverage", "The coverage is null");
+        messageTable.put("missingEllipsoid", "The ellipsoid is null");
         messageTable.put("missingFactory", "The factory is null");
         messageTable.put("missingFormat", "The format is null");
         messageTable.put("missingFrameMetrics", "The frame metrics argument is null");
@@ -68,6 +71,7 @@ public class Logger {
         messageTable.put("missingLocation", "The location is null");
         messageTable.put("missingLookAt", "The look-at is null");
         messageTable.put("missingMatrix", "The matrix is null");
+        messageTable.put("missingModel", "The model is null");
         messageTable.put("missingName", "The name is null");
         messageTable.put("missingOffset", "The offset name is null");
         messageTable.put("missingPathName", "The path name is null");
@@ -84,7 +88,6 @@ public class Logger {
         messageTable.put("missingSector", "The sector is null");
         messageTable.put("missingServiceAddress", "The service address is null");
         messageTable.put("missingSource", "The source is null");
-        messageTable.put("missingTessellator", "The tessellator is null");
         messageTable.put("missingTile", "The tile is null");
         messageTable.put("missingTileFactory", "The tile factory is null");
         messageTable.put("missingTileUrlFactory", "The tile url factory is null");

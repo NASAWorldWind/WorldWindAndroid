@@ -39,7 +39,7 @@ public class AtmosphereLayer extends AbstractLayer {
 
     private Sector fullSphereSector = new Sector().setFullSphere();
 
-    private static final String VERTEX_POINTS_KEY = AtmosphereLayer.class.getName() + ".vertexPoints";
+    private static final String VERTEX_POINTS_KEY = AtmosphereLayer.class.getName() + ".points";
 
     private static final String TRI_STRIP_ELEMENTS_KEY = AtmosphereLayer.class.getName() + ".triStripElements";
 
@@ -109,7 +109,7 @@ public class AtmosphereLayer extends AbstractLayer {
         drawable.vertexPoints = rc.getBufferObject(VERTEX_POINTS_KEY);
         if (drawable.vertexPoints == null) {
             drawable.vertexPoints = rc.putBufferObject(VERTEX_POINTS_KEY,
-                this.assembleVertexPoints(rc, size, size, drawable.program.getAltitude()));
+                this.assembleVertexPoints(rc, size, size, (float) drawable.program.getAltitude()));
         }
 
         drawable.triStripElements = rc.getBufferObject(TRI_STRIP_ELEMENTS_KEY);
@@ -153,13 +153,13 @@ public class AtmosphereLayer extends AbstractLayer {
         rc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY /*z-order after all other surface drawables*/);
     }
 
-    protected BufferObject assembleVertexPoints(RenderContext rc, int numLat, int numLon, double altitude) {
+    protected BufferObject assembleVertexPoints(RenderContext rc, int numLat, int numLon, float altitude) {
         int count = numLat * numLon;
-        double[] altitudes = new double[count];
+        float[] altitudes = new float[count];
         Arrays.fill(altitudes, altitude);
 
         float[] points = new float[count * 3];
-        rc.globe.geographicToCartesianGrid(this.fullSphereSector, numLat, numLon, altitudes, null, points, 3, 0);
+        rc.globe.geographicToCartesianGrid(this.fullSphereSector, numLat, numLon, altitudes, 1.0f, null, points, 0, 0);
 
         int size = points.length * 4;
         FloatBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
