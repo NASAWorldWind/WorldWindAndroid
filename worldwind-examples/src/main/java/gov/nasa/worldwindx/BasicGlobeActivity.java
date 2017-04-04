@@ -27,12 +27,14 @@ import java.util.List;
 
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.LookAt;
+import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.layer.BackgroundLayer;
 import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
 import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.layer.LayerFactory;
 import gov.nasa.worldwind.layer.LayerList;
+import gov.nasa.worldwind.ogc.Wcs100ElevationCoverage;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsLayer;
 import gov.nasa.worldwind.util.Logger;
@@ -43,7 +45,19 @@ import gov.nasa.worldwindx.support.LayerManager;
  * Creates a simple view of a globe with touch navigation and a few layers.
  */
 public class BasicGlobeActivity extends AbstractMainActivity {
+    protected final String WWSK_WMS = "http://10.0.2.2:8080/geoserver/ows";             // WMS on emulator
+    protected final String WWSK_GWC = "http://10.0.2.2:8080/geoserver/gwc/service/wms"; // GeoWebCache (GWC) on emulator
+    protected final String SSGF_WMS = "http://10.0.1.7:8080/geoserver/ows";             // WMS on device
+    protected final String SSGF_GWC = "http://10.0.1.7:8080/geoserver/gwc/service/wms"; // GWC on device
+    protected final String APACHE_WMS = "http://192.168.1.219:8080/geoserver/ows";             // WMS on apache
+    protected final String APACHE_GWC = "http://192.168.1.219:8080/geoserver/gwc/service/wms"; // GeoWebCache (GWC) on apache
+    protected final String COBRA_WCS = "http://192.168.1.222:8080/geoserver/wcs";             // WMS on cobra
+    protected final String COBRA_WMS = "http://192.168.1.222:8080/geoserver/ows";             // WMS on cobra
+    protected final String COBRA_GWC = "http://192.168.1.222:8080/geoserver/gwc/service/wms"; // GeoWebCache (GWC) on emulator
+    protected final String TMIS = "http://10.0.1.7:5000/WmsServer";
 
+    String WCS_SERVER_ADDRESS = COBRA_WCS;
+    String WMS_SERVER_ADDRESS = COBRA_GWC;
     /**
      * This protected member allows derived classes to override the resource used in setContentView.
      */
@@ -108,6 +122,11 @@ public class BasicGlobeActivity extends AbstractMainActivity {
      * Adds the layers to the globe.
      */
     protected void initializeLayers() {
+
+        this.wwd.getGlobe().getElevationModel().addCoverage(
+            new Wcs100ElevationCoverage(
+                Sector.fromDegrees(-90, -180, 180, 360), 5, WCS_SERVER_ADDRESS, "dted:world_dted0"));
+
         // Default base layers
         getLayerManager().addLayer(new BackgroundLayer());
         getLayerManager().addLayer(new BlueMarbleLandsatLayer());
@@ -122,18 +141,9 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         @Override
         protected Void doInBackground(Void... notUsed) {
             // TIP: 10.0.2.2 is used to access the host development machine from emulator
-            final String WWSK_WMS = "http://10.0.2.2:8080/worldwind-geoserver/ows";             // WMS on emulator
-            final String WWSK_GWC = "http://10.0.2.2:8080/worldwind-geoserver/gwc/service/wms"; // GeoWebCache (GWC) on emulator
-            final String SSGF_WMS = "http://10.0.1.7:8080/worldwind-geoserver/ows";             // WMS on device
-            final String SSGF_GWC = "http://10.0.1.7:8080/worldwind-geoserver/gwc/service/wms"; // GWC on device
-            final String APACHE_WMS = "http://192.168.1.219:8080/worldwind-geoserver/ows";             // WMS on emulator
-            final String APACHE_GWC = "http://192.168.1.219:8080/worldwind-geoserver/gwc/service/wms"; // GeoWebCache (GWC) on emulator
-            final String COBRA_WMS = "http://192.168.1.222:8080/worldwind-geoserver/ows";             // WMS on emulator
-            final String COBRA_GWC = "http://192.168.1.222:8080/worldwind-geoserver/gwc/service/wms"; // GeoWebCache (GWC) on emulator
-            final String TMIS = "http://10.0.1.7:5000/WmsServer";
 
             // Build a WMS server GetCapabilties request
-            String serverAddress = APACHE_WMS;
+            String serverAddress = WMS_SERVER_ADDRESS;
             Uri serviceUri = Uri.parse(serverAddress).buildUpon()
                 .appendQueryParameter("VERSION", "1.3.0")
                 .appendQueryParameter("SERVICE", "WMS")
