@@ -227,6 +227,7 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
         placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(NORMAL_IMAGE_SCALE);
         placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(HIGHLIGHTED_IMAGE_SCALE).setImageColor(new Color(android.graphics.Color.YELLOW)));
         placemark.setDisplayName(name);
+        placemark.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
         // The AUTOMOTIVE_TYPE property is used to exchange the vehicle type with the VehicleTypeDialog
         placemark.putUserProperty(AUTOMOTIVE_TYPE, automotiveType);
         // The select/drag controller will examine a placemark's "capabilities" to determine what operations are applicable:
