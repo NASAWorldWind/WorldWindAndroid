@@ -15,6 +15,10 @@ import java.util.Map;
 
 import gov.nasa.worldwind.util.Logger;
 
+/**
+ * A representation of a Tiff subfile. This class maintains information provided by the Image File Directory and image
+ * data. This class is not thread safe.
+ */
 public class Subfile {
 
     public static final int UNSIGNED_INT = 1;
@@ -83,14 +87,23 @@ public class Subfile {
 
     // Strip & Tile Image Data
 
-    // 273 & 324
-    protected int[] offsets;
+    // 273
+    protected int[] stripOffsets;
 
-    // 279 & 325
-    protected int[] byteCounts;
+    // 279
+    protected int[] stripByteCounts;
 
     // 278
     protected int rowsPerStrip = 0xFFFFFFFF;
+
+    // 317
+    protected int compressionPredictor = 1;
+
+    // 324
+    protected int[] tileOffsets;
+
+    // 325
+    protected int[] tileByteCounts;
 
     // 322
     protected int tileWidth = 0;
@@ -248,6 +261,11 @@ public class Subfile {
                 Logger.logMessage(Logger.ERROR, "Subfile", "populateDefinedFields", "no image offsets provided"));
         }
 
+        field = this.fields.get(317);
+        if (field != null) {
+            this.compressionPredictor = Tiff.readWord(field.getDataBuffer());
+        }
+
         field = this.fields.get(339);
         if (field != null) {
             this.sampleFormat = new int[field.count];
@@ -301,12 +319,24 @@ public class Subfile {
         return this.resolutionUnit;
     }
 
-    public int[] getOffsets() {
-        return this.offsets;
+    public int getOffset() {
+        return this.offset;
     }
 
-    public int[] getByteCounts() {
-        return this.byteCounts;
+    public int[] getStripOffsets() {
+        return this.stripOffsets;
+    }
+
+    public int[] getStripByteCounts() {
+        return this.stripByteCounts;
+    }
+
+    public int[] getTileOffsets() {
+        return this.tileOffsets;
+    }
+
+    public int[] getTileByteCounts() {
+        return this.tileByteCounts;
     }
 
     public int getRowsPerStrip() {
@@ -329,20 +359,20 @@ public class Subfile {
         Field field = this.fields.get(273);
 
         if (field != null) {
-            this.offsets = new int[field.count];
+            this.stripOffsets = new int[field.count];
             ByteBuffer data = field.getDataBuffer();
-            for (int i = 0; i < this.offsets.length; i++) {
+            for (int i = 0; i < this.stripOffsets.length; i++) {
                 if (field.type == Type.USHORT) {
-                    this.offsets[i] = Tiff.readWord(data);
+                    this.stripOffsets[i] = Tiff.readWord(data);
                 } else if (field.type == Type.ULONG) {
-                    this.offsets[i] = Tiff.readLimitedDWord(data);
+                    this.stripOffsets[i] = Tiff.readLimitedDWord(data);
                 } else {
                     throw new RuntimeException(
                         Logger.logMessage(Logger.ERROR, "Strip", "populateStripFields", "invalid offset type"));
                 }
             }
         } else {
-            throw new RuntimeException("invalid tiff format - offsets missing");
+            throw new RuntimeException("invalid tiff format - stripOffsets missing");
         }
 
         field = this.fields.get(278);
@@ -359,20 +389,20 @@ public class Subfile {
 
         field = this.fields.get(279);
         if (field != null) {
-            this.byteCounts = new int[field.count];
+            this.stripByteCounts = new int[field.count];
             ByteBuffer data = field.getDataBuffer();
-            for (int i = 0; i < this.byteCounts.length; i++) {
+            for (int i = 0; i < this.stripByteCounts.length; i++) {
                 if (field.type == Type.USHORT) {
-                    this.byteCounts[i] = Tiff.readWord(data);
+                    this.stripByteCounts[i] = Tiff.readWord(data);
                 } else if (field.type == Type.ULONG) {
-                    this.byteCounts[i] = Tiff.readLimitedDWord(data);
+                    this.stripByteCounts[i] = Tiff.readLimitedDWord(data);
                 } else {
                     throw new RuntimeException(
-                        Logger.logMessage(Logger.ERROR, "Strip", "populateStripFields", "invalid byteCounts type"));
+                        Logger.logMessage(Logger.ERROR, "Strip", "populateStripFields", "invalid stripByteCounts type"));
                 }
             }
         } else {
-            throw new RuntimeException("invalid tiff format - byteCounts missing");
+            throw new RuntimeException("invalid tiff format - stripByteCounts missing");
         }
     }
 
@@ -380,13 +410,13 @@ public class Subfile {
         Field field = this.fields.get(324);
 
         if (field != null) {
-            this.offsets = new int[field.count];
+            this.tileOffsets = new int[field.count];
             ByteBuffer data = field.getDataBuffer();
-            for (int i = 0; i < this.offsets.length; i++) {
+            for (int i = 0; i < this.tileOffsets.length; i++) {
                 if (field.type == Type.USHORT) {
-                    this.offsets[i] = Tiff.readWord(data);
+                    this.tileOffsets[i] = Tiff.readWord(data);
                 } else if (field.type == Type.ULONG) {
-                    this.offsets[i] = Tiff.readLimitedDWord(data);
+                    this.tileOffsets[i] = Tiff.readLimitedDWord(data);
                 } else {
                     throw new RuntimeException(
                         Logger.logMessage(Logger.ERROR, "Subfile", "populateTileFields", "invalid offset type"));
@@ -399,21 +429,21 @@ public class Subfile {
 
         field = this.fields.get(325);
         if (field != null) {
-            this.byteCounts = new int[field.count];
+            this.tileByteCounts = new int[field.count];
             ByteBuffer data = field.getDataBuffer();
-            for (int i = 0; i < this.byteCounts.length; i++) {
+            for (int i = 0; i < this.tileByteCounts.length; i++) {
                 if (field.type == Type.USHORT) {
-                    this.byteCounts[i] = Tiff.readWord(data);
+                    this.tileByteCounts[i] = Tiff.readWord(data);
                 } else if (field.type == Type.ULONG) {
-                    this.byteCounts[i] = Tiff.readLimitedDWord(data);
+                    this.tileByteCounts[i] = Tiff.readLimitedDWord(data);
                 } else {
                     throw new RuntimeException(
-                        Logger.logMessage(Logger.ERROR, "Subfile", "populateTileFields", "invalid byteCounts type"));
+                        Logger.logMessage(Logger.ERROR, "Subfile", "populateTileFields", "invalid tileByteCounts type"));
                 }
             }
         } else {
             throw new RuntimeException(
-                Logger.logMessage(Logger.ERROR, "Subfile", "populateTileFields", "invalid tiff format - byteCounts missing"));
+                Logger.logMessage(Logger.ERROR, "Subfile", "populateTileFields", "invalid tiff format - tileByteCounts missing"));
         }
 
         field = this.fields.get(322);
@@ -498,9 +528,9 @@ public class Subfile {
 
     protected void combineStrips(ByteBuffer result) {
         // this works when the data is not compressed and may work when it is compressed as well
-        for (int i = 0; i < this.offsets.length; i++) {
-            this.buffer.limit(this.offsets[i] + this.byteCounts[i]);
-            this.buffer.position(this.offsets[i]);
+        for (int i = 0; i < this.stripOffsets.length; i++) {
+            this.buffer.limit(this.stripOffsets[i] + this.stripByteCounts[i]);
+            this.buffer.position(this.stripOffsets[i]);
             result.put(this.buffer);
         }
         this.buffer.clear();
@@ -530,7 +560,7 @@ public class Subfile {
                 tilePixelCol = pixelCol - currentTileCol * this.tileWidth;
                 tilePixelIndex = (tilePixelRow * this.tileWidth + tilePixelCol) * totalBytesPerSample;
 
-                offsetIndex = this.offsets[tileIndex] + tilePixelIndex;
+                offsetIndex = this.tileOffsets[tileIndex] + tilePixelIndex;
                 this.buffer.limit(offsetIndex + totalBytesPerSample);
                 this.buffer.position(offsetIndex);
                 result.put(this.buffer);

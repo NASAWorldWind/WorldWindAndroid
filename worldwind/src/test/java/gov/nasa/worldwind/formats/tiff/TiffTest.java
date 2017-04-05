@@ -72,7 +72,7 @@ public class TiffTest {
         // the first twelve values and the last
         int[] expectedOffsets = {930, 9122, 17314, 25506, 33698, 41890, 50082, 58274, 66466, 74658, 82850, 91042, 517026};
 
-        int[] actualOffsets = file.getOffsets();
+        int[] actualOffsets = file.getStripOffsets();
 
         // modify the actual offsets to limit the number of test points, didn't want to write in all of the offsets
         int[] modActualOffsets = Arrays.copyOfRange(actualOffsets, 0, 13);
@@ -123,7 +123,7 @@ public class TiffTest {
         Subfile file = tiff.getSubfiles().get(0);
         int[] expectedByteCounts = {8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192};
 
-        int[] actualByteCounts = file.getByteCounts();
+        int[] actualByteCounts = file.getStripByteCounts();
 
         // modify the actual bytes counts in order to reduce the number of test points
         int[] modActualByteCounts = Arrays.copyOf(actualByteCounts, 13);
@@ -233,7 +233,7 @@ public class TiffTest {
         Subfile file = tiff.getSubfiles().get(0);
         int[] expectedOffsets = {8, 40968, 81928, 122888, 163848, 204808, 245768};
 
-        int[] actualOffsets = file.getOffsets();
+        int[] actualOffsets = file.getStripOffsets();
 
         assertTrue("image offsets", Arrays.equals(expectedOffsets, actualOffsets));
     }
@@ -280,7 +280,7 @@ public class TiffTest {
         Subfile file = tiff.getSubfiles().get(0);
         int[] expectedByteCounts = {40960, 40960, 40960, 40960, 40960, 40960, 10240};
 
-        int[] actualByteCounts = file.getByteCounts();
+        int[] actualByteCounts = file.getStripByteCounts();
 
         assertTrue("byte counts", Arrays.equals(expectedByteCounts, actualByteCounts));
     }
@@ -387,8 +387,8 @@ public class TiffTest {
         file.samplesPerPixel = 3;
         file.bitsPerSample = new int[]{8, 8, 8};
         // canned continuous offsets
-        file.offsets = new int[]{0, 768, 768 * 2, 768 * 3, 768 * 4, 768 * 5, 768 * 6, 768 * 7, 768 * 8};
-        for (int bOffset = 0; bOffset < file.offsets.length; bOffset++) {
+        file.tileOffsets = new int[]{0, 768, 768 * 2, 768 * 3, 768 * 4, 768 * 5, 768 * 6, 768 * 7, 768 * 8};
+        for (int bOffset = 0; bOffset < file.tileOffsets.length; bOffset++) {
             byte[] bytes = new byte[768];
             // each chunk of tiles should use the value of their index
             Arrays.fill(bytes, (byte) bOffset);
