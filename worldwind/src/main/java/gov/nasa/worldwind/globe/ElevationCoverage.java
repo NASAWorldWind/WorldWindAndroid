@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.globe;
 
 import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.util.Tile;
 
 public interface ElevationCoverage {
 
@@ -27,10 +26,6 @@ public interface ElevationCoverage {
     Object removeUserProperty(Object key);
 
     boolean hasUserProperty(Object key);
-
-    boolean hasCoverage(double latitude, double longitude);
-
-    boolean hasCoverage(Sector sector);
 
     boolean getHeight(double latitude, double longitude, float[] result);
 

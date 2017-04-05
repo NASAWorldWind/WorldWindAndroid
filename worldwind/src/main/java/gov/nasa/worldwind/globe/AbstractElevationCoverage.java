@@ -90,10 +90,6 @@ public abstract class AbstractElevationCoverage implements ElevationCoverage {
             return false;
         }
 
-        if (!this.hasCoverage(latitude, longitude)) {
-            return false;
-        }
-
         return this.doGetHeight(latitude, longitude, result);
     }
 
@@ -113,10 +109,6 @@ public abstract class AbstractElevationCoverage implements ElevationCoverage {
             return;
         }
 
-        if (!this.hasCoverage(gridSector)) {
-            return;
-        }
-
         this.doGetHeightGrid(gridSector, gridWidth, gridHeight, result);
     }
 
@@ -133,10 +125,6 @@ public abstract class AbstractElevationCoverage implements ElevationCoverage {
         }
 
         if (!this.isEnabled()) {
-            return;
-        }
-
-        if (!this.hasCoverage(sector)) {
             return;
         }
 
