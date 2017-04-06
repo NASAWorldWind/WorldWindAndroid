@@ -47,6 +47,7 @@ import gov.nasa.worldwindx.support.LayerManager;
 public class BasicGlobeActivity extends AbstractMainActivity {
     protected final String WWSK_WMS = "http://10.0.2.2:8080/geoserver/ows";             // WMS on emulator
     protected final String WWSK_GWC = "http://10.0.2.2:8080/geoserver/gwc/service/wms"; // GeoWebCache (GWC) on emulator
+    protected final String SSGF_WCS = "http://10.0.1.7:8080/geoserver/wcs";             // WCS on device
     protected final String SSGF_WMS = "http://10.0.1.7:8080/geoserver/ows";             // WMS on device
     protected final String SSGF_GWC = "http://10.0.1.7:8080/geoserver/gwc/service/wms"; // GWC on device
     protected final String APACHE_WMS = "http://192.168.1.219:8080/geoserver/ows";             // WMS on apache
@@ -57,7 +58,7 @@ public class BasicGlobeActivity extends AbstractMainActivity {
     protected final String TMIS = "http://10.0.1.7:5000/WmsServer";
 
     String WCS_SERVER_ADDRESS = COBRA_WCS;
-    String WMS_SERVER_ADDRESS = COBRA_GWC;
+    String WMS_SERVER_ADDRESS = COBRA_WMS;
     /**
      * This protected member allows derived classes to override the resource used in setContentView.
      */
@@ -125,7 +126,7 @@ public class BasicGlobeActivity extends AbstractMainActivity {
 
         this.wwd.getGlobe().getElevationModel().addCoverage(
             new Wcs100ElevationCoverage(
-                Sector.fromDegrees(-90, -180, 180, 360), 5, WCS_SERVER_ADDRESS, "dted:world_dted0"));
+                Sector.fromDegrees(-90, -180, 180, 360), 5, WCS_SERVER_ADDRESS, "pnw:usgs_ned_10m"));
 
         // Default base layers
         getLayerManager().addLayer(new BackgroundLayer());
