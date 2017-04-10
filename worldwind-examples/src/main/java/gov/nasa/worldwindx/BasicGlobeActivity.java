@@ -12,11 +12,11 @@ import android.support.v4.view.GravityCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ZoomControls;
-
-import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -37,7 +37,6 @@ import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.ogc.Wcs100ElevationCoverage;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsLayer;
-import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwindx.experimental.AtmosphereLayer;
 import gov.nasa.worldwindx.support.LayerManager;
 
@@ -45,20 +44,33 @@ import gov.nasa.worldwindx.support.LayerManager;
  * Creates a simple view of a globe with touch navigation and a few layers.
  */
 public class BasicGlobeActivity extends AbstractMainActivity {
+
     protected final String WWSK_WMS = "http://10.0.2.2:8080/geoserver/ows";             // WMS on emulator
+
     protected final String WWSK_GWC = "http://10.0.2.2:8080/geoserver/gwc/service/wms"; // GeoWebCache (GWC) on emulator
+
     protected final String SSGF_WCS = "http://10.0.1.7:8080/geoserver/wcs";             // WCS on device
+
     protected final String SSGF_WMS = "http://10.0.1.7:8080/geoserver/ows";             // WMS on device
+
     protected final String SSGF_GWC = "http://10.0.1.7:8080/geoserver/gwc/service/wms"; // GWC on device
+
     protected final String APACHE_WMS = "http://192.168.1.219:8080/geoserver/ows";             // WMS on apache
+
     protected final String APACHE_GWC = "http://192.168.1.219:8080/geoserver/gwc/service/wms"; // GeoWebCache (GWC) on apache
+
     protected final String COBRA_WCS = "http://192.168.1.222:8080/geoserver/wcs";             // WMS on cobra
+
     protected final String COBRA_WMS = "http://192.168.1.222:8080/geoserver/ows";             // WMS on cobra
+
     protected final String COBRA_GWC = "http://192.168.1.222:8080/geoserver/gwc/service/wms"; // GeoWebCache (GWC) on emulator
+
     protected final String TMIS = "http://10.0.1.7:5000/WmsServer";
 
-    String WCS_SERVER_ADDRESS = COBRA_WCS;
-    String WMS_SERVER_ADDRESS = COBRA_WMS;
+    String WCS_SERVER_ADDRESS = SSGF_WCS;
+
+    String WMS_SERVER_ADDRESS = SSGF_WMS;
+
     /**
      * This protected member allows derived classes to override the resource used in setContentView.
      */
@@ -102,6 +114,7 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         globeLayout.addView(this.wwd);
 
         initializeZoomControls();
+        initializeTiltControls();
         initializeLayers();
     }
 
@@ -124,15 +137,28 @@ public class BasicGlobeActivity extends AbstractMainActivity {
      */
     protected void initializeLayers() {
 
+        // WCS Elevations
         this.wwd.getGlobe().getElevationModel().addCoverage(
             new Wcs100ElevationCoverage(
-                Sector.fromDegrees(-90, -180, 180, 360), 5, WCS_SERVER_ADDRESS, "pnw:usgs_ned_10m"));
+                sectorFromBBox(-180, -90, 180, 90),
+                7, // num levels
+                WCS_SERVER_ADDRESS,
+                "gebco:gebco_2014"));
+//            new Wcs100ElevationCoverage(
+//                sectorFromBBox(-123.0005555556, 43.9994444441653, -117.99944444420979, 49.000555555555515),
+//                13, // num levels
+//                WCS_SERVER_ADDRESS,
+//                "pnw:usgs_ned_10m"));
 
         // Default base layers
         getLayerManager().addLayer(new BackgroundLayer());
         getLayerManager().addLayer(new BlueMarbleLandsatLayer());
         getLayerManager().addLayer(new AtmosphereLayer());
         new InitializeWmsLayersTask().execute();
+    }
+
+    private Sector sectorFromBBox(double minX, double minY, double maxX, double maxY) {
+        return Sector.fromDegrees(minY, minX, maxX - minX, maxY - minY);
     }
 
     protected class InitializeWmsLayersTask extends AsyncTask<Void, String, Void> {
@@ -191,7 +217,7 @@ public class BasicGlobeActivity extends AbstractMainActivity {
             for (WmsLayer layerCaps : namedLayers) {
                 // The callback will add the layer to the layer list.
                 Layer layer = layerFactory.createFromWmsLayerCapabilities(layerCaps, callback);
-                layer.setDisplayName("> SSGF - " + layerCaps.getTitle());
+                layer.setDisplayName(">  " + layerCaps.getTitle());
                 layer.putUserProperty("BBOX", layerCaps.getGeographicBoundingBox()); // TODO: use for highlighting layers in view
                 layer.putUserProperty("MAX_SCALE_DENOM", layerCaps.getMaxScaleDenominator()); // TODO: use for sorting the layers
                 layer.putUserProperty("MIN_SCALE_DENOM", layerCaps.getMinScaleDenominator()); // TODO: use for sorting the layers
@@ -229,6 +255,29 @@ public class BasicGlobeActivity extends AbstractMainActivity {
             }
         });
         zoomControls.setZoomSpeed(50);  // repeat every 50 ms after a long press
+    }
+
+    /**
+     * Adds the zoom controls to the layout.
+     */
+    protected void initializeTiltControls() {
+        Button tiltUp = (Button) findViewById(R.id.btn_tilt_up);
+        tiltUp.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                adjustTilt(1.0);
+                return true;
+            }
+        });
+
+        Button tiltDown = (Button) findViewById(R.id.btn_tilt_down);
+        tiltDown.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                adjustTilt(-1.0);
+                return true;
+            }
+        });
     }
 
     /**
@@ -303,9 +352,17 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         double logRange = range != 0 ? Math.log(range) : 0;
         // Zoom changes are treated as logarithmic values. This accomplishes two things:
         // 1) Zooming is slow near the globe, and fast at great distances.
-        // 2) Zooming in then immediately zooming out returns the viewer to the same range value.
+        // 2) Zooming in and then immediately zooming out returns the viewer to the same range value.
         lookAt.range = Math.exp(logRange + change);
 
+        this.wwd.getNavigator().setAsLookAt(globe, lookAt);
+        this.wwd.requestRedraw();
+    }
+
+    protected void adjustTilt(double amount) {
+        Globe globe = this.wwd.getGlobe();
+        LookAt lookAt = this.wwd.getNavigator().getAsLookAt(globe, new LookAt());
+        lookAt.tilt = Math.max(0, Math.min(90, lookAt.tilt += amount));
         this.wwd.getNavigator().setAsLookAt(globe, lookAt);
         this.wwd.requestRedraw();
     }
