@@ -265,7 +265,7 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         tiltUp.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                adjustTilt(1.0);
+                adjustTilt(-1.0);
                 return true;
             }
         });
@@ -274,7 +274,7 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         tiltDown.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                adjustTilt(-1.0);
+                adjustTilt(1.0);
                 return true;
             }
         });
