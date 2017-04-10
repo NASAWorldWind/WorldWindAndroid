@@ -27,8 +27,6 @@ public interface ElevationCoverage {
 
     boolean hasUserProperty(Object key);
 
-    boolean getHeight(double latitude, double longitude, float[] result);
-
     void getHeightGrid(Sector gridSector, int gridWidth, int gridHeight, float[] result);
 
     void getHeightLimits(Sector sector, float[] result);

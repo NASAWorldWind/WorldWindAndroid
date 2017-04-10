@@ -144,22 +144,6 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
         return maxTimestamp;
     }
 
-    public boolean getHeight(double latitude, double longitude, float[] result) {
-        if (result == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeight", "missingResult"));
-        }
-
-        for (int idx = this.coverages.size() - 1; idx >= 0; idx--) { // use the last coverage
-            ElevationCoverage coverage = this.coverages.get(idx);
-            if (coverage.getHeight(latitude, longitude, result)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public void getHeightGrid(Sector gridSector, int gridWidth, int gridHeight, float[] result) {
         if (gridSector == null) {
             throw new IllegalArgumentException(

@@ -91,15 +91,6 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
     }
 
     @Override
-    protected boolean doGetHeight(double latitude, double longitude, float[] result) {
-        if (this.levelSet.sector.contains(latitude, longitude)) {
-            return false; // no coverage in the specified location
-        }
-
-        return false; // TODO
-    }
-
-    @Override
     protected void doGetHeightGrid(Sector gridSector, int gridWidth, int gridHeight, float[] result) {
         if (!this.levelSet.sector.intersects(gridSector)) {
             return; // no coverage in the specified sector
