@@ -80,24 +80,6 @@ public abstract class AbstractElevationCoverage implements ElevationCoverage {
     }
 
     @Override
-    public boolean getHeight(double latitude, double longitude, float[] result) {
-        if (result == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "AbstractElevationCoverage", "getHeight", "missingResult"));
-        }
-
-        if (!this.isEnabled()) {
-            return false;
-        }
-
-        if (!this.hasCoverage(latitude, longitude)) {
-            return false;
-        }
-
-        return this.doGetHeight(latitude, longitude, result);
-    }
-
-    @Override
     public void getHeightGrid(Sector gridSector, int gridWidth, int gridHeight, float[] result) {
         if (gridSector == null) {
             throw new IllegalArgumentException(
@@ -110,10 +92,6 @@ public abstract class AbstractElevationCoverage implements ElevationCoverage {
         }
 
         if (!this.isEnabled()) {
-            return;
-        }
-
-        if (!this.hasCoverage(gridSector)) {
             return;
         }
 
@@ -136,14 +114,8 @@ public abstract class AbstractElevationCoverage implements ElevationCoverage {
             return;
         }
 
-        if (!this.hasCoverage(sector)) {
-            return;
-        }
-
         this.doGetHeightLimits(sector, result);
     }
-
-    protected abstract boolean doGetHeight(double latitude, double longitude, float[] result);
 
     protected abstract void doGetHeightGrid(Sector gridSector, int gridWidth, int gridHeight, float[] result);
 

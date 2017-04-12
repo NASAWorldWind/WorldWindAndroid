@@ -82,21 +82,6 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         this.tileFactory = tileFactory;
     }
 
-    @Override
-    public boolean hasCoverage(double latitude, double longitude) {
-        return this.levelSet.sector.contains(latitude, longitude);
-    }
-
-    @Override
-    public boolean hasCoverage(Sector sector) {
-        if (sector == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "TiledElevationCoverage", "hasCoverage", "missingSector"));
-        }
-
-        return this.levelSet.sector.intersects(sector);
-    }
-
     protected boolean isEnableRetrieval() {
         return this.enableRetrieval;
     }
@@ -106,12 +91,11 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
     }
 
     @Override
-    protected boolean doGetHeight(double latitude, double longitude, float[] result) {
-        return false; // TODO
-    }
-
-    @Override
     protected void doGetHeightGrid(Sector gridSector, int gridWidth, int gridHeight, float[] result) {
+        if (!this.levelSet.sector.intersects(gridSector)) {
+            return; // no coverage in the specified sector
+        }
+
         double radiansPerSample = Math.toRadians(gridSector.deltaLatitude()) / gridHeight;
         Level targetLevel = this.levelSet.levelForResolution(radiansPerSample);
         TileBlock tileBlock = new TileBlock();
@@ -132,6 +116,10 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
 
     @Override
     protected void doGetHeightLimits(Sector sector, float[] result) {
+        if (!this.levelSet.sector.intersects(sector)) {
+            return; // no coverage in the specified sector
+        }
+
         double radiansPerSample = Math.toRadians(sector.deltaLatitude()) / GET_HEIGHT_LIMIT_SAMPLES;
         Level targetLevel = this.levelSet.levelForResolution(radiansPerSample);
         TileBlock tileBlock = new TileBlock();
@@ -367,6 +355,7 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
                 int i1 = (int) WWMath.clamp(iMax, coliMin, coliMax) % tileWidth;
 
                 short[] tileArray = tileBlock.getTileArray(row, col);
+                // TODO how often do we read all of tileArray?
 
                 for (int j = j0; j <= j1; j++) {
                     for (int i = i0; i <= i1; i++) {
