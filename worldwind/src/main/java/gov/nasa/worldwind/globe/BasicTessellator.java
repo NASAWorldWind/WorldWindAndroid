@@ -14,7 +14,6 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 import gov.nasa.worldwind.draw.BasicDrawableTerrain;
 import gov.nasa.worldwind.geom.Range;
@@ -190,10 +189,34 @@ public class BasicTessellator implements Tessellator, TileFactory {
 
             Vec3 origin = tile.getOrigin();
             float[] heights = tile.getHeights();
-            float[] heightLimits = tile.getHeightLimits();
-            float[] points = tile.getPoints();
-            float borderHeight = (float) (heightLimits[0] * verticalExaggeration);
 
+            // determine the border height by scanning the top, bottom, left, and right edges ot the tile heights array
+            float borderHeight = 0f;
+            // top and bottom
+            for (int i = 0; i < tileWidth; i++) {
+                int bottom = i + tileWidth * (tileHeight - 1);
+                if (heights[i] < borderHeight) {
+                    borderHeight = heights[i];
+                }
+                if (heights[bottom] < borderHeight) {
+                    borderHeight = heights[bottom];
+                }
+            }
+            // left and right
+            for (int i = 1; i < (tileHeight - 1); i++) {
+                int left = i * tileWidth;
+                int right = left + tileWidth - 1;
+                if (heights[left] < borderHeight) {
+                    borderHeight = heights[left];
+                }
+                if (heights[right] < borderHeight) {
+                    borderHeight = heights[right];
+                }
+            }
+            // adjust for vertical exaggeration
+            borderHeight = (float) (borderHeight * verticalExaggeration);
+
+            float[] points = tile.getPoints();
             if (points == null) {
                 int numPoints = (tileWidth + 2) * (tileHeight + 2) * 3;
                 points = new float[numPoints];
