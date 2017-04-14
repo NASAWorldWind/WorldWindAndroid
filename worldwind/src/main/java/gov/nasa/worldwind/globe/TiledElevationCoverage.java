@@ -156,35 +156,39 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         double lon = gridSector.minLongitude();
         double deltaLon = gridSector.deltaLongitude() / (gridWidth - 1);
         for (int uidx = 0; uidx < gridWidth; uidx++, lon += deltaLon) {
-            if (lon < levelMinLon || lon > levelMaxLon) {
-                continue;
+            if (uidx == gridWidth - 1) {
+                lon = gridSector.maxLongitude(); // explicitly set the last lon to the max longitude to ensure alignment
             }
 
-            double s = (lon + 180) / 360;
-            double u = levelWidth * WWMath.fract(s); // wrap the horizontal coordinate
-            int i0 = WWMath.mod((int) Math.floor(u - 0.5), levelWidth);
-            int i1 = WWMath.mod((i0 + 1), levelWidth);
-            int col0 = i0 / tileWidth;
-            int col1 = i1 / tileWidth;
-            result.cols.append(col0, 0);
-            result.cols.append(col1, 0);
+            if (lon >= levelMinLon && lon <= levelMaxLon) {
+                double s = (lon + 180) / 360;
+                double u = levelWidth * WWMath.fract(s); // wrap the horizontal coordinate
+                int i0 = WWMath.mod((int) Math.floor(u - 0.5), levelWidth);
+                int i1 = WWMath.mod((i0 + 1), levelWidth);
+                int col0 = i0 / tileWidth;
+                int col1 = i1 / tileWidth;
+                result.cols.append(col0, 0);
+                result.cols.append(col1, 0);
+            }
         }
 
         double lat = gridSector.minLatitude();
         double deltaLat = gridSector.deltaLatitude() / (gridHeight - 1);
-        for (double vidx = 0; vidx < gridHeight; vidx++, lat += deltaLat) {
-            if (lat < levelMinLat || lat > levelMaxLat) {
-                continue;
+        for (int vidx = 0; vidx < gridHeight; vidx++, lat += deltaLat) {
+            if (vidx == gridHeight - 1) {
+                lat = gridSector.maxLatitude(); // explicitly set the last lat to the max latitude to ensure alignment
             }
 
-            double t = (lat + 90) / 180;
-            double v = levelHeight * WWMath.clamp(t, tMin, tMax); // clamp the vertical coordinate to the level edge
-            int j0 = (int) WWMath.clamp(Math.floor(v - 0.5), 0, levelHeight - 1);
-            int j1 = (int) WWMath.clamp(j0 + 1, 0, levelHeight - 1);
-            int row0 = j0 / tileHeight;
-            int row1 = j1 / tileHeight;
-            result.rows.append(row0, 0);
-            result.rows.append(row1, 0);
+            if (lat >= levelMinLat && lat <= levelMaxLat) {
+                double t = (lat + 90) / 180;
+                double v = levelHeight * WWMath.clamp(t, tMin, tMax); // clamp the vertical coordinate to the level edge
+                int j0 = (int) WWMath.clamp(Math.floor(v - 0.5), 0, levelHeight - 1);
+                int j1 = (int) WWMath.clamp(j0 + 1, 0, levelHeight - 1);
+                int row0 = j0 / tileHeight;
+                int row1 = j1 / tileHeight;
+                result.rows.append(row0, 0);
+                result.rows.append(row1, 0);
+            }
         }
 
         for (int ridx = 0, rlen = result.rows.size(); ridx < rlen; ridx++) {
@@ -281,43 +285,47 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
 
         double lat = gridSector.minLatitude();
         double deltaLat = gridSector.deltaLatitude() / (gridHeight - 1);
-        for (double vidx = 0; vidx < gridHeight; vidx++, lat += deltaLat) {
-            if (lat < levelMinLat || lat > levelMaxLat) {
-                continue;
+        for (int vidx = 0; vidx < gridHeight; vidx++, lat += deltaLat) {
+            if (vidx == gridHeight - 1) {
+                lat = gridSector.maxLatitude(); // explicitly set the last lat to the max latitude to ensure alignment
             }
 
-            double t = (lat + 90) / 180;
-            double v = levelHeight * WWMath.clamp(t, tMin, tMax); // clamp the vertical coordinate to the level edge
-            float b = (float) WWMath.fract(v - 0.5);
-            int j0 = (int) WWMath.clamp(Math.floor(v - 0.5), 0, levelHeight - 1);
-            int j1 = (int) WWMath.clamp(j0 + 1, 0, levelHeight - 1);
-            int row0 = j0 / tileHeight;
-            int row1 = j1 / tileHeight;
+            if (lat >= levelMinLat && lat <= levelMaxLat) {
+                double t = (lat + 90) / 180;
+                double v = levelHeight * WWMath.clamp(t, tMin, tMax); // clamp the vertical coordinate to the level edge
+                float b = (float) WWMath.fract(v - 0.5);
+                int j0 = (int) WWMath.clamp(Math.floor(v - 0.5), 0, levelHeight - 1);
+                int j1 = (int) WWMath.clamp(j0 + 1, 0, levelHeight - 1);
+                int row0 = j0 / tileHeight;
+                int row1 = j1 / tileHeight;
 
-            double lon = gridSector.minLongitude();
-            double deltaLon = gridSector.deltaLongitude() / (gridWidth - 1);
-            for (int uidx = 0; uidx < gridWidth; uidx++, lon += deltaLon) {
-                if (lon < levelMinLon || lon > levelMaxLon) {
-                    continue;
+                double lon = gridSector.minLongitude();
+                double deltaLon = gridSector.deltaLongitude() / (gridWidth - 1);
+                for (int uidx = 0; uidx < gridWidth; uidx++, lon += deltaLon) {
+                    if (uidx == gridWidth - 1) {
+                        lon = gridSector.maxLongitude(); // explicitly set the last lon to the max longitude to ensure alignment
+                    }
+
+                    if (lon >= levelMinLon && lon <= levelMaxLon) {
+                        double s = (lon + 180) / 360;
+                        double u = levelWidth * WWMath.fract(s); // wrap the horizontal coordinate
+                        float a = (float) WWMath.fract(u - 0.5);
+                        int i0 = WWMath.mod((int) Math.floor(u - 0.5), levelWidth);
+                        int i1 = WWMath.mod((i0 + 1), levelWidth);
+                        int col0 = i0 / tileWidth;
+                        int col1 = i1 / tileWidth;
+
+                        float i0j0 = tileBlock.readTexel(row0, col0, i0 % tileWidth, j0 % tileHeight);
+                        float i1j0 = tileBlock.readTexel(row0, col1, i1 % tileWidth, j0 % tileHeight);
+                        float i0j1 = tileBlock.readTexel(row1, col0, i0 % tileWidth, j1 % tileHeight);
+                        float i1j1 = tileBlock.readTexel(row1, col1, i1 % tileWidth, j1 % tileHeight);
+
+                        result[index++] = (1 - a) * (1 - b) * i0j0 +
+                            a * (1 - b) * i1j0 +
+                            (1 - a) * b * i0j1 +
+                            a * b * i1j1;
+                    }
                 }
-
-                double s = (lon + 180) / 360;
-                double u = levelWidth * WWMath.fract(s); // wrap the horizontal coordinate
-                float a = (float) WWMath.fract(u - 0.5);
-                int i0 = WWMath.mod((int) Math.floor(u - 0.5), levelWidth);
-                int i1 = WWMath.mod((i0 + 1), levelWidth);
-                int col0 = i0 / tileWidth;
-                int col1 = i1 / tileWidth;
-
-                float i0j0 = tileBlock.readTexel(row0, col0, i0 % tileWidth, j0 % tileHeight);
-                float i1j0 = tileBlock.readTexel(row0, col1, i1 % tileWidth, j0 % tileHeight);
-                float i0j1 = tileBlock.readTexel(row1, col0, i0 % tileWidth, j1 % tileHeight);
-                float i1j1 = tileBlock.readTexel(row1, col1, i1 % tileWidth, j1 % tileHeight);
-
-                result[index++] = (1 - a) * (1 - b) * i0j0 +
-                    a * (1 - b) * i1j0 +
-                    (1 - a) * b * i0j1 +
-                    a * b * i1j1;
             }
         }
     }
