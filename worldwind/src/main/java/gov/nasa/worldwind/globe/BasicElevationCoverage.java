@@ -5,11 +5,8 @@
 
 package gov.nasa.worldwind.globe;
 
-import gov.nasa.worldwind.ogc.WmsLayerConfig;
-import gov.nasa.worldwind.ogc.WmsTileFactory;
-import gov.nasa.worldwind.util.LevelSet;
-import gov.nasa.worldwind.util.LevelSetConfig;
-import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.ogc.WmsElevationCoverage;
 
 /**
  * Displays NASA's global elevation coverage at 10m resolution within the continental United States, 30m resolution in
@@ -17,7 +14,7 @@ import gov.nasa.worldwind.util.Logger;
  * BasicElevationCoverage is configured to retrieve elevation coverage from the WMS at <a
  * href="https://worldwind26.arc.nasa.gov/wms?SERVICE=WMS&REQUEST=GetCapabilities">https://worldwind26.arc.nasa.gov/wms</a>.
  */
-public class BasicElevationCoverage extends TiledElevationCoverage {
+public class BasicElevationCoverage extends WmsElevationCoverage {
 
     /**
      * Constructs a global elevation coverage with the WMS at https://worldwind26.arc.nasa.gov/wms.
@@ -34,19 +31,6 @@ public class BasicElevationCoverage extends TiledElevationCoverage {
      * @throws IllegalArgumentException If the service address is null
      */
     public BasicElevationCoverage(String serviceAddress) {
-        if (serviceAddress == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicElevationCoverage", "constructor", "missingServiceAddress"));
-        }
-
-        LevelSetConfig levelSetConfig = new LevelSetConfig();
-        levelSetConfig.numLevels = 13;
-        this.setLevelSet(new LevelSet(levelSetConfig));
-
-        WmsLayerConfig layerConfig = new WmsLayerConfig();
-        layerConfig.serviceAddress = serviceAddress;
-        layerConfig.layerNames = "GEBCO,aster_v2,USGS-NED";
-        layerConfig.imageFormat = "application/bil16";
-        this.setTileFactory(new WmsTileFactory(layerConfig));
+        super(new Sector().setFullSphere(), 13, serviceAddress, "GEBCO,aster_v2,USGS-NED");
     }
 }

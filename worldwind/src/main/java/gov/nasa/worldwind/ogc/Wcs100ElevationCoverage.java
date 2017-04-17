@@ -8,30 +8,41 @@ package gov.nasa.worldwind.ogc;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globe.TiledElevationCoverage;
 import gov.nasa.worldwind.util.LevelSet;
+import gov.nasa.worldwind.util.LevelSetConfig;
 import gov.nasa.worldwind.util.Logger;
 
 /**
- * Generates terrain from OGC Web Coverage Service (WCS) version 1.0.0.
+ * Generates elevations from OGC Web Coverage Service (WCS) version 1.0.0.
  * <p/>
- * Wcs100ElevationCoverage requires the service address, coverage name, and bounding sector of the coverage. Get
- * Coverage requests generated for retrieving data will use the WCS version 1.0.0 specification and be limited to the
- * "image/tiff" format and EPSG:4326 coordinate system. Wcs100ElevationCoverage does not conduct and version, coordinate
- * system, or version coordination and assumes the server will support parameters detailed here.
+ * Wcs100ElevationCoverage requires the WCS service address, coverage name, and coverage bounding sector. Get Coverage
+ * requests generated for retrieving data use the WCS version 1.0.0 protocol and are limited to the "image/tiff" format
+ * and the EPSG:4326 coordinate system. Wcs100ElevationCoverage does not perform version negotation and assumes the
+ * service supports the format and coordinate system parameters detailed here.
  */
 public class Wcs100ElevationCoverage extends TiledElevationCoverage {
 
     /**
-     * Constructs a WCS Elevation Coverage given the provided sector, number of levels, service address, and coverage
-     * name.
+     * Constructs a Web Coverage Service (WCS) elevation coverage with specified WCS configuration values.
      *
-     * @param sector         the coverage bounding sector
-     * @param numLevels      the number of levels
+     * @param sector         the coverage's geographic bounding sector
+     * @param numLevels      the number of levels of elevations to generate, beginning with 2-by-4 geographic grid of
+     *                       90-degree tiles containing 256x256 elevation pixels
      * @param serviceAddress the WCS service address
-     * @param coverage       the coverage name
+     * @param coverage       the WCS coverage name
      *
-     * @throws IllegalArgumentException If any argument is null or the number of levels is less than 0.
+     * @throws IllegalArgumentException If any argument is null or if the number of levels is less than 0
      */
     public Wcs100ElevationCoverage(Sector sector, int numLevels, String serviceAddress, String coverage) {
+        if (sector == null) {
+            throw new IllegalArgumentException(
+                Logger.makeMessage("Wcs100ElevationCoverage", "constructor", "missingSector"));
+        }
+
+        if (numLevels < 0) {
+            throw new IllegalArgumentException(
+                Logger.makeMessage("Wcs100ElevationCoverage", "constructor", "invalidNumLevels"));
+        }
+
         if (serviceAddress == null) {
             throw new IllegalArgumentException(
                 Logger.makeMessage("Wcs100ElevationCoverage", "constructor", "missingServiceAddress"));
@@ -39,21 +50,13 @@ public class Wcs100ElevationCoverage extends TiledElevationCoverage {
 
         if (coverage == null) {
             throw new IllegalArgumentException(
-                Logger.makeMessage("Wcs100ElevationCoverage", "constructor", "The coverage is null"));
+                Logger.makeMessage("Wcs100ElevationCoverage", "constructor", "missingCoverage"));
         }
 
-        if (sector == null) {
-            throw new IllegalArgumentException(
-                Logger.makeMessage("Wcs100ElevationCoverage", "constructor", "The sector is null"));
-        }
-
-        if (numLevels < 0) {
-            throw new IllegalArgumentException(
-                Logger.makeMessage("Wcs100ElevationCoverage", "constructor", "The number of levels must be greater than 0"));
-        }
-
-        LevelSet levelSet = new LevelSet(sector, 90.0, numLevels, 256, 256);
-        this.setLevelSet(levelSet);
+        LevelSetConfig levelSetConfig = new LevelSetConfig();
+        levelSetConfig.sector.set(sector);
+        levelSetConfig.numLevels = numLevels;
+        this.setLevelSet(new LevelSet(levelSetConfig));
 
         this.setTileFactory(new Wcs100TileFactory(serviceAddress, coverage));
     }
