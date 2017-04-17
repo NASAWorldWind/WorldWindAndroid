@@ -190,31 +190,8 @@ public class BasicTessellator implements Tessellator, TileFactory {
             Vec3 origin = tile.getOrigin();
             float[] heights = tile.getHeights();
 
-            // determine the border height by scanning the top, bottom, left, and right edges ot the tile heights array
-            float borderHeight = 0f;
-            // top and bottom
-            for (int i = 0; i < tileWidth; i++) {
-                int bottom = i + tileWidth * (tileHeight - 1);
-                if (heights[i] < borderHeight) {
-                    borderHeight = heights[i];
-                }
-                if (heights[bottom] < borderHeight) {
-                    borderHeight = heights[bottom];
-                }
-            }
-            // left and right
-            for (int i = 1; i < (tileHeight - 1); i++) {
-                int left = i * tileWidth;
-                int right = left + tileWidth - 1;
-                if (heights[left] < borderHeight) {
-                    borderHeight = heights[left];
-                }
-                if (heights[right] < borderHeight) {
-                    borderHeight = heights[right];
-                }
-            }
             // adjust for vertical exaggeration
-            borderHeight = (float) (borderHeight * verticalExaggeration);
+            float borderHeight = (float) (tile.minTerrainElevation * verticalExaggeration);
 
             float[] points = tile.getPoints();
             if (points == null) {
