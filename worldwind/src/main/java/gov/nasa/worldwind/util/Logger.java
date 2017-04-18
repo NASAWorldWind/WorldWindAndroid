@@ -90,6 +90,7 @@ public class Logger {
         messageTable.put("missingSource", "The source is null");
         messageTable.put("missingTile", "The tile is null");
         messageTable.put("missingTileFactory", "The tile factory is null");
+        messageTable.put("missingTileMatrixSet", "The tile matrix set is null");
         messageTable.put("missingTileUrlFactory", "The tile url factory is null");
         messageTable.put("missingTypeface", "The typeface is null");
         messageTable.put("missingUrl", "The url is null");
