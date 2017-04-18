@@ -154,6 +154,8 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         double matrixMaxLon = tileMatrix.sector.maxLongitude();
         double matrixDeltaLat = tileMatrix.sector.deltaLatitude();
         double matrixDeltaLon = tileMatrix.sector.deltaLongitude();
+        double sMin = 1.0 / (2.0 * rasterWidth);
+        double sMax = 1.0 - sMin;
         double tMin = 1.0 / (2.0 * rasterHeight);
         double tMax = 1.0 - tMin;
 
@@ -169,9 +171,17 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
 
             if (matrixMinLon <= lon && lon <= matrixMaxLon) {
                 double s = (lon - matrixMinLon) / matrixDeltaLon;
-                double u = rasterWidth * WWMath.fract(s); // wrap the horizontal coordinate
-                int i0 = WWMath.mod((int) Math.floor(u - 0.5), rasterWidth);
-                int i1 = WWMath.mod((i0 + 1), rasterWidth);
+                double u;
+                int i0, i1;
+                if (tileMatrix.sector.isFullSphere()) {
+                    u = rasterWidth * WWMath.fract(s); // wrap the horizontal coordinate
+                    i0 = WWMath.mod((int) Math.floor(u - 0.5), rasterWidth);
+                    i1 = WWMath.mod((i0 + 1), rasterWidth);
+                } else {
+                    u = rasterWidth * WWMath.clamp(s, sMin, sMax); // clamp the horizontal coordinate
+                    i0 = (int) WWMath.clamp((int) Math.floor(u - 0.5), 0, rasterWidth - 1);
+                    i1 = (int) WWMath.clamp((i0 + 1), 0, rasterWidth - 1);
+                }
                 int col0 = i0 / tileWidth;
                 int col1 = i1 / tileWidth;
                 result.cols.append(col0, 0);
@@ -301,6 +311,8 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         double matrixMaxLon = tileBlock.tileMatrix.sector.maxLongitude();
         double matrixDeltaLat = tileBlock.tileMatrix.sector.deltaLatitude();
         double matrixDeltaLon = tileBlock.tileMatrix.sector.deltaLongitude();
+        double sMin = 1.0 / (2.0 * rasterWidth);
+        double sMax = 1.0 - sMin;
         double tMin = 1.0 / (2.0 * rasterHeight);
         double tMax = 1.0 - tMin;
         int ridx = 0;
@@ -328,10 +340,18 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
                 }
 
                 double s = (lon - matrixMinLon) / matrixDeltaLon;
-                double u = rasterWidth * WWMath.fract(s); // wrap the horizontal coordinate
+                double u;
+                int i0, i1;
+                if (tileBlock.tileMatrix.sector.isFullSphere()) {
+                    u = rasterWidth * WWMath.fract(s); // wrap the horizontal coordinate
+                    i0 = WWMath.mod((int) Math.floor(u - 0.5), rasterWidth);
+                    i1 = WWMath.mod((i0 + 1), rasterWidth);
+                } else {
+                    u = rasterWidth * WWMath.clamp(s, sMin, sMax); // clamp the horizontal coordinate
+                    i0 = (int) WWMath.clamp((int) Math.floor(u - 0.5), 0, rasterWidth - 1);
+                    i1 = (int) WWMath.clamp((i0 + 1), 0, rasterWidth - 1);
+                }
                 float a = (float) WWMath.fract(u - 0.5);
-                int i0 = WWMath.mod((int) Math.floor(u - 0.5), rasterWidth);
-                int i1 = WWMath.mod((i0 + 1), rasterWidth);
                 int col0 = i0 / tileWidth;
                 int col1 = i1 / tileWidth;
 
