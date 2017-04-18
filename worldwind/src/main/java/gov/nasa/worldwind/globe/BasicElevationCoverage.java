@@ -42,8 +42,8 @@ public class BasicElevationCoverage extends TiledElevationCoverage {
         }
 
         Sector sector = new Sector().setFullSphere();
-        int matrixWidth = 2;
-        int matrixHeight = 1;
+        int matrixWidth = 4; // 4x2 top level matrix equivalent to 90 degree top level tiles
+        int matrixHeight = 2;
         int tileWidth = 256;
         int tileHeight = 256;
         int numLevels = 13;
