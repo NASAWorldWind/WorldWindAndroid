@@ -6,8 +6,8 @@
 package gov.nasa.worldwind.ogc;
 
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.TileMatrixSet;
 import gov.nasa.worldwind.globe.TiledElevationCoverage;
-import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -52,9 +52,12 @@ public class Wcs100ElevationCoverage extends TiledElevationCoverage {
                 Logger.makeMessage("Wcs100ElevationCoverage", "constructor", "The number of levels must be greater than 0"));
         }
 
-        LevelSet levelSet = new LevelSet(sector, 90.0, numLevels, 256, 256);
-        this.setLevelSet(levelSet);
+        int matrixWidth = sector.isFullSphere() ? 2 : 1;
+        int matrixHeight = 1;
+        int tileWidth = 256;
+        int tileHeight = 256;
 
+        this.setTileMatrixSet(new TileMatrixSet(sector, matrixWidth, matrixHeight, tileWidth, tileHeight, numLevels));
         this.setTileFactory(new Wcs100TileFactory(serviceAddress, coverage));
     }
 }

@@ -6,17 +6,15 @@
 package gov.nasa.worldwind.ogc;
 
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.TileMatrix;
+import gov.nasa.worldwind.globe.TiledElevationCoverage;
 import gov.nasa.worldwind.render.ImageSource;
-import gov.nasa.worldwind.render.ImageTile;
-import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.Logger;
-import gov.nasa.worldwind.util.Tile;
-import gov.nasa.worldwind.util.TileFactory;
 
 /**
  * Factory for constructing WCS version 1.0.0 URLs associated with WCS Get Coverage requests.
  */
-public class Wcs100TileFactory implements TileFactory {
+public class Wcs100TileFactory implements TiledElevationCoverage.TileFactory {
 
     /**
      * The WCS service address use to build Get Coverage URLs.
@@ -104,19 +102,14 @@ public class Wcs100TileFactory implements TileFactory {
     }
 
     @Override
-    public Tile createTile(Sector sector, Level level, int row, int column) {
-        ImageTile tile = new ImageTile(sector, level, row, column);
-
-        String urlString = this.urlForTile(sector, level);
-        if (urlString != null) {
-            tile.setImageSource(ImageSource.fromUrl(urlString));
-        }
-
-        return tile;
+    public ImageSource createTileSource(TileMatrix tileMatrix, int row, int column) {
+        String urlString = this.urlForTile(tileMatrix, row, column);
+        return ImageSource.fromUrl(urlString);
     }
 
-    protected String urlForTile(Sector sector, Level level) {
+    protected String urlForTile(TileMatrix tileMatrix, int row, int col) {
         StringBuilder url = new StringBuilder(this.serviceAddress);
+        Sector sector = tileMatrix.tileSector(row, col);
 
         int index = url.indexOf("?");
         if (index < 0) { // if service address contains no query delimiter
@@ -130,8 +123,8 @@ public class Wcs100TileFactory implements TileFactory {
 
         url.append("SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=").append(this.coverage).append("&");
         url.append("CRS=EPSG:4326&FORMAT=image/tiff&");
-        url.append("WIDTH=").append(level.tileWidth).append("&");
-        url.append("HEIGHT=").append(level.tileHeight).append("&");
+        url.append("WIDTH=").append(tileMatrix.tileWidth).append("&");
+        url.append("HEIGHT=").append(tileMatrix.tileHeight).append("&");
         url.append("BBOX=").append(sector.minLongitude()).append(",").append(sector.minLatitude()).append(",");
         url.append(sector.maxLongitude()).append(",").append(sector.maxLatitude());
 
