@@ -167,7 +167,7 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
                 lon = gridSector.maxLongitude(); // explicitly set the last lon to the max longitude to ensure alignment
             }
 
-            if (lon >= matrixMinLon && lon <= matrixMaxLon) {
+            if (matrixMinLon <= lon && lon <= matrixMaxLon) {
                 double s = (lon - matrixMinLon) / matrixDeltaLon;
                 double u = rasterWidth * WWMath.fract(s); // wrap the horizontal coordinate
                 int i0 = WWMath.mod((int) Math.floor(u - 0.5), rasterWidth);
@@ -186,7 +186,7 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
                 lat = gridSector.maxLatitude(); // explicitly set the last lat to the max latitude to ensure alignment
             }
 
-            if (lat >= matrixMinLat && lat <= matrixMaxLat) {
+            if (matrixMinLat <= lat && lat <= matrixMaxLat) {
                 double t = (matrixMaxLat - lat) / matrixDeltaLat;
                 double v = rasterHeight * WWMath.clamp(t, tMin, tMax); // clamp the vertical coordinate to the raster edge
                 int j0 = (int) WWMath.clamp(Math.floor(v - 0.5), 0, rasterHeight - 1);
@@ -303,51 +303,53 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         double matrixDeltaLon = tileBlock.tileMatrix.sector.deltaLongitude();
         double tMin = 1.0 / (2.0 * rasterHeight);
         double tMax = 1.0 - tMin;
-        int index = 0;
+        int ridx = 0;
 
         double lat = gridSector.minLatitude();
         double deltaLat = gridSector.deltaLatitude() / (gridHeight - 1);
-        for (int vidx = 0; vidx < gridHeight; vidx++, lat += deltaLat) {
-            if (vidx == gridHeight - 1) {
+        for (int hidx = 0; hidx < gridHeight; hidx++, lat += deltaLat) {
+            if (hidx == gridHeight - 1) {
                 lat = gridSector.maxLatitude(); // explicitly set the last lat to the max latitude to ensure alignment
             }
 
-            if (lat >= matrixMinLat && lat <= matrixMaxLat) {
-                double t = (matrixMaxLat - lat) / matrixDeltaLat;
-                double v = rasterHeight * WWMath.clamp(t, tMin, tMax); // clamp the vertical coordinate to the raster edge
-                float b = (float) WWMath.fract(v - 0.5);
-                int j0 = (int) WWMath.clamp(Math.floor(v - 0.5), 0, rasterHeight - 1);
-                int j1 = (int) WWMath.clamp(j0 + 1, 0, rasterHeight - 1);
-                int row0 = j0 / tileHeight;
-                int row1 = j1 / tileHeight;
+            double t = (matrixMaxLat - lat) / matrixDeltaLat;
+            double v = rasterHeight * WWMath.clamp(t, tMin, tMax); // clamp the vertical coordinate to the raster edge
+            float b = (float) WWMath.fract(v - 0.5);
+            int j0 = (int) WWMath.clamp(Math.floor(v - 0.5), 0, rasterHeight - 1);
+            int j1 = (int) WWMath.clamp(j0 + 1, 0, rasterHeight - 1);
+            int row0 = j0 / tileHeight;
+            int row1 = j1 / tileHeight;
 
-                double lon = gridSector.minLongitude();
-                double deltaLon = gridSector.deltaLongitude() / (gridWidth - 1);
-                for (int uidx = 0; uidx < gridWidth; uidx++, lon += deltaLon) {
-                    if (uidx == gridWidth - 1) {
-                        lon = gridSector.maxLongitude(); // explicitly set the last lon to the max longitude to ensure alignment
-                    }
-
-                    if (lon >= matrixMinLon && lon <= matrixMaxLon) {
-                        double s = (lon - matrixMinLon) / matrixDeltaLon;
-                        double u = rasterWidth * WWMath.fract(s); // wrap the horizontal coordinate
-                        float a = (float) WWMath.fract(u - 0.5);
-                        int i0 = WWMath.mod((int) Math.floor(u - 0.5), rasterWidth);
-                        int i1 = WWMath.mod((i0 + 1), rasterWidth);
-                        int col0 = i0 / tileWidth;
-                        int col1 = i1 / tileWidth;
-
-                        float i0j0 = tileBlock.readTexel(row0, col0, i0 % tileWidth, j0 % tileHeight);
-                        float i1j0 = tileBlock.readTexel(row0, col1, i1 % tileWidth, j0 % tileHeight);
-                        float i0j1 = tileBlock.readTexel(row1, col0, i0 % tileWidth, j1 % tileHeight);
-                        float i1j1 = tileBlock.readTexel(row1, col1, i1 % tileWidth, j1 % tileHeight);
-
-                        result[index++] = (1 - a) * (1 - b) * i0j0 +
-                            a * (1 - b) * i1j0 +
-                            (1 - a) * b * i0j1 +
-                            a * b * i1j1;
-                    }
+            double lon = gridSector.minLongitude();
+            double deltaLon = gridSector.deltaLongitude() / (gridWidth - 1);
+            for (int widx = 0; widx < gridWidth; widx++, lon += deltaLon) {
+                if (widx == gridWidth - 1) {
+                    lon = gridSector.maxLongitude(); // explicitly set the last lon to the max longitude to ensure alignment
                 }
+
+                double s = (lon - matrixMinLon) / matrixDeltaLon;
+                double u = rasterWidth * WWMath.fract(s); // wrap the horizontal coordinate
+                float a = (float) WWMath.fract(u - 0.5);
+                int i0 = WWMath.mod((int) Math.floor(u - 0.5), rasterWidth);
+                int i1 = WWMath.mod((i0 + 1), rasterWidth);
+                int col0 = i0 / tileWidth;
+                int col1 = i1 / tileWidth;
+
+                if (matrixMinLat <= lat && lat <= matrixMaxLat &&
+                    matrixMinLon <= lon && lon <= matrixMaxLon) {
+
+                    short i0j0 = tileBlock.readTexel(row0, col0, i0 % tileWidth, j0 % tileHeight);
+                    short i1j0 = tileBlock.readTexel(row0, col1, i1 % tileWidth, j0 % tileHeight);
+                    short i0j1 = tileBlock.readTexel(row1, col0, i0 % tileWidth, j1 % tileHeight);
+                    short i1j1 = tileBlock.readTexel(row1, col1, i1 % tileWidth, j1 % tileHeight);
+
+                    result[ridx] = (1 - a) * (1 - b) * i0j0 +
+                        a * (1 - b) * i1j0 +
+                        (1 - a) * b * i0j1 +
+                        a * b * i1j1;
+                }
+
+                ridx++;
             }
         }
     }
@@ -492,7 +494,7 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
             return this.texelArray;
         }
 
-        public float readTexel(int row, int column, int i, int j) {
+        public short readTexel(int row, int column, int i, int j) {
             short[] array = this.getTileArray(row, column);
             int pos = i + j * this.tileMatrix.tileWidth;
             return array[pos];
