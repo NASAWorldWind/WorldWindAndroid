@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.ogc;
 
+import java.util.Locale;
+
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.TileMatrix;
 import gov.nasa.worldwind.globe.TiledElevationCoverage;
@@ -135,8 +137,8 @@ public class Wcs100TileFactory implements TiledElevationCoverage.TileFactory {
             .append(sector.minLatitude()).append(",")
             .append(sector.maxLongitude()).append(",")
             .append(sector.maxLatitude());
-        url.append("&WIDTH=").append(width);
-        url.append("&HEIGHT=").append(height);
+        url.append("&WIDTH=").append(tileMatrix.tileWidth);
+        url.append("&HEIGHT=").append(tileMatrix.tileHeight);
         url.append("&FORMAT=image/tiff");
 
         return url.toString();
