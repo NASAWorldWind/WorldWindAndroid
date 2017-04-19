@@ -8,8 +8,6 @@ package gov.nasa.worldwind.ogc;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.TileMatrixSet;
 import gov.nasa.worldwind.globe.TiledElevationCoverage;
-import gov.nasa.worldwind.util.LevelSet;
-import gov.nasa.worldwind.util.LevelSetConfig;
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -52,11 +50,6 @@ public class Wcs100ElevationCoverage extends TiledElevationCoverage {
         if (coverage == null) {
             throw new IllegalArgumentException(
                 Logger.makeMessage("Wcs100ElevationCoverage", "constructor", "missingCoverage"));
-        }
-
-        if (sector == null) {
-            throw new IllegalArgumentException(
-                Logger.makeMessage("Wcs100ElevationCoverage", "constructor", "The sector is null"));
         }
 
         if (numLevels < 0) {
