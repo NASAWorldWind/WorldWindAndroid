@@ -22,7 +22,7 @@ public class Wcs100TileFactory implements TiledElevationCoverage.TileFactory {
     protected String serviceAddress;
 
     /**
-     * The coverage name of the desired WCS data.
+     * The coverage name of the desired WCS coverage.
      */
     protected String coverage;
 
@@ -44,7 +44,7 @@ public class Wcs100TileFactory implements TiledElevationCoverage.TileFactory {
 
         if (coverage == null) {
             throw new IllegalArgumentException(
-                Logger.makeMessage("Wcs100TileFactory", "constructor", "The coverage is null"));
+                Logger.makeMessage("Wcs100TileFactory", "constructor", "missingCoverage"));
         }
 
         this.serviceAddress = serviceAddress;
@@ -95,7 +95,7 @@ public class Wcs100TileFactory implements TiledElevationCoverage.TileFactory {
     public void setCoverage(String coverage) {
         if (coverage == null) {
             throw new IllegalArgumentException(
-                Logger.makeMessage("Wcs100TileFactory", "constructor", "The coverage is null"));
+                Logger.makeMessage("Wcs100TileFactory", "setCoverage", "missingCoverage"));
         }
 
         this.coverage = coverage;
@@ -121,12 +121,23 @@ public class Wcs100TileFactory implements TiledElevationCoverage.TileFactory {
             }
         }
 
-        url.append("SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=").append(this.coverage).append("&");
-        url.append("CRS=EPSG:4326&FORMAT=image/tiff&");
-        url.append("WIDTH=").append(tileMatrix.tileWidth).append("&");
-        url.append("HEIGHT=").append(tileMatrix.tileHeight).append("&");
-        url.append("BBOX=").append(sector.minLongitude()).append(",").append(sector.minLatitude()).append(",");
-        url.append(sector.maxLongitude()).append(",").append(sector.maxLatitude());
+        index = this.serviceAddress.toUpperCase(Locale.US).indexOf("SERVICE=WCS");
+        if (index < 0) {
+            url.append("SERVICE=WCS");
+        }
+
+        url.append("&VERSION=1.0.0");
+        url.append("&REQUEST=GetCoverage");
+        url.append("&COVERAGE=").append(this.coverage);
+        url.append("&CRS=EPSG:4326");
+        url.append("&BBOX=")
+            .append(sector.minLongitude()).append(",")
+            .append(sector.minLatitude()).append(",")
+            .append(sector.maxLongitude()).append(",")
+            .append(sector.maxLatitude());
+        url.append("&WIDTH=").append(width);
+        url.append("&HEIGHT=").append(height);
+        url.append("&FORMAT=image/tiff");
 
         return url.toString();
     }
