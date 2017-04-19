@@ -3,7 +3,11 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
 precision mediump float;
+#endif
 
 uniform bool enablePickMode;
 uniform bool enableTexture;
@@ -16,8 +20,8 @@ varying vec2 tileCoord;
 void main() {
     /* Using the second texture coordinate, compute a mask that's 1.0 when the fragment is inside the surface tile, and
        0.0 otherwise. */
-    float sMask = step(0.0, tileCoord.s) * (1.0 - step(1.0, tileCoord.s));
-    float tMask = step(0.0, tileCoord.t) * (1.0 - step(1.0, tileCoord.t));
+    float sMask = step(0.0, tileCoord.s) * step(0.0, 1.0 - tileCoord.s);
+    float tMask = step(0.0, tileCoord.t) * step(0.0, 1.0 - tileCoord.t);
     float tileMask = sMask * tMask;
 
     if (enablePickMode && enableTexture) {

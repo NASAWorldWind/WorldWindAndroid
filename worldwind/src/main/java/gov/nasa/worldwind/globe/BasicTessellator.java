@@ -277,11 +277,11 @@ public class BasicTessellator implements Tessellator, TileFactory {
         float dt = 1f / (numLat > 1 ? numLat - 3 : 1);
         float s = 0;
         float t = 0;
-        int sidx, tidx, resultIdx = 0;
+        int ridx = 0;
 
         // Iterate over the number of latitude and longitude vertices, computing the parameterized S and T coordinates
         // corresponding to each vertex.
-        for (tidx = 0; tidx < numLat; tidx++) {
+        for (int tidx = 0; tidx < numLat; tidx++) {
             if (tidx < 2) {
                 t = 0; // explicitly set the first T coordinate to 0 to ensure alignment
             } else if (tidx < numLat - 2) {
@@ -290,7 +290,7 @@ public class BasicTessellator implements Tessellator, TileFactory {
                 t = 1; // explicitly set the last T coordinate to 1 to ensure alignment
             }
 
-            for (sidx = 0; sidx < numLon; sidx++) {
+            for (int sidx = 0; sidx < numLon; sidx++) {
                 if (sidx < 2) {
                     s = 0; // explicitly set the first S coordinate to 0 to ensure alignment
                 } else if (sidx < numLon - 2) {
@@ -299,8 +299,8 @@ public class BasicTessellator implements Tessellator, TileFactory {
                     s = 1; // explicitly set the last S coordinate to 1 to ensure alignment
                 }
 
-                result[resultIdx++] = s;
-                result[resultIdx++] = t;
+                result[ridx++] = s;
+                result[ridx++] = t;
             }
         }
 

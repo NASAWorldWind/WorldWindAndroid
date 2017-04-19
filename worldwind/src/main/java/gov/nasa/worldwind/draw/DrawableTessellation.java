@@ -66,6 +66,9 @@ public class DrawableTessellation implements Drawable {
             return; // program unspecified or failed to build
         }
 
+        // Use the draw context's pick mode.
+        this.program.enablePickMode(dc.pickMode);
+
         // Configure the program to draw the specified color.
         this.program.enableTexture(false);
         this.program.loadColor(this.color);
