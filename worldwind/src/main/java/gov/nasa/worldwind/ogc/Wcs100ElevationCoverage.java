@@ -62,7 +62,7 @@ public class Wcs100ElevationCoverage extends TiledElevationCoverage {
         int tileWidth = 256;
         int tileHeight = 256;
 
-        this.setTileMatrixSet(new TileMatrixSet(sector, matrixWidth, matrixHeight, tileWidth, tileHeight, numLevels));
+        this.setTileMatrixSet(TileMatrixSet.fromTilePyramid(sector, matrixWidth, matrixHeight, tileWidth, tileHeight, numLevels));
         this.setTileFactory(new Wcs100TileFactory(serviceAddress, coverage));
     }
 }

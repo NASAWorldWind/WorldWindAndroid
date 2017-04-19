@@ -19,20 +19,18 @@ public class TileMatrix {
 
     public int tileHeight;
 
-    public double pixelSpanX;
-
-    public double pixelSpanY;
-
     public TileMatrix() {
     }
 
+    public double degreesPerPixel() {
+        return this.sector.deltaLatitude() / (this.matrixHeight * this.tileHeight);
+    }
+
     public Sector tileSector(int row, int column) {
-        double matrixMinLat = this.sector.maxLatitude();
-        double matrixMinLon = this.sector.minLongitude();
-        double deltaLat = this.tileHeight * this.pixelSpanY;
-        double deltaLon = this.tileWidth * this.pixelSpanX;
-        double minLat = matrixMinLat - deltaLat * (row + 1);
-        double minLon = matrixMinLon + deltaLon * column;
+        double deltaLat = this.sector.deltaLatitude() / this.matrixHeight;
+        double deltaLon = this.sector.deltaLongitude() / this.matrixWidth;
+        double minLat = this.sector.maxLatitude() - deltaLat * (row + 1);
+        double minLon = this.sector.minLongitude() + deltaLon * column;
 
         return new Sector(minLat, minLon, deltaLat, deltaLon);
     }

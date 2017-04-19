@@ -106,7 +106,7 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         }
 
         double targetPixelSpan = gridSector.deltaLatitude() / gridHeight;
-        int targetIdx = this.tileMatrixSet.indexOfMatrixNearestPixelSpan(targetPixelSpan);
+        int targetIdx = this.tileMatrixSet.indexOfMatrixNearest(targetPixelSpan);
         TileBlock tileBlock = new TileBlock();
 
         for (int idx = targetIdx; idx >= 0; idx--) {
@@ -128,7 +128,7 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         }
 
         double targetPixelSpan = sector.deltaLatitude() / GET_HEIGHT_LIMIT_SAMPLES;
-        int targetIdx = this.tileMatrixSet.indexOfMatrixNearestPixelSpan(targetPixelSpan);
+        int targetIdx = this.tileMatrixSet.indexOfMatrixNearest(targetPixelSpan);
         TileBlock tileBlock = new TileBlock();
 
         for (int idx = targetIdx; idx >= 0; idx--) {

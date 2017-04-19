@@ -47,7 +47,7 @@ public class BasicElevationCoverage extends TiledElevationCoverage {
         int tileWidth = 256;
         int tileHeight = 256;
         int numLevels = 13;
-        this.setTileMatrixSet(new TileMatrixSet(sector, matrixWidth, matrixHeight, tileWidth, tileHeight, numLevels));
+        this.setTileMatrixSet(TileMatrixSet.fromTilePyramid(sector, matrixWidth, matrixHeight, tileWidth, tileHeight, numLevels));
 
         WmsLayerConfig layerConfig = new WmsLayerConfig();
         layerConfig.serviceAddress = serviceAddress;
