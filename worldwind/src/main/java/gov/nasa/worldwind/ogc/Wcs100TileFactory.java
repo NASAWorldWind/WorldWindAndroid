@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.ogc;
 
+import java.util.Locale;
+
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.ImageTile;
@@ -24,7 +26,7 @@ public class Wcs100TileFactory implements TileFactory {
     protected String serviceAddress;
 
     /**
-     * The coverage name of the desired WCS data.
+     * The coverage name of the desired WCS coverage.
      */
     protected String coverage;
 
@@ -46,7 +48,7 @@ public class Wcs100TileFactory implements TileFactory {
 
         if (coverage == null) {
             throw new IllegalArgumentException(
-                Logger.makeMessage("Wcs100TileFactory", "constructor", "The coverage is null"));
+                Logger.makeMessage("Wcs100TileFactory", "constructor", "missingCoverage"));
         }
 
         this.serviceAddress = serviceAddress;
@@ -97,7 +99,7 @@ public class Wcs100TileFactory implements TileFactory {
     public void setCoverage(String coverage) {
         if (coverage == null) {
             throw new IllegalArgumentException(
-                Logger.makeMessage("Wcs100TileFactory", "constructor", "The coverage is null"));
+                Logger.makeMessage("Wcs100TileFactory", "setCoverage", "missingCoverage"));
         }
 
         this.coverage = coverage;
@@ -105,17 +107,35 @@ public class Wcs100TileFactory implements TileFactory {
 
     @Override
     public Tile createTile(Sector sector, Level level, int row, int column) {
+        if (sector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Wcs100TileFactory", "createTile", "missingSector"));
+        }
+
+        if (level == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Wcs100TileFactory", "createTile", "missingLevel"));
+        }
+
         ImageTile tile = new ImageTile(sector, level, row, column);
 
-        String urlString = this.urlForTile(sector, level);
-        if (urlString != null) {
-            tile.setImageSource(ImageSource.fromUrl(urlString));
-        }
+        String urlString = this.urlForTile(sector, level.tileWidth, level.tileHeight);
+        tile.setImageSource(ImageSource.fromUrl(urlString));
 
         return tile;
     }
 
-    protected String urlForTile(Sector sector, Level level) {
+    public String urlForTile(Sector sector, int width, int height) {
+        if (sector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Wcs100TileFactory", "urlForTile", "missingSector"));
+        }
+
+        if (width < 1 || height < 1) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Wcs100TileFactory", "urlForTile", "invalidWidthOrHeight"));
+        }
+
         StringBuilder url = new StringBuilder(this.serviceAddress);
 
         int index = url.indexOf("?");
@@ -128,12 +148,23 @@ public class Wcs100TileFactory implements TileFactory {
             }
         }
 
-        url.append("SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=").append(this.coverage).append("&");
-        url.append("CRS=EPSG:4326&FORMAT=image/tiff&");
-        url.append("WIDTH=").append(level.tileWidth).append("&");
-        url.append("HEIGHT=").append(level.tileHeight).append("&");
-        url.append("BBOX=").append(sector.minLongitude()).append(",").append(sector.minLatitude()).append(",");
-        url.append(sector.maxLongitude()).append(",").append(sector.maxLatitude());
+        index = this.serviceAddress.toUpperCase(Locale.US).indexOf("SERVICE=WCS");
+        if (index < 0) {
+            url.append("SERVICE=WCS");
+        }
+
+        url.append("&VERSION=1.0.0");
+        url.append("&REQUEST=GetCoverage");
+        url.append("&COVERAGE=").append(this.coverage);
+        url.append("&CRS=EPSG:4326");
+        url.append("&BBOX=")
+            .append(sector.minLongitude()).append(",")
+            .append(sector.minLatitude()).append(",")
+            .append(sector.maxLongitude()).append(",")
+            .append(sector.maxLatitude());
+        url.append("&WIDTH=").append(width);
+        url.append("&HEIGHT=").append(height);
+        url.append("&FORMAT=image/tiff");
 
         return url.toString();
     }
