@@ -14,7 +14,6 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 import gov.nasa.worldwind.draw.BasicDrawableTerrain;
 import gov.nasa.worldwind.geom.Range;
@@ -190,10 +189,11 @@ public class BasicTessellator implements Tessellator, TileFactory {
 
             Vec3 origin = tile.getOrigin();
             float[] heights = tile.getHeights();
-            float[] heightLimits = tile.getHeightLimits();
-            float[] points = tile.getPoints();
-            float borderHeight = (float) (heightLimits[0] * verticalExaggeration);
 
+            // adjust for vertical exaggeration
+            float borderHeight = (float) (tile.minTerrainElevation * verticalExaggeration);
+
+            float[] points = tile.getPoints();
             if (points == null) {
                 int numPoints = (tileWidth + 2) * (tileHeight + 2) * 3;
                 points = new float[numPoints];
