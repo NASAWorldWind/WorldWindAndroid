@@ -41,7 +41,7 @@ public class TerrainTile extends Tile {
 
     private String pointBufferKey;
 
-    private long pointSequence;
+    private static long pointBufferSequence; // must be static to avoid cache collisions when a tile instances is destroyed and re-created
 
     /**
      * {@inheritDoc}
@@ -84,7 +84,7 @@ public class TerrainTile extends Tile {
 
     public void setPoints(float[] points) {
         this.points = points;
-        this.pointBufferKey = "TerrainTile.points." + this.tileKey + "." + (this.pointSequence++);
+        this.pointBufferKey = "TerrainTile.points." + this.tileKey + "." + (pointBufferSequence++);
     }
 
     public Vec3 getOrigin() {
