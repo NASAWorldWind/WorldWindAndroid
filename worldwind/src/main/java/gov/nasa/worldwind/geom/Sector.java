@@ -129,6 +129,18 @@ public class Sector {
     }
 
     /**
+     * Indicates whether this sector contains the full range of latitude [90 to +90] and longitude [-180 to +180].
+     *
+     * @return true if this sector's coordinates are set to the full range of latitude and longitude
+     */
+    public boolean isFullSphere() {
+        return this.minLatitude == -90
+            && this.maxLatitude == 90
+            && this.minLongitude == -180
+            && this.maxLongitude == 180;
+    }
+
+    /**
      * Returns the this sector's minimum latitude.
      *
      * @return the minimum latitude of this sector or NaN if this sector's location is nas not been defined.

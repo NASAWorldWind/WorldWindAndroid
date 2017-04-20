@@ -5,18 +5,18 @@
 
 package gov.nasa.worldwind.ogc;
 
+import java.util.Locale;
+
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.TileMatrix;
+import gov.nasa.worldwind.globe.TiledElevationCoverage;
 import gov.nasa.worldwind.render.ImageSource;
-import gov.nasa.worldwind.render.ImageTile;
-import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.Logger;
-import gov.nasa.worldwind.util.Tile;
-import gov.nasa.worldwind.util.TileFactory;
 
 /**
  * Factory for constructing WCS version 1.0.0 URLs associated with WCS Get Coverage requests.
  */
-public class Wcs100TileFactory implements TileFactory {
+public class Wcs100TileFactory implements TiledElevationCoverage.TileFactory {
 
     /**
      * The WCS service address use to build Get Coverage URLs.
@@ -24,7 +24,7 @@ public class Wcs100TileFactory implements TileFactory {
     protected String serviceAddress;
 
     /**
-     * The coverage name of the desired WCS data.
+     * The coverage name of the desired WCS coverage.
      */
     protected String coverage;
 
@@ -46,7 +46,7 @@ public class Wcs100TileFactory implements TileFactory {
 
         if (coverage == null) {
             throw new IllegalArgumentException(
-                Logger.makeMessage("Wcs100TileFactory", "constructor", "The coverage is null"));
+                Logger.makeMessage("Wcs100TileFactory", "constructor", "missingCoverage"));
         }
 
         this.serviceAddress = serviceAddress;
@@ -97,26 +97,21 @@ public class Wcs100TileFactory implements TileFactory {
     public void setCoverage(String coverage) {
         if (coverage == null) {
             throw new IllegalArgumentException(
-                Logger.makeMessage("Wcs100TileFactory", "constructor", "The coverage is null"));
+                Logger.makeMessage("Wcs100TileFactory", "setCoverage", "missingCoverage"));
         }
 
         this.coverage = coverage;
     }
 
     @Override
-    public Tile createTile(Sector sector, Level level, int row, int column) {
-        ImageTile tile = new ImageTile(sector, level, row, column);
-
-        String urlString = this.urlForTile(sector, level);
-        if (urlString != null) {
-            tile.setImageSource(ImageSource.fromUrl(urlString));
-        }
-
-        return tile;
+    public ImageSource createTileSource(TileMatrix tileMatrix, int row, int column) {
+        String urlString = this.urlForTile(tileMatrix, row, column);
+        return ImageSource.fromUrl(urlString);
     }
 
-    protected String urlForTile(Sector sector, Level level) {
+    protected String urlForTile(TileMatrix tileMatrix, int row, int col) {
         StringBuilder url = new StringBuilder(this.serviceAddress);
+        Sector sector = tileMatrix.tileSector(row, col);
 
         int index = url.indexOf("?");
         if (index < 0) { // if service address contains no query delimiter
@@ -128,12 +123,23 @@ public class Wcs100TileFactory implements TileFactory {
             }
         }
 
-        url.append("SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=").append(this.coverage).append("&");
-        url.append("CRS=EPSG:4326&FORMAT=image/tiff&");
-        url.append("WIDTH=").append(level.tileWidth).append("&");
-        url.append("HEIGHT=").append(level.tileHeight).append("&");
-        url.append("BBOX=").append(sector.minLongitude()).append(",").append(sector.minLatitude()).append(",");
-        url.append(sector.maxLongitude()).append(",").append(sector.maxLatitude());
+        index = this.serviceAddress.toUpperCase(Locale.US).indexOf("SERVICE=WCS");
+        if (index < 0) {
+            url.append("SERVICE=WCS");
+        }
+
+        url.append("&VERSION=1.0.0");
+        url.append("&REQUEST=GetCoverage");
+        url.append("&COVERAGE=").append(this.coverage);
+        url.append("&CRS=EPSG:4326");
+        url.append("&BBOX=")
+            .append(sector.minLongitude()).append(",")
+            .append(sector.minLatitude()).append(",")
+            .append(sector.maxLongitude()).append(",")
+            .append(sector.maxLatitude());
+        url.append("&WIDTH=").append(tileMatrix.tileWidth);
+        url.append("&HEIGHT=").append(tileMatrix.tileHeight);
+        url.append("&FORMAT=image/tiff");
 
         return url.toString();
     }
