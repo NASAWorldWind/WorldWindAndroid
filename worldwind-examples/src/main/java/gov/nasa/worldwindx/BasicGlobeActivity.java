@@ -34,6 +34,7 @@ import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
 import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.layer.LayerFactory;
 import gov.nasa.worldwind.layer.LayerList;
+import gov.nasa.worldwind.layer.ShowTessellationLayer;
 import gov.nasa.worldwind.ogc.Wcs100ElevationCoverage;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsLayer;
@@ -45,15 +46,15 @@ import gov.nasa.worldwindx.support.LayerManager;
  */
 public class BasicGlobeActivity extends AbstractMainActivity {
 
-    protected final String WWSK_WMS = "http://10.0.2.2:8080/geoserver/ows";             // WMS on emulator
+    protected final String EMULATOR_WMS = "http://10.0.2.2:8080/geoserver/ows";             // WMS on emulator
 
-    protected final String WWSK_GWC = "http://10.0.2.2:8080/geoserver/gwc/service/wms"; // GeoWebCache (GWC) on emulator
+    protected final String EMULATOR_GWC = "http://10.0.2.2:8080/geoserver/gwc/service/wms"; // GeoWebCache (GWC) on emulator
 
-    protected final String SSGF_WCS = "http://10.0.1.7:8080/geoserver/wcs";             // WCS on device
+    protected final String DEVICE_WCS = "http://10.0.1.7:8080/geoserver/wcs";             // WCS on device
 
-    protected final String SSGF_WMS = "http://10.0.1.7:8080/geoserver/ows";             // WMS on device
+    protected final String DEVICE_WMS = "http://10.0.1.7:8080/geoserver/ows";             // WMS on device
 
-    protected final String SSGF_GWC = "http://10.0.1.7:8080/geoserver/gwc/service/wms"; // GWC on device
+    protected final String DEVICE_GWC = "http://10.0.1.7:8080/geoserver/gwc/service/wms"; // GWC on device
 
     protected final String APACHE_WMS = "http://192.168.1.219:8080/geoserver/ows";             // WMS on apache
 
@@ -65,11 +66,9 @@ public class BasicGlobeActivity extends AbstractMainActivity {
 
     protected final String COBRA_GWC = "http://192.168.1.222:8080/geoserver/gwc/service/wms"; // GeoWebCache (GWC) on emulator
 
-    protected final String TMIS = "http://10.0.1.7:5000/WmsServer";
+    String WCS_SERVER_ADDRESS = COBRA_WCS;
 
-    String WCS_SERVER_ADDRESS = SSGF_WCS;
-
-    String WMS_SERVER_ADDRESS = SSGF_WMS;
+    String WMS_SERVER_ADDRESS = COBRA_WMS;
 
     /**
      * This protected member allows derived classes to override the resource used in setContentView.
@@ -153,12 +152,13 @@ public class BasicGlobeActivity extends AbstractMainActivity {
         // Default base layers
         getLayerManager().addLayer(new BackgroundLayer());
         getLayerManager().addLayer(new BlueMarbleLandsatLayer());
-        getLayerManager().addLayer(new AtmosphereLayer());
+        //getLayerManager().addLayer(new AtmosphereLayer());
+        getLayerManager().addLayer(new ShowTessellationLayer());
         new InitializeWmsLayersTask().execute();
     }
 
     private Sector sectorFromBBox(double minX, double minY, double maxX, double maxY) {
-        return Sector.fromDegrees(minY, minX, maxX - minX, maxY - minY);
+        return Sector.fromDegrees(minY, minX, maxY - minY, maxX - minX);
     }
 
     protected class InitializeWmsLayersTask extends AsyncTask<Void, String, Void> {
