@@ -161,7 +161,7 @@ public class DrawableSurfaceShape implements Drawable {
                         this.drawState.program.enableTexture(false);
                     }
 
-                    GLES20.glVertexAttribPointer(1 /*vertexTexCoord*/, prim.texCoordAttrib.size, GLES20.GL_FLOAT, false, this.drawState.vertexStride, prim.texCoordAttrib.offset);
+                    GLES20.glVertexAttribPointer(1 /*vertexTexCoord*/, prim.texCoordAttrib.size, GLES20.GL_FLOAT, false, shape.drawState.vertexStride, prim.texCoordAttrib.offset);
                     GLES20.glLineWidth(prim.lineWidth);
                     GLES20.glDrawElements(prim.mode, prim.count, prim.type, prim.offset);
                 }
