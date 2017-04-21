@@ -18,14 +18,15 @@
 <p>
     Demonstrates how to add a WCS Elevation coverage.</p>
 <p>
-    This tutorial demonstrates how to add Aster elevation data from a WCS.</p>
+    This tutorial demonstrates how to add ASTER elevation data from a WCS.</p>
 
 <h2>Example</h2>
 <h3>WcsElevationFragment.java</h3>
 <p>
     The WcsElevationFragment class extends the BasicGlobeFragment and overrides the createWorldWindow method. Here we
-    use the Wcs100ElevationCoverage class to load Aster elevation data. Once the coverage is added to the elevation
-    model, the Wcs100ElevationCoverage class will request elevation data via the WCS specification and generate terrain.
+    use the Wcs100ElevationCoverage class to load ASTER elevation data. Once the coverage is added to the elevation
+    model, the Wcs100ElevationCoverage class will request elevation data via the WCS specification and World Wind will
+    generate terrain.
 </p>
 <div style="border-top: 1px solid black; border-bottom: 1px solid black;">
     <textarea id="java-code">

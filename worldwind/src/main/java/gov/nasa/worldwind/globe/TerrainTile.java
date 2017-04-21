@@ -23,6 +23,12 @@ import gov.nasa.worldwind.util.Tile;
  */
 public class TerrainTile extends Tile {
 
+    /**
+     * Minimum elevation value used by the BasicTessellator to determine the terrain mesh edge extension depth (skirt).
+     * This value is scaled by the vertical exaggeration when the terrain is generated.
+     */
+    protected float minTerrainElevation = -Short.MAX_VALUE;
+
     protected float[] heights;
 
     protected float[] points;
@@ -35,7 +41,7 @@ public class TerrainTile extends Tile {
 
     private String pointBufferKey;
 
-    private long pointSequence;
+    private static long pointBufferSequence; // must be static to avoid cache collisions when a tile instances is destroyed and re-created
 
     /**
      * {@inheritDoc}
@@ -78,7 +84,7 @@ public class TerrainTile extends Tile {
 
     public void setPoints(float[] points) {
         this.points = points;
-        this.pointBufferKey = "TerrainTile.points." + this.tileKey + "." + (this.pointSequence++);
+        this.pointBufferKey = "TerrainTile.points." + this.tileKey + "." + (pointBufferSequence++);
     }
 
     public Vec3 getOrigin() {

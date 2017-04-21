@@ -144,49 +144,6 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
         return maxTimestamp;
     }
 
-    public boolean hasCoverage(double latitude, double longitude) {
-        for (int idx = 0, len = this.coverages.size(); idx < len; idx++) {
-            ElevationCoverage coverage = this.coverages.get(idx);
-            if (coverage.hasCoverage(latitude, longitude)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public boolean hasCoverage(Sector sector) {
-        if (sector == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "ElevationModel", "hasCoverage", "missingSector"));
-        }
-
-        for (int idx = 0, len = this.coverages.size(); idx < len; idx++) {
-            ElevationCoverage coverage = this.coverages.get(idx);
-            if (coverage.hasCoverage(sector)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public boolean getHeight(double latitude, double longitude, float[] result) {
-        if (result == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeight", "missingResult"));
-        }
-
-        for (int idx = this.coverages.size() - 1; idx >= 0; idx--) {
-            ElevationCoverage coverage = this.coverages.get(idx);
-            if (coverage.getHeight(latitude, longitude, result)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public void getHeightGrid(Sector gridSector, int gridWidth, int gridHeight, float[] result) {
         if (gridSector == null) {
             throw new IllegalArgumentException(
@@ -198,7 +155,7 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
                 Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeightGrid", "missingResult"));
         }
 
-        for (int idx = 0, len = this.coverages.size(); idx < len; idx++) {
+        for (int idx = 0, len = this.coverages.size(); idx < len; idx++) { // coverages composite from coarse to fine
             ElevationCoverage coverage = this.coverages.get(idx);
             coverage.getHeightGrid(gridSector, gridWidth, gridHeight, result);
         }
@@ -215,7 +172,7 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
                 Logger.logMessage(Logger.ERROR, "ElevationModel", "getHeightLimits", "missingResult"));
         }
 
-        for (int idx = 0, len = this.coverages.size(); idx < len; idx++) {
+        for (int idx = 0, len = this.coverages.size(); idx < len; idx++) { // coverage order is irrelevant
             ElevationCoverage coverage = this.coverages.get(idx);
             coverage.getHeightLimits(sector, result);
         }

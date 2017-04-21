@@ -5,10 +5,12 @@
 
 package gov.nasa.worldwind.globe;
 
+import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.TileMatrix;
+import gov.nasa.worldwind.geom.TileMatrixSet;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwind.ogc.WmsTileFactory;
-import gov.nasa.worldwind.util.LevelSet;
-import gov.nasa.worldwind.util.LevelSetConfig;
+import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -39,14 +41,27 @@ public class BasicElevationCoverage extends TiledElevationCoverage {
                 Logger.logMessage(Logger.ERROR, "BasicElevationCoverage", "constructor", "missingServiceAddress"));
         }
 
-        LevelSetConfig levelSetConfig = new LevelSetConfig();
-        levelSetConfig.numLevels = 13;
-        this.setLevelSet(new LevelSet(levelSetConfig));
+        Sector sector = new Sector().setFullSphere();
+        int matrixWidth = 4; // 4x2 top level matrix equivalent to 90 degree top level tiles
+        int matrixHeight = 2;
+        int tileWidth = 256;
+        int tileHeight = 256;
+        int numLevels = 13;
+        this.setTileMatrixSet(TileMatrixSet.fromTilePyramid(sector, matrixWidth, matrixHeight, tileWidth, tileHeight, numLevels));
 
         WmsLayerConfig layerConfig = new WmsLayerConfig();
         layerConfig.serviceAddress = serviceAddress;
         layerConfig.layerNames = "GEBCO,aster_v2,USGS-NED";
         layerConfig.imageFormat = "application/bil16";
-        this.setTileFactory(new WmsTileFactory(layerConfig));
+        final WmsTileFactory wmsTileFactory = new WmsTileFactory(layerConfig);
+
+        this.setTileFactory(new TiledElevationCoverage.TileFactory() {
+            @Override
+            public ImageSource createTileSource(TileMatrix tileMatrix, int row, int column) {
+                Sector sector = tileMatrix.tileSector(row, column);
+                String urlString = wmsTileFactory.urlForTile(sector, tileMatrix.tileWidth, tileMatrix.tileHeight);
+                return ImageSource.fromUrl(urlString);
+            }
+        });
     }
 }
