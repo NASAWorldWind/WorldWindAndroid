@@ -10,7 +10,6 @@ import android.util.Log;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.layer.LayerFactory;
-import gov.nasa.worldwind.util.Logger;
 
 public class WmsLayerFragment extends BasicGlobeFragment {
 
@@ -31,7 +30,7 @@ public class WmsLayerFragment extends BasicGlobeFragment {
         // Create an OGC Web Map Service (WMS) layer to display the
         // surface temperature layer from NASA's Near Earth Observations WMS.
         layerFactory.createFromWms(
-            "http://neowms.sci.gsfc.nasa.gov/wms/wms", // WMS server URL
+            "https://neo.sci.gsfc.nasa.gov/wms/wms", // WMS server URL
             "MOD_LSTD_CLIM_M",                         // WMS layer name
             new LayerFactory.Callback() {
                 @Override
