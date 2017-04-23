@@ -378,8 +378,14 @@ public class TiffTest {
     @Test
     public void testTileCombination() throws Exception {
         ByteBuffer raw = ByteBuffer.allocate(6912);
+        raw.put((byte) 'M');
+        raw.put((byte) 'M');
+        raw.putShort((short) 42);
         Subfile file = new Subfile();
-        file.buffer = raw;
+        Tiff tiff = new Tiff(raw);
+        raw.clear();
+        tiff.buffer = raw;
+        file.tiff = tiff;
         file.tileWidth = 16;
         file.tileLength = 16;
         file.imageWidth = 40;

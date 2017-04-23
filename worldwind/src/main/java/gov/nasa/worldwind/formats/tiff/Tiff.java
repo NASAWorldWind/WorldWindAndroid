@@ -5,6 +5,10 @@
 
 package gov.nasa.worldwind.formats.tiff;
 
+import android.support.annotation.IntDef;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -13,6 +17,20 @@ import java.util.List;
 import gov.nasa.worldwind.util.Logger;
 
 public class Tiff {
+
+    public static final int UNSIGNED_INT = 1;
+
+    public static final int TWOS_COMP_SIGNED_INT = 2;
+
+    public static final int FLOATING_POINT = 3;
+
+    public static final int UNDEFINED = 4;
+
+    @IntDef({UNSIGNED_INT, TWOS_COMP_SIGNED_INT, FLOATING_POINT, UNDEFINED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SAMPLE_FORMAT {
+
+    }
 
     /**
      * The {@link Subfile} contained within this Tiff.
@@ -36,7 +54,7 @@ public class Tiff {
     }
 
     public ByteBuffer getBuffer() {
-        return this.buffer.duplicate();
+        return this.buffer;
     }
 
     protected void checkAndSetByteOrder() {
@@ -73,7 +91,7 @@ public class Tiff {
 
     protected void parseSubfiles(int offset) {
         this.buffer.position(offset);
-        Subfile ifd = new Subfile(this.buffer, offset);
+        Subfile ifd = new Subfile(this, offset);
         this.subfiles.add(ifd);
 
         // check if there are more IFDs

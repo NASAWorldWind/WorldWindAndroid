@@ -5,10 +5,6 @@
 
 package gov.nasa.worldwind.formats.tiff;
 
-import android.support.annotation.IntDef;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,24 +17,10 @@ import gov.nasa.worldwind.util.Logger;
  */
 public class Subfile {
 
-    public static final int UNSIGNED_INT = 1;
-
-    public static final int TWOS_COMP_SIGNED_INT = 2;
-
-    public static final int FLOATING_POINT = 3;
-
-    public static final int UNDEFINED = 4;
-
-    @IntDef({UNSIGNED_INT, TWOS_COMP_SIGNED_INT, FLOATING_POINT, UNDEFINED})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface SAMPLE_FORMAT {
-
-    }
-
     /**
-     * A {@link ByteBuffer} of the entire Tiff file of which this Subfile is a part of.
+     * The parent Tiff which contains this Subfile.
      */
-    protected ByteBuffer buffer;
+    protected Tiff tiff;
 
     /**
      * The Tiff absolute file offset position of this Subfile.
@@ -112,7 +94,7 @@ public class Subfile {
     protected int tileLength = 0;
 
     // 339
-    protected int[] sampleFormat = {UNSIGNED_INT};
+    protected int[] sampleFormat = {Tiff.UNSIGNED_INT};
 
     /**
      * Empty Subfile constructor. Will not provide parsed default values.
@@ -121,31 +103,31 @@ public class Subfile {
 
     }
 
-    public Subfile(ByteBuffer buffer, int offset) {
-        this.buffer = buffer;
+    public Subfile(Tiff tiff, int offset) {
+        this.tiff = tiff;
         this.offset = offset;
 
-        int entries = Tiff.readWord(this.buffer);
+        int entries = Tiff.readWord(this.tiff.buffer);
 
         for (int i = 0; i < entries; i++) {
             Field field = new Field();
             field.subfile = this;
-            field.offset = this.buffer.position();
-            field.tag = Tiff.readWord(this.buffer);
-            field.type = Type.decode(Tiff.readWord(this.buffer));
-            field.count = Tiff.readLimitedDWord(this.buffer);
+            field.offset = this.tiff.buffer.position();
+            field.tag = Tiff.readWord(this.tiff.buffer);
+            field.type = Type.decode(Tiff.readWord(this.tiff.buffer));
+            field.count = Tiff.readLimitedDWord(this.tiff.buffer);
 
             // Check if the data is available in the last four bytes of the field entry or if we need to read the pointer
             int size = field.count * field.type.getSizeInBytes();
 
             if (size > 4) {
-                field.dataOffset = Tiff.readLimitedDWord(this.buffer);
+                field.dataOffset = Tiff.readLimitedDWord(this.tiff.buffer);
             } else {
-                field.dataOffset = this.buffer.position();
+                field.dataOffset = this.tiff.buffer.position();
             }
-            this.buffer.position(field.dataOffset);
-            field.sliceBuffer(this.buffer);
-            this.buffer.position(field.offset + 12); // move the buffer position to the end of the field
+            this.tiff.buffer.position(field.dataOffset);
+            field.sliceBuffer(this.tiff.buffer);
+            this.tiff.buffer.position(field.offset + 12); // move the buffer position to the end of the field
 
             this.fields.put(field.tag, field);
         }
@@ -154,8 +136,8 @@ public class Subfile {
 
     }
 
-    public ByteBuffer getBuffer() {
-        return this.buffer.duplicate();
+    public Tiff getTiff() {
+        return this.tiff;
     }
 
     public Map<Integer, Field> getFields() {
@@ -514,7 +496,7 @@ public class Subfile {
         }
 
         // set the result ByteBuffer to our datas byte order
-        result.order(this.buffer.order());
+        result.order(this.tiff.buffer.order());
 
         // TODO handle compression
         if (this.fields.containsKey(273)) {
@@ -529,11 +511,11 @@ public class Subfile {
     protected void combineStrips(ByteBuffer result) {
         // this works when the data is not compressed and may work when it is compressed as well
         for (int i = 0; i < this.stripOffsets.length; i++) {
-            this.buffer.limit(this.stripOffsets[i] + this.stripByteCounts[i]);
-            this.buffer.position(this.stripOffsets[i]);
-            result.put(this.buffer);
+            this.tiff.buffer.limit(this.stripOffsets[i] + this.stripByteCounts[i]);
+            this.tiff.buffer.position(this.stripOffsets[i]);
+            result.put(this.tiff.buffer);
         }
-        this.buffer.clear();
+        this.tiff.buffer.clear();
     }
 
     protected void combineTiles(ByteBuffer result) {
@@ -561,12 +543,12 @@ public class Subfile {
                 tilePixelIndex = (tilePixelRow * this.tileWidth + tilePixelCol) * totalBytesPerSample;
 
                 offsetIndex = this.tileOffsets[tileIndex] + tilePixelIndex;
-                this.buffer.limit(offsetIndex + totalBytesPerSample);
-                this.buffer.position(offsetIndex);
-                result.put(this.buffer);
+                this.tiff.buffer.limit(offsetIndex + totalBytesPerSample);
+                this.tiff.buffer.position(offsetIndex);
+                result.put(this.tiff.buffer);
             }
         }
-        this.buffer.clear();
+        this.tiff.buffer.clear();
     }
 
     protected int getTotalBytesPerPixel() {
