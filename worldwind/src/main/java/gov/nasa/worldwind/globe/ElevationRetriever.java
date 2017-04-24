@@ -77,8 +77,8 @@ public class ElevationRetriever extends Retriever<ImageSource, Void, ShortBuffer
             } else if (contentType.equalsIgnoreCase("image/tiff")) {
                 return this.readTiffData(stream);
             } else {
-                // TODO error message
-                return null;
+                throw new RuntimeException(
+                    Logger.logMessage(Logger.ERROR, "ElevationRetriever", "decodeUrl", "Format not supported"));
             }
         } finally {
             WWUtil.closeSilently(stream);
@@ -101,9 +101,7 @@ public class ElevationRetriever extends Retriever<ImageSource, Void, ShortBuffer
         Tiff tiff = new Tiff(buffer);
         Subfile subfile = tiff.getSubfiles().get(0);
         // check that the format of the subfile matches our supported data types
-        if (subfile.getSampleFormat()[0] == 2 &&
-            subfile.getBitsPerSample()[0] == 16 &&
-            subfile.getSamplesPerPixel() == 1) {
+        if (this.isTiffFormatSupported(subfile)) {
             int dataSize = subfile.getDataSize();
             ByteBuffer result = subfile.getData(ByteBuffer.allocate(dataSize));
             result.clear();
@@ -111,9 +109,16 @@ public class ElevationRetriever extends Retriever<ImageSource, Void, ShortBuffer
             this.bufferPool.release(tiffBuffer);
             return result.asShortBuffer();
         } else {
-            // TODO error message
-            return null;
+            throw new RuntimeException(
+                Logger.logMessage(Logger.ERROR, "ElevationRetriever", "readTiffData", "Tiff file format not supported"));
         }
+    }
+
+    protected boolean isTiffFormatSupported(Subfile subfile) {
+        return subfile.getSampleFormat()[0] == Tiff.TWOS_COMP_SIGNED_INT &&
+            subfile.getBitsPerSample()[0] == 16 &&
+            subfile.getSamplesPerPixel() == 1 &&
+            subfile.getCompression() == 1;
     }
 
     protected ShortBuffer readInt16Data(InputStream stream) throws IOException {

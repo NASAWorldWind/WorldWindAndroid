@@ -18,6 +18,59 @@ import gov.nasa.worldwind.util.Logger;
 
 public class Tiff {
 
+    public static final int NEW_SUBFILE_TYPE_TAG = 254;
+
+    public static final int IMAGE_WIDTH_TAG = 256;
+
+    public static final int IMAGE_LENGTH_TAG = 257;
+
+    public static final int BITS_PER_SAMPLE_TAG = 258;
+
+    public static final int COMPRESSION_TAG = 259;
+
+    public static final int PHOTOMETRIC_INTERPRETATION_TAG = 262;
+
+    public static final int SAMPLES_PER_PIXEL_TAG = 277;
+
+    public static final int X_RESOLUTION_TAG = 282;
+
+    public static final int Y_RESOLUTION_TAG = 283;
+
+    public static final int PLANAR_CONFIGURATION_TAG = 284;
+
+    public static final int RESOLUTION_UNIT_TAG = 296;
+
+    public static final int STRIP_OFFSETS_TAG = 273;
+
+    public static final int STRIP_BYTE_COUNTS_TAG = 279;
+
+    public static final int ROWS_PER_STRIP_TAG = 278;
+
+    public static final int COMPRESSION_PREDICTOR_TAG = 317;
+
+    public static final int TILE_OFFSETS_TAG = 324;
+
+    public static final int TILE_BYTE_COUNTS_TAG = 325;
+
+    public static final int TILE_WIDTH_TAG = 322;
+
+    public static final int TILE_LENGTH_TAG = 323;
+
+    public static final int SAMPLE_FORMAT_TAG = 339;
+
+    /**
+     * Tiff tags are the integer definitions of individual Image File Directories (IFDs) and set by the Tiff 6.0
+     * specification. The tags defined here are a minimal set and not inclusive of the complete 6.0 specification.
+     */
+    @IntDef({NEW_SUBFILE_TYPE_TAG, IMAGE_WIDTH_TAG, IMAGE_LENGTH_TAG, BITS_PER_SAMPLE_TAG, COMPRESSION_TAG, PHOTOMETRIC_INTERPRETATION_TAG,
+        SAMPLES_PER_PIXEL_TAG, X_RESOLUTION_TAG, Y_RESOLUTION_TAG, PLANAR_CONFIGURATION_TAG, RESOLUTION_UNIT_TAG, STRIP_OFFSETS_TAG,
+        STRIP_BYTE_COUNTS_TAG, ROWS_PER_STRIP_TAG, COMPRESSION_PREDICTOR_TAG, TILE_OFFSETS_TAG, TILE_BYTE_COUNTS_TAG, TILE_WIDTH_TAG,
+        TILE_LENGTH_TAG, SAMPLE_FORMAT_TAG})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface TIFF_TAGS {
+
+    }
+
     public static final int UNSIGNED_INT = 1;
 
     public static final int TWOS_COMP_SIGNED_INT = 2;

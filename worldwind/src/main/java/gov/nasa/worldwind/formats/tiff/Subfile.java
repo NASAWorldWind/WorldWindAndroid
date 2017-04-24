@@ -145,12 +145,12 @@ public class Subfile {
     }
 
     protected void populateDefinedFields() {
-        Field field = this.fields.get(254);
+        Field field = this.fields.get(Tiff.NEW_SUBFILE_TYPE_TAG);
         if (field != null) {
             this.newSubfileType = Tiff.readLimitedDWord(field.getDataBuffer());
         }
 
-        field = this.fields.get(256);
+        field = this.fields.get(Tiff.IMAGE_WIDTH_TAG);
         if (field != null) {
             if (field.type == Type.USHORT) {
                 this.imageWidth = Tiff.readWord(field.getDataBuffer());
@@ -165,7 +165,7 @@ public class Subfile {
                 Logger.logMessage(Logger.ERROR, "Subfile", "populateDefinedFields", "invalid tiff format - image width missing"));
         }
 
-        field = this.fields.get(257);
+        field = this.fields.get(Tiff.IMAGE_LENGTH_TAG);
         if (field != null) {
             if (field.type == Type.USHORT) {
                 this.imageLength = Tiff.readWord(field.getDataBuffer());
@@ -180,7 +180,7 @@ public class Subfile {
                 Logger.logMessage(Logger.ERROR, "Subfile", "populateDefinedFields", "invalid tiff format - image length missing"));
         }
 
-        field = this.fields.get(258);
+        field = this.fields.get(Tiff.BITS_PER_SAMPLE_TAG);
         if (field != null) {
             this.bitsPerSample = new int[field.count];
             for (int i = 0; i < field.count; i++) {
@@ -188,7 +188,7 @@ public class Subfile {
             }
         }
 
-        field = this.fields.get(259);
+        field = this.fields.get(Tiff.COMPRESSION_TAG);
         if (field != null) {
             this.compression = Tiff.readWord(field.getDataBuffer());
             if (this.compression != 1) {
@@ -197,7 +197,7 @@ public class Subfile {
             }
         }
 
-        field = this.fields.get(262);
+        field = this.fields.get(Tiff.PHOTOMETRIC_INTERPRETATION_TAG);
         if (field != null) {
             this.photometricInterpretation = Tiff.readWord(field.getDataBuffer());
         } else {
@@ -205,22 +205,22 @@ public class Subfile {
                 Logger.logMessage(Logger.ERROR, "Subfile", "populatedDefinedFields", "photometricinterpretation missing"));
         }
 
-        field = this.fields.get(277);
+        field = this.fields.get(Tiff.SAMPLES_PER_PIXEL_TAG);
         if (field != null) {
             this.samplesPerPixel = Tiff.readWord(field.getDataBuffer());
         }
 
-        field = this.fields.get(282);
+        field = this.fields.get(Tiff.X_RESOLUTION_TAG);
         if (field != null) {
             this.xResolution = this.calculateRational(field.getDataBuffer());
         }
 
-        field = this.fields.get(283);
+        field = this.fields.get(Tiff.Y_RESOLUTION_TAG);
         if (field != null) {
             this.yResolution = this.calculateRational(field.getDataBuffer());
         }
 
-        field = this.fields.get(284);
+        field = this.fields.get(Tiff.PLANAR_CONFIGURATION_TAG);
         if (field != null) {
             this.planarConfiguration = Tiff.readWord(field.getDataBuffer());
             if (this.planarConfiguration != 1) {
@@ -229,26 +229,26 @@ public class Subfile {
             }
         }
 
-        field = this.fields.get(296);
+        field = this.fields.get(Tiff.RESOLUTION_UNIT_TAG);
         if (field != null) {
             this.resolutionUnit = Tiff.readWord(field.getDataBuffer());
         }
 
-        if (this.fields.containsKey(273)) {
+        if (this.fields.containsKey(Tiff.STRIP_OFFSETS_TAG)) {
             this.populateStripFields();
-        } else if (this.fields.containsKey(324)) {
+        } else if (this.fields.containsKey(Tiff.TILE_OFFSETS_TAG)) {
             this.populateTileFields();
         } else {
             throw new RuntimeException(
                 Logger.logMessage(Logger.ERROR, "Subfile", "populateDefinedFields", "no image offsets provided"));
         }
 
-        field = this.fields.get(317);
+        field = this.fields.get(Tiff.COMPRESSION_PREDICTOR_TAG);
         if (field != null) {
             this.compressionPredictor = Tiff.readWord(field.getDataBuffer());
         }
 
-        field = this.fields.get(339);
+        field = this.fields.get(Tiff.SAMPLE_FORMAT_TAG);
         if (field != null) {
             this.sampleFormat = new int[field.count];
             for (int i = 0; i < field.count; i++) {
@@ -338,7 +338,7 @@ public class Subfile {
     }
 
     protected void populateStripFields() {
-        Field field = this.fields.get(273);
+        Field field = this.fields.get(Tiff.STRIP_OFFSETS_TAG);
 
         if (field != null) {
             this.stripOffsets = new int[field.count];
@@ -357,7 +357,7 @@ public class Subfile {
             throw new RuntimeException("invalid tiff format - stripOffsets missing");
         }
 
-        field = this.fields.get(278);
+        field = this.fields.get(Tiff.ROWS_PER_STRIP_TAG);
         if (field != null) {
             if (field.type == Type.USHORT) {
                 this.rowsPerStrip = Tiff.readWord(field.getDataBuffer());
@@ -369,7 +369,7 @@ public class Subfile {
             }
         }
 
-        field = this.fields.get(279);
+        field = this.fields.get(Tiff.STRIP_BYTE_COUNTS_TAG);
         if (field != null) {
             this.stripByteCounts = new int[field.count];
             ByteBuffer data = field.getDataBuffer();
@@ -389,7 +389,7 @@ public class Subfile {
     }
 
     protected void populateTileFields() {
-        Field field = this.fields.get(324);
+        Field field = this.fields.get(Tiff.TILE_OFFSETS_TAG);
 
         if (field != null) {
             this.tileOffsets = new int[field.count];
@@ -409,7 +409,7 @@ public class Subfile {
                 Logger.logMessage(Logger.ERROR, "Subfile", "populateTileFields", "missing offset"));
         }
 
-        field = this.fields.get(325);
+        field = this.fields.get(Tiff.TILE_BYTE_COUNTS_TAG);
         if (field != null) {
             this.tileByteCounts = new int[field.count];
             ByteBuffer data = field.getDataBuffer();
@@ -428,7 +428,7 @@ public class Subfile {
                 Logger.logMessage(Logger.ERROR, "Subfile", "populateTileFields", "invalid tiff format - tileByteCounts missing"));
         }
 
-        field = this.fields.get(322);
+        field = this.fields.get(Tiff.TILE_WIDTH_TAG);
         if (field != null) {
             if (field.type == Type.USHORT) {
                 this.tileWidth = Tiff.readWord(field.getDataBuffer());
@@ -443,7 +443,7 @@ public class Subfile {
                 Logger.logMessage(Logger.ERROR, "Subfile", "populateTileFields", "missing tilewidth field"));
         }
 
-        field = this.fields.get(323);
+        field = this.fields.get(Tiff.TILE_LENGTH_TAG);
         if (field != null) {
             if (field.type == Type.USHORT) {
                 this.tileLength = Tiff.readWord(field.getDataBuffer());
@@ -499,7 +499,7 @@ public class Subfile {
         result.order(this.tiff.buffer.order());
 
         // TODO handle compression
-        if (this.fields.containsKey(273)) {
+        if (this.fields.containsKey(Tiff.STRIP_OFFSETS_TAG)) {
             this.combineStrips(result);
         } else {
             this.combineTiles(result);
