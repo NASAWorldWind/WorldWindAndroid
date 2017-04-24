@@ -18,15 +18,16 @@
 <p>
     Demonstrates how to add a WCS Elevation coverage.</p>
 <p>
-    This tutorial demonstrates how to add ASTER elevation data from a WCS.</p>
+    This tutorial demonstrates how to add USGS NED elevation data from a WCS.</p>
 
 <h2>Example</h2>
 <h3>WcsElevationFragment.java</h3>
 <p>
     The WcsElevationFragment class extends the BasicGlobeFragment and overrides the createWorldWindow method. Here we
-    use the Wcs100ElevationCoverage class to load ASTER elevation data. Once the coverage is added to the elevation
-    model, the Wcs100ElevationCoverage class will request elevation data via the WCS specification and World Wind will
-    generate terrain.
+    use the Wcs100ElevationCoverage class to load USGS NED elevation data. Once the coverage is added to the elevation
+    model, the Wcs100ElevationCoverage class will request elevation data via the WCS version 1.0.0 specification and
+    World Wind will generate terrain. A similar connection to a WCS supporting version 2.0.1 is available in the
+    Wcs201ElevationCoverage class.
 </p>
 <div style="border-top: 1px solid black; border-bottom: 1px solid black;">
     <textarea id="java-code">
@@ -40,27 +41,29 @@ public class WcsElevationFragment extends BasicGlobeFragment {
      * @return The WorldWindow object containing the globe.
      */
     @Override
-    public WorldWindow createWorldWindow() {
+        public WorldWindow createWorldWindow() {
         // Let the super class (BasicGlobeFragment) do the creation
         WorldWindow wwd = super.createWorldWindow();
 
+        // Specify the bounding sector - provided by the WCS
+        Sector coverageSector = Sector.fromDegrees(25.0, -125.0, 25.0, 60.0);
+        // Specify the number of levels to match data resolution
+        int numberOfLevels = 12;
         // Specify the version 1.0.0 WCS address
         String serviceAddress = "https://worldwind26.arc.nasa.gov/wcs";
         // Specify the coverage name
-        String coverage = "aster_v2";
-        // Specify the bounding sector - provided by the WCS
-        Sector coverageSector = Sector.fromDegrees(-83.0, -180.0, 173.0, 360.0);
+        String coverage = "USGS-NED";
 
         // Create an elevation coverage from a version 1.0.0 WCS
-        Wcs100ElevationCoverage aster = new Wcs100ElevationCoverage(serviceAddress, coverage, coverageSector);
+        ElevationCoverage usgsNed = new Wcs100ElevationCoverage(coverageSector, numberOfLevels, serviceAddress, coverage);
 
         // Remove any existing coverages from the Globe
         wwd.getGlobe().getElevationModel().clearCoverages();
 
         // Add the coverage to the Globes elevation model
-        wwd.getGlobe().getElevationModel().addCoverage(aster);
+        wwd.getGlobe().getElevationModel().addCoverage(usgsNed);
 
-        // Position the camera to look at the Sangre de Cristo Mountains
+        // Position the camera to look at Mt. Rainier
         this.positionView(wwd);
 
         return wwd;
@@ -76,10 +79,6 @@ public class WcsElevationFragment extends BasicGlobeFragment {
         mode: "text/x-java",
         readOnly: true
       });
-
-
-
-
 
 </script>
 </body>
