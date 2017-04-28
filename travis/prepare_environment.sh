@@ -9,7 +9,8 @@ set +x
 
 # Decrypt the Android signing keystore. Skip the decryption step on untrusted pull request builds, as the encryption
 # environment variables are not available.
-if [[ "${TRAVIS_PULL_REQUEST}" == "false"  ]]; then
+if [[ "${TRAVIS_PULL_REQUEST}" == "false" ]]; then
+    echo "Decrypting Android signing keystore"
     openssl aes-256-cbc -K "${encrypted_2eaf8cabe659_key}" -iv "${encrypted_2eaf8cabe659_iv}" -in keystore.jks.enc -out keystore.jks -d
 fi
 
