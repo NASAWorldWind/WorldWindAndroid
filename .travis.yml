@@ -20,18 +20,9 @@ android:
     - extra-android-support
     - extra-android-m2repository
 
-before_install:
-  # Decrypt and un-archive the files keystore.jks and keystore.properties which are used to sign release APKs
-  - openssl aes-256-cbc -K $encrypted_f4941407fe7e_key -iv $encrypted_f4941407fe7e_iv -in keystore.tar.enc -out keystore.tar -d
-  - tar -xf keystore.tar
-
 before_script:
-  # Install the jq shell filter so we can extract data from GitHub API JSON results
-  # See apt configuration: https://docs.travis-ci.com/user/ci-environment/#apt-configuration
-  - sudo apt-get install -qq jq
-  - jq --version
-  # Ensure scripts can be executed (required if scripts are authored in Windows)
-  - chmod +x ./travis/*.sh
+  # Prepare the Travis build environment
+  - ./travis/prepare_environment.sh
 
 script:
   # Build the project
