@@ -48,30 +48,40 @@ dependencies {
     }
 }
 
+// Define common documentation output directory
+def docOutput = file('./build/outputs/doc/')
+
 task compileJavadocSources(type: Javadoc) {
-    group 'build'
+    description 'Creates the Javadoc API documentation'
     source android.sourceSets.main.java.srcDirs
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
     include('**/*.java')
-    destinationDir file('./build/outputs/doc/javadoc/')
     title 'NASA World Wind Android'
     options.windowTitle 'NASA World Wind Android'
     options.memberLevel = JavadocMemberLevel.PUBLIC
+    destinationDir file(new File(docOutput, 'javadoc'))
     failOnError false
 }
 
-task bundleJavadoc(type: Zip) {
-    description 'Assembles a bundle containing the Javadoc API documentation.'
-    from compileJavadocSources.destinationDir
-    include '**/*'
-    destinationDir file('./build/outputs/doc/')
-    archiveName 'worldwind-javadoc.zip'
+task bundleJavadocJar(type: Jar) {
+    description 'Bundles Javadoc API documentation into a jar'
+    classifier 'javadoc'
+    from compileJavadocSources
+    destinationDir docOutput
 }
 
-task assembleJavadoc(type: Task, dependsOn: [compileJavadocSources, bundleJavadoc]) {
-    description 'Assembles the Javadoc API documentation.'
-    group 'build'
+task bundleJavadocZip(type: Zip) {
+    description 'Bundles Javadoc API documentation into a zip file'
+    classifier 'javadoc'
+    from compileJavadocSources
+    destinationDir docOutput
 }
 
-assemble.dependsOn(assembleJavadoc)
-bundleJavadoc.mustRunAfter(compileJavadocSources)
+task bundleSourcesJar(type: Jar) {
+    description 'Bundles the source into a jar'
+    classifier 'sources'
+    from android.sourceSets.main.java.srcDirs
+    destinationDir docOutput
+}
+
+// Attach the javadoc generation to the assemble task for execution during build
+assemble.dependsOn(bundleJavadocZip)
