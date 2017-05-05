@@ -7,8 +7,8 @@ android {
         applicationId 'gov.nasa.worldwindx.tutorials'
         minSdkVersion 16
         targetSdkVersion 24
-        versionCode 50
-        versionName '0.5.0'
+        versionCode 60
+        versionName '0.6.0'
     }
     buildTypes {
         release {
