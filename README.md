@@ -25,9 +25,9 @@ repository contains the library source, examples and tutorials.
 
 ## Download
 
-Download the [latest release](https://github.com/NASAWorldWind/WorldWindAndroid/releases/latest) or grab via Gradle:
+Download the [latest release](https://bintray.com/nasaworldwind/maven/WorldWindAndroid/_latestVersion) or grab via Gradle:
 ```groovy
-compile 'gov.nasa.worldwind.android:worldwind:0.6.0'
+compile 'gov.nasa.worldwind.android:worldwind:0.6.0@aar'
 ```
 
 ## Releases and Roadmap
