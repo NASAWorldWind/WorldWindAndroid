@@ -22,21 +22,17 @@ task clean(type: Delete) {
     delete rootProject.buildDir
 }
 
-def keystorePropertiesFile = rootProject.file('keystore.properties')
-if (keystorePropertiesFile.canRead()) {
-
-    def keystoreProperties = new Properties()
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+if (System.getenv().containsKey('SIGNING_STORE_FILE')) {
 
     subprojects {
         afterEvaluate {
             android {
                 signingConfigs {
                     release {
-                        keyAlias keystoreProperties['keyAlias']
-                        keyPassword keystoreProperties['keyPassword']
-                        storeFile rootProject.file(keystoreProperties['storeFile'])
-                        storePassword keystoreProperties['storePassword']
+                        keyAlias System.getenv('SIGNING_KEY_ALIAS')
+                        keyPassword System.getenv('SIGNING_KEY_PASSWORD')
+                        storeFile rootProject.file(System.getenv('SIGNING_STORE_FILE'))
+                        storePassword System.getenv('SIGNING_STORE_PASSWORD')
                     }
                 }
                 buildTypes {
@@ -47,4 +43,5 @@ if (keystorePropertiesFile.canRead()) {
             }
         }
     }
+
 }

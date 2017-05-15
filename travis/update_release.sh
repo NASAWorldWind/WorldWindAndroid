@@ -198,6 +198,20 @@ do
 done
 
 # ======================
+# Bintray Publishing
+# ======================
+# Check that this is a tagged release and then publish the artifact to Bintray
+if [[ "${TRAVIS_TAG}" == "daily"* ]]; then # daily build associated with a tag in the format daily/YYYYMMDD
+    echo "Skipping Bintray publication for daily build"
+    # do nothing, we aren't currently publishing daily builds
+elif [[ -n $TRAVIS_TAG ]]; then # manually created tag; prepare a draft release
+    echo "Publishing release ${TRAVIS_TAG} to Bintray"
+    # invoke the publishing gradle task for the worldwind module
+    ./gradlew worldwind:bintrayUpload
+fi
+
+
+# ======================
 # Daily Tag Maintenance
 # ======================
 
