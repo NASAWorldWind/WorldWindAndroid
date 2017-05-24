@@ -1,9 +1,6 @@
 # Directs the Travis CI build service for World Wind Android
 # For more information see https://docs.travis-ci.com/user/customizing-the-build/
 
-# Required to install the jq JSON filter used to parse GitHub API results
-sudo: required
-
 # Set up to run the Android build script per the Travis CI documentation
 language: android
 
@@ -22,18 +19,33 @@ android:
 
 before_script:
   # Prepare the Travis build environment
-  - ./travis/prepare_environment.sh
+  - 'if [[ "${TRAVIS_PULL_REQUEST}" == "false" ]]; then openssl aes-256-cbc -K "${encrypted_2eaf8cabe659_key}" -iv "${encrypted_2eaf8cabe659_iv}" -in keystore.jks.enc -out keystore.jks -d fi'
 
 script:
   # Build the project
-  - ./gradlew build
+  - ./gradlew build --stacktrace
 
-after_success:
-  # Push the daily tag when this build is a cron job
-  - ./travis/add_daily_tag.sh
-  # Push javadoc to GitHub pages and upload build artifacts to GitHub releases, depending on what initiated the build
-  - ./travis/update_javadoc.sh
-  - ./travis/update_release.sh
+deploy: # by default, travis will not invoke this step for PRs
+  # Publish release artifacts to Bintray/JCenter and add the documentation to ghpages
+  - provider: script
+    script: ./gradlew worldwind:bintrayUpload --stacktrace && travis/ghpages.sh
+    skip_cleanup: true
+    on:
+      tags: true
+  # Publish artifacts to GitHub release
+  - provider: releases
+    api_key: $GITHUB_API_KEY
+    file:
+      - worldwind/build/outputs/aar/worldwind-debug.aar
+      - worldwind/build/outputs/aar/worldwind-release.aar
+      - worldwind/build/outputs/doc/worldwind-javadoc.zip
+      - worldwind-examples/build/outputs/apk/worldwind-examples-release.apk
+      - worldwind-examples/build/outputs/apk/worldwind-examples-debug.apk
+      - worldwind-tutorials/build/outputs/apk/worldwind-tutorials-release.apk
+      - worldwind-tutorials/build/outputs/apk/worldwind-tutorials-debug.apk
+    skip_cleanup: true
+    on:
+      tags: true
 
 after_failure:
   # Concatenate the logcat.log file et al to the travis log
