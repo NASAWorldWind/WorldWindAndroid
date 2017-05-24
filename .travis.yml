@@ -1,6 +1,9 @@
 # Directs the Travis CI build service for World Wind Android
 # For more information see https://docs.travis-ci.com/user/customizing-the-build/
 
+# Required to install the jq JSON filter used to parse GitHub API results
+sudo: required
+
 # Set up to run the Android build script per the Travis CI documentation
 language: android
 
@@ -26,9 +29,9 @@ script:
   - ./gradlew build --stacktrace
 
 deploy: # by default, travis will not invoke this step for PRs
-  # Publish release artifacts to Bintray/JCenter and add the documentation to ghpages
+  # Publish release artifacts to Bintray/JCenter and add the documentation to ghpages. Create a changelog for GitHub.
   - provider: script
-    script: ./gradlew worldwind:bintrayUpload --stacktrace && travis/ghpages.sh
+    script: ./gradlew worldwind:bintrayUpload --stacktrace && travis/ghpages.sh && travis/create_changelog.sh
     skip_cleanup: true
     on:
       tags: true
@@ -43,6 +46,7 @@ deploy: # by default, travis will not invoke this step for PRs
       - worldwind-examples/build/outputs/apk/worldwind-examples-debug.apk
       - worldwind-tutorials/build/outputs/apk/worldwind-tutorials-release.apk
       - worldwind-tutorials/build/outputs/apk/worldwind-tutorials-debug.apk
+      - CHANGELOG.md
     skip_cleanup: true
     on:
       tags: true
