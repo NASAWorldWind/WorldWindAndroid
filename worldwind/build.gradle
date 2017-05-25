@@ -1,9 +1,17 @@
+buildscript {
+    dependencies {
+        // Required by the Artifactory gradle plugin for publishing to OJO
+        classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:3.1.1'
+    }
+}
+
 plugins {
     id 'com.jfrog.bintray' version '1.7.3'
 }
 
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.artifactory'
 
 android {
     compileSdkVersion 24
@@ -13,7 +21,7 @@ android {
         minSdkVersion 16
         targetSdkVersion 24
         versionCode 60
-        versionName '0.6.0'
+        versionName '0.7.x-SNAPSHOT'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -88,6 +96,21 @@ bintray {
             name = android.defaultConfig.versionName
             desc = 'World Wind Android v' + android.defaultConfig.versionName
             vcsTag = System.getenv('TRAVIS_TAG')
+        }
+    }
+}
+
+artifactory {
+    contextUrl = 'https://oss.jfrog.org/artifactory'
+    publish {
+        repository {
+            repoKey = 'oss-snapshot-local'
+            username = System.getenv('BINTRAY_USER')
+            password = System.getenv('OJO_API_KEY')
+        }
+        defaults {
+            publications('bintray')
+            publishArtifacts = true
         }
     }
 }

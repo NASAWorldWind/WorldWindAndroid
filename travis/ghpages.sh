@@ -39,7 +39,7 @@ git config --global user.name "travis-ci"
 
 # Clone the GitHub Pages repository to the local filesystem
 GH_PAGES_DIR=${HOME}/gh_pages
-git clone --quiet --branch=master https://${GITHUB_API_KEY}@github.com/f17d911/NASAWorldWind.github.io.git $GH_PAGES_DIR > /dev/null
+git clone --quiet --branch=master https://${GITHUB_API_KEY}@github.com/NASAWorldWind/NASAWorldWind.github.io.git $GH_PAGES_DIR > /dev/null
 cd $GH_PAGES_DIR
 
 # Copy new javadocs to the repository
@@ -47,7 +47,7 @@ mkdir -p ./assets/android/${TRAVIS_TAG}/javadoc
 cp -Rf ${TRAVIS_BUILD_DIR}/worldwind/build/outputs/doc/javadoc/* ./assets/android/${TRAVIS_TAG}/javadoc
 
 # Initialize the FOLDER var predicated on the build configuration
-RELEASES_URL="https://api.github.com/repos/f17d911/worldwindandroid/releases"
+RELEASES_URL="https://api.github.com/repos/nasaworldwind/worldwindandroid/releases"
 
 # Update the release log to reflect all versions available
 curl --silent -o ./assets/android/releases.json --header "Authorization: token ${GITHUB_API_KEY}" ${RELEASES_URL}
