@@ -25,7 +25,7 @@ GH_PAGES_DIR=${HOME}/gh_pages
 git clone --quiet --branch=master https://${GITHUB_API_KEY}@github.com/NASAWorldWind/NASAWorldWind.github.io.git $GH_PAGES_DIR > /dev/null
 cd $GH_PAGES_DIR
 
-curl --silent -o assets/android/ojoVersionInformation.json "https://oss.jfrog.org/artifactory/api/search/versions?g=gov.nasa.worldwind.android&a=worldwind&repos=oss-snapshot-local"
+curl --silent -o assets/android/latestOjoVersion.json "https://oss.jfrog.org/artifactory/api/search/versions?g=gov.nasa.worldwind.android&a=worldwind&repos=oss-snapshot-local"
 
 # Do a quick check to make sure there wasn't an issue with the retrieval from the API
 sudo apt-get install -qq jq

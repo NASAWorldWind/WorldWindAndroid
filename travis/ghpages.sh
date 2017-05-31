@@ -38,17 +38,14 @@ cd $GH_PAGES_DIR
 mkdir -p ./assets/android/${TRAVIS_TAG}/javadoc
 cp -Rf ${TRAVIS_BUILD_DIR}/worldwind/build/outputs/doc/javadoc/* ./assets/android/${TRAVIS_TAG}/javadoc
 
-# Initialize the FOLDER var predicated on the build configuration
-RELEASES_URL="https://api.github.com/repos/nasaworldwind/worldwindandroid/releases"
-
 # Release version information - builds JSON file for relaying documentation versioning to the website
 JSON_DATA="{ \
-      \"doc_version\": \"${TRAVIS_TAG}\" \
+      \"tag\": \"${TRAVIS_TAG}\" \
     }"
-echo $JSON_DATA > ./assets/android/docVersion.json
+echo $JSON_DATA > ./assets/android/latestTag.json
 
 # Update the Bintray release log to reflect the most recent version available
-curl --silent -o ./assets/android/bintrayVersionInformation.json https://api.bintray.com/packages/nasaworldwind/maven/WorldWindAndroid/versions/_latest
+curl --silent -o ./assets/android/latestBintrayVersion.json https://api.bintray.com/packages/nasaworldwind/maven/WorldWindAndroid/versions/_latest
 
 # Commit and push the changes (quietly)
 git add -f .
