@@ -7,8 +7,6 @@
 # the access token into the log.
 # ======================================================================================================================
 
-#!/bin/bash
-
 set +x
 set -e
 
@@ -24,14 +22,8 @@ if [[ -z "$GITHUB_API_KEY" ]]; then
     exit 1
 fi
 
-# Assert the GitHub Pages repo is defined
-if [[ -z "$GH_PAGES_REPO" ]]; then
-    echo "$0 error: You must export the GH_PAGES_REPO containing GitHub Pages URL sans protocol\; the repo was not cloned."
-    exit 1
-fi
-
 # Emit a log message for the javadoc update
-echo "Updating JavaDoc at ${GH_PAGES_REPO}/assets/android/${TRAVIS_TAG}/javadoc"
+echo "Updating JavaDoc at assets/android/${TRAVIS_TAG}/javadoc"
 
 # Configure the user to be associated with commits to the GitHub pages
 git config --global user.email "travis@travis-ci.org"
@@ -49,8 +41,14 @@ cp -Rf ${TRAVIS_BUILD_DIR}/worldwind/build/outputs/doc/javadoc/* ./assets/androi
 # Initialize the FOLDER var predicated on the build configuration
 RELEASES_URL="https://api.github.com/repos/nasaworldwind/worldwindandroid/releases"
 
-# Update the release log to reflect all versions available
-curl --silent -o ./assets/android/releases.json --header "Authorization: token ${GITHUB_API_KEY}" ${RELEASES_URL}
+# Release version information - builds JSON file for relaying documentation versioning to the website
+JSON_DATA="{ \
+      \"doc_version\": \"${TRAVIS_TAG}\" \
+    }"
+echo $JSON_DATA > ./assets/android/docVersion.json
+
+# Update the Bintray release log to reflect the most recent version available
+curl --silent -o ./assets/android/bintrayVersionInformation.json https://api.bintray.com/packages/nasaworldwind/maven/WorldWindAndroid/versions/_latest
 
 # Commit and push the changes (quietly)
 git add -f .
