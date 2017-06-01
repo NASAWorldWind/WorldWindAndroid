@@ -21,9 +21,6 @@ if [[ -z "$GITHUB_API_KEY" ]]; then
     exit 1
 fi
 
-# Update the Bintray release log to reflect the most recent version available
-curl --silent -o ./assets/android/latestBintrayVersion.json https://api.bintray.com/packages/nasaworldwind/maven/WorldWindAndroid/versions/_latest
-
 # Configure the user to be associated with commits to the GitHub pages
 git config --global user.email "travis@travis-ci.org"
 git config --global user.name "travis-ci"
@@ -33,7 +30,11 @@ GH_PAGES_DIR=${HOME}/gh_pages
 git clone --quiet --branch=master https://${GITHUB_API_KEY}@github.com/NASAWorldWind/NASAWorldWind.github.io.git $GH_PAGES_DIR > /dev/null
 cd $GH_PAGES_DIR
 
-curl --silent -o assets/android/latestOjoVersion.json "https://oss.jfrog.org/artifactory/api/search/versions?g=gov.nasa.worldwind.android&a=worldwind&repos=oss-snapshot-local"
+# Update the Bintray release log to reflect the latest version available
+curl --silent -o ./assets/android/latestBintrayVersion.json "https://api.bintray.com/packages/nasaworldwind/maven/WorldWindAndroid/versions/_latest"
+
+# Update the OJO release log to reflect the latest version available
+curl --silent -o ./assets/android/latestOjoVersion.json "https://oss.jfrog.org/artifactory/api/search/versions?g=gov.nasa.worldwind.android&a=worldwind&repos=oss-snapshot-local"
 
 # Do a quick check to make sure there wasn't an issue with the retrieval from the API
 sudo apt-get install -qq jq
