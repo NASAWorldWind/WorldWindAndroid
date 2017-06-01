@@ -1,7 +1,12 @@
 #!/bin/bash
 # ======================================================================================================================
-# Updates the GitHub Pages website with the updated OJO SNAPSHOT version. Clones the GitHub Pages to the local
-# filesystem, requests the new version information, then commits and pushes the changes.
+# Updates the GitHub Pages website with the updated OJO SNAPSHOT and Bintray/JCenter version. Clones the GitHub Pages to
+# the local filesystem, requests the new version information, then commits and pushes the changes.
+#
+# The version information is requested from the OJO and Bintray API's and saved to the GitHub Pages repository. The main
+# site then consumes the information for displaying the latest information to visitors. The OJO and Bintray API's
+# enforce the same origin policy which necessitates the server conducting the call rather than the page calling
+# dynamically.
 #
 # Uses Git to update tags in the repo. Git commands using authentication are redirected to /dev/null to prevent leaking
 # the access token into the log.
@@ -15,6 +20,9 @@ if [[ -z "$GITHUB_API_KEY" ]]; then
     echo "$0 error: You must export the GITHUB_API_KEY containing the personal access token for Travis\; the repo was not cloned."
     exit 1
 fi
+
+# Update the Bintray release log to reflect the most recent version available
+curl --silent -o ./assets/android/latestBintrayVersion.json https://api.bintray.com/packages/nasaworldwind/maven/WorldWindAndroid/versions/_latest
 
 # Configure the user to be associated with commits to the GitHub pages
 git config --global user.email "travis@travis-ci.org"
@@ -41,5 +49,3 @@ else
     git commit -m "Updated javadoc from successful travis build $TRAVIS_BUILD_NUMBER in $TRAVIS_BRANCH"
     git push -fq origin master > /dev/null
 fi
-
-

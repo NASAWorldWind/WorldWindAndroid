@@ -44,9 +44,6 @@ JSON_DATA="{ \
     }"
 echo $JSON_DATA > ./assets/android/latestTag.json
 
-# Update the Bintray release log to reflect the most recent version available
-curl --silent -o ./assets/android/latestBintrayVersion.json https://api.bintray.com/packages/nasaworldwind/maven/WorldWindAndroid/versions/_latest
-
 # Commit and push the changes (quietly)
 git add -f .
 git commit -m "Updated javadoc from successful travis build $TRAVIS_BUILD_NUMBER in $TRAVIS_BRANCH"

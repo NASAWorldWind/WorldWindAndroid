@@ -31,7 +31,9 @@ script:
 deploy: # by default, travis will not invoke this step for PRs
   # Publish SNAPSHOT artifacts to OJO and update the latest SNAPSHOT version on the website
   - provider: script
-    script: ./gradlew worldwind:artifactoryPublish --stacktrace && travis/update_snapshot_version.sh
+    # OJO publishing not available yet
+    # script: ./gradlew worldwind:artifactoryPublish --stacktrace && travis/retrieve_latest_versions.sh
+    script: travis/retrieve_latest_versions.sh
     skip_cleanup: true
     on:
       branch: develop
