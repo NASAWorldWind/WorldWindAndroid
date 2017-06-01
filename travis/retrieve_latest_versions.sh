@@ -30,16 +30,29 @@ GH_PAGES_DIR=${HOME}/gh_pages
 git clone --quiet --branch=master https://${GITHUB_API_KEY}@github.com/NASAWorldWind/NASAWorldWind.github.io.git $GH_PAGES_DIR > /dev/null
 cd $GH_PAGES_DIR
 
+# Add jq for an initial evaluation of the API returns
+sudo apt-get install -qq jq
+jq --version
+
 # Update the Bintray release log to reflect the latest version available
 curl --silent -o ./assets/android/latestBintrayVersion.json "https://api.bintray.com/packages/nasaworldwind/maven/WorldWindAndroid/versions/_latest"
+
+# Do a quick check to make sure there wasn't an issue with retrieval from the API
+BINTRAY_CURRENT_VERSION=$(more ./assets/android/latestBintrayVersion.json | jq .name)
+
+if [[ -z "$BINTRAY_CURRENT_VERSION" ]] || [[ "$BINTRAY_CURRENT_VERSION" == "null" ]]; then
+    echo "The Bintray version request failed, no changes made to the GH pages repository"
+else
+    # Commit and push the changes (quietly)
+    git add -f .
+    git commit -m "Updated Bintray version from successful API call in build $TRAVIS_BUILD_NUMBER in $TRAVIS_BRANCH"
+    git push -fq origin master > /dev/null
+fi
 
 # Update the OJO release log to reflect the latest version available
 curl --silent -o ./assets/android/latestOjoVersion.json "https://oss.jfrog.org/artifactory/api/search/versions?g=gov.nasa.worldwind.android&a=worldwind&repos=oss-snapshot-local"
 
 # Do a quick check to make sure there wasn't an issue with the retrieval from the API
-sudo apt-get install -qq jq
-jq --version
-
 OJO_CURRENT_VERSION=$(more assets/android/ojoVersionInformation.json | jq .results[0].version)
 
 if [[ -z "$OJO_CURRENT_VERSION" ]] || [[ "$OJO_CURRENT_VERSION" == "null" ]]; then
@@ -47,6 +60,6 @@ if [[ -z "$OJO_CURRENT_VERSION" ]] || [[ "$OJO_CURRENT_VERSION" == "null" ]]; th
 else
     # Commit and push the changes (quietly)
     git add -f .
-    git commit -m "Updated javadoc from successful travis build $TRAVIS_BUILD_NUMBER in $TRAVIS_BRANCH"
+    git commit -m "Updated SNAPSHOT version from successful API call in build $TRAVIS_BUILD_NUMBER in $TRAVIS_BRANCH"
     git push -fq origin master > /dev/null
 fi
