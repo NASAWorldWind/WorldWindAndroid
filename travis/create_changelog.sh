@@ -32,13 +32,6 @@ MILESTONE_DESCRIPTION=( \
 MILESTONE_DESCRIPTION=${MILESTONE_DESCRIPTION[*]#\"}
 echo ${MILESTONE_DESCRIPTION[*]%\"} >> CHANGELOG.md
 
-# Write instruction for how to get the library from JCenter
-echo "###Use via JCenter and Gradle" >> CHANGELOG.md
-echo "\`\`\`groovy" >> CHANGELOG.md
-echo "compile: \"gov.nasa.worldwind.andriod:worldwind:${TRAVIS_TAG}@aar\"" >> CHANGELOG.md
-echo "\`\`\`" >> CHANGELOG.md
-echo "The JCenter repository must be specified in your project (Android Studio does this as a default)." >> CHANGELOG.md
-
 # When GitHub has milestones associated with the release, assemble a Changelog file and post it to the release assets
 if [[ "${#MILESTONE_ARRAY[@]}" -ne 0 ]]; then
     # Assemble Markdown list items for each milestone's associated issues
