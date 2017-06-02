@@ -30,13 +30,12 @@ script:
 
 deploy: # by default, travis will not invoke this step for PRs
   # Publish SNAPSHOT artifacts to OJO and update the latest SNAPSHOT version on the website
-  - provider: script
-    # OJO publishing not available yet
-    # script: ./gradlew worldwind:artifactoryPublish --stacktrace && travis/retrieve_latest_versions.sh
-    script: travis/retrieve_latest_versions.sh
-    skip_cleanup: true
-    on:
-      branch: develop
+#  - provider: script
+#    # OJO publishing not available yet
+#     script: ./gradlew worldwind:artifactoryPublish --stacktrace
+#    skip_cleanup: true
+#    on:
+#      branch: develop
   # Publish release artifacts to Bintray/JCenter and add the documentation to ghpages. Create a changelog for GitHub.
   - provider: script
     script: ./gradlew worldwind:bintrayUpload --stacktrace && travis/ghpages.sh && travis/create_changelog.sh
@@ -59,21 +58,17 @@ deploy: # by default, travis will not invoke this step for PRs
     on:
       tags: true
 
-after_failure:
-  # Concatenate the logcat.log file et al to the travis log
-  - for file in *.log; do echo "$file"; echo "====================="; cat "$file"; done || true
-
 before_cache:
-  # Use the caching configuration per the Travis CI documentation
-  # See https://docs.travis-ci.com/user/languages/android#Caching
-  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+  # See the Travis documentation: https://docs.travis-ci.com/user/languages/android#Caching
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 
 cache:
   directories:
-    # Use the caching configuration per the Travis CI documentation
-    # See https://docs.travis-ci.com/user/languages/android#Caching
+    # See the Travis documentation: https://docs.travis-ci.com/user/languages/android#Caching
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
+    - $HOME/.android/build-cache
 
 notifications:
   # Notify the World Wind services mailing list on every build
