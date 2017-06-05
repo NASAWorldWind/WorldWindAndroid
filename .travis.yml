@@ -11,6 +11,7 @@ language: android
 jdk:
   - oraclejdk8
 
+# Configure the Android build configuration to match the Gradle build
 android:
   components:
     - platform-tools      # latest SDK platform-tools
@@ -20,13 +21,17 @@ android:
     - extra-android-support
     - extra-android-m2repository
 
-# Build the project, signing APK files with the World Wind keystore when the build is not a pull request
-script:
+# Decrypt the keystore used to certify Android apps when the build is not a pull request
+before_script:
   - 'if [[ "${TRAVIS_PULL_REQUEST}" == "false" ]]; then openssl aes-256-cbc -K "${encrypted_2eaf8cabe659_key}" -iv "${encrypted_2eaf8cabe659_iv}" -in keystore.jks.enc -out keystore.jks -d; fi'
+
+# Build the project
+script:
   - ./gradlew build --stacktrace
 
-deploy: # travis does not invoke this step for pull request builds
-  # Publish SNAPSHOT artifacts to OJO and update the latest SNAPSHOT version on the website
+# Deploy build artifacts; Travis does not invoke this step for pull request builds
+deploy:
+  # Publish SNAPSHOT artifacts to oss.jfrog.org
 #  - provider: script
 #    # OJO publishing not available yet
 #     script: ./gradlew worldwind:artifactoryPublish --stacktrace
@@ -81,6 +86,6 @@ cache:
 notifications:
   email:
     recipients:
-      secure: SheoPrZZHX1c70JTwoRULza5XobdTPisIgQSfpFBSjolS/Z+qJBIZkyQNKRPfzvs5FEZNBHlaXnvAEX8sUHAJtvp5A9P/c0jaZ3dA0IQ1TJCNg3XT2ZLz4R5JOQclYbgBIqr27MSmx9vvnfGUDCSKaRXdLxmB0Hun7zlkR79IEQ6lLeeB9pu7N/4vuzdmMGKU1lOWs3tmDpdeNOdgSYhKW81eX0FHrgWTXeXcv/3hhtn87XogwKdVKeYFKY+1wHUV3j+dnqeN7yMhqlpljHkOpQ5YqG7nDnPbSJZJ2NINTB/+Mus57eq67FnNl4CDAsWue97wrY8u/+mtGP0boyhXUlBaKJdJpENnuSbxLZtMzvrI5JucxgGXiKei+q84DAh1BbN0+205kBfQgh24GF68bMuKFSpJDobN6usLXVnfjnTrlrMkJQ9wGY/m8g9P9IhJpguJuhYocB6ByMOCkkeSEXdVN6Wb7MGXcfSWdnasVhqAX4yYUt34WUO+vWf842atzXWMZDyStjUe/hWQactB2FhyZBt9kIjMBMWodEhAlDPgFSzwz4huiDkAjeQSszqDQQVOXGFG+f64HhnhYElkY7F08/Yy/sI5HlQ0C0nlNXVsFZ5oHRWwyw02tVVdzNo3ho2h1NSW935S0z3rWRlNOxxKisBON0OBGgZdWJRLYc=
+      secure: DkCy9CqMXyRmRNYOt3pgN6kK/p5n4sVrW4qi2W6HDkolrBVSXYcLid1D9krMgcK7DhcWCbAusUdDh7vVjnnD9OaNanElN8sp0bOEtL0QJrPfcyVJdALO6qoZW+PCLLW7bgEjtbXBAY/u5sHTop/X2XWV1vM3Jx23eqvS5/UzbwyAqRvHjGreJG4RDMQhxOuk/yiXT1QB2sKcbZBn3nTaBQOjHsYENfAAxwh/Gr1XrS5RPg3UWV9N8vVW98nyIYYTQmtvu84M048wdub/fDH91XUQucpJtMKWjc9C/TwOhHEuk3hvg+w7GvqROPbVa1GVkw6b3bL1MVumAzd9SRESZmKxWI/EhqnlYFhkE88p1xjX5JX5sU7R5q+lGnh3pVL7E8nGBjthEdcvyqRGYxqACSY85Zdh70QjQ74Z4jLuwueLhiNaFVxE5cwEsVdW4ciZgCEbOHcUY3HuXRe7zYzKdAJN3+cUhwF9zZ0ABsxTowzgBZwzE6+kpmoQaV/VeWwJIe3+szedgk4cb+Hv4F1iILBMQ7avAeCdwcUzcP3B4SIG0wAT63JRJbERqTumchVmSycFP77sDgZ1wG5pi/DMxoSeCRqLBWnJAPLDnz/JEMhZl3+nEqtGUG69pymv5bsoCBPXCLeDZj5hNliZcP+Sm4RJgjNz0IILaSlEzJ+duto=
     on_success: always
     on_failure: always
