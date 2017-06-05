@@ -7,8 +7,8 @@ sudo: required
 # Set up to run the Android build script per the Travis CI documentation
 language: android
 
+# Configure the build to use Oracle JDK 8, required by Android API 24
 jdk:
-  # Configure the build to use Oracle JDK 8, required by Android API 24
   - oraclejdk8
 
 android:
@@ -20,15 +20,12 @@ android:
     - extra-android-support
     - extra-android-m2repository
 
-before_script:
-  # Prepare the Travis build environment
-  - 'if [[ "${TRAVIS_PULL_REQUEST}" == "false" ]]; then openssl aes-256-cbc -K "${encrypted_2eaf8cabe659_key}" -iv "${encrypted_2eaf8cabe659_iv}" -in keystore.jks.enc -out keystore.jks -d; fi'
-
+# Build the project, signing APK files with the World Wind keystore when the build is not a pull request
 script:
-  # Build the project
+  - 'if [[ "${TRAVIS_PULL_REQUEST}" == "false" ]]; then openssl aes-256-cbc -K "${encrypted_2eaf8cabe659_key}" -iv "${encrypted_2eaf8cabe659_iv}" -in keystore.jks.enc -out keystore.jks -d; fi'
   - ./gradlew build --stacktrace
 
-deploy: # by default, travis will not invoke this step for PRs
+deploy: # travis does not invoke this step for pull request builds
   # Publish SNAPSHOT artifacts to OJO and update the latest SNAPSHOT version on the website
 #  - provider: script
 #    # OJO publishing not available yet
@@ -36,13 +33,24 @@ deploy: # by default, travis will not invoke this step for PRs
 #    skip_cleanup: true
 #    on:
 #      branch: develop
-  # Publish release artifacts to Bintray/JCenter and add the documentation to ghpages. Create a changelog for GitHub.
+  # Publish release artifacts to Bintray/JCenter
   - provider: script
-    script: ./gradlew worldwind:bintrayUpload --stacktrace && travis/ghpages.sh && travis/create_changelog.sh
+    script: ./gradlew worldwind:bintrayUpload --stacktrace
+    skip_cleanup: true
+    on:
+  # Publish release documentation to GitHub pages
+  - provider: script
+    script: ./travis/ghpages.sh
     skip_cleanup: true
     on:
       tags: true
-  # Publish artifacts to GitHub release
+  # Create a changelog for GitHub Releases
+  - provider: script
+    script: ./travis/create_changelog.sh
+    skip_cleanup: true
+    on:
+      tags: true
+  # Publish release artifacts to GitHub Releases
   - provider: releases
     api_key: $GITHUB_API_KEY
     file:
@@ -58,20 +66,18 @@ deploy: # by default, travis will not invoke this step for PRs
     on:
       tags: true
 
+# Android build cache configuration. See the Travis documentation: https://docs.travis-ci.com/user/languages/android#Caching
 before_cache:
-  # See the Travis documentation: https://docs.travis-ci.com/user/languages/android#Caching
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
-
 cache:
   directories:
-    # See the Travis documentation: https://docs.travis-ci.com/user/languages/android#Caching
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
     - $HOME/.android/build-cache
 
+# Notify the World Wind mailing list on every build
 notifications:
-  # Notify the World Wind services mailing list on every build
   email:
     recipients:
       secure: SheoPrZZHX1c70JTwoRULza5XobdTPisIgQSfpFBSjolS/Z+qJBIZkyQNKRPfzvs5FEZNBHlaXnvAEX8sUHAJtvp5A9P/c0jaZ3dA0IQ1TJCNg3XT2ZLz4R5JOQclYbgBIqr27MSmx9vvnfGUDCSKaRXdLxmB0Hun7zlkR79IEQ6lLeeB9pu7N/4vuzdmMGKU1lOWs3tmDpdeNOdgSYhKW81eX0FHrgWTXeXcv/3hhtn87XogwKdVKeYFKY+1wHUV3j+dnqeN7yMhqlpljHkOpQ5YqG7nDnPbSJZJ2NINTB/+Mus57eq67FnNl4CDAsWue97wrY8u/+mtGP0boyhXUlBaKJdJpENnuSbxLZtMzvrI5JucxgGXiKei+q84DAh1BbN0+205kBfQgh24GF68bMuKFSpJDobN6usLXVnfjnTrlrMkJQ9wGY/m8g9P9IhJpguJuhYocB6ByMOCkkeSEXdVN6Wb7MGXcfSWdnasVhqAX4yYUt34WUO+vWf842atzXWMZDyStjUe/hWQactB2FhyZBt9kIjMBMWodEhAlDPgFSzwz4huiDkAjeQSszqDQQVOXGFG+f64HhnhYElkY7F08/Yy/sI5HlQ0C0nlNXVsFZ5oHRWwyw02tVVdzNo3ho2h1NSW935S0z3rWRlNOxxKisBON0OBGgZdWJRLYc=
