@@ -38,6 +38,7 @@ deploy: # travis does not invoke this step for pull request builds
     script: ./gradlew worldwind:bintrayUpload --stacktrace
     skip_cleanup: true
     on:
+      tags: true
   # Publish release documentation to GitHub pages
   - provider: script
     script: ./travis/ghpages.sh
