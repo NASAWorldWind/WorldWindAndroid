@@ -4,6 +4,7 @@
   ~ National Aeronautics and Space Administration. All Rights Reserved.
   -->
 
+<!-- android:paddingLeft is a constant to avoid padding inconsistencies in landscape mode -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="@dimen/nav_header_height"
