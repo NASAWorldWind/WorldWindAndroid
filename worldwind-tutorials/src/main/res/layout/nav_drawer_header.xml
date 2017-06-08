@@ -33,6 +33,7 @@
     <TextView
         android:autoLink="web"
         android:id="@+id/textView"
+        android:textColorLink="@android:color/white"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="https://github.com/NASAWorldWind/WorldWindAndroid"/>
