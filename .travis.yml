@@ -29,45 +29,24 @@ before_script:
 script:
   - ./gradlew build --stacktrace
 
-# Deploy build artifacts; Travis does not invoke this step for pull request builds
+# Deploy build artifacts. Travis does not invoke this step for pull request builds
 deploy:
-  # Publish SNAPSHOT artifacts to oss.jfrog.org
-#  - provider: script
-#    # OJO publishing not available yet
-#     script: ./gradlew worldwind:artifactoryPublish --stacktrace
-#    skip_cleanup: true
-#    on:
-#      branch: develop
   # Publish release artifacts to Bintray/JCenter
   - provider: script
     script: ./gradlew worldwind:bintrayUpload --stacktrace
     skip_cleanup: true
     on:
       tags: true
-  # Publish release documentation to GitHub pages
+  # Create CHANGELOG.md in the current directory
   - provider: script
-    script: ./travis/ghpages.sh
+    script: 'source ./travis/changelog.sh && changelog "${TRAVIS_TAG}" "https://api.github.com/repos/${TRAVIS_REPO_SLUG}" >> CHANGELOG.md'
     skip_cleanup: true
     on:
       tags: true
-  # Create a changelog for GitHub Releases
-  - provider: script
-    script: ./travis/create_changelog.sh
-    skip_cleanup: true
-    on:
-      tags: true
-  # Publish release artifacts to GitHub Releases
+  # Create a GitHub release and pubilsh CHANGELOG.md to the release assets
   - provider: releases
     api_key: $GITHUB_API_KEY
-    file:
-      - worldwind/build/outputs/aar/worldwind-debug.aar
-      - worldwind/build/outputs/aar/worldwind-release.aar
-      - worldwind/build/outputs/doc/worldwind-javadoc.zip
-      - worldwind-examples/build/outputs/apk/worldwind-examples-release.apk
-      - worldwind-examples/build/outputs/apk/worldwind-examples-debug.apk
-      - worldwind-tutorials/build/outputs/apk/worldwind-tutorials-release.apk
-      - worldwind-tutorials/build/outputs/apk/worldwind-tutorials-debug.apk
-      - CHANGELOG.md
+    file: CHANGELOG.md
     skip_cleanup: true
     on:
       tags: true
