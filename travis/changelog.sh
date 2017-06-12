@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# Install jq to filter GitHub API results
-sudo apt-get install -qq jq
-jq --version
-
 # Writes a change log to stdout using the GitHub API and the milestone associated with the specified Git tag
 function changelog() {
 
