@@ -39,7 +39,7 @@ deploy:
       tags: true
   # Create CHANGELOG.md in the current directory
   - provider: script
-    script: 'source ./travis/changelog.sh && changelog "${TRAVIS_TAG}" "https://api.github.com/repos/${TRAVIS_REPO_SLUG}" >> CHANGELOG.md'
+    script: ./travis/changelog.sh >> CHANGELOG.md
     skip_cleanup: true
     on:
       tags: true
