@@ -31,6 +31,12 @@ script:
 
 # Deploy build artifacts. Travis does not invoke this step for pull request builds
 deploy:
+  # Publish SNAPSHOT artifacts to oss.jfrog.org
+  - provider: script
+    script: ./gradlew worldwind:artifactoryPublish --stacktrace
+    skip_cleanup: true
+    on:
+      branch: develop
   # Publish release artifacts to Bintray/JCenter
   - provider: script
     script: ./gradlew worldwind:bintrayUpload --stacktrace
