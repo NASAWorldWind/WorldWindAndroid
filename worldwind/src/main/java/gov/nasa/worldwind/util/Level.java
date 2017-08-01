@@ -48,11 +48,6 @@ public class Level {
     public final int tileHeight;
 
     /**
-     * The size of pixels or elevation cells within this level, in radians per pixel (or per cell).
-     */
-    public final double texelHeight;
-
-    /**
      * Constructs a Level within a {@link LevelSet}. Applications typically do not interact with this class.
      *
      * @param parent      the level set that this level is a member of
@@ -77,7 +72,6 @@ public class Level {
         this.tileDelta = tileDelta;
         this.tileWidth = parent.tileWidth;
         this.tileHeight = parent.tileHeight;
-        this.texelHeight = Math.toRadians(tileDelta) / parent.tileHeight;
     }
 
     /**
