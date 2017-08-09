@@ -20,8 +20,8 @@ keystore.jks
 
 local.properties
 
-worldwind/*.iml
+worldwind/worldwind.iml
 
-worldwind-examples/*.iml
+worldwind-examples/worldwind-examples.iml
 
-worldwind-tutorials/*.iml
+worldwind-tutorials/worldwind-tutorials.iml
