@@ -4,15 +4,11 @@
 
 .idea/libraries
 
-.idea/modules.xml
-
 .idea/shelf
 
 .idea/tasks.xml
 
 .idea/workspace.xml
-
-*.iml
 
 build
 
