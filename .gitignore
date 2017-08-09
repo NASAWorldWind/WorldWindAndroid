@@ -2,18 +2,26 @@
 
 .gradle
 
-.idea/encodings.xml
-
 .idea/libraries
 
-.idea/misc.xml
+.idea/modules.xml
 
 .idea/shelf
 
+.idea/tasks.xml
+
 .idea/workspace.xml
+
+*.iml
 
 build
 
 keystore.jks
 
 local.properties
+
+worldwind/*.iml
+
+worldwind-examples/*.iml
+
+worldwind-tutorials/*.iml
