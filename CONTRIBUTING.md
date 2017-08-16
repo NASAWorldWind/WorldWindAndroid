@@ -1,4 +1,4 @@
-# Contributing to Web WorldWind
+# Contributing to WorldWind Android
 
 #### Table of Contents
 
