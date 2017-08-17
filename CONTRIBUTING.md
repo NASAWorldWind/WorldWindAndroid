@@ -27,8 +27,6 @@ WorldWind team and community understand your report, reproduce the behavior, and
 
 #### Before Submitting a Bug Report
 
-* Check the [**"Common Problems"**](https://worldwind.arc.nasa.gov/web/tutorials/common-problems/) page on the WorldWind
-website. This page describes common issues that users or developers frequently encounter and gives solutions to those issues.
 * Check the [**WorldWind Forum**](https://forum.worldwindcentral.com/forum/worldwind-android-wwa/android-discussion).
 * Check this repository's [**issues**](https://github.com/NASAWorldWind/WorldWindAndroid/issues) to see if the problem has
 already been reported. If it has and the issue is **still open**, add a comment to the existing issue instead of opening
