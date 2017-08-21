@@ -1423,7 +1423,7 @@ public class PlacemarksMilStd2525StressActivity extends GeneralGlobeActivity imp
             Navigator navigator = getWorldWindow().getNavigator();
             navigator.setLongitude(navigator.getLongitude() - cameraDegrees);
 
-            // Redraw the World Window to display the above changes.
+            // Redraw the WorldWindow to display the above changes.
             this.getWorldWindow().requestRedraw();
         }
 

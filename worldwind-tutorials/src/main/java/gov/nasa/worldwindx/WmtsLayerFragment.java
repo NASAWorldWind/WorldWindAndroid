@@ -23,7 +23,7 @@ public class WmtsLayerFragment extends BasicGlobeFragment {
         // Let the super class (BasicGlobeFragment) do the creation
         WorldWindow wwd = super.createWorldWindow();
 
-        // Create a layer factory, World Wind's general component for creating layers
+        // Create a layer factory, WorldWind's general component for creating layers
         // from complex data sources.
         LayerFactory layerFactory = new LayerFactory();
 
@@ -34,7 +34,7 @@ public class WmtsLayerFragment extends BasicGlobeFragment {
             new LayerFactory.Callback() {
                 @Override
                 public void creationSucceeded(LayerFactory factory, Layer layer) {
-                    // Add the finished WMTS layer to the World Window.
+                    // Add the finished WMTS layer to the WorldWindow.
                     getWorldWindow().getLayers().addLayer(layer);
                     Log.i("gov.nasa.worldwind", "WMTS layer creation succeeded");
                 }

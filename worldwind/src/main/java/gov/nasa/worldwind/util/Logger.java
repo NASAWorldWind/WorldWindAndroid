@@ -97,7 +97,7 @@ public class Logger {
         messageTable.put("missingViewport", "The viewport is null");
         messageTable.put("missingVector", "The vector is null");
         messageTable.put("missingVersion", "The version is null");
-        messageTable.put("missingWorldWindow", "The world window is null");
+        messageTable.put("missingWorldWindow", "The WorldWindow is null");
         messageTable.put("singularMatrix", "The matrix cannot be inverted");
     }
 

@@ -98,7 +98,7 @@ public class PlacemarksStressTestActivity extends GeneralGlobeActivity implement
             Navigator navigator = getWorldWindow().getNavigator();
             navigator.setLongitude(navigator.getLongitude() - cameraDegrees);
 
-            // Redraw the World Window to display the above changes.
+            // Redraw the WorldWindow to display the above changes.
             this.getWorldWindow().requestRedraw();
         }
 

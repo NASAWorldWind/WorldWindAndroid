@@ -219,7 +219,7 @@ public class Line {
         // Adapted from the original ray-triangle intersection algorithm to optimize for ray-triangle strip
         // intersection. We optimize by reusing constant terms, replacing use of Vec3 with inline primitives, and
         // exploiting the triangle strip organization to reuse computations common to adjacent triangles. These
-        // optimizations reduced worst-case terrain picking performance for Web World Wind by approximately 50% in
+        // optimizations reduced worst-case terrain picking performance for Web WorldWind by approximately 50% in
         // Chrome on a 2010 iMac and a Nexus 9.
 
         double vx = this.direction.x;

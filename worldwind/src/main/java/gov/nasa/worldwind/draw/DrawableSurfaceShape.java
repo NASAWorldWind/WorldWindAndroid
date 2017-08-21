@@ -93,7 +93,7 @@ public class DrawableSurfaceShape implements Drawable {
         } finally {
             // Clear the accumulated shapes.
             scratchList.clear();
-            // Restore the default World Wind OpenGL state.
+            // Restore the default WorldWind OpenGL state.
             GLES20.glDisableVertexAttribArray(1 /*vertexTexCoord*/); // only vertexPoint is enabled by default
         }
     }
@@ -171,7 +171,7 @@ public class DrawableSurfaceShape implements Drawable {
                 shapeCount++;
             }
         } finally {
-            // Restore the default World Wind OpenGL state.
+            // Restore the default WorldWind OpenGL state.
             dc.bindFramebuffer(0);
             GLES20.glViewport(dc.viewport.x, dc.viewport.y, dc.viewport.width, dc.viewport.height);
             GLES20.glEnable(GLES20.GL_DEPTH_TEST);

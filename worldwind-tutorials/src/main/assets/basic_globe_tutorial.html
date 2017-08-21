@@ -24,12 +24,12 @@ The globe uses the default navigation gestures:
     <li>three-finger tilt arcs the camera vertically around the look at position.</li>
 </ul>
 <h2>Get Started</h2>
-<p>It’s very easy to get started using World Wind Android. You simply create and configure a <b>WorldWindow</b> View
+<p>It’s very easy to get started using WorldWind Android. You simply create and configure a <b>WorldWindow</b> View
     object and add it to a layout. This can be performed in an Activity or a Fragment.
 </p>
 <div style="border-top: 1px solid black; border-bottom: 1px solid black;">
     <textarea id="java-snippet" cols="80" rows="5">
-// Create a World Window (a GLSurfaceView)...
+// Create a WorldWindow (a GLSurfaceView)...
 WorldWindow wwd = new WorldWindow(getContext());
 // ... and add some map layers
 wwd.getLayers().addLayer(new BackgroundLayer());
@@ -55,12 +55,12 @@ public class BasicGlobeFragment extends Fragment {
      * Creates a new WorldWindow (GLSurfaceView) object.
      */
     public WorldWindow createWorldWindow() {
-        // Create the World Window (a GLSurfaceView) which displays the globe.
+        // Create the WorldWindow (a GLSurfaceView) which displays the globe.
         this.wwd = new WorldWindow(getContext());
-        // Setup the World Window's layers.
+        // Setup the WorldWindow's layers.
         this.wwd.getLayers().addLayer(new BackgroundLayer());
         this.wwd.getLayers().addLayer(new BlueMarbleLandsatLayer());
-        // Setup the World Window's elevation coverages.
+        // Setup the WorldWindow's elevation coverages.
         this.wwd.getGlobe().getElevationModel().addCoverage(new BasicElevationCoverage());
         return this.wwd;
     }

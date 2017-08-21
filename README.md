@@ -1,6 +1,6 @@
 <img src="https://worldwind.arc.nasa.gov/css/images/nasa-logo.svg" height="100"/>
 
-# World Wind Android
+# WorldWind Android
 
 [![Build Status](https://travis-ci.org/NASAWorldWind/WorldWindAndroid.svg?branch=develop)](https://travis-ci.org/NASAWorldWind/WorldWindAndroid)
 [![Download](https://api.bintray.com/packages/nasaworldwind/maven/WorldWindAndroid/images/download.svg)](https://bintray.com/nasaworldwind/maven/WorldWindAndroid/_latestVersion)
@@ -11,8 +11,8 @@ imagery. Provides a collection of shapes for displaying and interacting with geo
 geometric objects.
 
 - [worldwind.arc.nasa.gov](https://worldwind.arc.nasa.gov) has setup instructions, developers guides, API documentation and more
-- [World Wind Forum](https://forum.worldwindcentral.com) provides help from the World Wind community
-- [Android Studio](https://developer.android.com/sdk/) is used by the NASA World Wind development team
+- [WorldWind Forum](https://forum.worldwindcentral.com) provides help from the WorldWind community
+- [Android Studio](https://developer.android.com/sdk/) is used by the NASA WorldWind development team
 
 ## Download
 
@@ -23,7 +23,7 @@ compile 'gov.nasa.worldwind.android:worldwind:0.6.0@aar'
 
 ## Releases and Roadmap
 
-Official World Wind Android releases have the latest stable features, enhancements and bug fixes ready for production use.
+Official WorldWind Android releases have the latest stable features, enhancements and bug fixes ready for production use.
 
 - [GitHub Releases](https://github.com/NASAWorldWind/WorldWindAndroid/releases/) documents official releases
 - [GitHub Milestones](https://github.com/NASAWorldWind/WorldWindAndroid/milestones) documents upcoming releases and the development roadmap
@@ -32,7 +32,7 @@ Official World Wind Android releases have the latest stable features, enhancemen
 
 ## License
 
-    NASA WORLD WIND
+    NASA WorldWind
 
     Copyright (C) 2001 United States Government
     as represented by the Administrator of the
@@ -53,7 +53,7 @@ Official World Wind Android releases have the latest stable features, enhancemen
 
     Government Agency: National Aeronautics and Space Administration (NASA)
     Government Agency Original Software Designation: ARC-15166-1
-    Government Agency Original Software Title: NASA World Wind
+    Government Agency Original Software Title: NASA WorldWind
     User Registration Requested. Please send email with your contact information to Patrick.Hogan@nasa.gov
     Government Agency Point of Contact for Original Software: Patrick.Hogan@nasa.gov
 

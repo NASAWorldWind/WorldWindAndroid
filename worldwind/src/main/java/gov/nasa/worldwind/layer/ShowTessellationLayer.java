@@ -42,7 +42,7 @@ public class ShowTessellationLayer extends AbstractLayer {
             return; // no terrain to render
         }
 
-        // Use World Wind's basic GLSL program.
+        // Use WorldWind's basic GLSL program.
         BasicShaderProgram program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
         if (program == null) {
             program = (BasicShaderProgram) rc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(rc.resources));

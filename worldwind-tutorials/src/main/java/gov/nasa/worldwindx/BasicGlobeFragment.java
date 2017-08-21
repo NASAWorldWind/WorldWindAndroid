@@ -29,12 +29,12 @@ public class BasicGlobeFragment extends Fragment {
      * Creates a new WorldWindow (GLSurfaceView) object.
      */
     public WorldWindow createWorldWindow() {
-        // Create the World Window (a GLSurfaceView) which displays the globe.
+        // Create the WorldWindow (a GLSurfaceView) which displays the globe.
         this.wwd = new WorldWindow(getContext());
-        // Setup the World Window's layers.
+        // Setup the WorldWindow's layers.
         this.wwd.getLayers().addLayer(new BackgroundLayer());
         this.wwd.getLayers().addLayer(new BlueMarbleLandsatLayer());
-        // Setup the World Window's elevation coverages.
+        // Setup the WorldWindow's elevation coverages.
         this.wwd.getGlobe().getElevationModel().addCoverage(new BasicElevationCoverage());
         return this.wwd;
     }

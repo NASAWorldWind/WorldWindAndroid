@@ -91,7 +91,7 @@ public class DrawableLines implements Drawable {
         // Draw the leader line.
         GLES20.glDrawArrays(GLES20.GL_LINES, 0 /*first*/, (buffer.remaining() / 3) /*count*/);
 
-        // Restore the default World Wind OpenGL state.
+        // Restore the default WorldWind OpenGL state.
         if (!this.enableDepthTest) {
             GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         }

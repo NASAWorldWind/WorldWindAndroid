@@ -40,7 +40,7 @@ public class TaskService {
     }
 
     protected ThreadFactory threadFactory() {
-        final String threadName = "World Wind Task Service ";
+        final String threadName = "WorldWind Task Service ";
         final AtomicInteger threadNumber = new AtomicInteger(1);
 
         return new ThreadFactory() {

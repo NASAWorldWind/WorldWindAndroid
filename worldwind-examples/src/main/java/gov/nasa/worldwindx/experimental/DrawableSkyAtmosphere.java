@@ -89,7 +89,7 @@ public class DrawableSkyAtmosphere implements Drawable {
         GLES20.glFrontFace(GLES20.GL_CW);
         GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, this.triStripElements.getBufferLength(), GLES20.GL_UNSIGNED_SHORT, 0);
 
-        // Restore the default World Wind OpenGL state.
+        // Restore the default WorldWind OpenGL state.
         GLES20.glDepthMask(true);
         GLES20.glFrontFace(GLES20.GL_CCW);
     }

@@ -43,7 +43,7 @@ public class GpkgTileFactory implements TileFactory {
         String tableName = this.tiles.getTableName();
         int zoomLevel = level.levelNumber;
 
-        // Attempt to find the GeoPackage tile matrix associated with the World Wind level. Assumes that the World Wind
+        // Attempt to find the GeoPackage tile matrix associated with the WorldWind level. Assumes that the WorldWind
         // levels match the GeoPackage tile matrix zoom levels. If there's no match then the GeoPackage contains no
         // tiles for this level and this tile has no image source.
         GeoPackage geoPackage = this.tiles.getContainer();
@@ -51,7 +51,7 @@ public class GpkgTileFactory implements TileFactory {
         GpkgTileUserMetrics tileUserMetrics = geoPackage.getTileUserMetrics(tableName);
 
         if (tileMatrix != null && tileUserMetrics.hasZoomLevel(zoomLevel)) {
-            // Convert the World Wind tile address to the equivalent GeoPackage tile address. Assumes that the World
+            // Convert the WorldWind tile address to the equivalent GeoPackage tile address. Assumes that the World
             // Wind level set matchs the GeoPackage tile matrix set, with the exception of tile rows which are inverted.
             int gpkgRow = tileMatrix.getMatrixHeight() - row - 1;
             // Configure the tile with a bitmap factory that reads directly from the GeoPackage.

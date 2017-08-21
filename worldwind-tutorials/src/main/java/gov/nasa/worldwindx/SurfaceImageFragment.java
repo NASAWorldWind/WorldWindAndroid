@@ -32,7 +32,7 @@ public class SurfaceImageFragment extends BasicGlobeFragment {
         String urlString = "http://worldwindserver.net/android/images/etna.jpg";
         SurfaceImage surfaceImageUrl = new SurfaceImage(sector, ImageSource.fromUrl(urlString));
 
-        // Add a World Window layer that displays the Surface Image, just before the Atmosphere layer.
+        // Add a WorldWindow layer that displays the Surface Image, just before the Atmosphere layer.
         RenderableLayer layer = new RenderableLayer("Surface Image");
         layer.addRenderable(surfaceImageResource);
         layer.addRenderable(surfaceImageUrl);

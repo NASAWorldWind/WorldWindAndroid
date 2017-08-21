@@ -4,7 +4,7 @@
   -->
 
 <resources>
-    <string name="app_name">World Wind Tutorials</string>
+    <string name="app_name">WorldWind Tutorials</string>
 
     <string name="action_about">About</string>
     <string name="action_settings">Settings</string>

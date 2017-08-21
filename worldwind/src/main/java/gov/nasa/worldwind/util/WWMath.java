@@ -9,7 +9,7 @@ import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Viewport;
 
 /**
- * Collection of static methods for performing common World Wind computations.
+ * Collection of static methods for performing common WorldWind computations.
  */
 public class WWMath {
 

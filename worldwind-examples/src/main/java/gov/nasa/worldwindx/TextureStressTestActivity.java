@@ -47,9 +47,9 @@ public class TextureStressTestActivity extends BasicGlobeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_texture_stress_test));
-        this.setAboutBoxText("Continuously allocates OpenGL texture objects to test the effect of an excessive number of textures on the World Wind render resource cache.");
+        this.setAboutBoxText("Continuously allocates OpenGL texture objects to test the effect of an excessive number of textures on the WorldWind render resource cache.");
 
-        // Setup the World Window to display the tessellation layer and a layer of surface images. We use a minimal
+        // Setup the WorldWindow to display the tessellation layer and a layer of surface images. We use a minimal
         // layer configuration in order to gather precise metrics on memory usage.
         this.getWorldWindow().getLayers().clearLayers();
         this.getWorldWindow().getLayers().addLayer(new ShowTessellationLayer());
@@ -69,7 +69,7 @@ public class TextureStressTestActivity extends BasicGlobeActivity {
     }
 
     protected boolean addImage() {
-        // Create an image source with a unique factory instance. This pattern is used in order to force World Wind to
+        // Create an image source with a unique factory instance. This pattern is used in order to force WorldWind to
         // allocate a new OpenGL texture object for each surface image from a single bitmap instance.
         ImageSource imageSource = ImageSource.fromBitmapFactory(new ImageSource.BitmapFactory() {
             @Override
@@ -107,7 +107,7 @@ public class TextureStressTestActivity extends BasicGlobeActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Add images to the World Window at a regular interval.
+        // Add images to the WorldWindow at a regular interval.
         this.handler.sendEmptyMessageDelayed(ADD_IMAGE, ADD_IMAGE_DELAY);
     }
 }

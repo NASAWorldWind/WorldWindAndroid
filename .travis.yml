@@ -1,4 +1,4 @@
-# Directs the Travis CI build service for World Wind Android
+# Directs the Travis CI build service for WorldWind Android
 # For more information see https://docs.travis-ci.com/user/customizing-the-build/
 
 # Set up to run the Android build script per the Travis CI documentation

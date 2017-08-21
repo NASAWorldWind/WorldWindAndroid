@@ -75,9 +75,9 @@ public class MultiGlobeActivity extends AbstractMainActivity {
     }
 
     private WorldWindow createWorldWindow() {
-        // Create the World Window (a GLSurfaceView) which displays the globe.
+        // Create the WorldWindow (a GLSurfaceView) which displays the globe.
         WorldWindow wwd = new WorldWindow(this);
-        // Setup the World Window's layers.
+        // Setup the WorldWindow's layers.
         wwd.getLayers().addLayer(new BackgroundLayer());
         wwd.getLayers().addLayer(new BlueMarbleLandsatLayer());
         wwd.getLayers().addLayer(new AtmosphereLayer());

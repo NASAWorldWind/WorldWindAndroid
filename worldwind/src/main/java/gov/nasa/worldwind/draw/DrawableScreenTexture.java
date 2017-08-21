@@ -87,7 +87,7 @@ public class DrawableScreenTexture implements Drawable {
             this.doDraw(dc, drawable);
         }
 
-        // Restore the default World Wind OpenGL state.
+        // Restore the default WorldWind OpenGL state.
         GLES20.glDepthMask(true);
         GLES20.glDisableVertexAttribArray(1 /*vertexTexCoord*/); // only vertexPoint is enabled by default
     }
@@ -117,7 +117,7 @@ public class DrawableScreenTexture implements Drawable {
         // Draw the unit square as triangles.
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
 
-        // Restore the default World Wind OpenGL state.
+        // Restore the default WorldWind OpenGL state.
         if (!drawable.enableDepthTest) {
             GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         }

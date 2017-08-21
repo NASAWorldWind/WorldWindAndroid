@@ -25,8 +25,8 @@
 <h3>GeoPackageFragment.java</h3>
 <p>
     The GeoPackageFragment class extends BasicGlobeFragment and overrides the createWorldWindow method. Here we use
-    World Wind's LayerFactory to display the contents of a local OGC GeoPackage database. LayerFactory asynchronously
-    reads the GeoPackage contents to configure a World Wind layer, then notifies the application when it's done.
+    WorldWind's LayerFactory to display the contents of a local OGC GeoPackage database. LayerFactory asynchronously
+    reads the GeoPackage contents to configure a WorldWind layer, then notifies the application when it's done.
 </p>
 <div style="border-top: 1px solid black; border-bottom: 1px solid black;">
     <textarea id="java-code">
@@ -48,7 +48,7 @@ public class GeoPackageFragment extends BasicGlobeFragment {
         // SQLite library which operates only on files in the local Android filesystem.
         File geoPackageFile = TutorialUtil.unpackAsset(this.getContext(), "geopackage_tutorial.gpkg");
 
-        // Create a layer factory, World Wind's general component for creating layers
+        // Create a layer factory, WorldWind's general component for creating layers
         // from complex data sources.
         LayerFactory layerFactory = new LayerFactory();
 
@@ -59,7 +59,7 @@ public class GeoPackageFragment extends BasicGlobeFragment {
             new LayerFactory.Callback() {
                 @Override
                 public void creationSucceeded(LayerFactory factory, Layer layer) {
-                    // Add the finished GeoPackage layer to the World Window.
+                    // Add the finished GeoPackage layer to the WorldWindow.
                     getWorldWindow().getLayers().addLayer(layer);
                     // Place the viewer directly over the GeoPackage image.
                     getWorldWindow().getNavigator().setLatitude(36.8139677556754);

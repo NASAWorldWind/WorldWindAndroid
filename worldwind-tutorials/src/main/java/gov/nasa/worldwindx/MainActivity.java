@@ -34,7 +34,7 @@ import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.util.Logger;
 
 /**
- * This abstract Activity class implements a Navigation Drawer menu shared by all the World Wind Example activities.
+ * This abstract Activity class implements a Navigation Drawer menu shared by all the WorldWind Example activities.
  */
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     protected String tutorialUrl;
 
-    protected String aboutBoxTitle = "World Wind Tutorials";        // TODO: use a string resource, e.g., app name
+    protected String aboutBoxTitle = "WorldWind Tutorials";        // TODO: use a string resource, e.g., app name
 
     protected String aboutBoxText = "A collection of tutorials";    // TODO: make this a string resource
 
@@ -211,11 +211,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
         am.getMemoryInfo(mi);
 
-        // Assemble the current World Wind frame metrics.
+        // Assemble the current WorldWind frame metrics.
 
         FrameMetrics fm = this.getWorldWindow().getFrameMetrics();
 
-        // Print a log message with the system memory, World Wind cache usage, and World Wind average frame time.
+        // Print a log message with the system memory, WorldWind cache usage, and WorldWind average frame time.
         Logger.log(Logger.INFO, String.format(Locale.US, "System memory %,.0f KB    Heap memory %,.0f KB    Render cache %,.0f KB    Frame time %.1f ms + %.1f ms",
             (mi.totalMem - mi.availMem) / 1024.0,
             (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024.0,
@@ -223,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             fm.getRenderTimeAverage(),
             fm.getDrawTimeAverage()));
 
-        // Reset the accumulated World Wind frame metrics.
+        // Reset the accumulated WorldWind frame metrics.
         fm.reset();
 
         // Print the frame metrics again after the configured delay.

@@ -47,7 +47,7 @@ import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.SynchronizedPool;
 
 /**
- * Provides a World Wind window that implements a virtual globe inside of the Android view hierarchy. By default, World
+ * Provides a WorldWind window that implements a virtual globe inside of the Android view hierarchy. By default, World
  * Window is configured to display an ellipsoidal globe using the WGS 84 reference values.
  */
 public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCallback, GLSurfaceView.Renderer, MessageListener {
@@ -63,7 +63,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     protected static final int MSG_ID_SET_DEPTH_BITS = 4;
 
     /**
-     * Planet or celestial object displayed by this World Window.
+     * Planet or celestial object displayed by this WorldWindow.
      */
     protected Globe globe = new Globe(WorldWind.WGS84_ELLIPSOID, new ProjectionWgs84());
 
@@ -167,17 +167,17 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * @param configChooser optional argument for choosing an EGL configuration; may be null
      */
     protected void init(EGLConfigChooser configChooser) {
-        // Initialize the World Window's navigator.
+        // Initialize the WorldWindow's navigator.
         Location initLocation = Location.fromTimeZone(TimeZone.getDefault());
         double initAltitude = this.distanceToViewGlobeExtents() * 1.1; // add 10% to the minimum distance to allow for space around the screen edges
         this.navigator.setLatitude(initLocation.latitude);
         this.navigator.setLongitude(initLocation.longitude);
         this.navigator.setAltitude(initAltitude);
 
-        // Initialize the World Window's controller.
+        // Initialize the WorldWindow's controller.
         this.worldWindowController.setWorldWindow(this);
 
-        // Initialize the World Window's render resource cache.
+        // Initialize the WorldWindow's render resource cache.
         int cacheCapacity = RenderResourceCache.recommendedCapacity(this.getContext());
         this.renderResourceCache = new RenderResourceCache(cacheCapacity);
 
@@ -188,8 +188,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.setRenderer(this);
         this.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY); // must be called after setRenderer
 
-        // Log a message with some basic information about the world window's configuration.
-        Logger.log(Logger.INFO, "World Window initialized");
+        // Log a message with some basic information about the WorldWindow's configuration.
+        Logger.log(Logger.INFO, "WorldWindow initialized");
     }
 
     /**
@@ -215,19 +215,19 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     /**
-     * Indicates the planet or celestial object displayed by this World Window. Defines the reference ellipsoid and
+     * Indicates the planet or celestial object displayed by this WorldWindow. Defines the reference ellipsoid and
      * elevation models. Globe expresses its ellipsoidal parameters and elevation values in meters.
      * <p>
-     * World Window's globe is initially configured with the WGS 84 reference ellipsoid.
+     * WorldWindow's globe is initially configured with the WGS 84 reference ellipsoid.
      *
-     * @return the globe displayed by this World Window
+     * @return the globe displayed by this WorldWindow
      */
     public Globe getGlobe() {
         return this.globe;
     }
 
     /**
-     * Sets the planet or celestial object displayed by this World Window. Defines the reference ellipsoid and
+     * Sets the planet or celestial object displayed by this WorldWindow. Defines the reference ellipsoid and
      * elevation models. Globe expresses its ellipsoidal parameters and elevation values in meters.
      *
      * @param globe the globe to display
@@ -390,39 +390,39 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     /**
-     * Determines the World Wind objects displayed at a screen point. The screen point is interpreted as coordinates in
+     * Determines the WorldWind objects displayed at a screen point. The screen point is interpreted as coordinates in
      * Android screen pixels relative to this View.
      * <p/>
-     * If the screen point intersects any number of World Wind shapes, the returned list contains a picked object
+     * If the screen point intersects any number of WorldWind shapes, the returned list contains a picked object
      * identifying the top shape at the screen point. This picked object includes the shape renderable (or its non-null
-     * pick delegate) and the World Wind layer that displayed the shape. Shapes which are either hidden behind another
+     * pick delegate) and the WorldWind layer that displayed the shape. Shapes which are either hidden behind another
      * shape at the screen point or hidden behind terrain at the screen point are omitted from the returned list.
      * Therefore if the returned list contains a picked object identifying a shape, it is always marked as 'on top'.
      * <p/>
-     * If the screen point intersects the World Wind terrain, the returned list contains a picked object identifying the
-     * associated geographic position. If there are no shapes in the World Wind scene between the terrain and the screen
+     * If the screen point intersects the WorldWind terrain, the returned list contains a picked object identifying the
+     * associated geographic position. If there are no shapes in the WorldWind scene between the terrain and the screen
      * point, the terrain picked object is marked as 'on top'.
      * <p/>
-     * This returns an empty list when nothing in the World Wind scene intersects the screen point, when the screen
-     * point is outside this View's bounds, or if the OpenGL thread displaying the World Window's scene is paused (or
+     * This returns an empty list when nothing in the WorldWind scene intersects the screen point, when the screen
+     * point is outside this View's bounds, or if the OpenGL thread displaying the WorldWindow's scene is paused (or
      * becomes paused while this method is executing).
      *
      * @param x the screen point's X coordinate in Android screen pixels
      * @param y the screen point's Y coordinate in Android screen pixels
      *
-     * @return a list of World Wind objects at the screen point
+     * @return a list of WorldWind objects at the screen point
      */
     public PickedObjectList pick(float x, float y) {
         // Allocate a list in which to collect and return the picked objects.
         PickedObjectList pickedObjects = new PickedObjectList();
 
-        // Nothing can be picked if the World Window's OpenGL thread is paused.
+        // Nothing can be picked if the WorldWindow's OpenGL thread is paused.
         if (this.isPaused) {
             return pickedObjects;
         }
 
         // Compute the pick point in OpenGL screen coordinates, rounding to the nearest whole pixel. Nothing can be picked
-        // if pick point is outside the World Window's viewport.
+        // if pick point is outside the WorldWindow's viewport.
         int px = Math.round(x);
         int py = Math.round(this.getHeight() - y);
         if (!this.viewport.contains(px, py)) {
@@ -453,17 +453,17 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     /**
-     * Determines the World Wind shapes displayed in a screen rectangle. The screen rectangle is interpreted as
+     * Determines the WorldWind shapes displayed in a screen rectangle. The screen rectangle is interpreted as
      * coordinates in Android screen pixels relative to this view.
      * <p/>
-     * If the screen rectangle intersects any number of World Wind shapes, the returned list contains a picked object
+     * If the screen rectangle intersects any number of WorldWind shapes, the returned list contains a picked object
      * identifying the all of the top shapes in the rectangle. This picked object includes the shape renderable (or its
-     * non-null pick delegate) and the World Wind layer that displayed the shape. Shapes which are entirely hidden
+     * non-null pick delegate) and the WorldWind layer that displayed the shape. Shapes which are entirely hidden
      * behind another shape in the screen rectangle or are entirely hidden behind terrain in the screen rectangle are
      * omitted from the returned list.
      * <p/>
-     * This returns an empty list when no shapes in the World Wind scene intersect the screen rectangle, when the screen
-     * rectangle is outside this View's bounds, or if the OpenGL thread displaying the World Window's scene is paused
+     * This returns an empty list when no shapes in the WorldWind scene intersect the screen rectangle, when the screen
+     * rectangle is outside this View's bounds, or if the OpenGL thread displaying the WorldWindow's scene is paused
      * (or becomes paused while this method is executing).
      *
      * @param x      the screen rectangle's X coordinate in Android screen pixels
@@ -471,13 +471,13 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * @param width  the screen rectangle's width in Android screen pixels
      * @param height the screen rectangle's height in Android screen pixels
      *
-     * @return a list of World Wind shapes in the screen rectangle
+     * @return a list of WorldWind shapes in the screen rectangle
      */
     public PickedObjectList pickShapesInRect(float x, float y, float width, float height) {
         // Allocate a list in which to collect and return the picked objects.
         PickedObjectList pickedObjects = new PickedObjectList();
 
-        // Nothing can be picked if the World Window's OpenGL thread is paused.
+        // Nothing can be picked if the WorldWindow's OpenGL thread is paused.
         if (this.isPaused) {
             return pickedObjects;
         }
@@ -509,7 +509,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * screen pixels relative to this View.
      * <p/>
      * This stores the converted point in the result argument, and returns a boolean value indicating whether or not the
-     * converted is successful. This returns false if the Cartesian point is clipped by either the World Window's near
+     * converted is successful. This returns false if the Cartesian point is clipped by either the WorldWindow's near
      * clipping plane or far clipping plane.
      *
      * @param x      the Cartesian point's x component in meters
@@ -527,7 +527,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
                 Logger.logMessage(Logger.ERROR, "WorldWindow", "cartesianToScreenPoint", "missingResult"));
         }
 
-        // Compute the World Window's modelview-projection matrix.
+        // Compute the WorldWindow's modelview-projection matrix.
         this.computeViewingTransform(this.scratchProjection, this.scratchModelview);
         this.scratchProjection.multiplyByMatrix(this.scratchModelview);
 
@@ -547,7 +547,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * pixels relative to this View.
      * <p/>
      * This stores the converted point in the result argument, and returns a boolean value indicating whether or not the
-     * converted is successful. This returns false if the Cartesian point is clipped by either of the World Window's
+     * converted is successful. This returns false if the Cartesian point is clipped by either of the WorldWindow's
      * near clipping plane or far clipping plane.
      *
      * @param latitude  the position's latitude in degrees
@@ -595,7 +595,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         double sx = x;
         double sy = this.getHeight() - y;
 
-        // Compute the inverse modelview-projection matrix corresponding to the World Window's current Navigator state.
+        // Compute the inverse modelview-projection matrix corresponding to the WorldWindow's current Navigator state.
         this.computeViewingTransform(this.scratchProjection, this.scratchModelview);
         this.scratchProjection.multiplyByMatrix(this.scratchModelview).invert();
 
@@ -640,7 +640,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     /**
-     * Request that this World Window update its display. Prior changes to this World Window's Navigator, Globe and
+     * Request that this WorldWindow update its display. Prior changes to this WorldWindow's Navigator, Globe and
      * Layers (including the contents of layers) are reflected on screen sometime after calling this method. May be
      * called from any thread.
      */
@@ -651,7 +651,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
             return;
         }
 
-        // Suppress duplicate redraw requests, request that occur while the World Window is paused, and requests that
+        // Suppress duplicate redraw requests, request that occur while the WorldWindow is paused, and requests that
         // occur before we have an Android surface to draw to.
         if (!this.isWaitingForRedraw && !this.isPaused && !this.viewport.isEmpty()) {
             Choreographer.getInstance().postFrameCallback(this);
@@ -683,8 +683,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     /**
-     * Requests that this World Window's OpenGL renderer display another frame on the OpenGL thread. Does not cause the
-     * World Window's to display changes in its Navigator, Globe or Layers. Use {@link #requestRedraw()} instead.
+     * Requests that this WorldWindow's OpenGL renderer display another frame on the OpenGL thread. Does not cause the
+     * WorldWindow's to display changes in its Navigator, Globe or Layers. Use {@link #requestRedraw()} instead.
      *
      * @deprecated Use {@link #requestRedraw} instead.
      */
@@ -694,8 +694,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     }
 
     /**
-     * Queues a runnable to be executed on this World Window's OpenGL thread. Must not be used to affect changes to this
-     * World Window's state, including the Navigator, Globe and Layers. See the Android developers guide on <a
+     * Queues a runnable to be executed on this WorldWindow's OpenGL thread. Must not be used to affect changes to this
+     * WorldWindow's state, including the Navigator, Globe and Layers. See the Android developers guide on <a
      * href="http://developer.android.com/training/multiple-threads/communicate-ui.html">Communicating with the UI
      * Thread</a> instead.
      *
@@ -716,7 +716,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      */
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
-        // Specify the default World Wind OpenGL state.
+        // Specify the default WorldWind OpenGL state.
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glEnable(GLES20.GL_CULL_FACE);
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
@@ -728,7 +728,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // Clear any cached OpenGL resources and state, which are now invalid.
         this.dc.contextLost();
 
-        // Set the World Window's depth bits.
+        // Set the WorldWindow's depth bits.
         int[] depthBits = new int[1];
         GLES20.glGetIntegerv(GLES20.GL_DEPTH_BITS, depthBits, 0);
         this.mainThreadHandler.sendMessage(
@@ -746,12 +746,12 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     public void onSurfaceChanged(GL10 unused, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
 
-        // Set the World Window's new viewport dimensions.
+        // Set the WorldWindow's new viewport dimensions.
         Viewport newViewport = new Viewport(0, 0, width, height);
         this.mainThreadHandler.sendMessage(
             Message.obtain(this.mainThreadHandler, MSG_ID_SET_VIEWPORT /*msg.what*/, newViewport /*msg.obj*/));
 
-        // Redraw this World Window with the new viewport.
+        // Redraw this WorldWindow with the new viewport.
         this.mainThreadHandler.sendEmptyMessage(MSG_ID_REQUEST_REDRAW /*msg.what*/);
     }
 
@@ -790,7 +790,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         }
 
         // Process and display the Drawables accumulated in the last frame taken from the front of the queue. This frame
-        // may be drawn multiple times if the OpenGL thread executes more often than the World Window enqueues frames.
+        // may be drawn multiple times if the OpenGL thread executes more often than the WorldWindow enqueues frames.
         try {
             if (this.currentFrame != null) {
                 this.drawFrame(this.currentFrame);
@@ -812,7 +812,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     public void surfaceCreated(SurfaceHolder holder) {
         super.surfaceCreated(holder);
 
-        // Set up to receive broadcast messages from World Wind's global message center.
+        // Set up to receive broadcast messages from WorldWind's global message center.
         WorldWind.messageService().addListener(this);
     }
 
@@ -827,10 +827,10 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     public void surfaceDestroyed(SurfaceHolder holder) {
         super.surfaceDestroyed(holder);
 
-        // Release this WorldWindow reference from World Wind's global message service.
+        // Release this WorldWindow reference from WorldWind's global message service.
         WorldWind.messageService().removeListener(this);
 
-        // Reset the World Window's internal state.
+        // Reset the WorldWindow's internal state.
         this.reset();
     }
 
@@ -843,10 +843,10 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     public void onPause() {
         super.onPause();
 
-        // Mark the World Window as paused.
+        // Mark the WorldWindow as paused.
         this.isPaused = true;
 
-        // Reset the World Window's internal state. The OpenGL thread is paused, so frames in the queue will not be
+        // Reset the WorldWindow's internal state. The OpenGL thread is paused, so frames in the queue will not be
         // processed. Clear the frame queue and recycle pending frames back into the frame pool. We also don't know
         // whether or not the render resources are valid, so we reset and let the GLSurfaceView establish the new
         // EGL context and viewport.
@@ -861,7 +861,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     public void onResume() {
         super.onResume();
 
-        // Mark the World Window as not paused.
+        // Mark the WorldWindow as not paused.
         this.isPaused = false;
     }
 
@@ -872,7 +872,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
             return true;
         }
 
-        // Give the World Window's controller an opportunity to handle the event
+        // Give the WorldWindow's controller an opportunity to handle the event
         try {
             if (this.worldWindowController.onTouchEvent(event)) {
                 this.navigatorEvents.onTouchEvent(event);
@@ -900,7 +900,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
             this.frameMetrics.beginRendering(this.rc);
         }
 
-        // Setup the render context according to the World Window's current state.
+        // Setup the render context according to the WorldWindow's current state.
         this.rc.globe = this.globe;
         this.rc.terrainTessellator = this.tessellator;
         this.rc.layers = this.layers;
@@ -937,7 +937,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.rc.pickRay = frame.pickRay;
         this.rc.pickMode = frame.pickMode;
 
-        // Let the frame controller render the World Window's current state.
+        // Let the frame controller render the WorldWindow's current state.
         this.frameController.renderFrame(this.rc);
 
         // Enqueue the frame for processing on the OpenGL thread as soon as possible and wake the OpenGL thread.
@@ -1054,7 +1054,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
             }
         }
 
-        // Compute a perspective projection matrix given the World Window's viewport, field of view, and clip distances.
+        // Compute a perspective projection matrix given the WorldWindow's viewport, field of view, and clip distances.
         projection.setToPerspectiveProjection(this.viewport.width, this.viewport.height, this.fieldOfView, near, far);
 
         // Compute a Cartesian transform matrix from the Navigator.

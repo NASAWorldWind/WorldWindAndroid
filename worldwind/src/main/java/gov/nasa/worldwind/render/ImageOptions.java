@@ -8,12 +8,12 @@ package gov.nasa.worldwind.render;
 import gov.nasa.worldwind.WorldWind;
 
 /**
- * Options for images displayed by World Wind components.
+ * Options for images displayed by WorldWind components.
  */
 public class ImageOptions {
 
     /**
-     * Indicates the in-memory configuration for images displayed by World Wind components. By default, images are
+     * Indicates the in-memory configuration for images displayed by WorldWind components. By default, images are
      * represented in the 32-bit RGBA_8888 configuration, the highest quality available. Components that do not require
      * an alpha channel and want to conserve memory may use the 16-bit RGBA_565 configuration. Accepted values are
      * {@link WorldWind#RGBA_8888} and {@link WorldWind#RGB_565}.
@@ -22,7 +22,7 @@ public class ImageOptions {
     public int imageConfig = WorldWind.RGBA_8888;
 
     /**
-     * Indicates the image sampling algorithm used by World Wind to display images that appear larger or smaller on
+     * Indicates the image sampling algorithm used by WorldWind to display images that appear larger or smaller on
      * screen than their native resolution. Accepted values are {@link WorldWind#BILINEAR} and {@link
      * WorldWind#NEAREST_NEIGHBOR}.
      */
@@ -30,7 +30,7 @@ public class ImageOptions {
     public int resamplingMode = WorldWind.BILINEAR;
 
     /**
-     * Indicates how World Wind displays the contents of an image when attempting to draw a region outside of the image
+     * Indicates how WorldWind displays the contents of an image when attempting to draw a region outside of the image
      * bounds. Accepted values are {@link WorldWind#CLAMP} and {@link WorldWind#REPEAT}.
      */
     @WorldWind.WrapMode

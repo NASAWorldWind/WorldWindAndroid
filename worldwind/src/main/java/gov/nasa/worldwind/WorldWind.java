@@ -35,7 +35,7 @@ public class WorldWind {
     public static final int RELATIVE_TO_GROUND = 2;
 
     /**
-     * Altitude mode indicates how World Wind interprets a position's altitude component. Accepted values are {@link
+     * Altitude mode indicates how WorldWind interprets a position's altitude component. Accepted values are {@link
      * #ABSOLUTE}, {@link #CLAMP_TO_GROUND} and {@link #RELATIVE_TO_GROUND}.
      */
     @IntDef({ABSOLUTE, CLAMP_TO_GROUND, RELATIVE_TO_GROUND})
@@ -69,7 +69,7 @@ public class WorldWind {
     public static final int SCREEN_DRAWABLE = 3;
 
     /**
-     * Drawable group provides a standard set of group IDs for organizing World Window drawing into four phases:
+     * Drawable group provides a standard set of group IDs for organizing WorldWindow drawing into four phases:
      * background, surface, shape, and screen. Accepted values are {@link #BACKGROUND_DRAWABLE}, {@link
      * #SURFACE_DRAWABLE}, {@link #SHAPE_DRAWABLE} and {@link #SCREEN_DRAWABLE}.
      */
@@ -145,7 +145,7 @@ public class WorldWind {
     public static final int RGB_565 = 1;
 
     /**
-     * Image config indicates the in-memory representation for images displayed by World Wind components. Images are
+     * Image config indicates the in-memory representation for images displayed by WorldWind components. Images are
      * typically represented in the 32-bit RGBA_8888 configuration, the highest quality available. Components that do
      * not require an alpha channel and want to conserve memory may use the 16-bit RGBA_565 configuration. Accepted
      * values are {@link #RGBA_8888} and {@link #RGB_565}.
@@ -196,7 +196,7 @@ public class WorldWind {
     public static final int OFFSET_PIXELS = 2;
 
     /**
-     * Offset mode indicates how World Wind interprets an offset's x and y values. Accepted values are {@link
+     * Offset mode indicates how WorldWind interprets an offset's x and y values. Accepted values are {@link
      * #OFFSET_FRACTION}, {@link #OFFSET_INSET_PIXELS} and {@link #OFFSET_PIXELS}.
      */
     @IntDef({OFFSET_FRACTION, OFFSET_INSET_PIXELS, OFFSET_PIXELS})
@@ -217,7 +217,7 @@ public class WorldWind {
     public static final int RELATIVE_TO_SCREEN = 1;
 
     /**
-     * Orientation mode indicates how World Wind interprets a renderable's orientation value, e.g., tilt and rotate
+     * Orientation mode indicates how WorldWind interprets a renderable's orientation value, e.g., tilt and rotate
      * values. Accepted values are {@link #RELATIVE_TO_GLOBE}, and {@link #RELATIVE_TO_SCREEN}.
      */
     @IntDef({RELATIVE_TO_GLOBE, RELATIVE_TO_SCREEN})
@@ -242,7 +242,7 @@ public class WorldWind {
     public static final int RHUMB_LINE = 2;
 
     /**
-     * Path type indicates how World Wind create a geographic path between two locations. Accepted values are {@link
+     * Path type indicates how WorldWind create a geographic path between two locations. Accepted values are {@link
      * #GREAT_CIRCLE}, {@link #LINEAR} and {@link #RHUMB_LINE}.
      */
     @IntDef({GREAT_CIRCLE, LINEAR, RHUMB_LINE})
@@ -262,7 +262,7 @@ public class WorldWind {
     public static final int NEAREST_NEIGHBOR = 1;
 
     /**
-     * Resampling mode indicates the image sampling algorithm used by World Wind to display images that appear larger or
+     * Resampling mode indicates the image sampling algorithm used by WorldWind to display images that appear larger or
      * smaller on screen than their native resolution. Accepted values are {@link WorldWind#BILINEAR} and {@link
      * WorldWind#NEAREST_NEIGHBOR}.
      */
@@ -285,7 +285,7 @@ public class WorldWind {
     public static final int REPEAT = 1;
 
     /**
-     * Wrap mode indicates how World Wind displays the contents of an image when attempting to draw a region outside of
+     * Wrap mode indicates how WorldWind displays the contents of an image when attempting to draw a region outside of
      * the image bounds. Accepted values are {@link WorldWind#CLAMP} and {@link WorldWind#REPEAT}.
      */
     @IntDef({CLAMP, REPEAT})
@@ -295,7 +295,7 @@ public class WorldWind {
     }
 
     /**
-     * Notification constant requesting that World Window instances update their display.
+     * Notification constant requesting that WorldWindow instances update their display.
      */
     public static final String REQUEST_REDRAW = "gov.nasa.worldwind.RequestRedraw";
 
@@ -319,20 +319,20 @@ public class WorldWind {
     public static final Ellipsoid WGS84_ELLIPSOID = new Ellipsoid(WGS84_SEMI_MAJOR_AXIS, WGS84_INVERSE_FLATTENING);
 
     /**
-     * Provides a global mechanism for broadcasting notifications within the World Wind library and World Wind
+     * Provides a global mechanism for broadcasting notifications within the WorldWind library and WorldWind
      * applications.
      */
     protected static MessageService messageService = new MessageService();
 
     /**
-     * Provides a global service for running asynchronous tasks within the World Wind library and World Wind
+     * Provides a global service for running asynchronous tasks within the WorldWind library and WorldWind
      * applications.
      */
     protected static TaskService taskService = new TaskService();
 
     /**
      * Returns a singleton MessageService instance that provides a mechanism for broadcasting notifications within the
-     * World Wind library and World Wind applications.
+     * WorldWind library and WorldWind applications.
      *
      * @return the singleton message center
      */
@@ -342,7 +342,7 @@ public class WorldWind {
 
     /**
      * Returns a singleton TaskService instance that provides a mechanism for running asynchronous tasks within the
-     * World Wind library and World Wind applications.
+     * WorldWind library and WorldWind applications.
      *
      * @return the singleton task service
      */
@@ -351,8 +351,8 @@ public class WorldWind {
     }
 
     /**
-     * Requests that all World Window instances update their display. Internally, this dispatches a REQUEST_REDRAW
-     * message to the World Wind message center.
+     * Requests that all WorldWindow instances update their display. Internally, this dispatches a REQUEST_REDRAW
+     * message to the WorldWind message center.
      */
     public static void requestRedraw() {
         messageService.postMessage(REQUEST_REDRAW, null, null); // specify null for no sender, no user properties

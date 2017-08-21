@@ -103,7 +103,7 @@ public class DrawableShape implements Drawable {
             GLES20.glDrawElements(prim.mode, prim.count, prim.type, prim.offset);
         }
 
-        // Restore the default World Wind OpenGL state.
+        // Restore the default WorldWind OpenGL state.
         if (!this.drawState.enableCullFace) {
             GLES20.glEnable(GLES20.GL_CULL_FACE);
         }

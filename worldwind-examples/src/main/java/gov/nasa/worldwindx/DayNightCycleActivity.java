@@ -33,7 +33,7 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Choreog
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_day_night_cycle));
-        setAboutBoxText("Demonstrates how to display a continuous day-night cycle on the World Wind globe.\n" +
+        setAboutBoxText("Demonstrates how to display a continuous day-night cycle on the WorldWind globe.\n" +
             "This gradually changes both the Navigator's location and the AtmosphereLayer's light location.");
 
         // Initialize the Atmosphere layer's light location to our custom location. By default the light location is
@@ -67,7 +67,7 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Choreog
             this.sunLocation.set(this.sunLocation.latitude, this.sunLocation.longitude - lightDegrees);
             this.atmosphereLayer.setLightLocation(this.sunLocation);
 
-            // Redraw the World Window to display the above changes.
+            // Redraw the WorldWindow to display the above changes.
             this.getWorldWindow().requestRedraw();
         }
 

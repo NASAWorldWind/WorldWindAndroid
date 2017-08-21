@@ -92,7 +92,7 @@ public class PathsExampleActivity extends GeneralGlobeActivity implements Handle
                 path.setPositions(positions);
             }
 
-            // Redraw the World Window to display the changes.
+            // Redraw the WorldWindow to display the changes.
             this.getWorldWindow().requestRedraw();
 
             // Continue the animation after a delay.

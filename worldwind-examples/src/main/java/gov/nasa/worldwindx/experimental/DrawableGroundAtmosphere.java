@@ -119,7 +119,7 @@ public class DrawableGroundAtmosphere implements Drawable {
             terrain.drawTriangles(dc);
         }
 
-        // Restore the default World Wind OpenGL state.
+        // Restore the default WorldWind OpenGL state.
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glDisableVertexAttribArray(1);
     }

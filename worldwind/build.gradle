@@ -94,7 +94,7 @@ bintray {
         name = System.getenv('BINTRAY_PACKAGE')
         version {
             name = android.defaultConfig.versionName
-            desc = 'World Wind Android v' + android.defaultConfig.versionName
+            desc = 'WorldWind Android v' + android.defaultConfig.versionName
             vcsTag = System.getenv('TRAVIS_TAG')
         }
     }
@@ -123,8 +123,8 @@ task compileJavadocSources(type: Javadoc) {
     description 'Creates the Javadoc API documentation'
     source android.sourceSets.main.java.srcDirs
     include('**/*.java')
-    title 'NASA World Wind Android'
-    options.windowTitle 'NASA World Wind Android'
+    title 'NASA WorldWind Android'
+    options.windowTitle 'NASA WorldWind Android'
     options.memberLevel = JavadocMemberLevel.PUBLIC
     destinationDir file(new File(docOutput, 'javadoc'))
     failOnError false

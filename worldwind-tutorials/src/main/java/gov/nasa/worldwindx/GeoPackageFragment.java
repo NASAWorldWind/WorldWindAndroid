@@ -29,7 +29,7 @@ public class GeoPackageFragment extends BasicGlobeFragment {
         // SQLite library which operates only on files in the local Android filesystem.
         File geoPackageFile = TutorialUtil.unpackAsset(this.getContext(), "geopackage_tutorial.gpkg");
 
-        // Create a layer factory, World Wind's general component for creating layers
+        // Create a layer factory, WorldWind's general component for creating layers
         // from complex data sources.
         LayerFactory layerFactory = new LayerFactory();
 
@@ -40,7 +40,7 @@ public class GeoPackageFragment extends BasicGlobeFragment {
             new LayerFactory.Callback() {
                 @Override
                 public void creationSucceeded(LayerFactory factory, Layer layer) {
-                    // Add the finished GeoPackage layer to the World Window.
+                    // Add the finished GeoPackage layer to the WorldWindow.
                     getWorldWindow().getLayers().addLayer(layer);
                     // Place the viewer directly over the GeoPackage image.
                     getWorldWindow().getNavigator().setLatitude(36.8139677556754);

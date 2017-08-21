@@ -64,7 +64,7 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
         FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
         globeLayout.addView(this.statusText);
 
-        // Override the World Window's built-in navigation behavior by adding picking support.
+        // Override the WorldWindow's built-in navigation behavior by adding picking support.
         this.getWorldWindow().setWorldWindowController(new PickController());
 
         new CreatePlacesTask().execute();
@@ -371,7 +371,7 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
 
     /**
      * This inner class is a custom WorldWindController that handles both picking and navigation via a combination of
-     * the native World Wind navigation gestures and Android gestures. This class' onTouchEvent method arbitrates
+     * the native WorldWind navigation gestures and Android gestures. This class' onTouchEvent method arbitrates
      * between pick events and globe navigation events.
      */
     public class PickController extends BasicWorldWindowController {
@@ -403,7 +403,7 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
         });
 
         /**
-         * Delegates events to the pick handler or the native World Wind navigation handlers.
+         * Delegates events to the pick handler or the native WorldWind navigation handlers.
          */
         @Override
         public boolean onTouchEvent(MotionEvent event) {
