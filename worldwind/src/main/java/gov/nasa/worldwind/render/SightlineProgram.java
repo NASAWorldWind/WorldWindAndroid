@@ -69,8 +69,8 @@ public class SightlineProgram extends ShaderProgram {
         GLES20.glUniformMatrix4fv(this.slpMatrixId, 2, false, this.array, 0);
     }
 
-    public void loadRange(double range) {
-        GLES20.glUniform1f(this.rangeId, (float) range);
+    public void loadRange(float range) {
+        GLES20.glUniform1f(this.rangeId, range);
     }
 
     public void loadColor(Color visibleColor, Color occludedColor) {

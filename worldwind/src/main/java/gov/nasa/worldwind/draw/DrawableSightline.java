@@ -19,7 +19,7 @@ public class DrawableSightline implements Drawable {
 
     public Matrix4 centerTransform = new Matrix4();
 
-    public double range;
+    public float range;
 
     public Color visibleColor = new Color(0, 0, 0, 0);
 
