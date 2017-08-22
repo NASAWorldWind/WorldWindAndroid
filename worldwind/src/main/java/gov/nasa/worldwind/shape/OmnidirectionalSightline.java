@@ -18,6 +18,7 @@ import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.render.SightlineProgram;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
+import gov.nasa.worldwind.util.WWMath;
 
 /**
  * Displays an omnidirectional sightline's visibility within the WorldWind scene. The sightline's placement and area of
@@ -359,7 +360,7 @@ public class OmnidirectionalSightline extends AbstractRenderable implements Attr
         }
 
         // Don't render anything if the sightline's coverage area is not visible.
-        if (!this.intersectsFrustum(rc)) {
+        if (!this.isVisible(rc)) {
             return;
         }
 
@@ -415,7 +416,14 @@ public class OmnidirectionalSightline extends AbstractRenderable implements Attr
             && this.centerPoint.z != 0;
     }
 
-    protected boolean intersectsFrustum(RenderContext rc) {
+    protected boolean isVisible(RenderContext rc) {
+        double cameraDistance = this.centerPoint.distanceTo(rc.cameraPoint);
+        double pixelSizeMeters = rc.pixelSizeAtDistance(cameraDistance);
+
+        if (this.range < pixelSizeMeters) {
+            return false; // The range is zero, or is less than one screen pixel
+        }
+
         return this.boundingSphere.set(this.centerPoint, this.range).intersectsFrustum(rc.frustum);
     }
 
@@ -434,7 +442,7 @@ public class OmnidirectionalSightline extends AbstractRenderable implements Attr
 
         // Compute the transform from sightline local coordinates to world coordinates.
         drawable.centerTransform = rc.globe.cartesianToLocalTransform(this.centerPoint.x, this.centerPoint.y, this.centerPoint.z, drawable.centerTransform);
-        drawable.range = this.range;
+        drawable.range = (float) WWMath.clamp(this.range, 0, Float.MAX_VALUE);
 
         // Configure the drawable colors according to the current attributes. When picking use a unique color associated
         // with the picked object ID. Null attributes indicate that nothing is drawn.
