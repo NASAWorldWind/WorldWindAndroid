@@ -32,6 +32,10 @@
             android:icon="@android:drawable/ic_menu_myplaces"
             android:title="@string/title_placemarks_milstd2525_demo"/>
         <item
+            android:id="@+id/nav_omnidirectional_sensor_activity"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="@string/title_omni_sensor"/>
+        <item
             android:id="@+id/nav_paths_example"
             android:icon="@android:drawable/ic_menu_directions"
             android:title="@string/title_paths_example"/>
