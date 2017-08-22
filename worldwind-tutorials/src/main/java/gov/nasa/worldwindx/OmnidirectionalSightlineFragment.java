@@ -16,7 +16,7 @@ import gov.nasa.worldwind.shape.OmnidirectionalSightline;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.ShapeAttributes;
 
-public class OmnidirectionalSensorFragment extends BasicGlobeFragment {
+public class OmnidirectionalSightlineFragment extends BasicGlobeFragment {
 
     /**
      * Creates a new WorldWindow (GLSurfaceView) object with an OmnidirectionalSightline
@@ -28,9 +28,9 @@ public class OmnidirectionalSensorFragment extends BasicGlobeFragment {
         // Let the super class (BasicGlobeFragment) do the creation
         WorldWindow wwd = super.createWorldWindow();
 
-        // Specify the sensors position
+        // Specify the sightline position
         Position position = new Position(46.230, -122.190, 2500.0);
-        // Specify the range of the sensor (meters)
+        // Specify the range of the sightline (meters)
         double range = 10000.0;
         // Create attributes for the visible terrain
         ShapeAttributes visibleAttributes = new ShapeAttributes();
@@ -39,21 +39,21 @@ public class OmnidirectionalSensorFragment extends BasicGlobeFragment {
         ShapeAttributes occludedAttributes = new ShapeAttributes();
         occludedAttributes.setInteriorColor(new Color(0.1f, 0.1f, 0.1f, 0.5f));
 
-        // Create the sensor
-        OmnidirectionalSightline sensor = new OmnidirectionalSightline(position, range);
+        // Create the sightline
+        OmnidirectionalSightline sightline = new OmnidirectionalSightline(position, range);
         // Add the attributes
-        sensor.setAttributes(visibleAttributes);
-        sensor.setOccludeAttributes(occludedAttributes);
+        sightline.setAttributes(visibleAttributes);
+        sightline.setOccludeAttributes(occludedAttributes);
 
-        // Create a layer for the sensor
-        RenderableLayer sensorLayer = new RenderableLayer();
-        sensorLayer.addRenderable(sensor);
-        wwd.getLayers().addLayer(sensorLayer);
+        // Create a layer for the sightline
+        RenderableLayer sightlineLayer = new RenderableLayer();
+        sightlineLayer.addRenderable(sightline);
+        wwd.getLayers().addLayer(sightlineLayer);
 
-        // Create a Placemark to visualize the position of the sensor
-        this.createPlacemark(position, sensorLayer);
+        // Create a Placemark to visualize the position of the sightline
+        this.createPlacemark(position, sightlineLayer);
 
-        // Position the camera to look at the sensor coverage
+        // Position the camera to look at the line of site terrain coverage
         this.positionView(wwd);
 
         return wwd;
