@@ -19,6 +19,7 @@
     <string name="title_labels">Labels</string>
     <string name="title_look_at_view">Look At View</string>
     <string name="title_navigator_event">Navigator Events</string>
+    <string name="title_omni_sightline">Omnidirectional Sightline</string>
     <string name="title_paths">Paths</string>
     <string name="title_placemarks">Placemarks</string>
     <string name="title_placemarks_picking">Placemark Picking</string>

@@ -109,15 +109,16 @@ public class DrawableSurfaceShape implements Drawable {
         int shapeCount = 0;
 
         try {
-            Framebuffer framebuffer = dc.surfaceFramebuffer();
+            Framebuffer framebuffer = dc.scratchFramebuffer();
             if (!framebuffer.bindFramebuffer(dc)) {
                 return 0; // framebuffer failed to bind
             }
 
-            // Clear the framebuffer.
+            // Clear the framebuffer and disable the depth test.
             Texture colorAttachment = framebuffer.getAttachedTexture(GLES20.GL_COLOR_ATTACHMENT0);
             GLES20.glViewport(0, 0, colorAttachment.getWidth(), colorAttachment.getHeight());
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+            GLES20.glDisable(GLES20.GL_DEPTH_TEST);
 
             // Use the draw context's pick mode.
             this.drawState.program.enablePickMode(dc.pickMode);
@@ -173,6 +174,7 @@ public class DrawableSurfaceShape implements Drawable {
             // Restore the default World Wind OpenGL state.
             dc.bindFramebuffer(0);
             GLES20.glViewport(dc.viewport.x, dc.viewport.y, dc.viewport.width, dc.viewport.height);
+            GLES20.glEnable(GLES20.GL_DEPTH_TEST);
             GLES20.glLineWidth(1);
         }
 
@@ -188,7 +190,7 @@ public class DrawableSurfaceShape implements Drawable {
             return; // terrain vertex attribute failed to bind
         }
 
-        Texture colorAttachment = dc.surfaceFramebuffer().getAttachedTexture(GLES20.GL_COLOR_ATTACHMENT0);
+        Texture colorAttachment = dc.scratchFramebuffer().getAttachedTexture(GLES20.GL_COLOR_ATTACHMENT0);
         if (!colorAttachment.bindTexture(dc)) {
             return; // framebuffer texture failed to bind
         }
