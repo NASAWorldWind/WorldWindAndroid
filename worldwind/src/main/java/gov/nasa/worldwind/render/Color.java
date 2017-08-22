@@ -186,8 +186,9 @@ public class Color {
      * can be passed to the function glUniform4fv.
      *
      * @param result a pre-allocated array of length 4 in which to return the components
+     * @param offset a starting index in the result array
      *
-     * @return the result argument set to this vector's components
+     * @return the result argument set to this color's components
      */
     public float[] toArray(float[] result, int offset) {
         if (result == null || result.length - offset < 4) {
@@ -217,5 +218,66 @@ public class Color {
         int a8 = Math.round(this.alpha * 0xFF);
 
         return android.graphics.Color.argb(a8, r8, g8, b8);
+    }
+
+    /**
+     * Premultiplies this color in place. The RGB components are multiplied by the alpha component.
+     *
+     * @return this color with its RGB components multiplied by its alpha component
+     */
+    public Color premultiply() {
+        this.red *= this.alpha;
+        this.green *= this.alpha;
+        this.blue *= this.alpha;
+
+        return this;
+    }
+
+    /**
+     * Premultiplies the specified color and stores the result in this color. This color's RGB components are set to the
+     * product of the specified color's RGB components and its alpha component. This color's alpha component is set to
+     * the specified color's alpha.
+     *
+     * @param color the color with components to premultiply and store in this color
+     *
+     * @return this color set to the premultiplied components of the specified color
+     *
+     * @throws IllegalArgumentException If the color is null
+     */
+    public Color premultiplyColor(Color color) {
+        if (color == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Color", "premultiplyColor", "missingColor"));
+        }
+
+        this.red = color.red * color.alpha;
+        this.green = color.green * color.alpha;
+        this.blue = color.blue * color.alpha;
+        this.alpha = color.alpha;
+
+        return this;
+    }
+
+    /**
+     * Copies this color's premultiplied components to the specified array. The result is compatible with GLSL uniform
+     * vectors, and can be passed to the function glUniform4fv.
+     *
+     * @param result a pre-allocated array of length 4 in which to return the components
+     * @param offset a starting index in the result array
+     *
+     * @return the result argument set to this color's premultiplied components
+     */
+    public float[] premultiplyToArray(float[] result, int offset) {
+        if (result == null || result.length - offset < 4) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Color", "premultiplyToArray", "missingResult"));
+        }
+
+        result[offset++] = this.red * this.alpha;
+        result[offset++] = this.green * this.alpha;
+        result[offset++] = this.blue * this.alpha;
+        result[offset] = this.alpha;
+
+        return result;
     }
 }
