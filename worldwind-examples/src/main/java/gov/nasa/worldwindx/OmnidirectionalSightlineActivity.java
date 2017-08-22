@@ -27,19 +27,20 @@ import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.ShapeAttributes;
 
 /**
- * This Activity demonstrates the OmnidirectionalSightline object and allows the sensor to be dragged.
+ * This Activity demonstrates the OmnidirectionalSightline object and allows the position of the sightline to be moved
+ * via a drag action.
  */
-public class OmnidirectionalSensorActivity extends BasicGlobeActivity {
+public class OmnidirectionalSightlineActivity extends BasicGlobeActivity {
 
     /**
-     * The sensor which evaluates line of sight
+     * The OmnidirectionalSightline displaying visibility on the terrain
      */
-    protected OmnidirectionalSightline sensor;
+    protected OmnidirectionalSightline sightline;
 
     /**
-     * A Placemark representing the position of the sensor
+     * A Placemark representing the position of the sightline
      */
-    protected Placemark sensorPlacemark;
+    protected Placemark sightlinePlacemark;
 
     /**
      * A custom WorldWindowController object that handles the select, drag and navigation gestures.
@@ -49,9 +50,9 @@ public class OmnidirectionalSensorActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_omni_sensor));
-        setAboutBoxText("Demonstrates a draggable WorldWind Omnidirectional sensor. Drag the placemark icon around the " +
-            "screen to move the omnidirectional sensor.");
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_movable_omni_sightline));
+        setAboutBoxText("Demonstrates a draggable WorldWind Omnidirectional sightline. Drag the placemark icon around the " +
+            "screen to move the sightline position.");
 
         // Initialize attributes for the OmnidirectionalSightline
         ShapeAttributes viewableRegions = new ShapeAttributes();
@@ -62,27 +63,27 @@ public class OmnidirectionalSensorActivity extends BasicGlobeActivity {
 
         // Initialize the OmnidirectionalSightline and Corresponding Placemark
         Position pos = new Position(46.202, -122.190, 500.0);
-        this.sensor = new OmnidirectionalSightline(pos, 10000.0);
-        this.sensor.setAttributes(viewableRegions);
-        this.sensor.setOccludeAttributes(blockedRegions);
-        this.sensor.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
-        this.sensorPlacemark = new Placemark(pos);
-        this.sensorPlacemark.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
-        this.sensorPlacemark.getAttributes().setImageSource(ImageSource.fromResource(R.drawable.aircraft_fixwing));
-        this.sensorPlacemark.getAttributes().setImageScale(2);
-        this.sensorPlacemark.getAttributes().setDrawLeader(true);
+        this.sightline = new OmnidirectionalSightline(pos, 10000.0);
+        this.sightline.setAttributes(viewableRegions);
+        this.sightline.setOccludeAttributes(blockedRegions);
+        this.sightline.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
+        this.sightlinePlacemark = new Placemark(pos);
+        this.sightlinePlacemark.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
+        this.sightlinePlacemark.getAttributes().setImageSource(ImageSource.fromResource(R.drawable.aircraft_fixwing));
+        this.sightlinePlacemark.getAttributes().setImageScale(2);
+        this.sightlinePlacemark.getAttributes().setDrawLeader(true);
 
-        // Establish a layer to hold the sensor and placemark
-        RenderableLayer sensorLayer = new RenderableLayer();
-        sensorLayer.addRenderable(this.sensor);
-        sensorLayer.addRenderable(this.sensorPlacemark);
-        this.wwd.getLayers().addLayer(sensorLayer);
+        // Establish a layer to hold the sightline and placemark
+        RenderableLayer sightlineLayer = new RenderableLayer();
+        sightlineLayer.addRenderable(this.sightline);
+        sightlineLayer.addRenderable(this.sightlinePlacemark);
+        this.wwd.getLayers().addLayer(sightlineLayer);
 
         // Override the WorldWindow's built-in navigation behavior with conditional dragging support.
         this.controller = new SimpleSelectDragNavigateController();
         this.wwd.setWorldWindowController(this.controller);
 
-        // And finally, for this demo, position the viewer to look at the sensor position
+        // And finally, for this demo, position the viewer to look at the sightline position
         LookAt lookAt = new LookAt().set(pos.latitude, pos.longitude, pos.altitude, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
         this.getWorldWindow().getNavigator().setAsLookAt(this.getWorldWindow().getGlobe(), lookAt);
     }
@@ -166,15 +167,15 @@ public class OmnidirectionalSensorActivity extends BasicGlobeActivity {
                 // First we compute the screen coordinates of the position's "ground" point.  We'll apply the
                 // screen X and Y drag distances to this point, from which we'll compute a new position,
                 // wherein we restore the original position's altitude.
-                Position position = sensorPlacemark.getReferencePosition();
+                Position position = sightlinePlacemark.getReferencePosition();
                 double altitude = position.altitude;
                 if (getWorldWindow().geographicToScreenPoint(position.latitude, position.longitude, 0, this.dragRefPt)) {
                     // Update the placemark's ground position
                     if (screenPointToGroundPosition(this.dragRefPt.x - distanceX, this.dragRefPt.y - distanceY, position)) {
                         // Restore the placemark's original altitude
                         position.altitude = altitude;
-                        // Move the sensor
-                        sensor.setPosition(position);
+                        // Move the sightline
+                        sightline.setPosition(position);
                         // Reflect the change in position on the globe.
                         getWorldWindow().requestRedraw();
                         return true;

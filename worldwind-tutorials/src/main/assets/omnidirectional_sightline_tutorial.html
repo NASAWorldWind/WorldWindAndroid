@@ -14,23 +14,26 @@
     <link rel="stylesheet" type="text/css" href="file:///android_asset/override.css"/>
 </head>
 <body>
-<h1>OmnidirectionalSensor Tutorial</h1>
+<h1>OmnidirectionalSightline Tutorial</h1>
 <p>
-    Demonstrates how to create a OmnidirectionalSensor and add it to the globe
+    Demonstrates how to create an OmnidirectionalSightline and add it to the globe. An OmnidirectionalSightline provides
+    a visual area representation of line of sight from a provided position. Areas occluded by terrain will appear in a
+    different color than areas visible to the provided point.
 </p>
 <p>
-    This tutorial demonstrates the creation of an OmnidirectionSensor to the globe. In addition to the sensor, a
-    placemark indicating the position of the sensor is added to provide visual context.
+    This tutorial demonstrates the creation of an OmnidirectionSightline. In addition to the OmnidirectionalSightline, a
+    Placemark indicating the position of the sightline origin is added to provide visual context.
 </p>
 <p>
-    The regions colored green indicate they are visible from the position provided to the OmnidirectionSensor. Regions
-    colored gray are occluded by terrain from the provided position. This tutorial uses a sensor range of 10,000 meters.
+    The regions colored green indicate they are visible from the position provided to the OmnidirectionSightline.
+    Regions colored gray are occluded by terrain from the provided position. This tutorial uses a sightline range of
+    10,000 meters.
 </p>
 <h2>Example</h2>
-<h3>OmnidirectionalSensorFragment.java</h3>
+<h3>OmnidirectionalSightlineFragment.java</h3>
 <p>
-    The OmnidirectionSensorFragment class extends the BasicGlobeFragment and overrides the createWorldWindow method. An
-    OmnidirectionalSensor object with specified position and range is then created and added to the globe.
+    The OmnidirectionSightlineFragment class extends the BasicGlobeFragment and overrides the createWorldWindow method.
+    An OmnidirectionalSightline object with specified position and range is then created and added to the globe.
 </p>
 <div style="border-top: 1px solid black; border-bottom: 1px solid black;">
     <textarea id="java-code">
@@ -41,9 +44,9 @@ package gov.nasa.worldwindx;
         // Let the super class (BasicGlobeFragment) do the creation
         WorldWindow wwd = super.createWorldWindow();
 
-        // Specify the sensors position
+        // Specify the sightline origin position
         Position position = new Position(46.230, -122.190, 2500.0);
-        // Specify the range of the sensor (meters)
+        // Specify the range of the sightline (meters)
         double range = 10000.0;
         // Create attributes for the visible terrain
         ShapeAttributes visibleAttributes = new ShapeAttributes();
@@ -52,21 +55,21 @@ package gov.nasa.worldwindx;
         ShapeAttributes occludedAttributes = new ShapeAttributes();
         occludedAttributes.setInteriorColor(new Color(0.1f, 0.1f, 0.1f, 0.5f));
 
-        // Create the sensor
-        OmnidirectionalSensor sensor = new OmnidirectionalSensor(position, range);
+        // Create the sightline
+        OmnidirectionalSightline sightline = new OmnidirectionalSightline(position, range);
         // Add the attributes
-        sensor.setAttributes(visibleAttributes);
-        sensor.setOccludeAttributes(occludedAttributes);
+        sightline.setAttributes(visibleAttributes);
+        sightline.setOccludeAttributes(occludedAttributes);
 
-        // Create a layer for the sensor
-        RenderableLayer sensorLayer = new RenderableLayer();
-        sensorLayer.addRenderable(sensor);
-        wwd.getLayers().addLayer(sensorLayer);
+        // Create a layer for the sightline
+        RenderableLayer sightlineLayer = new RenderableLayer();
+        sightlineLayer.addRenderable(sightline);
+        wwd.getLayers().addLayer(sightlineLayer);
 
-        // Create a Placemark to visualize the position of the sensor
-        this.createPlacemark(position, sensorLayer);
+        // Create a Placemark to help visualize the position of the sightline
+        this.createPlacemark(position, sightlineLayer);
 
-        // Position the camera to look at the sensor coverage
+        // Position the camera to look at the line of site terrain coverage
         this.positionView(wwd);
 
         return wwd;
@@ -82,10 +85,6 @@ package gov.nasa.worldwindx;
         mode: "text/x-java",
         readOnly: true
       });
-
-
-
-
 </script>
 </body>
 </html>
