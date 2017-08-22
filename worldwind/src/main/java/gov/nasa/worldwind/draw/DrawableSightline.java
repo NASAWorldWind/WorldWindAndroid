@@ -11,11 +11,11 @@ import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.Framebuffer;
-import gov.nasa.worldwind.render.SensorProgram;
+import gov.nasa.worldwind.render.SightlineProgram;
 import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Pool;
 
-public class DrawableSensor implements Drawable {
+public class DrawableSightline implements Drawable {
 
     public Matrix4 centerTransform = new Matrix4();
 
@@ -25,9 +25,9 @@ public class DrawableSensor implements Drawable {
 
     public Color occludedColor = new Color(0, 0, 0, 0);
 
-    public SensorProgram program = null;
+    public SightlineProgram program = null;
 
-    private Matrix4 sensorView = new Matrix4();
+    private Matrix4 sightlineView = new Matrix4();
 
     private Matrix4 matrix = new Matrix4();
 
@@ -42,17 +42,17 @@ public class DrawableSensor implements Drawable {
         new Matrix4() // negative Z
     };
 
-    private Pool<DrawableSensor> pool;
+    private Pool<DrawableSightline> pool;
 
-    public DrawableSensor() {
+    public DrawableSightline() {
     }
 
-    public static DrawableSensor obtain(Pool<DrawableSensor> pool) {
-        DrawableSensor instance = pool.acquire(); // get an instance from the pool
-        return (instance != null) ? instance.setPool(pool) : new DrawableSensor().setPool(pool);
+    public static DrawableSightline obtain(Pool<DrawableSightline> pool) {
+        DrawableSightline instance = pool.acquire(); // get an instance from the pool
+        return (instance != null) ? instance.setPool(pool) : new DrawableSightline().setPool(pool);
     }
 
-    private DrawableSensor setPool(Pool<DrawableSensor> pool) {
+    private DrawableSightline setPool(Pool<DrawableSightline> pool) {
         this.pool = pool;
         return this;
     }
@@ -79,16 +79,16 @@ public class DrawableSensor implements Drawable {
         this.program.loadRange(this.range);
         this.program.loadColor(this.visibleColor, this.occludedColor);
 
-        // Configure the cube map projection matrix to capture one face of the cube map as far as the sensor's range.
+        // Configure the cube map projection matrix to capture one face of the cube map as far as the sightline's range.
         this.cubeMapProjection.setToPerspectiveProjection(1, 1, 90, 1, this.range);
 
         // TODO accumulate only the visible terrain, which can be used in both passes
         // TODO give terrain a bounding box, test with a frustum set using depthviewProjection
 
         for (int idx = 0, len = this.cubeMapFace.length; idx < len; idx++) {
-            this.sensorView.set(this.centerTransform);
-            this.sensorView.multiplyByMatrix(this.cubeMapFace[idx]);
-            this.sensorView.invertOrthonormal();
+            this.sightlineView.set(this.centerTransform);
+            this.sightlineView.multiplyByMatrix(this.cubeMapFace[idx]);
+            this.sightlineView.invertOrthonormal();
 
             if (this.drawSceneDepth(dc)) {
                 this.drawSceneOcclusion(dc);
@@ -123,8 +123,8 @@ public class DrawableSensor implements Drawable {
                     continue; // vertex buffer failed to bind
                 }
 
-                // Draw the terrain onto one face of the cube map, from the sensor's point of view.
-                this.matrix.setToMultiply(this.cubeMapProjection, this.sensorView);
+                // Draw the terrain onto one face of the cube map, from the sightline's point of view.
+                this.matrix.setToMultiply(this.cubeMapProjection, this.sightlineView);
                 this.matrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
                 this.program.loadModelviewProjection(this.matrix);
 
@@ -167,10 +167,10 @@ public class DrawableSensor implements Drawable {
             this.matrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
             this.program.loadModelviewProjection(this.matrix);
 
-            // Map the terrain into one face of the cube map, from the sensor's point of view.
-            this.matrix.set(this.sensorView);
+            // Map the terrain into one face of the cube map, from the sightline's point of view.
+            this.matrix.set(this.sightlineView);
             this.matrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z);
-            this.program.loadSensorviewProjection(this.cubeMapProjection, this.matrix);
+            this.program.loadSightlineProjection(this.cubeMapProjection, this.matrix);
 
             // Draw the terrain as triangles.
             terrain.drawTriangles(dc);
