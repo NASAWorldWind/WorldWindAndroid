@@ -17,8 +17,8 @@
 <h1>OmnidirectionalSightline Tutorial</h1>
 <p>
     Demonstrates how to create an OmnidirectionalSightline and add it to the globe. An OmnidirectionalSightline provides
-    a visual area representation of line of sight from a provided position. Areas occluded by terrain will appear in a
-    different color than areas visible to the provided point.
+    a visual area representation of line of sight from a provided origin. Areas occluded by terrain from line of sight
+    will appear in a different color than areas visible to the provided point.
 </p>
 <p>
     This tutorial demonstrates the creation of an OmnidirectionSightline. In addition to the OmnidirectionalSightline, a
@@ -26,8 +26,7 @@
 </p>
 <p>
     The regions colored green indicate they are visible from the position provided to the OmnidirectionSightline.
-    Regions colored gray are occluded by terrain from the provided position. This tutorial uses a sightline range of
-    10,000 meters.
+    Regions colored gray are occluded by terrain. This tutorial uses a sightline range of 10,000 meters.
 </p>
 <h2>Example</h2>
 <h3>OmnidirectionalSightlineFragment.java</h3>
@@ -44,7 +43,7 @@ package gov.nasa.worldwindx;
         // Let the super class (BasicGlobeFragment) do the creation
         WorldWindow wwd = super.createWorldWindow();
 
-        // Specify the sightline origin position
+        // Specify the sightline position, which is the origin of the line of sight calculation
         Position position = new Position(46.230, -122.190, 2500.0);
         // Specify the range of the sightline (meters)
         double range = 10000.0;
@@ -57,7 +56,7 @@ package gov.nasa.worldwindx;
 
         // Create the sightline
         OmnidirectionalSightline sightline = new OmnidirectionalSightline(position, range);
-        // Add the attributes
+        // Set the attributes
         sightline.setAttributes(visibleAttributes);
         sightline.setOccludeAttributes(occludedAttributes);
 
@@ -66,7 +65,7 @@ package gov.nasa.worldwindx;
         sightlineLayer.addRenderable(sightline);
         wwd.getLayers().addLayer(sightlineLayer);
 
-        // Create a Placemark to help visualize the position of the sightline
+        // Create a Placemark to visualize the position of the sightline
         this.createPlacemark(position, sightlineLayer);
 
         // Position the camera to look at the line of site terrain coverage

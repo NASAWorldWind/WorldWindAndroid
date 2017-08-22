@@ -27,18 +27,20 @@ import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.ShapeAttributes;
 
 /**
- * This Activity demonstrates the OmnidirectionalSightline object and allows the position of the sightline to be moved
- * via a drag action.
+ * This Activity demonstrates the OmnidirectionalSightline object which provides a visual representation of line of
+ * sight from a specified origin. Terrain visible from the origin is colored differently than areas not visible from
+ * the OmnidirectionalSightline origin. Line of sight is calculated as a straight line from the origin to the available
+ * terrain.
  */
 public class OmnidirectionalSightlineActivity extends BasicGlobeActivity {
 
     /**
-     * The OmnidirectionalSightline displaying visibility on the terrain
+     * The OmnidirectionalSightline object which will display areas visible using a line of sight from the origin
      */
     protected OmnidirectionalSightline sightline;
 
     /**
-     * A Placemark representing the position of the sightline
+     * A Placemark representing the origin of the sightline
      */
     protected Placemark sightlinePlacemark;
 
@@ -62,6 +64,7 @@ public class OmnidirectionalSightlineActivity extends BasicGlobeActivity {
         blockedRegions.setInteriorColor(new Color(0.1f, 0.1f, 0.1f, 0.5f));
 
         // Initialize the OmnidirectionalSightline and Corresponding Placemark
+        // The position is the line of sight origin for determining visible terrain
         Position pos = new Position(46.202, -122.190, 500.0);
         this.sightline = new OmnidirectionalSightline(pos, 10000.0);
         this.sightline.setAttributes(viewableRegions);
