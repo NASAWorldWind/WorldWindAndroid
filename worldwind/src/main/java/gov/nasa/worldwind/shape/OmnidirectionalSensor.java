@@ -30,7 +30,7 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
     /**
      * The sensor's center position.
      */
-    protected Position position;
+    protected Position position = new Position();
 
     /**
      * The sensor's altitude mode. See {@link gov.nasa.worldwind.WorldWind.AltitudeMode}
