@@ -7,7 +7,7 @@ package gov.nasa.worldwind.shape;
 
 import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.draw.DrawableSensor;
+import gov.nasa.worldwind.draw.DrawableSightline;
 import gov.nasa.worldwind.geom.BoundingSphere;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec3;
@@ -15,60 +15,55 @@ import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.RenderContext;
-import gov.nasa.worldwind.render.SensorProgram;
+import gov.nasa.worldwind.render.SightlineProgram;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
 
 /**
- * Displays an omnidirectional sensor's line-of-sight within the WorldWind scene. The sensor's placement and area of
+ * Displays an omnidirectional sightline's visibility within the WorldWind scene. The sightline's placement and area of
  * potential visibility are represented by a Cartesian sphere with a center position and a range. Terrain features
- * within there sphere are is considered visible if there is a direct line-of-sight between the center position and the
+ * within the sphere are considered visible if there is a direct line-of-sight between the center position and a given
  * terrain point.
  * <p>
- * OmnidirectionalSensor displays an overlay on the WorldWind terrain indicating which terrain features are visible, and
- * which are occluded. Visible terrain features, those having a direct line-of-sight between to sensor's center
- * position, appear in the sensor's normal attributes or its highlight attributes, depending on the sensor's highlight
- * state. Occluded terrain features appear in the sensor's occlude attributes, regardless of highlight state. Terrain
- * features outside the sensor's range are excluded from the overlay.
+ * OmnidirectionalSightline displays an overlay on the WorldWind terrain indicating which terrain features are visible,
+ * and which are occluded. Visible terrain features, those having a direct line-of-sight to the center position, appear
+ * in the sightline's normal attributes or its highlight attributes, depending on the highlight state. Occluded terrain
+ * features appear in the sightline's occlude attributes, regardless of highlight state. Terrain features outside the
+ * sightline's range are excluded from the overlay.
  * <p>
- * <h3>Limitations and Planned Improvements</h3>
- * <ul>
- * <li>OmnidirectionalSensor is currently limited to terrain-based
+ * <h3>Limitations and Planned Improvements</h3> <ul> <li>OmnidirectionalSightline is currently limited to terrain-based
  * occlusion, and does not incorporate other 3D scene elements during visibility determination. Subsequent iterations
- * will support occlusion of both terrain and 3D polygons.</li>
- * <li>The visibility overlay is drawn in ShapeAttributes'
- * interior color only. Subsequent iterations will add an outline where the range intersects the scene, and will display
- * the sightline's geometry as an outline.</li>
- * <li>OmnidirectionalSensor requires OpenGL ES 2.0 extension <a
- * href="https://www.khronos.org/registry/OpenGL/extensions/OES/OES_depth_texture.txt">GL_OES_depth_texture</a>.
- * Subsequent iterations may relax this requirement.</li>
- * </ul>
+ * will support occlusion of both terrain and 3D polygons.</li> <li>The visibility overlay is drawn in ShapeAttributes'
+ * interior color only. Subsequent iterations will add an outline where the sightline's range intersects the scene, and
+ * will display the sightline's geometry as an outline.</li> <li>OmnidirectionalSightline requires OpenGL ES 2.0
+ * extension <a href="https://www.khronos.org/registry/OpenGL/extensions/OES/OES_depth_texture.txt">GL_OES_depth_texture</a>.
+ * Subsequent iterations may relax this requirement.</li> </ul>
  */
-public class OmnidirectionalSensor extends AbstractRenderable implements Attributable, Highlightable, Movable {
+public class OmnidirectionalSightline extends AbstractRenderable implements Attributable, Highlightable, Movable {
 
     /**
-     * The sensor's center position.
+     * The sightline's center position.
      */
     protected Position position = new Position();
 
     /**
-     * The sensor's altitude mode. See {@link gov.nasa.worldwind.WorldWind.AltitudeMode}
+     * The sightline's altitude mode. See {@link gov.nasa.worldwind.WorldWind.AltitudeMode}
      */
     @WorldWind.AltitudeMode
     protected int altitudeMode = WorldWind.ABSOLUTE;
 
     /**
-     * The sensor's range from its center position in meters.
+     * The sightline's range from its center position in meters.
      */
     protected double range;
 
     /**
-     * The attributes to use for visible features, when the sensor is not highlighted.
+     * The attributes to use for visible features, when the sightline is not highlighted.
      */
     protected ShapeAttributes attributes;
 
     /**
-     * The attributes to use for visible features, when the sensor is highlighted.
+     * The attributes to use for visible features, when the sightline is highlighted.
      */
     protected ShapeAttributes highlightAttributes;
 
@@ -100,23 +95,23 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
     private BoundingSphere boundingSphere = new BoundingSphere();
 
     /**
-     * Constructs a sensor that displays the line-of-sight from a specified center position and range. Visible features
-     * are displayed in white, while occluded features are displayed in red.
+     * Constructs an OmnidirectionalSightline that displays the line-of-sight from a specified center position and
+     * range. Visible features are displayed in white, while occluded features are displayed in red.
      *
-     * @param position the position where the sensor is centered
-     * @param range    the sensor's range in meters from its position
+     * @param position the position where the sightline is centered
+     * @param range    the sightline's range in meters from its position
      *
      * @throws IllegalArgumentException If the position is null, or if the range is negative
      */
-    public OmnidirectionalSensor(Position position, double range) {
+    public OmnidirectionalSightline(Position position, double range) {
         if (position == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "OmnidirectionalSensor", "constructor", "missingPosition"));
+                Logger.logMessage(Logger.ERROR, "OmnidirectionalSightline", "constructor", "missingPosition"));
         }
 
         if (range < 0) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "OmnidirectionalSensor", "constructor", "invalidRange"));
+                Logger.logMessage(Logger.ERROR, "OmnidirectionalSightline", "constructor", "invalidRange"));
         }
 
         this.position.set(position);
@@ -127,24 +122,24 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
     }
 
     /**
-     * Constructs a sensor that displays the line-of-sight from a specified center position and range. Visible features
-     * are displayed in the specified attributes, while occluded features are displayed in red.
+     * Constructs an OmnidirectionalSightline that displays the line-of-sight from a specified center position and
+     * range. Visible features are displayed in the specified attributes, while occluded features are displayed in red.
      *
-     * @param position   the position where the sensor is centered
-     * @param range      the sensor's range in meters from its position
-     * @param attributes a reference to an attributes bundle used by this sensor when not highlighted
+     * @param position   the position where the sightline is centered
+     * @param range      the sightline's range in meters from its position
+     * @param attributes a reference to an attributes bundle used by this sightline when not highlighted
      *
      * @throws IllegalArgumentException If the position is null, or if the range is negative
      */
-    public OmnidirectionalSensor(Position position, double range, ShapeAttributes attributes) {
+    public OmnidirectionalSightline(Position position, double range, ShapeAttributes attributes) {
         if (position == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "OmnidirectionalSensor", "constructor", "missingPosition"));
+                Logger.logMessage(Logger.ERROR, "OmnidirectionalSightline", "constructor", "missingPosition"));
         }
 
         if (range < 0) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "OmnidirectionalSensor", "constructor", "invalidRange"));
+                Logger.logMessage(Logger.ERROR, "OmnidirectionalSightline", "constructor", "invalidRange"));
         }
 
         this.position.set(position);
@@ -155,27 +150,27 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
     }
 
     /**
-     * Indicates the geographic position where this sensor is centered.
+     * Indicates the geographic position where this sightline is centered.
      *
-     * @return this sensor's geographic position
+     * @return this sightline's geographic position
      */
     public Position getPosition() {
         return this.position;
     }
 
     /**
-     * Sets this sensor's geographic position to the values in the supplied position.
+     * Sets this sightline's geographic position to the values in the supplied position.
      *
-     * @param position the new position where this sensor is centered
+     * @param position the new position where this sightline is centered
      *
-     * @return this sensor, with its position set to the specified value
+     * @return this sightline, with its position set to the specified value
      *
      * @throws IllegalArgumentException If the position is null
      */
-    public OmnidirectionalSensor setPosition(Position position) {
+    public OmnidirectionalSightline setPosition(Position position) {
         if (position == null) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "OmnidirectionalSensor", "setPosition", "missingPosition"));
+                Logger.logMessage(Logger.ERROR, "OmnidirectionalSightline", "setPosition", "missingPosition"));
         }
 
         this.position.set(position);
@@ -183,7 +178,7 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
     }
 
     /**
-     * Indicates the altitude mode associated with this sensor's position.
+     * Indicates the altitude mode associated with this sightline's position.
      *
      * @return the altitude mode, see {@link gov.nasa.worldwind.WorldWind.AltitudeMode} for possible
      */
@@ -193,42 +188,42 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
     }
 
     /**
-     * Sets the altitude mode associated with this sensor's position.
+     * Sets the altitude mode associated with this sightline's position.
      *
      * @param altitudeMode the new altitude mode, see {@link gov.nasa.worldwind.WorldWind.AltitudeMode} for acceptable
      *                     values
      *
-     * @return this sensor with its altitude mode set to the specified value
+     * @return this sightline with its altitude mode set to the specified value
      */
-    public OmnidirectionalSensor setAltitudeMode(@WorldWind.AltitudeMode int altitudeMode) {
+    public OmnidirectionalSightline setAltitudeMode(@WorldWind.AltitudeMode int altitudeMode) {
         this.altitudeMode = altitudeMode;
         return this;
     }
 
     /**
-     * Indicates this sensor's range. Range represents the sensor's transmission distance in meters from its center
-     * position.
+     * Indicates this sightline's range. Range represents the sightline's transmission distance in meters from its
+     * center position.
      *
-     * @return this sensor's range in meters.
+     * @return this sightline's range in meters.
      */
     public double getRange() {
         return this.range;
     }
 
     /**
-     * Sets this sensor's range. Range represents the sensor's transmission distance in meters from its center
+     * Sets this sightline's range. Range represents the sightline's transmission distance in meters from its center
      * position.
      *
-     * @param meters this sensor's range in meters
+     * @param meters this sightline's range in meters
      *
-     * @return this sensor with its range set to the specified value
+     * @return this sightline with its range set to the specified value
      *
      * @throws IllegalArgumentException If the range is negative
      */
-    public OmnidirectionalSensor setRange(double meters) {
+    public OmnidirectionalSightline setRange(double meters) {
         if (meters < 0) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "OmnidirectionalSensor", "setRange", "invalidRange"));
+                Logger.logMessage(Logger.ERROR, "OmnidirectionalSightline", "setRange", "invalidRange"));
         }
 
         this.range = meters;
@@ -236,86 +231,86 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
     }
 
     /**
-     * Indicates this sensor's "normal" attributes. These attributes are used for the sensor's overlay when the
-     * highlighted flag is false, and there is a direct line-of-sight from the sensor's center position to a terrain
-     * feature. If null and this sensor is not highlighted, visible terrain features are excluded from
-     * the sensor's overlay.
+     * Indicates this sightline's "normal" attributes. These attributes are used for the sightline's overlay when the
+     * highlighted flag is false, and there is a direct line-of-sight from the sightline's center position to a terrain
+     * feature. If null and this sightline is not highlighted, visible terrain features are excluded from
+     * the overlay.
      *
-     * @return a reference to this sensor's attributes bundle
+     * @return a reference to this sightline's attributes bundle
      */
     public ShapeAttributes getAttributes() {
         return this.attributes;
     }
 
     /**
-     * Sets this sensor's "normal" attributes to the supplied attributes bundle. These attributes are used for the
-     * sensor's overlay when the highlighted flag is false, and there is a direct line-of-sight from the sensor's center
-     * position to a terrain feature. If null and this sensor is not highlighted, visible terrain features are excluded
-     * from the sensor's overlay.
+     * Sets this sightline's "normal" attributes to the supplied attributes bundle. These attributes are used for the
+     * sightline's overlay when the highlighted flag is false, and there is a direct line-of-sight from the sightline's
+     * center position to a terrain feature. If null and this sightline is not highlighted, visible terrain features are
+     * excluded from the overlay.
      * <p/>
-     * It is permissible to share attribute bundles between sensors.
+     * It is permissible to share attribute bundles between sightlines.
      *
-     * @param attributes a reference to an attributes bundle used by this sensor when not highlighted
+     * @param attributes a reference to an attributes bundle used by this sightline when not highlighted
      */
     public void setAttributes(ShapeAttributes attributes) {
         this.attributes = attributes;
     }
 
     /**
-     * Indicates this sensor's "highlight" attributes. These attributes are used for the sensor's overlay when the
-     * highlighted flag is true, and there is a direct line-of-sight from the sensor's center position to a terrain
-     * feature. If null and the highlighted flag is true, this sensor's normal attributes are used. If they, too, are
-     * null, visible terrain features are excluded from the sensor's overlay.
+     * Indicates this sightline's "highlight" attributes. These attributes are used for the sightline's overlay when the
+     * highlighted flag is true, and there is a direct line-of-sight from the sightline's center position to a terrain
+     * feature. If null and the highlighted flag is true, this sightline's normal attributes are used. If they, too, are
+     * null, visible terrain features are excluded from the overlay.
      *
-     * @return a reference to this sensor's highlight attributes bundle
+     * @return a reference to this sightline's highlight attributes bundle
      */
     public ShapeAttributes getHighlightAttributes() {
         return this.highlightAttributes;
     }
 
     /**
-     * Sets this sensor's "highlight" attributes. These attributes are used for the sensor's overlay when the
-     * highlighted flag is true, and there is a direct line-of-sight from the sensor's center position to a terrain
-     * feature. If null and the highlighted flag is true, this sensor's normal attributes are used. If they, too, are
-     * null, visible terrain features are excluded from the sensor's overlay.
+     * Sets this sightline's "highlight" attributes. These attributes are used for the sightline's overlay when the
+     * highlighted flag is true, and there is a direct line-of-sight from the sightline's center position to a terrain
+     * feature. If null and the highlighted flag is true, this sightline's normal attributes are used. If they, too, are
+     * null, visible terrain features are excluded from the overlay.
      * <p/>
-     * It is permissible to share attribute bundles between sensors.
+     * It is permissible to share attribute bundles between sightlines.
      *
-     * @param highlightAttributes a reference to the attributes bundle used by this sensor when highlighted
+     * @param highlightAttributes a reference to the attributes bundle used by this sightline when highlighted
      */
     public void setHighlightAttributes(ShapeAttributes highlightAttributes) {
         this.highlightAttributes = highlightAttributes;
     }
 
     /**
-     * Indicates this sensor's "occlude" attributes. These attributes are used for the sensor's overlay when there's no
-     * direct line-of-sight from the sensor's center position to a terrain feature. If null, occluded terrain features
-     * are excluded from the sensor's overlay.
+     * Indicates this sightline's "occlude" attributes. These attributes are used for the sightline's overlay when
+     * there's no direct line-of-sight from the sightline's center position to a terrain feature. If null, occluded
+     * terrain features are excluded from the overlay.
      *
-     * @return a reference to this sensor's occlude attributes bundle
+     * @return a reference to this sightline's occlude attributes bundle
      */
     public ShapeAttributes getOccludeAttributes() {
         return this.occludeAttributes;
     }
 
     /**
-     * Sets this sensor's "occlude" attributes. These attributes are used for the sensor's overlay when there's no
-     * direct line-of-sight from the sensor's center position to a terrain feature. If null, occluded terrain features
-     * are excluded from the sensor's overlay.
+     * Sets this sightline's "occlude" attributes. These attributes are used for the sightline's overlay when there's no
+     * direct line-of-sight from the sightline's center position to a terrain feature. If null, occluded terrain
+     * features are excluded from the overlay.
      * <p>
-     * It is permissible to share attribute bundles between sensors.
+     * It is permissible to share attribute bundles between sightlines.
      *
-     * @param occludeAttributes a reference to an attributes bundle used by this sensor when occluded
+     * @param occludeAttributes a reference to an attributes bundle used by this sightline when occluded
      */
     public void setOccludeAttributes(ShapeAttributes occludeAttributes) {
         this.occludeAttributes = occludeAttributes;
     }
 
     /**
-     * Indicates whether this sensor's overlay uses its highlight attributes rather than its normal attributes for
+     * Indicates whether this sightline's overlay uses its highlight attributes rather than its normal attributes for
      * visible features.
      *
-     * @return true if this sensor is highlighted, and false otherwise
+     * @return true if this sightline is highlighted, and false otherwise
      */
     @Override
     public boolean isHighlighted() {
@@ -323,10 +318,10 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
     }
 
     /**
-     * Sets the highlighted state of this sensor, which indicates whether this sensor's overlay uses its highlight
+     * Sets the highlighted state of this sightline, which indicates whether this sightline's overlay uses its highlight
      * attributes rather than its normal attributes for visible features.
      *
-     * @param highlighted true to highlight this sensor, and false otherwise
+     * @param highlighted true to highlight this sightline, and false otherwise
      */
     @Override
     public void setHighlighted(boolean highlighted) {
@@ -335,7 +330,7 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
 
     /**
      * A position associated with the object that indicates its aggregate geographic position. For an
-     * OmnidirectionalSensor, this is simply it's position property.
+     * OmnidirectionalSightline, this is simply it's position property.
      *
      * @return {@link #getPosition()}
      */
@@ -345,11 +340,11 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
     }
 
     /**
-     * Moves the sensor over the globe's surface. For an OmnidirectionalSensor, this simply calls {@link
-     * OmnidirectionalSensor#setPosition(Position)}.
+     * Moves the sightline over the globe's surface. For an OmnidirectionalSightline, this simply calls {@link
+     * OmnidirectionalSightline#setPosition(Position)}.
      *
      * @param globe    not used.
-     * @param position the new position of the sensor's reference position.
+     * @param position the new position of the sightline's reference position.
      */
     @Override
     public void moveTo(Globe globe, Position position) {
@@ -358,12 +353,12 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
 
     @Override
     protected void doRender(RenderContext rc) {
-        // Compute this sensor's center point in Cartesian coordinates.
+        // Compute this sightline's center point in Cartesian coordinates.
         if (!this.determineCenterPoint(rc)) {
             return;
         }
 
-        // Don't render anything if the sensor's coverage area is not visible.
+        // Don't render anything if the sightline's coverage area is not visible.
         if (!this.intersectsFrustum(rc)) {
             return;
         }
@@ -380,7 +375,7 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
         // Enqueue drawables for processing on the OpenGL thread.
         this.makeDrawable(rc);
 
-        // Enqueue a picked object that associates the sensor's drawables with its picked object ID.
+        // Enqueue a picked object that associates the sightline's drawables with its picked object ID.
         if (rc.pickMode) {
             rc.offerPickedObject(PickedObject.fromRenderable(this.pickedObjectId, this, rc.currentLayer));
         }
@@ -433,11 +428,11 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
     }
 
     protected void makeDrawable(RenderContext rc) {
-        // Obtain a pooled drawable and configure it to draw the sensor's coverage.
-        Pool<DrawableSensor> pool = rc.getDrawablePool(DrawableSensor.class);
-        DrawableSensor drawable = DrawableSensor.obtain(pool);
+        // Obtain a pooled drawable and configure it to draw the sightline's coverage.
+        Pool<DrawableSightline> pool = rc.getDrawablePool(DrawableSightline.class);
+        DrawableSightline drawable = DrawableSightline.obtain(pool);
 
-        // Compute the transform from sensor local coordinates to world coordinates.
+        // Compute the transform from sightline local coordinates to world coordinates.
         drawable.centerTransform = rc.globe.cartesianToLocalTransform(this.centerPoint.x, this.centerPoint.y, this.centerPoint.z, drawable.centerTransform);
         drawable.range = this.range;
 
@@ -450,10 +445,10 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
             drawable.occludedColor.set(rc.pickMode ? this.pickColor : this.occludeAttributes.interiorColor);
         }
 
-        // Use the sensor GLSL program to draw the sensor's coverage.
-        drawable.program = (SensorProgram) rc.getShaderProgram(SensorProgram.KEY);
+        // Use the sightline GLSL program to draw the coverage.
+        drawable.program = (SightlineProgram) rc.getShaderProgram(SightlineProgram.KEY);
         if (drawable.program == null) {
-            drawable.program = (SensorProgram) rc.putShaderProgram(SensorProgram.KEY, new SensorProgram(rc.resources));
+            drawable.program = (SightlineProgram) rc.putShaderProgram(SightlineProgram.KEY, new SightlineProgram(rc.resources));
         }
 
         // Enqueue a drawable for processing on the OpenGL thread.

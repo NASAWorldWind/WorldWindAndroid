@@ -14,13 +14,13 @@ import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
 
-public class SensorProgram extends ShaderProgram {
+public class SightlineProgram extends ShaderProgram {
 
-    public static final Object KEY = SensorProgram.class;
+    public static final Object KEY = SightlineProgram.class;
 
     protected int mvpMatrixId;
 
-    protected int svpMatrixId;
+    protected int slpMatrixId;
 
     protected int rangeId;
 
@@ -30,14 +30,14 @@ public class SensorProgram extends ShaderProgram {
 
     private float[] array = new float[32];
 
-    public SensorProgram(Resources resources) {
+    public SightlineProgram(Resources resources) {
         try {
-            String vs = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_sensorprogram_vert);
-            String fs = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_sensorprogram_frag);
+            String vs = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_sightlineprogram_vert);
+            String fs = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_sightlineprogram_frag);
             this.setProgramSources(vs, fs);
             this.setAttribBindings("vertexPoint");
         } catch (Exception logged) {
-            Logger.logMessage(Logger.ERROR, "SensorProgram", "constructor", "errorReadingProgramSource", logged);
+            Logger.logMessage(Logger.ERROR, "SightlineProgram", "constructor", "errorReadingProgramSource", logged);
         }
     }
 
@@ -45,8 +45,8 @@ public class SensorProgram extends ShaderProgram {
         this.mvpMatrixId = GLES20.glGetUniformLocation(this.programId, "mvpMatrix");
         GLES20.glUniformMatrix4fv(this.mvpMatrixId, 1, false, this.array, 0);
 
-        this.svpMatrixId = GLES20.glGetUniformLocation(this.programId, "svpMatrix");
-        GLES20.glUniformMatrix4fv(this.svpMatrixId, 2, false, this.array, 0);
+        this.slpMatrixId = GLES20.glGetUniformLocation(this.programId, "slpMatrix");
+        GLES20.glUniformMatrix4fv(this.slpMatrixId, 2, false, this.array, 0);
 
         this.rangeId = GLES20.glGetUniformLocation(this.programId, "range");
         GLES20.glUniform1f(this.rangeId, 0);
@@ -63,10 +63,10 @@ public class SensorProgram extends ShaderProgram {
         GLES20.glUniformMatrix4fv(this.mvpMatrixId, 1, false, this.array, 0);
     }
 
-    public void loadSensorviewProjection(Matrix4 projection, Matrix4 sensorview) {
+    public void loadSightlineProjection(Matrix4 projection, Matrix4 sightline) {
         projection.transposeToArray(this.array, 0);
-        sensorview.transposeToArray(this.array, 16);
-        GLES20.glUniformMatrix4fv(this.svpMatrixId, 2, false, this.array, 0);
+        sightline.transposeToArray(this.array, 16);
+        GLES20.glUniformMatrix4fv(this.slpMatrixId, 2, false, this.array, 0);
     }
 
     public void loadRange(double range) {

@@ -22,19 +22,19 @@ import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.ImageSource;
-import gov.nasa.worldwind.shape.OmnidirectionalSensor;
+import gov.nasa.worldwind.shape.OmnidirectionalSightline;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.ShapeAttributes;
 
 /**
- * This Activity demonstrates the OmnidirectionalSensor object and allows the sensor to be dragged.
+ * This Activity demonstrates the OmnidirectionalSightline object and allows the sensor to be dragged.
  */
 public class OmnidirectionalSensorActivity extends BasicGlobeActivity {
 
     /**
      * The sensor which evaluates line of sight
      */
-    protected OmnidirectionalSensor sensor;
+    protected OmnidirectionalSightline sensor;
 
     /**
      * A Placemark representing the position of the sensor
@@ -53,16 +53,16 @@ public class OmnidirectionalSensorActivity extends BasicGlobeActivity {
         setAboutBoxText("Demonstrates a draggable WorldWind Omnidirectional sensor. Drag the placemark icon around the " +
             "screen to move the omnidirectional sensor.");
 
-        // Initialize attributes for the OmnidirectionalSensor
+        // Initialize attributes for the OmnidirectionalSightline
         ShapeAttributes viewableRegions = new ShapeAttributes();
         viewableRegions.setInteriorColor(new Color(0f, 1f, 0f, 0.25f));
 
         ShapeAttributes blockedRegions = new ShapeAttributes();
         blockedRegions.setInteriorColor(new Color(0.1f, 0.1f, 0.1f, 0.5f));
 
-        // Initialize the OmnidirectionalSensor and Corresponding Placemark
+        // Initialize the OmnidirectionalSightline and Corresponding Placemark
         Position pos = new Position(46.202, -122.190, 500.0);
-        this.sensor = new OmnidirectionalSensor(pos, 10000.0);
+        this.sensor = new OmnidirectionalSightline(pos, 10000.0);
         this.sensor.setAttributes(viewableRegions);
         this.sensor.setOccludeAttributes(blockedRegions);
         this.sensor.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);

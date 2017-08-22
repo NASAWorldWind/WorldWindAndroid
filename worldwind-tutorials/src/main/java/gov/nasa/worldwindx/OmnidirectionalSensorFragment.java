@@ -12,14 +12,14 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.ImageSource;
-import gov.nasa.worldwind.shape.OmnidirectionalSensor;
+import gov.nasa.worldwind.shape.OmnidirectionalSightline;
 import gov.nasa.worldwind.shape.Placemark;
 import gov.nasa.worldwind.shape.ShapeAttributes;
 
 public class OmnidirectionalSensorFragment extends BasicGlobeFragment {
 
     /**
-     * Creates a new WorldWindow (GLSurfaceView) object with an OmnidirectionalSensor
+     * Creates a new WorldWindow (GLSurfaceView) object with an OmnidirectionalSightline
      *
      * @return The WorldWindow object containing the globe.
      */
@@ -40,7 +40,7 @@ public class OmnidirectionalSensorFragment extends BasicGlobeFragment {
         occludedAttributes.setInteriorColor(new Color(0.1f, 0.1f, 0.1f, 0.5f));
 
         // Create the sensor
-        OmnidirectionalSensor sensor = new OmnidirectionalSensor(position, range);
+        OmnidirectionalSightline sensor = new OmnidirectionalSightline(position, range);
         // Add the attributes
         sensor.setAttributes(visibleAttributes);
         sensor.setOccludeAttributes(occludedAttributes);
