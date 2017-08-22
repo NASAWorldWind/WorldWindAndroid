@@ -111,7 +111,7 @@ public class DrawableSensor implements Drawable {
             // Draw only depth values offset slightly away from the viewer.
             GLES20.glColorMask(false, false, false, false);
             GLES20.glEnable(GLES20.GL_POLYGON_OFFSET_FILL);
-            GLES20.glPolygonOffset(4, 2);
+            GLES20.glPolygonOffset(4, 4);
 
             for (int idx = 0, len = dc.getDrawableTerrainCount(); idx < len; idx++) {
                 // Get the drawable terrain associated with the draw context.

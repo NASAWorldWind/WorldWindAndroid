@@ -175,7 +175,7 @@ public class DrawContext {
 
         Framebuffer framebuffer = new Framebuffer();
         Texture colorAttachment = new Texture(1024, 1024, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE);
-        Texture depthAttachment = new Texture(1024, 1024, GLES20.GL_DEPTH_COMPONENT, GLES20.GL_UNSIGNED_INT);
+        Texture depthAttachment = new Texture(1024, 1024, GLES20.GL_DEPTH_COMPONENT, GLES20.GL_UNSIGNED_SHORT);
         // TODO consider modifying Texture's tex parameter behavior in order to make this unnecessary
         depthAttachment.setTexParameter(GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
         depthAttachment.setTexParameter(GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);

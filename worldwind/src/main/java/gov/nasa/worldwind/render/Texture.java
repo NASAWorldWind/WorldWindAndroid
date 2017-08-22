@@ -71,7 +71,7 @@ public class Texture implements RenderResource {
         this.textureHeight = height;
         this.textureFormat = format;
         this.textureType = type;
-        this.textureByteCount = estimateByteCount(width, height, format, GLES20.GL_UNSIGNED_BYTE);
+        this.textureByteCount = estimateByteCount(width, height, format, type);
         this.texCoordTransform.setToIdentity();
     }
 
