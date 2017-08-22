@@ -5,13 +5,19 @@
 
 package gov.nasa.worldwind.shape;
 
+import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.draw.DrawableSensor;
+import gov.nasa.worldwind.geom.BoundingSphere;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.RenderContext;
+import gov.nasa.worldwind.render.SensorProgram;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.Pool;
 
 /**
  * Displays an omnidirectional sensor's line-of-sight within the WorldWind scene. The sensor's placement and area of
@@ -24,6 +30,19 @@ import gov.nasa.worldwind.util.Logger;
  * position, appear in the sensor's normal attributes or its highlight attributes, depending on the sensor's highlight
  * state. Occluded terrain features appear in the sensor's occlude attributes, regardless of highlight state. Terrain
  * features outside the sensor's range are excluded from the overlay.
+ * <p>
+ * <h3>Limitations and Planned Improvements</h3>
+ * <ul>
+ * <li>OmnidirectionalSensor is currently limited to terrain-based
+ * occlusion, and does not incorporate other 3D scene elements during visibility determination. Subsequent iterations
+ * will support occlusion of both terrain and 3D polygons.</li>
+ * <li>The visibility overlay is drawn in ShapeAttributes'
+ * interior color only. Subsequent iterations will add an outline where the range intersects the scene, and will display
+ * the sightline's geometry as an outline.</li>
+ * <li>OmnidirectionalSensor requires OpenGL ES 2.0 extension <a
+ * href="https://www.khronos.org/registry/OpenGL/extensions/OES/OES_depth_texture.txt">GL_OES_depth_texture</a>.
+ * Subsequent iterations may relax this requirement.</li>
+ * </ul>
  */
 public class OmnidirectionalSensor extends AbstractRenderable implements Attributable, Highlightable, Movable {
 
@@ -67,6 +86,18 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
      * Determines whether the normal or highlighted attributes should be used for visible features.
      */
     protected boolean highlighted;
+
+    private Vec3 centerPoint = new Vec3();
+
+    private Vec3 scratchPoint = new Vec3();
+
+    private Vec3 scratchVector = new Vec3();
+
+    private int pickedObjectId;
+
+    private Color pickColor = new Color();
+
+    private BoundingSphere boundingSphere = new BoundingSphere();
 
     /**
      * Constructs a sensor that displays the line-of-sight from a specified center position and range. Visible features
@@ -327,6 +358,105 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
 
     @Override
     protected void doRender(RenderContext rc) {
+        // Compute this sensor's center point in Cartesian coordinates.
+        if (!this.determineCenterPoint(rc)) {
+            return;
+        }
 
+        // Don't render anything if the sensor's coverage area is not visible.
+        if (!this.intersectsFrustum(rc)) {
+            return;
+        }
+
+        // Select the currently active attributes.
+        this.determineActiveAttributes(rc);
+
+        // Configure the pick color when rendering in pick mode.
+        if (rc.pickMode) {
+            this.pickedObjectId = rc.nextPickedObjectId();
+            this.pickColor = PickedObject.identifierToUniqueColor(this.pickedObjectId, this.pickColor);
+        }
+
+        // Enqueue drawables for processing on the OpenGL thread.
+        this.makeDrawable(rc);
+
+        // Enqueue a picked object that associates the sensor's drawables with its picked object ID.
+        if (rc.pickMode) {
+            rc.offerPickedObject(PickedObject.fromRenderable(this.pickedObjectId, this, rc.currentLayer));
+        }
+    }
+
+    protected boolean determineCenterPoint(RenderContext rc) {
+        double lat = this.position.latitude;
+        double lon = this.position.longitude;
+        double alt = this.position.altitude;
+
+        switch (this.altitudeMode) {
+            case WorldWind.ABSOLUTE:
+                if (rc.globe != null) {
+                    rc.globe.geographicToCartesian(lat, lon, alt * rc.verticalExaggeration, this.centerPoint);
+                }
+                break;
+            case WorldWind.CLAMP_TO_GROUND:
+                if (rc.terrain != null && rc.terrain.surfacePoint(lat, lon, this.scratchPoint)) {
+                    this.centerPoint.set(this.scratchPoint); // found a point on the terrain
+                }
+                break;
+            case WorldWind.RELATIVE_TO_GROUND:
+                if (rc.terrain != null && rc.terrain.surfacePoint(lat, lon, this.scratchPoint)) {
+                    this.centerPoint.set(this.scratchPoint); // found a point on the terrain
+                    if (alt != 0) { // Offset along the normal vector at the terrain surface point.
+                        rc.globe.geographicToCartesianNormal(lat, lon, this.scratchVector);
+                        this.centerPoint.x += this.scratchVector.x * alt;
+                        this.centerPoint.y += this.scratchVector.y * alt;
+                        this.centerPoint.z += this.scratchVector.z * alt;
+                    }
+                }
+                break;
+        }
+
+        return this.centerPoint.x != 0
+            && this.centerPoint.y != 0
+            && this.centerPoint.z != 0;
+    }
+
+    protected boolean intersectsFrustum(RenderContext rc) {
+        return this.boundingSphere.set(this.centerPoint, this.range).intersectsFrustum(rc.frustum);
+    }
+
+    protected void determineActiveAttributes(RenderContext rc) {
+        if (this.highlighted && this.highlightAttributes != null) {
+            this.activeAttributes = this.highlightAttributes;
+        } else {
+            this.activeAttributes = this.attributes;
+        }
+    }
+
+    protected void makeDrawable(RenderContext rc) {
+        // Obtain a pooled drawable and configure it to draw the sensor's coverage.
+        Pool<DrawableSensor> pool = rc.getDrawablePool(DrawableSensor.class);
+        DrawableSensor drawable = DrawableSensor.obtain(pool);
+
+        // Compute the transform from sensor local coordinates to world coordinates.
+        drawable.centerTransform = rc.globe.cartesianToLocalTransform(this.centerPoint.x, this.centerPoint.y, this.centerPoint.z, drawable.centerTransform);
+        drawable.range = this.range;
+
+        // Configure the drawable colors according to the current attributes. When picking use a unique color associated
+        // with the picked object ID. Null attributes indicate that nothing is drawn.
+        if (this.activeAttributes != null) {
+            drawable.visibleColor.set(rc.pickMode ? this.pickColor : this.activeAttributes.interiorColor);
+        }
+        if (this.occludeAttributes != null) {
+            drawable.occludedColor.set(rc.pickMode ? this.pickColor : this.occludeAttributes.interiorColor);
+        }
+
+        // Use the sensor GLSL program to draw the sensor's coverage.
+        drawable.program = (SensorProgram) rc.getShaderProgram(SensorProgram.KEY);
+        if (drawable.program == null) {
+            drawable.program = (SensorProgram) rc.putShaderProgram(SensorProgram.KEY, new SensorProgram(rc.resources));
+        }
+
+        // Enqueue a drawable for processing on the OpenGL thread.
+        rc.offerSurfaceDrawable(drawable, 0 /*z-order*/);
     }
 }
