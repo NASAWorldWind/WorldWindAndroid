@@ -30,6 +30,19 @@ import gov.nasa.worldwind.util.Pool;
  * position, appear in the sensor's normal attributes or its highlight attributes, depending on the sensor's highlight
  * state. Occluded terrain features appear in the sensor's occlude attributes, regardless of highlight state. Terrain
  * features outside the sensor's range are excluded from the overlay.
+ * <p>
+ * <h3>Limitations and Planned Improvements</h3>
+ * <ul>
+ * <li>OmnidirectionalSensor is currently limited to terrain-based
+ * occlusion, and does not incorporate other 3D scene elements during visibility determination. Subsequent iterations
+ * will support occlusion of both terrain and 3D polygons.</li>
+ * <li>The visibility overlay is drawn in ShapeAttributes'
+ * interior color only. Subsequent iterations will add an outline where the range intersects the scene, and will display
+ * the sightline's geometry as an outline.</li>
+ * <li>OmnidirectionalSensor requires OpenGL ES 2.0 extension <a
+ * href="https://www.khronos.org/registry/OpenGL/extensions/OES/OES_depth_texture.txt">GL_OES_depth_texture</a>.
+ * Subsequent iterations may relax this requirement.</li>
+ * </ul>
  */
 public class OmnidirectionalSensor extends AbstractRenderable implements Attributable, Highlightable, Movable {
 
