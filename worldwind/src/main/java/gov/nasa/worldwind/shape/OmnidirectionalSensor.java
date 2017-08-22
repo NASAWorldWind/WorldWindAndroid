@@ -44,7 +44,7 @@ public class OmnidirectionalSensor extends AbstractRenderable implements Attribu
     protected double range;
 
     /**
-     * The sensor's to use for visible features, when the sensor is not highlighted.
+     * The attributes to use for visible features, when the sensor is not highlighted.
      */
     protected ShapeAttributes attributes;
 
