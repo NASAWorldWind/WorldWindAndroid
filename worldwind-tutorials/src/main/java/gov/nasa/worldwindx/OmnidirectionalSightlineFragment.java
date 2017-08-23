@@ -28,7 +28,7 @@ public class OmnidirectionalSightlineFragment extends BasicGlobeFragment {
         // Let the super class (BasicGlobeFragment) do the creation
         WorldWindow wwd = super.createWorldWindow();
 
-        // Specify the sightline position
+        // Specify the sightline position, which is the origin of the line of sight calculation
         Position position = new Position(46.230, -122.190, 2500.0);
         // Specify the range of the sightline (meters)
         double range = 10000.0;
@@ -37,11 +37,11 @@ public class OmnidirectionalSightlineFragment extends BasicGlobeFragment {
         visibleAttributes.setInteriorColor(new Color(0f, 1f, 0f, 0.5f));
         // Create attributes for the occluded terrain
         ShapeAttributes occludedAttributes = new ShapeAttributes();
-        occludedAttributes.setInteriorColor(new Color(0.1f, 0.1f, 0.1f, 0.5f));
+        occludedAttributes.setInteriorColor(new Color(0.1f, 0.1f, 0.1f, 0.8f));
 
         // Create the sightline
         OmnidirectionalSightline sightline = new OmnidirectionalSightline(position, range);
-        // Add the attributes
+        // Set the attributes
         sightline.setAttributes(visibleAttributes);
         sightline.setOccludeAttributes(occludedAttributes);
 

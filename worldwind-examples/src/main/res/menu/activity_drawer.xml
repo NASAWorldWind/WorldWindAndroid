@@ -33,8 +33,8 @@
             android:title="@string/title_placemarks_milstd2525_demo"/>
         <item
             android:id="@+id/nav_omnidirectional_sightline_activity"
-            android:icon="@android:drawable/ic_menu_myplaces"
-            android:title="@string/title_movable_omni_sightline"/>
+            android:icon="@android:drawable/ic_menu_gallery"
+            android:title="@string/title_movable_line_of_sight"/>
         <item
             android:id="@+id/nav_paths_example"
             android:icon="@android:drawable/ic_menu_directions"
