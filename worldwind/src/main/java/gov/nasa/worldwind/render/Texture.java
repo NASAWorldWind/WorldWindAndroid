@@ -27,6 +27,8 @@ public class Texture implements RenderResource {
 
     protected int textureFormat;
 
+    protected int textureType;
+
     protected int textureByteCount;
 
     protected Matrix3 texCoordTransform = new Matrix3();
@@ -53,12 +55,13 @@ public class Texture implements RenderResource {
         this.textureWidth = width;
         this.textureHeight = height;
         this.textureFormat = format;
+        this.textureType = type;
         this.textureByteCount = estimateByteCount(width, height, format, type);
         this.texCoordTransform.setToVerticalFlip();
         this.imageBitmap = bitmap;
     }
 
-    public Texture(int width, int height, int format) {
+    public Texture(int width, int height, int format, int type) {
         if (width < 0 || height < 0) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Texture", "constructor", "invalidWidthOrHeight"));
@@ -67,7 +70,8 @@ public class Texture implements RenderResource {
         this.textureWidth = width;
         this.textureHeight = height;
         this.textureFormat = format;
-        this.textureByteCount = estimateByteCount(width, height, format, GLES20.GL_UNSIGNED_BYTE);
+        this.textureType = type;
+        this.textureByteCount = estimateByteCount(width, height, format, type);
         this.texCoordTransform.setToIdentity();
     }
 
@@ -168,7 +172,7 @@ public class Texture implements RenderResource {
         // Allocate texture memory for the OpenGL texture 2D object. The texture memory is initialized with 0.
         GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0 /*level*/,
             this.textureFormat, this.textureWidth, this.textureHeight, 0 /*border*/,
-            this.textureFormat, GLES20.GL_UNSIGNED_BYTE, null /*pixels*/);
+            this.textureFormat, this.textureType, null /*pixels*/);
     }
 
     protected void loadTexImage(DrawContext dc, Bitmap bitmap) {
@@ -189,6 +193,10 @@ public class Texture implements RenderResource {
                 "Exception attempting to load texture image \'" + bitmap + "\'", e);
         }
     }
+
+    // TODO refactor setTexParameters to apply all configured tex parameters
+    // TODO apply defaults only when no parameter is configured
+    // TODO consider simplifying the defaults and requiring that layers/shapes specify what they want
 
     protected void setTexParameters(DrawContext dc) {
         int param;
@@ -255,6 +263,10 @@ public class Texture implements RenderResource {
                         break;
                 }
                 break;
+            case GLES20.GL_UNSIGNED_INT:
+                bytesPerRow = widthPow2 * 4; // 32 bits per pixel
+                break;
+            case GLES20.GL_UNSIGNED_SHORT:
             case GLES20.GL_UNSIGNED_SHORT_5_6_5:
             case GLES20.GL_UNSIGNED_SHORT_4_4_4_4:
             case GLES20.GL_UNSIGNED_SHORT_5_5_5_1:

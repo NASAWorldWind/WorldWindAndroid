@@ -1,60 +1,65 @@
 # Directs the Travis CI build service for World Wind Android
 # For more information see https://docs.travis-ci.com/user/customizing-the-build/
 
-# Required to install the jq JSON filter used to parse GitHub API results
-sudo: required
-
 # Set up to run the Android build script per the Travis CI documentation
 language: android
 
+# Configure the build to use Oracle JDK 8, required by Android API 24
 jdk:
-  # Configure the build to use Oracle JDK 8, required by Android API 24
   - oraclejdk8
 
+# Configure the Android build configuration to match the Gradle build
 android:
   components:
     - platform-tools      # latest SDK platform-tools
     - tools               # latest SDK tools
     - android-24          # SDK version used to compile the project
-    - build-tools-25.0.3  # build tools used by the project
+    - build-tools-26.0.1  # build tools used by the project
     - extra-android-support
     - extra-android-m2repository
 
+# Decrypt the keystore used to certify Android apps when the build is not a pull request
 before_script:
-  # Prepare the Travis build environment
-  - ./travis/prepare_environment.sh
+  - 'if [[ -n "${encrypted_2eaf8cabe659_key}" ]]; then openssl aes-256-cbc -K "${encrypted_2eaf8cabe659_key}" -iv "${encrypted_2eaf8cabe659_iv}" -in keystore.jks.enc -out keystore.jks -d; fi'
 
+# Build the project
 script:
-  # Build the project
-  - ./gradlew build
+  - ./gradlew build --stacktrace
 
-after_success:
-  # Push the daily tag when this build is a cron job
-  - ./travis/add_daily_tag.sh
-  # Push javadoc to GitHub pages and upload build artifacts to GitHub releases, depending on what initiated the build
-  - ./travis/update_javadoc.sh
-  - ./travis/update_release.sh
+# Deploy build artifacts. Travis does not invoke this step for pull request builds
+deploy:
+  # Publish SNAPSHOT artifacts to oss.jfrog.org
+  - provider: script
+    script: ./gradlew worldwind:artifactoryPublish --stacktrace
+    skip_cleanup: true
+    on:
+      branch: develop
+  # Publish release artifacts to Bintray/JCenter
+  - provider: script
+    script: ./gradlew worldwind:bintrayUpload --stacktrace
+    skip_cleanup: true
+    on:
+      tags: true
+  # Create CHANGELOG.md in the current directory
+  - provider: script
+    script: ./travis/changelog.sh >> CHANGELOG.md
+    skip_cleanup: true
+    on:
+      tags: true
+  # Create a GitHub release and publish CHANGELOG.md to the release assets
+  - provider: releases
+    api_key: $GITHUB_API_KEY
+    file: CHANGELOG.md
+    skip_cleanup: true
+    on:
+      tags: true
 
-after_failure:
-  # Concatenate the logcat.log file et al to the travis log
-  - for file in *.log; do echo "$file"; echo "====================="; cat "$file"; done || true
-
+# Android build cache configuration. See the Travis documentation: https://docs.travis-ci.com/user/languages/android#Caching
 before_cache:
-  # Use the caching configuration per the Travis CI documentation
-  # See https://docs.travis-ci.com/user/languages/android#Caching
-  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
-
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-    # Use the caching configuration per the Travis CI documentation
-    # See https://docs.travis-ci.com/user/languages/android#Caching
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
-
-notifications:
-  # Notify the World Wind services mailing list on every build
-  email:
-    recipients:
-      secure: SheoPrZZHX1c70JTwoRULza5XobdTPisIgQSfpFBSjolS/Z+qJBIZkyQNKRPfzvs5FEZNBHlaXnvAEX8sUHAJtvp5A9P/c0jaZ3dA0IQ1TJCNg3XT2ZLz4R5JOQclYbgBIqr27MSmx9vvnfGUDCSKaRXdLxmB0Hun7zlkR79IEQ6lLeeB9pu7N/4vuzdmMGKU1lOWs3tmDpdeNOdgSYhKW81eX0FHrgWTXeXcv/3hhtn87XogwKdVKeYFKY+1wHUV3j+dnqeN7yMhqlpljHkOpQ5YqG7nDnPbSJZJ2NINTB/+Mus57eq67FnNl4CDAsWue97wrY8u/+mtGP0boyhXUlBaKJdJpENnuSbxLZtMzvrI5JucxgGXiKei+q84DAh1BbN0+205kBfQgh24GF68bMuKFSpJDobN6usLXVnfjnTrlrMkJQ9wGY/m8g9P9IhJpguJuhYocB6ByMOCkkeSEXdVN6Wb7MGXcfSWdnasVhqAX4yYUt34WUO+vWf842atzXWMZDyStjUe/hWQactB2FhyZBt9kIjMBMWodEhAlDPgFSzwz4huiDkAjeQSszqDQQVOXGFG+f64HhnhYElkY7F08/Yy/sI5HlQ0C0nlNXVsFZ5oHRWwyw02tVVdzNo3ho2h1NSW935S0z3rWRlNOxxKisBON0OBGgZdWJRLYc=
-    on_success: always
-    on_failure: always
+    - $HOME/.android/build-cache

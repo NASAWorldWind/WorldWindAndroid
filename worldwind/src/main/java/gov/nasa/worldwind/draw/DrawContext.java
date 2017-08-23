@@ -65,7 +65,7 @@ public class DrawContext {
 
     private int elementArrayBufferId;
 
-    private Framebuffer surfaceFramebuffer;
+    private Framebuffer scratchFramebuffer;
 
     private BufferObject unitSquareBuffer;
 
@@ -103,7 +103,7 @@ public class DrawContext {
         this.textureUnit = GLES20.GL_TEXTURE0;
         this.arrayBufferId = 0;
         this.elementArrayBufferId = 0;
-        this.surfaceFramebuffer = null;
+        this.scratchFramebuffer = null;
         this.unitSquareBuffer = null;
         Arrays.fill(this.textureId, 0);
     }
@@ -155,16 +155,34 @@ public class DrawContext {
         }
     }
 
-    public Framebuffer surfaceFramebuffer() {
-        if (this.surfaceFramebuffer != null) {
-            return this.surfaceFramebuffer;
+    /**
+     * Returns an OpenGL framebuffer object suitable for offscreen drawing. The framebuffer has a 32-bit color buffer
+     * and a 32-bit depth buffer, both attached as OpenGL texture 2D objects.
+     * <p>
+     * The framebuffer may be used by any drawable and for any purpose. However, the draw context makes no guarantees
+     * about the framebuffer's contents. Drawables must clear the framebuffer before use, and must assume its contents
+     * may be modified by another drawable, either during the current frame or in a subsequent frame.
+     * <p>
+     * The OpenGL framebuffer object is created on first use and cached. Subsequent calls to this method return the
+     * cached buffer object.
+     *
+     * @return the draw context's scratch OpenGL framebuffer object
+     */
+    public Framebuffer scratchFramebuffer() {
+        if (this.scratchFramebuffer != null) {
+            return this.scratchFramebuffer;
         }
 
         Framebuffer framebuffer = new Framebuffer();
-        Texture colorAttachment = new Texture(1024, 1024, GLES20.GL_RGBA);
+        Texture colorAttachment = new Texture(1024, 1024, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE);
+        Texture depthAttachment = new Texture(1024, 1024, GLES20.GL_DEPTH_COMPONENT, GLES20.GL_UNSIGNED_SHORT);
+        // TODO consider modifying Texture's tex parameter behavior in order to make this unnecessary
+        depthAttachment.setTexParameter(GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+        depthAttachment.setTexParameter(GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
         framebuffer.attachTexture(this, colorAttachment, GLES20.GL_COLOR_ATTACHMENT0);
+        framebuffer.attachTexture(this, depthAttachment, GLES20.GL_DEPTH_ATTACHMENT);
 
-        return (this.surfaceFramebuffer = framebuffer);
+        return (this.scratchFramebuffer = framebuffer);
     }
 
     /**
@@ -292,6 +310,8 @@ public class DrawContext {
      * <p/>
      * The OpenGL buffer object is created on first use and cached. Subsequent calls to this method return the cached
      * buffer object.
+     *
+     * @return the draw context's unit square OpenGL buffer object
      */
     public BufferObject unitSquareBuffer() {
         if (this.unitSquareBuffer != null) {

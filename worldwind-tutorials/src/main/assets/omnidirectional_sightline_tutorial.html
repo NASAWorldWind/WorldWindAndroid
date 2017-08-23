@@ -1,0 +1,89 @@
+<!--
+  ~ Copyright (c) 2017 United States Government as represented by the Administrator of the
+  ~ National Aeronautics and Space Administration. All Rights Reserved.
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Surface Image Tutorial</title>
+    <script src="file:///android_asset/codemirror-5.16.0/lib/codemirror.js" type="text/javascript"></script>
+    <script src="file:///android_asset/codemirror-5.16.0/mode/clike/clike.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/codemirror-5.16.0/lib/codemirror.css"/>
+    <link rel="stylesheet" type="text/css" href="file:///android_asset/override.css"/>
+</head>
+<body>
+<h1>Line Of Sight Tutorial</h1>
+<p>
+    Demonstrates how to create an OmnidirectionalSightline and add it to the globe to visualize line of sight. An
+    OmnidirectionalSightline provides a visual area representation of line of sight from a provided origin. Areas
+    occluded by terrain from line of sight will appear in a different color than areas visible to the provided point.
+</p>
+<p>
+    This tutorial demonstrates the creation of an OmnidirectionSightline. In addition to the OmnidirectionalSightline, a
+    Placemark indicating the position of the sightline origin is added to provide visual context.
+</p>
+<p>
+    The regions colored green indicate they are visible from the position provided to the OmnidirectionSightline.
+    Regions colored gray are occluded by terrain. This tutorial uses a sightline range of 10,000 meters.
+</p>
+<h2>Example</h2>
+<h3>OmnidirectionalSightlineFragment.java</h3>
+<p>
+    The OmnidirectionSightlineFragment class extends the BasicGlobeFragment and overrides the createWorldWindow method.
+    An OmnidirectionalSightline object with specified position and range is then created and added to the globe.
+</p>
+<div style="border-top: 1px solid black; border-bottom: 1px solid black;">
+    <textarea id="java-code">
+package gov.nasa.worldwindx;
+...
+    @Override
+    public WorldWindow createWorldWindow() {
+        // Let the super class (BasicGlobeFragment) do the creation
+        WorldWindow wwd = super.createWorldWindow();
+
+        // Specify the sightline position, which is the origin of the line of sight calculation
+        Position position = new Position(46.230, -122.190, 2500.0);
+        // Specify the range of the sightline (meters)
+        double range = 10000.0;
+        // Create attributes for the visible terrain
+        ShapeAttributes visibleAttributes = new ShapeAttributes();
+        visibleAttributes.setInteriorColor(new Color(0f, 1f, 0f, 0.5f));
+        // Create attributes for the occluded terrain
+        ShapeAttributes occludedAttributes = new ShapeAttributes();
+        occludedAttributes.setInteriorColor(new Color(0.1f, 0.1f, 0.1f, 0.5f));
+
+        // Create the sightline
+        OmnidirectionalSightline sightline = new OmnidirectionalSightline(position, range);
+        // Set the attributes
+        sightline.setAttributes(visibleAttributes);
+        sightline.setOccludeAttributes(occludedAttributes);
+
+        // Create a layer for the sightline
+        RenderableLayer sightlineLayer = new RenderableLayer();
+        sightlineLayer.addRenderable(sightline);
+        wwd.getLayers().addLayer(sightlineLayer);
+
+        // Create a Placemark to visualize the position of the sightline
+        this.createPlacemark(position, sightlineLayer);
+
+        // Position the camera to look at the line of site terrain coverage
+        this.positionView(wwd);
+
+        return wwd;
+    }
+
+    </textarea>
+</div>
+
+<script type="text/javascript">
+      var javaEditor = CodeMirror.fromTextArea(document.getElementById("java-code"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        mode: "text/x-java",
+        readOnly: true
+      });
+</script>
+</body>
+</html>
