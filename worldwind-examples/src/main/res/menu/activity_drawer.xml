@@ -34,7 +34,7 @@
         <item
             android:id="@+id/nav_omnidirectional_sightline_activity"
             android:icon="@android:drawable/ic_menu_myplaces"
-            android:title="@string/title_movable_omni_sightline"/>
+            android:title="@string/title_movable_line_of_sight"/>
         <item
             android:id="@+id/nav_paths_example"
             android:icon="@android:drawable/ic_menu_directions"

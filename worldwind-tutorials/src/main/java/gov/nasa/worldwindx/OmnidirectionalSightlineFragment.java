@@ -37,7 +37,7 @@ public class OmnidirectionalSightlineFragment extends BasicGlobeFragment {
         visibleAttributes.setInteriorColor(new Color(0f, 1f, 0f, 0.5f));
         // Create attributes for the occluded terrain
         ShapeAttributes occludedAttributes = new ShapeAttributes();
-        occludedAttributes.setInteriorColor(new Color(0.1f, 0.1f, 0.1f, 0.5f));
+        occludedAttributes.setInteriorColor(new Color(0.1f, 0.1f, 0.1f, 0.8f));
 
         // Create the sightline
         OmnidirectionalSightline sightline = new OmnidirectionalSightline(position, range);

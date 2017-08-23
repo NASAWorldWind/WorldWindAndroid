@@ -52,16 +52,16 @@ public class OmnidirectionalSightlineActivity extends BasicGlobeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_movable_omni_sightline));
+        setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_movable_line_of_sight));
         setAboutBoxText("Demonstrates a draggable WorldWind Omnidirectional sightline. Drag the placemark icon around the " +
             "screen to move the sightline position.");
 
         // Initialize attributes for the OmnidirectionalSightline
         ShapeAttributes viewableRegions = new ShapeAttributes();
-        viewableRegions.setInteriorColor(new Color(0f, 1f, 0f, 0.25f));
+        viewableRegions.setInteriorColor(new Color(0f, 1f, 0f, 0.5f));
 
         ShapeAttributes blockedRegions = new ShapeAttributes();
-        blockedRegions.setInteriorColor(new Color(0.1f, 0.1f, 0.1f, 0.5f));
+        blockedRegions.setInteriorColor(new Color(0.1f, 0.1f, 0.1f, 0.8f));
 
         // Initialize the OmnidirectionalSightline and Corresponding Placemark
         // The position is the line of sight origin for determining visible terrain
