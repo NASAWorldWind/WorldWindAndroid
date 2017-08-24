@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.ogc.gml;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
@@ -20,53 +21,60 @@ public class GmlEnvelope extends XmlModel {
 
     protected String srsDimension;
 
-    protected List<String> axisLabels;
+    protected List<String> axisLabels = Collections.emptyList();
 
-    protected List<String> uomLabels;
+    protected List<String> uomLabels = Collections.emptyList();
 
     public GmlEnvelope() {
     }
 
     public GmlDirectPosition getLowerCorner() {
-        return this.lowerCorner;
+        return lowerCorner;
     }
 
     public GmlDirectPosition getUpperCorner() {
-        return this.upperCorner;
+        return upperCorner;
     }
 
     public String getSrsName() {
-        return this.srsName;
+        return srsName;
     }
 
     public String getSrsDimension() {
-        return this.srsDimension;
+        return srsDimension;
     }
 
     public List<String> getAxisLabels() {
-        return this.axisLabels;
+        return axisLabels;
     }
 
     public List<String> getUomLabels() {
-        return this.uomLabels;
+        return uomLabels;
     }
 
     @Override
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
 
-        if (keyName.equals("lowerCorner")) {
-            this.lowerCorner = (GmlDirectPosition) value;
-        } else if (keyName.equals("upperCorner")) {
-            this.upperCorner = (GmlDirectPosition) value;
-        } else if (keyName.equals("srsName")) {
-            this.srsName = (String) value;
-        } else if (keyName.equals("srsDimension")) {
-            this.srsDimension = (String) value;
-        } else if (keyName.equals("axisLabels")) {
-            this.axisLabels = Arrays.asList(((String) value).split(" "));
-        } else if (keyName.equals("uomLabels")) {
-            this.uomLabels = Arrays.asList(((String) value).split(" "));
+        switch (keyName) {
+            case "lowerCorner":
+                lowerCorner = (GmlDirectPosition) value;
+                break;
+            case "upperCorner":
+                upperCorner = (GmlDirectPosition) value;
+                break;
+            case "srsName":
+                srsName = (String) value;
+                break;
+            case "srsDimension":
+                srsDimension = (String) value;
+                break;
+            case "axisLabels":
+                axisLabels = Arrays.asList(value.toString().split(" "));
+                break;
+            case "uomLabels":
+                uomLabels = Arrays.asList(value.toString().split(" "));
+                break;
         }
     }
 }

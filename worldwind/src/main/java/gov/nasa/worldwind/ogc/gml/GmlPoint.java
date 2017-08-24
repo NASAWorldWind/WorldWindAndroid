@@ -5,17 +5,15 @@
 
 package gov.nasa.worldwind.ogc.gml;
 
-public class GmlAbstractFeature extends GmlAbstractGml {
+public class GmlPoint extends GmlAbstractGeometricPrimitive {
 
-    protected GmlBoundingShape boundedBy;
+    protected GmlDirectPosition pos;
 
-    // TODO location
-
-    public GmlAbstractFeature() {
+    public GmlPoint() {
     }
 
-    public GmlBoundingShape getBoundedBy() {
-        return boundedBy;
+    public GmlDirectPosition getPos() {
+        return pos;
     }
 
     @Override
@@ -23,8 +21,8 @@ public class GmlAbstractFeature extends GmlAbstractGml {
         super.parseField(keyName, value);
 
         switch (keyName) {
-            case "boundedBy":
-                boundedBy = (GmlBoundingShape) value;
+            case "pos":
+                pos = (GmlDirectPosition) value;
                 break;
         }
     }

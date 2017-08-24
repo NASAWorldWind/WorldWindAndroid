@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class GmlDirectPosition extends GmlDoubleList {
+public class GmlVector extends GmlDoubleList {
 
     protected String srsName;
 
@@ -19,7 +19,7 @@ public class GmlDirectPosition extends GmlDoubleList {
 
     protected List<String> uomLabels = Collections.emptyList();
 
-    public GmlDirectPosition() {
+    public GmlVector() {
     }
 
     public String getSrsName() {

@@ -15,7 +15,7 @@ public class GmlDomainSet extends XmlModel {
     }
 
     public GmlAbstractGeometry getGeometry() {
-        return this.geometry;
+        return geometry;
     }
 
     @Override
@@ -23,7 +23,7 @@ public class GmlDomainSet extends XmlModel {
         super.parseField(keyName, value);
 
         if (value instanceof GmlAbstractGeometry) { // we know the element type at parse time, but not it's name
-            this.geometry = (GmlAbstractGeometry) value;
+            geometry = (GmlAbstractGeometry) value;
         }
     }
 }

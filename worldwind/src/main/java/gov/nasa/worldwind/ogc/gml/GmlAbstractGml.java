@@ -15,15 +15,17 @@ public class GmlAbstractGml extends XmlModel {
     }
 
     public String getId() {
-        return this.id;
+        return id;
     }
 
     @Override
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
 
-        if (keyName.equals("id")) {
-            this.id = (String) value;
+        switch (keyName) {
+            case "id":
+                id = (String) value;
+                break;
         }
     }
 }

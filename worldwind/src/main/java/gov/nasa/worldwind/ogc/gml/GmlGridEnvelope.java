@@ -7,21 +7,21 @@ package gov.nasa.worldwind.ogc.gml;
 
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class GmlBoundingShape extends XmlModel {
+public class GmlGridEnvelope extends XmlModel {
 
-    protected GmlEnvelope envelope;
+    protected GmlIntegerList low = new GmlIntegerList();
 
-    protected String nilReason;
+    protected GmlIntegerList high = new GmlIntegerList();
 
-    public GmlBoundingShape() {
+    public GmlGridEnvelope() {
     }
 
-    public GmlEnvelope getEnvelope() {
-        return envelope;
+    public GmlIntegerList getLow() {
+        return low;
     }
 
-    public String getNilReason() {
-        return nilReason;
+    public GmlIntegerList getHigh() {
+        return high;
     }
 
     @Override
@@ -29,11 +29,11 @@ public class GmlBoundingShape extends XmlModel {
         super.parseField(keyName, value);
 
         switch (keyName) {
-            case "Envelope":
-                envelope = (GmlEnvelope) value;
+            case "low":
+                this.low = (GmlIntegerList) value;
                 break;
-            case "nilReason":
-                nilReason = (String) value;
+            case "high":
+                this.high = (GmlIntegerList) value;
                 break;
         }
     }

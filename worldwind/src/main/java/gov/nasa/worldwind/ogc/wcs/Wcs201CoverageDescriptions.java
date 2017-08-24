@@ -21,11 +21,14 @@ public class Wcs201CoverageDescriptions extends XmlModel {
 
     protected List<Wcs201CoverageDescription> coverageDescriptions = new ArrayList<>();
 
+    public Wcs201CoverageDescriptions() {
+    }
+
     public static Wcs201CoverageDescriptions parse(InputStream inputStream) throws Exception {
         XmlPullParser pullParser = Xml.newPullParser();
         pullParser.setInput(inputStream, null /*inputEncoding*/);
 
-        XmlModelParser modelParser = new WcsParser();
+        XmlModelParser modelParser = new WcsXmlParser();
         modelParser.setPullParser(pullParser);
 
         Object result = modelParser.parse();
@@ -38,11 +41,11 @@ public class Wcs201CoverageDescriptions extends XmlModel {
     }
 
     public List<Wcs201CoverageDescription> getCoverageDescriptions() {
-        return this.coverageDescriptions;
+        return coverageDescriptions;
     }
 
     public Wcs201CoverageDescription getCoverageDescription(String identifier) {
-        for (Wcs201CoverageDescription coverageDescription : this.coverageDescriptions) {
+        for (Wcs201CoverageDescription coverageDescription : coverageDescriptions) {
             if (coverageDescription.getCoverageId().equals(identifier)) {
                 return coverageDescription;
             }
@@ -53,8 +56,12 @@ public class Wcs201CoverageDescriptions extends XmlModel {
 
     @Override
     protected void parseField(String keyName, Object value) {
-        if (keyName.equals("CoverageDescription")) {
-            this.coverageDescriptions.add((Wcs201CoverageDescription) value);
+        super.parseField(keyName, value);
+
+        switch (keyName) {
+            case "CoverageDescription":
+                coverageDescriptions.add((Wcs201CoverageDescription) value);
+                break;
         }
     }
 }

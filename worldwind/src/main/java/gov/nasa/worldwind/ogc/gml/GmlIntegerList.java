@@ -8,27 +8,27 @@ package gov.nasa.worldwind.ogc.gml;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class GmlDoubleList extends XmlModel {
+public class GmlIntegerList extends XmlModel {
 
-    protected double[] values = new double[0];
+    protected int[] values = new int[0];
 
-    public GmlDoubleList() {
+    public GmlIntegerList() {
     }
 
-    public double[] getValues() {
+    public int[] getValues() {
         return values;
     }
 
     @Override
     protected void parseText(String text) {
         String[] tokens = text.split(" ");
-        values = new double[tokens.length];
+        values = new int[tokens.length];
 
         for (int idx = 0, len = tokens.length; idx < len; idx++) {
             try {
-                values[idx] = Double.parseDouble(tokens[idx]);
+                values[idx] = Integer.parseInt(tokens[idx]);
             } catch (NumberFormatException e) {
-                Logger.logMessage(Logger.ERROR, "GmlDoubleList", "parseText", "exceptionParsingText", e);
+                Logger.logMessage(Logger.ERROR, "GmlIntegerList", "parseText", "exceptionParsingText", e);
             }
         }
     }

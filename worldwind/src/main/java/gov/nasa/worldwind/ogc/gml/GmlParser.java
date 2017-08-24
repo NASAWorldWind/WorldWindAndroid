@@ -12,24 +12,36 @@ public class GmlParser extends XmlModelParser {
     protected String gml32Namespace = "http://www.opengis.net/gml/3.2";
 
     public GmlParser() {
-        this.registerGmlModels(this.gml32Namespace);
+        registerGmlModels(gml32Namespace);
     }
 
     protected void registerGmlModels(String namespace) {
-        this.registerTxtModel(namespace, "axisLabels");
-        this.registerXmlModel(namespace, "AbstractFeature", GmlAbstractFeature.class);
-        this.registerXmlModel(namespace, "AbstractGeometry", GmlAbstractGeometry.class);
-        this.registerXmlModel(namespace, "AbstractGML", GmlAbstractGml.class);
-        this.registerXmlModel(namespace, "boundedBy", GmlBoundingShape.class);
-        this.registerXmlModel(namespace, "domainSet", GmlDomainSet.class);
-        this.registerXmlModel(namespace, "Envelope", GmlEnvelope.class);
-        this.registerXmlModel(namespace, "Grid", GmlGrid.class);
-        this.registerXmlModel(namespace, "lowerCorner", GmlDirectPosition.class);
-        this.registerTxtModel(namespace, "nilReason");
-        this.registerXmlModel(namespace, "RectifiedGrid", GmlRectifiedGrid.class);
-        this.registerTxtModel(namespace, "srsName");
-        this.registerTxtModel(namespace, "srsDimension");
-        this.registerTxtModel(namespace, "uomLabels");
-        this.registerXmlModel(namespace, "upperCorner", GmlDirectPosition.class);
+        registerXmlModel(namespace, "AbstractFeature", GmlAbstractFeature.class);
+        registerXmlModel(namespace, "AbstractGeometry", GmlAbstractGeometry.class);
+        registerXmlModel(namespace, "AbstractGML", GmlAbstractGml.class);
+        registerTxtModel(namespace, "axisLabels");
+        registerTxtModel(namespace, "axisName");
+        registerXmlModel(namespace, "boundedBy", GmlBoundingShape.class);
+        registerTxtModel(namespace, "dimension");
+        registerXmlModel(namespace, "domainSet", GmlDomainSet.class);
+        registerXmlModel(namespace, "Envelope", GmlEnvelope.class);
+        registerXmlModel(namespace, "_GeometricPrimitive", GmlAbstractGeometricPrimitive.class);
+        registerTxtModel(namespace, "gid");
+        registerXmlModel(namespace, "Grid", GmlGrid.class);
+        registerXmlModel(namespace, "GridEnvelope", GmlGridEnvelope.class);
+        registerXmlModel(namespace, "high", GmlIntegerList.class);
+        registerXmlModel(namespace, "limits", GmlGridLimits.class);
+        registerXmlModel(namespace, "low", GmlIntegerList.class);
+        registerXmlModel(namespace, "lowerCorner", GmlDirectPosition.class);
+        registerTxtModel(namespace, "nilReason");
+        registerXmlModel(namespace, "offsetVector", GmlVector.class);
+        registerXmlModel(namespace, "origin", GmlPointProperty.class);
+        registerXmlModel(namespace, "Point", GmlPoint.class);
+        registerXmlModel(namespace, "pos", GmlDirectPosition.class);
+        registerXmlModel(namespace, "RectifiedGrid", GmlRectifiedGrid.class);
+        registerTxtModel(namespace, "srsName");
+        registerTxtModel(namespace, "srsDimension");
+        registerTxtModel(namespace, "uomLabels");
+        registerXmlModel(namespace, "upperCorner", GmlDirectPosition.class);
     }
 }

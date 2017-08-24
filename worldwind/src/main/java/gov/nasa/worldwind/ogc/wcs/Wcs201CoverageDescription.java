@@ -18,17 +18,24 @@ public class Wcs201CoverageDescription extends GmlAbstractFeature {
     }
 
     public String getCoverageId() {
-        return this.coverageId;
+        return coverageId;
+    }
+
+    public GmlDomainSet getDomainSet() {
+        return domainSet;
     }
 
     @Override
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
 
-        if (keyName.equals("CoverageId")) {
-            this.coverageId = (String) value;
-        } else if (keyName.equals("domainSet")) {
-            this.domainSet = (GmlDomainSet) value;
+        switch (keyName) {
+            case "CoverageId":
+                coverageId = (String) value;
+                break;
+            case "domainSet":
+                domainSet = (GmlDomainSet) value;
+                break;
         }
     }
 }

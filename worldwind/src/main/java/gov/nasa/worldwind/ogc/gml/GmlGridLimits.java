@@ -5,17 +5,17 @@
 
 package gov.nasa.worldwind.ogc.gml;
 
-public class GmlAbstractFeature extends GmlAbstractGml {
+import gov.nasa.worldwind.util.xml.XmlModel;
 
-    protected GmlBoundingShape boundedBy;
+public class GmlGridLimits extends XmlModel {
 
-    // TODO location
+    protected GmlGridEnvelope gridEnvelope;
 
-    public GmlAbstractFeature() {
+    public GmlGridLimits() {
     }
 
-    public GmlBoundingShape getBoundedBy() {
-        return boundedBy;
+    public GmlGridEnvelope getGridEnvelope() {
+        return gridEnvelope;
     }
 
     @Override
@@ -23,8 +23,8 @@ public class GmlAbstractFeature extends GmlAbstractGml {
         super.parseField(keyName, value);
 
         switch (keyName) {
-            case "boundedBy":
-                boundedBy = (GmlBoundingShape) value;
+            case "GridEnvelope":
+                gridEnvelope = (GmlGridEnvelope) value;
                 break;
         }
     }

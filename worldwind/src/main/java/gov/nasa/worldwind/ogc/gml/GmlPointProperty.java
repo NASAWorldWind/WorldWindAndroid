@@ -5,19 +5,22 @@
 
 package gov.nasa.worldwind.ogc.gml;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import gov.nasa.worldwind.util.xml.XmlModel;
 
-public class GmlBoundingShape extends XmlModel {
+public class GmlPointProperty extends XmlModel {
 
-    protected GmlEnvelope envelope;
+    protected List<GmlPoint> points = new ArrayList<>();
 
     protected String nilReason;
 
-    public GmlBoundingShape() {
+    public GmlPointProperty() {
     }
 
-    public GmlEnvelope getEnvelope() {
-        return envelope;
+    public List<GmlPoint> getPoints() {
+        return points;
     }
 
     public String getNilReason() {
@@ -29,8 +32,8 @@ public class GmlBoundingShape extends XmlModel {
         super.parseField(keyName, value);
 
         switch (keyName) {
-            case "Envelope":
-                envelope = (GmlEnvelope) value;
+            case "Point":
+                points.add((GmlPoint) value);
                 break;
             case "nilReason":
                 nilReason = (String) value;

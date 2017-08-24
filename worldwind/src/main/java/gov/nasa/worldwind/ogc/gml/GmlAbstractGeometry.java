@@ -6,33 +6,64 @@
 package gov.nasa.worldwind.ogc.gml;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class GmlAbstractGeometry extends GmlAbstractGml {
+
+    protected String gid;
 
     protected String srsName;
 
     protected String srsDimension;
 
-    protected List<String> axisLabels;
+    protected List<String> axisLabels = Collections.emptyList();
 
-    protected List<String> uomLabels;
+    protected List<String> uomLabels = Collections.emptyList();
 
     public GmlAbstractGeometry() {
+    }
+
+    public String getGid() {
+        return gid;
+    }
+
+    public String getSrsName() {
+        return srsName;
+    }
+
+    public String getSrsDimension() {
+        return srsDimension;
+    }
+
+    public List<String> getAxisLabels() {
+        return axisLabels;
+    }
+
+    public List<String> getUomLabels() {
+        return uomLabels;
     }
 
     @Override
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
 
-        if (keyName.equals("srsName")) {
-            this.srsName = (String) value;
-        } else if (keyName.equals("srsDimension")) {
-            this.srsDimension = (String) value;
-        } else if (keyName.equals("axisLabels")) {
-            this.axisLabels = Arrays.asList(((String) value).split(" "));
-        } else if (keyName.equals("uomLabels")) {
-            this.uomLabels = Arrays.asList(((String) value).split(" "));
+        switch (keyName) {
+            case "gid":
+                gid = (String) value;
+                break;
+            case "srsName":
+                srsName = (String) value;
+                break;
+            case "srsDimension":
+                srsDimension = (String) value;
+                break;
+            case "axisLabels":
+                axisLabels = Arrays.asList(value.toString().split(" "));
+                break;
+            case "uomLabels":
+                uomLabels = Arrays.asList(value.toString().split(" "));
+                break;
         }
     }
 }
