@@ -9,13 +9,21 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class GmlDomainSet extends XmlModel {
 
-    // TODO
+    protected GmlAbstractGeometry geometry;
 
     public GmlDomainSet() {
+    }
+
+    public GmlAbstractGeometry getGeometry() {
+        return this.geometry;
     }
 
     @Override
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
+
+        if (value instanceof GmlAbstractGeometry) { // we know the element type at parse time, but not it's name
+            this.geometry = (GmlAbstractGeometry) value;
+        }
     }
 }

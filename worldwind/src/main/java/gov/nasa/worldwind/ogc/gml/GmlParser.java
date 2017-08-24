@@ -18,12 +18,15 @@ public class GmlParser extends XmlModelParser {
     protected void registerGmlModels(String namespace) {
         this.registerTxtModel(namespace, "axisLabels");
         this.registerXmlModel(namespace, "AbstractFeature", GmlAbstractFeature.class);
+        this.registerXmlModel(namespace, "AbstractGeometry", GmlAbstractGeometry.class);
         this.registerXmlModel(namespace, "AbstractGML", GmlAbstractGml.class);
         this.registerXmlModel(namespace, "boundedBy", GmlBoundingShape.class);
         this.registerXmlModel(namespace, "domainSet", GmlDomainSet.class);
         this.registerXmlModel(namespace, "Envelope", GmlEnvelope.class);
+        this.registerXmlModel(namespace, "Grid", GmlGrid.class);
         this.registerXmlModel(namespace, "lowerCorner", GmlDirectPosition.class);
         this.registerTxtModel(namespace, "nilReason");
+        this.registerXmlModel(namespace, "RectifiedGrid", GmlRectifiedGrid.class);
         this.registerTxtModel(namespace, "srsName");
         this.registerTxtModel(namespace, "srsDimension");
         this.registerTxtModel(namespace, "uomLabels");
