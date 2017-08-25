@@ -190,9 +190,9 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
             levelNumber = 0; // need at least one level, even if it exceeds the desired resolution
         }
 
-        levelNumber++; // convert level number to level count
+        int numLevels = levelNumber + 1; // convert level number to level count
 
-        return TileMatrixSet.fromTilePyramid(boundingSector, boundingSector.isFullSphere() ? 2 : 1, 1, tileWidth, tileHeight, levelNumber);
+        return TileMatrixSet.fromTilePyramid(boundingSector, boundingSector.isFullSphere() ? 2 : 1, 1, tileWidth, tileHeight, numLevels);
     }
 
     protected Wcs201CoverageDescriptions describeCoverage(String serviceAddress, String coverageId) throws Exception {
