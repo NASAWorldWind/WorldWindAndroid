@@ -20,7 +20,6 @@ import gov.nasa.worldwind.geom.TileMatrixSet;
 import gov.nasa.worldwind.globe.TiledElevationCoverage;
 import gov.nasa.worldwind.ogc.gml.GmlAbstractGeometry;
 import gov.nasa.worldwind.ogc.gml.GmlRectifiedGrid;
-import gov.nasa.worldwind.ogc.ows.OwsException;
 import gov.nasa.worldwind.ogc.ows.OwsExceptionReport;
 import gov.nasa.worldwind.ogc.ows.OwsXmlParser;
 import gov.nasa.worldwind.ogc.wcs.Wcs201CoverageDescription;
