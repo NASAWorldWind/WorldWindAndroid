@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import gov.nasa.worldwind.ogc.gml.GmlParser;
+import gov.nasa.worldwind.ogc.ows.OwsXmlParser;
 import gov.nasa.worldwind.util.xml.XmlModelParser;
 
 public class WcsXmlParser extends XmlModelParser {
@@ -21,6 +22,7 @@ public class WcsXmlParser extends XmlModelParser {
     protected String wcs20Namespace = "http://www.opengis.net/wcs/2.0";
 
     public WcsXmlParser() {
+        registerOwsModels();
         registerGmlModels();
         registerWcs20Models(wcs20Namespace);
     }
@@ -33,6 +35,10 @@ public class WcsXmlParser extends XmlModelParser {
         modelParser.setPullParser(pullParser);
 
         return modelParser.parse();
+    }
+
+    protected void registerOwsModels() {
+        registerAllModels(new OwsXmlParser());
     }
 
     protected void registerGmlModels() {

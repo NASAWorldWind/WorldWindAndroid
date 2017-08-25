@@ -20,6 +20,7 @@ import gov.nasa.worldwind.geom.TileMatrixSet;
 import gov.nasa.worldwind.globe.TiledElevationCoverage;
 import gov.nasa.worldwind.ogc.gml.GmlAbstractGeometry;
 import gov.nasa.worldwind.ogc.gml.GmlRectifiedGrid;
+import gov.nasa.worldwind.ogc.ows.OwsException;
 import gov.nasa.worldwind.ogc.ows.OwsExceptionReport;
 import gov.nasa.worldwind.ogc.ows.OwsXmlParser;
 import gov.nasa.worldwind.ogc.wcs.Wcs201CoverageDescription;
@@ -220,7 +221,9 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
             // Parse and read the input stream
             inputStream = new BufferedInputStream(conn.getInputStream());
             responseXml = WcsXmlParser.parse(inputStream);
-            if (!(responseXml instanceof Wcs201CoverageDescriptions)) {
+            if (responseXml instanceof OwsExceptionReport) {
+                throw new OgcException((OwsExceptionReport) responseXml);
+            } else if (!(responseXml instanceof Wcs201CoverageDescriptions)) {
                 throw new Exception(
                     Logger.makeMessage("Wcs201ElevationCoverage", "describeCoverage", "Response is not a WCS DescribeCoverage document"));
             }
