@@ -124,7 +124,7 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
         });
     }
 
-    protected void doInitAsync(String serviceAddress, String coverageId) throws Exception {
+    protected void doInitAsync(String serviceAddress, String coverageId) {
         Object object = retrieveWcsDescribeCoverage(serviceAddress, coverageId);
         if (!(object instanceof Wcs201CoverageDescriptions)) {
             throw new RuntimeException(
@@ -150,7 +150,7 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
         });
     }
 
-    protected TileMatrixSet tileMatrixSetForResolution(Wcs201CoverageDescription coverageDescription) throws Exception {
+    protected TileMatrixSet tileMatrixSetForResolution(Wcs201CoverageDescription coverageDescription) {
 
         String srsName = coverageDescription.getBoundedBy().getEnvelope().getSrsName();
         if (srsName == null || !srsName.contains("4326")) {
