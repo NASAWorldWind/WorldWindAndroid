@@ -87,6 +87,17 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
         this.setTileFactory(new Wcs201TileFactory(serviceAddress, coverage));
     }
 
+    /**
+     * Attempts to construct a Web Coverage Service (WCS) elevation coverage with the provided service address and
+     * coverage id. This constructor initiates an asynchronous request for the DescribeCoverage document and then uses
+     * the information provided to determine a suitable Sector and level count. If the coverage id doesn't match the
+     * available coverages or there is another error, no data will be provided and the error will be logged.
+     *
+     * @param serviceAddress the WCS service address
+     * @param coverage       the WCS coverage name
+     *
+     * @throws IllegalArgumentException If any argument is null
+     */
     public Wcs201ElevationCoverage(String serviceAddress, String coverage) {
         if (serviceAddress == null) {
             throw new IllegalArgumentException(
@@ -98,6 +109,7 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
                 Logger.makeMessage("Wcs201ElevationCoverage", "constructor", "missingCoverage"));
         }
 
+        // Fetch the DescribeCoverage document and determine the bounding box and number of levels
         final String finalServiceAddress = serviceAddress;
         final String finalCoverageId = coverage;
         WorldWind.taskService().execute(new Runnable() {
@@ -106,8 +118,7 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
                 try {
                     doInitAsync(finalServiceAddress, finalCoverageId);
                 } catch (Throwable e) {
-                    // TODO
-                    e.printStackTrace();
+                    Logger.logMessage(Logger.ERROR, "Wcs201ElevationCoverage", "negotiationConstructor", "Could not configure WCS201", e);
                 }
             }
         });
@@ -116,13 +127,14 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
     protected void doInitAsync(String serviceAddress, String coverageId) throws Exception {
         Object object = retrieveWcsDescribeCoverage(serviceAddress, coverageId);
         if (!(object instanceof Wcs201CoverageDescriptions)) {
-            // TODO
+            throw new RuntimeException(
+                Logger.makeMessage("Wcs201ElevationCoverage", "doInitAsync", "Wcs201CoverageDescriptions not found"));
         }
         Wcs201CoverageDescriptions coverageDescriptions = (Wcs201CoverageDescriptions) object;
         Wcs201CoverageDescription coverageDescription = coverageDescriptions.getCoverageDescription(coverageId);
         if (coverageDescription == null) {
-            // TODO
-            throw new Exception("error");
+            throw new RuntimeException(
+                Logger.makeMessage("Wcs201ElevationCoverage", "doInitAsync", "WCS with " + coverageId + " identifier not found"));
         }
 
         final TileFactory factory = new Wcs201TileFactory(serviceAddress, coverageId);
@@ -142,30 +154,30 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
 
         String srsName = coverageDescription.getBoundedBy().getEnvelope().getSrsName();
         if (srsName == null || !srsName.contains("4326")) {
-            // TODO
-            throw new Exception("error");
+            throw new RuntimeException(
+                Logger.makeMessage("Wcs201ElevationCoverage", "tileMatrixSetForResolution", "Incompatible Envelope SRS"));
         }
         double[] lowerCorner = coverageDescription.getBoundedBy().getEnvelope().getLowerCorner().getValues();
         double[] upperCorner = coverageDescription.getBoundedBy().getEnvelope().getUpperCorner().getValues();
         if (lowerCorner == null || upperCorner == null || lowerCorner.length != 2 || upperCorner.length != 2) {
-            // TODO
-            throw new Exception("error");
+            throw new RuntimeException(
+                Logger.makeMessage("Wcs201ElevationCoverage", "tileMatrixSetForResolution", "Failed to determine envelope corners"));
         }
         Sector boundingSector = Sector.fromDegrees(lowerCorner[0], lowerCorner[1], upperCorner[0] - lowerCorner[0], upperCorner[1] - lowerCorner[1]);
 
         // Determine the number of data points in the i and j directions
         GmlAbstractGeometry geometry = coverageDescription.getDomainSet().getGeometry();
         if (!(geometry instanceof GmlRectifiedGrid)) {
-            // TODO
-            throw new Exception("error");
+            throw new RuntimeException(
+                Logger.makeMessage("Wcs201ElevationCoverage", "tileMatrixSetForResolution", "Incompatible domainSet geometry"));
         }
         GmlRectifiedGrid grid = (GmlRectifiedGrid) geometry;
 
         int[] gridLow = grid.getLimits().getGridEnvelope().getLow().getValues();
         int[] gridHigh = grid.getLimits().getGridEnvelope().getHigh().getValues();
         if (gridLow == null || gridHigh == null || gridLow.length != 2 || gridHigh.length != 2) {
-            // TODO
-            throw new Exception("error");
+            throw new RuntimeException(
+                Logger.makeMessage("Wcs201ElevationCoverage", "tileMatrixSetForResolution", "Failed to determine grid dimensions"));
         }
         int gridDelta = gridHigh[1] - gridLow[1];
 
@@ -213,5 +225,4 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
 
         return wcs201CoverageDescriptions;
     }
-
 }
