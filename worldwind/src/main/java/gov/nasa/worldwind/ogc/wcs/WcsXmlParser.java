@@ -8,7 +8,9 @@ package gov.nasa.worldwind.ogc.wcs;
 import android.util.Xml;
 
 import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import gov.nasa.worldwind.ogc.gml.GmlParser;
@@ -23,7 +25,7 @@ public class WcsXmlParser extends XmlModelParser {
         registerWcs20Models(wcs20Namespace);
     }
 
-    public static Object parse(InputStream inputStream) throws Exception {
+    public static Object parse(InputStream inputStream) throws IOException, XmlPullParserException {
         XmlPullParser pullParser = Xml.newPullParser();
         pullParser.setInput(inputStream, null /*inputEncoding*/);
 
@@ -34,7 +36,7 @@ public class WcsXmlParser extends XmlModelParser {
     }
 
     protected void registerGmlModels() {
-        registerAll(new GmlParser());
+        registerAllModels(new GmlParser());
     }
 
     protected void registerWcs20Models(String namespace) {

@@ -64,7 +64,7 @@ public class XmlModelParser {
         this.txtModelRegistry.add(new QName(namespace, name));
     }
 
-    public void registerAll(XmlModelParser registry) {
+    public void registerAllModels(XmlModelParser registry) {
         this.xmlModelRegistry.putAll(registry.xmlModelRegistry);
         this.txtModelRegistry.addAll(registry.txtModelRegistry);
     }

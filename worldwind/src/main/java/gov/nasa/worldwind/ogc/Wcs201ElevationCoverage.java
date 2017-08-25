@@ -20,6 +20,8 @@ import gov.nasa.worldwind.geom.TileMatrixSet;
 import gov.nasa.worldwind.globe.TiledElevationCoverage;
 import gov.nasa.worldwind.ogc.gml.GmlAbstractGeometry;
 import gov.nasa.worldwind.ogc.gml.GmlRectifiedGrid;
+import gov.nasa.worldwind.ogc.ows.OwsExceptionReport;
+import gov.nasa.worldwind.ogc.ows.OwsXmlParser;
 import gov.nasa.worldwind.ogc.wcs.Wcs201CoverageDescription;
 import gov.nasa.worldwind.ogc.wcs.Wcs201CoverageDescriptions;
 import gov.nasa.worldwind.ogc.wcs.WcsXmlParser;
@@ -116,29 +118,25 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
             @Override
             public void run() {
                 try {
-                    doInitAsync(finalServiceAddress, finalCoverageId);
-                } catch (Throwable e) {
-                    Logger.logMessage(Logger.ERROR, "Wcs201ElevationCoverage", "negotiationConstructor", "Could not configure WCS201", e);
+                    initAsync(finalServiceAddress, finalCoverageId);
+                } catch (Throwable logged) {
+                    Logger.logMessage(Logger.ERROR, "Wcs201ElevationCoverage", "constructor",
+                        "Exception initializing WCS coverage serviceAddress:" + finalServiceAddress + " coverage:" + finalCoverageId, logged);
                 }
             }
         });
     }
 
-    protected void doInitAsync(String serviceAddress, String coverageId) {
-        Object object = retrieveWcsDescribeCoverage(serviceAddress, coverageId);
-        if (!(object instanceof Wcs201CoverageDescriptions)) {
-            throw new RuntimeException(
-                Logger.makeMessage("Wcs201ElevationCoverage", "doInitAsync", "Wcs201CoverageDescriptions not found"));
-        }
-        Wcs201CoverageDescriptions coverageDescriptions = (Wcs201CoverageDescriptions) object;
-        Wcs201CoverageDescription coverageDescription = coverageDescriptions.getCoverageDescription(coverageId);
+    protected void initAsync(String serviceAddress, String coverage) throws Exception {
+        Wcs201CoverageDescriptions coverageDescriptions = this.describeCoverage(serviceAddress, coverage);
+        Wcs201CoverageDescription coverageDescription = coverageDescriptions.getCoverageDescription(coverage);
         if (coverageDescription == null) {
-            throw new RuntimeException(
-                Logger.makeMessage("Wcs201ElevationCoverage", "doInitAsync", "WCS with " + coverageId + " identifier not found"));
+            throw new Exception(
+                Logger.makeMessage("Wcs201ElevationCoverage", "initAsync", "WCS coverage is undefined: " + coverage));
         }
 
-        final TileFactory factory = new Wcs201TileFactory(serviceAddress, coverageId);
-        final TileMatrixSet matrixSet = this.tileMatrixSetForResolution(coverageDescription);
+        final TileFactory factory = new Wcs201TileFactory(serviceAddress, coverage);
+        final TileMatrixSet matrixSet = this.tileMatrixSetFromCoverageDescription(coverageDescription);
 
         handler.post(new Runnable() {
             @Override
@@ -150,41 +148,41 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
         });
     }
 
-    protected TileMatrixSet tileMatrixSetForResolution(Wcs201CoverageDescription coverageDescription) {
-
+    protected TileMatrixSet tileMatrixSetFromCoverageDescription(Wcs201CoverageDescription coverageDescription) throws Exception {
         String srsName = coverageDescription.getBoundedBy().getEnvelope().getSrsName();
         if (srsName == null || !srsName.contains("4326")) {
-            throw new RuntimeException(
-                Logger.makeMessage("Wcs201ElevationCoverage", "tileMatrixSetForResolution", "Incompatible Envelope SRS"));
+            throw new Exception(
+                Logger.makeMessage("Wcs201ElevationCoverage", "tileMatrixSetFromCoverageDescription", "WCS Envelope SRS is incompatible: " + srsName));
         }
+
         double[] lowerCorner = coverageDescription.getBoundedBy().getEnvelope().getLowerCorner().getValues();
         double[] upperCorner = coverageDescription.getBoundedBy().getEnvelope().getUpperCorner().getValues();
         if (lowerCorner == null || upperCorner == null || lowerCorner.length != 2 || upperCorner.length != 2) {
-            throw new RuntimeException(
-                Logger.makeMessage("Wcs201ElevationCoverage", "tileMatrixSetForResolution", "Failed to determine envelope corners"));
+            throw new Exception(
+                Logger.makeMessage("Wcs201ElevationCoverage", "tileMatrixSetFromCoverageDescription", "WCS Envelope is invalid"));
         }
-        Sector boundingSector = Sector.fromDegrees(lowerCorner[0], lowerCorner[1], upperCorner[0] - lowerCorner[0], upperCorner[1] - lowerCorner[1]);
 
         // Determine the number of data points in the i and j directions
         GmlAbstractGeometry geometry = coverageDescription.getDomainSet().getGeometry();
         if (!(geometry instanceof GmlRectifiedGrid)) {
-            throw new RuntimeException(
-                Logger.makeMessage("Wcs201ElevationCoverage", "tileMatrixSetForResolution", "Incompatible domainSet geometry"));
+            throw new Exception(
+                Logger.makeMessage("Wcs201ElevationCoverage", "tileMatrixSetFromCoverageDescription", "WCS domainSet Geometry is incompatible:" + geometry));
         }
-        GmlRectifiedGrid grid = (GmlRectifiedGrid) geometry;
 
+        GmlRectifiedGrid grid = (GmlRectifiedGrid) geometry;
         int[] gridLow = grid.getLimits().getGridEnvelope().getLow().getValues();
         int[] gridHigh = grid.getLimits().getGridEnvelope().getHigh().getValues();
         if (gridLow == null || gridHigh == null || gridLow.length != 2 || gridHigh.length != 2) {
-            throw new RuntimeException(
-                Logger.makeMessage("Wcs201ElevationCoverage", "tileMatrixSetForResolution", "Failed to determine grid dimensions"));
+            throw new Exception(
+                Logger.makeMessage("Wcs201ElevationCoverage", "tileMatrixSetFromCoverageDescription", "WCS GridEnvelope is invalid"));
         }
-        int gridDelta = gridHigh[1] - gridLow[1];
 
+        Sector boundingSector = Sector.fromDegrees(lowerCorner[0], lowerCorner[1], upperCorner[0] - lowerCorner[0], upperCorner[1] - lowerCorner[1]);
         int tileWidth = 256;
         int tileHeight = 256;
 
-        double level = Math.log(gridDelta / tileHeight) / Math.log(2); // fractional level address
+        int gridHeight = gridHigh[1] - gridLow[1];
+        double level = Math.log(gridHeight / tileHeight) / Math.log(2); // fractional level address
         int levelNumber = (int) Math.ceil(level); // ceiling captures the resolution
 
         if (levelNumber < 0) {
@@ -196,9 +194,9 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
         return TileMatrixSet.fromTilePyramid(boundingSector, boundingSector.isFullSphere() ? 2 : 1, 1, tileWidth, tileHeight, levelNumber);
     }
 
-    protected Object retrieveWcsDescribeCoverage(String serviceAddress, String coverageId) {
+    protected Wcs201CoverageDescriptions describeCoverage(String serviceAddress, String coverageId) throws Exception {
         InputStream inputStream = null;
-        Object wcs201CoverageDescriptions = null;
+        Object responseXml = null;
         try {
             // Build the appropriate request Uri given the provided service address
             Uri serviceUri = Uri.parse(serviceAddress).buildUpon()
@@ -212,17 +210,24 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
             URLConnection conn = new URL(serviceUri.toString()).openConnection();
             conn.setConnectTimeout(3000);
             conn.setReadTimeout(30000);
-            inputStream = new BufferedInputStream(conn.getInputStream());
+
+            // Throw an exception when the service responded with an error
+            OwsExceptionReport exceptionReport = OwsXmlParser.parseErrorStream(conn);
+            if (exceptionReport != null) {
+                throw new OgcException(exceptionReport);
+            }
 
             // Parse and read the input stream
-            wcs201CoverageDescriptions = WcsXmlParser.parse(inputStream);
-        } catch (Exception e) {
-            throw new RuntimeException(
-                Logger.makeMessage("Wcs201ElevationCoverage", "retrieveWcsDescribeCoverage", "Unable to open connection and read from service address " + e.toString()));
+            inputStream = new BufferedInputStream(conn.getInputStream());
+            responseXml = WcsXmlParser.parse(inputStream);
+            if (!(responseXml instanceof Wcs201CoverageDescriptions)) {
+                throw new Exception(
+                    Logger.makeMessage("Wcs201ElevationCoverage", "describeCoverage", "Response is not a WCS DescribeCoverage document"));
+            }
         } finally {
             WWUtil.closeSilently(inputStream);
         }
 
-        return wcs201CoverageDescriptions;
+        return (Wcs201CoverageDescriptions) responseXml;
     }
 }
