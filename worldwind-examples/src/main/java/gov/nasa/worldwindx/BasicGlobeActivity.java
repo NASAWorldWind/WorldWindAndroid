@@ -30,12 +30,11 @@ import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.layer.BackgroundLayer;
-import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
 import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.layer.LayerFactory;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwind.layer.ShowTessellationLayer;
-import gov.nasa.worldwind.ogc.Wcs100ElevationCoverage;
+import gov.nasa.worldwind.ogc.Wcs201ElevationCoverage;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
 import gov.nasa.worldwind.ogc.wms.WmsLayer;
 import gov.nasa.worldwindx.experimental.AtmosphereLayer;
@@ -135,26 +134,17 @@ public class BasicGlobeActivity extends AbstractMainActivity {
      * Adds the layers to the globe.
      */
     protected void initializeLayers() {
-
-        // WCS Elevations
-        this.wwd.getGlobe().getElevationModel().addCoverage(
-            new Wcs100ElevationCoverage(
-                sectorFromBBox(-180, -90, 180, 90),
-                7, // num levels
-                WCS_SERVER_ADDRESS,
-                "gebco:gebco_2014"));
-//            new Wcs100ElevationCoverage(
-//                sectorFromBBox(-123.0005555556, 43.9994444441653, -117.99944444420979, 49.000555555555515),
-//                13, // num levels
-//                WCS_SERVER_ADDRESS,
-//                "pnw:usgs_ned_10m"));
-
         // Default base layers
         getLayerManager().addLayer(new BackgroundLayer());
-        getLayerManager().addLayer(new BlueMarbleLandsatLayer());
-        //getLayerManager().addLayer(new AtmosphereLayer());
+        getLayerManager().addLayer(new AtmosphereLayer());
         getLayerManager().addLayer(new ShowTessellationLayer());
+
+        // Dynamic WMS layers
         new InitializeWmsLayersTask().execute();
+
+        // WCS elevations
+        this.wwd.getGlobe().getElevationModel().addCoverage(new Wcs201ElevationCoverage(WCS_SERVER_ADDRESS, "gebco__gebco_2014"));
+        this.wwd.getGlobe().getElevationModel().addCoverage(new Wcs201ElevationCoverage(WCS_SERVER_ADDRESS, "pnw__usgs_ned_10m"));
     }
 
     private Sector sectorFromBBox(double minX, double minY, double maxX, double maxY) {
