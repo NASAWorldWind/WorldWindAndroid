@@ -97,6 +97,7 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
     protected void invalidateTiles() {
         this.coverageSource.clear();
         this.coverageCache.clear();
+        this.updateTimestamp();
     }
 
     @Override
