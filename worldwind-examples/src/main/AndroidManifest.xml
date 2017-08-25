@@ -51,7 +51,7 @@
         <activity
             android:name=".OmnidirectionalSightlineActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_movable_omni_sightline"
+            android:label="@string/title_movable_line_of_sight"
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar">

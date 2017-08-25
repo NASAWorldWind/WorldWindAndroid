@@ -64,6 +64,11 @@ public class XmlModelParser {
         this.txtModelRegistry.add(new QName(namespace, name));
     }
 
+    public void registerAllModels(XmlModelParser registry) {
+        this.xmlModelRegistry.putAll(registry.xmlModelRegistry);
+        this.txtModelRegistry.addAll(registry.txtModelRegistry);
+    }
+
     /**
      * Returns a new xpp for a specified element name.
      *

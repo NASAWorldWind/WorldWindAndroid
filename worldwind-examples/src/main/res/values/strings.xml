@@ -14,7 +14,7 @@
     <string name="title_day_night_cycle">Day and Night Cycle</string>
     <string name="title_general_globe">General Purpose Globe</string>
     <string name="title_multi_globe">Multi-Globe Demonstration</string>
-    <string name="title_movable_omni_sightline">Movable OmnidirectionalSightline</string>
+    <string name="title_movable_line_of_sight">Movable Line of Sight</string>
     <string name="title_paths_example">Paths Example</string>
     <string name="title_paths_and_polygons">Paths, Polygons &amp; Labels Demonstration</string>
     <string name="title_placemarks_demo">Placemarks Demonstration</string>
