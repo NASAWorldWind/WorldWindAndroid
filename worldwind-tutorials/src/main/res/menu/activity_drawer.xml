@@ -32,6 +32,10 @@
             android:icon="@android:drawable/ic_menu_mapmode"
             android:title="@string/title_surface_image"/>
         <item
+            android:id="@+id/nav_omnidirectional_sightline_activity"
+            android:icon="@android:drawable/ic_menu_gallery"
+            android:title="@string/title_omni_sightline"/>
+        <item
             android:id="@+id/nav_camera_view_activity"
             android:icon="@android:drawable/ic_menu_compass"
             android:title="@string/title_camera_view"/>

@@ -18,7 +18,22 @@ geometric objects.
 
 Download the [latest release](https://bintray.com/nasaworldwind/maven/WorldWindAndroid/_latestVersion) or grab via Gradle:
 ```groovy
-compile 'gov.nasa.worldwind.android:worldwind:0.6.0@aar'
+compile 'gov.nasa.worldwind.android:worldwind:0.7.0'
+```
+
+## Snapshots
+
+Get development build snapshots with the latest features and bug fixes from [oss.jfrog.org](https://oss.jfrog.org/):
+```groovy
+repositories {
+    maven {
+        url 'https://oss.jfrog.org/artifactory/oss-snapshot-local'
+    }
+}
+
+...
+
+compile 'gov.nasa.worldwind.android:worldwind:0.8.0-SNAPSHOT'
 ```
 
 ## Releases and Roadmap

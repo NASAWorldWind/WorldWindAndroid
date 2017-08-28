@@ -281,6 +281,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_navigator_event_activity:
                 loadTutorial(NavigatorEventFragment.class, "file:///android_asset/navigator_events_tutorial.html",  R.string.title_navigator_event);
                 break;
+            case R.id.nav_omnidirectional_sightline_activity:
+                loadTutorial(OmnidirectionalSightlineFragment.class, "file:///android_asset/omnidirectional_sightline_tutorial.html", R.string.title_omni_sightline);
+                break;
             case R.id.nav_paths_activity:
                 loadTutorial(PathsFragment.class, "file:///android_asset/paths_tutorial.html", R.string.title_paths);
                 break;
