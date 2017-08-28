@@ -32,7 +32,7 @@ Official WorldWind Android releases have the latest stable features, enhancement
 
 ## License
 
-    NASA WorldWind
+    NASA WORLDWIND
 
     Copyright (C) 2001 United States Government
     as represented by the Administrator of the
