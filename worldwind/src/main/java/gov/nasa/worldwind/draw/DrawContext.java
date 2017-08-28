@@ -354,7 +354,7 @@ public class DrawContext {
         GLES20.glReadPixels(x, y, 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, pixelBuffer);
         pixelBuffer.get(this.pixelArray, 0, 4);
 
-        // Convert the RGBA 8888 color to a World Wind color.
+        // Convert the RGBA 8888 color to a WorldWind color.
         result.red = (this.pixelArray[0] & 0xFF) / (float) 0xFF;
         result.green = (this.pixelArray[1] & 0xFF) / (float) 0xFF;
         result.blue = (this.pixelArray[2] & 0xFF) / (float) 0xFF;
@@ -387,7 +387,7 @@ public class DrawContext {
             // Copy each RGBA 888 color from the NIO buffer a heap array in bulk to reduce buffer access overhead.
             pixelBuffer.get(this.pixelArray, 0, 4);
 
-            // Convert the RGBA 8888 color to a World Wind color.
+            // Convert the RGBA 8888 color to a WorldWind color.
             result.red = (this.pixelArray[0] & 0xFF) / (float) 0xFF;
             result.green = (this.pixelArray[1] & 0xFF) / (float) 0xFF;
             result.blue = (this.pixelArray[2] & 0xFF) / (float) 0xFF;

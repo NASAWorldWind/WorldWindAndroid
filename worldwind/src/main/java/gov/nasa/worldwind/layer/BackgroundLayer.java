@@ -15,15 +15,15 @@ import gov.nasa.worldwind.util.Logger;
 
 /**
  * Displays a single image spanning the globe. By default, BackgroundLayer is configured to display NASA's Blue Marble
- * next generation image at 40km resolution from the built-in World Wind library resource
+ * next generation image at 40km resolution from the built-in WorldWind library resource
  * res/drawable/gov_nasa_worldwind_worldtopobathy2004053.
  */
 public class BackgroundLayer extends RenderableLayer {
 
     /**
-     * Constructs a Blue Marble background layer with the built-in World Wind library resource
+     * Constructs a Blue Marble background layer with the built-in WorldWind library resource
      * res/drawable/gov_nasa_worldwind_worldtopobathy2004053. The resource must be accessible from the Android Context
-     * associated with the World Window.
+     * associated with the WorldWindow.
      */
     public BackgroundLayer() {
         this(ImageSource.fromResource(R.drawable.gov_nasa_worldwind_worldtopobathy2004053), new ImageOptions(WorldWind.RGB_565));

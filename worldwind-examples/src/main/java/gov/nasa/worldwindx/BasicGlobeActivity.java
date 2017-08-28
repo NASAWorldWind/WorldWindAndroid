@@ -43,19 +43,19 @@ public class BasicGlobeActivity extends AbstractMainActivity {
             " - two-finger rotate arcs the camera horizontally around the look at position,\n" +
             " - three-finger tilt arcs the camera vertically around the look at position.");
 
-        // Create the World Window (a GLSurfaceView) which displays the globe.
+        // Create the WorldWindow (a GLSurfaceView) which displays the globe.
         this.wwd = new WorldWindow(this);
 
         // Add the WorldWindow view object to the layout that was reserved for the globe.
         FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
         globeLayout.addView(this.wwd);
 
-        // Setup the World Window's layers.
+        // Setup the WorldWindow's layers.
         this.wwd.getLayers().addLayer(new BackgroundLayer());
         this.wwd.getLayers().addLayer(new BlueMarbleLandsatLayer());
         this.wwd.getLayers().addLayer(new AtmosphereLayer());
 
-        // Setup the World Window's elevation coverages.
+        // Setup the WorldWindow's elevation coverages.
         this.wwd.getGlobe().getElevationModel().addCoverage(new BasicElevationCoverage());
     }
 

@@ -151,7 +151,7 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
         // Get a reference to the WorldWindow view
         WorldWindow wwd = this.getWorldWindow();
 
-        // Override the World Window's built-in navigation behavior with conditional dragging support.
+        // Override the WorldWindow's built-in navigation behavior with conditional dragging support.
         this.controller = new SelectDragNavigateController();
         wwd.setWorldWindowController(this.controller);
 
@@ -228,7 +228,7 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
 
     /**
      * This inner class is a custom WorldWindController that handles picking, dragging and globe navigation via a
-     * combination of the native World Wind navigation gestures and Android gestures. This class' onTouchEvent method
+     * combination of the native WorldWind navigation gestures and Android gestures. This class' onTouchEvent method
      * arbitrates between select and drag gestures and globe navigation gestures.
      */
     public class SelectDragNavigateController extends BasicWorldWindowController {
@@ -305,7 +305,7 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
         });
 
         /**
-         * Delegates events to the select/drag handlers or the native World Wind navigation handlers.
+         * Delegates events to the select/drag handlers or the native WorldWind navigation handlers.
          */
         @Override
         public boolean onTouchEvent(MotionEvent event) {

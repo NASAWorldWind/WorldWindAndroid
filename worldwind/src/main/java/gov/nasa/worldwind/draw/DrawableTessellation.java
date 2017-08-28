@@ -100,7 +100,7 @@ public class DrawableTessellation implements Drawable {
             terrain.drawLines(dc);
         }
 
-        // Restore default World Wind OpenGL state.
+        // Restore default WorldWind OpenGL state.
         GLES20.glDepthMask(true);
     }
 }

@@ -166,7 +166,7 @@ public class AtmosphereLayer extends AbstractLayer {
         return new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer);
     }
 
-    // TODO move this into a basic tessellator implementation in World Wind
+    // TODO move this into a basic tessellator implementation in WorldWind
     // TODO tessellator and atmosphere needs the TriStripIndices - could we add these to BasicGlobe (needs to be on a static context)
     // TODO may need to switch the tessellation method anyway - geographic grid may produce artifacts at the poles
     protected BufferObject assembleTriStripElements(int numLat, int numLon) {

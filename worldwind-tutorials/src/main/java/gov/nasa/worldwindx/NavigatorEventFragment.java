@@ -68,7 +68,7 @@ public class NavigatorEventFragment extends BasicGlobeFragment {
         this.animatorSet = new AnimatorSet();
         this.animatorSet.play(fadeOut);
 
-        // Create a simple Navigator Listener that logs navigator events emitted by the World Window.
+        // Create a simple Navigator Listener that logs navigator events emitted by the WorldWindow.
         NavigatorListener listener = new NavigatorListener() {
             @Override
             public void onNavigatorEvent(WorldWindow wwd, NavigatorEvent event) {
@@ -101,7 +101,7 @@ public class NavigatorEventFragment extends BasicGlobeFragment {
             }
         };
 
-        // Register the Navigator Listener with the activity's World Window.
+        // Register the Navigator Listener with the activity's WorldWindow.
         this.getWorldWindow().addNavigatorListener(listener);
 
         return rootView;

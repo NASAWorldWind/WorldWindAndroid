@@ -170,7 +170,7 @@ public class MilStd2525 {
      * Creates a placemark attributes bundle containing a MIL-STD-2525 symbol using the specified modifiers and
      * attributes.  The ImageSource bitmap is lazily created via an ImageSource.Bitmap factory. The call to the
      * factory's createBitmap method made when Placemark comes into view; it's also used to recreate the bitmap if the
-     * resource was evicted from the World Wind render resource cache.
+     * resource was evicted from the WorldWind render resource cache.
      *
      * @param symbolCode The 15-character SIDC (symbol identification coding scheme) code.
      * @param modifiers  The ModifierUnit (unit) or ModifierTG (tactical graphic) modifiers collection. May be null.

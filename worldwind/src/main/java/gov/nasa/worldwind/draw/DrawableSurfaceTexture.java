@@ -171,7 +171,7 @@ public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
             }
         }
 
-        // Restore the default World Wind OpenGL state.
+        // Restore the default WorldWind OpenGL state.
         GLES20.glDisableVertexAttribArray(1);
     }
 

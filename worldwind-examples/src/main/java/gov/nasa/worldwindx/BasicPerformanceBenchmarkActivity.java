@@ -226,7 +226,7 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
         this.setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_basic_performance_benchmark));
         this.setAboutBoxText("Executes a basic performance benchmark, logging the accumulated frame statistics.");
 
-        // Suppress the World Window's built-in navigation behavior.
+        // Suppress the WorldWindow's built-in navigation behavior.
         WorldWindow wwd = this.getWorldWindow();
         wwd.setWorldWindowController(new NoOpWorldWindowController());
 
