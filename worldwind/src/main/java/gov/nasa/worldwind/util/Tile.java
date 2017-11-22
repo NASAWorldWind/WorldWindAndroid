@@ -438,14 +438,15 @@ public class Tile {
         double nearestLon;
         double lonDifference = rc.camera.longitude - this.sector.centroidLongitude();
         if (lonDifference < -180.0) {
-            nearestLon = WWMath.clamp(rc.camera.longitude + 360.0, this.sector.minLongitude(), this.sector.maxLongitude());
+            nearestLon = this.sector.maxLongitude();
         } else if (lonDifference > 180.0) {
-            nearestLon = WWMath.clamp(rc.camera.longitude - 360.0, this.sector.minLongitude(), this.sector.maxLongitude());
+            nearestLon = this.sector.minLongitude();
         } else {
             nearestLon = WWMath.clamp(rc.camera.longitude, this.sector.minLongitude(), this.sector.maxLongitude());
         }
 
-        rc.geographicToCartesian(nearestLat, nearestLon, this.heightLimits[0] * rc.verticalExaggeration, WorldWind.ABSOLUTE, this.nearestPoint);
+        float minHeight = (float) (this.heightLimits[0] * rc.verticalExaggeration);
+        rc.geographicToCartesian(nearestLat, nearestLon, minHeight, WorldWind.ABSOLUTE, this.nearestPoint);
 
         return rc.cameraPoint.distanceTo(this.nearestPoint);
     }
