@@ -10,9 +10,11 @@ import android.util.DisplayMetrics;
 import java.util.Arrays;
 import java.util.Collection;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.BoundingBox;
 import gov.nasa.worldwind.geom.Frustum;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.RenderContext;
 
 /**
@@ -70,10 +72,9 @@ public class Tile {
     protected BoundingBox extent;
 
     /**
-     * Cartesian points used for determining distance when the {@link gov.nasa.worldwind.geom.Camera} is not above this
-     * tile.
+     * The nearest point on the tile to the camera. Altitude value is based on the minimum height for the tile.
      */
-    protected float[] samplePoints;
+    protected Vec3 nearestPoint = new Vec3();
 
     protected float[] heightLimits;
 
@@ -399,8 +400,14 @@ public class Tile {
 
         long elevationTimestamp = rc.globe.getElevationModel().getTimestamp();
         if (elevationTimestamp != this.heightLimitsTimestamp) {
-            Arrays.fill(this.heightLimits, 0);
+            // initialize the heights for elevation model scan
+            this.heightLimits[0] = Float.MAX_VALUE;
+            this.heightLimits[1] = -Float.MAX_VALUE;
             rc.globe.getElevationModel().getHeightLimits(this.sector, this.heightLimits);
+            // check for valid height limits
+            if (this.heightLimits[0] > this.heightLimits[1]) {
+                Arrays.fill(this.heightLimits, 0f);
+            }
         }
 
         double verticalExaggeration = rc.verticalExaggeration;
@@ -425,25 +432,22 @@ public class Tile {
      * @return the distance in meters
      */
     protected double distanceToCamera(RenderContext rc) {
-        if (this.sector.contains(rc.camera.latitude, rc.camera.longitude)) {
-            return rc.camera.altitude;
+        // determine the nearest latitude
+        double nearestLat = WWMath.clamp(rc.camera.latitude, this.sector.minLatitude(), this.sector.maxLatitude());
+        // determine the nearest longitude and account for the antimeridian discontinuity
+        double nearestLon;
+        double lonDifference = rc.camera.longitude - this.sector.centroidLongitude();
+        if (lonDifference < -180.0) {
+            nearestLon = this.sector.maxLongitude();
+        } else if (lonDifference > 180.0) {
+            nearestLon = this.sector.minLongitude();
+        } else {
+            nearestLon = WWMath.clamp(rc.camera.longitude, this.sector.minLongitude(), this.sector.maxLongitude());
         }
 
-        if (this.samplePoints == null) {
-            this.samplePoints = rc.globe.geographicToCartesianGrid(this.sector, 3, 3, null, 1.0f, null, new float[27], 0, 0);
-        }
+        float minHeight = (float) (this.heightLimits[0] * rc.verticalExaggeration);
+        rc.geographicToCartesian(nearestLat, nearestLon, minHeight, WorldWind.ABSOLUTE, this.nearestPoint);
 
-        double minDistanceSq = Double.MAX_VALUE;
-        for (int i = 0, len = this.samplePoints.length; i < len; i += 3) {
-            double dx = rc.cameraPoint.x - this.samplePoints[i];
-            double dy = rc.cameraPoint.y - this.samplePoints[i + 1];
-            double dz = rc.cameraPoint.z - this.samplePoints[i + 2];
-            double distanceSq = (dx * dx) + (dy * dy) + (dz * dz);
-            if (minDistanceSq > distanceSq) {
-                minDistanceSq = distanceSq;
-            }
-        }
-
-        return Math.sqrt(minDistanceSq);
+        return rc.cameraPoint.distanceTo(this.nearestPoint);
     }
 }
