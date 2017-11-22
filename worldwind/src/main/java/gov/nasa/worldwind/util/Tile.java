@@ -399,8 +399,14 @@ public class Tile {
 
         long elevationTimestamp = rc.globe.getElevationModel().getTimestamp();
         if (elevationTimestamp != this.heightLimitsTimestamp) {
-            Arrays.fill(this.heightLimits, 0);
+            // initialize the heights for elevation model scan
+            this.heightLimits[0] = Float.MAX_VALUE;
+            this.heightLimits[1] = -Float.MAX_VALUE;
             rc.globe.getElevationModel().getHeightLimits(this.sector, this.heightLimits);
+            // check for valid height limits
+            if (this.heightLimits[0] > this.heightLimits[1]) {
+                Arrays.fill(this.heightLimits, 0f);
+            }
         }
 
         double verticalExaggeration = rc.verticalExaggeration;
