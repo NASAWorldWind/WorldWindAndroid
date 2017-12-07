@@ -28,6 +28,10 @@ public class TextRenderer {
 
     protected Rect scratchBounds = new Rect();
 
+    protected gov.nasa.worldwind.render.Color textColor;
+
+    protected gov.nasa.worldwind.render.Color outlineColor;
+
     public TextRenderer() {
         this.paint = new Paint();
         this.paint.setAntiAlias(true);
@@ -79,6 +83,22 @@ public class TextRenderer {
         return this;
     }
 
+    public gov.nasa.worldwind.render.Color getTextColor() {
+        return this.textColor;
+    }
+
+    public void setTextColor(gov.nasa.worldwind.render.Color color) {
+        this.textColor = color;
+    }
+
+    public gov.nasa.worldwind.render.Color getOutlineColor() {
+        return this.outlineColor;
+    }
+
+    public void setOutlineColor(gov.nasa.worldwind.render.Color outlineColor) {
+        this.outlineColor = outlineColor;
+    }
+
     public Texture renderText(String text) {
         if (text != null && text.length() > 0) {
             Bitmap bitmap = this.drawText(text);
@@ -108,12 +128,12 @@ public class TextRenderer {
 
         if (this.enableOutline) {
             this.paint.setStyle(Paint.Style.FILL_AND_STROKE);
-            this.paint.setColor(Color.BLACK);
+            this.paint.setColor(this.outlineColor != null ? this.outlineColor.toColorInt() : Color.BLACK);
             this.canvas.drawText(text, 0, text.length(), x, y, this.paint);
         }
 
         this.paint.setStyle(Paint.Style.FILL);
-        this.paint.setColor(Color.WHITE);
+        this.paint.setColor(this.textColor != null ? this.textColor.toColorInt() : Color.WHITE);
         this.canvas.drawText(text, 0, text.length(), x, y, this.paint);
 
         this.canvas.setBitmap(null);
