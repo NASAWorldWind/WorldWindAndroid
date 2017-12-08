@@ -490,7 +490,7 @@ public class Label extends AbstractRenderable implements Highlightable, Movable 
         if (rc.pickMode) {
             drawable.color.set(renderData.pickColor);
         } else {
-            drawable.color.set(1f, 1f, 1f, 1f);
+            drawable.color.set(1, 1, 1, 1);
         }
         drawable.texture = texture;
         drawable.enableDepthTest = this.activeAttributes.enableDepthTest;
