@@ -14,11 +14,15 @@ import android.graphics.Typeface;
 
 public class TextRenderer {
 
+    protected gov.nasa.worldwind.render.Color textColor;
+
     protected float textSize;
 
     protected Typeface typeface;
 
     protected boolean enableOutline;
+
+    protected gov.nasa.worldwind.render.Color outlineColor;
 
     protected float outlineWidth;
 
@@ -27,10 +31,6 @@ public class TextRenderer {
     protected Canvas canvas;
 
     protected Rect scratchBounds = new Rect();
-
-    protected gov.nasa.worldwind.render.Color textColor;
-
-    protected gov.nasa.worldwind.render.Color outlineColor;
 
     public TextRenderer() {
         this.paint = new Paint();
@@ -42,6 +42,14 @@ public class TextRenderer {
         this.typeface = this.paint.getTypeface();
         this.enableOutline = false;
         this.outlineWidth = this.paint.getStrokeWidth();
+    }
+
+    public gov.nasa.worldwind.render.Color getTextColor() {
+        return this.textColor;
+    }
+
+    public void setTextColor(gov.nasa.worldwind.render.Color color) {
+        this.textColor = color;
     }
 
     public float getTextSize() {
@@ -73,6 +81,14 @@ public class TextRenderer {
         return this;
     }
 
+    public gov.nasa.worldwind.render.Color getOutlineColor() {
+        return this.outlineColor;
+    }
+
+    public void setOutlineColor(gov.nasa.worldwind.render.Color outlineColor) {
+        this.outlineColor = outlineColor;
+    }
+
     public float getOutlineWidth() {
         return this.outlineWidth;
     }
@@ -81,22 +97,6 @@ public class TextRenderer {
         this.outlineWidth = lineWidth;
         this.paint.setStrokeWidth(lineWidth);
         return this;
-    }
-
-    public gov.nasa.worldwind.render.Color getTextColor() {
-        return this.textColor;
-    }
-
-    public void setTextColor(gov.nasa.worldwind.render.Color color) {
-        this.textColor = color;
-    }
-
-    public gov.nasa.worldwind.render.Color getOutlineColor() {
-        return this.outlineColor;
-    }
-
-    public void setOutlineColor(gov.nasa.worldwind.render.Color outlineColor) {
-        this.outlineColor = outlineColor;
     }
 
     public Texture renderText(String text) {
