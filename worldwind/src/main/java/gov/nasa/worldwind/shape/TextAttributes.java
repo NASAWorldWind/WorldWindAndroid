@@ -38,6 +38,7 @@ public class TextAttributes {
         this.textSize = 24;
         this.typeface = null;
         this.enableOutline = true;
+        this.outlineColor = new Color(0f, 0f, 0f, 1f);
         this.enableDepthTest = true;
         this.outlineWidth = 3;
     }
