@@ -169,12 +169,14 @@ public class TextAttributes {
         return this.outlineColor;
     }
 
-    public void setOutlineColor(Color color) {
+    public TextAttributes setOutlineColor(Color color) {
         if (color == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "TextAttributes", "setOutlineColor", "missingColor"));
         }
-        this.outlineColor = color;
+
+        this.outlineColor.set(color);
+        return this;
     }
 
     public boolean isEnableDepthTest() {
