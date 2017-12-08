@@ -436,9 +436,11 @@ public class RenderContext {
         Texture texture = null;
 
         if (text != null && attributes != null) {
+            this.textRenderer.setTextColor(attributes.getTextColor());
             this.textRenderer.setTextSize(attributes.getTextSize());
             this.textRenderer.setTypeface(attributes.getTypeface());
             this.textRenderer.setEnableOutline(attributes.isEnableOutline());
+            this.textRenderer.setOutlineColor(attributes.getOutlineColor());
             this.textRenderer.setOutlineWidth(attributes.getOutlineWidth());
             texture = this.textRenderer.renderText(text);
         }
