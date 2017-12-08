@@ -26,6 +26,8 @@ public class TextAttributes {
 
     protected boolean enableOutline;
 
+    protected Color outlineColor;
+
     protected boolean enableDepthTest;
 
     protected float outlineWidth;
@@ -50,6 +52,7 @@ public class TextAttributes {
         this.textOffset = new Offset(attributes.textOffset);
         this.textSize = attributes.textSize;
         this.typeface = attributes.typeface;
+        this.outlineColor = new Color(attributes.outlineColor);
         this.enableOutline = attributes.enableOutline;
         this.enableDepthTest = attributes.enableDepthTest;
         this.outlineWidth = attributes.outlineWidth;
@@ -66,6 +69,7 @@ public class TextAttributes {
         this.textSize = attributes.textSize;
         this.typeface = attributes.typeface;
         this.enableOutline = attributes.enableOutline;
+        this.outlineColor = new Color(attributes.outlineColor);
         this.enableDepthTest = attributes.enableDepthTest;
         this.outlineWidth = attributes.outlineWidth;
 
@@ -87,6 +91,7 @@ public class TextAttributes {
             && this.textSize == that.textSize
             && ((this.typeface == null) ? (that.typeface == null) : this.typeface.equals(that.typeface))
             && this.enableOutline == that.enableOutline
+            && this.outlineColor.equals(that.outlineColor)
             && this.enableDepthTest == that.enableDepthTest
             && this.outlineWidth == that.outlineWidth;
     }
@@ -98,6 +103,7 @@ public class TextAttributes {
         result = 31 * result + (this.textSize != +0.0f ? Float.floatToIntBits(this.textSize) : 0);
         result = 31 * result + (this.typeface != null ? this.typeface.hashCode() : 0);
         result = 31 * result + (this.enableOutline ? 1 : 0);
+        result = 31 * result + (this.outlineColor != null ? this.outlineColor.hashCode() : 0);
         result = 31 * result + (this.enableDepthTest ? 1 : 0);
         result = 31 * result + (this.outlineWidth != +0.0f ? Float.floatToIntBits(this.outlineWidth) : 0);
         return result;
@@ -156,6 +162,14 @@ public class TextAttributes {
     public TextAttributes setEnableOutline(boolean enable) {
         this.enableOutline = enable;
         return this;
+    }
+
+    public Color getOutlineColor() {
+        return this.outlineColor;
+    }
+
+    public void setOutlineColor(Color outlineColor) {
+        this.outlineColor = outlineColor;
     }
 
     public boolean isEnableDepthTest() {

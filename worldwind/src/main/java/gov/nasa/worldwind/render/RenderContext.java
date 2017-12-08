@@ -15,7 +15,6 @@ import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.PickedObjectList;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.draw.Drawable;
-import gov.nasa.worldwind.draw.DrawableList;
 import gov.nasa.worldwind.draw.DrawableQueue;
 import gov.nasa.worldwind.draw.DrawableTerrain;
 import gov.nasa.worldwind.geom.Camera;
@@ -544,19 +543,25 @@ public class RenderContext {
 
         protected String text;
 
+        protected Color textColor;
+
         protected float textSize;
 
         protected Typeface typeface;
 
         protected boolean enableOutline;
 
+        protected Color outlineColor;
+
         protected float outlineWidth;
 
         public TextCacheKey set(String text, TextAttributes attributes) {
             this.text = text;
+            this.textColor = (attributes != null ? attributes.getTextColor() : null);
             this.textSize = (attributes != null ? attributes.getTextSize() : 0);
             this.typeface = (attributes != null ? attributes.getTypeface() : null);
-            this.enableOutline = (attributes != null ? attributes.isEnableOutline() : false);
+            this.enableOutline = (attributes != null && attributes.isEnableOutline());
+            this.outlineColor = (attributes != null ? attributes.getOutlineColor() : null);
             this.outlineWidth = (attributes != null ? attributes.getOutlineWidth() : 0);
             return this;
         }
@@ -572,18 +577,22 @@ public class RenderContext {
 
             TextCacheKey that = (TextCacheKey) o;
             return ((this.text == null) ? (that.text == null) : this.text.equals(that.text))
+                && this.textColor == that.textColor
                 && this.textSize == that.textSize
                 && ((this.typeface == null) ? (that.typeface == null) : this.typeface.equals(that.typeface))
                 && this.enableOutline == that.enableOutline
+                && this.outlineColor == that.outlineColor
                 && this.outlineWidth == that.outlineWidth;
         }
 
         @Override
         public int hashCode() {
             int result = (this.text != null ? this.text.hashCode() : 0);
+            result = 31 * result + (this.textColor != null ? this.textColor.hashCode() : 0);
             result = 31 * result + (this.textSize != +0.0f ? Float.floatToIntBits(this.textSize) : 0);
             result = 31 * result + (this.typeface != null ? this.typeface.hashCode() : 0);
             result = 31 * result + (this.enableOutline ? 1 : 0);
+            result = 31 * result + (this.outlineColor != null ? this.outlineColor.hashCode() : 0);
             result = 31 * result + (this.outlineWidth != +0.0f ? Float.floatToIntBits(this.outlineWidth) : 0);
             return result;
         }
