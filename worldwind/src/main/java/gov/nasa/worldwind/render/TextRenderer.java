@@ -14,11 +14,15 @@ import android.graphics.Typeface;
 
 public class TextRenderer {
 
+    protected gov.nasa.worldwind.render.Color textColor;
+
     protected float textSize;
 
     protected Typeface typeface;
 
     protected boolean enableOutline;
+
+    protected gov.nasa.worldwind.render.Color outlineColor;
 
     protected float outlineWidth;
 
@@ -38,6 +42,14 @@ public class TextRenderer {
         this.typeface = this.paint.getTypeface();
         this.enableOutline = false;
         this.outlineWidth = this.paint.getStrokeWidth();
+    }
+
+    public gov.nasa.worldwind.render.Color getTextColor() {
+        return this.textColor;
+    }
+
+    public void setTextColor(gov.nasa.worldwind.render.Color color) {
+        this.textColor = color;
     }
 
     public float getTextSize() {
@@ -67,6 +79,14 @@ public class TextRenderer {
     public TextRenderer setEnableOutline(boolean enable) {
         this.enableOutline = enable;
         return this;
+    }
+
+    public gov.nasa.worldwind.render.Color getOutlineColor() {
+        return this.outlineColor;
+    }
+
+    public void setOutlineColor(gov.nasa.worldwind.render.Color outlineColor) {
+        this.outlineColor = outlineColor;
     }
 
     public float getOutlineWidth() {
@@ -108,12 +128,12 @@ public class TextRenderer {
 
         if (this.enableOutline) {
             this.paint.setStyle(Paint.Style.FILL_AND_STROKE);
-            this.paint.setColor(Color.BLACK);
+            this.paint.setColor(this.outlineColor != null ? this.outlineColor.toColorInt() : Color.BLACK);
             this.canvas.drawText(text, 0, text.length(), x, y, this.paint);
         }
 
         this.paint.setStyle(Paint.Style.FILL);
-        this.paint.setColor(Color.WHITE);
+        this.paint.setColor(this.textColor != null ? this.textColor.toColorInt() : Color.WHITE);
         this.canvas.drawText(text, 0, text.length(), x, y, this.paint);
 
         this.canvas.setBitmap(null);
