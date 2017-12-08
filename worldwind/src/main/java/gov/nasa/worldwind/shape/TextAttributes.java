@@ -38,7 +38,7 @@ public class TextAttributes {
         this.textSize = 24;
         this.typeface = null;
         this.enableOutline = true;
-        this.outlineColor = new Color(0f, 0f, 0f, 1f);
+        this.outlineColor = new Color(0, 0, 0, 1);
         this.enableDepthTest = true;
         this.outlineWidth = 3;
     }
@@ -70,7 +70,7 @@ public class TextAttributes {
         this.textSize = attributes.textSize;
         this.typeface = attributes.typeface;
         this.enableOutline = attributes.enableOutline;
-        this.outlineColor = new Color(attributes.outlineColor);
+        this.outlineColor.set(attributes.outlineColor);
         this.enableDepthTest = attributes.enableDepthTest;
         this.outlineWidth = attributes.outlineWidth;
 
@@ -169,8 +169,12 @@ public class TextAttributes {
         return this.outlineColor;
     }
 
-    public void setOutlineColor(Color outlineColor) {
-        this.outlineColor = outlineColor;
+    public void setOutlineColor(Color color) {
+        if (color == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "TextAttributes", "setOutlineColor", "missingColor"));
+        }
+        this.outlineColor = color;
     }
 
     public boolean isEnableDepthTest() {
