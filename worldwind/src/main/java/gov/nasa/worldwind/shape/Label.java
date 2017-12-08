@@ -484,13 +484,13 @@ public class Label extends AbstractRenderable implements Highlightable, Movable 
 
         // Configure the drawable according to the active attributes. Use a color appropriate for the pick mode. When
         // picking use a unique color associated with the picked object ID. Use the texture associated with the active
-        // attributes' text image and its associated tex coord transform.
+        // attributes' text image and its associated tex coord transform. The text texture includes the appropriate
+        // color for drawing, specifying white for normal drawing ensures the color multiplication in the shader results
+        // in the texture's color.
         if (rc.pickMode) {
             drawable.color.set(renderData.pickColor);
         } else {
-            // The text texture includes the appropriate color for drawing, specifying white here ensures the color
-            // multiplication in the shader results in the texture's color.
-            drawable.color.set(new Color(1f, 1f, 1f, 1f));
+            drawable.color.set(1f, 1f, 1f, 1f);
         }
         drawable.texture = texture;
         drawable.enableDepthTest = this.activeAttributes.enableDepthTest;
