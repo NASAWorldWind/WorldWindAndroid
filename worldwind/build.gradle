@@ -14,10 +14,10 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.artifactory'
 
 android {
-    compileSdkVersion 24
+    compileSdkVersion 23
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 24
+        targetSdkVersion 23
         versionCode 10
         versionName '0.8.0-SNAPSHOT'
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
@@ -43,9 +43,7 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-annotations:24.+'
-    androidTestCompile 'com.android.support.test:runner:0.5'
-    androidTestCompile 'com.android.support.test:rules:0.5'
+    compile 'com.android.support:support-annotations:27.0.2'
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.0.43-beta'
     // PowerMockito is required to mock static methods like Logger.log
@@ -57,6 +55,8 @@ dependencies {
         exclude module: 'hamcrest-core'
         exclude module: 'objenesis'
     }
+    androidTestCompile 'com.android.support.test:runner:1.0.1'
+    androidTestCompile 'com.android.support.test:rules:1.0.1'
 }
 
 publishing {
