@@ -104,7 +104,7 @@ public class TextAttributes {
         result = 31 * result + (this.textSize != +0.0f ? Float.floatToIntBits(this.textSize) : 0);
         result = 31 * result + (this.typeface != null ? this.typeface.hashCode() : 0);
         result = 31 * result + (this.enableOutline ? 1 : 0);
-        result = 31 * result + (this.outlineColor != null ? this.outlineColor.hashCode() : 0);
+        result = 31 * result + this.outlineColor.hashCode();
         result = 31 * result + (this.enableDepthTest ? 1 : 0);
         result = 31 * result + (this.outlineWidth != +0.0f ? Float.floatToIntBits(this.outlineWidth) : 0);
         return result;
