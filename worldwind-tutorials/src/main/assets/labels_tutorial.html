@@ -20,7 +20,8 @@
 </p>
 <p>
     This tutorial uses Labels shapes to identify landmarks around Washington, D.C. Label shapes have a variety of
-    configurable properties, including text color, text size (in screen pixels), typeface, text outline, and rotation.
+    configurable properties, including text color, text size (in screen pixels), typeface, text outline, rotation,
+    outline color, and outline size.
     </ul>
 </p>
 <h2>Example</h2>
@@ -77,6 +78,8 @@ public class LabelsFragment extends BasicGlobeFragment {
         attrs = new TextAttributes();
         attrs.setTypeface(Typeface.DEFAULT_BOLD); // system default bold typeface
         attrs.setTextSize(48); // 48 screen pixels
+        attrs.setOutlineColor(new Color(0, 0, 1, 1)); // set outline color to green via r,g,b,a
+        attrs.setOutlineWidth(10); // adjust the outline width
         label = new Label(new Position(38.907192, -77.036871, 0), "Washington", attrs);
         layer.addRenderable(label);
 

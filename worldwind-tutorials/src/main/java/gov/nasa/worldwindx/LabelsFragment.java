@@ -60,6 +60,8 @@ public class LabelsFragment extends BasicGlobeFragment {
         attrs = new TextAttributes();
         attrs.setTypeface(Typeface.DEFAULT_BOLD); // system default bold typeface
         attrs.setTextSize(48); // 48 screen pixels
+        attrs.setOutlineColor(new Color(0, 0, 1, 1)); // set outline color to green via r,g,b,a
+        attrs.setOutlineWidth(10); // adjust the outline width
         label = new Label(new Position(38.907192, -77.036871, 0), "Washington", attrs);
         layer.addRenderable(label);
 
