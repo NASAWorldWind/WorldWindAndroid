@@ -55,6 +55,72 @@ public class TextCacheKeyTest {
     }
 
     @Test
+    public void testNullToNonNullAttributesSet() {
+        String text = "Testing";
+        RenderContext.TextCacheKey textCacheKeyOne = new RenderContext.TextCacheKey().set(text, null);
+        RenderContext.TextCacheKey textCacheKeyTwo = new RenderContext.TextCacheKey().set(text, null);
+
+        assertTrue("TextCacheKey null to non-null equals pre", textCacheKeyOne.equals(textCacheKeyTwo));
+        assertTrue("TextCacheKey null to non-null hashcode pre", textCacheKeyOne.hashCode() == textCacheKeyTwo.hashCode());
+
+        TextAttributes textAttributes = new TextAttributes();
+        textAttributes.setOutlineWidth(5);
+        textCacheKeyTwo.set(text, textAttributes);
+
+        assertFalse("TextCacheKey null to non-null equals post", textCacheKeyOne.equals(textCacheKeyTwo));
+        assertFalse("TextCacheKey null to non-null hashcode post", textCacheKeyOne.hashCode() == textCacheKeyTwo.hashCode());
+    }
+
+    @Test
+    public void testNullToNullAttributesSet() {
+        String text = "Testing";
+        RenderContext.TextCacheKey textCacheKeyOne = new RenderContext.TextCacheKey().set(text, null);
+        RenderContext.TextCacheKey textCacheKeyTwo = new RenderContext.TextCacheKey().set(text, null);
+
+        assertTrue("TextCacheKey null to null equals pre", textCacheKeyOne.equals(textCacheKeyTwo));
+        assertTrue("TextCacheKey null to null hashcode pre", textCacheKeyOne.hashCode() == textCacheKeyTwo.hashCode());
+
+        textCacheKeyTwo.set(text, null);
+
+        assertTrue("TextCacheKey null to null equals post", textCacheKeyOne.equals(textCacheKeyTwo));
+        assertTrue("TextCacheKey null to null hashcode post", textCacheKeyOne.hashCode() == textCacheKeyTwo.hashCode());
+    }
+
+    @Test
+    public void testNonNullToNullAttributesSet() {
+        String text = "Testing";
+        TextAttributes textAttributes = new TextAttributes();
+        textAttributes.setOutlineWidth(5);
+        RenderContext.TextCacheKey textCacheKeyOne = new RenderContext.TextCacheKey().set(text, textAttributes);
+        RenderContext.TextCacheKey textCacheKeyTwo = new RenderContext.TextCacheKey().set(text, textAttributes);
+
+        assertTrue("TextCacheKey non-null to null equals pre", textCacheKeyOne.equals(textCacheKeyTwo));
+        assertTrue("TextCacheKey non-null to null hashcode pre", textCacheKeyOne.hashCode() == textCacheKeyTwo.hashCode());
+
+        textCacheKeyTwo.set(text, null);
+
+        assertFalse("TextCacheKey non-null to null equals post", textCacheKeyOne.equals(textCacheKeyTwo));
+        assertFalse("TextCacheKey non-null to null hashcode post", textCacheKeyOne.hashCode() == textCacheKeyTwo.hashCode());
+    }
+
+    @Test
+    public void testNonNullToNonNullAttributesSet() {
+        String text = "Testing";
+        TextAttributes textAttributes = new TextAttributes();
+        textAttributes.setOutlineWidth(5);
+        RenderContext.TextCacheKey textCacheKeyOne = new RenderContext.TextCacheKey().set(text, textAttributes);
+        RenderContext.TextCacheKey textCacheKeyTwo = new RenderContext.TextCacheKey().set(text, textAttributes);
+
+        assertTrue("TextCacheKey non-null to non-null equals pre", textCacheKeyOne.equals(textCacheKeyTwo));
+        assertTrue("TextCacheKey non-null to non-null hashcode pre", textCacheKeyOne.hashCode() == textCacheKeyTwo.hashCode());
+
+        textCacheKeyTwo.set(text, textAttributes);
+
+        assertTrue("TextCacheKey non-null to non-null equals post", textCacheKeyOne.equals(textCacheKeyTwo));
+        assertTrue("TextCacheKey non-null to non-null hashcode post", textCacheKeyOne.hashCode() == textCacheKeyTwo.hashCode());
+    }
+
+    @Test
     public void testModifiedAttrs() {
         // Common Text Attributes
         TextAttributes attrs = new TextAttributes();

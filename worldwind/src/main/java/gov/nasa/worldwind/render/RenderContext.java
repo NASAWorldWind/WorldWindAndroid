@@ -560,12 +560,19 @@ public class RenderContext {
         public TextCacheKey set(String text, TextAttributes attributes) {
             this.text = text;
             if (attributes != null) {
-                this.textColor = new Color(attributes.getTextColor());
+                this.textColor = (this.textColor != null) ? this.textColor.set(attributes.getTextColor()) : new Color(attributes.getTextColor());
                 this.textSize = attributes.getTextSize();
                 this.typeface = attributes.getTypeface();
                 this.enableOutline = attributes.isEnableOutline();
-                this.outlineColor = new Color(attributes.getOutlineColor());
+                this.outlineColor = (this.outlineColor != null) ? this.outlineColor.set(attributes.getOutlineColor()) : new Color(attributes.getOutlineColor());
                 this.outlineWidth = attributes.getOutlineWidth();
+            } else {
+                this.textColor = null;
+                this.textSize = 0;
+                this.typeface = null;
+                this.enableOutline = false;
+                this.outlineColor = null;
+                this.outlineWidth = 0;
             }
 
             return this;
