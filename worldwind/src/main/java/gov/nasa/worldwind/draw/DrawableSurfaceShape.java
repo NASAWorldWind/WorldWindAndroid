@@ -135,7 +135,7 @@ public class DrawableSurfaceShape implements Drawable {
                 // Get the shape.
                 DrawableSurfaceShape shape = (DrawableSurfaceShape) scratchList.get(idx);
 
-                if (!shape.sector.intersects(terrainSector)) {
+                if (!shape.sector.intersectsOrNextTo(terrainSector)) {
                     continue;
                 }
 
