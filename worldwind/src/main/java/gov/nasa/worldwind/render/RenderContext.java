@@ -559,12 +559,22 @@ public class RenderContext {
 
         public TextCacheKey set(String text, TextAttributes attributes) {
             this.text = text;
-            this.textColor = (attributes != null ? attributes.getTextColor() : null);
-            this.textSize = (attributes != null ? attributes.getTextSize() : 0);
-            this.typeface = (attributes != null ? attributes.getTypeface() : null);
-            this.enableOutline = (attributes != null && attributes.isEnableOutline());
-            this.outlineColor = (attributes != null ? attributes.getOutlineColor() : null);
-            this.outlineWidth = (attributes != null ? attributes.getOutlineWidth() : 0);
+            if (attributes != null) {
+                this.textColor = (this.textColor != null) ? this.textColor.set(attributes.getTextColor()) : new Color(attributes.getTextColor());
+                this.textSize = attributes.getTextSize();
+                this.typeface = attributes.getTypeface();
+                this.enableOutline = attributes.isEnableOutline();
+                this.outlineColor = (this.outlineColor != null) ? this.outlineColor.set(attributes.getOutlineColor()) : new Color(attributes.getOutlineColor());
+                this.outlineWidth = attributes.getOutlineWidth();
+            } else {
+                this.textColor = null;
+                this.textSize = 0;
+                this.typeface = null;
+                this.enableOutline = false;
+                this.outlineColor = null;
+                this.outlineWidth = 0;
+            }
+
             return this;
         }
 
@@ -579,11 +589,11 @@ public class RenderContext {
 
             TextCacheKey that = (TextCacheKey) o;
             return ((this.text == null) ? (that.text == null) : this.text.equals(that.text))
-                && this.textColor == that.textColor
+                && ((this.textColor == null) ? (that.textColor == null) : this.textColor.equals(that.textColor))
                 && this.textSize == that.textSize
                 && ((this.typeface == null) ? (that.typeface == null) : this.typeface.equals(that.typeface))
                 && this.enableOutline == that.enableOutline
-                && this.outlineColor == that.outlineColor
+                && ((this.outlineColor == null) ? (that.outlineColor == null) : this.outlineColor.equals(that.outlineColor))
                 && this.outlineWidth == that.outlineWidth;
         }
 
