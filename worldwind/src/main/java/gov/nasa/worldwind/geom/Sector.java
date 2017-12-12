@@ -353,9 +353,9 @@ public class Sector {
     }
 
     /**
-     * Indicates whether this sector is next to or intersects a specified sector. Two sectors intersect if meeting the
-     * {@link Sector#intersects(Sector)} methods criteria and if the boundary or corner is shared with the specified
-     * sector. This is a temporary implementation and will be deprecated in future releases.
+     * Indicates if this sector is next to, or intersects, a specified sector. Two sectors intersect when the conditions
+     * of the {@link Sector#intersects(Sector)} methods have been met, and if the boundary or corner is shared with the
+     * specified sector. This is a temporary implementation and will be deprecated in future releases.
      *
      * @param sector the sector to test intersection with
      *
