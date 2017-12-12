@@ -56,11 +56,11 @@ public class LabelsFragment extends BasicGlobeFragment {
         label = new Label(new Position(38.889803, -77.009114, 0), "United States Capitol", attrs);
         layer.addRenderable(label);
 
-        // Create a label with a 48 pixel text size and a bold typeface.
+        // Create a label with a 48 pixel text size, a bold typeface, and customized outline.
         attrs = new TextAttributes();
         attrs.setTypeface(Typeface.DEFAULT_BOLD); // system default bold typeface
         attrs.setTextSize(48); // 48 screen pixels
-        attrs.setOutlineColor(new Color(0, 0, 1, 1)); // set outline color to green via r,g,b,a
+        attrs.setOutlineColor(new Color(0, 0, 1, 1)); // set outline color to blue via r,g,b,a
         attrs.setOutlineWidth(10); // adjust the outline width
         label = new Label(new Position(38.907192, -77.036871, 0), "Washington", attrs);
         layer.addRenderable(label);

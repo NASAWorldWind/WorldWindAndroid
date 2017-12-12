@@ -19,9 +19,16 @@
     Demonstrates how to display labels on a WorldWind globe.
 </p>
 <p>
-    This tutorial uses Labels shapes to identify landmarks around Washington, D.C. Label shapes have a variety of
-    configurable properties, including text color, text size (in screen pixels), typeface, text outline, rotation,
-    outline color, and outline size.
+    This tutorial uses Labels to identify landmarks around Washington, D.C. Label shapes have a variety of configurable
+    properties, including:
+<ul>
+    <li>Text Color</li>
+    <li>Text Size (in screen pixels)</li>
+    <li>Typeface</li>
+    <li>Text Outline</li>
+    <li>Rotation</li>
+    <li>Outline Color</li>
+    <li>Outline Size</li>
     </ul>
 </p>
 <h2>Example</h2>
@@ -74,11 +81,11 @@ public class LabelsFragment extends BasicGlobeFragment {
         label = new Label(new Position(38.889803, -77.009114, 0), "United States Capitol", attrs);
         layer.addRenderable(label);
 
-        // Create a label with a 48 pixel text size and a bold typeface.
+        // Create a label with a 48 pixel text size, a bold typeface, and customized outline.
         attrs = new TextAttributes();
         attrs.setTypeface(Typeface.DEFAULT_BOLD); // system default bold typeface
         attrs.setTextSize(48); // 48 screen pixels
-        attrs.setOutlineColor(new Color(0, 0, 1, 1)); // set outline color to green via r,g,b,a
+        attrs.setOutlineColor(new Color(0, 0, 1, 1)); // set outline color to blue via r,g,b,a
         attrs.setOutlineWidth(10); // adjust the outline width
         label = new Label(new Position(38.907192, -77.036871, 0), "Washington", attrs);
         layer.addRenderable(label);
