@@ -353,6 +353,31 @@ public class Sector {
     }
 
     /**
+     * Indicates if this sector is next to, or intersects, a specified sector. Two sectors intersect when the conditions
+     * of the {@link Sector#intersects(Sector)} methods have been met, and if the boundary or corner is shared with the
+     * specified sector. This is a temporary implementation and will be deprecated in future releases.
+     *
+     * @param sector the sector to test intersection with
+     *
+     * @return true if the specified sector intersects or is next to this sector, false otherwise
+     *
+     * @throws IllegalArgumentException If the sector is null
+     */
+    public boolean intersectsOrNextTo(Sector sector) {
+        if (sector == null) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Sector", "intersects", "missingSector"));
+        }
+
+        // Assumes normalized angles: [-90, +90], [-180, +180]
+        // Note: comparisons with NaN are always false
+        return this.minLatitude <= sector.maxLatitude
+            && this.maxLatitude >= sector.minLatitude
+            && this.minLongitude <= sector.maxLongitude
+            && this.maxLongitude >= sector.minLongitude;
+    }
+
+    /**
      * Computes the intersection of this sector and a specified sector, storing the result in this sector and returning
      * whether or not the sectors intersect. Two sectors intersect when both the latitude boundaries and the longitude
      * boundaries overlap by a non-zero amount. An empty sector never intersects another sector. When there is no
