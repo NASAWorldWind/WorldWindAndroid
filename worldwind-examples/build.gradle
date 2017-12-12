@@ -1,12 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '26.0.1'
+    compileSdkVersion 23
     defaultConfig {
         applicationId 'gov.nasa.worldwindx.examples'
-        minSdkVersion 16
-        targetSdkVersion 24
+        minSdkVersion 23
+        targetSdkVersion 23
         versionCode 10
         versionName '0.8.0-SNAPSHOT'
     }
@@ -22,18 +21,15 @@ android {
         abortOnError false
         disable 'GradleDependency'
     }
-}
-
-repositories {
-    flatDir dirs: 'libs'
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':worldwind')
-    compile 'mil-sym-android:renderer:0.1.2@aar'
-    //maven-like dependency from flatDir repo; alternative: compile(name: 'renderer', ext: 'aar')
-    compile 'com.android.support:appcompat-v7:24.2.1'
-    compile 'com.android.support:design:24.2.1'
-    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support:design:23.4.0'
+    compile 'mil.army.missioncommand:mil-sym-android-renderer:0.1.36'
 }
