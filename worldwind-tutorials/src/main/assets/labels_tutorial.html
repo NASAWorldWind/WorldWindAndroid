@@ -62,10 +62,12 @@ public class LabelsFragment extends BasicGlobeFragment {
         Label label = new Label(new Position(38.8977, -77.0365, 0), "The White House");
         layer.addRenderable(label);
 
-        // Create a label with a green text color, the default text size, the system default typeface, and the default
-        // alignment.
+        // Create a label with a black text color, the default text size, the system default typeface, the default
+        // alignment, and a thick white text outline.
         TextAttributes attrs = new TextAttributes();
-        attrs.setTextColor(new Color(0, 1, 0, 1)); // green via r,g,b,a
+        attrs.setTextColor(new Color(0, 0, 0, 1)); // black text via r,g,b,a
+        attrs.setOutlineColor(new Color(1, 1, 1, 1)); // white outline via r,g,b,a
+        attrs.setOutlineWidth(5); // thicken the white outline
         label = new Label(new Position(38.881389, -77.036944, 0), "Thomas Jefferson Memorial", attrs);
         layer.addRenderable(label);
 
@@ -81,12 +83,10 @@ public class LabelsFragment extends BasicGlobeFragment {
         label = new Label(new Position(38.889803, -77.009114, 0), "United States Capitol", attrs);
         layer.addRenderable(label);
 
-        // Create a label with a 48 pixel text size, a bold typeface, and customized outline.
+        // Create a label with a 48 pixel text size and a bold typeface.
         attrs = new TextAttributes();
         attrs.setTypeface(Typeface.DEFAULT_BOLD); // system default bold typeface
         attrs.setTextSize(48); // 48 screen pixels
-        attrs.setOutlineColor(new Color(0, 0, 1, 1)); // set outline color to blue via r,g,b,a
-        attrs.setOutlineWidth(10); // adjust the outline width
         label = new Label(new Position(38.907192, -77.036871, 0), "Washington", attrs);
         layer.addRenderable(label);
 
