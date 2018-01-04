@@ -101,7 +101,7 @@ public class Ellipse extends AbstractShape {
     }
 
     public Location getCenter() {
-        return center;
+        return this.center;
     }
 
     public void setCenter(double latitude, double longitude) {
@@ -114,7 +114,7 @@ public class Ellipse extends AbstractShape {
     }
 
     public double getMinorRadius() {
-        return minorRadius;
+        return this.minorRadius;
     }
 
     public void setMinorRadius(double minorRadius) {
@@ -127,7 +127,7 @@ public class Ellipse extends AbstractShape {
     }
 
     public double getMajorRadius() {
-        return majorRadius;
+        return this.majorRadius;
     }
 
     public void setMajorRadius(double majorRadius) {
@@ -140,7 +140,7 @@ public class Ellipse extends AbstractShape {
     }
 
     public double getHeadingDegrees() {
-        return headingDegrees;
+        return this.headingDegrees;
     }
 
     public void setHeadingDegrees(double headingDegrees) {
