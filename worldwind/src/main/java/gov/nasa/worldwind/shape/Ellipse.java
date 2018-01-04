@@ -15,7 +15,6 @@ import java.nio.ShortBuffer;
 import gov.nasa.worldwind.draw.DrawShapeState;
 import gov.nasa.worldwind.draw.DrawableSurfaceShape;
 import gov.nasa.worldwind.geom.Location;
-import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.RenderContext;
@@ -24,19 +23,32 @@ import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.ShortArray;
 
+/**
+ * An Ellipse shape based on great circle representation of an ellipse's geometry. With a 0 (default) degree heading,
+ * the major axis is aligned east to west. The minor radius must be smaller than or equal to the major radius.
+ */
 public class Ellipse extends AbstractShape {
 
     protected static final int VERTEX_STRIDE = 6;
 
+    /**
+     * Then center position of the Ellipse
+     */
     protected Location center;
 
+    /**
+     * The arc length of the minor radius in meters
+     */
     protected double minorRadius;
 
+    /**
+     * The arc length of the major radius in meters
+     */
     protected double majorRadius;
 
     protected double headingDegrees;
 
-    protected int intervals = 64;
+    protected int intervals = 64; // must be even, should be evenly divisible by 4
 
     protected FloatArray vertexArray = new FloatArray();
 
@@ -47,8 +59,6 @@ public class Ellipse extends AbstractShape {
     protected Object vertexBufferKey = nextCacheKey();
 
     protected Object elementBufferKey = nextCacheKey();
-
-    protected Vec3 vertexOrigin = new Vec3();
 
     private static final Location SCRATCH = new Location();
 
@@ -198,7 +208,6 @@ public class Ellipse extends AbstractShape {
 
         // Configure the drawable according to the shape's attributes. Disable triangle backface culling when we're
         // displaying a polygon without extruded sides, so we want to draw the top and the bottom.
-        drawState.vertexOrigin.set(this.vertexOrigin);
         drawState.vertexStride = VERTEX_STRIDE * 4; // stride in bytes
         drawState.enableCullFace = false;
         drawState.enableDepthTest = this.activeAttributes.depthTest;
