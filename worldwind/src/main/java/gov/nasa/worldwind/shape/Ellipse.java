@@ -14,7 +14,6 @@ import java.nio.ShortBuffer;
 
 import gov.nasa.worldwind.draw.DrawShapeState;
 import gov.nasa.worldwind.draw.DrawableSurfaceShape;
-import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
@@ -72,7 +71,7 @@ public class Ellipse extends AbstractShape {
      * The maximum number of angular intervals that may be used to assemble the ellipse's geometry for rendering.
      */
     protected int maximumIntervals = 64;
-    
+
     protected int intervals;
 
     protected FloatArray vertexArray = new FloatArray();
@@ -85,7 +84,7 @@ public class Ellipse extends AbstractShape {
 
     protected Object elementBufferKey = nextCacheKey();
 
-    private static final Location SCRATCH = new Location();
+    private static final Position SCRATCH = new Position();
 
     protected static Object nextCacheKey() {
         return new Object();
@@ -418,10 +417,12 @@ public class Ellipse extends AbstractShape {
     }
 
     protected void assembleGeometry(RenderContext rc) {
-
         // Clear the shape's vertex array. This array will accumulate values as the shapes's
         // geometry is assembled.
         this.vertexArray.clear();
+
+        // Determine the number of intervals to use based on the circumference of the ellipse
+        this.intervals = this.maximumIntervals; // TODO determine intervals used based on ellipse circumference
 
         // Determine the number of spine points and construct radius value holding array
         int spinePoints = this.intervals / 2 - 1; // intervals must be even
