@@ -15,6 +15,7 @@
     <string name="title_basic_globe">Basic Globe</string>
     <string name="title_camera_controls">Camera Controls</string>
     <string name="title_camera_view">Camera View</string>
+    <string name="title_ellipses">Ellipses</string>
     <string name="title_geopackage">GeoPackage</string>
     <string name="title_labels">Labels</string>
     <string name="title_look_at_view">Look At View</string>

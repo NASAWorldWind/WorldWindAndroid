@@ -269,6 +269,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_camera_control_activity:
                 loadTutorial(CameraControlFragment.class, "file:///android_asset/camera_control_tutorial.html",  R.string.title_camera_controls);
                 break;
+            case R.id.nav_ellipses_activity:
+                loadTutorial(EllipseFragment.class, "file:///android_asset/ellipses_tutorial.html", R.string.title_ellipses);
+                break;
             case R.id.nav_geopackage_activity:
                 loadTutorial(GeoPackageFragment.class, "file:///android_asset/geopackage_tutorial.html", R.string.title_geopackage);
                 break;
