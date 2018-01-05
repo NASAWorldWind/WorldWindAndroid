@@ -22,6 +22,7 @@ import gov.nasa.worldwind.util.FloatArray;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.ShortArray;
+import gov.nasa.worldwind.util.WWMath;
 
 /**
  * Ellipse shape defined by a geographic center position and radii for the semi-major and semi-minor axes.
@@ -45,7 +46,7 @@ public class Ellipse extends AbstractShape {
 
     protected static final int VERTEX_STRIDE = 6;
 
-    protected static final int MIN_INTERVALS = 8;
+    protected static final int MIN_INTERVALS = 32;
 
     /**
      * The ellipse's geographic center position.
@@ -417,12 +418,12 @@ public class Ellipse extends AbstractShape {
     }
 
     protected void assembleGeometry(RenderContext rc) {
-        // Clear the shape's vertex array. This array will accumulate values as the shapes's
-        // geometry is assembled.
-        this.vertexArray.clear();
-
         // Determine the number of intervals to use based on the circumference of the ellipse
-        this.intervals = this.maximumIntervals; // TODO determine intervals used based on ellipse circumference
+        double circumference = Math.PI * (3 * (this.majorRadius + this.minorRadius) - Math.sqrt((3 * this.majorRadius + this.minorRadius) * (this.majorRadius + 3 * this.minorRadius)));
+        this.intervals = (int) WWMath.clamp(circumference / 50000.0, MIN_INTERVALS, this.maximumIntervals);
+        if (this.intervals % 2 != 0) {
+            this.intervals--;
+        }
 
         // Determine the number of spine points and construct radius value holding array
         int spinePoints = this.intervals / 2 - 1; // intervals must be even
