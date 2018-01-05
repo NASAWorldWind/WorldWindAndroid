@@ -36,6 +36,7 @@ public class Logger {
         messageTable.put("invalidFieldOfView", "The field of view is invalid");
         messageTable.put("invalidHeight", "The height is invalid");
         messageTable.put("invalidIndex", "The index is invalid");
+        messageTable.put("invalidNumIntervals", "The number of intervals is invalid");
         messageTable.put("invalidNumLevels", "The number of levels is invalid");
         messageTable.put("invalidRadius", "The radius is invalid");
         messageTable.put("invalidRange", "The range is invalid");
