@@ -256,17 +256,24 @@ public class Ellipse extends AbstractShape {
     }
 
     /**
-     * Sets the maximum number of angular intervals that may be used to approximate this ellipse's geometry on
-     * screen.
+     * Sets the maximum number of angular intervals that may be used to approximate this ellipse's on screen.
+     * <p>
+     * Ellipse may use a minimum number of intervals to ensure that its appearance on screen at least roughly
+     * approximates the ellipse's shape. When the specified number of intervals is too small, it is clamped to an
+     * implementation-defined minimum number of intervals.
+     * <p>
+     * Ellipse may require that the number of intervals is an even multiple of some integer. When the specified number
+     * of intervals does not meet this criteria, the next smallest integer that meets ellipse's criteria is used
+     * instead.
      *
-     * @param numIntervals the number of angular intervals; must be at least 8
+     * @param numIntervals the number of angular intervals
      *
      * @return this ellipse with its number of angular intervals set to the specified value
      *
-     * @throws IllegalArgumentException If the number of intervals is less than 8
+     * @throws IllegalArgumentException If the number of intervals is negative
      */
     public Ellipse setMaximumIntervals(int numIntervals) {
-        if (numIntervals < MIN_INTERVALS) {
+        if (numIntervals < 0) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Ellipse", "setMaximumIntervals", "invalidNumIntervals"));
         }
