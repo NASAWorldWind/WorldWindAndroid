@@ -429,12 +429,22 @@ public class Ellipse extends AbstractShape {
         int spineIdx = 0;
         double[] spineRadius = new double[spinePoints];
 
+        // Check if minor radius is less than major in which case we need to flip the definitions and change the phase
+        boolean isStandardAxisOrientation = this.majorRadius > this.minorRadius;
+        double headingAdjustment = isStandardAxisOrientation ? 90 : 0;
+
         // Vertex generation begins on the positive major axis and works ccs around the ellipse. The spine points are
-        // then appended from positive major axis to negative major axis. The radians value does not align with a
-        // geographical "heading"
+        // then appended from positive major axis to negative major axis.
         double deltaRadians = 2 * Math.PI / this.intervals;
-        double majorArcRadians = this.majorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
-        double minorArcRadians = this.minorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
+        double majorArcRadians, minorArcRadians;
+        if (isStandardAxisOrientation) {
+            majorArcRadians = this.majorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
+            minorArcRadians = this.minorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
+        } else {
+            majorArcRadians = this.minorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
+            minorArcRadians = this.majorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
+        }
+
         for (int i = 0; i < this.intervals; i++) {
             double radians = deltaRadians * i;
             double x = Math.cos(radians) * majorArcRadians;
@@ -443,7 +453,7 @@ public class Ellipse extends AbstractShape {
             double arcRadius = Math.sqrt(x * x + y * y);
             // Calculate the great circle location given this intervals step (azimuthDegrees) a correction value to
             // start from an east-west aligned major axis (90.0) and the user specified user heading value
-            this.center.greatCircleLocation(azimuthDegrees + 90.0 + this.heading, arcRadius, SCRATCH);
+            this.center.greatCircleLocation(azimuthDegrees + headingAdjustment + this.heading, arcRadius, SCRATCH);
             this.addVertex(rc, SCRATCH.latitude, SCRATCH.longitude, 0);
             // Add the major arc radius for the spine points. Spine points are vertically coincident with exterior
             // points. The first and middle most point do not have corresponding spine points.
@@ -454,7 +464,7 @@ public class Ellipse extends AbstractShape {
 
         // Add the interior spine point vertices
         for (int i = 0; i < spinePoints; i++) {
-            this.center.greatCircleLocation(0 + 90.0 + this.heading, spineRadius[i], SCRATCH);
+            this.center.greatCircleLocation(0 + headingAdjustment + this.heading, spineRadius[i], SCRATCH);
             this.addVertex(rc, SCRATCH.latitude, SCRATCH.longitude, 0);
         }
 
