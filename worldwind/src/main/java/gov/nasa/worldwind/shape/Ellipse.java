@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 United States Government as represented by the Administrator of the
+ * Copyright (c) 2017 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
@@ -15,6 +15,7 @@ import java.nio.ShortBuffer;
 import gov.nasa.worldwind.draw.DrawShapeState;
 import gov.nasa.worldwind.draw.DrawableSurfaceShape;
 import gov.nasa.worldwind.geom.Location;
+import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.RenderContext;
@@ -24,31 +25,55 @@ import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.ShortArray;
 
 /**
- * An Ellipse shape based on great circle representation of an ellipse's geometry. With a 0 (default) degree heading,
- * the major axis is aligned east to west. The minor radius must be smaller than or equal to the major radius.
+ * Ellipse shape defined by a geographic center position and radii for the semi-major and semi-minor axes.
+ * <p>
+ * <h3>Axes and Heading</h3>
+ * <p>
+ * Ellipse axes, by default, are oriented such that the semi-major axis points East and the semi-minor axis points
+ * North. Ellipse provides an optional heading, which when set to anything other than 0.0 rotates the semi-major and
+ * semi-minor axes about the center position, while retaining the axes relative relationship to one another. Heading is
+ * defined in degrees clockwise from North. Configuring ellipse with a heading of 45.0 results in the semi-major axis
+ * pointing Southeast and the semi-minor axis pointing Northeast.
+ * <p>
+ * <h3>Display Granularity</h3>
+ * <p>
+ * Ellipse's representation on screen is composed of discrete segments which approximate the ellipse's geometry. This
+ * approximation is chosen such that the screen representation appears to be a continuous smooth ellipse. Applications
+ * can control the maximum number of angular intervals used in this representation with {@link
+ * #setMaximumIntervals(int)}.
  */
 public class Ellipse extends AbstractShape {
 
     protected static final int VERTEX_STRIDE = 6;
 
-    /**
-     * Then center position of the Ellipse
-     */
-    protected Location center;
+    protected static final int MIN_INTERVALS = 8;
 
     /**
-     * The arc length of the minor radius in meters
+     * The ellipse's geographic center position.
+     */
+    protected Position center;
+
+    /**
+     * The ellipse's radius perpendicular to it's heading, in meters.
+     */
+    protected double majorRadius;
+
+    /**
+     * The ellipse's radius parallel to it's heading, in meters.
      */
     protected double minorRadius;
 
     /**
-     * The arc length of the major radius in meters
+     * The ellipse's heading in degrees clockwise from North.
      */
-    protected double majorRadius;
+    protected double heading;
 
-    protected double headingDegrees;
-
-    protected int intervals = 64; // must be even, should be evenly divisible by 4
+    /**
+     * The maximum number of angular intervals that may be used to assemble the ellipse's geometry for rendering.
+     */
+    protected int maximumIntervals = 64;
+    
+    protected int intervals;
 
     protected FloatArray vertexArray = new FloatArray();
 
@@ -66,97 +91,240 @@ public class Ellipse extends AbstractShape {
         return new Object();
     }
 
+    /**
+     * Constructs an ellipse with a null center position, and with major- and minor-radius both 0.0. This ellipse does
+     * not display until the center position is defined and the radii are both greater than 0.0.
+     */
     public Ellipse() {
     }
 
+    /**
+     * Constructs an ellipse with a null center position, and with major- and minor-radius both 0.0. This ellipse does
+     * not display until the center position is defined and the radii are both greater than 0.0.
+     *
+     * @param attributes the shape attributes applied to the ellipse
+     */
     public Ellipse(ShapeAttributes attributes) {
         super(attributes);
     }
 
-    public Ellipse(double latitude, double longitude, double majorRadius, double minorRadius, double headingDegrees) {
-        this(latitude, longitude, majorRadius, minorRadius, headingDegrees, null);
-    }
-
-    public Ellipse(double latitude, double longitude, double majorRadius, double minorRadius, double headingDegrees, ShapeAttributes attributes) {
-        super(attributes);
-        if (latitude > 90 || latitude < -90) {
+    /**
+     * Constructs an ellipse with a specified center position and radii. The ellipse displays in the default shape
+     * attributes, which may be specified using {@link #setAttributes(ShapeAttributes)}. The ellipse does not display if
+     * the center position is null, or both radii are 0.0.
+     *
+     * @param center      geographic position at the ellipse's center. May be null.
+     * @param majorRadius radius of the semi-major axis, in meters.
+     * @param minorRadius radius of the semi-minor axis, in meters.
+     *
+     * @throws IllegalArgumentException If either radius is negative
+     */
+    public Ellipse(Position center, double majorRadius, double minorRadius) {
+        if (majorRadius < 0 || minorRadius < 0) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Ellipse", "constructor", "invalid latitude"));
+                Logger.logMessage(Logger.ERROR, "Ellipse", "constructor", "invalidRadius"));
         }
 
-        if (longitude > 180 || longitude < -180) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Ellipse", "constructor", "invalid longitude"));
+        if (center != null) {
+            this.center = new Position(center);
         }
 
-        if (minorRadius > majorRadius) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Ellipse", "constructor", "minor radius must be smaller than major radius"));
-        }
-
-        this.center = new Location(latitude, longitude);
         this.majorRadius = majorRadius;
         this.minorRadius = minorRadius;
-        this.headingDegrees = headingDegrees;
     }
 
-    public Location getCenter() {
+    /**
+     * Constructs an ellipse with a specified center position, radii, and shape attributes. The ellipse displays in the
+     * specified shape attributes, which may be modifies using {@link #setAttributes(ShapeAttributes)}. The ellipse does
+     * not display if the center position is null, or both radii are 0.0.
+     *
+     * @param center      geographic position at the ellipse's center; may be null
+     * @param majorRadius radius of the semi-major axis, in meters.
+     * @param minorRadius radius of the semi-minor axis, in meters.
+     * @param attributes  the shape attributes applied to the ellipse
+     *
+     * @throws IllegalArgumentException If either radius is negative
+     */
+    public Ellipse(Position center, double majorRadius, double minorRadius, ShapeAttributes attributes) {
+        super(attributes);
+
+        if (majorRadius < 0 || minorRadius < 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Ellipse", "constructor", "invalidRadius"));
+        }
+
+        if (center != null) {
+            this.center = new Position(center);
+        }
+
+        this.majorRadius = majorRadius;
+        this.minorRadius = minorRadius;
+    }
+
+    /**
+     * Indicates the geographic position of this ellipse's center. The position may be null, in which case the ellipse
+     * does not display.
+     *
+     * @return this ellipse's geographic center; may be null
+     */
+    public Position getCenter() {
         return this.center;
     }
 
-    public void setCenter(double latitude, double longitude) {
-        if (this.center == null) {
-            this.center = new Location(latitude, longitude);
+    /**
+     * Sets the geographic position of this ellipse's center. The position may be null, in which case the ellipse does
+     * not display.
+     *
+     * @param position the new center position; may be null
+     *
+     * @return this ellipse with its center position set to the specified position
+     */
+    public Ellipse setCenter(Position position) {
+        if (position == null) {
+            this.center = null;
+        } else if (this.center == null) {
+            this.center = new Position(position);
         } else {
-            this.center.set(latitude, longitude);
+            this.center.set(position);
         }
         this.reset();
+
+        return this;
     }
 
-    public double getMinorRadius() {
-        return this.minorRadius;
-    }
-
-    public void setMinorRadius(double minorRadius) {
-        if (minorRadius > this.majorRadius) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Ellipse", "setMinorRadius", "minor radius must be smaller than major radius"));
-        }
-        this.minorRadius = minorRadius;
-        this.reset();
-    }
-
+    /**
+     * Indicates the radius of this globe's semi-major axis. When the ellipse's heading is 0.0, the semi-major axis
+     * points East.
+     *
+     * @return the radius, in meters
+     */
     public double getMajorRadius() {
         return this.majorRadius;
     }
 
-    public void setMajorRadius(double majorRadius) {
-        if (majorRadius < this.minorRadius) {
+    /**
+     * Sets the radius of this globe's semi-major axis. When the ellipse's heading is 0.0, the semi-major axis points
+     * East.
+     *
+     * @param radius the new radius, in meters
+     *
+     * @return this ellipse with the radius of its semi-major axis set to the specified value
+     *
+     * @throws IllegalArgumentException If the radius is negative
+     */
+    public Ellipse setMajorRadius(double radius) {
+        if (radius < 0) {
             throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Ellipse", "setMajorRadius", "minor radius must be smaller than major radius"));
+                Logger.logMessage(Logger.ERROR, "Ellipse", "setMajorRadius", "invalidRadius"));
         }
-        this.majorRadius = majorRadius;
+
+        this.majorRadius = radius;
         this.reset();
+        return this;
     }
 
-    public double getHeadingDegrees() {
-        return this.headingDegrees;
+    /**
+     * Indicates the radius of this globe's semi-minor axis. When the ellipse's heading is 0.0, the semi-minor axis
+     * points North.
+     *
+     * @return the radius, in meters
+     */
+    public double getMinorRadius() {
+        return this.minorRadius;
     }
 
-    public void setHeadingDegrees(double headingDegrees) {
-        this.headingDegrees = headingDegrees;
+    /**
+     * Sets the radius of this globe's semi-minor axis. When the ellipse's heading is 0.0, the semi-minor axis points
+     * North.
+     *
+     * @param radius the new radius, in meters
+     *
+     * @return this ellipse with the radius of its semi-minor axis set to the specified value
+     *
+     * @throws IllegalArgumentException If the radius is negative
+     */
+    public Ellipse setMinorRadius(double radius) {
+        if (radius < 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Ellipse", "setMinorRadius", "invalidRadius"));
+        }
+
+        this.minorRadius = radius;
         this.reset();
+        return this;
     }
 
-    protected void reset() {
-        this.vertexArray.clear();
-        this.interiorElements.clear();
-        this.outlineElements.clear();
+    /**
+     * Indicates this ellipse's heading. When ellipse's heading is 0.0, the
+     * semi-major axis points East and the semi-minor axis points North. Headings other than 0.0 rotate the axes about
+     * the ellipse's center position, while retaining the axes relative relationship to one another.
+     *
+     * @return this ellipse's heading, in degrees clockwise from North
+     */
+    public double getHeading() {
+        return heading;
+    }
+
+    /**
+     * Sets this ellipse's heading in degrees clockwise from North. When ellipse's heading is 0.0, the
+     * semi-major axis points East and the semi-minor axis points North. Headings other than 0.0 rotate the axes about
+     * the ellipse's center position, while retaining the axes relative relationship to one another.
+     *
+     * @param degrees the new heading, in degrees clockwise from North
+     *
+     * @return this ellipse, with its heading set to the specified value
+     */
+    public Ellipse setHeading(double degrees) {
+        this.heading = degrees;
+        this.reset();
+        return this;
+    }
+
+    /**
+     * Indicates the maximum number of angular intervals that may be used to approximate this ellipse's geometry on
+     * screen.
+     *
+     * @return the number of angular intervals
+     */
+    public int getMaximumIntervals() {
+        return this.maximumIntervals;
+    }
+
+    /**
+     * Sets the maximum number of angular intervals that may be used to approximate this ellipse's on screen.
+     * <p>
+     * Ellipse may use a minimum number of intervals to ensure that its appearance on screen at least roughly
+     * approximates the ellipse's shape. When the specified number of intervals is too small, it is clamped to an
+     * implementation-defined minimum number of intervals.
+     * <p>
+     * Ellipse may require that the number of intervals is an even multiple of some integer. When the specified number
+     * of intervals does not meet this criteria, the next smallest integer that meets ellipse's criteria is used
+     * instead.
+     *
+     * @param numIntervals the number of angular intervals
+     *
+     * @return this ellipse with its number of angular intervals set to the specified value
+     *
+     * @throws IllegalArgumentException If the number of intervals is negative
+     */
+    public Ellipse setMaximumIntervals(int numIntervals) {
+        if (numIntervals < 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Ellipse", "setMaximumIntervals", "invalidNumIntervals"));
+        }
+
+        this.maximumIntervals = numIntervals;
+        this.reset();
+        return this;
     }
 
     @Override
     protected void makeDrawable(RenderContext rc) {
-        if (this.center == null || this.minorRadius == 0 || this.majorRadius == 0) {
+        if (this.center == null) {
+            return; // nothing to draw
+        }
+
+        if (this.majorRadius == 0 && this.minorRadius == 0) {
             return; // nothing to draw
         }
 
@@ -274,7 +442,7 @@ public class Ellipse extends AbstractShape {
             double arcRadius = Math.sqrt(x * x + y * y);
             // Calculate the great circle location given this intervals step (azimuthDegrees) a correction value to
             // start from an east-west aligned major axis (90.0) and the user specified user heading value
-            this.center.greatCircleLocation(azimuthDegrees + 90.0 + this.headingDegrees, arcRadius, SCRATCH);
+            this.center.greatCircleLocation(azimuthDegrees + 90.0 + this.heading, arcRadius, SCRATCH);
             this.addVertex(rc, SCRATCH.latitude, SCRATCH.longitude, 0);
             // Add the major arc radius for the spine points. Spine points are vertically coincident with exterior
             // points. The first and middle most point do not have corresponding spine points.
@@ -285,7 +453,7 @@ public class Ellipse extends AbstractShape {
 
         // Add the interior spine point vertices
         for (int i = 0; i < spinePoints; i++) {
-            this.center.greatCircleLocation(0 + 90.0 + this.headingDegrees, spineRadius[i], SCRATCH);
+            this.center.greatCircleLocation(0 + 90.0 + this.heading, spineRadius[i], SCRATCH);
             this.addVertex(rc, SCRATCH.latitude, SCRATCH.longitude, 0);
         }
 
@@ -339,5 +507,12 @@ public class Ellipse extends AbstractShape {
         this.vertexArray.add(0);
         this.vertexArray.add(0);
         this.vertexArray.add(0);
+    }
+
+    @Override
+    protected void reset() {
+        this.vertexArray.clear();
+        this.interiorElements.clear();
+        this.outlineElements.clear();
     }
 }
