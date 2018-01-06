@@ -64,6 +64,10 @@
             android:icon="@android:drawable/ic_menu_myplaces"
             android:title="@string/title_polygons"/>
         <item
+            android:id="@+id/nav_ellipse_activity"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="@string/title_ellipse"/>
+        <item
             android:id="@+id/nav_labels_activity"
             android:icon="@android:drawable/ic_menu_edit"
             android:title="@string/title_labels"/>
