@@ -35,12 +35,22 @@ import gov.nasa.worldwind.util.WWMath;
  * defined in degrees clockwise from North. Configuring ellipse with a heading of 45.0 results in the semi-major axis
  * pointing Southeast and the semi-minor axis pointing Northeast.
  * <p>
+ * <h3>Altitude Mode and Terrain Following</h3>
+ * <p>
+ * Ellipse geometry displays at a constant altitude determined by the geographic center position and altitude mode. For
+ * example, an ellipse with a center position altitude of 1km and altitude mode of ABSOLUTE displays at 1km above mean
+ * sea level. The same ellipse with an altitude mode of RELATIVE_TO_GROUND displays at 1km above ground level, relative
+ * to the ellipse's center location.
+ * <p>
+ * Surface ellipse geometry, where an ellipse appears draped across the terrain, may be achieved by enabling ellipse's
+ * terrain following state and setting its altitude mode to CLAMP_TO_GROUND. See {@link #setFollowTerrain(boolean)} and
+ * {@link #setAltitudeMode(int)}.
+ * <p>
  * <h3>Display Granularity</h3>
  * <p>
- * Ellipse's representation on screen is composed of discrete segments which approximate the ellipse's geometry. This
- * approximation is chosen such that the screen representation appears to be a continuous smooth ellipse. Applications
- * can control the maximum number of angular intervals used in this representation with {@link
- * #setMaximumIntervals(int)}.
+ * Ellipse's appearance on screen is composed of discrete segments which approximate the ellipse's geometry. This
+ * approximation is chosen such that the display appears to be a continuous smooth ellipse. Applications can control the
+ * maximum number of angular intervals used in this representation with {@link #setMaximumIntervals(int)}.
  */
 public class Ellipse extends AbstractShape {
 
@@ -67,6 +77,11 @@ public class Ellipse extends AbstractShape {
      * The ellipse's heading in degrees clockwise from North.
      */
     protected double heading;
+
+    /**
+     * Determines whether this ellipse's geometry follows the terrain surface or is fixed at a constant altitude.
+     */
+    protected boolean followTerrain;
 
     /**
      * The maximum number of angular intervals that may be used to assemble the ellipse's geometry for rendering.
@@ -276,6 +291,30 @@ public class Ellipse extends AbstractShape {
      */
     public Ellipse setHeading(double degrees) {
         this.heading = degrees;
+        this.reset();
+        return this;
+    }
+
+    /**
+     * Indicates whether this ellipse's geometry follows the terrain surface or is fixed at a constant altitude.
+     *
+     * @return true if ellipse geometry follows the terrain surface, and false otherwise
+     */
+    public boolean isFollowTerrain() {
+        return this.followTerrain;
+    }
+
+    /**
+     * Sets the terrain following state of this ellipse, which indicates whether this ellipse's geometry follows the
+     * terrain surface or is fixed at a constant altitude. By default the terrain following state is false, and ellipse
+     * geometry follows the constant altitude of its center position.
+     *
+     * @param followTerrain true to follow the terrain surface, and false otherwise
+     *
+     * @return this ellipse, with its terrain following state set to the specified value
+     */
+    public Ellipse setFollowTerrain(boolean followTerrain) {
+        this.followTerrain = followTerrain;
         this.reset();
         return this;
     }
