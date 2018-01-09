@@ -85,7 +85,7 @@ public class Ellipse extends AbstractShape {
     /**
      * The maximum number of angular intervals that may be used to assemble the ellipse's geometry for rendering.
      */
-    protected int maximumIntervals = 64;
+    protected int maximumIntervals = 256;
 
     /**
      * The number of intervals used for generating geometry. Clamped between MIN_INTERVALS and maximumIntervals and
