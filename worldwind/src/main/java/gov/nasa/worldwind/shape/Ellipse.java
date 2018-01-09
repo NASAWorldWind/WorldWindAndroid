@@ -15,6 +15,7 @@ import java.nio.ShortBuffer;
 import gov.nasa.worldwind.draw.DrawShapeState;
 import gov.nasa.worldwind.draw.DrawableSurfaceShape;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.RenderContext;
@@ -22,6 +23,7 @@ import gov.nasa.worldwind.util.FloatArray;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.ShortArray;
+import gov.nasa.worldwind.util.WWMath;
 
 /**
  * Ellipse shape defined by a geographic center position and radii for the semi-major and semi-minor axes.
@@ -85,7 +87,7 @@ public class Ellipse extends AbstractShape {
     /**
      * The maximum number of angular intervals that may be used to assemble the ellipse's geometry for rendering.
      */
-    protected int maximumIntervals = 64;
+    protected int maximumIntervals = 256;
 
     /**
      * The number of intervals used for generating geometry. Clamped between MIN_INTERVALS and maximumIntervals and
@@ -104,6 +106,8 @@ public class Ellipse extends AbstractShape {
     protected Object elementBufferKey = nextCacheKey();
 
     private static final Position SCRATCH = new Position();
+
+    protected Vec3 nearestPoint = new Vec3();
 
     protected static Object nextCacheKey() {
         return new Object();
@@ -370,7 +374,11 @@ public class Ellipse extends AbstractShape {
             return; // nothing to draw
         }
 
-        if (this.mustAssembleGeometry(rc)) {
+        // Interval count is determined by camera distance, if the interval has changed then the vertices need to be
+        // regenerated
+        int calculatedIntervals = this.calculateIntervals(rc);
+        if (this.mustAssembleGeometry(rc) || (calculatedIntervals != this.intervals)) {
+            this.intervals = calculatedIntervals;
             this.assembleGeometry(rc);
             this.assembleElements(rc);
             this.vertexBufferKey = nextCacheKey();
@@ -460,8 +468,7 @@ public class Ellipse extends AbstractShape {
     }
 
     protected void assembleGeometry(RenderContext rc) {
-        // Determine the number of intervals to use based on the circumference of the ellipse
-        this.calculateIntervals();
+        // Verify the intervals value is even
         if (this.intervals % 2 != 0) {
             this.intervals--;
         }
@@ -562,22 +569,48 @@ public class Ellipse extends AbstractShape {
         this.vertexArray.add(0);
     }
 
-    protected void calculateIntervals() {
-        double circumference = this.calculateCircumference();
-        int intervals = (int) (circumference / 700.0); // In a circle, this would generate an interval every 700m
-        if (intervals < MIN_INTERVALS) {
-            this.intervals = MIN_INTERVALS;
-        } else if (intervals < this.maximumIntervals) {
-            this.intervals = intervals;
-        } else {
-            this.intervals = this.maximumIntervals;
+    protected int calculateIntervals(RenderContext rc) {
+        // On shape initiation the boundingSector has not been determined
+        if (this.boundingSector.isEmpty()) {
+            return MIN_INTERVALS;
         }
+
+        double distance = this.distanceToCamera(rc);
+        int intervals = (int) (33709613.0 / distance); // The nominator value was determined through empirical testing
+        // Intervals must be divisible by two, this check is repeated in the assembleGeometry method
+        if (intervals % 2 != 0) {
+            intervals--;
+        }
+
+        if (intervals > this.maximumIntervals) {
+            intervals = this.maximumIntervals;
+        }
+
+        if (intervals < MIN_INTERVALS) {
+            intervals = MIN_INTERVALS;
+        }
+
+        return intervals;
     }
 
-    private double calculateCircumference() {
-        double a = this.majorRadius;
-        double b = this.minorRadius;
-        return Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
+    private double distanceToCamera(RenderContext rc) {
+        // implementation borrowed from Tile
+        // determine the nearest latitude
+        double nearestLat = WWMath.clamp(rc.camera.latitude, this.boundingSector.minLatitude(), this.boundingSector.maxLatitude());
+        // determine the nearest longitude and account for the antimeridian discontinuity
+        double nearestLon;
+        double lonDifference = rc.camera.longitude - this.boundingSector.centroidLongitude();
+        if (lonDifference < -180.0) {
+            nearestLon = this.boundingSector.maxLongitude();
+        } else if (lonDifference > 180.0) {
+            nearestLon = this.boundingSector.minLongitude();
+        } else {
+            nearestLon = WWMath.clamp(rc.camera.longitude, this.boundingSector.minLongitude(), this.boundingSector.maxLongitude());
+        }
+
+        rc.geographicToCartesian(nearestLat, nearestLon, 0, this.altitudeMode, this.nearestPoint);
+
+        return rc.cameraPoint.distanceTo(this.nearestPoint);
     }
 
     @Override
