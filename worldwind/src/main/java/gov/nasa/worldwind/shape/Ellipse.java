@@ -22,7 +22,6 @@ import gov.nasa.worldwind.util.FloatArray;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.ShortArray;
-import gov.nasa.worldwind.util.WWMath;
 
 /**
  * Ellipse shape defined by a geographic center position and radii for the semi-major and semi-minor axes.
@@ -88,6 +87,10 @@ public class Ellipse extends AbstractShape {
      */
     protected int maximumIntervals = 64;
 
+    /**
+     * The number of intervals used for generating geometry. Clamped between MIN_INTERVALS and maximumIntervals and
+     * based on the circumference of the ellipse in planar geometry. Will always be even.
+     */
     protected int intervals;
 
     protected FloatArray vertexArray = new FloatArray();
@@ -458,8 +461,7 @@ public class Ellipse extends AbstractShape {
 
     protected void assembleGeometry(RenderContext rc) {
         // Determine the number of intervals to use based on the circumference of the ellipse
-        double circumference = Math.PI * (3 * (this.majorRadius + this.minorRadius) - Math.sqrt((3 * this.majorRadius + this.minorRadius) * (this.majorRadius + 3 * this.minorRadius)));
-        this.intervals = (int) WWMath.clamp(circumference / 50000.0, MIN_INTERVALS, this.maximumIntervals);
+        this.calculateIntervals();
         if (this.intervals % 2 != 0) {
             this.intervals--;
         }
@@ -558,6 +560,24 @@ public class Ellipse extends AbstractShape {
         this.vertexArray.add(0);
         this.vertexArray.add(0);
         this.vertexArray.add(0);
+    }
+
+    protected void calculateIntervals() {
+        double circumference = this.calculateCircumference();
+        int intervals = (int) (circumference / 700.0); // In a circle, this would generate an interval every 700m
+        if (intervals < MIN_INTERVALS) {
+            this.intervals = MIN_INTERVALS;
+        } else if (intervals < this.maximumIntervals) {
+            this.intervals = intervals;
+        } else {
+            this.intervals = this.maximumIntervals;
+        }
+    }
+
+    private double calculateCircumference() {
+        double a = this.majorRadius;
+        double b = this.minorRadius;
+        return Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
     }
 
     @Override
