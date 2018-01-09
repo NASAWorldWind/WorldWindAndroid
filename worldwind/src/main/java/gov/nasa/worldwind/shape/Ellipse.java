@@ -88,8 +88,8 @@ public class Ellipse extends AbstractShape {
     protected int maximumIntervals = 64;
 
     /**
-     * The number of intervals used for generating geometry. Clamped between MIN_INTERVALS and maximumIntervals and
-     * based on the circumference of the ellipse in planar geometry. Will always be even.
+     * The number of intervals used for generating geometry. Clamped between MIN_INTERVALS and maximumIntervals. Will
+     * always be even.
      */
     protected int intervals;
 
@@ -460,8 +460,8 @@ public class Ellipse extends AbstractShape {
     }
 
     protected void assembleGeometry(RenderContext rc) {
-        // Determine the number of intervals to use based on the circumference of the ellipse
-        this.calculateIntervals();
+        // Determine the number of intervals to use based on the maximum interval value
+        this.intervals = Math.max(MIN_INTERVALS, this.maximumIntervals);
         if (this.intervals % 2 != 0) {
             this.intervals--;
         }
@@ -560,24 +560,6 @@ public class Ellipse extends AbstractShape {
         this.vertexArray.add(0);
         this.vertexArray.add(0);
         this.vertexArray.add(0);
-    }
-
-    protected void calculateIntervals() {
-        double circumference = this.calculateCircumference();
-        int intervals = (int) (circumference / 700.0); // In a circle, this would generate an interval every 700m
-        if (intervals < MIN_INTERVALS) {
-            this.intervals = MIN_INTERVALS;
-        } else if (intervals < this.maximumIntervals) {
-            this.intervals = intervals;
-        } else {
-            this.intervals = this.maximumIntervals;
-        }
-    }
-
-    private double calculateCircumference() {
-        double a = this.majorRadius;
-        double b = this.minorRadius;
-        return Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
     }
 
     @Override
