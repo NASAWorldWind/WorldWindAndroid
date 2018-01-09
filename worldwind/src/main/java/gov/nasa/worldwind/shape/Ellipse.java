@@ -468,7 +468,7 @@ public class Ellipse extends AbstractShape {
     }
 
     protected void assembleGeometry(RenderContext rc) {
-        // Determine the number of intervals to use based on the circumference of the ellipse
+        // Verify the intervals value is even
         if (this.intervals % 2 != 0) {
             this.intervals--;
         }
