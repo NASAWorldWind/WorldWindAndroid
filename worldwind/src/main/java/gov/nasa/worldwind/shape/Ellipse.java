@@ -15,6 +15,7 @@ import java.nio.ShortBuffer;
 import gov.nasa.worldwind.draw.DrawShapeState;
 import gov.nasa.worldwind.draw.DrawableSurfaceShape;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.RenderContext;
@@ -22,6 +23,7 @@ import gov.nasa.worldwind.util.FloatArray;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.ShortArray;
+import gov.nasa.worldwind.util.WWMath;
 
 /**
  * Ellipse shape defined by a geographic center position and radii for the semi-major and semi-minor axes.
@@ -83,6 +85,12 @@ public class Ellipse extends AbstractShape {
     protected boolean followTerrain;
 
     /**
+     * The maximum pixels a single edge interval will span before the number of intevals is increased. Increasing this
+     * value will make ellipses appear coarser.
+     */
+    protected double maximumPixelsPerInterval = 50;
+
+    /**
      * The maximum number of angular intervals that may be used to assemble the ellipse's geometry for rendering.
      */
     protected int maximumIntervals = 256;
@@ -103,7 +111,9 @@ public class Ellipse extends AbstractShape {
 
     protected Object elementBufferKey = nextCacheKey();
 
-    private static final Position SCRATCH = new Position();
+    protected static final Position POSITION = new Position();
+
+    protected static final Vec3 POINT = new Vec3();
 
     protected static Object nextCacheKey() {
         return new Object();
@@ -323,6 +333,37 @@ public class Ellipse extends AbstractShape {
     }
 
     /**
+     * Indiciates the idealized maximum pixels a single edge interval will span on the screen.
+     *
+     * @return the maximum pixels per edge element
+     */
+    public double getMaximumPixelsPerInterval() {
+        return this.maximumPixelsPerInterval;
+    }
+
+    /**
+     * Sets the maximum pixels per interval.
+     * <p>
+     * Ellipse dynamically determines the number of intervals or segments used for visualizing the shape. This property
+     * dictates the maximum pixels a single edge should span. If a shapes geometry indicates a single edge will exceed
+     * this value, the shape geometery is regenerated with additional intervals.
+     * </p>
+     *
+     * @param maximumPixelsPerInterval
+     *
+     * @return
+     */
+    public Ellipse setMaximumPixelsPerInterval(double maximumPixelsPerInterval) {
+        if (maximumPixelsPerInterval < 0) {
+            throw new IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Ellipse", "setMaximumPixelsPerInterval", "maximum pixels per interval must be positive"));
+        }
+
+        this.maximumPixelsPerInterval = maximumPixelsPerInterval;
+        return this;
+    }
+
+    /**
      * Indicates the maximum number of angular intervals that may be used to approximate this ellipse's geometry on
      * screen.
      *
@@ -456,12 +497,23 @@ public class Ellipse extends AbstractShape {
     }
 
     protected boolean mustAssembleGeometry(RenderContext rc) {
-        return this.vertexArray.size() == 0;
+        int calculatedIntervals = this.calculateIntervals(rc);
+        if (this.vertexArray.size() == 0 || calculatedIntervals != this.intervals) {
+            this.intervals = calculatedIntervals;
+            return true;
+        }
+
+        return false;
     }
 
     protected void assembleGeometry(RenderContext rc) {
+        // Clear the shape's vertex array and element arrays. These arrays will accumulate values as the shapes's
+        // geometry is assembled.
+        this.vertexArray.clear();
+        this.interiorElements.clear();
+        this.outlineElements.clear();
+
         // Determine the number of intervals to use based on the maximum interval value
-        this.intervals = Math.max(MIN_INTERVALS, this.maximumIntervals);
         if (this.intervals % 2 != 0) {
             this.intervals--;
         }
@@ -495,8 +547,8 @@ public class Ellipse extends AbstractShape {
             double arcRadius = Math.sqrt(x * x + y * y);
             // Calculate the great circle location given this intervals step (azimuthDegrees) a correction value to
             // start from an east-west aligned major axis (90.0) and the user specified user heading value
-            this.center.greatCircleLocation(azimuthDegrees + headingAdjustment + this.heading, arcRadius, SCRATCH);
-            this.addVertex(rc, SCRATCH.latitude, SCRATCH.longitude, 0);
+            this.center.greatCircleLocation(azimuthDegrees + headingAdjustment + this.heading, arcRadius, POSITION);
+            this.addVertex(rc, POSITION.latitude, POSITION.longitude, 0);
             // Add the major arc radius for the spine points. Spine points are vertically coincident with exterior
             // points. The first and middle most point do not have corresponding spine points.
             if (i > 0 && i < this.intervals / 2) {
@@ -506,8 +558,8 @@ public class Ellipse extends AbstractShape {
 
         // Add the interior spine point vertices
         for (int i = 0; i < spinePoints; i++) {
-            this.center.greatCircleLocation(0 + headingAdjustment + this.heading, spineRadius[i], SCRATCH);
-            this.addVertex(rc, SCRATCH.latitude, SCRATCH.longitude, 0);
+            this.center.greatCircleLocation(0 + headingAdjustment + this.heading, spineRadius[i], POSITION);
+            this.addVertex(rc, POSITION.latitude, POSITION.longitude, 0);
         }
 
 
@@ -560,6 +612,68 @@ public class Ellipse extends AbstractShape {
         this.vertexArray.add(0);
         this.vertexArray.add(0);
         this.vertexArray.add(0);
+    }
+
+    protected int calculateIntervals(RenderContext rc) {
+        double distanceToCamera = this.distanceToCamera(rc);
+        double pixelSizeAtDistance = rc.pixelSizeAtDistance(distanceToCamera);
+        double circumference = this.calculateCircumference();
+
+        int calculatedIntervals = MIN_INTERVALS;
+        while (calculatedIntervals < this.maximumIntervals) {
+            double metersPerInterval = circumference / calculatedIntervals;
+            if (metersPerInterval > pixelSizeAtDistance * this.maximumPixelsPerInterval) {
+                calculatedIntervals *= 2;
+            } else {
+                break;
+            }
+        }
+
+        // Intervals must be divisible by two, this check is repeated in the assembleGeometry method
+        if (calculatedIntervals % 2 != 0) {
+            calculatedIntervals--;
+        }
+
+        if (calculatedIntervals > this.maximumIntervals) {
+            calculatedIntervals = this.maximumIntervals;
+        }
+
+        if (calculatedIntervals < MIN_INTERVALS) {
+            calculatedIntervals = MIN_INTERVALS;
+        }
+
+        return calculatedIntervals;
+    }
+
+    protected double distanceToCamera(RenderContext rc) {
+        if (this.boundingSector.isEmpty()) {
+            Vec3 point = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
+            return point.distanceTo(rc.cameraPoint);
+        }
+
+        // borrowed from the Tile class
+        // determine the nearest latitude
+        double nearestLat = WWMath.clamp(rc.camera.latitude, this.boundingSector.minLatitude(), this.boundingSector.maxLatitude());
+        // determine the nearest longitude and account for the antimeridian discontinuity
+        double nearestLon;
+        double lonDifference = rc.camera.longitude - this.boundingSector.centroidLongitude();
+        if (lonDifference < -180.0) {
+            nearestLon = this.boundingSector.maxLongitude();
+        } else if (lonDifference > 180.0) {
+            nearestLon = this.boundingSector.minLongitude();
+        } else {
+            nearestLon = WWMath.clamp(rc.camera.longitude, this.boundingSector.minLongitude(), this.boundingSector.maxLongitude());
+        }
+
+        rc.geographicToCartesian(nearestLat, nearestLon, this.center.altitude, this.altitudeMode, POINT);
+
+        return rc.cameraPoint.distanceTo(POINT);
+    }
+
+    private double calculateCircumference() {
+        double a = this.majorRadius;
+        double b = this.minorRadius;
+        return Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
     }
 
     @Override
