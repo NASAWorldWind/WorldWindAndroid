@@ -595,7 +595,7 @@ public class Ellipse extends AbstractShape {
         Vec3 centerPoint = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
         double maxRadius = Math.max(this.majorRadius, this.minorRadius);
         double cameraDistance = centerPoint.distanceTo(rc.cameraPoint) - maxRadius;
-        if (cameraDistance < 0) {
+        if (cameraDistance <= 0) {
             return this.maximumIntervals; // use the maximum number of intervals when the camera is very close
         }
 
