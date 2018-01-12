@@ -332,37 +332,6 @@ public class Ellipse extends AbstractShape {
     }
 
     /**
-     * Indiciates the idealized maximum pixels a single edge interval will span on the screen.
-     *
-     * @return the maximum pixels per edge element
-     */
-    public double getMaximumPixelsPerInterval() {
-        return this.maximumPixelsPerInterval;
-    }
-
-    /**
-     * Sets the maximum pixels per interval.
-     * <p>
-     * Ellipse dynamically determines the number of intervals or segments used for visualizing the shape. This property
-     * dictates the maximum pixels a single edge should span. If a shapes geometry indicates a single edge will exceed
-     * this value, the shape geometery is regenerated with additional intervals.
-     * </p>
-     *
-     * @param maximumPixelsPerInterval
-     *
-     * @return
-     */
-    public Ellipse setMaximumPixelsPerInterval(double maximumPixelsPerInterval) {
-        if (maximumPixelsPerInterval < 0) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Ellipse", "setMaximumPixelsPerInterval", "maximum pixels per interval must be positive"));
-        }
-
-        this.maximumPixelsPerInterval = maximumPixelsPerInterval;
-        return this;
-    }
-
-    /**
      * Indicates the maximum number of angular intervals that may be used to approximate this ellipse's geometry on
      * screen.
      *
@@ -622,18 +591,13 @@ public class Ellipse extends AbstractShape {
             return intervals; // use at least the minimum number of intervals
         }
 
-        double cameraDistance;
-        if (this.boundingSector.isEmpty()) {
-            Vec3 point = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
-            cameraDistance = point.distanceTo(rc.cameraPoint);
-        } else {
-            cameraDistance = this.cameraDistanceGeographic(rc, this.boundingSector);
-        }
+        Vec3 point = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
+        double cameraDistance = Math.max(0, point.distanceTo(rc.cameraPoint) - Math.max(this.majorRadius, this.minorRadius));
         double metersPerPixel = rc.pixelSizeAtDistance(cameraDistance);
         double circumferencePixels = this.computeCircumference() / metersPerPixel;
         double circumferenceIntervals = circumferencePixels / this.maximumPixelsPerInterval;
 
-        double subdivisions = Math.log(circumferenceIntervals / MIN_INTERVALS) / Math.log(2);
+        double subdivisions = Math.log(circumferenceIntervals / intervals) / Math.log(2);
         int subdivisonCount = Math.max(0, (int) Math.ceil(subdivisions));
         intervals <<= subdivisonCount;
 
