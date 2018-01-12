@@ -23,7 +23,6 @@ import gov.nasa.worldwind.util.FloatArray;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.ShortArray;
-import gov.nasa.worldwind.util.WWMath;
 
 /**
  * Ellipse shape defined by a geographic center position and radii for the semi-major and semi-minor axes.
@@ -615,8 +614,14 @@ public class Ellipse extends AbstractShape {
     }
 
     protected int calculateIntervals(RenderContext rc) {
-        double distanceToCamera = this.distanceToCamera(rc);
-        double pixelSizeAtDistance = rc.pixelSizeAtDistance(distanceToCamera);
+        double distanceToCameraMeters;
+        if (this.boundingSector.isEmpty()) {
+            Vec3 point = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
+            distanceToCameraMeters = point.distanceTo(rc.cameraPoint);
+        } else {
+            distanceToCameraMeters = this.cameraDistanceGeographic(rc, this.boundingSector);
+        }
+        double pixelSizeAtDistance = rc.pixelSizeAtDistance(distanceToCameraMeters);
         double circumference = this.calculateCircumference();
 
         int calculatedIntervals = MIN_INTERVALS;
@@ -643,31 +648,6 @@ public class Ellipse extends AbstractShape {
         }
 
         return calculatedIntervals;
-    }
-
-    protected double distanceToCamera(RenderContext rc) {
-        if (this.boundingSector.isEmpty()) {
-            Vec3 point = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
-            return point.distanceTo(rc.cameraPoint);
-        }
-
-        // borrowed from the Tile class
-        // determine the nearest latitude
-        double nearestLat = WWMath.clamp(rc.camera.latitude, this.boundingSector.minLatitude(), this.boundingSector.maxLatitude());
-        // determine the nearest longitude and account for the antimeridian discontinuity
-        double nearestLon;
-        double lonDifference = rc.camera.longitude - this.boundingSector.centroidLongitude();
-        if (lonDifference < -180.0) {
-            nearestLon = this.boundingSector.maxLongitude();
-        } else if (lonDifference > 180.0) {
-            nearestLon = this.boundingSector.minLongitude();
-        } else {
-            nearestLon = WWMath.clamp(rc.camera.longitude, this.boundingSector.minLongitude(), this.boundingSector.maxLongitude());
-        }
-
-        rc.geographicToCartesian(nearestLat, nearestLon, this.center.altitude, this.altitudeMode, POINT);
-
-        return rc.cameraPoint.distanceTo(POINT);
     }
 
     private double calculateCircumference() {
