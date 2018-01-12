@@ -15,6 +15,7 @@ import java.nio.ShortBuffer;
 import gov.nasa.worldwind.draw.DrawShapeState;
 import gov.nasa.worldwind.draw.DrawableSurfaceShape;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.RenderContext;
@@ -83,9 +84,15 @@ public class Ellipse extends AbstractShape {
     protected boolean followTerrain;
 
     /**
+     * The maximum pixels a single edge interval will span before the number of intevals is increased. Increasing this
+     * value will make ellipses appear coarser.
+     */
+    protected double maximumPixelsPerInterval = 50;
+
+    /**
      * The maximum number of angular intervals that may be used to assemble the ellipse's geometry for rendering.
      */
-    protected int maximumIntervals = 64;
+    protected int maximumIntervals = 256;
 
     /**
      * The number of intervals used for generating geometry. Clamped between MIN_INTERVALS and maximumIntervals. Will
@@ -103,7 +110,9 @@ public class Ellipse extends AbstractShape {
 
     protected Object elementBufferKey = nextCacheKey();
 
-    private static final Position SCRATCH = new Position();
+    protected static final Position POSITION = new Position();
+
+    protected static final Vec3 POINT = new Vec3();
 
     protected static Object nextCacheKey() {
         return new Object();
@@ -385,7 +394,6 @@ public class Ellipse extends AbstractShape {
         drawState = drawable.drawState;
         drawable.sector.set(this.boundingSector);
 
-
         // Use the basic GLSL program to draw the shape.
         drawState.program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
         if (drawState.program == null) {
@@ -456,15 +464,22 @@ public class Ellipse extends AbstractShape {
     }
 
     protected boolean mustAssembleGeometry(RenderContext rc) {
-        return this.vertexArray.size() == 0;
+        int calculatedIntervals = this.computeIntervals(rc);
+        int sanitzedIntervals = this.sanitizeIntervals(calculatedIntervals);
+        if (this.vertexArray.size() == 0 || sanitzedIntervals != this.intervals) {
+            this.intervals = sanitzedIntervals;
+            return true;
+        }
+
+        return false;
     }
 
     protected void assembleGeometry(RenderContext rc) {
-        // Determine the number of intervals to use based on the maximum interval value
-        this.intervals = Math.max(MIN_INTERVALS, this.maximumIntervals);
-        if (this.intervals % 2 != 0) {
-            this.intervals--;
-        }
+        // Clear the shape's vertex array and element arrays. These arrays will accumulate values as the shapes's
+        // geometry is assembled.
+        this.vertexArray.clear();
+        this.interiorElements.clear();
+        this.outlineElements.clear();
 
         // Determine the number of spine points and construct radius value holding array
         int spinePoints = this.intervals / 2 - 1; // intervals must be even
@@ -495,8 +510,8 @@ public class Ellipse extends AbstractShape {
             double arcRadius = Math.sqrt(x * x + y * y);
             // Calculate the great circle location given this intervals step (azimuthDegrees) a correction value to
             // start from an east-west aligned major axis (90.0) and the user specified user heading value
-            this.center.greatCircleLocation(azimuthDegrees + headingAdjustment + this.heading, arcRadius, SCRATCH);
-            this.addVertex(rc, SCRATCH.latitude, SCRATCH.longitude, 0);
+            this.center.greatCircleLocation(azimuthDegrees + headingAdjustment + this.heading, arcRadius, POSITION);
+            this.addVertex(rc, POSITION.latitude, POSITION.longitude, 0);
             // Add the major arc radius for the spine points. Spine points are vertically coincident with exterior
             // points. The first and middle most point do not have corresponding spine points.
             if (i > 0 && i < this.intervals / 2) {
@@ -506,8 +521,8 @@ public class Ellipse extends AbstractShape {
 
         // Add the interior spine point vertices
         for (int i = 0; i < spinePoints; i++) {
-            this.center.greatCircleLocation(0 + headingAdjustment + this.heading, spineRadius[i], SCRATCH);
-            this.addVertex(rc, SCRATCH.latitude, SCRATCH.longitude, 0);
+            this.center.greatCircleLocation(0 + headingAdjustment + this.heading, spineRadius[i], POSITION);
+            this.addVertex(rc, POSITION.latitude, POSITION.longitude, 0);
         }
 
 
@@ -560,6 +575,46 @@ public class Ellipse extends AbstractShape {
         this.vertexArray.add(0);
         this.vertexArray.add(0);
         this.vertexArray.add(0);
+    }
+
+    /**
+     * Calculate the number of times to split the edges of the shape for geometry assembly.
+     *
+     * @param rc current RenderContext
+     *
+     * @return an even number of intervals
+     */
+    protected int computeIntervals(RenderContext rc) {
+        int intervals = MIN_INTERVALS;
+        if (intervals >= this.maximumIntervals) {
+            return intervals; // use at least the minimum number of intervals
+        }
+
+        Vec3 centerPoint = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
+        double maxRadius = Math.max(this.majorRadius, this.minorRadius);
+        double cameraDistance = centerPoint.distanceTo(rc.cameraPoint) - maxRadius;
+        if (cameraDistance <= 0) {
+            return this.maximumIntervals; // use the maximum number of intervals when the camera is very close
+        }
+
+        double metersPerPixel = rc.pixelSizeAtDistance(cameraDistance);
+        double circumferencePixels = this.computeCircumference() / metersPerPixel;
+        double circumferenceIntervals = circumferencePixels / this.maximumPixelsPerInterval;
+        double subdivisions = Math.log(circumferenceIntervals / intervals) / Math.log(2);
+        int subdivisonCount = Math.max(0, (int) Math.ceil(subdivisions));
+        intervals <<= subdivisonCount; // subdivide the base intervals to achieve the desired number of intervals
+
+        return Math.min(intervals, this.maximumIntervals); // don't exceed the maximum number of intervals
+    }
+
+    protected int sanitizeIntervals(int intervals) {
+        return (intervals % 2) == 0 ? intervals : intervals - 1;
+    }
+
+    protected double computeCircumference() {
+        double a = this.majorRadius;
+        double b = this.minorRadius;
+        return Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
     }
 
     @Override
