@@ -496,7 +496,7 @@ public class Ellipse extends AbstractShape {
     }
 
     protected boolean mustAssembleGeometry(RenderContext rc) {
-        int calculatedIntervals = this.calculateIntervals(rc);
+        int calculatedIntervals = this.computeIntervals(rc);
         if (this.vertexArray.size() == 0 || calculatedIntervals != this.intervals) {
             this.intervals = calculatedIntervals;
             return true;
@@ -616,7 +616,7 @@ public class Ellipse extends AbstractShape {
      *
      * @return an even number of intervals
      */
-    protected int calculateIntervals(RenderContext rc) {
+    protected int computeIntervals(RenderContext rc) {
         if (this.maximumIntervals < MIN_INTERVALS) {
             return MIN_INTERVALS;
         }
@@ -629,7 +629,7 @@ public class Ellipse extends AbstractShape {
             distanceToCameraMeters = this.cameraDistanceGeographic(rc, this.boundingSector);
         }
         double pixelSizeAtDistance = rc.pixelSizeAtDistance(distanceToCameraMeters);
-        double circumference = this.calculateCircumference();
+        double circumference = this.computeCircumference();
 
         int calculatedIntervals = MIN_INTERVALS;
         while (calculatedIntervals < this.maximumIntervals) {
@@ -649,7 +649,7 @@ public class Ellipse extends AbstractShape {
         return Math.min(calculatedIntervals, this.maximumIntervals);
     }
 
-    private double calculateCircumference() {
+    private double computeCircumference() {
         double a = this.majorRadius;
         double b = this.minorRadius;
         return Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
