@@ -617,36 +617,34 @@ public class Ellipse extends AbstractShape {
      * @return an even number of intervals
      */
     protected int computeIntervals(RenderContext rc) {
-        if (this.maximumIntervals < MIN_INTERVALS) {
-            return MIN_INTERVALS;
+        if (MIN_INTERVALS >= this.maximumIntervals) {
+            return MIN_INTERVALS; // use at least the minimum number of intervals
         }
 
-        double distanceToCameraMeters;
+        double cameraDistance;
         if (this.boundingSector.isEmpty()) {
             Vec3 point = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
-            distanceToCameraMeters = point.distanceTo(rc.cameraPoint);
+            cameraDistance = point.distanceTo(rc.cameraPoint);
         } else {
-            distanceToCameraMeters = this.cameraDistanceGeographic(rc, this.boundingSector);
+            cameraDistance = this.cameraDistanceGeographic(rc, this.boundingSector);
         }
-        double pixelSizeAtDistance = rc.pixelSizeAtDistance(distanceToCameraMeters);
-        double circumference = this.computeCircumference();
+        double metersPerPixel = rc.pixelSizeAtDistance(cameraDistance);
+        double circumferencePixels = this.computeCircumference() / metersPerPixel;
+        double circumferenceIntervals = circumferencePixels / this.maximumPixelsPerInterval;
 
-        int calculatedIntervals = MIN_INTERVALS;
-        while (calculatedIntervals < this.maximumIntervals) {
-            double metersPerInterval = circumference / calculatedIntervals;
-            if (metersPerInterval > pixelSizeAtDistance * this.maximumPixelsPerInterval) {
-                calculatedIntervals *= 2;
-            } else {
-                break;
-            }
-        }
+        double level = Math.log(circumferenceIntervals / MIN_INTERVALS) / Math.log(2);
+        int levelNumber = Math.max(0, (int) Math.ceil(level));
+        int intervals = MIN_INTERVALS << levelNumber;
 
-        // Intervals must be divisible by two
-        if (calculatedIntervals % 2 != 0) {
-            calculatedIntervals--;
+        if (intervals > this.maximumIntervals) {
+            intervals = this.maximumIntervals; // don't exceed the maximum number of intervals
         }
 
-        return Math.min(calculatedIntervals, this.maximumIntervals);
+        if (intervals % 2 != 0) {
+            intervals--; // ensure that number of intervals is divisible by two
+        }
+
+        return intervals;
     }
 
     private double computeCircumference() {
