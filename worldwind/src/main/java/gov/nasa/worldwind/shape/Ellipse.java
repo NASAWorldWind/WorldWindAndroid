@@ -587,12 +587,19 @@ public class Ellipse extends AbstractShape {
      */
     protected int computeIntervals(RenderContext rc) {
         int intervals = MIN_INTERVALS;
-        if (intervals >= this.maximumIntervals) {
+        int maxIntervals = (this.maximumIntervals % 2 == 0) ? this.maximumIntervals : this.maximumIntervals - 1;
+
+        if (intervals >= maxIntervals) {
             return intervals; // use at least the minimum number of intervals
         }
 
         Vec3 point = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
-        double cameraDistance = Math.max(0, point.distanceTo(rc.cameraPoint) - Math.max(this.majorRadius, this.minorRadius));
+        double maxRadius = Math.max(this.majorRadius, this.minorRadius);
+        double cameraDistance = point.distanceTo(rc.cameraPoint) - maxRadius;
+        if (cameraDistance <= 0) {
+            return maxIntervals; // use the maximum number of intervals when the camera is very close
+        }
+
         double metersPerPixel = rc.pixelSizeAtDistance(cameraDistance);
         double circumferencePixels = this.computeCircumference() / metersPerPixel;
         double circumferenceIntervals = circumferencePixels / this.maximumPixelsPerInterval;
@@ -601,15 +608,7 @@ public class Ellipse extends AbstractShape {
         int subdivisonCount = Math.max(0, (int) Math.ceil(subdivisions));
         intervals <<= subdivisonCount;
 
-        if (intervals > this.maximumIntervals) {
-            intervals = this.maximumIntervals; // don't exceed the maximum number of intervals
-        }
-
-        if (intervals % 2 != 0) {
-            intervals--; // ensure that number of intervals is divisible by two
-        }
-
-        return intervals;
+        return Math.min(intervals, maxIntervals); // don't exceed the maximum number of intervals
     }
 
     private double computeCircumference() {
