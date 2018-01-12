@@ -15,6 +15,7 @@ import java.nio.ShortBuffer;
 import gov.nasa.worldwind.draw.DrawShapeState;
 import gov.nasa.worldwind.draw.DrawableSurfaceShape;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.RenderContext;
@@ -102,6 +103,8 @@ public class Ellipse extends AbstractShape {
     protected Object vertexBufferKey = nextCacheKey();
 
     protected Object elementBufferKey = nextCacheKey();
+
+    protected Vec3 vertexOrigin = new Vec3();
 
     private static final Position SCRATCH = new Position();
 
@@ -385,7 +388,6 @@ public class Ellipse extends AbstractShape {
         drawState = drawable.drawState;
         drawable.sector.set(this.boundingSector);
 
-
         // Use the basic GLSL program to draw the shape.
         drawState.program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
         if (drawState.program == null) {
@@ -416,8 +418,8 @@ public class Ellipse extends AbstractShape {
         this.drawInterior(rc, drawState);
         this.drawOutline(rc, drawState);
 
-        // Configure the drawable according to the shape's attributes. Disable triangle backface culling when we're
-        // displaying a polygon without extruded sides, so we want to draw the top and the bottom.
+        // Configure the drawable according to the shape's attributes.
+        drawState.vertexOrigin.set(this.vertexOrigin);
         drawState.vertexStride = VERTEX_STRIDE * 4; // stride in bytes
         drawState.enableCullFace = false;
         drawState.enableDepthTest = this.activeAttributes.depthTest;
@@ -466,6 +468,9 @@ public class Ellipse extends AbstractShape {
             this.intervals--;
         }
 
+        // Use the ellipse's center position as the local origin for vertex positions.
+        this.vertexOrigin.set(this.center.longitude, this.center.latitude, this.center.altitude);
+
         // Determine the number of spine points and construct radius value holding array
         int spinePoints = this.intervals / 2 - 1; // intervals must be even
         int spineIdx = 0;
@@ -510,10 +515,10 @@ public class Ellipse extends AbstractShape {
             this.addVertex(rc, SCRATCH.latitude, SCRATCH.longitude, 0);
         }
 
-
-        // Compute the shape's bounding box or bounding sector from its assembled coordinates.
+        // Compute the shape's bounding sector from its assembled coordinates.
         this.boundingSector.setEmpty();
         this.boundingSector.union(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
+        this.boundingSector.translate(this.vertexOrigin.y /*lat*/, this.vertexOrigin.x /*lon*/);
         this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
     }
 
@@ -553,9 +558,9 @@ public class Ellipse extends AbstractShape {
     }
 
     protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude) {
-        this.vertexArray.add((float) longitude);
-        this.vertexArray.add((float) latitude);
-        this.vertexArray.add((float) altitude);
+        this.vertexArray.add((float) (longitude - this.vertexOrigin.x));
+        this.vertexArray.add((float) (latitude - this.vertexOrigin.y));
+        this.vertexArray.add((float) (altitude - this.vertexOrigin.z));
         // reserved for future texture coordinate use
         this.vertexArray.add(0);
         this.vertexArray.add(0);

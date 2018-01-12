@@ -702,4 +702,18 @@ public class Sector {
 
         return this;
     }
+
+    /**
+     * TODO
+     * @param deltaLatitude
+     * @param deltaLongitude
+     * @return
+     */
+    public Sector translate(double deltaLatitude, double deltaLongitude) {
+        this.minLatitude += deltaLatitude;
+        this.maxLatitude += deltaLatitude;
+        this.minLongitude += deltaLongitude;
+        this.maxLongitude += deltaLongitude;
+        return this;
+    }
 }

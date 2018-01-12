@@ -294,6 +294,7 @@ public class Path extends AbstractShape {
         if (this.isSurfaceShape) {
             this.boundingSector.setEmpty();
             this.boundingSector.union(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
+            this.boundingSector.translate(this.vertexOrigin.y /*latitude*/, this.vertexOrigin.x /*longitude*/);
             this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
         } else {
             this.boundingBox.setToPoints(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
@@ -350,19 +351,23 @@ public class Path extends AbstractShape {
         int vertex = this.vertexArray.size() / VERTEX_STRIDE;
         Vec3 point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, this.point);
 
-        if (this.vertexArray.size() == 0) {
-            this.vertexOrigin.set(point);
-            this.prevPoint.set(point);
+        if (vertex == 0) {
+            if (this.isSurfaceShape) {
+                this.vertexOrigin.set(longitude, latitude, altitude);
+            } else {
+                this.vertexOrigin.set(point);
+            }
             this.texCoord1d = 0;
+            this.prevPoint.set(point);
         } else {
             this.texCoord1d += point.distanceTo(this.prevPoint);
             this.prevPoint.set(point);
         }
 
         if (this.isSurfaceShape) {
-            this.vertexArray.add((float) longitude);
-            this.vertexArray.add((float) latitude);
-            this.vertexArray.add((float) altitude);
+            this.vertexArray.add((float) (longitude - this.vertexOrigin.x));
+            this.vertexArray.add((float) (latitude - this.vertexOrigin.y));
+            this.vertexArray.add((float) (altitude - this.vertexOrigin.z));
             this.vertexArray.add((float) this.texCoord1d);
             this.outlineElements.add((short) vertex);
         } else {
@@ -374,7 +379,6 @@ public class Path extends AbstractShape {
 
             if (this.extrude) {
                 point = rc.geographicToCartesian(latitude, longitude, 0, this.altitudeMode, this.point);
-
                 this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
                 this.vertexArray.add((float) (point.y - this.vertexOrigin.y));
                 this.vertexArray.add((float) (point.z - this.vertexOrigin.z));
