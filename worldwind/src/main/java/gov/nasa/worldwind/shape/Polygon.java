@@ -109,7 +109,7 @@ public class Polygon extends AbstractShape {
 
     private Matrix3 texCoordMatrix = new Matrix3();
 
-    private Matrix4 modelToTexCoord2d = new Matrix4();
+    private Matrix4 modelToTexCoord = new Matrix4();
 
     private Location intermediateLocation = new Location();
 
@@ -537,7 +537,7 @@ public class Polygon extends AbstractShape {
     protected int addVertex(RenderContext rc, double latitude, double longitude, double altitude, int type) {
         int vertex = this.vertexArray.size() / VERTEX_STRIDE;
         Vec3 point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, this.point);
-        Vec3 texCoord2d = this.texCoord2d.set(point).multiplyByMatrix(this.modelToTexCoord2d);
+        Vec3 texCoord2d = this.texCoord2d.set(point).multiplyByMatrix(this.modelToTexCoord);
 
         if (type != VERTEX_COMBINED) {
             this.tessCoords[0] = longitude;
@@ -618,8 +618,8 @@ public class Polygon extends AbstractShape {
         my /= numPoints;
         mz /= numPoints;
 
-        this.modelToTexCoord2d = rc.globe.cartesianToLocalTransform(mx, my, mz, this.modelToTexCoord2d);
-        this.modelToTexCoord2d.invertOrthonormal();
+        this.modelToTexCoord = rc.globe.cartesianToLocalTransform(mx, my, mz, this.modelToTexCoord);
+        this.modelToTexCoord.invertOrthonormal();
     }
 
     protected void tessCombine(RenderContext rc, double[] coords, Object[] data, float[] weight, Object[] outData) {
