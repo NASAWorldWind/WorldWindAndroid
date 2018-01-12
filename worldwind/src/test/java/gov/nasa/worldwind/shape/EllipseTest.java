@@ -236,4 +236,18 @@ public class EllipseTest {
             assertTrue("maximum interval exception type", e instanceof IllegalArgumentException);
         }
     }
+
+    @Test
+    public void testCircumference_Circle() {
+        Ellipse ellipse = new Ellipse();
+        double major = 50;
+        double minor = 50;
+        ellipse.setMajorRadius(major);
+        ellipse.setMinorRadius(minor);
+        double expectedCircumference = 2 * Math.PI * major;
+
+        double actualCircumference = ellipse.computeCircumference();
+
+        assertEquals("circle circumference", expectedCircumference, actualCircumference, 1e-9);
+    }
 }

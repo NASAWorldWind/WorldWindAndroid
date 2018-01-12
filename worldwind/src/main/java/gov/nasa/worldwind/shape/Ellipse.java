@@ -611,7 +611,7 @@ public class Ellipse extends AbstractShape {
         return (intervals % 2) == 0 ? intervals : intervals - 1;
     }
 
-    private double computeCircumference() {
+    protected double computeCircumference() {
         double a = this.majorRadius;
         double b = this.minorRadius;
         return Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
