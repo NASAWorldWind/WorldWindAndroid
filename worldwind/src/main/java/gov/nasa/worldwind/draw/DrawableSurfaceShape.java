@@ -26,6 +26,8 @@ public class DrawableSurfaceShape implements Drawable {
 
     private Matrix4 mvpMatrix = new Matrix4();
 
+    private Matrix4 textureMvpMatrix = new Matrix4();
+
     private Matrix3 identityMatrix3 = new Matrix3();
 
     private Color color = new Color();
@@ -123,13 +125,13 @@ public class DrawableSurfaceShape implements Drawable {
             // Use the draw context's pick mode.
             this.drawState.program.enablePickMode(dc.pickMode);
 
-            // Transform geographic coordinates to texture fragments appropriate for the terrain sector.
+            // Compute the tile common matrix that transforms geographic coordinates to texture fragments appropriate
+            // for the terrain sector.
             // TODO capture this in a method on Matrix4
-            this.mvpMatrix.setToIdentity();
-            this.mvpMatrix.multiplyByTranslation(-1, -1, 0);
-            this.mvpMatrix.multiplyByScale(2 / terrainSector.deltaLongitude(), 2 / terrainSector.deltaLatitude(), 0);
-            this.mvpMatrix.multiplyByTranslation(-terrainSector.minLongitude(), -terrainSector.minLatitude(), 0);
-            this.drawState.program.loadModelviewProjection(this.mvpMatrix);
+            this.textureMvpMatrix.setToIdentity();
+            this.textureMvpMatrix.multiplyByTranslation(-1, -1, 0);
+            this.textureMvpMatrix.multiplyByScale(2 / terrainSector.deltaLongitude(), 2 / terrainSector.deltaLatitude(), 0);
+            this.textureMvpMatrix.multiplyByTranslation(-terrainSector.minLongitude(), -terrainSector.minLatitude(), 0);
 
             for (int idx = 0, len = scratchList.size(); idx < len; idx++) {
                 // Get the shape.
@@ -146,6 +148,11 @@ public class DrawableSurfaceShape implements Drawable {
                 if (shape.drawState.elementBuffer == null || !shape.drawState.elementBuffer.bindBuffer(dc)) {
                     continue; // element buffer unspecified or failed to bind
                 }
+
+                // Transform local shape coordinates to texture fragments appropriate for the terrain sector.
+                this.mvpMatrix.set(this.textureMvpMatrix);
+                this.mvpMatrix.multiplyByTranslation(shape.drawState.vertexOrigin.x, shape.drawState.vertexOrigin.y, shape.drawState.vertexOrigin.z);
+                this.drawState.program.loadModelviewProjection(this.mvpMatrix);
 
                 // Use the shape's vertex point attribute.
                 GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 3, GLES20.GL_FLOAT, false, shape.drawState.vertexStride, 0);

@@ -109,7 +109,7 @@ public class Polygon extends AbstractShape {
 
     private Matrix3 texCoordMatrix = new Matrix3();
 
-    private Matrix4 modelToLocal = new Matrix4();
+    private Matrix4 modelToTexCoord = new Matrix4();
 
     private Location intermediateLocation = new Location();
 
@@ -431,7 +431,8 @@ public class Polygon extends AbstractShape {
         this.outlineElements.clear();
         this.verticalElements.clear();
 
-        this.determineShapeOrigin(rc);
+        // Compute a matrix that transforms from Cartesian coordinates to shape texture coordinates.
+        this.determineModelToTexCoord(rc);
 
         GLUtessellator tess = rc.getTessellator();
         GLU.gluTessNormal(tess, 0, 0, 1);
@@ -452,8 +453,6 @@ public class Polygon extends AbstractShape {
 
             // Add the boundary's first vertex.
             Position begin = positions.get(0);
-            rc.geographicToCartesian(begin.latitude, begin.longitude, begin.altitude, this.altitudeMode, this.prevPoint);
-            this.texCoord1d = 0;
             this.addVertex(rc, begin.latitude, begin.longitude, begin.altitude, VERTEX_ORIGINAL /*type*/);
 
             // Add the remaining boundary vertices, tessellating each edge as indicated by the polygon's properties.
@@ -482,6 +481,7 @@ public class Polygon extends AbstractShape {
         if (this.isSurfaceShape) {
             this.boundingSector.setEmpty();
             this.boundingSector.union(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
+            this.boundingSector.translate(this.vertexOrigin.y /*lat*/, this.vertexOrigin.x /*lon*/);
             this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
         } else {
             this.boundingBox.setToPoints(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
@@ -537,27 +537,36 @@ public class Polygon extends AbstractShape {
     protected int addVertex(RenderContext rc, double latitude, double longitude, double altitude, int type) {
         int vertex = this.vertexArray.size() / VERTEX_STRIDE;
         Vec3 point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, this.point);
-        Vec3 texCoord2d = this.texCoord2d.set(point).multiplyByMatrix(this.modelToLocal);
+        Vec3 texCoord2d = this.texCoord2d.set(point).multiplyByMatrix(this.modelToTexCoord);
 
         if (type != VERTEX_COMBINED) {
-            this.tessCoords[0] = (float) longitude;
-            this.tessCoords[1] = (float) latitude;
-            this.tessCoords[2] = (float) altitude;
+            this.tessCoords[0] = longitude;
+            this.tessCoords[1] = latitude;
+            this.tessCoords[2] = altitude;
             GLU.gluTessVertex(rc.getTessellator(), this.tessCoords, 0 /*coords_offset*/, vertex);
         }
 
-        this.texCoord1d += point.distanceTo(this.prevPoint);
-        this.prevPoint.set(point);
+        if (vertex == 0) {
+            if (this.isSurfaceShape) {
+                this.vertexOrigin.set(longitude, latitude, altitude);
+            } else {
+                this.vertexOrigin.set(point);
+            }
+            this.texCoord1d = 0;
+            this.prevPoint.set(point);
+        } else {
+            this.texCoord1d += point.distanceTo(this.prevPoint);
+            this.prevPoint.set(point);
+        }
 
         if (this.isSurfaceShape) {
-            this.vertexArray.add((float) longitude);
-            this.vertexArray.add((float) latitude);
-            this.vertexArray.add((float) altitude);
+            this.vertexArray.add((float) (longitude - this.vertexOrigin.x));
+            this.vertexArray.add((float) (latitude - this.vertexOrigin.y));
+            this.vertexArray.add((float) (altitude - this.vertexOrigin.z));
             this.vertexArray.add((float) texCoord2d.x);
             this.vertexArray.add((float) texCoord2d.y);
             this.vertexArray.add((float) this.texCoord1d);
         } else {
-            point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, this.point);
             this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
             this.vertexArray.add((float) (point.y - this.vertexOrigin.y));
             this.vertexArray.add((float) (point.z - this.vertexOrigin.z));
@@ -573,18 +582,18 @@ public class Polygon extends AbstractShape {
                 this.vertexArray.add((float) 0 /*unused*/);
                 this.vertexArray.add((float) 0 /*unused*/);
                 this.vertexArray.add((float) 0 /*unused*/);
+            }
 
-                if (type == VERTEX_ORIGINAL) {
-                    this.verticalElements.add((short) vertex);
-                    this.verticalElements.add((short) (vertex + 1));
-                }
+            if (this.extrude && type == VERTEX_ORIGINAL) {
+                this.verticalElements.add((short) vertex);
+                this.verticalElements.add((short) (vertex + 1));
             }
         }
 
         return vertex;
     }
 
-    protected void determineShapeOrigin(RenderContext rc) {
+    protected void determineModelToTexCoord(RenderContext rc) {
         double mx = 0, my = 0, mz = 0;
         double numPoints = 0;
 
@@ -609,8 +618,8 @@ public class Polygon extends AbstractShape {
         my /= numPoints;
         mz /= numPoints;
 
-        this.vertexOrigin.set(mx, my, mz);
-        this.modelToLocal = rc.globe.cartesianToLocalTransform(mx, my, mz, this.modelToLocal).invertOrthonormal();
+        this.modelToTexCoord = rc.globe.cartesianToLocalTransform(mx, my, mz, this.modelToTexCoord);
+        this.modelToTexCoord.invertOrthonormal();
     }
 
     protected void tessCombine(RenderContext rc, double[] coords, Object[] data, float[] weight, Object[] outData) {

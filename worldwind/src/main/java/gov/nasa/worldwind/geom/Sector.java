@@ -702,4 +702,23 @@ public class Sector {
 
         return this;
     }
+
+    /**
+     * Translates this sector by a specified geographic increment.
+     * <p>
+     * The translated sector is assumed to have normalized angles (angles within the range [-90, +90] latitude and
+     * [-180, +180] longitude).
+     *
+     * @param deltaLatitude  the translation's latitude increment in degrees
+     * @param deltaLongitude the translation's longitude increment in degrees
+     *
+     * @return this sector, translated by the specified increment
+     */
+    public Sector translate(double deltaLatitude, double deltaLongitude) {
+        this.minLatitude += deltaLatitude;
+        this.maxLatitude += deltaLatitude;
+        this.minLongitude += deltaLongitude;
+        this.maxLongitude += deltaLongitude;
+        return this;
+    }
 }
