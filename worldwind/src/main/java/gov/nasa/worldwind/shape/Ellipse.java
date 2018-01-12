@@ -466,8 +466,9 @@ public class Ellipse extends AbstractShape {
 
     protected boolean mustAssembleGeometry(RenderContext rc) {
         int calculatedIntervals = this.computeIntervals(rc);
-        if (this.vertexArray.size() == 0 || calculatedIntervals != this.intervals) {
-            this.intervals = calculatedIntervals;
+        int sanitzedIntervals = this.sanitizeIntervals(calculatedIntervals);
+        if (this.vertexArray.size() == 0 || sanitzedIntervals != this.intervals) {
+            this.intervals = sanitzedIntervals;
             return true;
         }
 
@@ -587,17 +588,15 @@ public class Ellipse extends AbstractShape {
      */
     protected int computeIntervals(RenderContext rc) {
         int intervals = MIN_INTERVALS;
-        int maxIntervals = (this.maximumIntervals % 2 == 0) ? this.maximumIntervals : this.maximumIntervals - 1;
-
-        if (intervals >= maxIntervals) {
+        if (intervals >= this.maximumIntervals) {
             return intervals; // use at least the minimum number of intervals
         }
 
-        Vec3 point = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
+        Vec3 centerPoint = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
         double maxRadius = Math.max(this.majorRadius, this.minorRadius);
-        double cameraDistance = point.distanceTo(rc.cameraPoint) - maxRadius;
-        if (cameraDistance <= 0) {
-            return maxIntervals; // use the maximum number of intervals when the camera is very close
+        double cameraDistance = centerPoint.distanceTo(rc.cameraPoint) - maxRadius;
+        if (cameraDistance < 0) {
+            return this.maximumIntervals; // use the maximum number of intervals when the camera is very close
         }
 
         double metersPerPixel = rc.pixelSizeAtDistance(cameraDistance);
@@ -606,9 +605,13 @@ public class Ellipse extends AbstractShape {
 
         double subdivisions = Math.log(circumferenceIntervals / intervals) / Math.log(2);
         int subdivisonCount = Math.max(0, (int) Math.ceil(subdivisions));
-        intervals <<= subdivisonCount;
+        intervals <<= subdivisonCount; // subdivide the base intervals to achieve the desired number of intervals
 
-        return Math.min(intervals, maxIntervals); // don't exceed the maximum number of intervals
+        return Math.min(intervals, this.maximumIntervals); // don't exceed the maximum number of intervals
+    }
+
+    protected int sanitizeIntervals(int intervals) {
+        return (intervals % 2) == 0 ? intervals : intervals - 1;
     }
 
     private double computeCircumference() {
