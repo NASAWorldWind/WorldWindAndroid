@@ -512,11 +512,6 @@ public class Ellipse extends AbstractShape {
         this.interiorElements.clear();
         this.outlineElements.clear();
 
-        // Determine the number of intervals to use based on the maximum interval value
-        if (this.intervals % 2 != 0) {
-            this.intervals--;
-        }
-
         // Determine the number of spine points and construct radius value holding array
         int spinePoints = this.intervals / 2 - 1; // intervals must be even
         int spineIdx = 0;
