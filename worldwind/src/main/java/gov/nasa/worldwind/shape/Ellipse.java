@@ -617,8 +617,9 @@ public class Ellipse extends AbstractShape {
      * @return an even number of intervals
      */
     protected int computeIntervals(RenderContext rc) {
-        if (MIN_INTERVALS >= this.maximumIntervals) {
-            return MIN_INTERVALS; // use at least the minimum number of intervals
+        int intervals = MIN_INTERVALS;
+        if (intervals >= this.maximumIntervals) {
+            return intervals; // use at least the minimum number of intervals
         }
 
         double cameraDistance;
@@ -632,9 +633,9 @@ public class Ellipse extends AbstractShape {
         double circumferencePixels = this.computeCircumference() / metersPerPixel;
         double circumferenceIntervals = circumferencePixels / this.maximumPixelsPerInterval;
 
-        double level = Math.log(circumferenceIntervals / MIN_INTERVALS) / Math.log(2);
-        int levelNumber = Math.max(0, (int) Math.ceil(level));
-        int intervals = MIN_INTERVALS << levelNumber;
+        double subdivisions = Math.log(circumferenceIntervals / MIN_INTERVALS) / Math.log(2);
+        int subdivisonCount = Math.max(0, (int) Math.ceil(subdivisions));
+        intervals <<= subdivisonCount;
 
         if (intervals > this.maximumIntervals) {
             intervals = this.maximumIntervals; // don't exceed the maximum number of intervals
