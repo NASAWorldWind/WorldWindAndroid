@@ -394,7 +394,6 @@ public class Ellipse extends AbstractShape {
         drawState = drawable.drawState;
         drawable.sector.set(this.boundingSector);
 
-
         // Use the basic GLSL program to draw the shape.
         drawState.program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
         if (drawState.program == null) {
@@ -602,7 +601,6 @@ public class Ellipse extends AbstractShape {
         double metersPerPixel = rc.pixelSizeAtDistance(cameraDistance);
         double circumferencePixels = this.computeCircumference() / metersPerPixel;
         double circumferenceIntervals = circumferencePixels / this.maximumPixelsPerInterval;
-
         double subdivisions = Math.log(circumferenceIntervals / intervals) / Math.log(2);
         int subdivisonCount = Math.max(0, (int) Math.ceil(subdivisions));
         intervals <<= subdivisonCount; // subdivide the base intervals to achieve the desired number of intervals
