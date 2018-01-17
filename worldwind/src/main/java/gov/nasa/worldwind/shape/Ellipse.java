@@ -105,7 +105,7 @@ public class Ellipse extends AbstractShape {
 
     protected Object vertexBufferKey = nextCacheKey();
 
-    protected static SparseArray<ElementBufferData> ELEMENT_BUFFERS = new SparseArray<>();
+    protected static SparseArray<ElementBufferAttributes> ELEMENT_BUFFER_ATTRIBUTES = new SparseArray<>();
 
     protected Vec3 vertexOrigin = new Vec3();
 
@@ -407,29 +407,22 @@ public class Ellipse extends AbstractShape {
             rc.putBufferObject(this.vertexBufferKey, drawState.vertexBuffer);
         }
 
+        // Get the attributes of the element buffer
+        ElementBufferAttributes elementBufferAttributes = ELEMENT_BUFFER_ATTRIBUTES.get(this.intervals);
+        if (elementBufferAttributes == null) {
+            elementBufferAttributes = assembleAndCacheElements(rc, this.intervals);
+        }
 
         // Check for an existing element buffer
-        ElementBufferData elementBufferData = ELEMENT_BUFFERS.get(this.intervals);
-        if (elementBufferData == null) {
-            elementBufferData = assembleElements(this.intervals);
-            elementBufferData.resourceKey = nextCacheKey();
-            rc.putBufferObject(elementBufferData.resourceKey, elementBufferData.elementBuffer);
-            ELEMENT_BUFFERS.put(this.intervals, elementBufferData);
-            elementBufferData.elementBuffer = null;
-        }
-
-        // Check for the buffer in the render resource cache
-        drawState.elementBuffer = rc.getBufferObject(elementBufferData.resourceKey);
+        drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes);
         if (drawState.elementBuffer == null) {
-            elementBufferData = assembleElements(this.intervals);
-            elementBufferData.resourceKey = nextCacheKey();
-            rc.putBufferObject(elementBufferData.resourceKey, elementBufferData.elementBuffer);
-            ELEMENT_BUFFERS.put(this.intervals, elementBufferData);
-            elementBufferData.elementBuffer = null;
+            // The attribute key must be stale, update the attributes and buffer
+            elementBufferAttributes = assembleAndCacheElements(rc, this.intervals);
+            drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes);
         }
 
-        this.drawInterior(rc, drawState, elementBufferData);
-        this.drawOutline(rc, drawState, elementBufferData);
+        this.drawInterior(rc, drawState, elementBufferAttributes);
+        this.drawOutline(rc, drawState, elementBufferAttributes);
 
         // Configure the drawable according to the shape's attributes.
         drawState.vertexOrigin.set(this.vertexOrigin);
@@ -441,7 +434,7 @@ public class Ellipse extends AbstractShape {
         rc.offerSurfaceDrawable(drawable, 0 /*zOrder*/);
     }
 
-    protected void drawInterior(RenderContext rc, DrawShapeState drawState, ElementBufferData elementBufferData) {
+    protected void drawInterior(RenderContext rc, DrawShapeState drawState, ElementBufferAttributes elementBufferAttributes) {
         if (!this.activeAttributes.drawInterior) {
             return;
         }
@@ -451,11 +444,11 @@ public class Ellipse extends AbstractShape {
         // Configure the drawable to display the shape's interior.
         drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.interiorColor);
         drawState.texCoordAttrib(2 /*size*/, 12 /*offset in bytes*/);
-        drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, elementBufferData.interiorElementCount,
-            GLES20.GL_UNSIGNED_SHORT, elementBufferData.interiorOffset /*offset*/);
+        drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, elementBufferAttributes.interiorElementCount,
+            GLES20.GL_UNSIGNED_SHORT, 0 /*offset*/);
     }
 
-    protected void drawOutline(RenderContext rc, DrawShapeState drawState, ElementBufferData elementBufferData) {
+    protected void drawOutline(RenderContext rc, DrawShapeState drawState, ElementBufferAttributes elementBufferAttributes) {
         if (!this.activeAttributes.drawOutline) {
             return;
         }
@@ -466,8 +459,8 @@ public class Ellipse extends AbstractShape {
         drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
         drawState.lineWidth(this.activeAttributes.outlineWidth);
         drawState.texCoordAttrib(1 /*size*/, 20 /*offset in bytes*/);
-        drawState.drawElements(GLES20.GL_LINE_LOOP, elementBufferData.outlineElementCount,
-            GLES20.GL_UNSIGNED_SHORT, elementBufferData.outlineOffset /*offset*/);
+        drawState.drawElements(GLES20.GL_LINE_LOOP, elementBufferAttributes.outlineElementCount,
+            GLES20.GL_UNSIGNED_SHORT, elementBufferAttributes.outlineOffset /*offset*/);
     }
 
     protected boolean mustAssembleGeometry(RenderContext rc) {
@@ -539,7 +532,7 @@ public class Ellipse extends AbstractShape {
         this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
     }
 
-    protected static ElementBufferData assembleElements(int intervals) {
+    protected static ElementBufferAttributes assembleAndCacheElements(RenderContext rc, int intervals) {
         // Create temporary storage for elements
         ShortArray interiorElements = new ShortArray();
         ShortArray outlineElements = new ShortArray();
@@ -577,18 +570,24 @@ public class Ellipse extends AbstractShape {
             outlineElements.add((short) i);
         }
 
+        // Generate an attribute bundle for this element buffer
+        ElementBufferAttributes elementBufferCacheKey = new ElementBufferAttributes();
+        elementBufferCacheKey.interiorElementCount = interiorElements.size();
+        elementBufferCacheKey.outlineElementCount = outlineElements.size();
+        elementBufferCacheKey.outlineOffset = interiorElements.size() * 2;
+
+        // Generate a buffer for the element
         int size = (interiorElements.size() * 2) + (outlineElements.size() * 2);
         ShortBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer();
         buffer.put(interiorElements.array(), 0, interiorElements.size());
         buffer.put(outlineElements.array(), 0, outlineElements.size());
-        ElementBufferData elementBufferData = new ElementBufferData();
-        elementBufferData.elementBuffer = new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind());
-        elementBufferData.interiorElementCount = interiorElements.size();
-        elementBufferData.interiorOffset = 0;
-        elementBufferData.outlineElementCount = outlineElements.size();
-        elementBufferData.outlineOffset = interiorElements.size() * 2;
+        BufferObject elementBuffer = new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind());
 
-        return elementBufferData;
+        // Cache the buffer object and attributes in the render resource cache and attribute map respectively
+        rc.putBufferObject(elementBufferCacheKey, elementBuffer);
+        ELEMENT_BUFFER_ATTRIBUTES.put(intervals, elementBufferCacheKey);
+
+        return elementBufferCacheKey;
     }
 
     protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude) {
@@ -646,18 +645,32 @@ public class Ellipse extends AbstractShape {
         this.vertexArray.clear();
     }
 
-    protected static class ElementBufferData {
+    protected static class ElementBufferAttributes {
 
         protected int interiorElementCount;
-
-        protected int interiorOffset;
 
         protected int outlineElementCount;
 
         protected int outlineOffset;
 
-        protected BufferObject elementBuffer;
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
 
-        protected Object resourceKey;
+            ElementBufferAttributes that = (ElementBufferAttributes) o;
+
+            if (interiorElementCount != that.interiorElementCount) return false;
+            if (outlineElementCount != that.outlineElementCount) return false;
+            return outlineOffset == that.outlineOffset;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = interiorElementCount;
+            result = 31 * result + outlineElementCount;
+            result = 31 * result + outlineOffset;
+            return result;
+        }
     }
 }
