@@ -409,14 +409,8 @@ public class Ellipse extends AbstractShape {
 
         // Get the attributes of the element buffer
         ElementBufferAttributes elementBufferAttributes = ELEMENT_BUFFER_ATTRIBUTES.get(this.intervals);
-        if (elementBufferAttributes == null) {
-            elementBufferAttributes = assembleAndCacheElements(rc, this.intervals);
-        }
-
-        // Check for an existing element buffer
-        drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes);
-        if (drawState.elementBuffer == null) {
-            // The attribute key must be stale, update the attributes and buffer
+        if (elementBufferAttributes == null ||
+            (drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes)) == null) {
             elementBufferAttributes = assembleAndCacheElements(rc, this.intervals);
             drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes);
         }
@@ -434,7 +428,7 @@ public class Ellipse extends AbstractShape {
         rc.offerSurfaceDrawable(drawable, 0 /*zOrder*/);
     }
 
-    protected void drawInterior(RenderContext rc, DrawShapeState drawState, ElementBufferAttributes elementBufferAttributes) {
+    protected void drawInterior(RenderContext rc, DrawShapeState drawState, ElementBufferAttributes elementBufferAttrs) {
         if (!this.activeAttributes.drawInterior) {
             return;
         }
@@ -444,11 +438,11 @@ public class Ellipse extends AbstractShape {
         // Configure the drawable to display the shape's interior.
         drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.interiorColor);
         drawState.texCoordAttrib(2 /*size*/, 12 /*offset in bytes*/);
-        drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, elementBufferAttributes.interiorElementCount,
+        drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, elementBufferAttrs.interiorElementCount,
             GLES20.GL_UNSIGNED_SHORT, 0 /*offset*/);
     }
 
-    protected void drawOutline(RenderContext rc, DrawShapeState drawState, ElementBufferAttributes elementBufferAttributes) {
+    protected void drawOutline(RenderContext rc, DrawShapeState drawState, ElementBufferAttributes elementBufferAttrs) {
         if (!this.activeAttributes.drawOutline) {
             return;
         }
@@ -459,8 +453,8 @@ public class Ellipse extends AbstractShape {
         drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
         drawState.lineWidth(this.activeAttributes.outlineWidth);
         drawState.texCoordAttrib(1 /*size*/, 20 /*offset in bytes*/);
-        drawState.drawElements(GLES20.GL_LINE_LOOP, elementBufferAttributes.outlineElementCount,
-            GLES20.GL_UNSIGNED_SHORT, elementBufferAttributes.outlineOffset /*offset*/);
+        drawState.drawElements(GLES20.GL_LINE_LOOP, elementBufferAttrs.outlineElementCount,
+            GLES20.GL_UNSIGNED_SHORT, elementBufferAttrs.outlineOffset /*offset*/);
     }
 
     protected boolean mustAssembleGeometry(RenderContext rc) {
