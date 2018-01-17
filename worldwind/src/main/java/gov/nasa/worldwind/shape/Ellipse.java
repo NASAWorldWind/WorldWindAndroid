@@ -103,15 +103,9 @@ public class Ellipse extends AbstractShape {
 
     protected FloatArray vertexArray = new FloatArray();
 
-    protected ShortArray interiorElements = new ShortArray();
-
-    protected ShortArray outlineElements = new ShortArray();
-
     protected Object vertexBufferKey = nextCacheKey();
 
-    protected Object elementBufferKey;
-
-    protected static SparseArray<BufferObject> ELEMENT_BUFFERS = new SparseArray<>();
+    protected static SparseArray<ElementBufferData> ELEMENT_BUFFERS = new SparseArray<>();
 
     protected Vec3 vertexOrigin = new Vec3();
 
@@ -415,19 +409,15 @@ public class Ellipse extends AbstractShape {
 
 
         // Assemble the drawable's OpenGL element buffer object.
-        drawState.elementBuffer = ELEMENT_BUFFERS.get(this.intervals);
-        if (drawState.elementBuffer == null) {
-            this.assembleElements(rc);
-            int size = (this.interiorElements.size() * 2) + (this.outlineElements.size() * 2);
-            ShortBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer();
-            buffer.put(this.interiorElements.array(), 0, this.interiorElements.size());
-            buffer.put(this.outlineElements.array(), 0, this.outlineElements.size());
-            drawState.elementBuffer = new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind());
-            ELEMENT_BUFFERS.put(this.intervals, drawState.elementBuffer);
+        ElementBufferData elementBufferData = ELEMENT_BUFFERS.get(this.intervals);
+        if (elementBufferData == null) {
+            elementBufferData = assembleElements(this.intervals);
+            ELEMENT_BUFFERS.put(this.intervals, elementBufferData);
         }
+        drawState.elementBuffer = elementBufferData.elementBuffer;
 
-        this.drawInterior(rc, drawState);
-        this.drawOutline(rc, drawState);
+        this.drawInterior(rc, drawState, elementBufferData);
+        this.drawOutline(rc, drawState, elementBufferData);
 
         // Configure the drawable according to the shape's attributes.
         drawState.vertexOrigin.set(this.vertexOrigin);
@@ -439,7 +429,7 @@ public class Ellipse extends AbstractShape {
         rc.offerSurfaceDrawable(drawable, 0 /*zOrder*/);
     }
 
-    protected void drawInterior(RenderContext rc, DrawShapeState drawState) {
+    protected void drawInterior(RenderContext rc, DrawShapeState drawState, ElementBufferData elementBufferData) {
         if (!this.activeAttributes.drawInterior) {
             return;
         }
@@ -449,11 +439,11 @@ public class Ellipse extends AbstractShape {
         // Configure the drawable to display the shape's interior.
         drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.interiorColor);
         drawState.texCoordAttrib(2 /*size*/, 12 /*offset in bytes*/);
-        drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, this.interiorElements.size(),
-            GLES20.GL_UNSIGNED_SHORT, 0 /*offset*/);
+        drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, elementBufferData.interiorElementCount,
+            GLES20.GL_UNSIGNED_SHORT, elementBufferData.interiorOffset /*offset*/);
     }
 
-    protected void drawOutline(RenderContext rc, DrawShapeState drawState) {
+    protected void drawOutline(RenderContext rc, DrawShapeState drawState, ElementBufferData elementBufferData) {
         if (!this.activeAttributes.drawOutline) {
             return;
         }
@@ -464,8 +454,8 @@ public class Ellipse extends AbstractShape {
         drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
         drawState.lineWidth(this.activeAttributes.outlineWidth);
         drawState.texCoordAttrib(1 /*size*/, 20 /*offset in bytes*/);
-        drawState.drawElements(GLES20.GL_LINE_LOOP, this.outlineElements.size(),
-            GLES20.GL_UNSIGNED_SHORT, this.interiorElements.size() * 2 /*offset*/);
+        drawState.drawElements(GLES20.GL_LINE_LOOP, elementBufferData.outlineElementCount,
+            GLES20.GL_UNSIGNED_SHORT, elementBufferData.outlineOffset /*offset*/);
     }
 
     protected boolean mustAssembleGeometry(RenderContext rc) {
@@ -537,43 +527,56 @@ public class Ellipse extends AbstractShape {
         this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
     }
 
-    protected void assembleElements(RenderContext rc) {
-        // Clear the elements buffers in preparation for generation
-        this.interiorElements.clear();
-        this.outlineElements.clear();
+    protected static ElementBufferData assembleElements(int intervals) {
+        // Create temporary storage for elements
+        ShortArray interiorElements = new ShortArray();
+        ShortArray outlineElements = new ShortArray();
 
         // Generate the interior element buffer with spine
-        int interiorIdx = this.intervals;
+        int interiorIdx = intervals;
         // Add the anchor leg
-        this.interiorElements.add((short) 0);
-        this.interiorElements.add((short) 1);
+        interiorElements.add((short) 0);
+        interiorElements.add((short) 1);
         // Tessellate the interior
-        for (int i = 2; i < this.intervals; i++) {
+        for (int i = 2; i < intervals; i++) {
             // Add the corresponding interior spine point if this isn't the vertex following the last vertex for the
             // negative major axis
-            if (i != (this.intervals / 2 + 1)) {
-                if (i > this.intervals / 2) {
-                    this.interiorElements.add((short) --interiorIdx);
+            if (i != (intervals / 2 + 1)) {
+                if (i > intervals / 2) {
+                    interiorElements.add((short) --interiorIdx);
                 } else {
-                    this.interiorElements.add((short) interiorIdx++);
+                    interiorElements.add((short) interiorIdx++);
                 }
             }
             // Add the degenerate triangle at the negative major axis in order to flip the triangle strip back towards
             // the positive axis
-            if (i == this.intervals / 2) {
-                this.interiorElements.add((short) i);
+            if (i == intervals / 2) {
+                interiorElements.add((short) i);
             }
             // Add the exterior vertex
-            this.interiorElements.add((short) i);
+            interiorElements.add((short) i);
         }
         // Complete the strip
-        this.interiorElements.add((short) --interiorIdx);
-        this.interiorElements.add((short) 0);
+        interiorElements.add((short) --interiorIdx);
+        interiorElements.add((short) 0);
 
         // Generate the outline element buffer
-        for (int i = 0; i < this.intervals; i++) {
-            this.outlineElements.add((short) i);
+        for (int i = 0; i < intervals; i++) {
+            outlineElements.add((short) i);
         }
+
+        int size = (interiorElements.size() * 2) + (outlineElements.size() * 2);
+        ShortBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer();
+        buffer.put(interiorElements.array(), 0, interiorElements.size());
+        buffer.put(outlineElements.array(), 0, outlineElements.size());
+        ElementBufferData elementBufferData = new ElementBufferData();
+        elementBufferData.elementBuffer = new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind());
+        elementBufferData.interiorElementCount = interiorElements.size();
+        elementBufferData.interiorOffset = 0;
+        elementBufferData.outlineElementCount = outlineElements.size();
+        elementBufferData.outlineOffset = interiorElements.size() * 2;
+
+        return elementBufferData;
     }
 
     protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude) {
@@ -594,28 +597,26 @@ public class Ellipse extends AbstractShape {
      * @return an even number of intervals
      */
     protected int computeIntervals(RenderContext rc) {
-//        int intervals = MIN_INTERVALS;
-//        if (intervals >= this.maximumIntervals) {
-//            return intervals; // use at least the minimum number of intervals
-//        }
-//
-//        Vec3 centerPoint = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
-//        double maxRadius = Math.max(this.majorRadius, this.minorRadius);
-//        double cameraDistance = centerPoint.distanceTo(rc.cameraPoint) - maxRadius;
-//        if (cameraDistance <= 0) {
-//            return this.maximumIntervals; // use the maximum number of intervals when the camera is very close
-//        }
-//
-//        double metersPerPixel = rc.pixelSizeAtDistance(cameraDistance);
-//        double circumferencePixels = this.computeCircumference() / metersPerPixel;
-//        double circumferenceIntervals = circumferencePixels / this.maximumPixelsPerInterval;
-//        double subdivisions = Math.log(circumferenceIntervals / intervals) / Math.log(2);
-//        int subdivisonCount = Math.max(0, (int) Math.ceil(subdivisions));
-//        intervals <<= subdivisonCount; // subdivide the base intervals to achieve the desired number of intervals
-//
-//        return Math.min(intervals, this.maximumIntervals); // don't exceed the maximum number of intervals
+        int intervals = MIN_INTERVALS;
+        if (intervals >= this.maximumIntervals) {
+            return intervals; // use at least the minimum number of intervals
+        }
 
-        return MIN_INTERVALS;
+        Vec3 centerPoint = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
+        double maxRadius = Math.max(this.majorRadius, this.minorRadius);
+        double cameraDistance = centerPoint.distanceTo(rc.cameraPoint) - maxRadius;
+        if (cameraDistance <= 0) {
+            return this.maximumIntervals; // use the maximum number of intervals when the camera is very close
+        }
+
+        double metersPerPixel = rc.pixelSizeAtDistance(cameraDistance);
+        double circumferencePixels = this.computeCircumference() / metersPerPixel;
+        double circumferenceIntervals = circumferencePixels / this.maximumPixelsPerInterval;
+        double subdivisions = Math.log(circumferenceIntervals / intervals) / Math.log(2);
+        int subdivisonCount = Math.max(0, (int) Math.ceil(subdivisions));
+        intervals <<= subdivisonCount; // subdivide the base intervals to achieve the desired number of intervals
+
+        return Math.min(intervals, this.maximumIntervals); // don't exceed the maximum number of intervals
     }
 
     protected int sanitizeIntervals(int intervals) {
@@ -631,7 +632,18 @@ public class Ellipse extends AbstractShape {
     @Override
     protected void reset() {
         this.vertexArray.clear();
-        this.interiorElements.clear();
-        this.outlineElements.clear();
+    }
+
+    protected static class ElementBufferData {
+
+        protected int interiorElementCount;
+
+        protected int interiorOffset;
+
+        protected int outlineElementCount;
+
+        protected int outlineOffset;
+
+        protected BufferObject elementBuffer;
     }
 }
