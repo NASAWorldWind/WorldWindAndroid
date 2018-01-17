@@ -408,13 +408,25 @@ public class Ellipse extends AbstractShape {
         }
 
 
-        // Assemble the drawable's OpenGL element buffer object.
+        // Check for an existing element buffer
         ElementBufferData elementBufferData = ELEMENT_BUFFERS.get(this.intervals);
         if (elementBufferData == null) {
             elementBufferData = assembleElements(this.intervals);
+            elementBufferData.resourceKey = nextCacheKey();
+            rc.putBufferObject(elementBufferData.resourceKey, elementBufferData.elementBuffer);
             ELEMENT_BUFFERS.put(this.intervals, elementBufferData);
+            elementBufferData.elementBuffer = null;
         }
-        drawState.elementBuffer = elementBufferData.elementBuffer;
+
+        // Check for the buffer in the render resource cache
+        drawState.elementBuffer = rc.getBufferObject(elementBufferData.resourceKey);
+        if (drawState.elementBuffer == null) {
+            elementBufferData = assembleElements(this.intervals);
+            elementBufferData.resourceKey = nextCacheKey();
+            rc.putBufferObject(elementBufferData.resourceKey, elementBufferData.elementBuffer);
+            ELEMENT_BUFFERS.put(this.intervals, elementBufferData);
+            elementBufferData.elementBuffer = null;
+        }
 
         this.drawInterior(rc, drawState, elementBufferData);
         this.drawOutline(rc, drawState, elementBufferData);
@@ -645,5 +657,7 @@ public class Ellipse extends AbstractShape {
         protected int outlineOffset;
 
         protected BufferObject elementBuffer;
+
+        protected Object resourceKey;
     }
 }
