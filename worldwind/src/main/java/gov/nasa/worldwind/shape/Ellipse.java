@@ -6,6 +6,7 @@
 package gov.nasa.worldwind.shape;
 
 import android.opengl.GLES20;
+import android.util.SparseArray;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -108,7 +109,9 @@ public class Ellipse extends AbstractShape {
 
     protected Object vertexBufferKey = nextCacheKey();
 
-    protected Object elementBufferKey = nextCacheKey();
+    protected Object elementBufferKey;
+
+    protected static SparseArray<BufferObject> ELEMENT_BUFFERS = new SparseArray<>();
 
     protected Vec3 vertexOrigin = new Vec3();
 
@@ -383,9 +386,7 @@ public class Ellipse extends AbstractShape {
 
         if (this.mustAssembleGeometry(rc)) {
             this.assembleGeometry(rc);
-            this.assembleElements(rc);
             this.vertexBufferKey = nextCacheKey();
-            this.elementBufferKey = nextCacheKey();
         }
 
         // Obtain a drawable form the render context pool.
@@ -412,15 +413,17 @@ public class Ellipse extends AbstractShape {
             rc.putBufferObject(this.vertexBufferKey, drawState.vertexBuffer);
         }
 
+
         // Assemble the drawable's OpenGL element buffer object.
-        drawState.elementBuffer = rc.getBufferObject(this.elementBufferKey);
+        drawState.elementBuffer = ELEMENT_BUFFERS.get(this.intervals);
         if (drawState.elementBuffer == null) {
+            this.assembleElements(rc);
             int size = (this.interiorElements.size() * 2) + (this.outlineElements.size() * 2);
             ShortBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer();
             buffer.put(this.interiorElements.array(), 0, this.interiorElements.size());
             buffer.put(this.outlineElements.array(), 0, this.outlineElements.size());
             drawState.elementBuffer = new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind());
-            rc.putBufferObject(this.elementBufferKey, drawState.elementBuffer);
+            ELEMENT_BUFFERS.put(this.intervals, drawState.elementBuffer);
         }
 
         this.drawInterior(rc, drawState);
@@ -477,11 +480,8 @@ public class Ellipse extends AbstractShape {
     }
 
     protected void assembleGeometry(RenderContext rc) {
-        // Clear the shape's vertex array and element arrays. These arrays will accumulate values as the shapes's
-        // geometry is assembled.
+        // Clear the shape's vertex array. The array will accumulate values as the shapes's geometry is assembled.
         this.vertexArray.clear();
-        this.interiorElements.clear();
-        this.outlineElements.clear();
 
         // Use the ellipse's center position as the local origin for vertex positions.
         this.vertexOrigin.set(this.center.longitude, this.center.latitude, this.center.altitude);
@@ -538,6 +538,10 @@ public class Ellipse extends AbstractShape {
     }
 
     protected void assembleElements(RenderContext rc) {
+        // Clear the elements buffers in preparation for generation
+        this.interiorElements.clear();
+        this.outlineElements.clear();
+
         // Generate the interior element buffer with spine
         int interiorIdx = this.intervals;
         // Add the anchor leg
@@ -590,26 +594,28 @@ public class Ellipse extends AbstractShape {
      * @return an even number of intervals
      */
     protected int computeIntervals(RenderContext rc) {
-        int intervals = MIN_INTERVALS;
-        if (intervals >= this.maximumIntervals) {
-            return intervals; // use at least the minimum number of intervals
-        }
+//        int intervals = MIN_INTERVALS;
+//        if (intervals >= this.maximumIntervals) {
+//            return intervals; // use at least the minimum number of intervals
+//        }
+//
+//        Vec3 centerPoint = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
+//        double maxRadius = Math.max(this.majorRadius, this.minorRadius);
+//        double cameraDistance = centerPoint.distanceTo(rc.cameraPoint) - maxRadius;
+//        if (cameraDistance <= 0) {
+//            return this.maximumIntervals; // use the maximum number of intervals when the camera is very close
+//        }
+//
+//        double metersPerPixel = rc.pixelSizeAtDistance(cameraDistance);
+//        double circumferencePixels = this.computeCircumference() / metersPerPixel;
+//        double circumferenceIntervals = circumferencePixels / this.maximumPixelsPerInterval;
+//        double subdivisions = Math.log(circumferenceIntervals / intervals) / Math.log(2);
+//        int subdivisonCount = Math.max(0, (int) Math.ceil(subdivisions));
+//        intervals <<= subdivisonCount; // subdivide the base intervals to achieve the desired number of intervals
+//
+//        return Math.min(intervals, this.maximumIntervals); // don't exceed the maximum number of intervals
 
-        Vec3 centerPoint = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
-        double maxRadius = Math.max(this.majorRadius, this.minorRadius);
-        double cameraDistance = centerPoint.distanceTo(rc.cameraPoint) - maxRadius;
-        if (cameraDistance <= 0) {
-            return this.maximumIntervals; // use the maximum number of intervals when the camera is very close
-        }
-
-        double metersPerPixel = rc.pixelSizeAtDistance(cameraDistance);
-        double circumferencePixels = this.computeCircumference() / metersPerPixel;
-        double circumferenceIntervals = circumferencePixels / this.maximumPixelsPerInterval;
-        double subdivisions = Math.log(circumferenceIntervals / intervals) / Math.log(2);
-        int subdivisonCount = Math.max(0, (int) Math.ceil(subdivisions));
-        intervals <<= subdivisonCount; // subdivide the base intervals to achieve the desired number of intervals
-
-        return Math.min(intervals, this.maximumIntervals); // don't exceed the maximum number of intervals
+        return MIN_INTERVALS;
     }
 
     protected int sanitizeIntervals(int intervals) {
