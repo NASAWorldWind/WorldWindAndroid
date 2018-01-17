@@ -6,9 +6,10 @@
 package gov.nasa.worldwind.geom;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.util.Logger;
 
-public class LookAt {
+public class LookAt implements ViewingTransform {
 
     public double latitude;
 
@@ -58,6 +59,10 @@ public class LookAt {
         this.roll = lookAt.roll;
     }
 
+    public LookAt(ViewingTransform view) {
+
+    }
+
     public LookAt set(double latitude, double longitude, double altitude, @WorldWind.AltitudeMode int altitudeMode, double range,
                       double heading, double tilt, double roll) {
         this.latitude = latitude;
@@ -104,4 +109,8 @@ public class LookAt {
             '}';
     }
 
+    @Override
+    public Matrix4 viewingMatrix(WorldWindow wwd) {
+        return null;
+    }
 }

@@ -16,6 +16,7 @@ import android.util.AttributeSet;
 import android.view.Choreographer;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
+import android.view.View;
 
 import java.util.Map;
 import java.util.Queue;
@@ -30,9 +31,11 @@ import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.Location;
+import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Vec2;
 import gov.nasa.worldwind.geom.Vec3;
+import gov.nasa.worldwind.geom.ViewingTransform;
 import gov.nasa.worldwind.geom.Viewport;
 import gov.nasa.worldwind.globe.BasicTessellator;
 import gov.nasa.worldwind.globe.Globe;
@@ -306,6 +309,14 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         }
 
         this.navigator = navigator;
+    }
+
+    public ViewingTransform getView() {
+
+    }
+
+    public void setView(ViewingTransform view) {
+
     }
 
     public void addNavigatorListener(NavigatorListener listener) {
@@ -1058,6 +1069,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         projection.setToPerspectiveProjection(this.viewport.width, this.viewport.height, this.fieldOfView, near, far);
 
         // Compute a Cartesian transform matrix from the Navigator.
-        this.navigator.getAsViewingMatrix(this.globe, modelview);
+        this.view.getAsViewingMatrix(this);
     }
 }

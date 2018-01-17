@@ -6,9 +6,10 @@
 package gov.nasa.worldwind.geom;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.util.Logger;
 
-public class Camera {
+public class Camera implements ViewingTransform {
 
     public double latitude;
 
@@ -54,6 +55,11 @@ public class Camera {
         this.roll = camera.roll;
     }
 
+    public Camera(ViewingTransform view) {
+
+
+    }
+
     public Camera set(double latitude, double longitude, double altitude, @WorldWind.AltitudeMode int altitudeMode,
                       double heading, double tilt, double roll) {
         this.latitude = latitude;
@@ -95,5 +101,10 @@ public class Camera {
             ", tilt=" + tilt +
             ", roll=" + roll +
             '}';
+    }
+
+    @Override
+    public Matrix4 viewingMatrix(WorldWindow wwd) {
+        return null;
     }
 }
