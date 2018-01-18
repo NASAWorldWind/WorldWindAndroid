@@ -565,10 +565,10 @@ public class Ellipse extends AbstractShape {
         }
 
         // Generate an attribute bundle for this element buffer
-        ElementBufferAttributes elementBufferCacheKey = new ElementBufferAttributes();
-        elementBufferCacheKey.interiorElementCount = interiorElements.size();
-        elementBufferCacheKey.outlineElementCount = outlineElements.size();
-        elementBufferCacheKey.outlineOffset = interiorElements.size() * 2;
+        ElementBufferAttributes elementBufferAttributes = new ElementBufferAttributes();
+        elementBufferAttributes.interiorElementCount = interiorElements.size();
+        elementBufferAttributes.outlineElementCount = outlineElements.size();
+        elementBufferAttributes.outlineOffset = interiorElements.size() * 2;
 
         // Generate a buffer for the element
         int size = (interiorElements.size() * 2) + (outlineElements.size() * 2);
@@ -578,10 +578,10 @@ public class Ellipse extends AbstractShape {
         BufferObject elementBuffer = new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind());
 
         // Cache the buffer object and attributes in the render resource cache and attribute map respectively
-        rc.putBufferObject(elementBufferCacheKey, elementBuffer);
-        ELEMENT_BUFFER_ATTRIBUTES.put(intervals, elementBufferCacheKey);
+        rc.putBufferObject(elementBufferAttributes, elementBuffer);
+        ELEMENT_BUFFER_ATTRIBUTES.put(intervals, elementBufferAttributes);
 
-        return elementBufferCacheKey;
+        return elementBufferAttributes;
     }
 
     protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude) {
