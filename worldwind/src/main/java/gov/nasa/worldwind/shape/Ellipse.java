@@ -438,7 +438,7 @@ public class Ellipse extends AbstractShape {
         ElementBufferAttributes elementBufferAttributes = ELEMENT_BUFFER_ATTRIBUTES.get(this.intervals);
         drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes);
         if (drawState.elementBuffer == null) {
-            elementBufferAttributes = aseembleElementsToCache(rc, this.intervals);
+            elementBufferAttributes = assembleElementsToCache(rc, this.intervals);
             drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes);
         }
 
@@ -577,7 +577,7 @@ public class Ellipse extends AbstractShape {
         }
     }
 
-    protected static ElementBufferAttributes aseembleElementsToCache(RenderContext rc, int intervals) {
+    protected static ElementBufferAttributes assembleElementsToCache(RenderContext rc, int intervals) {
         // Create temporary storage for elements
         ShortArray interiorElements = new ShortArray();
         ShortArray outlineElements = new ShortArray();
