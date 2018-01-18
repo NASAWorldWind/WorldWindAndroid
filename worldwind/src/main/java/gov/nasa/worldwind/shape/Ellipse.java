@@ -409,8 +409,8 @@ public class Ellipse extends AbstractShape {
 
         // Get the attributes of the element buffer
         ElementBufferAttributes elementBufferAttributes = ELEMENT_BUFFER_ATTRIBUTES.get(this.intervals);
-        if (elementBufferAttributes == null ||
-            (drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes)) == null) {
+        drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes);
+        if (drawState.elementBuffer == null) {
             elementBufferAttributes = aseembleElementsToCache(rc, this.intervals);
             drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes);
         }
