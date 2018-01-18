@@ -652,6 +652,16 @@ public class Ellipse extends AbstractShape {
             this.vertexArray.add(0);
             this.vertexArray.add(0);
             this.vertexArray.add(0);
+
+            if (this.extrude) {
+                point = rc.geographicToCartesian(latitude, longitude, 0, WorldWind.CLAMP_TO_GROUND, POINT);
+                this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
+                this.vertexArray.add((float) (point.y - this.vertexOrigin.y));
+                this.vertexArray.add((float) (point.z - this.vertexOrigin.z));
+                this.vertexArray.add(0 /*unused*/);
+                this.vertexArray.add(0 /*unused*/);
+                this.vertexArray.add(0 /*unused*/);
+            }
         }
     }
 
