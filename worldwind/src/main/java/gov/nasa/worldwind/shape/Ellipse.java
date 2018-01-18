@@ -83,6 +83,8 @@ public class Ellipse extends AbstractShape {
      */
     protected double heading;
 
+    protected boolean extrude;
+
     /**
      * Determines whether this ellipse's geometry follows the terrain surface or is fixed at a constant altitude.
      */
@@ -310,6 +312,16 @@ public class Ellipse extends AbstractShape {
      */
     public Ellipse setHeading(double degrees) {
         this.heading = degrees;
+        this.reset();
+        return this;
+    }
+
+    public boolean isExtrude() {
+        return this.extrude;
+    }
+
+    public Ellipse setExtrude(boolean extrude) {
+        this.extrude = extrude;
         this.reset();
         return this;
     }
