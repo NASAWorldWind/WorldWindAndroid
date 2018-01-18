@@ -16,6 +16,7 @@ import java.nio.ShortBuffer;
 import gov.nasa.worldwind.draw.DrawShapeState;
 import gov.nasa.worldwind.draw.DrawableSurfaceShape;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Range;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
@@ -438,8 +439,8 @@ public class Ellipse extends AbstractShape {
         // Configure the drawable to display the shape's interior.
         drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.interiorColor);
         drawState.texCoordAttrib(2 /*size*/, 12 /*offset in bytes*/);
-        drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, elementBufferAttrs.interiorElementCount,
-            GLES20.GL_UNSIGNED_SHORT, 0 /*offset*/);
+        drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, elementBufferAttrs.interiorElements.length(),
+            GLES20.GL_UNSIGNED_SHORT, elementBufferAttrs.interiorElements.lower * 2 /*offset*/);
     }
 
     protected void drawOutline(RenderContext rc, DrawShapeState drawState, ElementBufferAttributes elementBufferAttrs) {
@@ -453,8 +454,8 @@ public class Ellipse extends AbstractShape {
         drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
         drawState.lineWidth(this.activeAttributes.outlineWidth);
         drawState.texCoordAttrib(1 /*size*/, 20 /*offset in bytes*/);
-        drawState.drawElements(GLES20.GL_LINE_LOOP, elementBufferAttrs.outlineElementCount,
-            GLES20.GL_UNSIGNED_SHORT, elementBufferAttrs.outlineOffset /*offset*/);
+        drawState.drawElements(GLES20.GL_LINE_LOOP, elementBufferAttrs.outlineElements.length(),
+            GLES20.GL_UNSIGNED_SHORT, elementBufferAttrs.outlineElements.lower * 2 /*offset*/);
     }
 
     protected boolean mustAssembleGeometry(RenderContext rc) {
@@ -566,9 +567,8 @@ public class Ellipse extends AbstractShape {
 
         // Generate an attribute bundle for this element buffer
         ElementBufferAttributes elementBufferAttributes = new ElementBufferAttributes();
-        elementBufferAttributes.interiorElementCount = interiorElements.size();
-        elementBufferAttributes.outlineElementCount = outlineElements.size();
-        elementBufferAttributes.outlineOffset = interiorElements.size() * 2;
+        elementBufferAttributes.interiorElements.set(0, interiorElements.size());
+        elementBufferAttributes.outlineElements.set(interiorElements.size(), interiorElements.size() + outlineElements.size());
 
         // Generate a buffer for the element
         int size = (interiorElements.size() * 2) + (outlineElements.size() * 2);
@@ -641,11 +641,9 @@ public class Ellipse extends AbstractShape {
 
     protected static class ElementBufferAttributes {
 
-        protected int interiorElementCount;
+        protected Range interiorElements = new Range();
 
-        protected int outlineElementCount;
-
-        protected int outlineOffset;
+        protected Range outlineElements = new Range();
 
         @Override
         public boolean equals(Object o) {
@@ -654,16 +652,14 @@ public class Ellipse extends AbstractShape {
 
             ElementBufferAttributes that = (ElementBufferAttributes) o;
 
-            if (interiorElementCount != that.interiorElementCount) return false;
-            if (outlineElementCount != that.outlineElementCount) return false;
-            return outlineOffset == that.outlineOffset;
+            if (!interiorElements.equals(that.interiorElements)) return false;
+            return outlineElements.equals(that.outlineElements);
         }
 
         @Override
         public int hashCode() {
-            int result = interiorElementCount;
-            result = 31 * result + outlineElementCount;
-            result = 31 * result + outlineOffset;
+            int result = interiorElements.hashCode();
+            result = 31 * result + outlineElements.hashCode();
             return result;
         }
     }
