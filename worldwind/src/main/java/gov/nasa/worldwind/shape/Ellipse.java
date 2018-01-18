@@ -13,7 +13,10 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.draw.DrawShapeState;
+import gov.nasa.worldwind.draw.Drawable;
+import gov.nasa.worldwind.draw.DrawableShape;
 import gov.nasa.worldwind.draw.DrawableSurfaceShape;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Range;
@@ -109,6 +112,10 @@ public class Ellipse extends AbstractShape {
     protected static SparseArray<ElementBufferAttributes> ELEMENT_BUFFER_ATTRIBUTES = new SparseArray<>();
 
     protected Vec3 vertexOrigin = new Vec3();
+
+    protected boolean isSurfaceShape;
+
+    protected double cameraDistance;
 
     protected static final Position POSITION = new Position();
 
@@ -385,12 +392,19 @@ public class Ellipse extends AbstractShape {
         }
 
         // Obtain a drawable form the render context pool.
-        DrawableSurfaceShape drawable;
+        Drawable drawable;
         DrawShapeState drawState;
-        Pool<DrawableSurfaceShape> pool = rc.getDrawablePool(DrawableSurfaceShape.class);
-        drawable = DrawableSurfaceShape.obtain(pool);
-        drawState = drawable.drawState;
-        drawable.sector.set(this.boundingSector);
+        if (this.isSurfaceShape) {
+            Pool<DrawableSurfaceShape> pool = rc.getDrawablePool(DrawableSurfaceShape.class);
+            drawable = DrawableSurfaceShape.obtain(pool);
+            drawState = ((DrawableSurfaceShape) drawable).drawState;
+            ((DrawableSurfaceShape) drawable).sector.set(this.boundingSector);
+        } else {
+            Pool<DrawableShape> pool = rc.getDrawablePool(DrawableShape.class);
+            drawable = DrawableShape.obtain(pool);
+            drawState = ((DrawableShape) drawable).drawState;
+            this.cameraDistance = this.boundingBox.distanceTo(rc.cameraPoint);
+        }
 
         // Use the basic GLSL program to draw the shape.
         drawState.program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
@@ -416,8 +430,13 @@ public class Ellipse extends AbstractShape {
             drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes);
         }
 
-        this.drawInterior(rc, drawState, elementBufferAttributes);
-        this.drawOutline(rc, drawState, elementBufferAttributes);
+        if (this.isSurfaceShape) {
+            this.drawInterior(rc, drawState, elementBufferAttributes);
+            this.drawOutline(rc, drawState, elementBufferAttributes);
+        } else {
+            this.drawOutline(rc, drawState, elementBufferAttributes);
+            this.drawInterior(rc, drawState, elementBufferAttributes);
+        }
 
         // Configure the drawable according to the shape's attributes.
         drawState.vertexOrigin.set(this.vertexOrigin);
@@ -426,7 +445,11 @@ public class Ellipse extends AbstractShape {
         drawState.enableDepthTest = this.activeAttributes.depthTest;
 
         // Enqueue the drawable for processing on the OpenGL thread.
-        rc.offerSurfaceDrawable(drawable, 0 /*zOrder*/);
+        if (this.isSurfaceShape) {
+            rc.offerSurfaceDrawable(drawable, 0 /*zOrder*/);
+        } else {
+            rc.offerShapeDrawable(drawable, this.cameraDistance);
+        }
     }
 
     protected void drawInterior(RenderContext rc, DrawShapeState drawState, ElementBufferAttributes elementBufferAttrs) {
@@ -470,11 +493,19 @@ public class Ellipse extends AbstractShape {
     }
 
     protected void assembleGeometry(RenderContext rc) {
+        // Determine whether the shape geometry must be assembled as Cartesian geometry or as goegraphic geometry.
+        this.isSurfaceShape = (this.altitudeMode == WorldWind.CLAMP_TO_GROUND) && this.followTerrain;
+
         // Clear the shape's vertex array. The array will accumulate values as the shapes's geometry is assembled.
         this.vertexArray.clear();
 
         // Use the ellipse's center position as the local origin for vertex positions.
-        this.vertexOrigin.set(this.center.longitude, this.center.latitude, this.center.altitude);
+        if (this.isSurfaceShape) {
+            this.vertexOrigin.set(this.center.longitude, this.center.latitude, this.center.altitude);
+        } else {
+            rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
+            this.vertexOrigin.set(POINT.x, POINT.y, POINT.z);
+        }
 
         // Determine the number of spine points and construct radius value holding array
         int spinePoints = this.intervals / 2 - 1; // intervals must be even
@@ -506,7 +537,7 @@ public class Ellipse extends AbstractShape {
             // Calculate the great circle location given this intervals step (azimuthDegrees) a correction value to
             // start from an east-west aligned major axis (90.0) and the user specified user heading value
             this.center.greatCircleLocation(azimuthDegrees + headingAdjustment + this.heading, arcRadius, POSITION);
-            this.addVertex(rc, POSITION.latitude, POSITION.longitude, 0);
+            this.addVertex(rc, POSITION.latitude, POSITION.longitude, this.center.altitude);
             // Add the major arc radius for the spine points. Spine points are vertically coincident with exterior
             // points. The first and middle most point do not have corresponding spine points.
             if (i > 0 && i < this.intervals / 2) {
@@ -517,14 +548,21 @@ public class Ellipse extends AbstractShape {
         // Add the interior spine point vertices
         for (int i = 0; i < spinePoints; i++) {
             this.center.greatCircleLocation(0 + headingAdjustment + this.heading, spineRadius[i], POSITION);
-            this.addVertex(rc, POSITION.latitude, POSITION.longitude, 0);
+            this.addVertex(rc, POSITION.latitude, POSITION.longitude, this.center.altitude);
         }
 
         // Compute the shape's bounding sector from its assembled coordinates.
-        this.boundingSector.setEmpty();
-        this.boundingSector.union(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
-        this.boundingSector.translate(this.vertexOrigin.y /*lat*/, this.vertexOrigin.x /*lon*/);
-        this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
+        if (this.isSurfaceShape) {
+            this.boundingSector.setEmpty();
+            this.boundingSector.union(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
+            this.boundingSector.translate(this.vertexOrigin.y /*lat*/, this.vertexOrigin.x /*lon*/);
+            this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
+        } else {
+            this.boundingSector.setEmpty();
+            this.boundingSector.union(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
+            this.boundingSector.translate(this.vertexOrigin.y /*lat*/, this.vertexOrigin.x /*lon*/);
+            this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
+        }
     }
 
     protected static ElementBufferAttributes aseembleElementsToCache(RenderContext rc, int intervals) {
@@ -585,13 +623,24 @@ public class Ellipse extends AbstractShape {
     }
 
     protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude) {
-        this.vertexArray.add((float) (longitude - this.vertexOrigin.x));
-        this.vertexArray.add((float) (latitude - this.vertexOrigin.y));
-        this.vertexArray.add((float) (altitude - this.vertexOrigin.z));
-        // reserved for future texture coordinate use
-        this.vertexArray.add(0);
-        this.vertexArray.add(0);
-        this.vertexArray.add(0);
+        if (this.isSurfaceShape) {
+            this.vertexArray.add((float) (longitude - this.vertexOrigin.x));
+            this.vertexArray.add((float) (latitude - this.vertexOrigin.y));
+            this.vertexArray.add((float) (altitude - this.vertexOrigin.z));
+            // reserved for future texture coordinate use
+            this.vertexArray.add(0);
+            this.vertexArray.add(0);
+            this.vertexArray.add(0);
+        } else {
+            Vec3 point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, POINT);
+            this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
+            this.vertexArray.add((float) (point.y - this.vertexOrigin.y));
+            this.vertexArray.add((float) (point.z - this.vertexOrigin.z));
+            // reserved for future texture coordinate use
+            this.vertexArray.add(0);
+            this.vertexArray.add(0);
+            this.vertexArray.add(0);
+        }
     }
 
     /**
