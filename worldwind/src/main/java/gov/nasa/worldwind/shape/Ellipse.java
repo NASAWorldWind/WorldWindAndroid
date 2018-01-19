@@ -111,7 +111,7 @@ public class Ellipse extends AbstractShape {
 
     protected Object vertexBufferKey = nextCacheKey();
 
-    protected static SparseArray<ElementBufferAttributes> ELEMENT_BUFFER_ATTRIBUTES = new SparseArray<>();
+
 
     protected Vec3 vertexOrigin = new Vec3();
 
@@ -435,7 +435,7 @@ public class Ellipse extends AbstractShape {
         }
 
         // Get the attributes of the element buffer
-        ElementBufferAttributes elementBufferAttributes = ELEMENT_BUFFER_ATTRIBUTES.get(this.intervals);
+        ElementBufferAttributes elementBufferAttributes = ElementBufferAttributes.get(this.intervals, this.extrude);
         drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes);
         if (drawState.elementBuffer == null) {
             elementBufferAttributes = assembleElementsToCache(rc, this.intervals);
@@ -476,6 +476,11 @@ public class Ellipse extends AbstractShape {
         drawState.texCoordAttrib(2 /*size*/, 12 /*offset in bytes*/);
         drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, elementBufferAttrs.interiorElements.length(),
             GLES20.GL_UNSIGNED_SHORT, elementBufferAttrs.interiorElements.lower * 2 /*offset*/);
+
+        if (this.extrude && !this.isSurfaceShape) {
+            drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, elementBufferAttrs.sideElements.length(),
+                GLES20.GL_UNSIGNED_SHORT, elementBufferAttrs.sideElements.lower * 2);
+        }
     }
 
     protected void drawOutline(RenderContext rc, DrawShapeState drawState, ElementBufferAttributes elementBufferAttrs) {
@@ -549,7 +554,7 @@ public class Ellipse extends AbstractShape {
             // Calculate the great circle location given this intervals step (azimuthDegrees) a correction value to
             // start from an east-west aligned major axis (90.0) and the user specified user heading value
             this.center.greatCircleLocation(azimuthDegrees + headingAdjustment + this.heading, arcRadius, POSITION);
-            this.addVertex(rc, POSITION.latitude, POSITION.longitude, this.center.altitude);
+            this.addVertex(rc, POSITION.latitude, POSITION.longitude, this.center.altitude, true);
             // Add the major arc radius for the spine points. Spine points are vertically coincident with exterior
             // points. The first and middle most point do not have corresponding spine points.
             if (i > 0 && i < this.intervals / 2) {
@@ -560,7 +565,7 @@ public class Ellipse extends AbstractShape {
         // Add the interior spine point vertices
         for (int i = 0; i < spinePoints; i++) {
             this.center.greatCircleLocation(0 + headingAdjustment + this.heading, spineRadius[i], POSITION);
-            this.addVertex(rc, POSITION.latitude, POSITION.longitude, this.center.altitude);
+            this.addVertex(rc, POSITION.latitude, POSITION.longitude, this.center.altitude, false);
         }
 
         // Compute the shape's bounding sector from its assembled coordinates.
@@ -577,16 +582,22 @@ public class Ellipse extends AbstractShape {
         }
     }
 
-    protected static ElementBufferAttributes assembleElementsToCache(RenderContext rc, int intervals) {
+    protected ElementBufferAttributes assembleElementsToCache(RenderContext rc, int intervals) {
         // Create temporary storage for elements
         ShortArray interiorElements = new ShortArray();
         ShortArray outlineElements = new ShortArray();
+        ShortArray sideElements = new ShortArray();
 
-        // Generate the interior element buffer with spine
-        int interiorIdx = intervals;
+        // Check if conditions satisfy the generation of elements for an extrusion wall
+        boolean ellipseExtruded = this.extrude && !this.isSurfaceShape;
+
+        // Generate the interior element buffer with spine, when the shape is extruded the extra ground points need to
+        // be accounted for
+        int interiorIdx = ellipseExtruded ? intervals * 2 : intervals;
+        int extrusionCorrection = ellipseExtruded ? 2 : 1;
         // Add the anchor leg
         interiorElements.add((short) 0);
-        interiorElements.add((short) 1);
+        interiorElements.add((short) extrusionCorrection);
         // Tessellate the interior
         for (int i = 2; i < intervals; i++) {
             // Add the corresponding interior spine point if this isn't the vertex following the last vertex for the
@@ -601,10 +612,10 @@ public class Ellipse extends AbstractShape {
             // Add the degenerate triangle at the negative major axis in order to flip the triangle strip back towards
             // the positive axis
             if (i == intervals / 2) {
-                interiorElements.add((short) i);
+                interiorElements.add((short) (i * extrusionCorrection));
             }
             // Add the exterior vertex
-            interiorElements.add((short) i);
+            interiorElements.add((short) (i * extrusionCorrection));
         }
         // Complete the strip
         interiorElements.add((short) --interiorIdx);
@@ -612,29 +623,41 @@ public class Ellipse extends AbstractShape {
 
         // Generate the outline element buffer
         for (int i = 0; i < intervals; i++) {
-            outlineElements.add((short) i);
+            outlineElements.add((short) (i * extrusionCorrection));
+        }
+
+        if (ellipseExtruded) {
+            // Generate the side element buffer
+            for (int i = 0; i < (intervals * 2); i++) {
+                sideElements.add((short) i);
+            }
+            sideElements.add((short) 0);
+            sideElements.add((short) 1);
         }
 
         // Generate an attribute bundle for this element buffer
         ElementBufferAttributes elementBufferAttributes = new ElementBufferAttributes();
         elementBufferAttributes.interiorElements.set(0, interiorElements.size());
         elementBufferAttributes.outlineElements.set(interiorElements.size(), interiorElements.size() + outlineElements.size());
+        elementBufferAttributes.sideElements.set(interiorElements.size() + outlineElements.size(),
+            interiorElements.size() + outlineElements.size() + sideElements.size());
 
         // Generate a buffer for the element
-        int size = (interiorElements.size() * 2) + (outlineElements.size() * 2);
+        int size = (interiorElements.size() + outlineElements.size() + sideElements.size()) * 2;
         ShortBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer();
         buffer.put(interiorElements.array(), 0, interiorElements.size());
         buffer.put(outlineElements.array(), 0, outlineElements.size());
+        buffer.put(sideElements.array(), 0, sideElements.size());
         BufferObject elementBuffer = new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind());
 
         // Cache the buffer object and attributes in the render resource cache and attribute map respectively
         rc.putBufferObject(elementBufferAttributes, elementBuffer);
-        ELEMENT_BUFFER_ATTRIBUTES.put(intervals, elementBufferAttributes);
+        ElementBufferAttributes.put(intervals, this.extrude, elementBufferAttributes);
 
         return elementBufferAttributes;
     }
 
-    protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude) {
+    protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude, boolean outlinePoint) {
         if (this.isSurfaceShape) {
             this.vertexArray.add((float) (longitude - this.vertexOrigin.x));
             this.vertexArray.add((float) (latitude - this.vertexOrigin.y));
@@ -653,7 +676,7 @@ public class Ellipse extends AbstractShape {
             this.vertexArray.add(0);
             this.vertexArray.add(0);
 
-            if (this.extrude) {
+            if (this.extrude && outlinePoint) {
                 point = rc.geographicToCartesian(latitude, longitude, 0, WorldWind.CLAMP_TO_GROUND, POINT);
                 this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
                 this.vertexArray.add((float) (point.y - this.vertexOrigin.y));
@@ -712,9 +735,48 @@ public class Ellipse extends AbstractShape {
 
     protected static class ElementBufferAttributes {
 
+        /**
+         * Caches ElementBufferAttributes corresponding to interval and extrusion settings. The actual buffer is cached
+         * in the RenderResourceCache of the RenderContext. The array allows for both and extruded version and
+         * non-extruded version for a given interval value. The second element in the array should be the extruded
+         * buffer.
+         */
+        protected static SparseArray<ElementBufferAttributes[]> ELEMENT_BUFFER_ATTRIBUTES = new SparseArray<>();
+
         protected Range interiorElements = new Range();
 
         protected Range outlineElements = new Range();
+
+        protected Range sideElements = new Range();
+
+        protected boolean extrude;
+
+        protected static ElementBufferAttributes get(int intervals, boolean extrude) {
+            ElementBufferAttributes[] attrs = ELEMENT_BUFFER_ATTRIBUTES.get(intervals);
+            if (attrs == null) {
+                return null;
+            }
+
+            if (extrude) {
+                return attrs[1];
+            } else {
+                return attrs[0];
+            }
+        }
+
+        protected static void put(int intervals, boolean extrude, ElementBufferAttributes attr) {
+            ElementBufferAttributes[] attrs = ELEMENT_BUFFER_ATTRIBUTES.get(intervals);
+            if (attrs == null) {
+                attrs = new ElementBufferAttributes[2];
+                ELEMENT_BUFFER_ATTRIBUTES.put(intervals, attrs);
+            }
+
+            if (extrude) {
+                attrs[1] = attr;
+            } else {
+                attrs[0] = attr;
+            }
+        }
 
         @Override
         public boolean equals(Object o) {
@@ -723,14 +785,18 @@ public class Ellipse extends AbstractShape {
 
             ElementBufferAttributes that = (ElementBufferAttributes) o;
 
+            if (extrude != that.extrude) return false;
             if (!interiorElements.equals(that.interiorElements)) return false;
-            return outlineElements.equals(that.outlineElements);
+            if (!outlineElements.equals(that.outlineElements)) return false;
+            return sideElements.equals(that.sideElements);
         }
 
         @Override
         public int hashCode() {
             int result = interiorElements.hashCode();
             result = 31 * result + outlineElements.hashCode();
+            result = 31 * result + sideElements.hashCode();
+            result = 31 * result + (extrude ? 1 : 0);
             return result;
         }
     }
