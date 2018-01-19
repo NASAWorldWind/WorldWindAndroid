@@ -438,7 +438,7 @@ public class Ellipse extends AbstractShape {
         ElementBufferAttributes elementBufferAttributes = ElementBufferAttributes.get(this.intervals, this.extrude);
         drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes);
         if (drawState.elementBuffer == null) {
-            elementBufferAttributes = assembleElementsToCache(rc, this.intervals);
+            elementBufferAttributes = assembleElementsToCache(rc, this.intervals, this.extrude && !this.isSurfaceShape);
             drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes);
         }
 
@@ -587,19 +587,16 @@ public class Ellipse extends AbstractShape {
         }
     }
 
-    protected ElementBufferAttributes assembleElementsToCache(RenderContext rc, int intervals) {
+    protected static ElementBufferAttributes assembleElementsToCache(RenderContext rc, int intervals, boolean isExtruded) {
         // Create temporary storage for elements
         ShortArray interiorElements = new ShortArray();
         ShortArray outlineElements = new ShortArray();
         ShortArray sideElements = new ShortArray();
 
-        // Check if conditions satisfy the generation of elements for an extrusion wall
-        boolean ellipseExtruded = this.extrude && !this.isSurfaceShape;
-
         // Generate the interior element buffer with spine, when the shape is extruded the extra ground points need to
         // be accounted for
-        int interiorIdx = ellipseExtruded ? intervals * 2 : intervals;
-        int extrusionCorrection = ellipseExtruded ? 2 : 1;
+        int interiorIdx = isExtruded ? intervals * 2 : intervals;
+        int extrusionCorrection = isExtruded ? 2 : 1;
         // Add the anchor leg
         interiorElements.add((short) 0);
         interiorElements.add((short) extrusionCorrection);
@@ -631,7 +628,7 @@ public class Ellipse extends AbstractShape {
             outlineElements.add((short) (i * extrusionCorrection));
         }
 
-        if (ellipseExtruded) {
+        if (isExtruded) {
             // Generate the side element buffer
             for (int i = 0; i < (intervals * 2); i++) {
                 sideElements.add((short) i);
@@ -657,7 +654,7 @@ public class Ellipse extends AbstractShape {
 
         // Cache the buffer object and attributes in the render resource cache and attribute map respectively
         rc.putBufferObject(elementBufferAttributes, elementBuffer);
-        ElementBufferAttributes.put(intervals, this.extrude, elementBufferAttributes);
+        ElementBufferAttributes.put(intervals, isExtruded, elementBufferAttributes);
 
         return elementBufferAttributes;
     }
@@ -748,6 +745,10 @@ public class Ellipse extends AbstractShape {
          */
         protected static SparseArray<ElementBufferAttributes[]> ELEMENT_BUFFER_ATTRIBUTES = new SparseArray<>();
 
+        protected static final int REGULAR_BUFFER = 0;
+
+        protected static final int EXTRUDED_BUFFER = 1;
+
         protected Range interiorElements = new Range();
 
         protected Range outlineElements = new Range();
@@ -763,9 +764,9 @@ public class Ellipse extends AbstractShape {
             }
 
             if (extrude) {
-                return attrs[1];
+                return attrs[EXTRUDED_BUFFER];
             } else {
-                return attrs[0];
+                return attrs[REGULAR_BUFFER];
             }
         }
 
@@ -777,9 +778,9 @@ public class Ellipse extends AbstractShape {
             }
 
             if (extrude) {
-                attrs[1] = attr;
+                attrs[EXTRUDED_BUFFER] = attr;
             } else {
-                attrs[0] = attr;
+                attrs[REGULAR_BUFFER] = attr;
             }
         }
 
