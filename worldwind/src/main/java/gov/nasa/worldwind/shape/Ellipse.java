@@ -496,6 +496,11 @@ public class Ellipse extends AbstractShape {
         drawState.texCoordAttrib(1 /*size*/, 20 /*offset in bytes*/);
         drawState.drawElements(GLES20.GL_LINE_LOOP, elementBufferAttrs.outlineElements.length(),
             GLES20.GL_UNSIGNED_SHORT, elementBufferAttrs.outlineElements.lower * 2 /*offset*/);
+
+        if (this.activeAttributes.drawVerticals && this.extrude) {
+            drawState.drawElements(GLES20.GL_LINES, elementBufferAttrs.sideElements.length(),
+                GLES20.GL_UNSIGNED_SHORT, elementBufferAttrs.sideElements.lower * 2);
+        }
     }
 
     protected boolean mustAssembleGeometry(RenderContext rc) {
