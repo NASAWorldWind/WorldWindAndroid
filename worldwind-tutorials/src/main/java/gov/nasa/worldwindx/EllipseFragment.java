@@ -61,6 +61,20 @@ public class EllipseFragment extends BasicGlobeFragment {
         ellipse.setFollowTerrain(true); // cause the ellipse geometry to follow the terrain surface
         tutorialLayer.addRenderable(ellipse);
 
+        // Create an ellipse with the default attributes, an altitude of 200 km, and a 500km major-radius and a 300km
+        // minor-radius.
+        ellipse = new Ellipse(new Position(25, -120, 200e3), 500000, 300000);
+        tutorialLayer.addRenderable(ellipse);
+
+        // Create an ellipse with custom attributes that make the interior 50% transparent and an extruded outline with
+        // vertical lines
+        attrs = new ShapeAttributes();
+        attrs.setInteriorColor(new Color(1, 1, 1, 0.5f)); // 50% transparent white
+        attrs.setDrawVerticals(true);
+        ellipse = new Ellipse(new Position(25, -100, 200e3), 500000, 300000, attrs);
+        ellipse.setExtrude(true);
+        tutorialLayer.addRenderable(ellipse);
+
         return wwd;
     }
 }
