@@ -453,7 +453,7 @@ public class Ellipse extends AbstractShape {
         // Configure the drawable according to the shape's attributes.
         drawState.vertexOrigin.set(this.vertexOrigin);
         drawState.vertexStride = VERTEX_STRIDE * 4; // stride in bytes
-        drawState.enableCullFace = false;
+        drawState.enableCullFace = this.extrude;
         drawState.enableDepthTest = this.activeAttributes.depthTest;
 
         // Enqueue the drawable for processing on the OpenGL thread.
@@ -477,7 +477,7 @@ public class Ellipse extends AbstractShape {
         drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, elementBufferAttrs.interiorElements.length(),
             GLES20.GL_UNSIGNED_SHORT, elementBufferAttrs.interiorElements.lower * 2 /*offset*/);
 
-        if (this.extrude && !this.isSurfaceShape) {
+        if (this.extrude) {
             drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, elementBufferAttrs.sideElements.length(),
                 GLES20.GL_UNSIGNED_SHORT, elementBufferAttrs.sideElements.lower * 2);
         }
