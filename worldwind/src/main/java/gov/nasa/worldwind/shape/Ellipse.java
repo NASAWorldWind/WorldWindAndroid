@@ -24,8 +24,9 @@ import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.RenderContext;
-import gov.nasa.worldwind.util.FloatArray;
+import gov.nasa.worldwind.render.RenderResource;
 import gov.nasa.worldwind.util.Logger;
+import gov.nasa.worldwind.util.LruMemoryCache;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.ShortArray;
 
@@ -107,7 +108,11 @@ public class Ellipse extends AbstractShape {
      */
     protected int intervals;
 
-    protected FloatArray vertexArray = new FloatArray();
+    protected static SparseArray<ElementBufferAttributes> ELEMENT_BUFFER_ATTRIBUTES = new SparseArray<>();
+
+    protected float[] vertexArray;
+
+    protected int vertexIndex;
 
     protected Object vertexBufferKey = nextCacheKey();
 
@@ -425,18 +430,18 @@ public class Ellipse extends AbstractShape {
         // Assemble the drawable's OpenGL vertex buffer object.
         drawState.vertexBuffer = rc.getBufferObject(this.vertexBufferKey);
         if (drawState.vertexBuffer == null) {
-            int size = this.vertexArray.size() * 4;
+            int size = this.vertexArray.length * 4;
             FloatBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
-            buffer.put(this.vertexArray.array(), 0, this.vertexArray.size());
+            buffer.put(this.vertexArray, 0, this.vertexArray.length);
             drawState.vertexBuffer = new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer.rewind());
             rc.putBufferObject(this.vertexBufferKey, drawState.vertexBuffer);
         }
 
         // Get the attributes of the element buffer
-        ElementBufferAttributes elementBufferAttributes = ElementBufferAttributes.get(this.intervals, this.extrude);
+        ElementBufferAttributes elementBufferAttributes = ELEMENT_BUFFER_ATTRIBUTES.get(this.intervals);
         drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes);
         if (drawState.elementBuffer == null) {
-            elementBufferAttributes = assembleElementsToCache(rc, this.intervals, this.extrude && !this.isSurfaceShape);
+            elementBufferAttributes = assembleElementsToCache(rc.renderResourceCache, this.intervals);
             drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes);
         }
 
@@ -472,8 +477,8 @@ public class Ellipse extends AbstractShape {
         // Configure the drawable to display the shape's interior.
         drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.interiorColor);
         drawState.texCoordAttrib(2 /*size*/, 12 /*offset in bytes*/);
-        drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, elementBufferAttrs.interiorElements.length(),
-            GLES20.GL_UNSIGNED_SHORT, elementBufferAttrs.interiorElements.lower * 2 /*offset*/);
+        drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, elementBufferAttrs.topElements.length(),
+            GLES20.GL_UNSIGNED_SHORT, elementBufferAttrs.topElements.lower * 2 /*offset*/);
 
         if (this.extrude) {
             drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, elementBufferAttrs.sideElements.length(),
@@ -504,7 +509,7 @@ public class Ellipse extends AbstractShape {
     protected boolean mustAssembleGeometry(RenderContext rc) {
         int calculatedIntervals = this.computeIntervals(rc);
         int sanitzedIntervals = this.sanitizeIntervals(calculatedIntervals);
-        if (this.vertexArray.size() == 0 || sanitzedIntervals != this.intervals) {
+        if (this.vertexArray == null || sanitzedIntervals != this.intervals) {
             this.intervals = sanitzedIntervals;
             return true;
         }
@@ -515,9 +520,6 @@ public class Ellipse extends AbstractShape {
     protected void assembleGeometry(RenderContext rc) {
         // Determine whether the shape geometry must be assembled as Cartesian geometry or as goegraphic geometry.
         this.isSurfaceShape = (this.altitudeMode == WorldWind.CLAMP_TO_GROUND) && this.followTerrain;
-
-        // Clear the shape's vertex array. The array will accumulate values as the shapes's geometry is assembled.
-        this.vertexArray.clear();
 
         // Use the ellipse's center position as the local origin for vertex positions.
         if (this.isSurfaceShape) {
@@ -531,6 +533,18 @@ public class Ellipse extends AbstractShape {
         int spinePoints = this.intervals / 2 - 1; // intervals must be even
         int spineIdx = 0;
         double[] spineRadius = new double[spinePoints];
+
+        // Clear the shape's vertex array. The array will accumulate values as the shapes's geometry is assembled.
+        this.vertexIndex = 0;
+        int offset = (this.intervals + spinePoints) * VERTEX_STRIDE;
+        int vertices;
+        if (this.extrude && !this.isSurfaceShape) {
+            vertices = this.intervals * 2 + spinePoints;
+        } else {
+            vertices = this.intervals + spinePoints;
+        }
+        // Each vertex has three position coordinates and three texture coordinates
+        this.vertexArray = new float[vertices * VERTEX_STRIDE];
 
         // Check if minor radius is less than major in which case we need to flip the definitions and change the phase
         boolean isStandardAxisOrientation = this.majorRadius > this.minorRadius;
@@ -557,7 +571,7 @@ public class Ellipse extends AbstractShape {
             // Calculate the great circle location given this intervals step (azimuthDegrees) a correction value to
             // start from an east-west aligned major axis (90.0) and the user specified user heading value
             this.center.greatCircleLocation(azimuthDegrees + headingAdjustment + this.heading, arcRadius, scratchPosition);
-            this.addVertex(rc, scratchPosition.latitude, scratchPosition.longitude, this.center.altitude, true);
+            this.addVertex(rc, scratchPosition.latitude, scratchPosition.longitude, this.center.altitude, offset, true);
             // Add the major arc radius for the spine points. Spine points are vertically coincident with exterior
             // points. The first and middle most point do not have corresponding spine points.
             if (i > 0 && i < this.intervals / 2) {
@@ -568,121 +582,119 @@ public class Ellipse extends AbstractShape {
         // Add the interior spine point vertices
         for (int i = 0; i < spinePoints; i++) {
             this.center.greatCircleLocation(0 + headingAdjustment + this.heading, spineRadius[i], scratchPosition);
-            this.addVertex(rc, scratchPosition.latitude, scratchPosition.longitude, this.center.altitude, false);
+            this.addVertex(rc, scratchPosition.latitude, scratchPosition.longitude, this.center.altitude, offset, false);
         }
 
         // Compute the shape's bounding sector from its assembled coordinates.
         if (this.isSurfaceShape) {
             this.boundingSector.setEmpty();
-            this.boundingSector.union(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
+            this.boundingSector.union(this.vertexArray, this.vertexArray.length, VERTEX_STRIDE);
             this.boundingSector.translate(this.vertexOrigin.y /*lat*/, this.vertexOrigin.x /*lon*/);
             this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
         } else {
-            this.boundingBox.setToPoints(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
+            this.boundingBox.setToPoints(this.vertexArray, this.vertexArray.length, VERTEX_STRIDE);
             this.boundingBox.translate(this.vertexOrigin.x, this.vertexOrigin.y, this.vertexOrigin.z);
             this.boundingSector.setEmpty();
         }
     }
 
-    protected static ElementBufferAttributes assembleElementsToCache(RenderContext rc, int intervals, boolean isExtruded) {
+    protected static ElementBufferAttributes assembleElementsToCache(LruMemoryCache<Object, RenderResource> cache, int intervals) {
         // Create temporary storage for elements
-        ShortArray interiorElements = new ShortArray();
-        ShortArray outlineElements = new ShortArray();
-        ShortArray sideElements = new ShortArray();
+        ShortArray elements = new ShortArray();
+        ElementBufferAttributes elementBufferAttributes = new ElementBufferAttributes();
 
-        // Generate the interior element buffer with spine, when the shape is extruded the extra ground points need to
-        // be accounted for
-        int interiorIdx = isExtruded ? intervals * 2 : intervals;
-        int extrusionCorrection = isExtruded ? 2 : 1;
+        // Generate the top element buffer with spine
+        int interiorIdx = intervals;
+        int spinePoints = intervals / 2 - 1; // intervals must be even
+        int offset = intervals + spinePoints;
+
         // Add the anchor leg
-        interiorElements.add((short) 0);
-        interiorElements.add((short) extrusionCorrection);
+        elements.add((short) 0);
+        elements.add((short) 1);
         // Tessellate the interior
         for (int i = 2; i < intervals; i++) {
             // Add the corresponding interior spine point if this isn't the vertex following the last vertex for the
             // negative major axis
             if (i != (intervals / 2 + 1)) {
                 if (i > intervals / 2) {
-                    interiorElements.add((short) --interiorIdx);
+                    elements.add((short) --interiorIdx);
                 } else {
-                    interiorElements.add((short) interiorIdx++);
+                    elements.add((short) interiorIdx++);
                 }
             }
             // Add the degenerate triangle at the negative major axis in order to flip the triangle strip back towards
             // the positive axis
             if (i == intervals / 2) {
-                interiorElements.add((short) (i * extrusionCorrection));
+                elements.add((short) i);
             }
             // Add the exterior vertex
-            interiorElements.add((short) (i * extrusionCorrection));
+            elements.add((short) i);
         }
         // Complete the strip
-        interiorElements.add((short) --interiorIdx);
-        interiorElements.add((short) 0);
+        elements.add((short) --interiorIdx);
+        elements.add((short) 0);
+
+        elementBufferAttributes.topElements.set(0, elements.size());
 
         // Generate the outline element buffer
         for (int i = 0; i < intervals; i++) {
-            outlineElements.add((short) (i * extrusionCorrection));
+            elements.add((short) i);
         }
 
-        if (isExtruded) {
-            // Generate the side element buffer
-            for (int i = 0; i < (intervals * 2); i++) {
-                sideElements.add((short) i);
-            }
-            sideElements.add((short) 0);
-            sideElements.add((short) 1);
-        }
+        elementBufferAttributes.outlineElements.set(elementBufferAttributes.topElements.upper, elements.size());
 
-        // Generate an attribute bundle for this element buffer
-        ElementBufferAttributes elementBufferAttributes = new ElementBufferAttributes();
-        elementBufferAttributes.interiorElements.set(0, interiorElements.size());
-        elementBufferAttributes.outlineElements.set(interiorElements.size(), interiorElements.size() + outlineElements.size());
-        elementBufferAttributes.sideElements.set(interiorElements.size() + outlineElements.size(),
-            interiorElements.size() + outlineElements.size() + sideElements.size());
+        // Generate the side element buffer
+        for (int i = 0; i < intervals; i++) {
+            elements.add((short) i);
+            elements.add((short) (i + offset));
+        }
+        elements.add((short) 0);
+        elements.add((short) offset);
+
+        elementBufferAttributes.sideElements.set(elementBufferAttributes.outlineElements.upper, elements.size());
 
         // Generate a buffer for the element
-        int size = (interiorElements.size() + outlineElements.size() + sideElements.size()) * 2;
+        int size = elements.size() * 2;
         ShortBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer();
-        buffer.put(interiorElements.array(), 0, interiorElements.size());
-        buffer.put(outlineElements.array(), 0, outlineElements.size());
-        buffer.put(sideElements.array(), 0, sideElements.size());
+        buffer.put(elements.array(), 0, elements.size());
         BufferObject elementBuffer = new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind());
 
-        // Cache the buffer object and attributes in the render resource cache and attribute map respectively
-        rc.putBufferObject(elementBufferAttributes, elementBuffer);
-        ElementBufferAttributes.put(intervals, isExtruded, elementBufferAttributes);
+        // Cache the buffer object and attributes in the cache and attribute map respectively
+        cache.put(elementBufferAttributes, elementBuffer, size);
+        ELEMENT_BUFFER_ATTRIBUTES.put(intervals, elementBufferAttributes);
 
         return elementBufferAttributes;
     }
 
-    protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude, boolean outlinePoint) {
+    protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude, int offset, boolean outlinePoint) {
+        int offsetVertexIndex = this.vertexIndex + offset;
+
         if (this.isSurfaceShape) {
-            this.vertexArray.add((float) (longitude - this.vertexOrigin.x));
-            this.vertexArray.add((float) (latitude - this.vertexOrigin.y));
-            this.vertexArray.add((float) (altitude - this.vertexOrigin.z));
+            this.vertexArray[this.vertexIndex++] = (float) (longitude - this.vertexOrigin.x);
+            this.vertexArray[this.vertexIndex++] = (float) (latitude - this.vertexOrigin.y);
+            this.vertexArray[this.vertexIndex++] = (float) (altitude - this.vertexOrigin.z);
             // reserved for future texture coordinate use
-            this.vertexArray.add(0);
-            this.vertexArray.add(0);
-            this.vertexArray.add(0);
+            this.vertexArray[this.vertexIndex++] = 0;
+            this.vertexArray[this.vertexIndex++] = 0;
+            this.vertexArray[this.vertexIndex++] = 0;
         } else {
             Vec3 point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, scratchPoint);
-            this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
-            this.vertexArray.add((float) (point.y - this.vertexOrigin.y));
-            this.vertexArray.add((float) (point.z - this.vertexOrigin.z));
+            this.vertexArray[this.vertexIndex++] = (float) (point.x - this.vertexOrigin.x);
+            this.vertexArray[this.vertexIndex++] = (float) (point.y - this.vertexOrigin.y);
+            this.vertexArray[this.vertexIndex++] = (float) (point.z - this.vertexOrigin.z);
             // reserved for future texture coordinate use
-            this.vertexArray.add(0);
-            this.vertexArray.add(0);
-            this.vertexArray.add(0);
+            this.vertexArray[this.vertexIndex++] = 0;
+            this.vertexArray[this.vertexIndex++] = 0;
+            this.vertexArray[this.vertexIndex++] = 0;
 
             if (this.extrude && outlinePoint) {
                 point = rc.geographicToCartesian(latitude, longitude, 0, WorldWind.CLAMP_TO_GROUND, scratchPoint);
-                this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
-                this.vertexArray.add((float) (point.y - this.vertexOrigin.y));
-                this.vertexArray.add((float) (point.z - this.vertexOrigin.z));
-                this.vertexArray.add(0 /*unused*/);
-                this.vertexArray.add(0 /*unused*/);
-                this.vertexArray.add(0 /*unused*/);
+                this.vertexArray[offsetVertexIndex++] = (float) (point.x - this.vertexOrigin.x);
+                this.vertexArray[offsetVertexIndex++] = (float) (point.y - this.vertexOrigin.y);
+                this.vertexArray[offsetVertexIndex++] = (float) (point.z - this.vertexOrigin.z);
+                this.vertexArray[offsetVertexIndex++] = 0; //unused
+                this.vertexArray[offsetVertexIndex++] = 0; //unused
+                this.vertexArray[offsetVertexIndex++] = 0; //unused
             }
         }
     }
@@ -729,57 +741,18 @@ public class Ellipse extends AbstractShape {
 
     @Override
     protected void reset() {
-        this.vertexArray.clear();
+        this.vertexArray = null;
     }
 
     protected static class ElementBufferAttributes {
 
-        /**
-         * Caches ElementBufferAttributes corresponding to interval and extrusion settings. The actual buffer is cached
-         * in the RenderResourceCache of the RenderContext. The array allows for both and extruded version and
-         * non-extruded version for a given interval value. The second element in the array should be the extruded
-         * buffer.
-         */
-        protected static SparseArray<ElementBufferAttributes[]> ELEMENT_BUFFER_ATTRIBUTES = new SparseArray<>();
-
-        protected static final int REGULAR_BUFFER = 0;
-
-        protected static final int EXTRUDED_BUFFER = 1;
-
-        protected Range interiorElements = new Range();
+        protected Range topElements = new Range();
 
         protected Range outlineElements = new Range();
 
         protected Range sideElements = new Range();
 
-        protected boolean extrude;
-
-        protected static ElementBufferAttributes get(int intervals, boolean extrude) {
-            ElementBufferAttributes[] attrs = ELEMENT_BUFFER_ATTRIBUTES.get(intervals);
-            if (attrs == null) {
-                return null;
-            }
-
-            if (extrude) {
-                return attrs[EXTRUDED_BUFFER];
-            } else {
-                return attrs[REGULAR_BUFFER];
-            }
-        }
-
-        protected static void put(int intervals, boolean extrude, ElementBufferAttributes attr) {
-            ElementBufferAttributes[] attrs = ELEMENT_BUFFER_ATTRIBUTES.get(intervals);
-            if (attrs == null) {
-                attrs = new ElementBufferAttributes[2];
-                ELEMENT_BUFFER_ATTRIBUTES.put(intervals, attrs);
-            }
-
-            if (extrude) {
-                attrs[EXTRUDED_BUFFER] = attr;
-            } else {
-                attrs[REGULAR_BUFFER] = attr;
-            }
-        }
+        protected Range verticalElements = new Range();
 
         @Override
         public boolean equals(Object o) {
@@ -788,18 +761,18 @@ public class Ellipse extends AbstractShape {
 
             ElementBufferAttributes that = (ElementBufferAttributes) o;
 
-            if (extrude != that.extrude) return false;
-            if (!interiorElements.equals(that.interiorElements)) return false;
+            if (!topElements.equals(that.topElements)) return false;
             if (!outlineElements.equals(that.outlineElements)) return false;
-            return sideElements.equals(that.sideElements);
+            if (!sideElements.equals(that.sideElements)) return false;
+            return verticalElements.equals(that.verticalElements);
         }
 
         @Override
         public int hashCode() {
-            int result = interiorElements.hashCode();
+            int result = topElements.hashCode();
             result = 31 * result + outlineElements.hashCode();
             result = 31 * result + sideElements.hashCode();
-            result = 31 * result + (extrude ? 1 : 0);
+            result = 31 * result + verticalElements.hashCode();
             return result;
         }
     }
