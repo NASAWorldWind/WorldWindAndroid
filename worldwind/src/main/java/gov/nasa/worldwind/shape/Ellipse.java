@@ -122,9 +122,9 @@ public class Ellipse extends AbstractShape {
 
     protected double cameraDistance;
 
-    protected static final Position scratchPosition = new Position();
+    private static final Position scratchPosition = new Position();
 
-    protected static final Vec3 scratchPoint = new Vec3();
+    private static final Vec3 scratchPoint = new Vec3();
 
     protected static Object nextCacheKey() {
         return new Object();
