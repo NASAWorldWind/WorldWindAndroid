@@ -111,8 +111,6 @@ public class Ellipse extends AbstractShape {
 
     protected Object vertexBufferKey = nextCacheKey();
 
-
-
     protected Vec3 vertexOrigin = new Vec3();
 
     protected boolean isSurfaceShape;
