@@ -535,7 +535,7 @@ public class Ellipse extends AbstractShape {
         }
 
         // Determine the number of spine points and construct radius value holding array
-        int spinePoints = this.intervals / 2 - 1; // intervals must be even
+        int spinePoints = computeSpinePoints(this.intervals); // intervals must be even
         int spineIdx = 0;
         double[] spineRadius = new double[spinePoints];
 
@@ -610,7 +610,7 @@ public class Ellipse extends AbstractShape {
 
         // Generate the top element buffer with spine
         int interiorIdx = intervals;
-        int spinePoints = intervals / 2 - 1;
+        int spinePoints = computeSpinePoints(intervals);
         int offset = intervals + spinePoints;
 
         // Add the anchor leg
@@ -739,6 +739,11 @@ public class Ellipse extends AbstractShape {
         double a = this.majorRadius;
         double b = this.minorRadius;
         return Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
+    }
+
+    protected static int computeSpinePoints(int intervals) {
+        // should be even
+        return intervals / 2 - 1;
     }
 
     @Override
