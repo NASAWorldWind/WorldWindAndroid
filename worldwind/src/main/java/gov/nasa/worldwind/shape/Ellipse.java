@@ -578,10 +578,9 @@ public class Ellipse extends AbstractShape {
             this.boundingSector.translate(this.vertexOrigin.y /*lat*/, this.vertexOrigin.x /*lon*/);
             this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
         } else {
+            this.boundingBox.setToPoints(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
+            this.boundingBox.translate(this.vertexOrigin.x, this.vertexOrigin.y, this.vertexOrigin.z);
             this.boundingSector.setEmpty();
-            this.boundingSector.union(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
-            this.boundingSector.translate(this.vertexOrigin.y /*lat*/, this.vertexOrigin.x /*lon*/);
-            this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
         }
     }
 
