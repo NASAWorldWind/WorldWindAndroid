@@ -117,9 +117,9 @@ public class Ellipse extends AbstractShape {
 
     protected double cameraDistance;
 
-    protected static final Position POSITION = new Position();
+    protected static final Position scratchPosition = new Position();
 
-    protected static final Vec3 POINT = new Vec3();
+    protected static final Vec3 scratchPoint = new Vec3();
 
     protected static Object nextCacheKey() {
         return new Object();
@@ -523,8 +523,8 @@ public class Ellipse extends AbstractShape {
         if (this.isSurfaceShape) {
             this.vertexOrigin.set(this.center.longitude, this.center.latitude, this.center.altitude);
         } else {
-            rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
-            this.vertexOrigin.set(POINT.x, POINT.y, POINT.z);
+            rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, scratchPoint);
+            this.vertexOrigin.set(scratchPoint.x, scratchPoint.y, scratchPoint.z);
         }
 
         // Determine the number of spine points and construct radius value holding array
@@ -556,8 +556,8 @@ public class Ellipse extends AbstractShape {
             double arcRadius = Math.sqrt(x * x + y * y);
             // Calculate the great circle location given this intervals step (azimuthDegrees) a correction value to
             // start from an east-west aligned major axis (90.0) and the user specified user heading value
-            this.center.greatCircleLocation(azimuthDegrees + headingAdjustment + this.heading, arcRadius, POSITION);
-            this.addVertex(rc, POSITION.latitude, POSITION.longitude, this.center.altitude, true);
+            this.center.greatCircleLocation(azimuthDegrees + headingAdjustment + this.heading, arcRadius, scratchPosition);
+            this.addVertex(rc, scratchPosition.latitude, scratchPosition.longitude, this.center.altitude, true);
             // Add the major arc radius for the spine points. Spine points are vertically coincident with exterior
             // points. The first and middle most point do not have corresponding spine points.
             if (i > 0 && i < this.intervals / 2) {
@@ -567,8 +567,8 @@ public class Ellipse extends AbstractShape {
 
         // Add the interior spine point vertices
         for (int i = 0; i < spinePoints; i++) {
-            this.center.greatCircleLocation(0 + headingAdjustment + this.heading, spineRadius[i], POSITION);
-            this.addVertex(rc, POSITION.latitude, POSITION.longitude, this.center.altitude, false);
+            this.center.greatCircleLocation(0 + headingAdjustment + this.heading, spineRadius[i], scratchPosition);
+            this.addVertex(rc, scratchPosition.latitude, scratchPosition.longitude, this.center.altitude, false);
         }
 
         // Compute the shape's bounding sector from its assembled coordinates.
@@ -666,7 +666,7 @@ public class Ellipse extends AbstractShape {
             this.vertexArray.add(0);
             this.vertexArray.add(0);
         } else {
-            Vec3 point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, POINT);
+            Vec3 point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, scratchPoint);
             this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
             this.vertexArray.add((float) (point.y - this.vertexOrigin.y));
             this.vertexArray.add((float) (point.z - this.vertexOrigin.z));
@@ -676,7 +676,7 @@ public class Ellipse extends AbstractShape {
             this.vertexArray.add(0);
 
             if (this.extrude && outlinePoint) {
-                point = rc.geographicToCartesian(latitude, longitude, 0, WorldWind.CLAMP_TO_GROUND, POINT);
+                point = rc.geographicToCartesian(latitude, longitude, 0, WorldWind.CLAMP_TO_GROUND, scratchPoint);
                 this.vertexArray.add((float) (point.x - this.vertexOrigin.x));
                 this.vertexArray.add((float) (point.y - this.vertexOrigin.y));
                 this.vertexArray.add((float) (point.z - this.vertexOrigin.z));
@@ -700,7 +700,7 @@ public class Ellipse extends AbstractShape {
             return intervals; // use at least the minimum number of intervals
         }
 
-        Vec3 centerPoint = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
+        Vec3 centerPoint = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, scratchPoint);
         double maxRadius = Math.max(this.majorRadius, this.minorRadius);
         double cameraDistance = centerPoint.distanceTo(rc.cameraPoint) - maxRadius;
         if (cameraDistance <= 0) {
