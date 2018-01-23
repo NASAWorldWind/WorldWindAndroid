@@ -24,9 +24,8 @@ import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.RenderContext;
-import gov.nasa.worldwind.render.RenderResource;
+import gov.nasa.worldwind.render.RenderResourceCache;
 import gov.nasa.worldwind.util.Logger;
-import gov.nasa.worldwind.util.LruMemoryCache;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.ShortArray;
 
@@ -108,6 +107,11 @@ public class Ellipse extends AbstractShape {
      */
     protected int intervals;
 
+    /**
+     * Simple interval count based cache of the keys for element buffers. Element buffers are dependent only on the
+     * number of intervals so the keys are cached here. The element buffer object itself is in the RenderResourceCache
+     * and subject to the restrictions and behavior of that cache.
+     */
     protected static SparseArray<ElementBufferAttributes> ELEMENT_BUFFER_ATTRIBUTES = new SparseArray<>();
 
     protected float[] vertexArray;
@@ -543,7 +547,6 @@ public class Ellipse extends AbstractShape {
         } else {
             vertices = this.intervals + spinePoints;
         }
-        // Each vertex has three position coordinates and three texture coordinates
         this.vertexArray = new float[vertices * VERTEX_STRIDE];
 
         // Check if minor radius is less than major in which case we need to flip the definitions and change the phase
@@ -598,7 +601,7 @@ public class Ellipse extends AbstractShape {
         }
     }
 
-    protected static ElementBufferAttributes assembleElementsToCache(LruMemoryCache<Object, RenderResource> cache, int intervals) {
+    protected static ElementBufferAttributes assembleElementsToCache(RenderResourceCache cache, int intervals) {
         // Create temporary storage for elements
         ShortArray elements = new ShortArray();
         ElementBufferAttributes elementBufferAttributes = new ElementBufferAttributes();
@@ -723,8 +726,8 @@ public class Ellipse extends AbstractShape {
         double circumferencePixels = this.computeCircumference() / metersPerPixel;
         double circumferenceIntervals = circumferencePixels / this.maximumPixelsPerInterval;
         double subdivisions = Math.log(circumferenceIntervals / intervals) / Math.log(2);
-        int subdivisonCount = Math.max(0, (int) Math.ceil(subdivisions));
-        intervals <<= subdivisonCount; // subdivide the base intervals to achieve the desired number of intervals
+        int subdivisionCount = Math.max(0, (int) Math.ceil(subdivisions));
+        intervals <<= subdivisionCount; // subdivide the base intervals to achieve the desired number of intervals
 
         return Math.min(intervals, this.maximumIntervals); // don't exceed the maximum number of intervals
     }
