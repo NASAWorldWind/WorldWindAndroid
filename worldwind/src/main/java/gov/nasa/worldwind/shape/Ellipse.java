@@ -18,6 +18,7 @@ import gov.nasa.worldwind.draw.DrawShapeState;
 import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableShape;
 import gov.nasa.worldwind.draw.DrawableSurfaceShape;
+import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Range;
 import gov.nasa.worldwind.geom.Vec3;
@@ -512,9 +513,9 @@ public class Ellipse extends AbstractShape {
 
     protected boolean mustAssembleGeometry(RenderContext rc) {
         int calculatedIntervals = this.computeIntervals(rc);
-        int sanitzedIntervals = this.sanitizeIntervals(calculatedIntervals);
-        if (this.vertexArray == null || sanitzedIntervals != this.intervals) {
-            this.intervals = sanitzedIntervals;
+        int sanitizedIntervals = this.sanitizeIntervals(calculatedIntervals);
+        if (this.vertexArray == null || sanitizedIntervals != this.intervals) {
+            this.intervals = sanitizedIntervals;
             return true;
         }
 
@@ -539,15 +540,14 @@ public class Ellipse extends AbstractShape {
         double[] spineRadius = new double[spinePoints];
 
         // Clear the shape's vertex array. The array will accumulate values as the shapes's geometry is assembled.
+        // Determine the offset from the top and extruded vertices
         this.vertexIndex = 0;
         int offset = (this.intervals + spinePoints) * VERTEX_STRIDE;
-        int vertices;
         if (this.extrude && !this.isSurfaceShape) {
-            vertices = this.intervals * 2 + spinePoints;
+            this.vertexArray = new float[(this.intervals * 2 + spinePoints) * VERTEX_STRIDE];
         } else {
-            vertices = this.intervals + spinePoints;
+            this.vertexArray = new float[(this.intervals + spinePoints) * VERTEX_STRIDE];
         }
-        this.vertexArray = new float[vertices * VERTEX_STRIDE];
 
         // Check if minor radius is less than major in which case we need to flip the definitions and change the phase
         boolean isStandardAxisOrientation = this.majorRadius > this.minorRadius;
@@ -573,8 +573,9 @@ public class Ellipse extends AbstractShape {
             double arcRadius = Math.sqrt(x * x + y * y);
             // Calculate the great circle location given this intervals step (azimuthDegrees) a correction value to
             // start from an east-west aligned major axis (90.0) and the user specified user heading value
-            this.center.greatCircleLocation(azimuthDegrees + headingAdjustment + this.heading, arcRadius, scratchPosition);
-            this.addVertex(rc, scratchPosition.latitude, scratchPosition.longitude, this.center.altitude, offset, true);
+            double azimuth = azimuthDegrees + headingAdjustment + this.heading;
+            Location loc = this.center.greatCircleLocation(azimuth, arcRadius, scratchPosition);
+            this.addVertex(rc, loc.latitude, loc.longitude, this.center.altitude, offset, true);
             // Add the major arc radius for the spine points. Spine points are vertically coincident with exterior
             // points. The first and middle most point do not have corresponding spine points.
             if (i > 0 && i < this.intervals / 2) {
@@ -604,11 +605,12 @@ public class Ellipse extends AbstractShape {
     protected static ElementBufferAttributes assembleElementsToCache(RenderResourceCache cache, int intervals) {
         // Create temporary storage for elements
         ShortArray elements = new ShortArray();
+        // Generate an attribute bundle for his element buffer
         ElementBufferAttributes elementBufferAttributes = new ElementBufferAttributes();
 
         // Generate the top element buffer with spine
         int interiorIdx = intervals;
-        int spinePoints = intervals / 2 - 1; // intervals must be even
+        int spinePoints = intervals / 2 - 1;
         int offset = intervals + spinePoints;
 
         // Add the anchor leg
@@ -636,14 +638,12 @@ public class Ellipse extends AbstractShape {
         // Complete the strip
         elements.add((short) --interiorIdx);
         elements.add((short) 0);
-
         elementBufferAttributes.topElements.set(0, elements.size());
 
         // Generate the outline element buffer
         for (int i = 0; i < intervals; i++) {
             elements.add((short) i);
         }
-
         elementBufferAttributes.outlineElements.set(elementBufferAttributes.topElements.upper, elements.size());
 
         // Generate the side element buffer
@@ -653,7 +653,6 @@ public class Ellipse extends AbstractShape {
         }
         elements.add((short) 0);
         elements.add((short) offset);
-
         elementBufferAttributes.sideElements.set(elementBufferAttributes.outlineElements.upper, elements.size());
 
         // Generate a buffer for the element
