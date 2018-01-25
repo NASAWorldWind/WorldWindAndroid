@@ -569,12 +569,13 @@ public class Ellipse extends AbstractShape {
         // then appended from positive major axis to negative major axis.
         double deltaRadians = 2 * Math.PI / this.activeIntervals;
         double majorArcRadians, minorArcRadians;
+        double globeRadius = Math.max(rc.globe.getEquatorialRadius(), rc.globe.getPolarRadius());
         if (isStandardAxisOrientation) {
-            majorArcRadians = this.majorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
-            minorArcRadians = this.minorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
+            majorArcRadians = this.majorRadius / globeRadius;
+            minorArcRadians = this.minorRadius / globeRadius;
         } else {
-            majorArcRadians = this.minorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
-            minorArcRadians = this.majorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
+            majorArcRadians = this.minorRadius / globeRadius;
+            minorArcRadians = this.majorRadius / globeRadius;
         }
 
         // Setup spine radius values
