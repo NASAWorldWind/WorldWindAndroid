@@ -19,10 +19,6 @@ public class BasicDrawableTerrain implements DrawableTerrain {
 
     public Vec3 vertexOrigin = new Vec3();
 
-    public Range lineElementRange = new Range();
-
-    public Range triStripElementRange = new Range();
-
     public BufferObject vertexPoints;
 
     public BufferObject vertexTexCoords;
@@ -79,7 +75,7 @@ public class BasicDrawableTerrain implements DrawableTerrain {
     @Override
     public boolean useVertexTexCoordAttrib(DrawContext dc, int attribLocation) {
         boolean bufferBound = (this.vertexTexCoords != null && this.vertexTexCoords.bindBuffer(dc));
-        if (bufferBound){
+        if (bufferBound) {
             GLES20.glVertexAttribPointer(attribLocation, 2, GLES20.GL_FLOAT, false, 0, 0);
         }
 
@@ -89,9 +85,10 @@ public class BasicDrawableTerrain implements DrawableTerrain {
     @Override
     public boolean drawLines(DrawContext dc) {
         boolean bufferBound = (this.elements != null && this.elements.bindBuffer(dc));
-        if (bufferBound) {
-            GLES20.glDrawElements(GLES20.GL_LINES, this.lineElementRange.length(), GLES20.GL_UNSIGNED_SHORT,
-                this.lineElementRange.lower * 2);
+        Range bufferRange = (this.elements != null) ? this.elements.getBufferRange(0) : null;
+        if (bufferBound && bufferRange != null) {
+            GLES20.glDrawElements(GLES20.GL_LINES, bufferRange.length(), GLES20.GL_UNSIGNED_SHORT,
+                bufferRange.lower * 2);
         }
 
         return bufferBound;
@@ -100,9 +97,10 @@ public class BasicDrawableTerrain implements DrawableTerrain {
     @Override
     public boolean drawTriangles(DrawContext dc) {
         boolean bufferBound = (this.elements != null && this.elements.bindBuffer(dc));
-        if (bufferBound) {
-            GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, this.triStripElementRange.length(), GLES20.GL_UNSIGNED_SHORT,
-                this.triStripElementRange.lower * 2);
+        Range bufferRange = (this.elements != null) ? this.elements.getBufferRange(1) : null;
+        if (bufferBound && bufferRange != null) {
+            GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, bufferRange.length(), GLES20.GL_UNSIGNED_SHORT,
+                bufferRange.lower * 2);
         }
 
         return bufferBound;

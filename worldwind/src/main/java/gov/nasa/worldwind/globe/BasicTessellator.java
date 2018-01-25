@@ -54,10 +54,6 @@ public class BasicTessellator implements Tessellator, TileFactory {
 
     protected short[] levelSetTriStripElements;
 
-    protected Range levelSetLineElementRange = new Range();
-
-    protected Range levelSetTriStripElementRange = new Range();
-
     protected BufferObject levelSetVertexTexCoordBuffer;
 
     protected BufferObject levelSetElementBuffer;
@@ -153,7 +149,16 @@ public class BasicTessellator implements Tessellator, TileFactory {
         // Prepare a drawable for the terrain tile for processing on the OpenGL thread.
         Pool<BasicDrawableTerrain> pool = rc.getDrawablePool(BasicDrawableTerrain.class);
         BasicDrawableTerrain drawable = BasicDrawableTerrain.obtain(pool);
-        this.prepareDrawableTerrain(rc, tile, drawable);
+
+        // Assemble the drawable's geographic sector and Cartesian vertex origin.
+        drawable.sector.set(tile.sector);
+        drawable.vertexOrigin.set(tile.origin);
+
+        // Assemble the drawable's OpenGL buffer objects.
+        drawable.vertexPoints = tile.getPointBuffer(rc);
+        drawable.vertexTexCoords = this.levelSetVertexTexCoordBuffer;
+        drawable.elements = this.levelSetElementBuffer;
+
         rc.offerDrawableTerrain(drawable, tile.getDistanceToCamera());
     }
 
@@ -209,21 +214,6 @@ public class BasicTessellator implements Tessellator, TileFactory {
         tile.setVerticalExaggeration(verticalExaggeration);
     }
 
-    protected void prepareDrawableTerrain(RenderContext rc, TerrainTile tile, BasicDrawableTerrain drawable) {
-        // Assemble the drawable's geographic sector and Cartesian vertex origin.
-        drawable.sector.set(tile.sector);
-        drawable.vertexOrigin.set(tile.origin);
-
-        // Assemble the drawable's element buffer ranges.
-        drawable.lineElementRange.set(this.levelSetLineElementRange);
-        drawable.triStripElementRange.set(this.levelSetTriStripElementRange);
-
-        // Assemble the drawable's OpenGL buffer objects.
-        drawable.vertexPoints = tile.getPointBuffer(rc);
-        drawable.vertexTexCoords = this.levelSetVertexTexCoordBuffer;
-        drawable.elements = this.levelSetElementBuffer;
-    }
-
     protected void assembleLevelSetBuffers(RenderContext rc) {
         int numLat = this.levelSet.tileHeight + 2;
         int numLon = this.levelSet.tileWidth + 2;
@@ -259,14 +249,18 @@ public class BasicTessellator implements Tessellator, TileFactory {
         if (this.levelSetElementBuffer == null) {
             int size = (this.levelSetLineElements.length + this.levelSetTriStripElements.length) * 2;
             ShortBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer();
+            Range lineElementRange = new Range();
+            Range triStripElementRange = new Range();
             buffer.put(this.levelSetLineElements);
-            this.levelSetLineElementRange.upper = buffer.position();
-            this.levelSetTriStripElementRange.lower = buffer.position();
+            lineElementRange.upper = buffer.position();
+            triStripElementRange.lower = buffer.position();
             buffer.put(this.levelSetTriStripElements);
-            this.levelSetTriStripElementRange.upper = buffer.position();
+            triStripElementRange.upper = buffer.position();
             buffer.rewind();
             this.levelSetElementBuffer = rc.putBufferObject(this.levelSetElementKey,
                 new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer));
+            this.levelSetElementBuffer.putBufferRange(0, lineElementRange);
+            this.levelSetElementBuffer.putBufferRange(1, triStripElementRange);
         }
     }
 

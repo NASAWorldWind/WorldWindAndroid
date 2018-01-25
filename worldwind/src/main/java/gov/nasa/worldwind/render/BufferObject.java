@@ -6,10 +6,12 @@
 package gov.nasa.worldwind.render;
 
 import android.opengl.GLES20;
+import android.util.SparseArray;
 
 import java.nio.Buffer;
 
 import gov.nasa.worldwind.draw.DrawContext;
+import gov.nasa.worldwind.geom.Range;
 import gov.nasa.worldwind.util.Logger;
 
 public class BufferObject implements RenderResource {
@@ -23,6 +25,8 @@ public class BufferObject implements RenderResource {
     protected int bufferByteCount;
 
     protected Buffer buffer;
+
+    protected SparseArray<Range> bufferRanges;
 
     public BufferObject(int target, int size, Buffer buffer) {
         this.bufferTarget = target;
@@ -41,6 +45,33 @@ public class BufferObject implements RenderResource {
 
     public int getBufferByteCount() {
         return this.bufferByteCount;
+    }
+
+    public Range getBufferRange(int key) {
+        return (this.bufferRanges != null) ? this.bufferRanges.get(key) : null;
+    }
+
+    public void putBufferRange(int key, Range range) {
+        if (this.bufferRanges == null) {
+            this.bufferRanges = new SparseArray<>();
+        }
+
+        this.bufferRanges.put(key, range);
+    }
+
+    public Range removeBufferRange(int key) {
+        if (this.bufferRanges == null) {
+            return null;
+        }
+
+        Range oldRange = this.bufferRanges.get(key);
+        this.bufferRanges.delete(key);
+
+        return oldRange;
+    }
+
+    public boolean hasBufferRange(int key) {
+        return (this.bufferRanges != null) && this.bufferRanges.indexOfKey(key) >= 0;
     }
 
     @Override
