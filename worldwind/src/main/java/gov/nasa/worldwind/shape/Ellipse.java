@@ -118,7 +118,7 @@ public class Ellipse extends AbstractShape {
      * number of activeIntervals so the keys are cached here. The element buffer object itself is in the
      * RenderResourceCache and subject to the restrictions and behavior of that cache.
      */
-    protected static SparseArray<Object> ELEMENT_BUFFER_KEYS = new SparseArray<>();
+    protected static SparseArray<Object> elementBufferKeys = new SparseArray<>();
 
     protected float[] vertexArray;
 
@@ -448,10 +448,10 @@ public class Ellipse extends AbstractShape {
         }
 
         // Get the attributes of the element buffer
-        Object elementBufferKey = ELEMENT_BUFFER_KEYS.get(this.activeIntervals);
+        Object elementBufferKey = elementBufferKeys.get(this.activeIntervals);
         if (elementBufferKey == null) {
             elementBufferKey = nextCacheKey();
-            ELEMENT_BUFFER_KEYS.put(this.activeIntervals, elementBufferKey);
+            elementBufferKeys.put(this.activeIntervals, elementBufferKey);
         }
 
         drawState.elementBuffer = rc.getBufferObject(elementBufferKey);
