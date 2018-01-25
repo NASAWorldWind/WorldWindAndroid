@@ -456,8 +456,7 @@ public class Ellipse extends AbstractShape {
 
         drawState.elementBuffer = rc.getBufferObject(elementBufferKey);
         if (drawState.elementBuffer == null) {
-            BufferObject elementBuffer = assembleElements(this.activeIntervals);
-            drawState.elementBuffer = elementBuffer;
+            drawState.elementBuffer = assembleElements(this.activeIntervals);
             rc.putBufferObject(elementBufferKey, drawState.elementBuffer);
         }
 
