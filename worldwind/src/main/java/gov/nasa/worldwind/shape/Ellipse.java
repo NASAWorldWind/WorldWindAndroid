@@ -55,7 +55,7 @@ import gov.nasa.worldwind.util.ShortArray;
  * <p>
  * Ellipse's appearance on screen is composed of discrete segments which approximate the ellipse's geometry. This
  * approximation is chosen such that the display appears to be a continuous smooth ellipse. Applications can control the
- * maximum number of angular intervals used in this representation with {@link #setMaximumIntervals(int)}.
+ * maximum number of angular activeIntervals used in this representation with {@link #setMaximumIntervals(int)}.
  */
 public class Ellipse extends AbstractShape {
 
@@ -103,20 +103,20 @@ public class Ellipse extends AbstractShape {
     protected double maximumPixelsPerInterval = 50;
 
     /**
-     * The maximum number of angular intervals that may be used to assemble the ellipse's geometry for rendering.
+     * The maximum number of angular activeIntervals that may be used to assemble the ellipse's geometry for rendering.
      */
     protected int maximumIntervals = 256;
 
     /**
-     * The number of intervals used for generating geometry. Clamped between MIN_INTERVALS and maximumIntervals. Will
-     * always be even.
+     * The number of activeIntervals used for generating geometry. Clamped between MIN_INTERVALS and maximumIntervals.
+     * Will always be even.
      */
-    protected int intervals;
+    protected int activeIntervals;
 
     /**
      * Simple interval count based cache of the keys for element buffers. Element buffers are dependent only on the
-     * number of intervals so the keys are cached here. The element buffer object itself is in the RenderResourceCache
-     * and subject to the restrictions and behavior of that cache.
+     * number of activeIntervals so the keys are cached here. The element buffer object itself is in the
+     * RenderResourceCache and subject to the restrictions and behavior of that cache.
      */
     protected static SparseArray<Object> ELEMENT_BUFFER_KEYS = new SparseArray<>();
 
@@ -367,7 +367,7 @@ public class Ellipse extends AbstractShape {
      * Indicates the maximum number of angular intervals that may be used to approximate this ellipse's geometry on
      * screen.
      *
-     * @return the number of angular intervals
+     * @return the maximum number of angular intervals
      */
     public int getMaximumIntervals() {
         return this.maximumIntervals;
@@ -448,15 +448,15 @@ public class Ellipse extends AbstractShape {
         }
 
         // Get the attributes of the element buffer
-        Object elementBufferKey = ELEMENT_BUFFER_KEYS.get(this.intervals);
+        Object elementBufferKey = ELEMENT_BUFFER_KEYS.get(this.activeIntervals);
         if (elementBufferKey == null) {
             elementBufferKey = nextCacheKey();
-            ELEMENT_BUFFER_KEYS.put(this.intervals, elementBufferKey);
+            ELEMENT_BUFFER_KEYS.put(this.activeIntervals, elementBufferKey);
         }
 
         drawState.elementBuffer = rc.getBufferObject(elementBufferKey);
         if (drawState.elementBuffer == null) {
-            BufferObject elementBuffer = assembleElements(this.intervals);
+            BufferObject elementBuffer = assembleElements(this.activeIntervals);
             drawState.elementBuffer = elementBuffer;
             rc.putBufferObject(elementBufferKey, drawState.elementBuffer);
         }
@@ -529,8 +529,8 @@ public class Ellipse extends AbstractShape {
     protected boolean mustAssembleGeometry(RenderContext rc) {
         int calculatedIntervals = this.computeIntervals(rc);
         int sanitizedIntervals = this.sanitizeIntervals(calculatedIntervals);
-        if (this.vertexArray == null || sanitizedIntervals != this.intervals) {
-            this.intervals = sanitizedIntervals;
+        if (this.vertexArray == null || sanitizedIntervals != this.activeIntervals) {
+            this.activeIntervals = sanitizedIntervals;
             return true;
         }
 
@@ -550,18 +550,18 @@ public class Ellipse extends AbstractShape {
         }
 
         // Determine the number of spine points and construct radius value holding array
-        int spinePoints = computeNumberSpinePoints(this.intervals); // intervals must be even
+        int spinePoints = computeNumberSpinePoints(this.activeIntervals); // activeIntervals must be even
         int spineIdx = 0;
         double[] spineRadius = new double[spinePoints];
 
         // Clear the shape's vertex array. The array will accumulate values as the shapes's geometry is assembled.
         // Determine the offset from the top and extruded vertices
         this.vertexIndex = 0;
-        int offset = (this.intervals + spinePoints) * VERTEX_STRIDE;
+        int offset = (this.activeIntervals + spinePoints) * VERTEX_STRIDE;
         if (this.extrude && !this.isSurfaceShape) {
-            this.vertexArray = new float[(this.intervals * 2 + spinePoints) * VERTEX_STRIDE];
+            this.vertexArray = new float[(this.activeIntervals * 2 + spinePoints) * VERTEX_STRIDE];
         } else {
-            this.vertexArray = new float[(this.intervals + spinePoints) * VERTEX_STRIDE];
+            this.vertexArray = new float[(this.activeIntervals + spinePoints) * VERTEX_STRIDE];
         }
 
         // Check if minor radius is less than major in which case we need to flip the definitions and change the phase
@@ -570,7 +570,7 @@ public class Ellipse extends AbstractShape {
 
         // Vertex generation begins on the positive major axis and works ccs around the ellipse. The spine points are
         // then appended from positive major axis to negative major axis.
-        double deltaRadians = 2 * Math.PI / this.intervals;
+        double deltaRadians = 2 * Math.PI / this.activeIntervals;
         double majorArcRadians, minorArcRadians;
         if (isStandardAxisOrientation) {
             majorArcRadians = this.majorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
@@ -580,20 +580,20 @@ public class Ellipse extends AbstractShape {
             minorArcRadians = this.majorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
         }
 
-        for (int i = 0; i < this.intervals; i++) {
+        for (int i = 0; i < this.activeIntervals; i++) {
             double radians = deltaRadians * i;
             double x = Math.cos(radians) * majorArcRadians;
             double y = Math.sin(radians) * minorArcRadians;
             double azimuthDegrees = Math.toDegrees(-Math.atan2(y, x));
             double arcRadius = Math.sqrt(x * x + y * y);
-            // Calculate the great circle location given this intervals step (azimuthDegrees) a correction value to
+            // Calculate the great circle location given this activeIntervals step (azimuthDegrees) a correction value to
             // start from an east-west aligned major axis (90.0) and the user specified user heading value
             double azimuth = azimuthDegrees + headingAdjustment + this.heading;
             Location loc = this.center.greatCircleLocation(azimuth, arcRadius, scratchPosition);
             this.addVertex(rc, loc.latitude, loc.longitude, this.center.altitude, offset, true);
             // Add the major arc radius for the spine points. Spine points are vertically coincident with exterior
             // points. The first and middle most point do not have corresponding spine points.
-            if (i > 0 && i < this.intervals / 2) {
+            if (i > 0 && i < this.activeIntervals / 2) {
                 spineRadius[spineIdx++] = x;
             }
         }
