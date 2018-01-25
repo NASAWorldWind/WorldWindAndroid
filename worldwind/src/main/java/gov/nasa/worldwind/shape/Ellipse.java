@@ -548,19 +548,17 @@ public class Ellipse extends AbstractShape {
             this.vertexOrigin.set(scratchPoint.x, scratchPoint.y, scratchPoint.z);
         }
 
-        // Determine the number of spine points and construct radius value holding array
-        int spinePoints = computeNumberSpinePoints(this.activeIntervals); // activeIntervals must be even
-        int spineIdx = 0;
-        double[] spineRadius = new double[spinePoints];
+        // Determine the number of spine points
+        int spineCount = computeNumberSpinePoints(this.activeIntervals); // activeIntervals must be even
 
         // Clear the shape's vertex array. The array will accumulate values as the shapes's geometry is assembled.
         // Determine the offset from the top and extruded vertices
         this.vertexIndex = 0;
-        int offset = (this.activeIntervals + spinePoints) * VERTEX_STRIDE;
+        int offset = (this.activeIntervals + spineCount) * VERTEX_STRIDE;
         if (this.extrude && !this.isSurfaceShape) {
-            this.vertexArray = new float[(this.activeIntervals * 2 + spinePoints) * VERTEX_STRIDE];
+            this.vertexArray = new float[(this.activeIntervals * 2 + spineCount) * VERTEX_STRIDE];
         } else {
-            this.vertexArray = new float[(this.activeIntervals + spinePoints) * VERTEX_STRIDE];
+            this.vertexArray = new float[(this.activeIntervals + spineCount) * VERTEX_STRIDE];
         }
 
         // Check if minor radius is less than major in which case we need to flip the definitions and change the phase
@@ -579,6 +577,11 @@ public class Ellipse extends AbstractShape {
             minorArcRadians = this.majorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
         }
 
+        // Setup spine radius values
+        int spineIdx = 0;
+        double[] spineRadius = new double[spineCount];
+
+        // Iterate around the ellipse to add vertices
         for (int i = 0; i < this.activeIntervals; i++) {
             double radians = deltaRadians * i;
             double x = Math.cos(radians) * majorArcRadians;
@@ -598,7 +601,7 @@ public class Ellipse extends AbstractShape {
         }
 
         // Add the interior spine point vertices
-        for (int i = 0; i < spinePoints; i++) {
+        for (int i = 0; i < spineCount; i++) {
             this.center.greatCircleLocation(0 + headingAdjustment + this.heading, spineRadius[i], scratchPosition);
             this.addVertex(rc, scratchPosition.latitude, scratchPosition.longitude, this.center.altitude, offset, false);
         }
