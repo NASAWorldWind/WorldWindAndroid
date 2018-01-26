@@ -554,7 +554,7 @@ public class Ellipse extends AbstractShape {
         // Clear the shape's vertex array. The array will accumulate values as the shapes's geometry is assembled.
         // Determine the offset from the top and extruded vertices
         this.vertexIndex = 0;
-        int offset = (this.activeIntervals + spineCount) * VERTEX_STRIDE;
+        int arrayOffset = computeIndexOffset(this.activeIntervals) * VERTEX_STRIDE;
         if (this.extrude && !this.isSurfaceShape) {
             this.vertexArray = new float[(this.activeIntervals * 2 + spineCount) * VERTEX_STRIDE];
         } else {
@@ -593,7 +593,7 @@ public class Ellipse extends AbstractShape {
             // start from an east-west aligned major axis (90.0) and the user specified user heading value
             double azimuth = azimuthDegrees + headingAdjustment + this.heading;
             Location loc = this.center.greatCircleLocation(azimuth, arcRadius, scratchPosition);
-            this.addVertex(rc, loc.latitude, loc.longitude, this.center.altitude, offset, true);
+            this.addVertex(rc, loc.latitude, loc.longitude, this.center.altitude, arrayOffset, this.isExtrude());
             // Add the major arc radius for the spine points. Spine points are vertically coincident with exterior
             // points. The first and middle most point do not have corresponding spine points.
             if (i > 0 && i < this.activeIntervals / 2) {
@@ -604,7 +604,7 @@ public class Ellipse extends AbstractShape {
         // Add the interior spine point vertices
         for (int i = 0; i < spineCount; i++) {
             this.center.greatCircleLocation(0 + headingAdjustment + this.heading, spineRadius[i], scratchPosition);
-            this.addVertex(rc, scratchPosition.latitude, scratchPosition.longitude, this.center.altitude, offset, false);
+            this.addVertex(rc, scratchPosition.latitude, scratchPosition.longitude, this.center.altitude, arrayOffset, false);
         }
 
         // Compute the shape's bounding sector from its assembled coordinates.
@@ -627,7 +627,7 @@ public class Ellipse extends AbstractShape {
         // Generate the top element buffer with spine
         int interiorIdx = intervals;
         int spinePoints = computeNumberSpinePoints(intervals);
-        int offset = intervals + spinePoints;
+        int offset = computeIndexOffset(intervals);
 
         // Add the anchor leg
         elements.add((short) 0);
@@ -683,7 +683,7 @@ public class Ellipse extends AbstractShape {
         return elementBuffer;
     }
 
-    protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude, int offset, boolean outlinePoint) {
+    protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude, int offset, boolean isExtrudedSkirt) {
         int offsetVertexIndex = this.vertexIndex + offset;
 
         if (this.isSurfaceShape) {
@@ -704,7 +704,7 @@ public class Ellipse extends AbstractShape {
             this.vertexArray[this.vertexIndex++] = 0;
             this.vertexArray[this.vertexIndex++] = 0;
 
-            if (this.extrude && outlinePoint) {
+            if (isExtrudedSkirt) {
                 point = rc.geographicToCartesian(latitude, longitude, 0, WorldWind.CLAMP_TO_GROUND, scratchPoint);
                 this.vertexArray[offsetVertexIndex++] = (float) (point.x - this.vertexOrigin.x);
                 this.vertexArray[offsetVertexIndex++] = (float) (point.y - this.vertexOrigin.y);
@@ -759,6 +759,10 @@ public class Ellipse extends AbstractShape {
     protected static int computeNumberSpinePoints(int intervals) {
         // intervals should be even
         return intervals / 2 - 1;
+    }
+
+    protected static int computeIndexOffset(int intervals) {
+        return intervals + computeNumberSpinePoints(intervals);
     }
 
     @Override
