@@ -118,6 +118,8 @@ public class Ellipse extends AbstractShape {
      */
     protected boolean regenerate = true;
 
+    private Object vertexBufferKey = new Object();
+
     /**
      * Simple interval count based cache of the keys for element buffers. Element buffers are dependent only on the
      * number of activeIntervals so the keys are cached here. The element buffer object itself is in the
@@ -415,6 +417,7 @@ public class Ellipse extends AbstractShape {
         // Check if the geometry or level of detail have changed and if the vertex buffer still exists in the cache
         if (this.mustAssembleGeometry(rc)) {
             this.assembleGeometry(rc);
+            this.vertexBufferKey = new Object();
         }
 
         // Obtain a drawable form the render context pool.
@@ -439,13 +442,13 @@ public class Ellipse extends AbstractShape {
         }
 
         // Assemble the drawable's OpenGL vertex buffer object.
-        drawState.vertexBuffer = rc.getBufferObject(this);
-        if (drawState.vertexBuffer == null || this.regenerate) {
+        drawState.vertexBuffer = rc.getBufferObject(this.vertexBufferKey);
+        if (drawState.vertexBuffer == null) {
             int size = this.vertexCount * 4;
             FloatBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
             buffer.put(vertexArray, 0, this.vertexCount);
             drawState.vertexBuffer = new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer.rewind());
-            rc.putBufferObject(this, drawState.vertexBuffer);
+            rc.putBufferObject(this.vertexBufferKey, drawState.vertexBuffer);
         }
 
         // Get the attributes of the element buffer
@@ -481,9 +484,6 @@ public class Ellipse extends AbstractShape {
         } else {
             rc.offerShapeDrawable(drawable, this.cameraDistance);
         }
-
-        // reset the regeneration indicator
-        this.regenerate = false;
     }
 
     protected void drawInterior(RenderContext rc, DrawShapeState drawState) {
@@ -532,12 +532,13 @@ public class Ellipse extends AbstractShape {
     protected boolean mustAssembleGeometry(RenderContext rc) {
         int calculatedIntervals = this.computeIntervals(rc);
         int sanitizedIntervals = this.sanitizeIntervals(calculatedIntervals);
-        if (sanitizedIntervals != this.activeIntervals || rc.getBufferObject(this) == null) {
+        if (this.regenerate || sanitizedIntervals != this.activeIntervals || rc.getBufferObject(this.vertexBufferKey) == null) {
+            this.regenerate = false;
             this.activeIntervals = sanitizedIntervals;
-            this.regenerate = true;
+            return true;
         }
 
-        return this.regenerate;
+        return false;
     }
 
     protected void assembleGeometry(RenderContext rc) {
