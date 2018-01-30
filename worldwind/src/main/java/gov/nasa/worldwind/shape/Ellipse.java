@@ -55,14 +55,14 @@ import gov.nasa.worldwind.util.ShortArray;
  * <p>
  * Ellipse's appearance on screen is composed of discrete segments which approximate the ellipse's geometry. This
  * approximation is chosen such that the display appears to be a continuous smooth ellipse. Applications can control the
- * maximum number of angular activeIntervals used in this representation with {@link #setMaximumIntervals(int)}.
+ * maximum number of angular intervals used in this representation with {@link #setMaximumIntervals(int)}.
  */
 public class Ellipse extends AbstractShape {
 
     protected static final int VERTEX_STRIDE = 6;
 
     /**
-     * The minimum number of activeIntervals that will be used for geometry generation.
+     * The minimum number of intervals that will be used for geometry generation.
      */
     protected static final int MIN_INTERVALS = 32;
 
@@ -83,7 +83,7 @@ public class Ellipse extends AbstractShape {
 
     /**
      * Simple interval count based cache of the keys for element buffers. Element buffers are dependent only on the
-     * number of activeIntervals so the keys are cached here. The element buffer object itself is in the
+     * number of intervals so the keys are cached here. The element buffer object itself is in the
      * RenderResourceCache and subject to the restrictions and behavior of that cache.
      */
     protected static SparseArray<Object> elementBufferKeys = new SparseArray<>();
@@ -125,12 +125,12 @@ public class Ellipse extends AbstractShape {
     protected double maximumPixelsPerInterval = 50;
 
     /**
-     * The maximum number of angular activeIntervals that may be used to assemble the ellipse's geometry for rendering.
+     * The maximum number of angular intervals that may be used to assemble the ellipse's geometry for rendering.
      */
     protected int maximumIntervals = 256;
 
     /**
-     * The number of activeIntervals used for generating geometry. Clamped between MIN_INTERVALS and maximumIntervals.
+     * The number of intervals used for generating geometry. Clamped between MIN_INTERVALS and maximumIntervals.
      * Will always be even.
      */
     protected int activeIntervals;
