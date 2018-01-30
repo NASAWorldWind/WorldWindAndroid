@@ -113,6 +113,9 @@ public class Ellipse extends AbstractShape {
      */
     protected int activeIntervals;
 
+    /**
+     * Indicates the geometry and vertex buffer should be regenerated on the render.
+     */
     protected boolean regenerate = true;
 
     /**
@@ -479,7 +482,7 @@ public class Ellipse extends AbstractShape {
             rc.offerShapeDrawable(drawable, this.cameraDistance);
         }
 
-        // reset the state
+        // reset the regeneration indicator
         this.regenerate = false;
     }
 
@@ -562,7 +565,7 @@ public class Ellipse extends AbstractShape {
             this.vertexCount = (this.activeIntervals + spineCount) * VERTEX_STRIDE;
         }
 
-        // Check if the vertex arrays exists and is adequate in size
+        // Check if the vertex arrays exists and provides sufficient capacity
         if (vertexArray == null || vertexArray.length < this.vertexCount) {
             vertexArray = new float[this.vertexCount];
         }
