@@ -61,13 +61,32 @@ public class Ellipse extends AbstractShape {
 
     protected static final int VERTEX_STRIDE = 6;
 
+    /**
+     * The minimum number of activeIntervals that will be used for geometry generation.
+     */
     protected static final int MIN_INTERVALS = 32;
 
+    /**
+     * Key for Range object in the element buffer describing the top of the Ellipse.
+     */
     protected static final int TOP_RANGE = 0;
 
+    /**
+     * Key for Range object in the element buffer describing the outline of the Ellipse.
+     */
     protected static final int OUTLINE_RANGE = 1;
 
+    /**
+     * Key for Range object in the element buffer describing the extruded sides of the Ellipse.
+     */
     protected static final int SIDE_RANGE = 2;
+
+    /**
+     * Simple interval count based cache of the keys for element buffers. Element buffers are dependent only on the
+     * number of activeIntervals so the keys are cached here. The element buffer object itself is in the
+     * RenderResourceCache and subject to the restrictions and behavior of that cache.
+     */
+    protected static SparseArray<Object> elementBufferKeys = new SparseArray<>();
 
     /**
      * The ellipse's geographic center position.
@@ -89,6 +108,9 @@ public class Ellipse extends AbstractShape {
      */
     protected double heading;
 
+    /**
+     * Draw sides of the ellipse which extend from the defined position and altitude to the ground.
+     */
     protected boolean extrude;
 
     /**
@@ -113,25 +135,11 @@ public class Ellipse extends AbstractShape {
      */
     protected int activeIntervals;
 
-    /**
-     * Indicates the geometry and vertex buffer should be regenerated on the render.
-     */
-    protected boolean regenerate = true;
-
-    private Object vertexBufferKey = new Object();
-
-    /**
-     * Simple interval count based cache of the keys for element buffers. Element buffers are dependent only on the
-     * number of activeIntervals so the keys are cached here. The element buffer object itself is in the
-     * RenderResourceCache and subject to the restrictions and behavior of that cache.
-     */
-    protected static SparseArray<Object> elementBufferKeys = new SparseArray<>();
-
-    protected static float[] vertexArray;
+    protected float[] vertexArray;
 
     protected int vertexIndex;
 
-    protected int vertexCount;
+    protected Object vertexBufferKey = new Object();
 
     protected Vec3 vertexOrigin = new Vec3();
 
@@ -139,9 +147,9 @@ public class Ellipse extends AbstractShape {
 
     protected double cameraDistance;
 
-    private static final Position scratchPosition = new Position();
+    private static Position scratchPosition = new Position();
 
-    private static final Vec3 scratchPoint = new Vec3();
+    private static Vec3 scratchPoint = new Vec3();
 
     /**
      * Constructs an ellipse with a null center position, and with major- and minor-radius both 0.0. This ellipse does
@@ -414,7 +422,6 @@ public class Ellipse extends AbstractShape {
             return; // nothing to draw
         }
 
-        // Check if the geometry or level of detail have changed and if the vertex buffer still exists in the cache
         if (this.mustAssembleGeometry(rc)) {
             this.assembleGeometry(rc);
             this.vertexBufferKey = new Object();
@@ -444,9 +451,9 @@ public class Ellipse extends AbstractShape {
         // Assemble the drawable's OpenGL vertex buffer object.
         drawState.vertexBuffer = rc.getBufferObject(this.vertexBufferKey);
         if (drawState.vertexBuffer == null) {
-            int size = this.vertexCount * 4;
+            int size = this.vertexArray.length * 4;
             FloatBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
-            buffer.put(vertexArray, 0, this.vertexCount);
+            buffer.put(this.vertexArray, 0, this.vertexArray.length);
             drawState.vertexBuffer = new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer.rewind());
             rc.putBufferObject(this.vertexBufferKey, drawState.vertexBuffer);
         }
@@ -532,8 +539,7 @@ public class Ellipse extends AbstractShape {
     protected boolean mustAssembleGeometry(RenderContext rc) {
         int calculatedIntervals = this.computeIntervals(rc);
         int sanitizedIntervals = this.sanitizeIntervals(calculatedIntervals);
-        if (this.regenerate || sanitizedIntervals != this.activeIntervals || rc.getBufferObject(this.vertexBufferKey) == null) {
-            this.regenerate = false;
+        if (this.vertexArray == null || sanitizedIntervals != this.activeIntervals) {
             this.activeIntervals = sanitizedIntervals;
             return true;
         }
@@ -561,14 +567,9 @@ public class Ellipse extends AbstractShape {
         this.vertexIndex = 0;
         int arrayOffset = computeIndexOffset(this.activeIntervals) * VERTEX_STRIDE;
         if (this.extrude && !this.isSurfaceShape) {
-            this.vertexCount = (this.activeIntervals * 2 + spineCount) * VERTEX_STRIDE;
+            this.vertexArray = new float[(this.activeIntervals * 2 + spineCount) * VERTEX_STRIDE];
         } else {
-            this.vertexCount = (this.activeIntervals + spineCount) * VERTEX_STRIDE;
-        }
-
-        // Check if the vertex arrays exists and provides sufficient capacity
-        if (vertexArray == null || vertexArray.length < this.vertexCount) {
-            vertexArray = new float[this.vertexCount];
+            this.vertexArray = new float[(this.activeIntervals + spineCount) * VERTEX_STRIDE];
         }
 
         // Check if minor radius is less than major in which case we need to flip the definitions and change the phase
@@ -620,11 +621,11 @@ public class Ellipse extends AbstractShape {
         // Compute the shape's bounding sector from its assembled coordinates.
         if (this.isSurfaceShape) {
             this.boundingSector.setEmpty();
-            this.boundingSector.union(vertexArray, this.vertexIndex, VERTEX_STRIDE);
+            this.boundingSector.union(this.vertexArray, this.vertexArray.length, VERTEX_STRIDE);
             this.boundingSector.translate(this.vertexOrigin.y /*lat*/, this.vertexOrigin.x /*lon*/);
             this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
         } else {
-            this.boundingBox.setToPoints(vertexArray, this.vertexIndex, VERTEX_STRIDE);
+            this.boundingBox.setToPoints(this.vertexArray, this.vertexArray.length, VERTEX_STRIDE);
             this.boundingBox.translate(this.vertexOrigin.x, this.vertexOrigin.y, this.vertexOrigin.z);
             this.boundingSector.setEmpty();
         }
@@ -636,6 +637,7 @@ public class Ellipse extends AbstractShape {
 
         // Generate the top element buffer with spine
         int interiorIdx = intervals;
+        int spinePoints = computeNumberSpinePoints(intervals);
         int offset = computeIndexOffset(intervals);
 
         // Add the anchor leg
@@ -696,31 +698,31 @@ public class Ellipse extends AbstractShape {
         int offsetVertexIndex = this.vertexIndex + offset;
 
         if (this.isSurfaceShape) {
-            vertexArray[this.vertexIndex++] = (float) (longitude - this.vertexOrigin.x);
-            vertexArray[this.vertexIndex++] = (float) (latitude - this.vertexOrigin.y);
-            vertexArray[this.vertexIndex++] = (float) (altitude - this.vertexOrigin.z);
+            this.vertexArray[this.vertexIndex++] = (float) (longitude - this.vertexOrigin.x);
+            this.vertexArray[this.vertexIndex++] = (float) (latitude - this.vertexOrigin.y);
+            this.vertexArray[this.vertexIndex++] = (float) (altitude - this.vertexOrigin.z);
             // reserved for future texture coordinate use
-            vertexArray[this.vertexIndex++] = 0;
-            vertexArray[this.vertexIndex++] = 0;
-            vertexArray[this.vertexIndex++] = 0;
+            this.vertexArray[this.vertexIndex++] = 0;
+            this.vertexArray[this.vertexIndex++] = 0;
+            this.vertexArray[this.vertexIndex++] = 0;
         } else {
             Vec3 point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, scratchPoint);
-            vertexArray[this.vertexIndex++] = (float) (point.x - this.vertexOrigin.x);
-            vertexArray[this.vertexIndex++] = (float) (point.y - this.vertexOrigin.y);
-            vertexArray[this.vertexIndex++] = (float) (point.z - this.vertexOrigin.z);
+            this.vertexArray[this.vertexIndex++] = (float) (point.x - this.vertexOrigin.x);
+            this.vertexArray[this.vertexIndex++] = (float) (point.y - this.vertexOrigin.y);
+            this.vertexArray[this.vertexIndex++] = (float) (point.z - this.vertexOrigin.z);
             // reserved for future texture coordinate use
-            vertexArray[this.vertexIndex++] = 0;
-            vertexArray[this.vertexIndex++] = 0;
-            vertexArray[this.vertexIndex++] = 0;
+            this.vertexArray[this.vertexIndex++] = 0;
+            this.vertexArray[this.vertexIndex++] = 0;
+            this.vertexArray[this.vertexIndex++] = 0;
 
             if (isExtrudedSkirt) {
                 point = rc.geographicToCartesian(latitude, longitude, 0, WorldWind.CLAMP_TO_GROUND, scratchPoint);
-                vertexArray[offsetVertexIndex++] = (float) (point.x - this.vertexOrigin.x);
-                vertexArray[offsetVertexIndex++] = (float) (point.y - this.vertexOrigin.y);
-                vertexArray[offsetVertexIndex++] = (float) (point.z - this.vertexOrigin.z);
-                vertexArray[offsetVertexIndex++] = 0; //unused
-                vertexArray[offsetVertexIndex++] = 0; //unused
-                vertexArray[offsetVertexIndex++] = 0; //unused
+                this.vertexArray[offsetVertexIndex++] = (float) (point.x - this.vertexOrigin.x);
+                this.vertexArray[offsetVertexIndex++] = (float) (point.y - this.vertexOrigin.y);
+                this.vertexArray[offsetVertexIndex++] = (float) (point.z - this.vertexOrigin.z);
+                this.vertexArray[offsetVertexIndex++] = 0; //unused
+                this.vertexArray[offsetVertexIndex++] = 0; //unused
+                this.vertexArray[offsetVertexIndex++] = 0; //unused
             }
         }
     }
@@ -776,6 +778,6 @@ public class Ellipse extends AbstractShape {
 
     @Override
     protected void reset() {
-        this.regenerate = true;
+        this.vertexArray = null;
     }
 }
