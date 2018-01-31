@@ -13,6 +13,7 @@ import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.render.ImageSource;
+import gov.nasa.worldwind.shape.Ellipse;
 import gov.nasa.worldwind.shape.Path;
 import gov.nasa.worldwind.shape.Polygon;
 import gov.nasa.worldwind.shape.ShapeAttributes;
@@ -79,18 +80,14 @@ public class ShapesDashAndFillFragment extends BasicGlobeFragment {
         path.setFollowTerrain(true);
         layer.addRenderable(path);
 
-        // Create a polygon using an image as a repeating fill pattern.
-        positions = Arrays.asList(
-            Position.fromDegrees(50.0, -70.0, 1e5),
-            Position.fromDegrees(35.0, -85.0, 1e5),
-            Position.fromDegrees(35.0, -55.0, 1e5)
-        );
-        Polygon polygon = new Polygon(positions);
+        // Create an Ellipse using an image as a repeating fill pattern and a dash pattern for the outline
+        Position ellipseCenter = new Position(40, -70.0, 1e5);
+        Ellipse ellipse = new Ellipse(ellipseCenter, 1.5e6, 800e3);
         sa = new ShapeAttributes(thickenLine);
         sa.setInteriorImageSource(ImageSource.fromResource(R.drawable.pattern_sample_houndstooth));
-        sa.setInteriorColor(new gov.nasa.worldwind.render.Color(1f, 1f, 1f, 1f));
-        polygon.setAttributes(sa);
-        layer.addRenderable(polygon);
+        sa.setOutlineImageSource(ImageSource.fromLineStipple(8, (short) 0xDFF6));
+        ellipse.setAttributes(sa);
+        layer.addRenderable(ellipse);
 
         // Create a surface polygon using an image as a repeating fill pattern and a dash pattern for the outline
         // of the polygon.
@@ -100,7 +97,7 @@ public class ShapesDashAndFillFragment extends BasicGlobeFragment {
             Position.fromDegrees(10.0, -60.0, 0.0),
             Position.fromDegrees(25.0, -55.0, 0.0)
         );
-        polygon = new Polygon(positions);
+        Polygon polygon = new Polygon(positions);
         sa = new ShapeAttributes(thickenLine);
         sa.setInteriorImageSource(ImageSource.fromResource(R.drawable.pattern_sample_houndstooth));
         sa.setOutlineImageSource(ImageSource.fromLineStipple(8, (short) 0xDFF6));
