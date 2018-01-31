@@ -628,9 +628,7 @@ public class Ellipse extends AbstractShape {
         int spineCount = computeNumberSpinePoints(this.activeIntervals); // activeIntervals must be even
 
         // Clear the shape's vertex array. The array will accumulate values as the shapes's geometry is assembled.
-        // Determine the offset from the top and extruded vertices
         this.vertexIndex = 0;
-        int arrayOffset = computeIndexOffset(this.activeIntervals) * VERTEX_STRIDE;
         if (this.extrude && !this.isSurfaceShape) {
             this.vertexArray = new float[(this.activeIntervals * 2 + spineCount) * VERTEX_STRIDE];
         } else {
@@ -654,6 +652,8 @@ public class Ellipse extends AbstractShape {
             minorArcRadians = this.majorRadius / globeRadius;
         }
 
+        // Determine the offset from the top and extruded vertices
+        int arrayOffset = computeIndexOffset(this.activeIntervals) * VERTEX_STRIDE;
         // Setup spine radius values
         int spineIdx = 0;
         double[] spineRadius = new double[spineCount];
