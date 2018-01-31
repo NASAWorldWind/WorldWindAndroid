@@ -702,7 +702,6 @@ public class Ellipse extends AbstractShape {
 
         // Generate the top element buffer with spine
         int interiorIdx = intervals;
-        int spinePoints = computeNumberSpinePoints(intervals);
         int offset = computeIndexOffset(intervals);
 
         // Add the anchor leg
