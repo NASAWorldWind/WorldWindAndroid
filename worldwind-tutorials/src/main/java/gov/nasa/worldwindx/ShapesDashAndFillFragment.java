@@ -85,7 +85,6 @@ public class ShapesDashAndFillFragment extends BasicGlobeFragment {
         Ellipse ellipse = new Ellipse(ellipseCenter, 1.5e6, 800e3);
         sa = new ShapeAttributes(thickenLine);
         sa.setInteriorImageSource(ImageSource.fromResource(R.drawable.pattern_sample_houndstooth));
-        sa.setOutlineImageSource(ImageSource.fromLineStipple(8, (short) 0xDFF6));
         ellipse.setAttributes(sa);
         layer.addRenderable(ellipse);
 
