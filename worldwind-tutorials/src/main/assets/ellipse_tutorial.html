@@ -24,12 +24,14 @@
     Demonstrates how to add an Ellipse to a RenderableLayer.
 </p>
 <p>
-    This example renders four different ellipses on the globe.
+    This example renders six different ellipses on the globe.
 <ul>
     <li>The Northwestern ellipse demonstrates the default styling and configuration.</li>
     <li>The Northeastern ellipse uses custom attributes.</li>
-    <li>The Southwestern ellipse has a 45 degree heading.</li>
-    <li>The Southeastern ellipse displays a circle.</li>
+    <li>The Western ellipse has a 45 degree heading.</li>
+    <li>The Eastern ellipse displays a circle.</li>
+    <li>The Southwestern ellipse is at an altitude of 200km.</li>
+    <li>The Southeastern ellipse is at an altitude of 200km, extrude, and custom attributes.</li>
 </ul>
 </p>
 <h2>Example</h2>
@@ -88,6 +90,20 @@ public class EllipseFragment extends BasicGlobeFragment {
         ellipse = new Ellipse(new Position(35, -100, 0), 400000, 400000);
         ellipse.setAltitudeMode(WorldWind.CLAMP_TO_GROUND); // clamp the ellipse's center position to the terrain surface
         ellipse.setFollowTerrain(true); // cause the ellipse geometry to follow the terrain surface
+        tutorialLayer.addRenderable(ellipse);
+
+        // Create an ellipse with the default attributes, an altitude of 200 km, and a 500km major-radius and a 300km
+        // minor-radius.
+        ellipse = new Ellipse(new Position(25, -120, 200e3), 500000, 300000);
+        tutorialLayer.addRenderable(ellipse);
+
+        // Create an ellipse with custom attributes that make the interior 50% transparent and an extruded outline with
+        // vertical lines
+        attrs = new ShapeAttributes();
+        attrs.setInteriorColor(new Color(1, 1, 1, 0.5f)); // 50% transparent white
+        attrs.setDrawVerticals(true);
+        ellipse = new Ellipse(new Position(25, -100, 200e3), 500000, 300000, attrs);
+        ellipse.setExtrude(true);
         tutorialLayer.addRenderable(ellipse);
 
         return wwd;

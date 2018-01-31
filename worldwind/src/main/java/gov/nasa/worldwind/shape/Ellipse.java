@@ -13,15 +13,18 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.draw.DrawShapeState;
+import gov.nasa.worldwind.draw.Drawable;
+import gov.nasa.worldwind.draw.DrawableShape;
 import gov.nasa.worldwind.draw.DrawableSurfaceShape;
+import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Range;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
 import gov.nasa.worldwind.render.RenderContext;
-import gov.nasa.worldwind.util.FloatArray;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.ShortArray;
@@ -58,7 +61,32 @@ public class Ellipse extends AbstractShape {
 
     protected static final int VERTEX_STRIDE = 6;
 
+    /**
+     * The minimum number of intervals that will be used for geometry generation.
+     */
     protected static final int MIN_INTERVALS = 32;
+
+    /**
+     * Key for Range object in the element buffer describing the top of the Ellipse.
+     */
+    protected static final int TOP_RANGE = 0;
+
+    /**
+     * Key for Range object in the element buffer describing the outline of the Ellipse.
+     */
+    protected static final int OUTLINE_RANGE = 1;
+
+    /**
+     * Key for Range object in the element buffer describing the extruded sides of the Ellipse.
+     */
+    protected static final int SIDE_RANGE = 2;
+
+    /**
+     * Simple interval count based cache of the keys for element buffers. Element buffers are dependent only on the
+     * number of intervals so the keys are cached here. The element buffer object itself is in the
+     * RenderResourceCache and subject to the restrictions and behavior of that cache.
+     */
+    protected static SparseArray<Object> elementBufferKeys = new SparseArray<>();
 
     /**
      * The ellipse's geographic center position.
@@ -81,6 +109,11 @@ public class Ellipse extends AbstractShape {
     protected double heading;
 
     /**
+     * Draw sides of the ellipse which extend from the defined position and altitude to the ground.
+     */
+    protected boolean extrude;
+
+    /**
      * Determines whether this ellipse's geometry follows the terrain surface or is fixed at a constant altitude.
      */
     protected boolean followTerrain;
@@ -97,26 +130,26 @@ public class Ellipse extends AbstractShape {
     protected int maximumIntervals = 256;
 
     /**
-     * The number of intervals used for generating geometry. Clamped between MIN_INTERVALS and maximumIntervals. Will
-     * always be even.
+     * The number of intervals used for generating geometry. Clamped between MIN_INTERVALS and maximumIntervals.
+     * Will always be even.
      */
-    protected int intervals;
+    protected int activeIntervals;
 
-    protected FloatArray vertexArray = new FloatArray();
+    protected float[] vertexArray;
 
-    protected Object vertexBufferKey = nextCacheKey();
+    protected int vertexIndex;
 
-    protected static SparseArray<ElementBufferAttributes> ELEMENT_BUFFER_ATTRIBUTES = new SparseArray<>();
+    protected Object vertexBufferKey = new Object();
 
     protected Vec3 vertexOrigin = new Vec3();
 
-    protected static final Position POSITION = new Position();
+    protected boolean isSurfaceShape;
 
-    protected static final Vec3 POINT = new Vec3();
+    protected double cameraDistance;
 
-    protected static Object nextCacheKey() {
-        return new Object();
-    }
+    private static Position scratchPosition = new Position();
+
+    private static Vec3 scratchPoint = new Vec3();
 
     /**
      * Constructs an ellipse with a null center position, and with major- and minor-radius both 0.0. This ellipse does
@@ -307,6 +340,16 @@ public class Ellipse extends AbstractShape {
         return this;
     }
 
+    public boolean isExtrude() {
+        return this.extrude;
+    }
+
+    public Ellipse setExtrude(boolean extrude) {
+        this.extrude = extrude;
+        this.reset();
+        return this;
+    }
+
     /**
      * Indicates whether this ellipse's geometry follows the terrain surface or is fixed at a constant altitude.
      *
@@ -335,7 +378,7 @@ public class Ellipse extends AbstractShape {
      * Indicates the maximum number of angular intervals that may be used to approximate this ellipse's geometry on
      * screen.
      *
-     * @return the number of angular intervals
+     * @return the maximum number of angular intervals
      */
     public int getMaximumIntervals() {
         return this.maximumIntervals;
@@ -381,16 +424,23 @@ public class Ellipse extends AbstractShape {
 
         if (this.mustAssembleGeometry(rc)) {
             this.assembleGeometry(rc);
-            this.vertexBufferKey = nextCacheKey();
+            this.vertexBufferKey = new Object();
         }
 
         // Obtain a drawable form the render context pool.
-        DrawableSurfaceShape drawable;
+        Drawable drawable;
         DrawShapeState drawState;
-        Pool<DrawableSurfaceShape> pool = rc.getDrawablePool(DrawableSurfaceShape.class);
-        drawable = DrawableSurfaceShape.obtain(pool);
-        drawState = drawable.drawState;
-        drawable.sector.set(this.boundingSector);
+        if (this.isSurfaceShape) {
+            Pool<DrawableSurfaceShape> pool = rc.getDrawablePool(DrawableSurfaceShape.class);
+            drawable = DrawableSurfaceShape.obtain(pool);
+            drawState = ((DrawableSurfaceShape) drawable).drawState;
+            ((DrawableSurfaceShape) drawable).sector.set(this.boundingSector);
+        } else {
+            Pool<DrawableShape> pool = rc.getDrawablePool(DrawableShape.class);
+            drawable = DrawableShape.obtain(pool);
+            drawState = ((DrawableShape) drawable).drawState;
+            this.cameraDistance = this.boundingBox.distanceTo(rc.cameraPoint);
+        }
 
         // Use the basic GLSL program to draw the shape.
         drawState.program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
@@ -401,35 +451,49 @@ public class Ellipse extends AbstractShape {
         // Assemble the drawable's OpenGL vertex buffer object.
         drawState.vertexBuffer = rc.getBufferObject(this.vertexBufferKey);
         if (drawState.vertexBuffer == null) {
-            int size = this.vertexArray.size() * 4;
+            int size = this.vertexArray.length * 4;
             FloatBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer();
-            buffer.put(this.vertexArray.array(), 0, this.vertexArray.size());
+            buffer.put(this.vertexArray, 0, this.vertexArray.length);
             drawState.vertexBuffer = new BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer.rewind());
             rc.putBufferObject(this.vertexBufferKey, drawState.vertexBuffer);
         }
 
         // Get the attributes of the element buffer
-        ElementBufferAttributes elementBufferAttributes = ELEMENT_BUFFER_ATTRIBUTES.get(this.intervals);
-        drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes);
-        if (drawState.elementBuffer == null) {
-            elementBufferAttributes = assembleElementsToCache(rc, this.intervals);
-            drawState.elementBuffer = rc.getBufferObject(elementBufferAttributes);
+        Object elementBufferKey = elementBufferKeys.get(this.activeIntervals);
+        if (elementBufferKey == null) {
+            elementBufferKey = new Object();
+            elementBufferKeys.put(this.activeIntervals, elementBufferKey);
         }
 
-        this.drawInterior(rc, drawState, elementBufferAttributes);
-        this.drawOutline(rc, drawState, elementBufferAttributes);
+        drawState.elementBuffer = rc.getBufferObject(elementBufferKey);
+        if (drawState.elementBuffer == null) {
+            drawState.elementBuffer = assembleElements(this.activeIntervals);
+            rc.putBufferObject(elementBufferKey, drawState.elementBuffer);
+        }
+
+        if (this.isSurfaceShape) {
+            this.drawInterior(rc, drawState);
+            this.drawOutline(rc, drawState);
+        } else {
+            this.drawOutline(rc, drawState);
+            this.drawInterior(rc, drawState);
+        }
 
         // Configure the drawable according to the shape's attributes.
         drawState.vertexOrigin.set(this.vertexOrigin);
         drawState.vertexStride = VERTEX_STRIDE * 4; // stride in bytes
-        drawState.enableCullFace = false;
+        drawState.enableCullFace = this.extrude;
         drawState.enableDepthTest = this.activeAttributes.depthTest;
 
         // Enqueue the drawable for processing on the OpenGL thread.
-        rc.offerSurfaceDrawable(drawable, 0 /*zOrder*/);
+        if (this.isSurfaceShape) {
+            rc.offerSurfaceDrawable(drawable, 0 /*zOrder*/);
+        } else {
+            rc.offerShapeDrawable(drawable, this.cameraDistance);
+        }
     }
 
-    protected void drawInterior(RenderContext rc, DrawShapeState drawState, ElementBufferAttributes elementBufferAttrs) {
+    protected void drawInterior(RenderContext rc, DrawShapeState drawState) {
         if (!this.activeAttributes.drawInterior) {
             return;
         }
@@ -439,11 +503,18 @@ public class Ellipse extends AbstractShape {
         // Configure the drawable to display the shape's interior.
         drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.interiorColor);
         drawState.texCoordAttrib(2 /*size*/, 12 /*offset in bytes*/);
-        drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, elementBufferAttrs.interiorElements.length(),
-            GLES20.GL_UNSIGNED_SHORT, elementBufferAttrs.interiorElements.lower * 2 /*offset*/);
+        Range top = drawState.elementBuffer.ranges.get(TOP_RANGE);
+        drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, top.length(),
+            GLES20.GL_UNSIGNED_SHORT, top.lower * 2 /*offset*/);
+
+        if (this.extrude) {
+            Range side = drawState.elementBuffer.ranges.get(SIDE_RANGE);
+            drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, side.length(),
+                GLES20.GL_UNSIGNED_SHORT, side.lower * 2);
+        }
     }
 
-    protected void drawOutline(RenderContext rc, DrawShapeState drawState, ElementBufferAttributes elementBufferAttrs) {
+    protected void drawOutline(RenderContext rc, DrawShapeState drawState) {
         if (!this.activeAttributes.drawOutline) {
             return;
         }
@@ -454,15 +525,22 @@ public class Ellipse extends AbstractShape {
         drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
         drawState.lineWidth(this.activeAttributes.outlineWidth);
         drawState.texCoordAttrib(1 /*size*/, 20 /*offset in bytes*/);
-        drawState.drawElements(GLES20.GL_LINE_LOOP, elementBufferAttrs.outlineElements.length(),
-            GLES20.GL_UNSIGNED_SHORT, elementBufferAttrs.outlineElements.lower * 2 /*offset*/);
+        Range outline = drawState.elementBuffer.ranges.get(OUTLINE_RANGE);
+        drawState.drawElements(GLES20.GL_LINE_LOOP, outline.length(),
+            GLES20.GL_UNSIGNED_SHORT, outline.lower * 2 /*offset*/);
+
+        if (this.activeAttributes.drawVerticals && this.extrude) {
+            Range side = drawState.elementBuffer.ranges.get(SIDE_RANGE);
+            drawState.drawElements(GLES20.GL_LINES, side.length(),
+                GLES20.GL_UNSIGNED_SHORT, side.lower * 2);
+        }
     }
 
     protected boolean mustAssembleGeometry(RenderContext rc) {
         int calculatedIntervals = this.computeIntervals(rc);
-        int sanitzedIntervals = this.sanitizeIntervals(calculatedIntervals);
-        if (this.vertexArray.size() == 0 || sanitzedIntervals != this.intervals) {
-            this.intervals = sanitzedIntervals;
+        int sanitizedIntervals = this.sanitizeIntervals(calculatedIntervals);
+        if (this.vertexArray == null || sanitizedIntervals != this.activeIntervals) {
+            this.activeIntervals = sanitizedIntervals;
             return true;
         }
 
@@ -470,16 +548,29 @@ public class Ellipse extends AbstractShape {
     }
 
     protected void assembleGeometry(RenderContext rc) {
-        // Clear the shape's vertex array. The array will accumulate values as the shapes's geometry is assembled.
-        this.vertexArray.clear();
+        // Determine whether the shape geometry must be assembled as Cartesian geometry or as goegraphic geometry.
+        this.isSurfaceShape = (this.altitudeMode == WorldWind.CLAMP_TO_GROUND) && this.followTerrain;
 
         // Use the ellipse's center position as the local origin for vertex positions.
-        this.vertexOrigin.set(this.center.longitude, this.center.latitude, this.center.altitude);
+        if (this.isSurfaceShape) {
+            this.vertexOrigin.set(this.center.longitude, this.center.latitude, this.center.altitude);
+        } else {
+            rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, scratchPoint);
+            this.vertexOrigin.set(scratchPoint.x, scratchPoint.y, scratchPoint.z);
+        }
 
-        // Determine the number of spine points and construct radius value holding array
-        int spinePoints = this.intervals / 2 - 1; // intervals must be even
-        int spineIdx = 0;
-        double[] spineRadius = new double[spinePoints];
+        // Determine the number of spine points
+        int spineCount = computeNumberSpinePoints(this.activeIntervals); // activeIntervals must be even
+
+        // Clear the shape's vertex array. The array will accumulate values as the shapes's geometry is assembled.
+        // Determine the offset from the top and extruded vertices
+        this.vertexIndex = 0;
+        int arrayOffset = computeIndexOffset(this.activeIntervals) * VERTEX_STRIDE;
+        if (this.extrude && !this.isSurfaceShape) {
+            this.vertexArray = new float[(this.activeIntervals * 2 + spineCount) * VERTEX_STRIDE];
+        } else {
+            this.vertexArray = new float[(this.activeIntervals + spineCount) * VERTEX_STRIDE];
+        }
 
         // Check if minor radius is less than major in which case we need to flip the definitions and change the phase
         boolean isStandardAxisOrientation = this.majorRadius > this.minorRadius;
@@ -487,111 +578,153 @@ public class Ellipse extends AbstractShape {
 
         // Vertex generation begins on the positive major axis and works ccs around the ellipse. The spine points are
         // then appended from positive major axis to negative major axis.
-        double deltaRadians = 2 * Math.PI / this.intervals;
+        double deltaRadians = 2 * Math.PI / this.activeIntervals;
         double majorArcRadians, minorArcRadians;
+        double globeRadius = Math.max(rc.globe.getEquatorialRadius(), rc.globe.getPolarRadius());
         if (isStandardAxisOrientation) {
-            majorArcRadians = this.majorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
-            minorArcRadians = this.minorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
+            majorArcRadians = this.majorRadius / globeRadius;
+            minorArcRadians = this.minorRadius / globeRadius;
         } else {
-            majorArcRadians = this.minorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
-            minorArcRadians = this.majorRadius / rc.globe.getRadiusAt(this.center.latitude, this.center.longitude);
+            majorArcRadians = this.minorRadius / globeRadius;
+            minorArcRadians = this.majorRadius / globeRadius;
         }
 
-        for (int i = 0; i < this.intervals; i++) {
+        // Setup spine radius values
+        int spineIdx = 0;
+        double[] spineRadius = new double[spineCount];
+
+        // Iterate around the ellipse to add vertices
+        for (int i = 0; i < this.activeIntervals; i++) {
             double radians = deltaRadians * i;
             double x = Math.cos(radians) * majorArcRadians;
             double y = Math.sin(radians) * minorArcRadians;
             double azimuthDegrees = Math.toDegrees(-Math.atan2(y, x));
             double arcRadius = Math.sqrt(x * x + y * y);
-            // Calculate the great circle location given this intervals step (azimuthDegrees) a correction value to
+            // Calculate the great circle location given this activeIntervals step (azimuthDegrees) a correction value to
             // start from an east-west aligned major axis (90.0) and the user specified user heading value
-            this.center.greatCircleLocation(azimuthDegrees + headingAdjustment + this.heading, arcRadius, POSITION);
-            this.addVertex(rc, POSITION.latitude, POSITION.longitude, 0);
+            double azimuth = azimuthDegrees + headingAdjustment + this.heading;
+            Location loc = this.center.greatCircleLocation(azimuth, arcRadius, scratchPosition);
+            this.addVertex(rc, loc.latitude, loc.longitude, this.center.altitude, arrayOffset, this.isExtrude());
             // Add the major arc radius for the spine points. Spine points are vertically coincident with exterior
             // points. The first and middle most point do not have corresponding spine points.
-            if (i > 0 && i < this.intervals / 2) {
+            if (i > 0 && i < this.activeIntervals / 2) {
                 spineRadius[spineIdx++] = x;
             }
         }
 
         // Add the interior spine point vertices
-        for (int i = 0; i < spinePoints; i++) {
-            this.center.greatCircleLocation(0 + headingAdjustment + this.heading, spineRadius[i], POSITION);
-            this.addVertex(rc, POSITION.latitude, POSITION.longitude, 0);
+        for (int i = 0; i < spineCount; i++) {
+            this.center.greatCircleLocation(0 + headingAdjustment + this.heading, spineRadius[i], scratchPosition);
+            this.addVertex(rc, scratchPosition.latitude, scratchPosition.longitude, this.center.altitude, arrayOffset, false);
         }
 
         // Compute the shape's bounding sector from its assembled coordinates.
-        this.boundingSector.setEmpty();
-        this.boundingSector.union(this.vertexArray.array(), this.vertexArray.size(), VERTEX_STRIDE);
-        this.boundingSector.translate(this.vertexOrigin.y /*lat*/, this.vertexOrigin.x /*lon*/);
-        this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
+        if (this.isSurfaceShape) {
+            this.boundingSector.setEmpty();
+            this.boundingSector.union(this.vertexArray, this.vertexArray.length, VERTEX_STRIDE);
+            this.boundingSector.translate(this.vertexOrigin.y /*lat*/, this.vertexOrigin.x /*lon*/);
+            this.boundingBox.setToUnitBox(); // Surface/geographic shape bounding box is unused
+        } else {
+            this.boundingBox.setToPoints(this.vertexArray, this.vertexArray.length, VERTEX_STRIDE);
+            this.boundingBox.translate(this.vertexOrigin.x, this.vertexOrigin.y, this.vertexOrigin.z);
+            this.boundingSector.setEmpty();
+        }
     }
 
-    protected static ElementBufferAttributes assembleElementsToCache(RenderContext rc, int intervals) {
+    protected static BufferObject assembleElements(int intervals) {
         // Create temporary storage for elements
-        ShortArray interiorElements = new ShortArray();
-        ShortArray outlineElements = new ShortArray();
+        ShortArray elements = new ShortArray();
 
-        // Generate the interior element buffer with spine
+        // Generate the top element buffer with spine
         int interiorIdx = intervals;
+        int spinePoints = computeNumberSpinePoints(intervals);
+        int offset = computeIndexOffset(intervals);
+
         // Add the anchor leg
-        interiorElements.add((short) 0);
-        interiorElements.add((short) 1);
+        elements.add((short) 0);
+        elements.add((short) 1);
         // Tessellate the interior
         for (int i = 2; i < intervals; i++) {
             // Add the corresponding interior spine point if this isn't the vertex following the last vertex for the
             // negative major axis
             if (i != (intervals / 2 + 1)) {
                 if (i > intervals / 2) {
-                    interiorElements.add((short) --interiorIdx);
+                    elements.add((short) --interiorIdx);
                 } else {
-                    interiorElements.add((short) interiorIdx++);
+                    elements.add((short) interiorIdx++);
                 }
             }
             // Add the degenerate triangle at the negative major axis in order to flip the triangle strip back towards
             // the positive axis
             if (i == intervals / 2) {
-                interiorElements.add((short) i);
+                elements.add((short) i);
             }
             // Add the exterior vertex
-            interiorElements.add((short) i);
+            elements.add((short) i);
         }
         // Complete the strip
-        interiorElements.add((short) --interiorIdx);
-        interiorElements.add((short) 0);
+        elements.add((short) --interiorIdx);
+        elements.add((short) 0);
+        Range topRange = new Range(0, elements.size());
 
         // Generate the outline element buffer
         for (int i = 0; i < intervals; i++) {
-            outlineElements.add((short) i);
+            elements.add((short) i);
         }
+        Range outlineRange = new Range(topRange.upper, elements.size());
 
-        // Generate an attribute bundle for this element buffer
-        ElementBufferAttributes elementBufferAttributes = new ElementBufferAttributes();
-        elementBufferAttributes.interiorElements.set(0, interiorElements.size());
-        elementBufferAttributes.outlineElements.set(interiorElements.size(), interiorElements.size() + outlineElements.size());
+        // Generate the side element buffer
+        for (int i = 0; i < intervals; i++) {
+            elements.add((short) i);
+            elements.add((short) (i + offset));
+        }
+        elements.add((short) 0);
+        elements.add((short) offset);
+        Range sideRange = new Range(outlineRange.upper, elements.size());
 
         // Generate a buffer for the element
-        int size = (interiorElements.size() * 2) + (outlineElements.size() * 2);
+        int size = elements.size() * 2;
         ShortBuffer buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer();
-        buffer.put(interiorElements.array(), 0, interiorElements.size());
-        buffer.put(outlineElements.array(), 0, outlineElements.size());
+        buffer.put(elements.array(), 0, elements.size());
         BufferObject elementBuffer = new BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind());
+        elementBuffer.ranges.put(TOP_RANGE, topRange);
+        elementBuffer.ranges.put(OUTLINE_RANGE, outlineRange);
+        elementBuffer.ranges.put(SIDE_RANGE, sideRange);
 
-        // Cache the buffer object and attributes in the render resource cache and attribute map respectively
-        rc.putBufferObject(elementBufferAttributes, elementBuffer);
-        ELEMENT_BUFFER_ATTRIBUTES.put(intervals, elementBufferAttributes);
-
-        return elementBufferAttributes;
+        return elementBuffer;
     }
 
-    protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude) {
-        this.vertexArray.add((float) (longitude - this.vertexOrigin.x));
-        this.vertexArray.add((float) (latitude - this.vertexOrigin.y));
-        this.vertexArray.add((float) (altitude - this.vertexOrigin.z));
-        // reserved for future texture coordinate use
-        this.vertexArray.add(0);
-        this.vertexArray.add(0);
-        this.vertexArray.add(0);
+    protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude, int offset, boolean isExtrudedSkirt) {
+        int offsetVertexIndex = this.vertexIndex + offset;
+
+        if (this.isSurfaceShape) {
+            this.vertexArray[this.vertexIndex++] = (float) (longitude - this.vertexOrigin.x);
+            this.vertexArray[this.vertexIndex++] = (float) (latitude - this.vertexOrigin.y);
+            this.vertexArray[this.vertexIndex++] = (float) (altitude - this.vertexOrigin.z);
+            // reserved for future texture coordinate use
+            this.vertexArray[this.vertexIndex++] = 0;
+            this.vertexArray[this.vertexIndex++] = 0;
+            this.vertexArray[this.vertexIndex++] = 0;
+        } else {
+            Vec3 point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, scratchPoint);
+            this.vertexArray[this.vertexIndex++] = (float) (point.x - this.vertexOrigin.x);
+            this.vertexArray[this.vertexIndex++] = (float) (point.y - this.vertexOrigin.y);
+            this.vertexArray[this.vertexIndex++] = (float) (point.z - this.vertexOrigin.z);
+            // reserved for future texture coordinate use
+            this.vertexArray[this.vertexIndex++] = 0;
+            this.vertexArray[this.vertexIndex++] = 0;
+            this.vertexArray[this.vertexIndex++] = 0;
+
+            if (isExtrudedSkirt) {
+                point = rc.geographicToCartesian(latitude, longitude, 0, WorldWind.CLAMP_TO_GROUND, scratchPoint);
+                this.vertexArray[offsetVertexIndex++] = (float) (point.x - this.vertexOrigin.x);
+                this.vertexArray[offsetVertexIndex++] = (float) (point.y - this.vertexOrigin.y);
+                this.vertexArray[offsetVertexIndex++] = (float) (point.z - this.vertexOrigin.z);
+                this.vertexArray[offsetVertexIndex++] = 0; //unused
+                this.vertexArray[offsetVertexIndex++] = 0; //unused
+                this.vertexArray[offsetVertexIndex++] = 0; //unused
+            }
+        }
     }
 
     /**
@@ -607,7 +740,7 @@ public class Ellipse extends AbstractShape {
             return intervals; // use at least the minimum number of intervals
         }
 
-        Vec3 centerPoint = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, POINT);
+        Vec3 centerPoint = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, scratchPoint);
         double maxRadius = Math.max(this.majorRadius, this.minorRadius);
         double cameraDistance = centerPoint.distanceTo(rc.cameraPoint) - maxRadius;
         if (cameraDistance <= 0) {
@@ -618,8 +751,8 @@ public class Ellipse extends AbstractShape {
         double circumferencePixels = this.computeCircumference() / metersPerPixel;
         double circumferenceIntervals = circumferencePixels / this.maximumPixelsPerInterval;
         double subdivisions = Math.log(circumferenceIntervals / intervals) / Math.log(2);
-        int subdivisonCount = Math.max(0, (int) Math.ceil(subdivisions));
-        intervals <<= subdivisonCount; // subdivide the base intervals to achieve the desired number of intervals
+        int subdivisionCount = Math.max(0, (int) Math.ceil(subdivisions));
+        intervals <<= subdivisionCount; // subdivide the base intervals to achieve the desired number of intervals
 
         return Math.min(intervals, this.maximumIntervals); // don't exceed the maximum number of intervals
     }
@@ -634,33 +767,17 @@ public class Ellipse extends AbstractShape {
         return Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
     }
 
-    @Override
-    protected void reset() {
-        this.vertexArray.clear();
+    protected static int computeNumberSpinePoints(int intervals) {
+        // intervals should be even
+        return intervals / 2 - 1;
     }
 
-    protected static class ElementBufferAttributes {
+    protected static int computeIndexOffset(int intervals) {
+        return intervals + computeNumberSpinePoints(intervals);
+    }
 
-        protected Range interiorElements = new Range();
-
-        protected Range outlineElements = new Range();
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            ElementBufferAttributes that = (ElementBufferAttributes) o;
-
-            if (!interiorElements.equals(that.interiorElements)) return false;
-            return outlineElements.equals(that.outlineElements);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = interiorElements.hashCode();
-            result = 31 * result + outlineElements.hashCode();
-            return result;
-        }
+    @Override
+    protected void reset() {
+        this.vertexArray = null;
     }
 }
