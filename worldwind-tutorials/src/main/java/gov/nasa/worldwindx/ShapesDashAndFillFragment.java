@@ -80,7 +80,7 @@ public class ShapesDashAndFillFragment extends BasicGlobeFragment {
         path.setFollowTerrain(true);
         layer.addRenderable(path);
 
-        // Create an Ellipse using an image as a repeating fill pattern and a dash pattern for the outline
+        // Create an Ellipse using an image as a repeating fill pattern
         Position ellipseCenter = new Position(40, -70.0, 1e5);
         Ellipse ellipse = new Ellipse(ellipseCenter, 1.5e6, 800e3);
         sa = new ShapeAttributes(thickenLine);
