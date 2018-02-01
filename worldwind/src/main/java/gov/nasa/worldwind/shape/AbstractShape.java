@@ -8,11 +8,13 @@ package gov.nasa.worldwind.shape;
 import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.BoundingBox;
+import gov.nasa.worldwind.geom.Matrix3;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.AbstractRenderable;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.RenderContext;
+import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.WWMath;
 
 public abstract class AbstractShape extends AbstractRenderable implements Attributable, Highlightable {
@@ -181,6 +183,16 @@ public abstract class AbstractShape extends AbstractRenderable implements Attrib
         }
 
         return Math.sqrt(minDistance2);
+    }
+
+    protected Matrix3 computeTexCoordMatrix(Texture texture, double metersPerPixel, Matrix3 result) {
+        Matrix3 texCoordMatrix = result.setToIdentity();
+        texCoordMatrix.setScale(
+            1.0 / (texture.getWidth() * metersPerPixel),
+            1.0 / (texture.getHeight() * metersPerPixel));
+        texCoordMatrix.multiplyByMatrix(texture.getTexCoordTransform());
+
+        return texCoordMatrix;
     }
 
     protected abstract void reset();

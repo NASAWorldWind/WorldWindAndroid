@@ -523,6 +523,7 @@ public class Ellipse extends AbstractShape {
             return;
         }
 
+        // Configure the drawable to use the interior texture when drawing the interior.
         if (this.activeAttributes.interiorImageSource != null) {
             Texture texture = rc.getTexture(this.activeAttributes.interiorImageSource);
             if (texture == null) {
@@ -530,13 +531,9 @@ public class Ellipse extends AbstractShape {
             }
             if (texture != null) {
                 double metersPerPixel = rc.pixelSizeAtDistance(this.cameraDistance);
-                Matrix3 texCoordMatrix = this.texCoordMatrix.setToIdentity();
-                texCoordMatrix.setScale(
-                    1.0 / (texture.getWidth() * metersPerPixel),
-                    1.0 / (texture.getHeight() * metersPerPixel));
-                texCoordMatrix.multiplyByMatrix(texture.getTexCoordTransform());
+                this.computeTexCoordMatrix(texture, metersPerPixel, this.texCoordMatrix);
                 drawState.texture(texture);
-                drawState.texCoordMatrix(texCoordMatrix);
+                drawState.texCoordMatrix(this.texCoordMatrix);
             }
         } else {
             drawState.texture(null);
@@ -570,11 +567,9 @@ public class Ellipse extends AbstractShape {
             }
             if (texture != null) {
                 double metersPerPixel = rc.pixelSizeAtDistance(this.cameraDistance);
-                Matrix3 texCoordMatrix = this.texCoordMatrix.setToIdentity();
-                texCoordMatrix.setScale(1.0 / (texture.getWidth() * metersPerPixel), 1.0);
-                texCoordMatrix.multiplyByMatrix(texture.getTexCoordTransform());
+                this.computeTexCoordMatrix(texture, metersPerPixel, this.texCoordMatrix);
                 drawState.texture(texture);
-                drawState.texCoordMatrix(texCoordMatrix);
+                drawState.texCoordMatrix(this.texCoordMatrix);
             }
         } else {
             drawState.texture(null);
