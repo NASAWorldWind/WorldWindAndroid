@@ -19,12 +19,16 @@ import gov.nasa.worldwind.draw.Drawable;
 import gov.nasa.worldwind.draw.DrawableShape;
 import gov.nasa.worldwind.draw.DrawableSurfaceShape;
 import gov.nasa.worldwind.geom.Location;
+import gov.nasa.worldwind.geom.Matrix3;
+import gov.nasa.worldwind.geom.Matrix4;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Range;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.BasicShaderProgram;
 import gov.nasa.worldwind.render.BufferObject;
+import gov.nasa.worldwind.render.ImageOptions;
 import gov.nasa.worldwind.render.RenderContext;
+import gov.nasa.worldwind.render.Texture;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Pool;
 import gov.nasa.worldwind.util.ShortArray;
@@ -80,6 +84,10 @@ public class Ellipse extends AbstractShape {
      * Key for Range object in the element buffer describing the extruded sides of the Ellipse.
      */
     protected static final int SIDE_RANGE = 2;
+
+    protected static final ImageOptions defaultInteriorImageOptions = new ImageOptions();
+
+    protected static final ImageOptions defaultOutlineImageOptions = new ImageOptions();
 
     /**
      * Simple interval count based cache of the keys for element buffers. Element buffers are dependent only on the
@@ -145,11 +153,27 @@ public class Ellipse extends AbstractShape {
 
     protected boolean isSurfaceShape;
 
+    protected double texCoord1d;
+
+    protected Vec3 texCoord2d = new Vec3();
+
+    protected Matrix3 texCoordMatrix = new Matrix3();
+
+    protected Matrix4 modelToTexCoord = new Matrix4();
+
     protected double cameraDistance;
+
+    protected Vec3 prevPoint = new Vec3();
 
     private static Position scratchPosition = new Position();
 
     private static Vec3 scratchPoint = new Vec3();
+
+    static {
+        defaultInteriorImageOptions.wrapMode = WorldWind.REPEAT;
+        defaultOutlineImageOptions.resamplingMode = WorldWind.NEAREST_NEIGHBOR;
+        defaultOutlineImageOptions.wrapMode = WorldWind.REPEAT;
+    }
 
     /**
      * Constructs an ellipse with a null center position, and with major- and minor-radius both 0.0. This ellipse does
@@ -378,7 +402,7 @@ public class Ellipse extends AbstractShape {
      * Indicates the maximum number of angular intervals that may be used to approximate this ellipse's geometry on
      * screen.
      *
-     * @return the maximum number of angular intervals
+     * @return the number of angular intervals
      */
     public int getMaximumIntervals() {
         return this.maximumIntervals;
@@ -435,6 +459,7 @@ public class Ellipse extends AbstractShape {
             drawable = DrawableSurfaceShape.obtain(pool);
             drawState = ((DrawableSurfaceShape) drawable).drawState;
             ((DrawableSurfaceShape) drawable).sector.set(this.boundingSector);
+            this.cameraDistance = this.cameraDistanceGeographic(rc, this.boundingSector);
         } else {
             Pool<DrawableShape> pool = rc.getDrawablePool(DrawableShape.class);
             drawable = DrawableShape.obtain(pool);
@@ -498,7 +523,21 @@ public class Ellipse extends AbstractShape {
             return;
         }
 
-        drawState.texture(null);
+        // Configure the drawable to use the interior texture when drawing the interior.
+        if (this.activeAttributes.interiorImageSource != null) {
+            Texture texture = rc.getTexture(this.activeAttributes.interiorImageSource);
+            if (texture == null) {
+                texture = rc.retrieveTexture(this.activeAttributes.interiorImageSource, defaultInteriorImageOptions);
+            }
+            if (texture != null) {
+                double metersPerPixel = rc.pixelSizeAtDistance(this.cameraDistance);
+                this.computeRepeatingTexCoordTransform(texture, metersPerPixel, this.texCoordMatrix);
+                drawState.texture(texture);
+                drawState.texCoordMatrix(this.texCoordMatrix);
+            }
+        } else {
+            drawState.texture(null);
+        }
 
         // Configure the drawable to display the shape's interior.
         drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.interiorColor);
@@ -509,6 +548,7 @@ public class Ellipse extends AbstractShape {
 
         if (this.extrude) {
             Range side = drawState.elementBuffer.ranges.get(SIDE_RANGE);
+            drawState.texture(null);
             drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, side.length(),
                 GLES20.GL_UNSIGNED_SHORT, side.lower * 2);
         }
@@ -519,7 +559,21 @@ public class Ellipse extends AbstractShape {
             return;
         }
 
-        drawState.texture(null);
+        // Configure the drawable to use the outline texture when drawing the outline.
+        if (this.activeAttributes.outlineImageSource != null) {
+            Texture texture = rc.getTexture(this.activeAttributes.outlineImageSource);
+            if (texture == null) {
+                texture = rc.retrieveTexture(this.activeAttributes.outlineImageSource, defaultOutlineImageOptions);
+            }
+            if (texture != null) {
+                double metersPerPixel = rc.pixelSizeAtDistance(this.cameraDistance);
+                this.computeRepeatingTexCoordTransform(texture, metersPerPixel, this.texCoordMatrix);
+                drawState.texture(texture);
+                drawState.texCoordMatrix(this.texCoordMatrix);
+            }
+        } else {
+            drawState.texture(null);
+        }
 
         // Configure the drawable to display the shape's outline.
         drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
@@ -531,6 +585,9 @@ public class Ellipse extends AbstractShape {
 
         if (this.activeAttributes.drawVerticals && this.extrude) {
             Range side = drawState.elementBuffer.ranges.get(SIDE_RANGE);
+            drawState.color(rc.pickMode ? this.pickColor : this.activeAttributes.outlineColor);
+            drawState.lineWidth(this.activeAttributes.outlineWidth);
+            drawState.texture(null);
             drawState.drawElements(GLES20.GL_LINES, side.length(),
                 GLES20.GL_UNSIGNED_SHORT, side.lower * 2);
         }
@@ -551,6 +608,9 @@ public class Ellipse extends AbstractShape {
         // Determine whether the shape geometry must be assembled as Cartesian geometry or as goegraphic geometry.
         this.isSurfaceShape = (this.altitudeMode == WorldWind.CLAMP_TO_GROUND) && this.followTerrain;
 
+        // Compute a matrix that transforms from Cartesian coordinates to shape texture coordinates.
+        this.determineModelToTexCoord(rc);
+
         // Use the ellipse's center position as the local origin for vertex positions.
         if (this.isSurfaceShape) {
             this.vertexOrigin.set(this.center.longitude, this.center.latitude, this.center.altitude);
@@ -563,9 +623,7 @@ public class Ellipse extends AbstractShape {
         int spineCount = computeNumberSpinePoints(this.activeIntervals); // activeIntervals must be even
 
         // Clear the shape's vertex array. The array will accumulate values as the shapes's geometry is assembled.
-        // Determine the offset from the top and extruded vertices
         this.vertexIndex = 0;
-        int arrayOffset = computeIndexOffset(this.activeIntervals) * VERTEX_STRIDE;
         if (this.extrude && !this.isSurfaceShape) {
             this.vertexArray = new float[(this.activeIntervals * 2 + spineCount) * VERTEX_STRIDE];
         } else {
@@ -589,6 +647,8 @@ public class Ellipse extends AbstractShape {
             minorArcRadians = this.majorRadius / globeRadius;
         }
 
+        // Determine the offset from the top and extruded vertices
+        int arrayOffset = computeIndexOffset(this.activeIntervals) * VERTEX_STRIDE;
         // Setup spine radius values
         int spineIdx = 0;
         double[] spineRadius = new double[spineCount];
@@ -637,7 +697,6 @@ public class Ellipse extends AbstractShape {
 
         // Generate the top element buffer with spine
         int interiorIdx = intervals;
-        int spinePoints = computeNumberSpinePoints(intervals);
         int offset = computeIndexOffset(intervals);
 
         // Add the anchor leg
@@ -697,23 +756,32 @@ public class Ellipse extends AbstractShape {
     protected void addVertex(RenderContext rc, double latitude, double longitude, double altitude, int offset, boolean isExtrudedSkirt) {
         int offsetVertexIndex = this.vertexIndex + offset;
 
+        Vec3 point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, scratchPoint);
+        Vec3 texCoord2d = this.texCoord2d.set(point).multiplyByMatrix(this.modelToTexCoord);
+
+        if (this.vertexIndex == 0) {
+            this.texCoord1d = 0;
+            this.prevPoint.set(point);
+        } else {
+            this.texCoord1d += point.distanceTo(this.prevPoint);
+            this.prevPoint.set(point);
+        }
+
         if (this.isSurfaceShape) {
             this.vertexArray[this.vertexIndex++] = (float) (longitude - this.vertexOrigin.x);
             this.vertexArray[this.vertexIndex++] = (float) (latitude - this.vertexOrigin.y);
             this.vertexArray[this.vertexIndex++] = (float) (altitude - this.vertexOrigin.z);
             // reserved for future texture coordinate use
-            this.vertexArray[this.vertexIndex++] = 0;
-            this.vertexArray[this.vertexIndex++] = 0;
-            this.vertexArray[this.vertexIndex++] = 0;
+            this.vertexArray[this.vertexIndex++] = (float) texCoord2d.x;
+            this.vertexArray[this.vertexIndex++] = (float) texCoord2d.y;
+            this.vertexArray[this.vertexIndex++] = (float) this.texCoord1d;
         } else {
-            Vec3 point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, scratchPoint);
             this.vertexArray[this.vertexIndex++] = (float) (point.x - this.vertexOrigin.x);
             this.vertexArray[this.vertexIndex++] = (float) (point.y - this.vertexOrigin.y);
             this.vertexArray[this.vertexIndex++] = (float) (point.z - this.vertexOrigin.z);
-            // reserved for future texture coordinate use
-            this.vertexArray[this.vertexIndex++] = 0;
-            this.vertexArray[this.vertexIndex++] = 0;
-            this.vertexArray[this.vertexIndex++] = 0;
+            this.vertexArray[this.vertexIndex++] = (float) texCoord2d.x;
+            this.vertexArray[this.vertexIndex++] = (float) texCoord2d.y;
+            this.vertexArray[this.vertexIndex++] = (float) this.texCoord1d;
 
             if (isExtrudedSkirt) {
                 point = rc.geographicToCartesian(latitude, longitude, 0, WorldWind.CLAMP_TO_GROUND, scratchPoint);
@@ -725,6 +793,12 @@ public class Ellipse extends AbstractShape {
                 this.vertexArray[offsetVertexIndex++] = 0; //unused
             }
         }
+    }
+
+    protected void determineModelToTexCoord(RenderContext rc) {
+        Vec3 point = rc.geographicToCartesian(this.center.latitude, this.center.longitude, this.center.altitude, this.altitudeMode, scratchPoint);
+        this.modelToTexCoord = rc.globe.cartesianToLocalTransform(point.x, point.y, point.z, this.modelToTexCoord);
+        this.modelToTexCoord.invertOrthonormal();
     }
 
     /**
