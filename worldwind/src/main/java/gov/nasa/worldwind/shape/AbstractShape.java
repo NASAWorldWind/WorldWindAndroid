@@ -185,7 +185,7 @@ public abstract class AbstractShape extends AbstractRenderable implements Attrib
         return Math.sqrt(minDistance2);
     }
 
-    protected Matrix3 computeTexCoordMatrix(Texture texture, double metersPerPixel, Matrix3 result) {
+    protected Matrix3 computeRepeatingTexCoordTransform(Texture texture, double metersPerPixel, Matrix3 result) {
         Matrix3 texCoordMatrix = result.setToIdentity();
         texCoordMatrix.setScale(
             1.0 / (texture.getWidth() * metersPerPixel),

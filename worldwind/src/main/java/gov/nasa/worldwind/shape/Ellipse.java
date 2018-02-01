@@ -531,7 +531,7 @@ public class Ellipse extends AbstractShape {
             }
             if (texture != null) {
                 double metersPerPixel = rc.pixelSizeAtDistance(this.cameraDistance);
-                this.computeTexCoordMatrix(texture, metersPerPixel, this.texCoordMatrix);
+                this.computeRepeatingTexCoordTransform(texture, metersPerPixel, this.texCoordMatrix);
                 drawState.texture(texture);
                 drawState.texCoordMatrix(this.texCoordMatrix);
             }
@@ -567,7 +567,7 @@ public class Ellipse extends AbstractShape {
             }
             if (texture != null) {
                 double metersPerPixel = rc.pixelSizeAtDistance(this.cameraDistance);
-                this.computeTexCoordMatrix(texture, metersPerPixel, this.texCoordMatrix);
+                this.computeRepeatingTexCoordTransform(texture, metersPerPixel, this.texCoordMatrix);
                 drawState.texture(texture);
                 drawState.texCoordMatrix(this.texCoordMatrix);
             }

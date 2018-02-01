@@ -214,7 +214,7 @@ public class Path extends AbstractShape {
             }
             if (texture != null) {
                 double metersPerPixel = rc.pixelSizeAtDistance(cameraDistance);
-                this.computeTexCoordMatrix(texture, metersPerPixel, this.texCoordMatrix);
+                this.computeRepeatingTexCoordTransform(texture, metersPerPixel, this.texCoordMatrix);
                 drawState.texture(texture);
                 drawState.texCoordMatrix(texCoordMatrix);
             }

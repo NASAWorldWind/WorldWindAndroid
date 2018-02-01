@@ -349,7 +349,7 @@ public class Polygon extends AbstractShape {
             }
             if (texture != null) {
                 double metersPerPixel = rc.pixelSizeAtDistance(this.cameraDistance);
-                this.computeTexCoordMatrix(texture, metersPerPixel, this.texCoordMatrix);
+                this.computeRepeatingTexCoordTransform(texture, metersPerPixel, this.texCoordMatrix);
                 drawState.texture(texture);
                 drawState.texCoordMatrix(texCoordMatrix);
             }
@@ -384,7 +384,7 @@ public class Polygon extends AbstractShape {
             }
             if (texture != null) {
                 double metersPerPixel = rc.pixelSizeAtDistance(this.cameraDistance);
-                this.computeTexCoordMatrix(texture, metersPerPixel, this.texCoordMatrix);
+                this.computeRepeatingTexCoordTransform(texture, metersPerPixel, this.texCoordMatrix);
                 drawState.texture(texture);
                 drawState.texCoordMatrix(texCoordMatrix);
             }
