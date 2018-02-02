@@ -18,7 +18,7 @@ geometric objects.
 
 Download the [latest release](https://bintray.com/nasaworldwind/maven/WorldWindAndroid/_latestVersion) or grab via Gradle:
 ```groovy
-compile 'gov.nasa.worldwind.android:worldwind:0.7.0'
+compile 'gov.nasa.worldwind.android:worldwind:0.8.0'
 ```
 
 ## Snapshots
@@ -33,7 +33,7 @@ repositories {
 
 ...
 
-compile 'gov.nasa.worldwind.android:worldwind:0.8.0-SNAPSHOT'
+compile 'gov.nasa.worldwind.android:worldwind:0.9.0-SNAPSHOT'
 ```
 
 ## Releases and Roadmap
