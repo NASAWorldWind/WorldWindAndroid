@@ -2,6 +2,15 @@
 
 # WorldWind Android
 
+```
+WorldWind team would like to inform you that starting April 5, 2019, NASA WorldWind project will be
+suspended. All the WorldWind servers providing elevation and imagery will be unavailable. While you
+can still download the SDKs from GitHub, there will be no technical support. If you have questions
+and/or concerns, please feel free to email at:
+
+worldwind-info@lists.nasa.gov
+```
+
 [![Build Status](https://travis-ci.org/NASAWorldWind/WorldWindAndroid.svg?branch=develop)](https://travis-ci.org/NASAWorldWind/WorldWindAndroid)
 [![Download](https://api.bintray.com/packages/nasaworldwind/maven/WorldWindAndroid/images/download.svg)](https://bintray.com/nasaworldwind/maven/WorldWindAndroid/_latestVersion)
  
