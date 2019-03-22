@@ -19,8 +19,8 @@ android:
     - extra-android-m2repository
 
 # Decrypt the keystore used to certify Android apps when the build is not a pull request
-before_script:
-  - 'if [[ -n "${encrypted_2eaf8cabe659_key}" ]]; then openssl aes-256-cbc -K "${encrypted_2eaf8cabe659_key}" -iv "${encrypted_2eaf8cabe659_iv}" -in keystore.jks.enc -out keystore.jks -d; fi'
+#before_script:
+#  - 'if [[ -n "${encrypted_2eaf8cabe659_key}" ]]; then openssl aes-256-cbc -K "${encrypted_2eaf8cabe659_key}" -iv "${encrypted_2eaf8cabe659_iv}" -in keystore.jks.enc -out keystore.jks -d; fi'
 
 # Build the project
 script:
