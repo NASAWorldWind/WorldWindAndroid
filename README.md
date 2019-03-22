@@ -11,7 +11,7 @@ and/or concerns, please feel free to email at:
 worldwind-info@lists.nasa.gov
 ```
 
-[![Build Status](https://travis-ci.org/NASAWorldWind/WorldWindAndroid.svg?branch=develop)](https://travis-ci.org/NASAWorldWind/WorldWindAndroid)
+[![Build Status](https://travis-ci.com/NASAWorldWind/WorldWindAndroid.svg?branch=develop)](https://travis-ci.com/NASAWorldWind/WorldWindAndroid)
 [![Download](https://api.bintray.com/packages/nasaworldwind/maven/WorldWindAndroid/images/download.svg)](https://bintray.com/nasaworldwind/maven/WorldWindAndroid/_latestVersion)
  
 3D virtual globe API for Android, developed by NASA. Provides a geographic context with high-resolution terrain, for 
@@ -52,7 +52,7 @@ Official WorldWind Android releases have the latest stable features, enhancement
 - [GitHub Releases](https://github.com/NASAWorldWind/WorldWindAndroid/releases/) documents official releases
 - [GitHub Milestones](https://github.com/NASAWorldWind/WorldWindAndroid/milestones) documents upcoming releases and the development roadmap
 - [Bintray](https://bintray.com/nasaworldwind/maven/WorldWindAndroid) contains official release binaries and Maven artifacts
-- [Travis CI](https://travis-ci.org/NASAWorldWind/WorldWindAndroid) provides continuous integration and release automation
+- [Travis CI](https://travis-ci.com/NASAWorldWind/WorldWindAndroid) provides continuous integration and release automation
 
 ## License
 
