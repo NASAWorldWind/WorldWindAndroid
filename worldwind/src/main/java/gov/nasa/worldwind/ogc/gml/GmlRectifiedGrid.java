@@ -12,7 +12,7 @@ public class GmlRectifiedGrid extends GmlGrid {
 
     protected GmlPointProperty origin;
 
-    protected List<GmlVector> offsetVector = new ArrayList();
+    protected List<GmlVector> offsetVector = new ArrayList<>();
 
     public GmlRectifiedGrid() {
     }
