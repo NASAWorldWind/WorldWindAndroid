@@ -27,20 +27,20 @@ script:
   - ./gradlew build --stacktrace
 
 # Deployment has been disabled in preparation for the WorldWind project suspension on April 5, 2019
-#deploy:
+deploy:
 #  # Publish SNAPSHOT artifacts to oss.jfrog.org
 #  - provider: script
 #    script: ./gradlew worldwind:artifactoryPublish --stacktrace
 #    skip_cleanup: true
 #    on:
 #      branch: develop
-#  # Publish API documentation to GitHub Pages
-#  - provider: pages
-#    github_token: $GITHUB_API_KEY
-#    local_dir: worldwind/build/outputs/doc/javadoc
-#    skip_cleanup: true
-#    on:
-#      branch: develop
+# Publish API documentation to GitHub Pages
+  - provider: pages
+    github_token: $GITHUB_API_KEY
+    local_dir: worldwind/build/outputs/doc/javadoc
+    skip_cleanup: true
+    on:
+      branch: develop
 #  # Publish release artifacts to Bintray/JCenter
 #  - provider: script
 #    script: ./gradlew worldwind:bintrayUpload --stacktrace
