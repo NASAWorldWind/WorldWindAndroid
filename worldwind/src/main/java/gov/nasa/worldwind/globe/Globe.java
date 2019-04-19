@@ -320,4 +320,20 @@ public class Globe {
 
         return this.projection.intersect(this, line, result);
     }
+
+    /**
+     * Determine terrain altitude in specified geographic point from elevation model
+     *
+     * @param latitude  location latitude
+     * @param longitude location longitude
+     *
+     * @return Elevation in meters in specified location
+     */
+    public double getElevationAtLocation(double latitude, double longitude) {
+        // Use 1E-15 below because sector can not have zero deltas
+        Sector sector = Sector.fromDegrees(latitude, longitude, 1E-15, 1E-15);
+        float[] heights = new float[1];
+        this.getElevationModel().getHeightGrid(sector, 1, 1, heights);
+        return heights[0];
+    }
 }
