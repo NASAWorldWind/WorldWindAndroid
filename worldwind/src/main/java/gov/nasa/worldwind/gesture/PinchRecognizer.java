@@ -68,8 +68,7 @@ public class PinchRecognizer extends GestureRecognizer {
                 }
             } else if (state == WorldWind.BEGAN || state == WorldWind.CHANGED) {
                 float distance = this.currentPinchDistance(event);
-                float newScale = Math.abs(distance / this.referenceDistance);
-                this.scale = this.lowPassFilter(this.scale, newScale);
+                this.scale = Math.abs(distance / this.referenceDistance);
                 this.transitionToState(event, WorldWind.CHANGED);
             }
         }
