@@ -1039,20 +1039,25 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         double eyeAltitude = this.navigator.getAltitude();
         double eyeHorizon = this.globe.horizonDistance(eyeAltitude);
         double atmosphereHorizon = this.globe.horizonDistance(160000);
-        double near = eyeAltitude * 0.5;
-        double far = eyeHorizon + atmosphereHorizon;
 
-        // Computes the near clip distance that provides a minimum resolution at the far clip plane, based on the OpenGL
-        // context's depth buffer precision.
-        if (this.depthBits != 0) {
-            double maxDepthValue = (1 << this.depthBits) - 1;
-            double farResolution = 10.0;
-            double nearDistance = far / (maxDepthValue / (1 - farResolution / far) - maxDepthValue + 1);
-            // Use the computed near distance only when it's less than our default distance.
-            if (near > nearDistance) {
-                near = nearDistance;
-            }
+        // The far distance is set to the smallest value that does not clip the atmosphere.
+        double far = eyeHorizon + atmosphereHorizon;
+        if (far < 1e3) far = 1e3;
+
+        //The near distance is set to a large value that does not clip the globe's surface.
+        double maxDepthValue = (1L << this.depthBits) - 1L;
+        double farResolution = 10.0;
+        double near = far / (maxDepthValue / (1 - farResolution / far) - maxDepthValue + 1);
+
+        // Prevent the near clip plane from intersecting the terrain.
+        double distanceToSurface = this.navigator.getAltitude() - this.globe.getElevationAtLocation(this.navigator.getLatitude(), this.navigator.getLongitude()) * this.getVerticalExaggeration();
+        if (distanceToSurface > 0) {
+            double tanHalfFov = Math.tan(0.5 * Math.toRadians(this.fieldOfView));
+            double maxNearDistance = distanceToSurface / (2 * Math.sqrt(2 * tanHalfFov * tanHalfFov + 1));
+            if (near > maxNearDistance) near = maxNearDistance;
         }
+
+        if (near < 1) near = 1;
 
         // Compute a perspective projection matrix given the WorldWindow's viewport, field of view, and clip distances.
         projection.setToPerspectiveProjection(this.viewport.width, this.viewport.height, this.fieldOfView, near, far);

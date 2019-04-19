@@ -28,17 +28,19 @@ public class Navigator {
 
     protected double roll;
 
-    private Camera scratchCamera = new Camera();
+    private final Camera scratchCamera = new Camera();
 
-    private Matrix4 modelview = new Matrix4();
+    private final Matrix4 modelview = new Matrix4();
 
-    private Matrix4 origin = new Matrix4();
+    private final Matrix4 origin = new Matrix4();
 
-    private Vec3 originPoint = new Vec3();
+    private final Vec3 originPoint = new Vec3();
 
-    private Position originPos = new Position();
+    private final Position originPos = new Position();
 
-    private Line forwardRay = new Line();
+    private final Line forwardRay = new Line();
+
+    private final static double COLLISION_THRESHOLD = 10.0; // 10m above surface
 
     public Navigator() {
     }
@@ -246,6 +248,26 @@ public class Navigator {
         result.heading = this.modelview.extractHeading(lookAt.roll); // disambiguate heading and roll
         result.tilt = this.modelview.extractTilt();
         result.roll = lookAt.roll; // roll passes straight through
+
+        // Check if camera altitude is not under the surface
+        // TODO Multiply elevation at location by vertical exaggeration
+        double elevation = globe.getElevationAtLocation(result.latitude, result.longitude) + COLLISION_THRESHOLD;
+        if(elevation > result.altitude) {
+            // Set camera altitude above the surface
+            result.altitude = elevation;
+            // Compute new camera point
+            globe.geographicToCartesian(result.latitude, result.longitude, result.altitude, originPoint);
+            // Compute look at point
+            globe.geographicToCartesian(lookAt.latitude, lookAt.longitude, lookAt.altitude, forwardRay.origin);
+            // Compute normal to globe in look at point
+            globe.geographicToCartesianNormal(lookAt.latitude, lookAt.longitude, forwardRay.direction);
+            // Calculate tilt angle between new camera point and look at point
+            originPoint.subtract(forwardRay.origin).normalize();
+            double dot = forwardRay.direction.dot(originPoint);
+            if (dot >= -1 || dot <= 1) {
+                result.tilt = Math.toDegrees(Math.acos(dot));
+            }
+        }
 
         return result;
     }
