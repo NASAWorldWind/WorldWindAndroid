@@ -75,7 +75,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected double fieldOfView = 45;
 
-    protected Navigator navigator = new Navigator();
+    protected Navigator navigator = new Navigator(this);
 
     protected NavigatorEventSupport navigatorEvents = new NavigatorEventSupport(this);
 
@@ -387,6 +387,10 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // TODO provide a mechanism for the old cache to evict its entries
         this.renderResourceCache = cache;
+    }
+
+    public Viewport getViewport() {
+        return this.viewport;
     }
 
     /**

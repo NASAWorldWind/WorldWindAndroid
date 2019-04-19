@@ -40,9 +40,17 @@ public class Navigator {
 
     private final Line forwardRay = new Line();
 
+    private final WorldWindow wwd;
+
     private final static double COLLISION_THRESHOLD = 10.0; // 10m above surface
 
-    public Navigator() {
+    public Navigator(WorldWindow wwd) {
+        if (wwd == null) {
+            throw new IllegalArgumentException(
+                    Logger.logMessage(Logger.ERROR, "Navigator", "constructor", "missingWorldWindow"));
+        }
+
+        this.wwd = wwd;
     }
 
     public double getLatitude() {
@@ -195,16 +203,23 @@ public class Navigator {
 
     protected LookAt cameraToLookAt(Globe globe, Camera camera, LookAt result) {
         this.cameraToViewingMatrix(globe, camera, this.modelview);
-        this.modelview.extractEyePoint(this.forwardRay.origin);
-        this.modelview.extractForwardVector(this.forwardRay.direction);
 
-        if (!globe.intersect(this.forwardRay, this.originPoint)) {
-            double horizon = globe.horizonDistance(camera.altitude);
-            this.forwardRay.pointAt(horizon, this.originPoint);
+        // Pick terrain located behind the viewport center point
+        PickedObject terrainPickedObject = wwd.pick(wwd.getViewport().width / 2f, wwd.getViewport().height / 2f).terrainPickedObject();
+        if (terrainPickedObject != null) {
+            // Use picked terrain position including approximate rendered altitude
+            this.originPos.set(terrainPickedObject.getTerrainPosition());
+            globe.geographicToCartesian(this.originPos.latitude, this.originPos.longitude, this.originPos.altitude, this.originPoint);
+            globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
+        } else {
+            // Center is outside the globe - use point on horizon
+            this.modelview.extractEyePoint(this.forwardRay.origin);
+            this.modelview.extractForwardVector(this.forwardRay.direction);
+            this.forwardRay.pointAt(globe.horizonDistance(camera.altitude), this.originPoint);
+            globe.cartesianToGeographic(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.originPos);
+            globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
         }
 
-        globe.cartesianToGeographic(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.originPos);
-        globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
         this.modelview.multiplyByMatrix(this.origin);
 
         result.latitude = this.originPos.latitude;
@@ -250,8 +265,7 @@ public class Navigator {
         result.roll = lookAt.roll; // roll passes straight through
 
         // Check if camera altitude is not under the surface
-        // TODO Multiply elevation at location by vertical exaggeration
-        double elevation = globe.getElevationAtLocation(result.latitude, result.longitude) + COLLISION_THRESHOLD;
+        double elevation = globe.getElevationAtLocation(result.latitude, result.longitude) * wwd.getVerticalExaggeration() + COLLISION_THRESHOLD;
         if(elevation > result.altitude) {
             // Set camera altitude above the surface
             result.altitude = elevation;
