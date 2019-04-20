@@ -50,6 +50,13 @@ public class ImageSource {
         Bitmap createBitmap();
     }
 
+    /**
+     * Interface which allows to do post transformations with retrieved image.
+     */
+    public interface Transformer {
+        Bitmap transform(Bitmap bitmap);
+    }
+
     protected static final HashMap<Object, BitmapFactory> lineStippleFactories = new HashMap<>();
 
     protected static final int TYPE_UNRECOGNIZED = 0;
@@ -67,6 +74,8 @@ public class ImageSource {
     protected int type = TYPE_UNRECOGNIZED;
 
     protected Object source;
+
+    protected Transformer transformer;
 
     protected ImageSource() {
     }
@@ -239,6 +248,16 @@ public class ImageSource {
             imageSource.source = source;
             return imageSource;
         }
+    }
+
+    public static ImageSource fromUrl(String urlString, Transformer transformer) {
+        ImageSource imageSource = fromUrl(urlString);
+        imageSource.transformer = transformer;
+        return imageSource;
+    }
+
+    Transformer getTransformer() {
+        return transformer;
     }
 
     @Override

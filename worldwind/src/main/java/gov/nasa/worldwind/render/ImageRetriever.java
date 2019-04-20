@@ -43,6 +43,12 @@ public class ImageRetriever extends Retriever<ImageSource, ImageOptions, Bitmap>
             Bitmap bitmap = this.decodeImage(imageSource, imageOptions);
 
             if (bitmap != null) {
+                // Apply bitmap transformation if required
+                ImageSource.Transformer transformer = imageSource.getTransformer();
+                if (transformer != null) {
+                    bitmap = transformer.transform(bitmap);
+                }
+
                 callback.retrievalSucceeded(this, imageSource, imageOptions, bitmap);
             } else {
                 callback.retrievalFailed(this, imageSource, null); // failed but no exception
