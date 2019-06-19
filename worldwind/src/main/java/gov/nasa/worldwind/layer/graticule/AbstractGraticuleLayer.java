@@ -58,10 +58,12 @@ public abstract class AbstractGraticuleLayer extends AbstractLayer {
     private static final String GRATICULE_LABEL_OFFSET_PROPERTY = "graticule_label_offset";
 
     // Helper variables to avoid memory leaks
-    private static final Vec3 surfacePoint = new Vec3();
-    private static final Line forwardRay = new Line();
-    private static final Vec3 lookAtPoint = new Vec3();
-    private static final Position lookAtPos = new Position();
+    private final Vec3 surfacePoint = new Vec3();
+    private final Line forwardRay = new Line();
+    private final Vec3 lookAtPoint = new Vec3();
+    private final Position lookAtPos = new Position();
+    private final float[] scratchHeights = new float[1];
+    private final Sector scratchSector = new Sector();
 
     private final GraticuleSupport graticuleSupport = new GraticuleSupport();
 
@@ -581,11 +583,11 @@ public abstract class AbstractGraticuleLayer extends AbstractLayer {
         return deltaLon < 180 ? deltaLon : 360 - deltaLon;
     }
 
+    // TODO Use rc.globe.getElevationAtLocation(latitude, longitude) when it will be merged to develop
     private double getElevation(RenderContext rc, double latitude, double longitude) {
-        Sector sector = Sector.fromDegrees(latitude, longitude, 1E-15, 1E-15);
-        float[] heights = new float[1];
-        rc.globe.getElevationModel().getHeightGrid(sector, 1, 1, heights);
-        return heights[0];
+        this.scratchSector.set(latitude, longitude, 1E-15, 1E-15);
+        rc.globe.getElevationModel().getHeightGrid(this.scratchSector, 1, 1, this.scratchHeights);
+        return this.scratchHeights[0];
     }
 
     private void calculateLookAtProperties(RenderContext rc) {
