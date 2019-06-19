@@ -32,6 +32,10 @@ public class Globe {
      */
     protected GeographicProjection projection;
 
+    private final float[] scratchHeights = new float[1];
+
+    private final Sector scratchSector = new Sector();
+
     /**
      * Constructs a globe with a specified reference ellipsoid and projection.
      *
@@ -331,9 +335,8 @@ public class Globe {
      */
     public double getElevationAtLocation(double latitude, double longitude) {
         // Use 1E-15 below because sector can not have zero deltas
-        Sector sector = Sector.fromDegrees(latitude, longitude, 1E-15, 1E-15);
-        float[] heights = new float[1];
-        this.getElevationModel().getHeightGrid(sector, 1, 1, heights);
-        return heights[0];
+        this.scratchSector.set(latitude, longitude, 1E-15, 1E-15);
+        this.getElevationModel().getHeightGrid(this.scratchSector, 1, 1, this.scratchHeights);
+        return this.scratchHeights[0];
     }
 }
