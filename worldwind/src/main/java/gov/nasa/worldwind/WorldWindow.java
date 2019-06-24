@@ -178,7 +178,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.worldWindowController.setWorldWindow(this);
 
         // Initialize the WorldWindow's render resource cache.
-        int cacheCapacity = RenderResourceCache.recommendedCapacity(this.getContext());
+        int cacheCapacity = RenderResourceCache.recommendedCapacity();
         this.renderResourceCache = new RenderResourceCache(cacheCapacity);
 
         // Set up to render on demand to an OpenGL ES 2.x context
