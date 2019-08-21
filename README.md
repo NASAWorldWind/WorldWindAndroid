@@ -2,21 +2,19 @@
 
 # WorldWind Android
 
-```
-Currently WorldWind is undergoing system evaluation. We will not be able to accept any software 
-update requests. WorldWind users can continue to access the NASA servers and SDKs, available on 
-Github. More information will be provided in the near future. If you have questions and/or 
-concerns, please feel free to email at:
+## NASA Renews Commitment to WorldWind
+WorldWind has received renewed commitment from NASA for continued development and support.  NASA will continue to release updates to the WorldWind SDKs, and will continue to make the WorldWind Servers accessible for all Users.  We plan to make an announcement soon regarding a path forward for improved support of the WorldWind User & Developer communities.
+
+If you have questions and/or concerns, please feel free to email at:
 
 worldwind-info@lists.nasa.gov
-```
 
 [![Build Status](https://travis-ci.com/NASAWorldWind/WorldWindAndroid.svg?branch=develop)](https://travis-ci.com/NASAWorldWind/WorldWindAndroid)
 [![Download](https://api.bintray.com/packages/nasaworldwind/maven/WorldWindAndroid/images/download.svg)](https://bintray.com/nasaworldwind/maven/WorldWindAndroid/_latestVersion)
- 
-3D virtual globe API for Android, developed by NASA. Provides a geographic context with high-resolution terrain, for 
-visualizing geographic or geo-located information in 3D and 2D. Developers can customize the globe's terrain and 
-imagery. Provides a collection of shapes for displaying and interacting with geographic data and representing a range of 
+
+3D virtual globe API for Android, developed by NASA. Provides a geographic context with high-resolution terrain, for
+visualizing geographic or geo-located information in 3D and 2D. Developers can customize the globe's terrain and
+imagery. Provides a collection of shapes for displaying and interacting with geographic data and representing a range of
 geometric objects.
 
 - [worldwind.arc.nasa.gov](https://worldwind.arc.nasa.gov) has setup instructions, developers guides, API documentation and more
@@ -72,7 +70,7 @@ Official WorldWind Android releases have the latest stable features, enhancement
     Government Agency, is an intended third-party beneficiary of all subsequent
     distributions or redistributions of the subject software. Anyone who uses, reproduces,
     distributes, modifies or redistributes the subject software, as defined herein, or any
-    part thereof, is, by that action, accepting in full the responsibilities and obligations 
+    part thereof, is, by that action, accepting in full the responsibilities and obligations
     contained in this agreement.
 
     Government Agency: National Aeronautics and Space Administration (NASA)
