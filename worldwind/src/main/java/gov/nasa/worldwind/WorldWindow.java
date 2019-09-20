@@ -50,7 +50,7 @@ import gov.nasa.worldwind.util.SynchronizedPool;
  * Provides a WorldWind window that implements a virtual globe inside of the Android view hierarchy. By default, World
  * Window is configured to display an ellipsoidal globe using the WGS 84 reference values.
  */
-public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCallback, GLSurfaceView.Renderer, MessageListener {
+public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCallback, GLSurfaceView.Renderer, MessageListener{
 
     protected static final int MAX_FRAME_QUEUE_SIZE = 2;
 
@@ -83,7 +83,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected FrameMetrics frameMetrics = new FrameMetrics();
 
-    protected WorldWindowController worldWindowController = new BasicWorldWindowController();
+    protected WorldWindowController worldWindowController = new BasicWorldWindowController(getContext());
 
     protected RenderResourceCache renderResourceCache;
 
