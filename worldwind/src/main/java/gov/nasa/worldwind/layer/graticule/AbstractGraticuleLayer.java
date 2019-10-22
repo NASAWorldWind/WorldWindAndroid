@@ -62,8 +62,6 @@ public abstract class AbstractGraticuleLayer extends AbstractLayer {
     private final Line forwardRay = new Line();
     private final Vec3 lookAtPoint = new Vec3();
     private final Position lookAtPos = new Position();
-    private final float[] scratchHeights = new float[1];
-    private final Sector scratchSector = new Sector();
 
     private final GraticuleSupport graticuleSupport = new GraticuleSupport();
 
@@ -432,7 +430,7 @@ public abstract class AbstractGraticuleLayer extends AbstractLayer {
         return (double) rc.getUserProperty(GRATICULE_PIXEL_SIZE_PROPERTY);
     }
 
-    double getLabelOffset(RenderContext rc) {
+    private double getLabelOffset(RenderContext rc) {
         calculateLookAtProperties(rc);
         return (double) rc.getUserProperty(GRATICULE_LABEL_OFFSET_PROPERTY);
     }
@@ -440,7 +438,7 @@ public abstract class AbstractGraticuleLayer extends AbstractLayer {
     Vec3 getSurfacePoint(RenderContext rc, double latitude, double longitude) {
         if (!rc.terrain.surfacePoint(latitude, longitude, surfacePoint))
             rc.globe.geographicToCartesian(latitude, longitude,
-                getElevation(rc, latitude, longitude), surfacePoint);
+                    rc.globe.getElevationAtLocation(latitude, longitude), surfacePoint);
 
         return surfacePoint;
     }
@@ -581,13 +579,6 @@ public abstract class AbstractGraticuleLayer extends AbstractLayer {
     private double getDeltaLongitude(Location p1, double longitude) {
         double deltaLon = Math.abs(p1.longitude - longitude);
         return deltaLon < 180 ? deltaLon : 360 - deltaLon;
-    }
-
-    // TODO Use rc.globe.getElevationAtLocation(latitude, longitude) when it will be merged to develop
-    private double getElevation(RenderContext rc, double latitude, double longitude) {
-        this.scratchSector.set(latitude, longitude, 1E-15, 1E-15);
-        rc.globe.getElevationModel().getHeightGrid(this.scratchSector, 1, 1, this.scratchHeights);
-        return this.scratchHeights[0];
     }
 
     private void calculateLookAtProperties(RenderContext rc) {
