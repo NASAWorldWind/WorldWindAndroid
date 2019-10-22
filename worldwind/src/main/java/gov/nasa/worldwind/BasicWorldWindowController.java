@@ -14,6 +14,7 @@ import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.gesture.GestureListener;
 import gov.nasa.worldwind.gesture.GestureRecognizer;
+import gov.nasa.worldwind.gesture.MousePanRecognizer;
 import gov.nasa.worldwind.gesture.PanRecognizer;
 import gov.nasa.worldwind.gesture.PinchRecognizer;
 import gov.nasa.worldwind.gesture.RotationRecognizer;
@@ -43,17 +44,21 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
 
     protected GestureRecognizer tiltRecognizer = new PanRecognizer();
 
+    protected GestureRecognizer mouseTiltRecognizer = new MousePanRecognizer();
+
     protected List<GestureRecognizer> allRecognizers = Arrays.asList(
-        this.panRecognizer, this.pinchRecognizer, this.rotationRecognizer, this.tiltRecognizer);
+        this.panRecognizer, this.pinchRecognizer, this.rotationRecognizer, this.tiltRecognizer, this.mouseTiltRecognizer);
 
     public BasicWorldWindowController() {
         this.panRecognizer.addListener(this);
         this.pinchRecognizer.addListener(this);
         this.rotationRecognizer.addListener(this);
         this.tiltRecognizer.addListener(this);
+        this.mouseTiltRecognizer.addListener(this);
 
         ((PanRecognizer) this.panRecognizer).setMaxNumberOfPointers(2);
         ((PanRecognizer) this.tiltRecognizer).setMinNumberOfPointers(3); // TODO support for two-finger tilt gestures
+        ((MousePanRecognizer) this.mouseTiltRecognizer).setButtonState(MotionEvent.BUTTON_SECONDARY);
     }
 
     public WorldWindow getWorldWindow() {
@@ -84,7 +89,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.handlePinch(recognizer);
         } else if (recognizer == this.rotationRecognizer) {
             this.handleRotate(recognizer);
-        } else if (recognizer == this.tiltRecognizer) {
+        } else if (recognizer == this.tiltRecognizer || recognizer == this.mouseTiltRecognizer) {
             this.handleTilt(recognizer);
         }
     }
