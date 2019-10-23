@@ -135,10 +135,10 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
      * @param camera Where the camera is positioned
      */
     protected void updateOverlayContents(LookAt lookAt, Camera camera) {
-        latView.setText(formatLatitude(lookAt.latitude));
-        lonView.setText(formatLongitude(lookAt.longitude));
-        elevView.setText(formatElevaton(wwd.getGlobe().getElevationAtLocation(lookAt.latitude, lookAt.longitude)));
-        altView.setText(formatAltitude(camera.altitude));
+        latView.setText(formatLatitude(lookAt.position.latitude));
+        lonView.setText(formatLongitude(lookAt.position.longitude));
+        elevView.setText(formatElevaton(wwd.getGlobe().getElevationAtLocation(lookAt.position.latitude, lookAt.position.longitude)));
+        altView.setText(formatAltitude(camera.position.altitude));
     }
 
     /**

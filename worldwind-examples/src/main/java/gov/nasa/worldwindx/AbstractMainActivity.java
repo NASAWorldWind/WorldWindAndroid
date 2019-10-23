@@ -176,9 +176,9 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
             // Write the camera data
             Camera camera = wwd.getNavigator().getAsCamera(wwd.getGlobe(), new Camera());
-            editor.putFloat(CAMERA_LATITUDE, (float) camera.latitude);
-            editor.putFloat(CAMERA_LONGITUDE, (float) camera.longitude);
-            editor.putFloat(CAMERA_ALTITUDE, (float) camera.altitude);
+            editor.putFloat(CAMERA_LATITUDE, (float) camera.position.latitude);
+            editor.putFloat(CAMERA_LONGITUDE, (float) camera.position.longitude);
+            editor.putFloat(CAMERA_ALTITUDE, (float) camera.position.altitude);
             editor.putFloat(CAMERA_HEADING, (float) camera.heading);
             editor.putFloat(CAMERA_TILT, (float) camera.tilt);
             editor.putFloat(CAMERA_ROLL, (float) camera.roll);

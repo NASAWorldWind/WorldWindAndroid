@@ -66,34 +66,23 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
 
         protected Camera curCamera = new Camera();
 
-        protected Position beginPos = new Position();
-
-        protected Position endPos = new Position();
-
-        protected Position curPos = new Position();
-
         protected int steps;
 
         public AnimateCameraCommand(WorldWindow wwd, Camera end, int steps) {
             this.wwd = wwd;
             this.endCamera.set(end);
-            this.endPos.set(end.latitude, end.longitude, end.altitude);
             this.steps = steps;
         }
 
         @Override
         public void run() {
             this.wwd.getNavigator().getAsCamera(this.wwd.getGlobe(), this.beginCamera);
-            this.beginPos.set(this.beginCamera.latitude, this.beginCamera.longitude, this.beginCamera.altitude);
 
             for (int i = 0; i < this.steps; i++) {
 
                 double amount = (double) i / (double) (this.steps - 1);
-                this.beginPos.interpolateAlongPath(this.endPos, WorldWind.GREAT_CIRCLE, amount, this.curPos);
+                this.beginCamera.position.interpolateAlongPath(this.endCamera.position, WorldWind.GREAT_CIRCLE, amount, this.curCamera.position);
 
-                this.curCamera.latitude = this.curPos.latitude;
-                this.curCamera.longitude = this.curPos.longitude;
-                this.curCamera.altitude = this.curPos.altitude;
                 this.curCamera.heading = WWMath.interpolateAngle360(amount, this.beginCamera.heading, this.endCamera.heading);
                 this.curCamera.tilt = WWMath.interpolateAngle180(amount, this.beginCamera.tilt, this.endCamera.tilt);
                 this.curCamera.roll = WWMath.interpolateAngle180(amount, this.beginCamera.roll, this.endCamera.roll);

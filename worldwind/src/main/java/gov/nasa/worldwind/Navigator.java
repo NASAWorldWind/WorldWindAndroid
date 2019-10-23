@@ -16,11 +16,9 @@ import gov.nasa.worldwind.util.Logger;
 
 public class Navigator {
 
-    protected double latitude;
+    private final static double COLLISION_THRESHOLD = 10.0; // 10m above surface
 
-    protected double longitude;
-
-    protected double altitude;
+    protected final Position position = new Position();
 
     protected double heading;
 
@@ -42,8 +40,6 @@ public class Navigator {
 
     private final WorldWindow wwd;
 
-    private final static double COLLISION_THRESHOLD = 10.0; // 10m above surface
-
     public Navigator(WorldWindow wwd) {
         if (wwd == null) {
             throw new IllegalArgumentException(
@@ -54,29 +50,29 @@ public class Navigator {
     }
 
     public double getLatitude() {
-        return this.latitude;
+        return this.position.latitude;
     }
 
     public Navigator setLatitude(double latitude) {
-        this.latitude = latitude;
+        this.position.latitude = latitude;
         return this;
     }
 
     public double getLongitude() {
-        return this.longitude;
+        return this.position.longitude;
     }
 
     public Navigator setLongitude(double longitude) {
-        this.longitude = longitude;
+        this.position.longitude = longitude;
         return this;
     }
 
     public double getAltitude() {
-        return this.altitude;
+        return this.position.altitude;
     }
 
     public Navigator setAltitude(double altitude) {
-        this.altitude = altitude;
+        this.position.altitude = altitude;
         return this;
     }
 
@@ -118,9 +114,7 @@ public class Navigator {
                 Logger.logMessage(Logger.ERROR, "Navigator", "getAsCamera", "missingResult"));
         }
 
-        result.latitude = this.latitude;
-        result.longitude = this.longitude;
-        result.altitude = this.altitude;
+        result.position.set(this.position);
         result.altitudeMode = WorldWind.ABSOLUTE;
         result.heading = this.heading;
         result.tilt = this.tilt;
@@ -140,9 +134,7 @@ public class Navigator {
                 Logger.logMessage(Logger.ERROR, "Navigator", "setAsCamera", "missingCamera"));
         }
 
-        this.latitude = camera.latitude;
-        this.longitude = camera.longitude;
-        this.altitude = camera.altitude; // TODO interpret altitude modes other than absolute
+        this.position.set(camera.position); // TODO interpret altitude modes other than absolute
         this.heading = camera.heading;
         this.tilt = camera.tilt;
         this.roll = camera.roll;
@@ -215,16 +207,14 @@ public class Navigator {
             // Center is outside the globe - use point on horizon
             this.modelview.extractEyePoint(this.forwardRay.origin);
             this.modelview.extractForwardVector(this.forwardRay.direction);
-            this.forwardRay.pointAt(globe.horizonDistance(camera.altitude), this.originPoint);
+            this.forwardRay.pointAt(globe.horizonDistance(camera.position.altitude), this.originPoint);
             globe.cartesianToGeographic(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.originPos);
             globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
         }
 
         this.modelview.multiplyByMatrix(this.origin);
 
-        result.latitude = this.originPos.latitude;
-        result.longitude = this.originPos.longitude;
-        result.altitude = this.originPos.altitude;
+        result.position.set(this.originPos);
         result.range = -this.modelview.m[11];
         result.heading = this.modelview.extractHeading(camera.roll); // disambiguate heading and roll
         result.tilt = this.modelview.extractTilt();
@@ -236,7 +226,7 @@ public class Navigator {
     protected Matrix4 cameraToViewingMatrix(Globe globe, Camera camera, Matrix4 result) {
         // TODO interpret altitude mode other than absolute
         // Transform by the local cartesian transform at the camera's position.
-        globe.geographicToCartesianTransform(camera.latitude, camera.longitude, camera.altitude, result);
+        globe.geographicToCartesianTransform(camera.position.latitude, camera.position.longitude, camera.position.altitude, result);
 
         // Transform by the heading, tilt and roll.
         result.multiplyByRotation(0, 0, 1, -camera.heading); // rotate clockwise about the Z axis
@@ -257,24 +247,22 @@ public class Navigator {
         globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
         this.modelview.multiplyByMatrix(this.origin);
 
-        result.latitude = this.originPos.latitude;
-        result.longitude = this.originPos.longitude;
-        result.altitude = this.originPos.altitude;
+        result.position.set(this.originPos);
         result.heading = this.modelview.extractHeading(lookAt.roll); // disambiguate heading and roll
         result.tilt = this.modelview.extractTilt();
         result.roll = lookAt.roll; // roll passes straight through
 
         // Check if camera altitude is not under the surface
-        double elevation = globe.getElevationAtLocation(result.latitude, result.longitude) * wwd.getVerticalExaggeration() + COLLISION_THRESHOLD;
-        if(elevation > result.altitude) {
+        double elevation = globe.getElevationAtLocation(result.position.latitude, result.position.longitude) * wwd.getVerticalExaggeration() + COLLISION_THRESHOLD;
+        if(elevation > result.position.altitude) {
             // Set camera altitude above the surface
-            result.altitude = elevation;
+            result.position.altitude = elevation;
             // Compute new camera point
-            globe.geographicToCartesian(result.latitude, result.longitude, result.altitude, originPoint);
+            globe.geographicToCartesian(result.position.latitude, result.position.longitude, result.position.altitude, originPoint);
             // Compute look at point
-            globe.geographicToCartesian(lookAt.latitude, lookAt.longitude, lookAt.altitude, forwardRay.origin);
+            globe.geographicToCartesian(lookAt.position.latitude, lookAt.position.longitude, lookAt.position.altitude, forwardRay.origin);
             // Compute normal to globe in look at point
-            globe.geographicToCartesianNormal(lookAt.latitude, lookAt.longitude, forwardRay.direction);
+            globe.geographicToCartesianNormal(lookAt.position.latitude, lookAt.position.longitude, forwardRay.direction);
             // Calculate tilt angle between new camera point and look at point
             originPoint.subtract(forwardRay.origin).normalize();
             double dot = forwardRay.direction.dot(originPoint);
@@ -289,7 +277,7 @@ public class Navigator {
     protected Matrix4 lookAtToViewingTransform(Globe globe, LookAt lookAt, Matrix4 result) {
         // TODO interpret altitude mode other than absolute
         // Transform by the local cartesian transform at the look-at's position.
-        globe.geographicToCartesianTransform(lookAt.latitude, lookAt.longitude, lookAt.altitude, result);
+        globe.geographicToCartesianTransform(lookAt.position.latitude, lookAt.position.longitude, lookAt.position.altitude, result);
 
         // Transform by the heading and tilt.
         result.multiplyByRotation(0, 0, 1, -lookAt.heading); // rotate clockwise about the Z axis

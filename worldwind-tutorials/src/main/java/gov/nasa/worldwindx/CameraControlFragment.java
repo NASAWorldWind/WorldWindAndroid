@@ -66,9 +66,9 @@ public class CameraControlFragment extends BasicGlobeFragment {
                 this.lastY = 0;
             } else if (state == WorldWind.CHANGED) {
                 // Get the navigator's current position.
-                double lat = this.camera.latitude;
-                double lon = this.camera.longitude;
-                double alt = this.camera.altitude;
+                double lat = this.camera.position.latitude;
+                double lon = this.camera.position.longitude;
+                double alt = this.camera.position.altitude;
 
                 // Convert the translation from screen coordinates to degrees. Use the navigator's range as a metric for
                 // converting screen pixels to meters, and use the globe's radius for converting from meters to arc degrees.
@@ -93,14 +93,14 @@ public class CameraControlFragment extends BasicGlobeFragment {
                 // If the navigator has panned over either pole, compensate by adjusting the longitude and heading to move
                 // the navigator to the appropriate spot on the other side of the pole.
                 if (lat < -90 || lat > 90) {
-                    this.camera.latitude = Location.normalizeLatitude(lat);
-                    this.camera.longitude = Location.normalizeLongitude(lon + 180);
+                    this.camera.position.latitude = Location.normalizeLatitude(lat);
+                    this.camera.position.longitude = Location.normalizeLongitude(lon + 180);
                 } else if (lon < -180 || lon > 180) {
-                    this.camera.latitude = lat;
-                    this.camera.longitude = Location.normalizeLongitude(lon);
+                    this.camera.position.latitude = lat;
+                    this.camera.position.longitude = Location.normalizeLongitude(lon);
                 } else {
-                    this.camera.latitude = lat;
-                    this.camera.longitude = lon;
+                    this.camera.position.latitude = lat;
+                    this.camera.position.longitude = lon;
                 }
                 //this.camera.heading = WWMath.normalizeAngle360(heading + sideDegrees * 1000);
 
@@ -122,7 +122,7 @@ public class CameraControlFragment extends BasicGlobeFragment {
                 if (scale != 0) {
                     // Apply the change in scale to the navigator, relative to when the gesture began.
                     scale = ((scale - 1) * 0.1f) + 1; // dampen the scale factor
-                    this.camera.altitude = this.camera.altitude * scale;
+                    this.camera.position.altitude = this.camera.position.altitude * scale;
                     this.applyLimits(this.camera);
 
                     this.wwd.getNavigator().setAsCamera(this.wwd.getGlobe(), this.camera);
@@ -193,11 +193,11 @@ public class CameraControlFragment extends BasicGlobeFragment {
 
             double minAltitude = 100;
             double maxAltitude = distanceToExtents;
-            camera.altitude = WWMath.clamp(camera.altitude, minAltitude, maxAltitude);
+            camera.position.altitude = WWMath.clamp(camera.position.altitude, minAltitude, maxAltitude);
 
             // Limit the tilt to between nadir and the horizon (roughly)
-            double r = wwd.getGlobe().getRadiusAt(camera.latitude, camera.latitude);
-            double maxTilt = Math.toDegrees(Math.asin(r / (r + camera.altitude)));
+            double r = wwd.getGlobe().getRadiusAt(camera.position.latitude, camera.position.latitude);
+            double maxTilt = Math.toDegrees(Math.asin(r / (r + camera.position.altitude)));
             double minTilt = 0;
             camera.tilt = WWMath.clamp(camera.tilt, minTilt, maxTilt);
         }

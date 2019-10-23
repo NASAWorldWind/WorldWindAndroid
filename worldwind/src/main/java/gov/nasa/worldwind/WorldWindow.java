@@ -912,7 +912,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.rc.fieldOfView = this.fieldOfView;
         this.rc.horizonDistance = this.globe.horizonDistance(this.navigator.getAltitude());
         this.rc.camera = this.navigator.getAsCamera(this.globe, this.rc.camera);
-        this.rc.cameraPoint = this.globe.geographicToCartesian(this.rc.camera.latitude, this.rc.camera.longitude, this.rc.camera.altitude, this.rc.cameraPoint);
+        this.rc.cameraPoint = this.globe.geographicToCartesian(this.rc.camera.position.latitude, this.rc.camera.position.longitude, this.rc.camera.position.altitude, this.rc.cameraPoint);
         this.rc.renderResourceCache = this.renderResourceCache;
         this.rc.renderResourceCache.setResources(this.getContext().getResources());
         this.rc.resources = this.getContext().getResources();

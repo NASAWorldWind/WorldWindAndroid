@@ -105,8 +105,8 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.lastY = 0;
         } else if (state == WorldWind.CHANGED) {
             // Get the navigator's current position.
-            double lat = this.lookAt.latitude;
-            double lon = this.lookAt.longitude;
+            double lat = this.lookAt.position.latitude;
+            double lon = this.lookAt.position.longitude;
             double rng = this.lookAt.range;
 
             // Convert the translation from screen coordinates to degrees. Use the navigator's range as a metric for
@@ -132,15 +132,15 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             // If the navigator has panned over either pole, compensate by adjusting the longitude and heading to move
             // the navigator to the appropriate spot on the other side of the pole.
             if (lat < -90 || lat > 90) {
-                this.lookAt.latitude = Location.normalizeLatitude(lat);
-                this.lookAt.longitude = Location.normalizeLongitude(lon + 180);
+                this.lookAt.position.latitude = Location.normalizeLatitude(lat);
+                this.lookAt.position.longitude = Location.normalizeLongitude(lon + 180);
                 this.lookAt.heading = WWMath.normalizeAngle360(heading + 180);
             } else if (lon < -180 || lon > 180) {
-                this.lookAt.latitude = lat;
-                this.lookAt.longitude = Location.normalizeLongitude(lon);
+                this.lookAt.position.latitude = lat;
+                this.lookAt.position.longitude = Location.normalizeLongitude(lon);
             } else {
-                this.lookAt.latitude = lat;
-                this.lookAt.longitude = lon;
+                this.lookAt.position.latitude = lat;
+                this.lookAt.position.longitude = lon;
             }
 
             this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);

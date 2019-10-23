@@ -391,7 +391,7 @@ public abstract class AbstractGraticuleLayer extends AbstractLayer {
                     Location.normalizeLongitude(labelPos.longitude));
             return labelPos;
         } else {
-            return Location.fromDegrees(rc.camera.latitude, rc.camera.longitude);
+            return rc.camera.position;
         }
     }
 
@@ -444,7 +444,7 @@ public abstract class AbstractGraticuleLayer extends AbstractLayer {
     }
 
     double computeAltitudeAboveGround(RenderContext rc) {
-        Vec3 surfacePoint = getSurfacePoint(rc, rc.camera.latitude, rc.camera.longitude);
+        Vec3 surfacePoint = getSurfacePoint(rc, rc.camera.position.latitude, rc.camera.position.longitude);
         return rc.cameraPoint.distanceTo(surfacePoint);
     }
 

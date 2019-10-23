@@ -10,11 +10,7 @@ import gov.nasa.worldwind.util.Logger;
 
 public class Camera {
 
-    public double latitude;
-
-    public double longitude;
-
-    public double altitude;
+    public final Position position = new Position();
 
     @WorldWind.AltitudeMode
     public int altitudeMode = WorldWind.ABSOLUTE;
@@ -30,9 +26,7 @@ public class Camera {
 
     public Camera(double latitude, double longitude, double altitude, @WorldWind.AltitudeMode int altitudeMode,
                   double heading, double tilt, double roll) {
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.altitude = altitude;
+        this.position.set(latitude, longitude, altitude);
         this.altitudeMode = altitudeMode;
         this.heading = heading;
         this.tilt = tilt;
@@ -45,9 +39,7 @@ public class Camera {
                 Logger.logMessage(Logger.ERROR, "Camera", "constructor", "missingCamera"));
         }
 
-        this.latitude = camera.latitude;
-        this.longitude = camera.longitude;
-        this.altitude = camera.altitude;
+        this.position.set(camera.position);
         this.altitudeMode = camera.altitudeMode;
         this.heading = camera.heading;
         this.tilt = camera.tilt;
@@ -56,9 +48,7 @@ public class Camera {
 
     public Camera set(double latitude, double longitude, double altitude, @WorldWind.AltitudeMode int altitudeMode,
                       double heading, double tilt, double roll) {
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.altitude = altitude;
+        this.position.set(latitude, longitude, altitude);
         this.altitudeMode = altitudeMode;
         this.heading = heading;
         this.tilt = tilt;
@@ -73,9 +63,7 @@ public class Camera {
                 Logger.logMessage(Logger.ERROR, "Camera", "set", "missingCamera"));
         }
 
-        this.latitude = camera.latitude;
-        this.longitude = camera.longitude;
-        this.altitude = camera.altitude;
+        this.position.set(camera.position);
         this.altitudeMode = camera.altitudeMode;
         this.heading = camera.heading;
         this.tilt = camera.tilt;
@@ -87,9 +75,9 @@ public class Camera {
     @Override
     public String toString() {
         return "Camera{" +
-            "latitude=" + latitude +
-            ", longitude=" + longitude +
-            ", altitude=" + altitude +
+            "latitude=" + position.latitude +
+            ", longitude=" + position.longitude +
+            ", altitude=" + position.altitude +
             ", altitudeMode=" + altitudeMode +
             ", heading=" + heading +
             ", tilt=" + tilt +
