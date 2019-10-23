@@ -127,7 +127,7 @@ public class Location {
     }
 
     /**
-     * Constructs an approximate location for a specified time zone. Used when selecting an initial navigator position
+     * Constructs an approximate location for a specified time zone. Used when selecting an initial camera position
      * based on the device's current time zone.
      *
      * @param timeZone the time zone in question

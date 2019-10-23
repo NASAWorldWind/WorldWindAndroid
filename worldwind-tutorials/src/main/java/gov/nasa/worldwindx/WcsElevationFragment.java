@@ -67,9 +67,6 @@ public class WcsElevationFragment extends BasicGlobeFragment {
         double tilt = Math.toDegrees(Math.atan(distance / eye.altitude));
 
         // Apply the new view
-        Camera camera = new Camera();
-        camera.set(eye.latitude, eye.longitude, eye.altitude, WorldWind.ABSOLUTE, heading, tilt, 0.0 /*roll*/);
-
-        wwd.getNavigator().setAsCamera(globe, camera);
+        wwd.getCamera().set(eye.latitude, eye.longitude, eye.altitude, WorldWind.ABSOLUTE, heading, tilt, 0.0 /*roll*/);
     }
 }

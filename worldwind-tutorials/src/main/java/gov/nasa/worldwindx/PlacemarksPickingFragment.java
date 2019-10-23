@@ -39,7 +39,7 @@ public class PlacemarksPickingFragment extends BasicGlobeFragment {
         WorldWindow wwd = super.createWorldWindow();
 
         // Override the WorldWindow's built-in navigation behavior by adding picking support.
-        wwd.setWorldWindowController(new PickNavigateController());
+        wwd.setWorldWindowController(new PickNavigateController(wwd));
 
         // Add a layer for placemarks to the WorldWindow
         RenderableLayer layer = new RenderableLayer("Placemarks");
@@ -53,7 +53,7 @@ public class PlacemarksPickingFragment extends BasicGlobeFragment {
 
         // Position the viewer to look near the airports
         LookAt lookAt = new LookAt().set(34.15, -119.15, 0, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
-        wwd.getNavigator().setAsLookAt(wwd.getGlobe(), lookAt);
+        wwd.getCamera().setFromLookAt(lookAt);
 
         return wwd;
     }
@@ -112,6 +112,10 @@ public class PlacemarksPickingFragment extends BasicGlobeFragment {
                 return false;
             }
         });
+
+        public PickNavigateController(WorldWindow wwd) {
+            super(wwd);
+        }
 
         /**
          * Delegates events to the pick handler or the native WorldWind navigation handlers.

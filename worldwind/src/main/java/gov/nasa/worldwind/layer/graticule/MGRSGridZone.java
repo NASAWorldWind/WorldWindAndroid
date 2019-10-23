@@ -63,7 +63,7 @@ class MGRSGridZone extends AbstractGraticuleTile {
                 getLayer().addRenderable(ge.renderable, graticuleType);
             }
 
-        if (rc.camera.altitude > SQUARE_MAX_ALTITUDE)
+        if (rc.camera.position.altitude > SQUARE_MAX_ALTITUDE)
             return;
 
         // Select 100km squares elements

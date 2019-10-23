@@ -22,6 +22,8 @@ import gov.nasa.worldwind.util.WWMath;
 
 public class BasicWorldWindowController implements WorldWindowController, GestureListener {
 
+    private static final float ZOOM_FACTOR = 1.5f;
+
     protected WorldWindow wwd;
 
     protected float lastX;
@@ -49,25 +51,60 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
     protected List<GestureRecognizer> allRecognizers = Arrays.asList(
         this.panRecognizer, this.pinchRecognizer, this.rotationRecognizer, this.tiltRecognizer, this.mouseTiltRecognizer);
 
-    public BasicWorldWindowController() {
+    public BasicWorldWindowController(WorldWindow wwd) {
+        this.wwd = wwd;
+
         this.panRecognizer.addListener(this);
         this.pinchRecognizer.addListener(this);
         this.rotationRecognizer.addListener(this);
         this.tiltRecognizer.addListener(this);
         this.mouseTiltRecognizer.addListener(this);
 
-        ((PanRecognizer) this.panRecognizer).setMaxNumberOfPointers(2);
-        ((PanRecognizer) this.tiltRecognizer).setMinNumberOfPointers(3); // TODO support for two-finger tilt gestures
+        ((PanRecognizer) this.panRecognizer).setMaxNumberOfPointers(1); // Do not pan during tilt
+        ((PanRecognizer) this.tiltRecognizer).setMinNumberOfPointers(2); // Use two fingers for tilt gesture
         ((MousePanRecognizer) this.mouseTiltRecognizer).setButtonState(MotionEvent.BUTTON_SECONDARY);
+
+        // Set interpret distance based on screen density
+        ((PanRecognizer) this.panRecognizer).setInterpretDistance(wwd.getContext().getResources().getDimension(R.dimen.pan_interpret_distance));
+        ((PinchRecognizer) this.pinchRecognizer).setInterpretDistance(wwd.getContext().getResources().getDimension(R.dimen.pinch_interpret_distance));
+        ((RotationRecognizer) this.rotationRecognizer).setInterpretAngle(20f);
+        ((PanRecognizer) this.tiltRecognizer).setInterpretDistance(wwd.getContext().getResources().getDimension(R.dimen.tilt_interpret_distance));
+        ((MousePanRecognizer) this.mouseTiltRecognizer).setInterpretDistance(wwd.getContext().getResources().getDimension(R.dimen.tilt_interpret_distance));
     }
 
-    public WorldWindow getWorldWindow() {
-        return wwd;
+    public void resetOrientation(boolean headingOnly) {
+        this.gestureDidBegin();
+        this.lookAt.heading = 0;
+        if(!headingOnly) {
+            this.lookAt.tilt = 0;
+            this.lookAt.roll = 0;
+        }
+        this.wwd.getCamera().setFromLookAt(this.lookAt);
+        this.wwd.requestRedraw();
+        this.gestureDidEnd();
+    }
+
+    public void zoomIn() {
+        this.gestureDidBegin();
+        this.lookAt.range /= ZOOM_FACTOR;
+        this.applyLimits(lookAt);
+        this.wwd.getCamera().setFromLookAt(this.lookAt);
+        this.wwd.requestRedraw();
+        this.gestureDidEnd();
+    }
+
+    public void zoomOut() {
+        this.gestureDidBegin();
+        this.lookAt.range *= ZOOM_FACTOR;
+        this.applyLimits(lookAt);
+        this.wwd.getCamera().setFromLookAt(this.lookAt);
+        this.wwd.requestRedraw();
+        this.gestureDidEnd();
     }
 
     @Override
-    public void setWorldWindow(WorldWindow wwd) {
-        this.wwd = wwd;
+    public WorldWindow getWorldWindow() {
+        return wwd;
     }
 
     @Override
@@ -76,6 +113,12 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
 
         for (int idx = 0, len = this.allRecognizers.size(); idx < len; idx++) {
             handled |= this.allRecognizers.get(idx).onTouchEvent(event); // use or-assignment to indicate if any recognizer handled the event
+        }
+
+        // Handle dependent gestures lock
+        if(handled) {
+            tiltRecognizer.setEnabled(!isInProcess(rotationRecognizer) || !rotationRecognizer.isEnabled());
+            rotationRecognizer.setEnabled(!isInProcess(tiltRecognizer) || !tiltRecognizer.isEnabled());
         }
 
         return handled;
@@ -104,12 +147,12 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.lastX = 0;
             this.lastY = 0;
         } else if (state == WorldWind.CHANGED) {
-            // Get the navigator's current position.
-            double lat = this.lookAt.latitude;
-            double lon = this.lookAt.longitude;
+            // Get observation point position.
+            double lat = this.lookAt.position.latitude;
+            double lon = this.lookAt.position.longitude;
             double rng = this.lookAt.range;
 
-            // Convert the translation from screen coordinates to degrees. Use the navigator's range as a metric for
+            // Convert the translation from screen coordinates to degrees. Use observation point range as a metric for
             // converting screen pixels to meters, and use the globe's radius for converting from meters to arc degrees.
             double metersPerPixel = this.wwd.pixelSizeAtDistance(rng);
             double forwardMeters = (dy - this.lastY) * metersPerPixel;
@@ -121,7 +164,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             double forwardDegrees = Math.toDegrees(forwardMeters / globeRadius);
             double sideDegrees = Math.toDegrees(sideMeters / globeRadius);
 
-            // Adjust the change in latitude and longitude based on the navigator's heading.
+            // Adjust the change in latitude and longitude based on observation point heading.
             double heading = this.lookAt.heading;
             double headingRadians = Math.toRadians(heading);
             double sinHeading = Math.sin(headingRadians);
@@ -129,21 +172,21 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             lat += forwardDegrees * cosHeading - sideDegrees * sinHeading;
             lon += forwardDegrees * sinHeading + sideDegrees * cosHeading;
 
-            // If the navigator has panned over either pole, compensate by adjusting the longitude and heading to move
-            // the navigator to the appropriate spot on the other side of the pole.
+            // If the camera has panned over either pole, compensate by adjusting the longitude and heading to move
+            // the camera to the appropriate spot on the other side of the pole.
             if (lat < -90 || lat > 90) {
-                this.lookAt.latitude = Location.normalizeLatitude(lat);
-                this.lookAt.longitude = Location.normalizeLongitude(lon + 180);
+                this.lookAt.position.latitude = Location.normalizeLatitude(lat);
+                this.lookAt.position.longitude = Location.normalizeLongitude(lon + 180);
                 this.lookAt.heading = WWMath.normalizeAngle360(heading + 180);
             } else if (lon < -180 || lon > 180) {
-                this.lookAt.latitude = lat;
-                this.lookAt.longitude = Location.normalizeLongitude(lon);
+                this.lookAt.position.latitude = lat;
+                this.lookAt.position.longitude = Location.normalizeLongitude(lon);
             } else {
-                this.lookAt.latitude = lat;
-                this.lookAt.longitude = lon;
+                this.lookAt.position.latitude = lat;
+                this.lookAt.position.longitude = lon;
             }
 
-            this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
+            this.wwd.getCamera().setFromLookAt(this.lookAt);
             this.wwd.requestRedraw();
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             this.gestureDidEnd();
@@ -158,11 +201,11 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.gestureDidBegin();
         } else if (state == WorldWind.CHANGED) {
             if (scale != 0) {
-                // Apply the change in scale to the navigator, relative to when the gesture began.
+                // Apply the change in range to observation point, relative to when the gesture began.
                 this.lookAt.range = this.beginLookAt.range / scale;
                 this.applyLimits(this.lookAt);
 
-                this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
+                this.wwd.getCamera().setFromLookAt(this.lookAt);
                 this.wwd.requestRedraw();
             }
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
@@ -178,12 +221,12 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.gestureDidBegin();
             this.lastRotation = 0;
         } else if (state == WorldWind.CHANGED) {
-            // Apply the change in rotation to the navigator, relative to the navigator's current values.
+            // Apply the change in rotation to the camera, relative to the camera's current values.
             double headingDegrees = this.lastRotation - rotation;
             this.lookAt.heading = WWMath.normalizeAngle360(this.lookAt.heading + headingDegrees);
             this.lastRotation = rotation;
 
-            this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
+            this.wwd.getCamera().setFromLookAt(this.lookAt);
             this.wwd.requestRedraw();
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             this.gestureDidEnd();
@@ -192,21 +235,22 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
 
     protected void handleTilt(GestureRecognizer recognizer) {
         int state = recognizer.getState();
-        float dx = recognizer.getTranslationX();
+        //float dx = recognizer.getTranslationX();
         float dy = recognizer.getTranslationY();
 
         if (state == WorldWind.BEGAN) {
             this.gestureDidBegin();
             this.lastRotation = 0;
         } else if (state == WorldWind.CHANGED) {
-            // Apply the change in tilt to the navigator, relative to when the gesture began.
-            double headingDegrees = 180 * dx / this.wwd.getWidth();
+            // Apply the change in tilt to the camera, relative to when the gesture began.
+            //double headingDegrees = 180 * dx / this.wwd.getWidth();
             double tiltDegrees = -180 * dy / this.wwd.getHeight();
-            this.lookAt.heading = WWMath.normalizeAngle360(this.beginLookAt.heading + headingDegrees);
+            // Do not change heading on tilt
+            //this.lookAt.heading = WWMath.normalizeAngle360(this.beginLookAt.heading + headingDegrees);
             this.lookAt.tilt = this.beginLookAt.tilt + tiltDegrees;
             this.applyLimits(this.lookAt);
 
-            this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
+            this.wwd.getCamera().setFromLookAt(this.lookAt);
             this.wwd.requestRedraw();
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             this.gestureDidEnd();
@@ -229,7 +273,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
 
     protected void gestureDidBegin() {
         if (this.activeGestures++ == 0) {
-            this.wwd.getNavigator().getAsLookAt(this.wwd.getGlobe(), this.beginLookAt);
+            this.wwd.getCamera().getAsLookAt(this.beginLookAt);
             this.lookAt.set(this.beginLookAt);
         }
     }
@@ -239,4 +283,9 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.activeGestures--;
         }
     }
+
+    private boolean isInProcess(GestureRecognizer recognizer) {
+        return recognizer.getState() == WorldWind.BEGAN || recognizer.getState() == WorldWind.CHANGED;
+    }
+
 }

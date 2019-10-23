@@ -120,7 +120,7 @@ public class MGRSGraticuleLayer extends AbstractUTMGraticuleLayer {
 
     @Override
     protected void selectRenderables(RenderContext rc) {
-        if (rc.camera.altitude <= GRID_ZONE_MAX_ALTITUDE) {
+        if (rc.camera.position.altitude <= GRID_ZONE_MAX_ALTITUDE) {
             this.selectMGRSRenderables(rc);
             super.selectRenderables(rc);
         } else {
