@@ -46,7 +46,7 @@ public class CameraControlFragment extends BasicGlobeFragment {
         WorldWindow wwd = super.createWorldWindow();
 
         // Override the default "look at" gesture behavior with a camera centric gesture controller
-        wwd.setWorldWindowController(new CameraController());
+        wwd.setWorldWindowController(new CameraController(wwd));
 
         // Apply camera position above KOXR airport, Oxnard, CA
         wwd.getCamera().set(34.2, -119.2,
@@ -67,6 +67,10 @@ public class CameraControlFragment extends BasicGlobeFragment {
         protected double beginHeading;
 
         protected double beginTilt;
+
+        public CameraController(WorldWindow wwd) {
+            super(wwd);
+        }
 
         @Override
         protected void handlePan(GestureRecognizer recognizer) {

@@ -84,7 +84,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected FrameMetrics frameMetrics = new FrameMetrics();
 
-    protected WorldWindowController worldWindowController = new BasicWorldWindowController();
+    protected WorldWindowController worldWindowController = new BasicWorldWindowController(this);
 
     protected RenderResourceCache renderResourceCache;
 
@@ -172,9 +172,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         Location initLocation = Location.fromTimeZone(TimeZone.getDefault());
         double initAltitude = this.distanceToViewGlobeExtents() * 1.1; // add 10% to the minimum distance to allow for space around the screen edges
         this.camera.position.set(initLocation.latitude, initLocation.longitude, initAltitude);
-
-        // Initialize the WorldWindow's controller.
-        this.worldWindowController.setWorldWindow(this);
 
         // Initialize the WorldWindow's render resource cache.
         int cacheCapacity = RenderResourceCache.recommendedCapacity();
@@ -362,9 +359,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
                 Logger.logMessage(Logger.ERROR, "WorldWindow", "setWorldWindowController", "missingController"));
         }
 
-        this.worldWindowController.setWorldWindow(null); // detach the old controller
         this.worldWindowController = controller; // switch to the new controller
-        this.worldWindowController.setWorldWindow(this); // attach the new controller
     }
 
     public RenderResourceCache getRenderResourceCache() {

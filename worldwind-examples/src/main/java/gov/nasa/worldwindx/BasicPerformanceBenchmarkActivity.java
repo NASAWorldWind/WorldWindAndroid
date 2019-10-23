@@ -47,10 +47,6 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
         }
 
         @Override
-        public void setWorldWindow(WorldWindow wwd) {
-        }
-
-        @Override
         public boolean onTouchEvent(MotionEvent event) {
             return false;
         }

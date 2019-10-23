@@ -49,7 +49,9 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
     protected List<GestureRecognizer> allRecognizers = Arrays.asList(
         this.panRecognizer, this.pinchRecognizer, this.rotationRecognizer, this.tiltRecognizer, this.mouseTiltRecognizer);
 
-    public BasicWorldWindowController() {
+    public BasicWorldWindowController(WorldWindow wwd) {
+        this.wwd = wwd;
+
         this.panRecognizer.addListener(this);
         this.pinchRecognizer.addListener(this);
         this.rotationRecognizer.addListener(this);
@@ -59,15 +61,18 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
         ((PanRecognizer) this.panRecognizer).setMaxNumberOfPointers(1); // Do not pan during tilt
         ((PanRecognizer) this.tiltRecognizer).setMinNumberOfPointers(2); // Use two fingers for tilt gesture
         ((MousePanRecognizer) this.mouseTiltRecognizer).setButtonState(MotionEvent.BUTTON_SECONDARY);
-    }
 
-    public WorldWindow getWorldWindow() {
-        return wwd;
+        // Set interpret distance based on screen density
+        ((PanRecognizer) this.panRecognizer).setInterpretDistance(wwd.getContext().getResources().getDimension(R.dimen.pan_interpret_distance));
+        ((PinchRecognizer) this.pinchRecognizer).setInterpretDistance(wwd.getContext().getResources().getDimension(R.dimen.pinch_interpret_distance));
+        ((RotationRecognizer) this.rotationRecognizer).setInterpretAngle(20f);
+        ((PanRecognizer) this.tiltRecognizer).setInterpretDistance(wwd.getContext().getResources().getDimension(R.dimen.tilt_interpret_distance));
+        ((MousePanRecognizer) this.mouseTiltRecognizer).setInterpretDistance(wwd.getContext().getResources().getDimension(R.dimen.tilt_interpret_distance));
     }
 
     @Override
-    public void setWorldWindow(WorldWindow wwd) {
-        this.wwd = wwd;
+    public WorldWindow getWorldWindow() {
+        return wwd;
     }
 
     @Override

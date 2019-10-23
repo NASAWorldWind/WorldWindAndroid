@@ -152,7 +152,7 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
         WorldWindow wwd = this.getWorldWindow();
 
         // Override the WorldWindow's built-in navigation behavior with conditional dragging support.
-        this.controller = new SelectDragNavigateController();
+        this.controller = new SelectDragNavigateController(wwd);
         wwd.setWorldWindowController(this.controller);
 
         // Add a layer for placemarks to the WorldWindow
@@ -303,6 +303,10 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
                 contextMenu();
             }
         });
+
+        public SelectDragNavigateController(WorldWindow wwd) {
+            super(wwd);
+        }
 
         /**
          * Delegates events to the select/drag handlers or the native WorldWind navigation handlers.
