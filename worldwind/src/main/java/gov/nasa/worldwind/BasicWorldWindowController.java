@@ -22,6 +22,8 @@ import gov.nasa.worldwind.util.WWMath;
 
 public class BasicWorldWindowController implements WorldWindowController, GestureListener {
 
+    private static final float ZOOM_FACTOR = 1.5f;
+
     protected WorldWindow wwd;
 
     protected float lastX;
@@ -68,6 +70,36 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
         ((RotationRecognizer) this.rotationRecognizer).setInterpretAngle(20f);
         ((PanRecognizer) this.tiltRecognizer).setInterpretDistance(wwd.getContext().getResources().getDimension(R.dimen.tilt_interpret_distance));
         ((MousePanRecognizer) this.mouseTiltRecognizer).setInterpretDistance(wwd.getContext().getResources().getDimension(R.dimen.tilt_interpret_distance));
+    }
+
+    public void resetOrientation(boolean headingOnly) {
+        this.gestureDidBegin();
+        this.lookAt.heading = 0;
+        if(!headingOnly) {
+            this.lookAt.tilt = 0;
+            this.lookAt.roll = 0;
+        }
+        this.wwd.getCamera().setFromLookAt(this.lookAt);
+        this.wwd.requestRedraw();
+        this.gestureDidEnd();
+    }
+
+    public void zoomIn() {
+        this.gestureDidBegin();
+        this.lookAt.range /= ZOOM_FACTOR;
+        this.applyLimits(lookAt);
+        this.wwd.getCamera().setFromLookAt(this.lookAt);
+        this.wwd.requestRedraw();
+        this.gestureDidEnd();
+    }
+
+    public void zoomOut() {
+        this.gestureDidBegin();
+        this.lookAt.range *= ZOOM_FACTOR;
+        this.applyLimits(lookAt);
+        this.wwd.getCamera().setFromLookAt(this.lookAt);
+        this.wwd.requestRedraw();
+        this.gestureDidEnd();
     }
 
     @Override
