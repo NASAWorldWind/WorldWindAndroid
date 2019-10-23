@@ -127,8 +127,8 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         this.navigationView.setCheckedItem(selectedItemId);
         // Use this Activity's Handler to periodically print the FrameMetrics.
         this.handler.sendEmptyMessageDelayed(PRINT_METRICS, PRINT_METRICS_DELAY);
-        // Restore the navigator's camera state from previously saved session data
-        this.restoreNavigatorState();
+        // Restore camera state from previously saved session data
+        this.restoreCameraState();
     }
 
     @Override
@@ -136,8 +136,8 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         super.onPause();
         // Stop printing frame metrics when this activity is paused.
         this.handler.removeMessages(PRINT_METRICS);
-        // Save the navigator's camera state.
-        this.saveNavigatorState();
+        // Save camera state.
+        this.saveCameraState();
     }
 
     @Override
@@ -163,9 +163,9 @@ public abstract class AbstractMainActivity extends AppCompatActivity
     }
 
     /**
-     * Saves the Navigator's camera data to a SharedPreferences object.
+     * Saves camera state to a SharedPreferences object.
      */
-    protected void saveNavigatorState() {
+    protected void saveCameraState() {
         WorldWindow wwd = this.getWorldWindow();
         if (wwd != null) {
             SharedPreferences preferences = this.getPreferences(MODE_PRIVATE);
@@ -175,7 +175,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity
             editor.putLong(SESSION_TIMESTAMP, getSessionTimestamp());
 
             // Write the camera data
-            Camera camera = wwd.getNavigator().getAsCamera(wwd.getGlobe(), new Camera());
+            Camera camera = wwd.getCamera();
             editor.putFloat(CAMERA_LATITUDE, (float) camera.position.latitude);
             editor.putFloat(CAMERA_LONGITUDE, (float) camera.position.longitude);
             editor.putFloat(CAMERA_ALTITUDE, (float) camera.position.altitude);
@@ -189,9 +189,9 @@ public abstract class AbstractMainActivity extends AppCompatActivity
     }
 
     /**
-     * Restores the Navigator's camera state from a SharedPreferences object.
+     * Restores camera state from a SharedPreferences object.
      */
-    protected void restoreNavigatorState() {
+    protected void restoreCameraState() {
         WorldWindow wwd = this.getWorldWindow();
         if (wwd != null) {
             SharedPreferences preferences = this.getPreferences(MODE_PRIVATE);
@@ -215,8 +215,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity
             }
 
             // Restore the camera state.
-            Camera camera = new Camera(lat, lon, alt, altMode, heading, tilt, roll);
-            wwd.getNavigator().setAsCamera(wwd.getGlobe(), camera);
+            wwd.getCamera().set(lat, lon, alt, altMode, heading, tilt, roll);
         }
     }
 

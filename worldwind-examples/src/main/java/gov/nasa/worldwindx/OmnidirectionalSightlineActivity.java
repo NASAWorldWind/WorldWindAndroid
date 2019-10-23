@@ -88,7 +88,7 @@ public class OmnidirectionalSightlineActivity extends BasicGlobeActivity {
 
         // And finally, for this demo, position the viewer to look at the sightline position
         LookAt lookAt = new LookAt().set(pos.latitude, pos.longitude, pos.altitude, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
-        this.getWorldWindow().getNavigator().setAsLookAt(this.getWorldWindow().getGlobe(), lookAt);
+        this.getWorldWindow().getCamera().setFromLookAt(lookAt);
     }
 
     /**

@@ -58,9 +58,7 @@ public class TextureStressTestActivity extends BasicGlobeActivity {
         // Position the viewer so that the surface images will be visible as they're added.
         this.firstSector.set(35.0, 10.0, 0.5, 0.5);
         this.sector.set(this.firstSector);
-        this.getWorldWindow().getNavigator().setLatitude(37.5);
-        this.getWorldWindow().getNavigator().setLongitude(15.0);
-        this.getWorldWindow().getNavigator().setAltitude(1.0e6);
+        this.getWorldWindow().getCamera().position.set(37.5, 15.0, 1.0e6);
 
         // Allocate a 32-bit 1024 x 1024 bitmap that we'll use to create all of the OpenGL texture objects in this test.
         int[] colors = new int[1024 * 1024];

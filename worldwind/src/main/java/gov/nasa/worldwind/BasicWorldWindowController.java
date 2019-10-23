@@ -104,12 +104,12 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.lastX = 0;
             this.lastY = 0;
         } else if (state == WorldWind.CHANGED) {
-            // Get the navigator's current position.
+            // Get observation point position.
             double lat = this.lookAt.position.latitude;
             double lon = this.lookAt.position.longitude;
             double rng = this.lookAt.range;
 
-            // Convert the translation from screen coordinates to degrees. Use the navigator's range as a metric for
+            // Convert the translation from screen coordinates to degrees. Use observation point range as a metric for
             // converting screen pixels to meters, and use the globe's radius for converting from meters to arc degrees.
             double metersPerPixel = this.wwd.pixelSizeAtDistance(rng);
             double forwardMeters = (dy - this.lastY) * metersPerPixel;
@@ -121,7 +121,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             double forwardDegrees = Math.toDegrees(forwardMeters / globeRadius);
             double sideDegrees = Math.toDegrees(sideMeters / globeRadius);
 
-            // Adjust the change in latitude and longitude based on the navigator's heading.
+            // Adjust the change in latitude and longitude based on observation point heading.
             double heading = this.lookAt.heading;
             double headingRadians = Math.toRadians(heading);
             double sinHeading = Math.sin(headingRadians);
@@ -129,8 +129,8 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             lat += forwardDegrees * cosHeading - sideDegrees * sinHeading;
             lon += forwardDegrees * sinHeading + sideDegrees * cosHeading;
 
-            // If the navigator has panned over either pole, compensate by adjusting the longitude and heading to move
-            // the navigator to the appropriate spot on the other side of the pole.
+            // If the camera has panned over either pole, compensate by adjusting the longitude and heading to move
+            // the camera to the appropriate spot on the other side of the pole.
             if (lat < -90 || lat > 90) {
                 this.lookAt.position.latitude = Location.normalizeLatitude(lat);
                 this.lookAt.position.longitude = Location.normalizeLongitude(lon + 180);
@@ -143,7 +143,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
                 this.lookAt.position.longitude = lon;
             }
 
-            this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
+            this.wwd.getCamera().setFromLookAt(this.lookAt);
             this.wwd.requestRedraw();
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             this.gestureDidEnd();
@@ -158,11 +158,11 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.gestureDidBegin();
         } else if (state == WorldWind.CHANGED) {
             if (scale != 0) {
-                // Apply the change in scale to the navigator, relative to when the gesture began.
+                // Apply the change in range to observation point, relative to when the gesture began.
                 this.lookAt.range = this.beginLookAt.range / scale;
                 this.applyLimits(this.lookAt);
 
-                this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
+                this.wwd.getCamera().setFromLookAt(this.lookAt);
                 this.wwd.requestRedraw();
             }
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
@@ -178,12 +178,12 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.gestureDidBegin();
             this.lastRotation = 0;
         } else if (state == WorldWind.CHANGED) {
-            // Apply the change in rotation to the navigator, relative to the navigator's current values.
+            // Apply the change in rotation to the camera, relative to the camera's current values.
             double headingDegrees = this.lastRotation - rotation;
             this.lookAt.heading = WWMath.normalizeAngle360(this.lookAt.heading + headingDegrees);
             this.lastRotation = rotation;
 
-            this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
+            this.wwd.getCamera().setFromLookAt(this.lookAt);
             this.wwd.requestRedraw();
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             this.gestureDidEnd();
@@ -199,14 +199,14 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.gestureDidBegin();
             this.lastRotation = 0;
         } else if (state == WorldWind.CHANGED) {
-            // Apply the change in tilt to the navigator, relative to when the gesture began.
+            // Apply the change in tilt to the camera, relative to when the gesture began.
             double headingDegrees = 180 * dx / this.wwd.getWidth();
             double tiltDegrees = -180 * dy / this.wwd.getHeight();
             this.lookAt.heading = WWMath.normalizeAngle360(this.beginLookAt.heading + headingDegrees);
             this.lookAt.tilt = this.beginLookAt.tilt + tiltDegrees;
             this.applyLimits(this.lookAt);
 
-            this.wwd.getNavigator().setAsLookAt(this.wwd.getGlobe(), this.lookAt);
+            this.wwd.getCamera().setFromLookAt(this.lookAt);
             this.wwd.requestRedraw();
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             this.gestureDidEnd();
@@ -229,7 +229,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
 
     protected void gestureDidBegin() {
         if (this.activeGestures++ == 0) {
-            this.wwd.getNavigator().getAsLookAt(this.wwd.getGlobe(), this.beginLookAt);
+            this.wwd.getCamera().getAsLookAt(this.beginLookAt);
             this.lookAt.set(this.beginLookAt);
         }
     }

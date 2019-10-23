@@ -158,7 +158,7 @@ public class NavigatorEventSupport {
     }
 
     protected void notifyListeners(int action, InputEvent inputEvent) {
-        NavigatorEvent event = NavigatorEvent.obtain(this.wwd.navigator, action, inputEvent);
+        NavigatorEvent event = NavigatorEvent.obtain(this.wwd.getCamera(), action, inputEvent);
         for (int idx = 0, len = this.listeners.size(); idx < len; idx++) {
             this.listeners.get(idx).onNavigatorEvent(this.wwd, event);
         }

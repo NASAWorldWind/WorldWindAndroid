@@ -52,11 +52,9 @@ public class RenderContext {
 
     public double verticalExaggeration = 1;
 
-    public double fieldOfView;
-
     public double horizonDistance;
 
-    public Camera camera = new Camera();
+    public Camera camera;
 
     public Vec3 cameraPoint = new Vec3();
 
@@ -116,9 +114,8 @@ public class RenderContext {
         this.layers = null;
         this.currentLayer = null;
         this.verticalExaggeration = 1;
-        this.fieldOfView = 0;
         this.horizonDistance = 0;
-        this.camera.set(0, 0, 0, WorldWind.ABSOLUTE /*lat, lon, alt*/, 0, 0, 0 /*heading, tilt, roll*/);
+        this.camera = null;
         this.cameraPoint.set(0, 0, 0);
         this.viewport.setEmpty();
         this.projection.setToIdentity();
@@ -161,7 +158,7 @@ public class RenderContext {
      */
     public double pixelSizeAtDistance(double distance) {
         if (this.pixelSizeFactor == 0) { // cache the scaling factor used to convert distances to pixel sizes
-            double fovyDegrees = this.fieldOfView;
+            double fovyDegrees = this.camera.getFieldOfView();
             double tanfovy_2 = Math.tan(Math.toRadians(fovyDegrees * 0.5));
             this.pixelSizeFactor = 2 * tanfovy_2 / this.viewport.height;
         }

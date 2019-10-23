@@ -13,7 +13,6 @@ import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.gesture.GestureRecognizer;
 import gov.nasa.worldwind.gesture.PinchRecognizer;
 import gov.nasa.worldwind.gesture.RotationRecognizer;
-import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.util.WWMath;
 
 public class CameraControlFragment extends BasicGlobeFragment {
@@ -29,17 +28,12 @@ public class CameraControlFragment extends BasicGlobeFragment {
         // Override the default "look at" gesture behavior with a camera centric gesture controller
         wwd.setWorldWindowController(new CameraController());
 
-        // Create a camera position above KOXR airport, Oxnard, CA
-        Camera camera = new Camera();
-        camera.set(34.2, -119.2,
-            10000, WorldWind.ABSOLUTE,
-            90, // Looking east
-            70, // Lookup up from nadir
-            0); // No roll
-
-        // Apply the new camera position
-        Globe globe = wwd.getGlobe();
-        wwd.getNavigator().setAsCamera(globe, camera);
+        // Apply camera position above KOXR airport, Oxnard, CA
+        wwd.getCamera().set(34.2, -119.2,
+                10000, WorldWind.ABSOLUTE,
+                90, // Looking east
+                70, // Lookup up from nadir
+                0); // No roll
 
         return wwd;
     }
@@ -50,9 +44,9 @@ public class CameraControlFragment extends BasicGlobeFragment {
      */
     private class CameraController extends BasicWorldWindowController {
 
-        protected Camera camera = new Camera();
+        protected double beginHeading;
 
-        protected Camera beginCamera = new Camera();
+        protected double beginTilt;
 
         @Override
         protected void handlePan(GestureRecognizer recognizer) {
@@ -65,12 +59,14 @@ public class CameraControlFragment extends BasicGlobeFragment {
                 this.lastX = 0;
                 this.lastY = 0;
             } else if (state == WorldWind.CHANGED) {
-                // Get the navigator's current position.
-                double lat = this.camera.position.latitude;
-                double lon = this.camera.position.longitude;
-                double alt = this.camera.position.altitude;
+                Camera camera = this.getWorldWindow().getCamera();
 
-                // Convert the translation from screen coordinates to degrees. Use the navigator's range as a metric for
+                // Get the camera's current position.
+                double lat = camera.position.latitude;
+                double lon = camera.position.longitude;
+                double alt = camera.position.altitude;
+
+                // Convert the translation from screen coordinates to degrees. Use the camera's range as a metric for
                 // converting screen pixels to meters, and use the globe's radius for converting from meters to arc degrees.
                 double metersPerPixel = this.wwd.pixelSizeAtDistance(alt);
                 double forwardMeters = (dy - this.lastY) * metersPerPixel;
@@ -82,29 +78,28 @@ public class CameraControlFragment extends BasicGlobeFragment {
                 double forwardDegrees = Math.toDegrees(forwardMeters / globeRadius);
                 double sideDegrees = Math.toDegrees(sideMeters / globeRadius);
 
-                // Adjust the change in latitude and longitude based on the navigator's heading.
-                double heading = this.camera.heading;
+                // Adjust the change in latitude and longitude based on the camera's heading.
+                double heading = camera.heading;
                 double headingRadians = Math.toRadians(heading);
                 double sinHeading = Math.sin(headingRadians);
                 double cosHeading = Math.cos(headingRadians);
                 lat += forwardDegrees * cosHeading - sideDegrees * sinHeading;
                 lon += forwardDegrees * sinHeading + sideDegrees * cosHeading;
 
-                // If the navigator has panned over either pole, compensate by adjusting the longitude and heading to move
-                // the navigator to the appropriate spot on the other side of the pole.
+                // If the camera has panned over either pole, compensate by adjusting the longitude and heading to move
+                // the camera to the appropriate spot on the other side of the pole.
                 if (lat < -90 || lat > 90) {
-                    this.camera.position.latitude = Location.normalizeLatitude(lat);
-                    this.camera.position.longitude = Location.normalizeLongitude(lon + 180);
+                    camera.position.latitude = Location.normalizeLatitude(lat);
+                    camera.position.longitude = Location.normalizeLongitude(lon + 180);
                 } else if (lon < -180 || lon > 180) {
-                    this.camera.position.latitude = lat;
-                    this.camera.position.longitude = Location.normalizeLongitude(lon);
+                    camera.position.latitude = lat;
+                    camera.position.longitude = Location.normalizeLongitude(lon);
                 } else {
-                    this.camera.position.latitude = lat;
-                    this.camera.position.longitude = lon;
+                    camera.position.latitude = lat;
+                    camera.position.longitude = lon;
                 }
-                //this.camera.heading = WWMath.normalizeAngle360(heading + sideDegrees * 1000);
+                //camera.heading = WWMath.normalizeAngle360(heading + sideDegrees * 1000);
 
-                this.wwd.getNavigator().setAsCamera(this.wwd.getGlobe(), this.camera);
                 this.wwd.requestRedraw();
             } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
                 this.gestureDidEnd();
@@ -120,12 +115,12 @@ public class CameraControlFragment extends BasicGlobeFragment {
                 this.gestureDidBegin();
             } else if (state == WorldWind.CHANGED) {
                 if (scale != 0) {
-                    // Apply the change in scale to the navigator, relative to when the gesture began.
+                    // Apply the change in scale to the camera, relative to when the gesture began.
                     scale = ((scale - 1) * 0.1f) + 1; // dampen the scale factor
-                    this.camera.position.altitude = this.camera.position.altitude * scale;
-                    this.applyLimits(this.camera);
+                    Camera camera = this.getWorldWindow().getCamera();
+                    camera.position.altitude = camera.position.altitude * scale;
+                    this.applyLimits(camera);
 
-                    this.wwd.getNavigator().setAsCamera(this.wwd.getGlobe(), this.camera);
                     this.wwd.requestRedraw();
                 }
             } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
@@ -143,12 +138,12 @@ public class CameraControlFragment extends BasicGlobeFragment {
                 this.lastRotation = 0;
             } else if (state == WorldWind.CHANGED) {
 
-                // Apply the change in rotation to the navigator, relative to the navigator's current values.
+                // Apply the change in rotation to the camera, relative to the camera's current values.
                 double headingDegrees = this.lastRotation - rotation;
-                this.camera.heading = WWMath.normalizeAngle360(this.camera.heading + headingDegrees);
+                Camera camera = this.getWorldWindow().getCamera();
+                camera.heading = WWMath.normalizeAngle360(camera.heading + headingDegrees);
                 this.lastRotation = rotation;
 
-                this.wwd.getNavigator().setAsCamera(this.wwd.getGlobe(), this.camera);
                 this.wwd.requestRedraw();
             } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
                 this.gestureDidEnd();
@@ -165,15 +160,15 @@ public class CameraControlFragment extends BasicGlobeFragment {
                 this.gestureDidBegin();
                 this.lastRotation = 0;
             } else if (state == WorldWind.CHANGED) {
-                // Apply the change in tilt to the navigator, relative to when the gesture began.
+                // Apply the change in tilt to the camera, relative to when the gesture began.
                 double headingDegrees = 180 * dx / this.wwd.getWidth();
                 double tiltDegrees = -180 * dy / this.wwd.getHeight();
 
-                this.camera.heading = WWMath.normalizeAngle360(this.beginCamera.heading + headingDegrees);
-                this.camera.tilt = this.beginCamera.tilt + tiltDegrees;
+                Camera camera = this.getWorldWindow().getCamera();
+                camera.heading = WWMath.normalizeAngle360(this.beginHeading + headingDegrees);
+                camera.tilt = this.beginTilt + tiltDegrees;
                 this.applyLimits(camera);
 
-                this.wwd.getNavigator().setAsCamera(this.wwd.getGlobe(), this.camera);
                 this.wwd.requestRedraw();
             } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
                 this.gestureDidEnd();
@@ -183,8 +178,9 @@ public class CameraControlFragment extends BasicGlobeFragment {
         @Override
         protected void gestureDidBegin() {
             if (this.activeGestures++ == 0) {
-                this.wwd.getNavigator().getAsCamera(this.wwd.getGlobe(), this.beginCamera);
-                this.camera.set(this.beginCamera);
+                Camera camera = this.getWorldWindow().getCamera();
+                this.beginHeading = camera.heading;
+                this.beginTilt = camera.tilt;
             }
         }
 

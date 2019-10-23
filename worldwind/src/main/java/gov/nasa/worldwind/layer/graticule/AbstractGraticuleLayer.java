@@ -325,7 +325,7 @@ public abstract class AbstractGraticuleLayer extends AbstractLayer {
         if (Math.abs(this.lastCameraTilt - rc.camera.tilt) > 1)
             return true;
 
-        if (Math.abs(this.lastFOV - rc.fieldOfView) > 1)
+        if (Math.abs(this.lastFOV - rc.camera.getFieldOfView()) > 1)
             return true;
 
         if (rc.cameraPoint.distanceTo(this.lastCameraPoint) > computeAltitudeAboveGround(rc) / 100)  // 1% of AAG
@@ -348,7 +348,7 @@ public abstract class AbstractGraticuleLayer extends AbstractLayer {
     protected void clear(RenderContext rc) {
         this.removeAllRenderables();
         this.lastCameraPoint.set(rc.cameraPoint);
-        this.lastFOV = rc.fieldOfView;
+        this.lastFOV = rc.camera.getFieldOfView();
         this.lastCameraHeading = rc.camera.heading;
         this.lastCameraTilt = rc.camera.tilt;
         this.lastVerticalExaggeration = rc.verticalExaggeration;
