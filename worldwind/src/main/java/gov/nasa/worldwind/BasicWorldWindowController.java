@@ -203,7 +203,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
 
     protected void handleTilt(GestureRecognizer recognizer) {
         int state = recognizer.getState();
-        float dx = recognizer.getTranslationX();
+        //float dx = recognizer.getTranslationX();
         float dy = recognizer.getTranslationY();
 
         if (state == WorldWind.BEGAN) {
@@ -211,9 +211,10 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.lastRotation = 0;
         } else if (state == WorldWind.CHANGED) {
             // Apply the change in tilt to the camera, relative to when the gesture began.
-            double headingDegrees = 180 * dx / this.wwd.getWidth();
+            //double headingDegrees = 180 * dx / this.wwd.getWidth();
             double tiltDegrees = -180 * dy / this.wwd.getHeight();
-            this.lookAt.heading = WWMath.normalizeAngle360(this.beginLookAt.heading + headingDegrees);
+            // Do not change heading on tilt
+            //this.lookAt.heading = WWMath.normalizeAngle360(this.beginLookAt.heading + headingDegrees);
             this.lookAt.tilt = this.beginLookAt.tilt + tiltDegrees;
             this.applyLimits(this.lookAt);
 
