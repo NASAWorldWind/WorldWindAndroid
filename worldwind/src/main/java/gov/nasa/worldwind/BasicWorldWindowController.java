@@ -56,8 +56,8 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
         this.tiltRecognizer.addListener(this);
         this.mouseTiltRecognizer.addListener(this);
 
-        ((PanRecognizer) this.panRecognizer).setMaxNumberOfPointers(2);
-        ((PanRecognizer) this.tiltRecognizer).setMinNumberOfPointers(3); // TODO support for two-finger tilt gestures
+        ((PanRecognizer) this.panRecognizer).setMaxNumberOfPointers(1); // Do not pan during tilt
+        ((PanRecognizer) this.tiltRecognizer).setMinNumberOfPointers(2); // Use two fingers for tilt gesture
         ((MousePanRecognizer) this.mouseTiltRecognizer).setButtonState(MotionEvent.BUTTON_SECONDARY);
     }
 
@@ -76,6 +76,12 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
 
         for (int idx = 0, len = this.allRecognizers.size(); idx < len; idx++) {
             handled |= this.allRecognizers.get(idx).onTouchEvent(event); // use or-assignment to indicate if any recognizer handled the event
+        }
+
+        // Handle dependent gestures lock
+        if(handled) {
+            tiltRecognizer.setEnabled(!isInProcess(rotationRecognizer) || !rotationRecognizer.isEnabled());
+            rotationRecognizer.setEnabled(!isInProcess(tiltRecognizer) || !tiltRecognizer.isEnabled());
         }
 
         return handled;
@@ -239,4 +245,9 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.activeGestures--;
         }
     }
+
+    private boolean isInProcess(GestureRecognizer recognizer) {
+        return recognizer.getState() == WorldWind.BEGAN || recognizer.getState() == WorldWind.CHANGED;
+    }
+
 }
