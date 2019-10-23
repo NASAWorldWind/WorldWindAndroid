@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.layer.BackgroundLayer;
 import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
-import gov.nasa.worldwindx.experimental.AtmosphereLayer;
+import gov.nasa.worldwind.layer.atmosphere.AtmosphereLayer;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
