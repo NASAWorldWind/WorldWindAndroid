@@ -5,7 +5,7 @@
 
 package gov.nasa.worldwind.formats.tiff;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

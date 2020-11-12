@@ -9,12 +9,13 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.PointF;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AlertDialog;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
 
 import java.util.HashMap;
 

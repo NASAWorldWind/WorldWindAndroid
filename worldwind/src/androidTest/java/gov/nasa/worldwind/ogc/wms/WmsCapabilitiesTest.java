@@ -6,7 +6,8 @@
 package gov.nasa.worldwind.ogc.wms;
 
 import android.content.res.Resources;
-import android.support.test.runner.AndroidJUnit4;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +22,7 @@ import java.util.List;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.test.R;
 
-import static android.support.test.InstrumentationRegistry.getInstrumentation;
+import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;

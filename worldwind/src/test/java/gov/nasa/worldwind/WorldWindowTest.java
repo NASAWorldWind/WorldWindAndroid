@@ -5,8 +5,6 @@
 
 package gov.nasa.worldwind;
 
-import android.content.Context;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -14,7 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 @RunWith(PowerMockRunner.class) // Support for mocking static methods
 public class WorldWindowTest {

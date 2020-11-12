@@ -6,7 +6,8 @@
 package gov.nasa.worldwind.util;
 
 import android.content.res.Resources;
-import android.support.annotation.RawRes;
+
+import androidx.annotation.RawRes;
 
 import java.io.BufferedReader;
 import java.io.Closeable;

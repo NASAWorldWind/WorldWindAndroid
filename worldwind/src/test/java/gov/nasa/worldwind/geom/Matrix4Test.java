@@ -16,7 +16,12 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import gov.nasa.worldwind.util.Logger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
 /**
  * Unit tests for Matrix4, a 4x4 square matrix in row, column order.

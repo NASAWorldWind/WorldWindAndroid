@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.geom;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
@@ -15,7 +14,12 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import gov.nasa.worldwind.util.Logger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(PowerMockRunner.class) // Support for mocking static methods
 @PrepareForTest(Logger.class)   // We mock the Logger class to avoid its calls to android.util.log

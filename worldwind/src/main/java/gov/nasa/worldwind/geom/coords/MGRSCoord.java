@@ -5,7 +5,7 @@
  */
 package gov.nasa.worldwind.geom.coords;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 /**
  * This class holds an immutable MGRS coordinate string along with

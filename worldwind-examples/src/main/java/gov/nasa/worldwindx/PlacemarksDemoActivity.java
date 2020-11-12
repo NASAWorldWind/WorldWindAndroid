@@ -9,12 +9,13 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.DrawableRes;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.DrawableRes;
 
 import java.io.BufferedReader;
 import java.io.IOException;

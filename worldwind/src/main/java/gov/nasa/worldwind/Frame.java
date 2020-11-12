@@ -9,7 +9,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import gov.nasa.worldwind.draw.DrawableList;
 import gov.nasa.worldwind.draw.DrawableQueue;
 import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.Matrix4;

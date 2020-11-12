@@ -13,6 +13,7 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
 
+import gov.nasa.worldwind.R;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Sector;
@@ -23,7 +24,6 @@ import gov.nasa.worldwind.render.ImageOptions;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Pool;
-import gov.nasa.worldwind.R;
 
 public class AtmosphereLayer extends AbstractLayer {
 

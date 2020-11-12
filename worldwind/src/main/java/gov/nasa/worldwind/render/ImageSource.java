@@ -7,7 +7,8 @@ package gov.nasa.worldwind.render;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.support.annotation.DrawableRes;
+
+import androidx.annotation.DrawableRes;
 
 import java.util.Arrays;
 import java.util.HashMap;

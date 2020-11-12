@@ -1,6 +1,6 @@
 package gov.nasa.worldwind.layer.graticule;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import gov.nasa.worldwind.geom.Frustum;
 import gov.nasa.worldwind.geom.Position;

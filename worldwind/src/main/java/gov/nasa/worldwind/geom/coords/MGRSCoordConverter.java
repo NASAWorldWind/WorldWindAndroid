@@ -13,7 +13,7 @@ package gov.nasa.worldwind.geom.coords;
  * @see MGRSCoord
  */
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 /**
  * Ported to Java from the NGA GeoTrans mgrs.c and mgrs.h code. Contains routines to convert from Geodetic to MGRS and

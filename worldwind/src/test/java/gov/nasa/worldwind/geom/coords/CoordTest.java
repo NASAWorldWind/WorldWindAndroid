@@ -5,10 +5,12 @@
  */
 package gov.nasa.worldwind.geom.coords;
 
-import gov.nasa.worldwind.geom.Location;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import gov.nasa.worldwind.geom.Location;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class CoordTest {
     

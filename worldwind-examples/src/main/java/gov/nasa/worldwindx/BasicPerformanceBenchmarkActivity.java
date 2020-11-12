@@ -8,9 +8,10 @@ package gov.nasa.worldwindx;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.v4.util.Pools;
 import android.view.MotionEvent;
+
+import androidx.annotation.NonNull;
+import androidx.core.util.Pools;
 
 import java.io.BufferedReader;
 import java.io.IOException;

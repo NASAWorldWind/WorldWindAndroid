@@ -7,9 +7,9 @@ package gov.nasa.worldwind.layer.atmosphere;
 
 import android.content.res.Resources;
 
+import gov.nasa.worldwind.R;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
-import gov.nasa.worldwind.R;
 
 public class SkyProgram extends AtmosphereProgram {
 

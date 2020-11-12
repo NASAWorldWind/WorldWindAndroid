@@ -8,7 +8,7 @@ package gov.nasa.worldwind.layer;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 public class RenderableLayerTest {
     @Ignore("not implemented")
