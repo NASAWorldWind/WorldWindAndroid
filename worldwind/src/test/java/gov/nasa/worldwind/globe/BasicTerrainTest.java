@@ -14,6 +14,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.util.LevelSet;
@@ -81,7 +82,7 @@ public class BasicTerrainTest {
         this.terrain = new BasicTerrain();
 
         // Add a terrain tile used to the mocked terrain
-        LevelSet levelSet = new LevelSet(new Sector().setFullSphere(), 1.0, 1, 5, 5); // tiles with 5x5 vertices
+        LevelSet levelSet = new LevelSet(new Sector().setFullSphere(), new Location(-90, -180), 1.0, 1, 5, 5); // tiles with 5x5 vertices
         TerrainTile tile = new TerrainTile(new Sector(0, 0, 1, 1), levelSet.firstLevel(), 90, 180);
         ((BasicTerrain) this.terrain).addTile(tile);
 

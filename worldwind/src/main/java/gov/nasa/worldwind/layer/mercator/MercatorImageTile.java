@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 
 import java.util.Collection;
 
+import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.ImageTile;
 import gov.nasa.worldwind.util.Level;
@@ -51,19 +52,20 @@ class MercatorImageTile extends ImageTile implements ImageSource.Transformer {
 
         // NOTE LevelSet.sector is final Sector attribute and thus can not be cast to MercatorSector!
         MercatorSector sector = MercatorSector.fromSector(level.parent.sector);
+        Location tileOrigin = level.parent.tileOrigin;
         double dLat = level.tileDelta / 2;
         double dLon = level.tileDelta;
 
-        int firstRow = Tile.computeRow(dLat, sector.minLatitude());
-        int lastRow = Tile.computeLastRow(dLat, sector.maxLatitude());
-        int firstCol = Tile.computeColumn(dLon, sector.minLongitude());
-        int lastCol = Tile.computeLastColumn(dLon, sector.maxLongitude());
+        int firstRow = Tile.computeRow(dLat, sector.minLatitude(), tileOrigin.latitude);
+        int lastRow = Tile.computeLastRow(dLat, sector.maxLatitude(), tileOrigin.latitude);
+        int firstCol = Tile.computeColumn(dLon, sector.minLongitude(), tileOrigin.longitude);
+        int lastCol = Tile.computeLastColumn(dLon, sector.maxLongitude(), tileOrigin.longitude);
 
         double deltaLat = dLat / 90;
         double d1 = sector.minLatPercent() + deltaLat * firstRow;
         for (int row = firstRow; row <= lastRow; row++) {
             double d2 = d1 + deltaLat;
-            double t1 = sector.minLongitude() + (firstCol * dLon);
+            double t1 = tileOrigin.longitude + (firstCol * dLon);
             for (int col = firstCol; col <= lastCol; col++) {
                 double t2;
                 t2 = t1 + dLon;

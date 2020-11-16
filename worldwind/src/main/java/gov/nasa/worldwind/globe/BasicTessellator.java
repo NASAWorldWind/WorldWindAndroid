@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import gov.nasa.worldwind.draw.BasicDrawableTerrain;
+import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Range;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
@@ -32,7 +33,7 @@ import gov.nasa.worldwind.util.TileFactory;
 public class BasicTessellator implements Tessellator, TileFactory {
 
     // ~0.6 meter resolution
-    protected LevelSet levelSet = new LevelSet(new Sector().setFullSphere(), 90, 20, 32, 32);
+    protected LevelSet levelSet = new LevelSet(new Sector().setFullSphere(), new Location(-90, -180), 90, 20, 32, 32);
 
     protected double detailControl = 80;
 
