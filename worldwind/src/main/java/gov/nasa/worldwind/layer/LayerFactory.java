@@ -8,6 +8,7 @@ package gov.nasa.worldwind.layer;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.SparseArray;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
@@ -30,6 +31,7 @@ import gov.nasa.worldwind.ogc.gpkg.GeoPackage;
 import gov.nasa.worldwind.ogc.gpkg.GpkgContent;
 import gov.nasa.worldwind.ogc.gpkg.GpkgSpatialReferenceSystem;
 import gov.nasa.worldwind.ogc.gpkg.GpkgTileFactory;
+import gov.nasa.worldwind.ogc.gpkg.GpkgTileMatrix;
 import gov.nasa.worldwind.ogc.gpkg.GpkgTileMatrixSet;
 import gov.nasa.worldwind.ogc.gpkg.GpkgTileUserMetrics;
 import gov.nasa.worldwind.ogc.wms.WmsCapabilities;
@@ -259,6 +261,13 @@ public class LayerFactory {
                 continue;
             }
 
+            SparseArray<GpkgTileMatrix> tileMatrix = geoPackage.getTileMatrix(content.getTableName());
+            if (tileMatrix == null || tileMatrix.size() == 0) {
+                Logger.logMessage(Logger.WARN, "LayerFactory", "createFromGeoPackageAsync",
+                        "Unsupported GeoPackage tile matrix");
+                continue;
+            }
+
             GpkgTileUserMetrics tileMetrics = geoPackage.getTileUserMetrics(content.getTableName());
             if (tileMetrics == null) {
                 Logger.logMessage(Logger.WARN, "LayerFactory", "createFromGeoPackageAsync",
@@ -267,14 +276,15 @@ public class LayerFactory {
             }
 
             LevelSetConfig config = new LevelSetConfig();
-            config.sector.set(content.getMinY(), content.getMinX(),
-                content.getMaxY() - content.getMinY(), content.getMaxX() - content.getMinX());
-            config.firstLevelDelta = 180;
-            config.numLevels = tileMetrics.getMaxZoomLevel() + 1; // zero when there are no zoom levels, (0 = -1 + 1)
-            config.tileWidth = 256;
-            config.tileHeight = 256;
+            config.sector.set(tileMatrixSet.getMinY(), tileMatrixSet.getMinX(),
+                    tileMatrixSet.getMaxY() - tileMatrixSet.getMinY(),
+                    tileMatrixSet.getMaxX() - tileMatrixSet.getMinX());
+            config.tileOrigin.set(tileMatrixSet.getMinY(), tileMatrixSet.getMinX());
+            config.firstLevelDelta = (tileMatrixSet.getMaxY() - tileMatrixSet.getMinY()) / tileMatrix.valueAt(0).getMatrixHeight();
+            config.numLevels = tileMatrix.size();
 
             TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
+            surfaceImage.setDisplayName(content.getIdentifier());
             surfaceImage.setLevelSet(new LevelSet(config));
             surfaceImage.setTileFactory(new GpkgTileFactory(content));
             gpkgRenderables.addRenderable(surfaceImage);
