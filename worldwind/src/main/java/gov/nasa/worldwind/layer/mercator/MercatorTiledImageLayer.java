@@ -1,6 +1,7 @@
 package gov.nasa.worldwind.layer.mercator;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.render.ImageOptions;
@@ -23,7 +24,7 @@ public abstract class MercatorTiledImageLayer extends RenderableLayer implements
 
         MercatorTiledSurfaceImage surfaceImage = new MercatorTiledSurfaceImage();
         surfaceImage.setLevelSet(new LevelSet(
-                MercatorSector.fromDegrees(-1.0, 1.0, - FULL_SPHERE / 2, FULL_SPHERE / 2),
+                MercatorSector.fromDegrees(-1.0, 1.0, - FULL_SPHERE / 2, FULL_SPHERE / 2), new Location(-90, -180),
                 FULL_SPHERE / (1 << firstLevelOffset), numLevels - firstLevelOffset, tileSize, tileSize));
         surfaceImage.setTileFactory(this);
         if(!overlay) {

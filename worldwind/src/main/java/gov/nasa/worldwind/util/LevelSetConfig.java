@@ -5,6 +5,7 @@
 
 package gov.nasa.worldwind.util;
 
+import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Sector;
 
 /**
@@ -17,6 +18,11 @@ public class LevelSetConfig {
      * The sector spanned by the level set.
      */
     public final Sector sector = new Sector().setFullSphere();
+
+    /**
+     * Tile origin for level set
+     */
+    public final Location tileOrigin = new Location(-90, -180);
 
     /**
      * The geographic width and height in degrees of tiles in the first level (lowest resolution) of the level set.
