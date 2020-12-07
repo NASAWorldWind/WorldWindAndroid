@@ -50,6 +50,18 @@ public class ImageSource {
         Bitmap createBitmap();
     }
 
+    /**
+     * Interface for remote image source post-transformation
+     */
+    public interface Transformer {
+        /**
+         * Transforms image according to specified algorithm implementation
+         * @param bitmap original bitmap
+         * @return transformed bitmap
+         */
+        Bitmap transform(Bitmap bitmap);
+    }
+
     protected static final HashMap<Object, BitmapFactory> lineStippleFactories = new HashMap<>();
 
     protected static final int TYPE_UNRECOGNIZED = 0;
@@ -67,6 +79,8 @@ public class ImageSource {
     protected int type = TYPE_UNRECOGNIZED;
 
     protected Object source;
+
+    protected Transformer transformer;
 
     protected ImageSource() {
     }
@@ -170,6 +184,23 @@ public class ImageSource {
         ImageSource imageSource = new ImageSource();
         imageSource.type = TYPE_URL;
         imageSource.source = urlString;
+        return imageSource;
+    }
+
+    /**
+     * Constructs an image source with a URL string. The image's dimensions should be no greater than 2048 x 2048. The
+     * application's manifest must include the permissions that allow network connections.
+     *
+     * @param urlString complete URL string
+     * @param transformer implementation of image post-transformation routine
+     *
+     * @return the new image source
+     *
+     * @throws IllegalArgumentException If the URL string is null
+     */
+    public static ImageSource fromUrl(String urlString, Transformer transformer) {
+        ImageSource imageSource = fromUrl(urlString);
+        imageSource.transformer = transformer;
         return imageSource;
     }
 
