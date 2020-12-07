@@ -5,6 +5,7 @@
 
 package gov.nasa.worldwind.util;
 
+import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Sector;
 
 /**
@@ -17,6 +18,11 @@ public class LevelSet {
      * The sector spanned by this level set.
      */
     public final Sector sector = new Sector();
+
+    /**
+     * Tile origin for this level set
+     */
+    public final Location tileOrigin = new Location();
 
     /**
      * The geographic width and height in degrees of tiles in the first level (lowest resolution) of this level set.
@@ -55,6 +61,7 @@ public class LevelSet {
      * Constructs a level set with specified parameters.
      *
      * @param sector          the sector spanned by this level set
+     * @param tileOrigin      the origin for this level set
      * @param firstLevelDelta the geographic width and height in degrees of tiles in the first level (lowest resolution)
      *                        of the level set
      * @param numLevels       the number of levels in the level set
@@ -67,10 +74,15 @@ public class LevelSet {
      *
      * @throws IllegalArgumentException If any argument is null, or if any dimension is zero
      */
-    public LevelSet(Sector sector, double firstLevelDelta, int numLevels, int tileWidth, int tileHeight) {
+    public LevelSet(Sector sector, Location tileOrigin, double firstLevelDelta, int numLevels, int tileWidth, int tileHeight) {
         if (sector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingSector"));
+        }
+
+        if (tileOrigin == null) {
+            throw new IllegalArgumentException(
+                    Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingTileOrigin"));
         }
 
         if (firstLevelDelta <= 0) {
@@ -89,6 +101,7 @@ public class LevelSet {
         }
 
         this.sector.set(sector);
+        this.tileOrigin.set(tileOrigin);
         this.firstLevelDelta = firstLevelDelta;
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
@@ -116,6 +129,11 @@ public class LevelSet {
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingSector"));
         }
 
+        if (config.tileOrigin == null) {
+            throw new IllegalArgumentException(
+                    Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingTileOrigin"));
+        }
+
         if (config.firstLevelDelta <= 0) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidTileDelta"));
@@ -132,6 +150,7 @@ public class LevelSet {
         }
 
         this.sector.set(config.sector);
+        this.tileOrigin.set(config.tileOrigin);
         this.firstLevelDelta = config.firstLevelDelta;
         this.tileWidth = config.tileWidth;
         this.tileHeight = config.tileHeight;
@@ -141,8 +160,7 @@ public class LevelSet {
 
     protected void assembleLevels() {
         for (int i = 0, len = this.levels.length; i < len; i++) {
-            double n = Math.pow(2, i);
-            double delta = firstLevelDelta / n;
+            double delta = firstLevelDelta / (1 << i);
             this.levels[i] = new Level(this, i, delta);
         }
     }

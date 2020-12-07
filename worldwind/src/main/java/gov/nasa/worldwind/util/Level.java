@@ -67,8 +67,8 @@ public class Level {
 
         this.parent = parent;
         this.levelNumber = levelNumber;
-        this.levelWidth = (int) Math.round(parent.tileWidth * 360 / tileDelta);
-        this.levelHeight = (int) Math.round(parent.tileHeight * 180 / tileDelta);
+        this.levelWidth = (int) Math.round(parent.tileWidth * parent.sector.deltaLongitude() / tileDelta);
+        this.levelHeight = (int) Math.round(parent.tileHeight * parent.sector.deltaLatitude() / tileDelta);
         this.tileDelta = tileDelta;
         this.tileWidth = parent.tileWidth;
         this.tileHeight = parent.tileHeight;
