@@ -71,9 +71,7 @@ public class LabelsFragment extends BasicGlobeFragment {
         layer.addRenderable(label);
 
         // Place the viewer directly over the tutorial labels.
-        wwd.getNavigator().setLatitude(38.89);
-        wwd.getNavigator().setLongitude(-77.023611);
-        wwd.getNavigator().setAltitude(10e3);
+        wwd.getCamera().position.set(38.89, -77.023611, 10e3);
 
         return wwd;
     }

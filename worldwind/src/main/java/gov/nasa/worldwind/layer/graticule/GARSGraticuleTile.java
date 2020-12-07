@@ -123,7 +123,7 @@ class GARSGraticuleTile extends AbstractGraticuleTile {
 
     @Override
     boolean isInView(RenderContext rc) {
-        return super.isInView(rc) && (this.level == 0 || rc.camera.altitude <= THRESHOLDS[this.level - 1]);
+        return super.isInView(rc) && (this.level == 0 || rc.camera.position.altitude <= THRESHOLDS[this.level - 1]);
     }
 
     @Override
@@ -131,7 +131,7 @@ class GARSGraticuleTile extends AbstractGraticuleTile {
         super.selectRenderables(rc);
 
         String graticuleType = getLayer().getTypeFor(this.getSector().deltaLatitude());
-        if (this.level == 0 && rc.camera.altitude > THRESHOLDS[0]) {
+        if (this.level == 0 && rc.camera.position.altitude > THRESHOLDS[0]) {
             Location labelOffset = getLayer().computeLabelOffset(rc);
 
             for (GridElement ge : this.getGridElements()) {
@@ -149,12 +149,12 @@ class GARSGraticuleTile extends AbstractGraticuleTile {
                 }
             }
 
-            if (rc.camera.altitude > THRESHOLDS[0])
+            if (rc.camera.position.altitude > THRESHOLDS[0])
                 return;
         }
 
         // Select tile grid elements
-        double eyeDistance = rc.camera.altitude;
+        double eyeDistance = rc.camera.position.altitude;
 
         if (this.level == 0 && eyeDistance <= THRESHOLDS[0]
             || this.level == 1 && eyeDistance <= THRESHOLDS[1]

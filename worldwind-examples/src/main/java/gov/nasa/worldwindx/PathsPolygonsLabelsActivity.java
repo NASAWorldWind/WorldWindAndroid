@@ -27,6 +27,7 @@ import java.util.Random;
 import gov.nasa.worldwind.BasicWorldWindowController;
 import gov.nasa.worldwind.PickedObjectList;
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
@@ -69,9 +70,12 @@ public class PathsPolygonsLabelsActivity extends GeneralGlobeActivity {
         FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
         globeLayout.addView(this.statusText);
 
+        // Get a reference to the WorldWindow view
+        WorldWindow wwd = this.getWorldWindow();
+
         // Override the WorldWindow's built-in navigation behavior by adding picking support.
-        this.getWorldWindow().setWorldWindowController(new PickController());
-        this.getWorldWindow().getLayers().addLayer(this.shapesLayer);
+        wwd.setWorldWindowController(new PickController(wwd));
+        wwd.getLayers().addLayer(this.shapesLayer);
 
         // Load the shapes into the renderable layer
         statusText.setText("Loading countries....");
@@ -351,6 +355,10 @@ public class PathsPolygonsLabelsActivity extends GeneralGlobeActivity {
                 return true;
             }
         });
+
+        public PickController(WorldWindow wwd) {
+            super(wwd);
+        }
 
         /**
          * Delegates events to the pick handler or the native WorldWind navigation handlers.

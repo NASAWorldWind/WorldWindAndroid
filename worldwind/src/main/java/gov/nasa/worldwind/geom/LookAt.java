@@ -10,11 +10,7 @@ import gov.nasa.worldwind.util.Logger;
 
 public class LookAt {
 
-    public double latitude;
-
-    public double longitude;
-
-    public double altitude;
+    public final Position position = new Position();
 
     @WorldWind.AltitudeMode
     public int altitudeMode = WorldWind.ABSOLUTE;
@@ -32,9 +28,7 @@ public class LookAt {
 
     public LookAt(double latitude, double longitude, double altitude, @WorldWind.AltitudeMode int altitudeMode, double range,
                   double heading, double tilt, double roll) {
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.altitude = altitude;
+        this.position.set(latitude, longitude, altitude);
         this.altitudeMode = altitudeMode;
         this.range = range;
         this.heading = heading;
@@ -48,9 +42,7 @@ public class LookAt {
                 Logger.logMessage(Logger.ERROR, "LookAt", "constructor", "missingLookAt"));
         }
 
-        this.latitude = lookAt.latitude;
-        this.longitude = lookAt.longitude;
-        this.altitude = lookAt.altitude;
+        this.position.set(lookAt.position);
         this.altitudeMode = lookAt.altitudeMode;
         this.range = lookAt.range;
         this.heading = lookAt.heading;
@@ -60,9 +52,7 @@ public class LookAt {
 
     public LookAt set(double latitude, double longitude, double altitude, @WorldWind.AltitudeMode int altitudeMode, double range,
                       double heading, double tilt, double roll) {
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.altitude = altitude;
+        this.position.set(latitude, longitude, altitude);
         this.altitudeMode = altitudeMode;
         this.range = range;
         this.heading = heading;
@@ -78,9 +68,7 @@ public class LookAt {
                 Logger.logMessage(Logger.ERROR, "LookAt", "set", "missingLookAt"));
         }
 
-        this.latitude = lookAt.latitude;
-        this.longitude = lookAt.longitude;
-        this.altitude = lookAt.altitude;
+        this.position.set(lookAt.position);
         this.altitudeMode = lookAt.altitudeMode;
         this.range = lookAt.range;
         this.heading = lookAt.heading;
@@ -93,9 +81,9 @@ public class LookAt {
     @Override
     public String toString() {
         return "LookAt{" +
-            "latitude=" + latitude +
-            ", longitude=" + longitude +
-            ", altitude=" + altitude +
+            "latitude=" + position.latitude +
+            ", longitude=" + position.longitude +
+            ", altitude=" + position.altitude +
             ", altitudeMode=" + altitudeMode +
             ", range=" + range +
             ", heading=" + heading +

@@ -15,7 +15,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import gov.nasa.worldwind.Navigator;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.ProjectionWgs84;
@@ -188,21 +187,21 @@ public class FrustumTest {
 //
 //        // Create a Frustum similar to the way the WorldWindow does it.
 //
-//        // Setup a Navigator, looking near Oxnard Airport.
+//        // Setup a Camera, looking near Oxnard Airport.
 //        LookAt lookAt = new LookAt().set(34.15, -119.15, 0, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
-//        Navigator navigator = new Navigator();
-//        navigator.setAsLookAt(globe, lookAt);
+//        Camera camera = new Camera(wwd);
+//        camera.setFromLookAt(lookAt);
 //
 //        // Compute a perspective projection matrix given the viewport, field of view, and clip distances.
 //        Viewport viewport = new Viewport(0, 0, 100, 100);  // screen coordinates
-//        double nearDistance = navigator.getAltitude() * 0.75;
-//        double farDistance = globe.horizonDistance(navigator.getAltitude()) + globe.horizonDistance(160000);
+//        double nearDistance = camera.position.altitude * 0.75;
+//        double farDistance = globe.horizonDistance(camera.position.altitude) + globe.horizonDistance(160000);
 //        Matrix4 projection = new Matrix4();
 //        projection.setToPerspectiveProjection(viewport.width, viewport.height, 45d /*fovy*/, nearDistance, farDistance);
 //
-//        // Compute a Cartesian viewing matrix using this Navigator's properties as a Camera.
+//        // Compute a Cartesian viewing matrix using this Camera's properties as a Camera.
 //        Matrix4 modelview = new Matrix4();
-//        navigator.getAsViewingMatrix(globe, modelview);
+//        camera.computeViewingTransform(modelview);
 //
 //        // Compute the Frustum
 //        Frustum frustum = new Frustum();
@@ -235,22 +234,22 @@ public class FrustumTest {
 //
 //        // Create a Frustum similar to the way the WorldWindow does it when picking
 //
-//        // Setup a Navigator, looking near Oxnard Airport.
+//        // Setup a Camera, looking near Oxnard Airport.
 //        LookAt lookAt = new LookAt().set(34.15, -119.15, 0, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
-//        Navigator navigator = new Navigator();
-//        navigator.setAsLookAt(globe, lookAt);
+//        Camera camera = new Camera(wwd);
+//        camera.setFromLookAt(lookAt);
 //
 //        // Compute a perspective projection matrix given the viewport, field of view, and clip distances.
 //        Viewport viewport = new Viewport(0, 0, 100, 100);  // screen coordinates
 //        Viewport pickViewport = new Viewport(49, 49, 3, 3); // 3x3 viewport centered on a pick point
-//        double nearDistance = navigator.getAltitude() * 0.75;
-//        double farDistance = globe.horizonDistance(navigator.getAltitude()) + globe.horizonDistance(160000);
+//        double nearDistance = camera.position.altitude * 0.75;
+//        double farDistance = globe.horizonDistance(camera.position.altitude) + globe.horizonDistance(160000);
 //        Matrix4 projection = new Matrix4();
 //        projection.setToPerspectiveProjection(viewport.width, viewport.height, 45d /*fovy*/, nearDistance, farDistance);
 //
-//        // Compute a Cartesian viewing matrix using this Navigator's properties as a Camera.
+//        // Compute a Cartesian viewing matrix using this Camera's properties as a Camera.
 //        Matrix4 modelview = new Matrix4();
-//        navigator.getAsViewingMatrix(globe, modelview);
+//        camera.computeViewingTransform(modelview);
 //
 //        // Compute the Frustum
 //        Frustum frustum = new Frustum();

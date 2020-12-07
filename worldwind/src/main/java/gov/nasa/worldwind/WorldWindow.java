@@ -73,8 +73,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected double verticalExaggeration = 1;
 
-    protected double fieldOfView = 45;
+    protected Camera camera = new Camera(this);
 
+    @Deprecated
     protected Navigator navigator = new Navigator(this);
 
     protected NavigatorEventSupport navigatorEvents = new NavigatorEventSupport(this);
@@ -83,7 +84,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected FrameMetrics frameMetrics = new FrameMetrics();
 
-    protected WorldWindowController worldWindowController = new BasicWorldWindowController();
+    protected WorldWindowController worldWindowController = new BasicWorldWindowController(this);
 
     protected RenderResourceCache renderResourceCache;
 
@@ -167,15 +168,10 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * @param configChooser optional argument for choosing an EGL configuration; may be null
      */
     protected void init(EGLConfigChooser configChooser) {
-        // Initialize the WorldWindow's navigator.
+        // Initialize the WorldWindow's camera.
         Location initLocation = Location.fromTimeZone(TimeZone.getDefault());
         double initAltitude = this.distanceToViewGlobeExtents() * 1.1; // add 10% to the minimum distance to allow for space around the screen edges
-        this.navigator.setLatitude(initLocation.latitude);
-        this.navigator.setLongitude(initLocation.longitude);
-        this.navigator.setAltitude(initAltitude);
-
-        // Initialize the WorldWindow's controller.
-        this.worldWindowController.setWorldWindow(this);
+        this.camera.position.set(initLocation.latitude, initLocation.longitude, initAltitude);
 
         // Initialize the WorldWindow's render resource cache.
         int cacheCapacity = RenderResourceCache.recommendedCapacity(this.getContext());
@@ -282,30 +278,23 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.verticalExaggeration = verticalExaggeration;
     }
 
+    public Camera getCamera() {
+        return this.camera;
+    }
+
+    @Deprecated
     public double getFieldOfView() {
-        return this.fieldOfView;
+        return this.camera.getFieldOfView();
     }
 
+    @Deprecated
     public void setFieldOfView(double fovyDegrees) {
-        if (fovyDegrees <= 0 || fovyDegrees >= 180) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WorldWindow", "setFieldOfView", "invalidFieldOfView"));
-        }
-
-        this.fieldOfView = fovyDegrees;
+        this.camera.setFieldOfView(fovyDegrees);
     }
 
+    @Deprecated
     public Navigator getNavigator() {
         return this.navigator;
-    }
-
-    public void setNavigator(Navigator navigator) {
-        if (navigator == null) {
-            throw new IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WorldWindow", "setNavigator", "missingNavigator"));
-        }
-
-        this.navigator = navigator;
     }
 
     public void addNavigatorListener(NavigatorListener listener) {
@@ -370,9 +359,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
                 Logger.logMessage(Logger.ERROR, "WorldWindow", "setWorldWindowController", "missingController"));
         }
 
-        this.worldWindowController.setWorldWindow(null); // detach the old controller
         this.worldWindowController = controller; // switch to the new controller
-        this.worldWindowController.setWorldWindow(this); // attach the new controller
     }
 
     public RenderResourceCache getRenderResourceCache() {
@@ -599,7 +586,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         double sx = x;
         double sy = this.getHeight() - y;
 
-        // Compute the inverse modelview-projection matrix corresponding to the WorldWindow's current Navigator state.
+        // Compute the inverse modelview-projection matrix corresponding to the WorldWindow's current Camera state.
         this.computeViewingTransform(this.scratchProjection, this.scratchModelview);
         this.scratchProjection.multiplyByMatrix(this.scratchModelview).invert();
 
@@ -626,7 +613,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * @return the pixel height in meters per pixel
      */
     public double pixelSizeAtDistance(double distance) {
-        double tanfovy_2 = Math.tan(Math.toRadians(this.fieldOfView * 0.5));
+        double tanfovy_2 = Math.tan(Math.toRadians(this.camera.getFieldOfView() * 0.5));
         double frustumHeight = 2 * distance * tanfovy_2;
         return frustumHeight / this.getHeight();
     }
@@ -638,13 +625,13 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * @return the distance in meters needed to view the entire globe
      */
     public double distanceToViewGlobeExtents() {
-        double sinfovy_2 = Math.sin(Math.toRadians(this.fieldOfView * 0.5));
+        double sinfovy_2 = Math.sin(Math.toRadians(this.camera.getFieldOfView() * 0.5));
         double radius = this.globe.getEquatorialRadius();
         return radius / sinfovy_2 - radius;
     }
 
     /**
-     * Request that this WorldWindow update its display. Prior changes to this WorldWindow's Navigator, Globe and
+     * Request that this WorldWindow update its display. Prior changes to this WorldWindow's Camera, Globe and
      * Layers (including the contents of layers) are reflected on screen sometime after calling this method. May be
      * called from any thread.
      */
@@ -688,7 +675,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     /**
      * Requests that this WorldWindow's OpenGL renderer display another frame on the OpenGL thread. Does not cause the
-     * WorldWindow's to display changes in its Navigator, Globe or Layers. Use {@link #requestRedraw()} instead.
+     * WorldWindow's to display changes in its Camera, Globe or Layers. Use {@link #requestRedraw()} instead.
      *
      * @deprecated Use {@link #requestRedraw} instead.
      */
@@ -699,7 +686,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     /**
      * Queues a runnable to be executed on this WorldWindow's OpenGL thread. Must not be used to affect changes to this
-     * WorldWindow's state, including the Navigator, Globe and Layers. See the Android developers guide on <a
+     * WorldWindow's state, including the Camera, Globe and Layers. See the Android developers guide on <a
      * href="http://developer.android.com/training/multiple-threads/communicate-ui.html">Communicating with the UI
      * Thread</a> instead.
      *
@@ -909,10 +896,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.rc.terrainTessellator = this.tessellator;
         this.rc.layers = this.layers;
         this.rc.verticalExaggeration = this.verticalExaggeration;
-        this.rc.fieldOfView = this.fieldOfView;
-        this.rc.horizonDistance = this.globe.horizonDistance(this.navigator.getAltitude());
-        this.rc.camera = this.navigator.getAsCamera(this.globe, this.rc.camera);
-        this.rc.cameraPoint = this.globe.geographicToCartesian(this.rc.camera.latitude, this.rc.camera.longitude, this.rc.camera.altitude, this.rc.cameraPoint);
+        this.rc.horizonDistance = this.globe.horizonDistance(this.camera.position.altitude);
+        this.rc.camera = this.camera;
+        this.rc.cameraPoint = this.globe.geographicToCartesian(this.rc.camera.position.latitude, this.rc.camera.position.longitude, this.rc.camera.position.altitude, this.rc.cameraPoint);
         this.rc.renderResourceCache = this.renderResourceCache;
         this.rc.renderResourceCache.setResources(this.getContext().getResources());
         this.rc.resources = this.getContext().getResources();
@@ -920,7 +906,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // Configure the frame's Cartesian modelview matrix and eye coordinate projection matrix.
         this.computeViewingTransform(frame.projection, frame.modelview);
         frame.viewport.set(this.viewport);
-        frame.infiniteProjection.setToInfiniteProjection(this.viewport.width, this.viewport.height, this.fieldOfView, 1.0);
+        frame.infiniteProjection.setToInfiniteProjection(this.viewport.width, this.viewport.height, this.camera.getFieldOfView(), 1.0);
         frame.infiniteProjection.multiplyByMatrix(frame.modelview);
         this.rc.viewport.set(frame.viewport);
         this.rc.projection.set(frame.projection);
@@ -1037,10 +1023,10 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     protected void computeViewingTransform(Matrix4 projection, Matrix4 modelview) {
         // Compute the clip plane distances. The near distance is set to a large value that does not clip the globe's
         // surface. The far distance is set to the smallest value that does not clip the atmosphere.
-        // TODO adjust the clip plane distances based on the navigator's orientation - shorter distances when the
+        // TODO adjust the clip plane distances based on the camera's orientation - shorter distances when the
         // TODO horizon is not in view
         // TODO parameterize the object altitude for horizon distance
-        double eyeAltitude = this.navigator.getAltitude();
+        double eyeAltitude = this.camera.position.altitude;
         double eyeHorizon = this.globe.horizonDistance(eyeAltitude);
         double atmosphereHorizon = this.globe.horizonDistance(160000);
 
@@ -1054,9 +1040,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         double near = far / (maxDepthValue / (1 - farResolution / far) - maxDepthValue + 1);
 
         // Prevent the near clip plane from intersecting the terrain.
-        double distanceToSurface = this.navigator.getAltitude() - this.globe.getElevationAtLocation(this.navigator.getLatitude(), this.navigator.getLongitude()) * this.getVerticalExaggeration();
+        double distanceToSurface = this.camera.position.altitude - this.globe.getElevationAtLocation(this.camera.position.latitude, this.camera.position.longitude) * this.getVerticalExaggeration();
         if (distanceToSurface > 0) {
-            double tanHalfFov = Math.tan(0.5 * Math.toRadians(this.fieldOfView));
+            double tanHalfFov = Math.tan(0.5 * Math.toRadians(this.camera.getFieldOfView()));
             double maxNearDistance = distanceToSurface / (2 * Math.sqrt(2 * tanHalfFov * tanHalfFov + 1));
             if (near > maxNearDistance) near = maxNearDistance;
         }
@@ -1064,9 +1050,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         if (near < 1) near = 1;
 
         // Compute a perspective projection matrix given the WorldWindow's viewport, field of view, and clip distances.
-        projection.setToPerspectiveProjection(this.viewport.width, this.viewport.height, this.fieldOfView, near, far);
+        projection.setToPerspectiveProjection(this.viewport.width, this.viewport.height, this.camera.getFieldOfView(), near, far);
 
-        // Compute a Cartesian transform matrix from the Navigator.
-        this.navigator.getAsViewingMatrix(this.globe, modelview);
+        // Compute a Cartesian transform matrix from the Camera.
+        this.camera.computeViewingTransform(modelview);
     }
 }

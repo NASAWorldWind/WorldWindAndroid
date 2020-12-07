@@ -33,9 +33,8 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
     protected TextView altView;
     protected ImageView crosshairs;
     protected ViewGroup overlay;
-    // Use pre-allocated navigator state objects to avoid per-event memory allocations
+    // Use pre-allocated lookAt state object to avoid per-event memory allocations
     private LookAt lookAt = new LookAt();
-    private Camera camera = new Camera();
     // Track the navigation event time so the overlay refresh rate can be throttled
     private long lastEventTime;
     // Animation object used to fade the overlays
@@ -81,12 +80,11 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
                 // and also it is moving but at an (arbitrary) maximum refresh rate of 20 Hz.
                 if (eventAction == WorldWind.NAVIGATOR_STOPPED || elapsedTime > 50) {
 
-                    // Get the current navigator state to apply to the overlays
-                    event.getNavigator().getAsLookAt(wwd.getGlobe(), lookAt);
-                    event.getNavigator().getAsCamera(wwd.getGlobe(), camera);
+                    // Get the current camera state to apply to the overlays
+                    event.getCamera().getAsLookAt(lookAt);
 
                     // Update the overlays
-                    updateOverlayContents(lookAt, camera);
+                    updateOverlayContents(lookAt, event.getCamera());
                     updateOverlayColor(eventAction);
 
                     lastEventTime = currentTime;
@@ -129,16 +127,16 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
     }
 
     /**
-     * Displays navigator state information in the status overlay views.
+     * Displays camera state information in the status overlay views.
      *
-     * @param lookAt Where the navigator is looking
+     * @param lookAt Where the camera is looking
      * @param camera Where the camera is positioned
      */
     protected void updateOverlayContents(LookAt lookAt, Camera camera) {
-        latView.setText(formatLatitude(lookAt.latitude));
-        lonView.setText(formatLongitude(lookAt.longitude));
-        elevView.setText(formatElevaton(wwd.getGlobe().getElevationAtLocation(lookAt.latitude, lookAt.longitude)));
-        altView.setText(formatAltitude(camera.altitude));
+        latView.setText(formatLatitude(lookAt.position.latitude));
+        lonView.setText(formatLongitude(lookAt.position.longitude));
+        elevView.setText(formatElevaton(wwd.getGlobe().getElevationAtLocation(lookAt.position.latitude, lookAt.position.longitude)));
+        altView.setText(formatAltitude(camera.position.altitude));
     }
 
     /**

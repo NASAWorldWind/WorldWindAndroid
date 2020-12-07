@@ -33,12 +33,8 @@ public class CameraViewFragment extends BasicGlobeFragment {
         double distance = distanceRadians * globe.getRadiusAt(aircraft.latitude, aircraft.longitude);
         double tilt = Math.toDegrees(Math.atan(distance / aircraft.altitude));
 
-        // Create the new camera view
-        Camera camera = new Camera();
-        camera.set(aircraft.latitude, aircraft.longitude, aircraft.altitude, WorldWind.ABSOLUTE, heading, tilt, 0); // No roll
-
         // Apply the view
-        wwd.getNavigator().setAsCamera(globe, camera);
+        wwd.getCamera().set(aircraft.latitude, aircraft.longitude, aircraft.altitude, WorldWind.ABSOLUTE, heading, tilt, 0); // No roll
 
         // This works too!  Using the fluid api to manipulate the Navigator's camera:
 //        wwd.getNavigator()

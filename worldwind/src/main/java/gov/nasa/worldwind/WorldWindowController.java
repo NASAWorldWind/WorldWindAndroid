@@ -11,7 +11,5 @@ public interface WorldWindowController {
 
     WorldWindow getWorldWindow();
 
-    void setWorldWindow(WorldWindow wwd);
-
     boolean onTouchEvent(MotionEvent event);
 }
