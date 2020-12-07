@@ -3,13 +3,13 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-package gov.nasa.worldwindx.experimental;
+package gov.nasa.worldwind.layer.atmosphere;
 
 import android.content.res.Resources;
 
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
-import gov.nasa.worldwindx.R;
+import gov.nasa.worldwind.R;
 
 public class SkyProgram extends AtmosphereProgram {
 
