@@ -28,19 +28,29 @@ public class Navigator {
 
     protected double roll;
 
-    private Camera scratchCamera = new Camera();
+    private final Camera scratchCamera = new Camera();
 
-    private Matrix4 modelview = new Matrix4();
+    private final Matrix4 modelview = new Matrix4();
 
-    private Matrix4 origin = new Matrix4();
+    private final Matrix4 origin = new Matrix4();
 
-    private Vec3 originPoint = new Vec3();
+    private final Vec3 originPoint = new Vec3();
 
-    private Position originPos = new Position();
+    private final Position originPos = new Position();
 
-    private Line forwardRay = new Line();
+    private final Line forwardRay = new Line();
 
-    public Navigator() {
+    private final WorldWindow wwd;
+
+    private final static double COLLISION_THRESHOLD = 10.0; // 10m above surface
+
+    public Navigator(WorldWindow wwd) {
+        if (wwd == null) {
+            throw new IllegalArgumentException(
+                    Logger.logMessage(Logger.ERROR, "Navigator", "constructor", "missingWorldWindow"));
+        }
+
+        this.wwd = wwd;
     }
 
     public double getLatitude() {
@@ -193,16 +203,23 @@ public class Navigator {
 
     protected LookAt cameraToLookAt(Globe globe, Camera camera, LookAt result) {
         this.cameraToViewingMatrix(globe, camera, this.modelview);
-        this.modelview.extractEyePoint(this.forwardRay.origin);
-        this.modelview.extractForwardVector(this.forwardRay.direction);
 
-        if (!globe.intersect(this.forwardRay, this.originPoint)) {
-            double horizon = globe.horizonDistance(camera.altitude);
-            this.forwardRay.pointAt(horizon, this.originPoint);
+        // Pick terrain located behind the viewport center point
+        PickedObject terrainPickedObject = wwd.pick(wwd.getViewport().width / 2f, wwd.getViewport().height / 2f).terrainPickedObject();
+        if (terrainPickedObject != null) {
+            // Use picked terrain position including approximate rendered altitude
+            this.originPos.set(terrainPickedObject.getTerrainPosition());
+            globe.geographicToCartesian(this.originPos.latitude, this.originPos.longitude, this.originPos.altitude, this.originPoint);
+            globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
+        } else {
+            // Center is outside the globe - use point on horizon
+            this.modelview.extractEyePoint(this.forwardRay.origin);
+            this.modelview.extractForwardVector(this.forwardRay.direction);
+            this.forwardRay.pointAt(globe.horizonDistance(camera.altitude), this.originPoint);
+            globe.cartesianToGeographic(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.originPos);
+            globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
         }
 
-        globe.cartesianToGeographic(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.originPos);
-        globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
         this.modelview.multiplyByMatrix(this.origin);
 
         result.latitude = this.originPos.latitude;
@@ -246,6 +263,25 @@ public class Navigator {
         result.heading = this.modelview.extractHeading(lookAt.roll); // disambiguate heading and roll
         result.tilt = this.modelview.extractTilt();
         result.roll = lookAt.roll; // roll passes straight through
+
+        // Check if camera altitude is not under the surface
+        double elevation = globe.getElevationAtLocation(result.latitude, result.longitude) * wwd.getVerticalExaggeration() + COLLISION_THRESHOLD;
+        if(elevation > result.altitude) {
+            // Set camera altitude above the surface
+            result.altitude = elevation;
+            // Compute new camera point
+            globe.geographicToCartesian(result.latitude, result.longitude, result.altitude, originPoint);
+            // Compute look at point
+            globe.geographicToCartesian(lookAt.latitude, lookAt.longitude, lookAt.altitude, forwardRay.origin);
+            // Compute normal to globe in look at point
+            globe.geographicToCartesianNormal(lookAt.latitude, lookAt.longitude, forwardRay.direction);
+            // Calculate tilt angle between new camera point and look at point
+            originPoint.subtract(forwardRay.origin).normalize();
+            double dot = forwardRay.direction.dot(originPoint);
+            if (dot >= -1 || dot <= 1) {
+                result.tilt = Math.toDegrees(Math.acos(dot));
+            }
+        }
 
         return result;
     }
