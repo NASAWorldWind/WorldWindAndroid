@@ -57,6 +57,14 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
+            android:name=".MGRSGraticuleActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_mgrs_graticule"
+            android:launchMode="singleInstance"
+            android:noHistory="true"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
             android:name=".MultiGlobeActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_multi_globe"
