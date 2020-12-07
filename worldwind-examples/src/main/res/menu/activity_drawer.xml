@@ -16,6 +16,10 @@
             android:icon="@android:drawable/ic_menu_compass"
             android:title="@string/title_multi_globe"/>
         <item
+            android:id="@+id/nav_mgrs_graticule_activity"
+            android:icon="@android:drawable/ic_menu_compass"
+            android:title="@string/title_mgrs_graticule"/>
+        <item
             android:id="@+id/nav_placemarks_demo_activity"
             android:icon="@android:drawable/ic_menu_myplaces"
             android:title="@string/title_placemarks_demo"/>

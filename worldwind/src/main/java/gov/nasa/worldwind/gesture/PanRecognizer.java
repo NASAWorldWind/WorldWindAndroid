@@ -43,6 +43,14 @@ public class PanRecognizer extends GestureRecognizer {
         this.maxNumberOfPointers = count;
     }
 
+    public float getInterpretDistance() {
+        return this.interpretDistance;
+    }
+
+    public void setInterpretDistance(float distance) {
+        this.interpretDistance = distance;
+    }
+
     @Override
     protected void actionMove(MotionEvent event) {
         int state = this.getState();

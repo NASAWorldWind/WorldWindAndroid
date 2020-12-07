@@ -30,6 +30,7 @@ import java.util.Locale;
 import gov.nasa.worldwind.BasicWorldWindowController;
 import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.PickedObjectList;
+import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.render.ImageSource;
@@ -64,8 +65,11 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
         FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
         globeLayout.addView(this.statusText);
 
+        // Get a reference to the WorldWindow view
+        WorldWindow wwd = this.getWorldWindow();
+
         // Override the WorldWindow's built-in navigation behavior by adding picking support.
-        this.getWorldWindow().setWorldWindowController(new PickController());
+        wwd.setWorldWindowController(new PickController(wwd));
 
         new CreatePlacesTask().execute();
     }
@@ -401,6 +405,10 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
                 return false;
             }
         });
+
+        public PickController(WorldWindow wwd) {
+            super(wwd);
+        }
 
         /**
          * Delegates events to the pick handler or the native WorldWind navigation handlers.

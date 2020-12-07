@@ -8,7 +8,7 @@ package gov.nasa.worldwindx;
 import android.os.Bundle;
 import android.view.Choreographer;
 
-import gov.nasa.worldwind.Navigator;
+import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.layer.LayerList;
 import gov.nasa.worldwindx.experimental.AtmosphereLayer;
@@ -34,7 +34,7 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Choreog
         super.onCreate(savedInstanceState);
         setAboutBoxTitle("About the " + this.getResources().getText(R.string.title_day_night_cycle));
         setAboutBoxText("Demonstrates how to display a continuous day-night cycle on the WorldWind globe.\n" +
-            "This gradually changes both the Navigator's location and the AtmosphereLayer's light location.");
+            "This gradually changes both the Camera's location and the AtmosphereLayer's light location.");
 
         // Initialize the Atmosphere layer's light location to our custom location. By default the light location is
         // always behind the viewer.
@@ -42,10 +42,10 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Choreog
         this.atmosphereLayer = (AtmosphereLayer) layers.getLayer(layers.indexOfLayerNamed("Atmosphere"));
         this.atmosphereLayer.setLightLocation(this.sunLocation);
 
-        // Initialize the Navigator so that the sun is behind the viewer.
-        Navigator navigator = this.getWorldWindow().getNavigator();
-        navigator.setLatitude(20);
-        navigator.setLongitude(this.sunLocation.longitude);
+        // Initialize the Camera so that the sun is behind the viewer.
+        Camera camera = this.getWorldWindow().getCamera();
+        camera.position.latitude = 20;
+        camera.position.longitude = this.sunLocation.longitude;
 
         // Use this Activity's Choreographer to animate the day-night cycle.
         Choreographer.getInstance().postFrameCallback(this);
@@ -59,9 +59,9 @@ public class DayNightCycleActivity extends BasicGlobeActivity implements Choreog
             double cameraDegrees = (frameDurationSeconds * this.cameraDegreesPerSecond);
             double lightDegrees = (frameDurationSeconds * this.lightDegreesPerSecond);
 
-            // Move the navigator to simulate the Earth's rotation about its axis.
-            Navigator navigator = getWorldWindow().getNavigator();
-            navigator.setLongitude(navigator.getLongitude() - cameraDegrees);
+            // Move the camera to simulate the Earth's rotation about its axis.
+            Camera camera = getWorldWindow().getCamera();
+            camera.position.longitude -= cameraDegrees;
 
             // Move the sun location to simulate the Sun's rotation about the Earth.
             this.sunLocation.set(this.sunLocation.latitude, this.sunLocation.longitude - lightDegrees);

@@ -39,9 +39,7 @@ public class SurfaceImageFragment extends BasicGlobeFragment {
         wwd.getLayers().addLayer(layer);
 
         // Position the viewer so that the Surface Images are visible when the activity is created.
-        wwd.getNavigator().setLatitude(37.46543388598137);
-        wwd.getNavigator().setLongitude(14.97980511744455);
-        wwd.getNavigator().setAltitude(4.0e5);
+        wwd.getCamera().position.set(37.46543388598137, 14.97980511744455, 4.0e5);
 
         return wwd;
     }

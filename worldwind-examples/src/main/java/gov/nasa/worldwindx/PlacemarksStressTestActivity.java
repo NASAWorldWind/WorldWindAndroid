@@ -10,7 +10,7 @@ import android.view.Choreographer;
 
 import java.util.Random;
 
-import gov.nasa.worldwind.Navigator;
+import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.layer.RenderableLayer;
@@ -94,9 +94,9 @@ public class PlacemarksStressTestActivity extends GeneralGlobeActivity implement
             double frameDurationSeconds = (frameTimeNanos - this.lastFrameTimeNanos) * 1.0e-9;
             double cameraDegrees = (frameDurationSeconds * this.cameraDegreesPerSecond);
 
-            // Move the navigator to simulate the Earth's rotation about its axis.
-            Navigator navigator = getWorldWindow().getNavigator();
-            navigator.setLongitude(navigator.getLongitude() - cameraDegrees);
+            // Move the camera to simulate the Earth's rotation about its axis.
+            Camera camera = getWorldWindow().getCamera();
+            camera.position.longitude -= cameraDegrees;
 
             // Redraw the WorldWindow to display the above changes.
             this.getWorldWindow().requestRedraw();

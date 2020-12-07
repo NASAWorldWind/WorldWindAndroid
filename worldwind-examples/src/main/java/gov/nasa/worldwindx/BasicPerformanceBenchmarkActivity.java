@@ -47,10 +47,6 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
         }
 
         @Override
-        public void setWorldWindow(WorldWindow wwd) {
-        }
-
-        @Override
         public boolean onTouchEvent(MotionEvent event) {
             return false;
         }
@@ -60,40 +56,34 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
 
         protected WorldWindow wwd;
 
-        protected Camera beginCamera = new Camera();
+        protected Camera beginCamera;
 
-        protected Camera endCamera = new Camera();
+        protected Camera endCamera;
 
-        protected Camera curCamera = new Camera();
-
-        protected Position beginPos = new Position();
-
-        protected Position endPos = new Position();
-
-        protected Position curPos = new Position();
+        protected Camera curCamera;
 
         protected int steps;
 
         public AnimateCameraCommand(WorldWindow wwd, Camera end, int steps) {
             this.wwd = wwd;
+
+            this.beginCamera = new Camera(wwd);
+            this.endCamera = new Camera(wwd);
+            this.curCamera = new Camera(wwd);
+
             this.endCamera.set(end);
-            this.endPos.set(end.latitude, end.longitude, end.altitude);
             this.steps = steps;
         }
 
         @Override
         public void run() {
-            this.wwd.getNavigator().getAsCamera(this.wwd.getGlobe(), this.beginCamera);
-            this.beginPos.set(this.beginCamera.latitude, this.beginCamera.longitude, this.beginCamera.altitude);
+            this.beginCamera.set(this.wwd.getCamera());
 
             for (int i = 0; i < this.steps; i++) {
 
                 double amount = (double) i / (double) (this.steps - 1);
-                this.beginPos.interpolateAlongPath(this.endPos, WorldWind.GREAT_CIRCLE, amount, this.curPos);
+                this.beginCamera.position.interpolateAlongPath(this.endCamera.position, WorldWind.GREAT_CIRCLE, amount, this.curCamera.position);
 
-                this.curCamera.latitude = this.curPos.latitude;
-                this.curCamera.longitude = this.curPos.longitude;
-                this.curCamera.altitude = this.curPos.altitude;
                 this.curCamera.heading = WWMath.interpolateAngle360(amount, this.beginCamera.heading, this.endCamera.heading);
                 this.curCamera.tilt = WWMath.interpolateAngle180(amount, this.beginCamera.tilt, this.endCamera.tilt);
                 this.curCamera.roll = WWMath.interpolateAngle180(amount, this.beginCamera.roll, this.endCamera.roll);
@@ -111,7 +101,7 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
 
         private WorldWindow wwd;
 
-        private Camera camera = new Camera();
+        private Camera camera;
 
         private SetCameraCommand() {
         }
@@ -127,6 +117,7 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
 
         private SetCameraCommand set(WorldWindow wwd, Camera camera) {
             this.wwd = wwd;
+            this.camera = new Camera(wwd);
             this.camera.set(camera);
             return this;
         }
@@ -138,7 +129,7 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
 
         @Override
         public void run() {
-            this.wwd.getNavigator().setAsCamera(this.wwd.getGlobe(), this.camera);
+            this.wwd.getCamera().set(this.camera);
             this.wwd.requestRedraw();
             pool.release(this.reset());
         }
@@ -249,12 +240,12 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
         exec.execute(new ClearFrameMetricsCommand(wwd));
 
         // After a 1/2 second delay, fly to NASA Ames Research Center over 100 frames.
-        Camera cam = new Camera(arc.latitude, arc.longitude, 10e3, WorldWind.ABSOLUTE, 0, 0, 0);
+        Camera cam = new Camera(this.getWorldWindow()).set(arc.latitude, arc.longitude, 10e3, WorldWind.ABSOLUTE, 0, 0, 0);
         exec.execute(new AnimateCameraCommand(wwd, cam, 100));
 
         // After a 1/2 second delay, rotate the camera to look at NASA Goddard Space Flight Center over 50 frames.
         double azimuth = arc.greatCircleAzimuth(gsfc);
-        cam = new Camera(arc.latitude, arc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 70, 0);
+        cam = new Camera(this.getWorldWindow()).set(arc.latitude, arc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 70, 0);
         exec.execute(new SleepCommand(500));
         exec.execute(new AnimateCameraCommand(wwd, cam, 50));
 
@@ -262,27 +253,27 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
         Location midLoc = arc.interpolateAlongPath(gsfc, WorldWind.GREAT_CIRCLE, 0.5, new Location());
         azimuth = midLoc.greatCircleAzimuth(gsfc);
         exec.execute(new SleepCommand(500));
-        cam = new Camera(midLoc.latitude, midLoc.longitude, 1000e3, WorldWind.ABSOLUTE, azimuth, 0, 0);
+        cam = new Camera(this.getWorldWindow()).set(midLoc.latitude, midLoc.longitude, 1000e3, WorldWind.ABSOLUTE, azimuth, 0, 0);
         exec.execute(new AnimateCameraCommand(wwd, cam, 100));
-        cam = new Camera(gsfc.latitude, gsfc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 70, 0);
+        cam = new Camera(this.getWorldWindow()).set(gsfc.latitude, gsfc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 70, 0);
         exec.execute(new AnimateCameraCommand(wwd, cam, 100));
 
         // After a 1/2 second delay, rotate the camera to look at ESA Centre for Earth Observation over 50 frames.
         azimuth = gsfc.greatCircleAzimuth(esrin);
-        cam = new Camera(gsfc.latitude, gsfc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 90, 0);
+        cam = new Camera(this.getWorldWindow()).set(gsfc.latitude, gsfc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 90, 0);
         exec.execute(new SleepCommand(500));
         exec.execute(new AnimateCameraCommand(wwd, cam, 50));
 
         // After a 1/2 second delay, fly the camera to ESA Centre for Earth Observation over 200 frames.
         midLoc = gsfc.interpolateAlongPath(esrin, WorldWind.GREAT_CIRCLE, 0.5, new Location());
         exec.execute(new SleepCommand(500));
-        cam = new Camera(midLoc.latitude, midLoc.longitude, 1000e3, WorldWind.ABSOLUTE, azimuth, 60, 0);
+        cam = new Camera(this.getWorldWindow()).set(midLoc.latitude, midLoc.longitude, 1000e3, WorldWind.ABSOLUTE, azimuth, 60, 0);
         exec.execute(new AnimateCameraCommand(wwd, cam, 100));
-        cam = new Camera(esrin.latitude, esrin.longitude, 100e3, WorldWind.ABSOLUTE, azimuth, 30, 0);
+        cam = new Camera(this.getWorldWindow()).set(esrin.latitude, esrin.longitude, 100e3, WorldWind.ABSOLUTE, azimuth, 30, 0);
         exec.execute(new AnimateCameraCommand(wwd, cam, 100));
 
         // After a 1/2 second delay, back the camera out to look at ESA Centre for Earth Observation over 100 frames.
-        cam = new Camera(esrin.latitude, esrin.longitude, 2000e3, WorldWind.ABSOLUTE, 0, 0, 0);
+        cam = new Camera(this.getWorldWindow()).set(esrin.latitude, esrin.longitude, 2000e3, WorldWind.ABSOLUTE, 0, 0, 0);
         exec.execute(new SleepCommand(500));
         exec.execute(new AnimateCameraCommand(wwd, cam, 100));
 

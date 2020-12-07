@@ -65,7 +65,6 @@ public class BasicFrameController implements FrameController {
         // picked object ID and the intersection position.
         if (rc.pickRay != null && rc.terrain.intersect(rc.pickRay, this.pickPoint)) {
             rc.globe.cartesianToGeographic(this.pickPoint.x, this.pickPoint.y, this.pickPoint.z, this.pickPos);
-            this.pickPos.altitude = 0; // report the actual altitude, which may not lie on the terrain's surface
             rc.offerPickedObject(PickedObject.fromTerrain(pickedObjectId, this.pickPos));
         }
     }

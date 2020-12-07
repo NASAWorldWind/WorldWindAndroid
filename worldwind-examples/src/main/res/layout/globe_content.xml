@@ -83,6 +83,23 @@
             android:text="@string/spacer"/>
 
         <TextView
+            android:id="@+id/elev_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:shadowColor="#000000"
+            android:shadowRadius="2"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:singleLine="true"/>
+
+        <TextView
+            android:id="@+id/spacer3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="@string/spacer"/>
+
+        <TextView
             android:id="@+id/alt_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -136,7 +136,7 @@ public abstract class AbstractLayer implements Layer {
 
     @Override
     public boolean isWithinActiveAltitudes(RenderContext rc) {
-        double cameraAltitude = rc.camera.altitude;
+        double cameraAltitude = rc.camera.position.altitude;
         return cameraAltitude >= this.minActiveAltitude && cameraAltitude <= this.maxActiveAltitude;
     }
 

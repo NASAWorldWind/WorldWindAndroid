@@ -1,0 +1,6 @@
+<resources>
+    <!-- Gesture detector -->
+    <dimen name="pan_interpret_distance">20dp</dimen>
+    <dimen name="pinch_interpret_distance">20dp</dimen>
+    <dimen name="tilt_interpret_distance">20dp</dimen>
+</resources>

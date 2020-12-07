@@ -37,6 +37,14 @@ public class PinchRecognizer extends GestureRecognizer {
         return this.scale * this.scaleOffset;
     }
 
+    public float getInterpretDistance() {
+        return this.interpretDistance;
+    }
+
+    public void setInterpretDistance(float distance) {
+        this.interpretDistance = distance;
+    }
+
     @Override
     protected void reset() {
         super.reset();

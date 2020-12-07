@@ -34,8 +34,6 @@
 </p>
 <div style="border-top: 1px solid black; border-bottom: 1px solid black;">
     <textarea id="java-code">
-package gov.nasa.worldwindx;
-...
 public class SurfaceImageFragment extends BasicGlobeFragment {
 
     /**
@@ -52,6 +50,7 @@ public class SurfaceImageFragment extends BasicGlobeFragment {
         SurfaceImage surfaceImageResource = new SurfaceImage(sector, ImageSource.fromResource(resourceId));
 
         // Configure a Surface Image to display a remote image showing Mount Etna erupting on July 13th, 2001.
+        // TODO sector constructor from North, South, East, West coordinates
         sector = new Sector(37.46543388598137, 14.60128369746704, 0.45360804083528, 0.75704283995502);
         String urlString = "https://worldwind.arc.nasa.gov/android/tutorials/data/etna.jpg";
         SurfaceImage surfaceImageUrl = new SurfaceImage(sector, ImageSource.fromUrl(urlString));
@@ -63,9 +62,7 @@ public class SurfaceImageFragment extends BasicGlobeFragment {
         wwd.getLayers().addLayer(layer);
 
         // Position the viewer so that the Surface Images are visible when the activity is created.
-        wwd.getNavigator().setLatitude(37.46543388598137);
-        wwd.getNavigator().setLongitude(14.97980511744455);
-        wwd.getNavigator().setAltitude(4.0e5);
+        wwd.getCamera().position.set(37.46543388598137, 14.97980511744455, 4.0e5);
 
         return wwd;
     }

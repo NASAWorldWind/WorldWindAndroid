@@ -12,6 +12,7 @@
     <string name="title_basic_stress_test">Basic Stress Test</string>
     <string name="title_day_night_cycle">Day and Night Cycle</string>
     <string name="title_general_globe">General Purpose Globe</string>
+    <string name="title_mgrs_graticule">MGRS graticule Demonstration</string>
     <string name="title_multi_globe">Multi-Globe Demonstration</string>
     <string name="title_movable_line_of_sight">Movable Line of Sight</string>
     <string name="title_paths_example">Paths Example</string>

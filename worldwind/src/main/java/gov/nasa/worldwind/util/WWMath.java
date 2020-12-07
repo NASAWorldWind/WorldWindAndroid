@@ -186,7 +186,7 @@ public class WWMath {
      */
     public static double normalizeAngle360(double degrees) {
         double angle = degrees % 360;
-        return angle >= 0 ? angle : (angle < 0 ? 360 + angle : 360 - angle);
+        return angle >= 0 ? angle : 360 + angle;
     }
 
     /**
