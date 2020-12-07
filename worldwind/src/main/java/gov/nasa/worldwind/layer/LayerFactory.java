@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwind.ogc.WmsTileFactory;
@@ -670,7 +671,7 @@ public class LayerFactory {
         }
         int imageSize = tileMatrixSet.getTileMatrices().get(0).getTileHeight();
 
-        return new LevelSet(boundingBox, 90.0, compatibleTileMatrixSet.tileMatrices.size(), imageSize, imageSize);
+        return new LevelSet(boundingBox, new Location(-90, -180), 90, compatibleTileMatrixSet.tileMatrices.size(), imageSize, imageSize);
     }
 
     protected String buildWmtsKvpTemplate(String kvpServiceAddress, String layer, String format, String styleIdentifier, String tileMatrixSet) {
