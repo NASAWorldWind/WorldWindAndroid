@@ -37,8 +37,6 @@ public class GestureRecognizer {
 
     protected List<GestureListener> listenerList = new ArrayList<>();
 
-    protected float lowPassWeight = 0.4f;
-
     @WorldWind.GestureState
     private int state = WorldWind.POSSIBLE;
 
@@ -244,12 +242,10 @@ public class GestureRecognizer {
 
     protected void handleActionMove(MotionEvent event) {
         this.eventCentroid(event, this.centroidArray);
-        float dx = this.centroidArray[0] - this.startX + this.centroidShiftX;
-        float dy = this.centroidArray[1] - this.startY + this.centroidShiftY;
+        this.translationX = this.centroidArray[0] - this.startX + this.centroidShiftX;
+        this.translationY = this.centroidArray[1] - this.startY + this.centroidShiftY;
         this.x = this.centroidArray[0];
         this.y = this.centroidArray[1];
-        this.translationX = this.lowPassFilter(this.translationX, dx);
-        this.translationY = this.lowPassFilter(this.translationY, dy);
 
         this.actionMove(event);
     }
@@ -316,11 +312,6 @@ public class GestureRecognizer {
         result[0] = x / count;
         result[1] = y / count;
         return result;
-    }
-
-    protected float lowPassFilter(float value, float newValue) {
-        float w = this.lowPassWeight;
-        return value * (1 - w) + newValue * w;
     }
 
     protected void actionDown(MotionEvent event) {

@@ -66,8 +66,7 @@ public class RotationRecognizer extends GestureRecognizer {
                 }
             } else if (state == WorldWind.BEGAN || state == WorldWind.CHANGED) {
                 float angle = this.currentTouchAngle(event);
-                float newRotation = (float) WWMath.normalizeAngle180(angle - this.referenceAngle);
-                this.rotation = this.lowPassFilter(this.rotation, newRotation);
+                this.rotation = (float) WWMath.normalizeAngle180(angle - this.referenceAngle);
                 this.transitionToState(event, WorldWind.CHANGED);
             }
         }
