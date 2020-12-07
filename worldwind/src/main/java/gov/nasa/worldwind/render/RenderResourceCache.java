@@ -5,8 +5,6 @@
 
 package gov.nasa.worldwind.render;
 
-import android.app.ActivityManager;
-import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.opengl.GLES20;
@@ -67,25 +65,8 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
             this.getCapacity() / 1024.0, this.imageRetrieverCache.getCapacity() / 1024.0));
     }
 
-    public static int recommendedCapacity(Context context) {
-        ActivityManager am = (context != null) ? (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE) : null;
-        if (am != null) {
-            ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
-            am.getMemoryInfo(mi);
-            if (mi.totalMem >= 1024 * 1024 * 2048L) { // use 384 MB on machines with 2048 MB or more
-                return 1024 * 1024 * 384;
-            } else if (mi.totalMem >= 1024 * 1024 * 1536) { // use 256 MB on machines with 1536 MB or more
-                return 1024 * 1024 * 256;
-            } else if (mi.totalMem >= 1024 * 1024 * 1024) { // use 192 MB on machines with 1024 MB or more
-                return 1024 * 1024 * 192;
-            } else if (mi.totalMem >= 1024 * 1024 * 512) { // use 96 MB on machines with 512 MB or more
-                return 1024 * 1024 * 96;
-            } else { // use 64 MB on machines with less than 512 MB
-                return 1024 * 1024 * 64;
-            }
-        } else { // use 64 MB by default
-            return 1024 * 1024 * 64;
-        }
+    public static int recommendedCapacity() {
+        return (int) (Runtime.getRuntime().maxMemory() * 0.75); // Use maximum 75% of available application heap
     }
 
     public Resources getResources() {
