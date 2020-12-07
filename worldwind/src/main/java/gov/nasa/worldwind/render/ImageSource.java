@@ -12,6 +12,7 @@ import android.support.annotation.DrawableRes;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import gov.nasa.worldwind.util.DownloadPostprocessor;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
 
@@ -67,6 +68,8 @@ public class ImageSource {
     protected int type = TYPE_UNRECOGNIZED;
 
     protected Object source;
+
+    protected DownloadPostprocessor<Bitmap> postprocessor;
 
     protected ImageSource() {
     }
@@ -170,6 +173,23 @@ public class ImageSource {
         ImageSource imageSource = new ImageSource();
         imageSource.type = TYPE_URL;
         imageSource.source = urlString;
+        return imageSource;
+    }
+
+    /**
+     * Constructs an image source with a URL string. The image's dimensions should be no greater than 2048 x 2048. The
+     * application's manifest must include the permissions that allow network connections.
+     *
+     * @param urlString complete URL string
+     * @param postprocessor implementation of image post-transformation routine
+     *
+     * @return the new image source
+     *
+     * @throws IllegalArgumentException If the URL string is null
+     */
+    public static ImageSource fromUrl(String urlString, DownloadPostprocessor<Bitmap> postprocessor) {
+        ImageSource imageSource = fromUrl(urlString);
+        imageSource.postprocessor = postprocessor;
         return imageSource;
     }
 
