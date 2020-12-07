@@ -11,7 +11,7 @@ import android.view.Choreographer;
 import gov.nasa.worldwind.Navigator;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.layer.LayerList;
-import gov.nasa.worldwindx.experimental.AtmosphereLayer;
+import gov.nasa.worldwind.layer.atmosphere.AtmosphereLayer;
 
 public class DayNightCycleActivity extends BasicGlobeActivity implements Choreographer.FrameCallback {
 

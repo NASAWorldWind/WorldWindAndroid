@@ -3,7 +3,7 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-package gov.nasa.worldwindx.experimental;
+package gov.nasa.worldwind.layer.atmosphere;
 
 import android.opengl.GLES20;
 import android.support.annotation.IntDef;
