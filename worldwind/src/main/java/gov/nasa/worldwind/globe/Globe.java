@@ -32,6 +32,10 @@ public class Globe {
      */
     protected GeographicProjection projection;
 
+    private final float[] scratchHeights = new float[1];
+
+    private final Sector scratchSector = new Sector();
+
     /**
      * Constructs a globe with a specified reference ellipsoid and projection.
      *
@@ -319,5 +323,20 @@ public class Globe {
         }
 
         return this.projection.intersect(this, line, result);
+    }
+
+    /**
+     * Determine terrain altitude in specified geographic point from elevation model
+     *
+     * @param latitude  location latitude
+     * @param longitude location longitude
+     *
+     * @return Elevation in meters in specified location
+     */
+    public double getElevationAtLocation(double latitude, double longitude) {
+        // Use 1E-15 below because sector can not have zero deltas
+        this.scratchSector.set(latitude, longitude, 1E-15, 1E-15);
+        this.getElevationModel().getHeightGrid(this.scratchSector, 1, 1, this.scratchHeights);
+        return this.scratchHeights[0];
     }
 }

@@ -29,6 +29,7 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
     // UI elements
     protected TextView latView;
     protected TextView lonView;
+    protected TextView elevView;
     protected TextView altView;
     protected ImageView crosshairs;
     protected ViewGroup overlay;
@@ -60,6 +61,7 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
         this.overlay.setVisibility(View.VISIBLE);
         this.latView = (TextView) findViewById(R.id.lat_value);
         this.lonView = (TextView) findViewById(R.id.lon_value);
+        this.elevView = (TextView) findViewById(R.id.elev_value);
         this.altView = (TextView) findViewById(R.id.alt_value);
         ObjectAnimator fadeOut = ObjectAnimator.ofFloat(this.crosshairs, "alpha", 0f).setDuration(1500);
         fadeOut.setStartDelay((long) 500);
@@ -135,6 +137,7 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
     protected void updateOverlayContents(LookAt lookAt, Camera camera) {
         latView.setText(formatLatitude(lookAt.latitude));
         lonView.setText(formatLongitude(lookAt.longitude));
+        elevView.setText(formatElevaton(wwd.getGlobe().getElevationAtLocation(lookAt.latitude, lookAt.longitude)));
         altView.setText(formatAltitude(camera.altitude));
     }
 
@@ -147,6 +150,7 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
         int color = (eventAction == WorldWind.NAVIGATOR_STOPPED) ? 0xA0FFFF00 /*semi-transparent yellow*/ : Color.YELLOW;
         latView.setTextColor(color);
         lonView.setTextColor(color);
+        elevView.setTextColor(color);
         altView.setTextColor(color);
     }
 
@@ -158,6 +162,12 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
     protected String formatLongitude(double longitude) {
         int sign = (int) Math.signum(longitude);
         return String.format("%7.3f°%s", (longitude * sign), (sign >= 0.0 ? "E" : "W"));
+    }
+
+    protected String formatElevaton(double elevation) {
+        return String.format("Alt: %,.0f %s",
+                (elevation < 100000 ? elevation : elevation / 1000),
+                (elevation < 100000 ? "m" : "km"));
     }
 
     protected String formatAltitude(double altitude) {
