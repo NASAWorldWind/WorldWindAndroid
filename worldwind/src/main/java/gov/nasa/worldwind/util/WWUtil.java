@@ -10,11 +10,14 @@ import android.support.annotation.RawRes;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import gov.nasa.worldwind.WorldWind;
 
 public class WWUtil {
 
@@ -82,5 +85,37 @@ public class WWUtil {
         } finally {
             closeSilently(reader);
         }
+    }
+
+
+    /**
+     * Checks Local Cache
+     * */
+    public static File checkLocalCache(boolean isForceOnline, String url) {
+        if(!isForceOnline) {
+            // ExUrl: https://worldwind26.arc.nasa.gov/elev?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=GEBCO,aster_v2,USGS-NED&STYLES=&CRS=EPSG:4326&BBOX=0.0,-90.0,90.0,0.0&WIDTH=256&HEIGHT=256&FORMAT=application/bil16&TRANSPARENT=TRUE
+            // Important part 4 values of BBOX
+            String eq = resolveBBOX(url);
+            String path = WorldWind.MAP_CACHE_PATH;
+            File dir = new File(path);
+            if(!dir.exists())
+                dir.mkdirs();
+            if(dir.canRead() && dir.canWrite()) {
+                for (File file : dir.listFiles()) {
+                    if (file.isFile()) {
+                        if(file.getName().equals(eq)) {
+                            return file;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public static String resolveBBOX(String url) {
+        String[] bboxSplit = url.split("BBOX="); // 2 Parts
+        String bboxValues = bboxSplit[1].split("&")[0];
+        return bboxValues.replaceAll(",","a").replace(".","b");
     }
 }
