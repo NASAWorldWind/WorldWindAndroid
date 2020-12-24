@@ -75,7 +75,7 @@ public class ImageRetriever extends Retriever<ImageSource, ImageOptions, Bitmap>
         }
 
         if (imageSource.isUrl()) {
-            File localCache = WWUtil.checkLocalCache(false, imageSource.asUrl());
+            File localCache = WWUtil.checkLocalCache(false, imageSource.asUrl(), WorldWind.MAP_CACHE_PATH);
             if(localCache == null)
                 return this.decodeUrl(imageSource.asUrl(), imageOptions);
             else {

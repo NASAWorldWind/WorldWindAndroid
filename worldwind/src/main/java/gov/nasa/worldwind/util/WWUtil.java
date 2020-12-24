@@ -91,13 +91,12 @@ public class WWUtil {
     /**
      * Checks Local Cache
      * */
-    public static File checkLocalCache(boolean isForceOnline, String url) {
+    public static File checkLocalCache(boolean isForceOnline, String url, String parentDir) {
         if(!isForceOnline) {
             // ExUrl: https://worldwind26.arc.nasa.gov/elev?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=GEBCO,aster_v2,USGS-NED&STYLES=&CRS=EPSG:4326&BBOX=0.0,-90.0,90.0,0.0&WIDTH=256&HEIGHT=256&FORMAT=application/bil16&TRANSPARENT=TRUE
             // Important part 4 values of BBOX
             String eq = resolveBBOX(url);
-            String path = WorldWind.MAP_CACHE_PATH;
-            File dir = new File(path);
+            File dir = new File(parentDir);
             if(!dir.exists())
                 dir.mkdirs();
             if(dir.canRead() && dir.canWrite()) {
@@ -113,9 +112,18 @@ public class WWUtil {
         return null;
     }
 
+    public static String getFormat(String url) {
+        //https://worldwind26.arc.nasa.gov/elev?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=GEBCO,aster_v2,USGS-NED&STYLES=&CRS=EPSG:4326&BBOX=-90.0,-180.0,0.0,-90.0&WIDTH=256&HEIGHT=256&FORMAT=application/bil16&TRANSPARENT=TRUE
+        //&FORMAT=application/bil16&
+        //bil16
+        String[] formatSplt = url.split("FORMAT="); // 2 Parts
+        String formatVal = formatSplt[1].split("&")[0].split("/")[1];
+        return formatVal.toLowerCase();
+    }
+
     public static String resolveBBOX(String url) {
         String[] bboxSplit = url.split("BBOX="); // 2 Parts
         String bboxValues = bboxSplit[1].split("&")[0];
-        return bboxValues.replaceAll(",","a").replace(".","b");
+        return bboxValues.replaceAll(",","a").replace(".","b").replace("-","c");
     }
 }
