@@ -32,6 +32,8 @@ public class Sector {
      */
     protected double maxLongitude = Double.NaN;
 
+    protected double deltaLat = Double.NaN, deltaLon = Double.NaN;
+
     /**
      * Constructs an empty sector with minimum and maximum latitudes and longitudes all NaN.
      */
@@ -53,6 +55,17 @@ public class Sector {
         this.maxLongitude = Location.clampLongitude(minLongitude + (deltaLongitude > 0 ? deltaLongitude : Double.NaN));
     }
 
+    public Sector(Angle minLatitude, Angle maxLatitude, Angle minLongitude, Angle maxLongitude) {
+        if (minLatitude != null && maxLatitude != null && minLongitude != null && maxLongitude != null) {
+            this.minLatitude = minLatitude.degrees;
+            this.maxLatitude = maxLatitude.degrees;
+            this.minLongitude = minLongitude.degrees;
+            this.maxLongitude = maxLongitude.degrees;
+            this.deltaLat = Angle.fromDegrees(this.maxLatitude - this.minLatitude).degrees;
+            this.deltaLon = Angle.fromDegrees(this.maxLongitude - this.minLongitude).degrees;
+        }
+    }
+
     /**
      * Constructs a sector with the minimum and maximum latitudes and longitudes of a specified sector.
      *
@@ -69,6 +82,10 @@ public class Sector {
         this.maxLatitude = sector.maxLatitude;
         this.minLongitude = sector.minLongitude;
         this.maxLongitude = sector.maxLongitude;
+    }
+
+    public static Sector fromDegreesMaxMin(double minLatitude, double maxLatitude, double minLongitude, double maxLongitude) {
+        return new Sector(Angle.fromDegrees(minLatitude), Angle.fromDegrees(maxLatitude), Angle.fromDegrees(minLongitude), Angle.fromDegrees(maxLongitude));
     }
 
     public static Sector fromDegrees(double latitudeDegrees, double longitudeDegrees,
