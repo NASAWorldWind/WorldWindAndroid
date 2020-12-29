@@ -16,6 +16,9 @@ import gov.nasa.worldwind.util.TaskService;
 
 public class WorldWind {
 
+    public static final String MAP_CACHE_PATH = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/worldwind/map/";
+    public static final String ELE_CACHE_PATH = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/worldwind/ele/";
+
     /**
      * {@link AltitudeMode} constant indicating an altitude relative to the globe's ellipsoid. Ignores the elevation of
      * the terrain directly beneath the position's latitude and longitude.

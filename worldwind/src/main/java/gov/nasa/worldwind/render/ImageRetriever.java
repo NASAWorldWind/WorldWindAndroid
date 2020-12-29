@@ -10,6 +10,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -38,7 +41,7 @@ public class ImageRetriever extends Retriever<ImageSource, ImageOptions, Bitmap>
 
     @Override
     protected void retrieveAsync(ImageSource imageSource, ImageOptions imageOptions,
-                                 Callback<ImageSource, ImageOptions, Bitmap> callback) {
+                                 Callback<ImageSource, ImageOptions, Bitmap> callback) { //TODO : OFFLINE MAPPING
         try {
             Bitmap bitmap = this.decodeImage(imageSource, imageOptions);
 
@@ -72,11 +75,18 @@ public class ImageRetriever extends Retriever<ImageSource, ImageOptions, Bitmap>
         }
 
         if (imageSource.isUrl()) {
-            return this.decodeUrl(imageSource.asUrl(), imageOptions);
+            File localCache = WWUtil.checkLocalCache(false, imageSource.asUrl(), WorldWind.MAP_CACHE_PATH);
+            if(localCache == null)
+                return this.decodeUrl(imageSource.asUrl(), imageOptions);
+            else {
+                return this.decodeFilePath(localCache.getAbsolutePath(), imageOptions);
+            }
         }
 
         return this.decodeUnrecognized(imageSource);
     }
+
+
 
     protected Bitmap decodeResource(int id, ImageOptions imageOptions) {
         BitmapFactory.Options factoryOptions = this.bitmapFactoryOptions(imageOptions);
@@ -102,11 +112,34 @@ public class ImageRetriever extends Retriever<ImageSource, ImageOptions, Bitmap>
             stream = new BufferedInputStream(conn.getInputStream());
 
             BitmapFactory.Options factoryOptions = this.bitmapFactoryOptions(imageOptions);
-            return BitmapFactory.decodeStream(stream, null, factoryOptions);
+            Bitmap bitmap = BitmapFactory.decodeStream(stream, null, factoryOptions);
+            encodeBitmapToFile(bitmap, urlString);
+            return bitmap;
         } finally {
             WWUtil.closeSilently(stream);
         }
     }
+
+    protected void encodeBitmapToFile(Bitmap bitmap, String url) {
+        try {
+            File f = new File(WorldWind.MAP_CACHE_PATH + WWUtil.resolveBBOX(url));
+
+            if(f.createNewFile()) {
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 0, bos);
+                byte[] bitmapdata = bos.toByteArray();
+
+                FileOutputStream fos = new FileOutputStream(f);
+                fos.write(bitmapdata);
+                fos.flush();
+                fos.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     protected Bitmap decodeUnrecognized(ImageSource imageSource) {
         Logger.log(Logger.WARN, "Unrecognized image source \'" + imageSource + "\'");

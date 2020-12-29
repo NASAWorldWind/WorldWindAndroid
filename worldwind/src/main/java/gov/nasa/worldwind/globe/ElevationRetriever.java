@@ -6,6 +6,9 @@
 package gov.nasa.worldwind.globe;
 
 import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -14,6 +17,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.formats.tiff.Subfile;
 import gov.nasa.worldwind.formats.tiff.Tiff;
 import gov.nasa.worldwind.render.ImageSource;
@@ -37,7 +41,7 @@ public class ElevationRetriever extends Retriever<ImageSource, Void, ShortBuffer
     }
 
     @Override
-    protected void retrieveAsync(ImageSource key, Void unused, Callback<ImageSource, Void, ShortBuffer> callback) {
+    protected void retrieveAsync(ImageSource key, Void unused, Callback<ImageSource, Void, ShortBuffer> callback) { //TODO : OFFLINE MAPPING
         try {
             ShortBuffer buffer = this.decodeCoverage(key);
 
@@ -53,7 +57,12 @@ public class ElevationRetriever extends Retriever<ImageSource, Void, ShortBuffer
 
     protected ShortBuffer decodeCoverage(ImageSource imageSource) throws IOException {
         if (imageSource.isUrl()) {
-            return this.decodeUrl(imageSource.asUrl());
+            File file = WWUtil.checkLocalCache(false, imageSource.asUrl(), UrlToOfflineDirPath(imageSource.asUrl()));
+            if (file != null) {
+                return this.decodeFile(file.getAbsolutePath(), WWUtil.getFormat(imageSource.asUrl()));
+            } else {
+                return this.decodeUrl(imageSource.asUrl());
+            }
         }
 
         return this.decodeUnrecognized(imageSource);
@@ -73,9 +82,13 @@ public class ElevationRetriever extends Retriever<ImageSource, Void, ShortBuffer
             stream = new BufferedInputStream(conn.getInputStream());
             String contentType = conn.getContentType();
             if (contentType.equalsIgnoreCase("application/bil16")) {
-                return this.readInt16Data(stream);
+                ByteBuffer shortBuffer = this.readInt16Data(stream);
+                this.encodeToFile(shortBuffer, urlString);
+                return shortBuffer.asShortBuffer();
             } else if (contentType.equalsIgnoreCase("image/tiff")) {
-                return this.readTiffData(stream);
+                ByteBuffer shortBuffer = this.readTiffData(stream);
+                this.encodeToFile(shortBuffer, urlString);
+                return shortBuffer.asShortBuffer();
             } else {
                 throw new RuntimeException(
                     Logger.logMessage(Logger.ERROR, "ElevationRetriever", "decodeUrl", "Format not supported"));
@@ -85,12 +98,65 @@ public class ElevationRetriever extends Retriever<ImageSource, Void, ShortBuffer
         }
     }
 
+    protected ShortBuffer decodeFile(String path, String format) {
+        InputStream stream = null;
+        try {
+            FileInputStream conn = new FileInputStream(path);
+
+            stream = new BufferedInputStream(conn);
+            if (format.toLowerCase().contains("bil16")) {
+                ByteBuffer shortBuffer = this.readInt16Data(stream);
+                return shortBuffer.asShortBuffer();
+            } else if (format.toLowerCase().contains("tiff")) {
+                ByteBuffer shortBuffer = this.readTiffDataFile(stream);
+                return shortBuffer.asShortBuffer();
+            } else {
+                throw new RuntimeException(
+                        Logger.logMessage(Logger.ERROR, "ElevationRetriever", "decodeUrl", "Format not supported"));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    Logger.logMessage(Logger.ERROR, "ElevationRetriever", "decodeUrl", "Format not supported"));
+        } finally {
+            WWUtil.closeSilently(stream);
+        }
+    }
+
+    protected String UrlToOfflineDirPath(String url) {
+        return WorldWind.ELE_CACHE_PATH + WWUtil.getFormat(url);
+    }
+
+    protected void encodeToFile(ByteBuffer buffer, String url) {
+        try {
+            File folders = new File(WorldWind.ELE_CACHE_PATH + WWUtil.getFormat(url));
+            if(folders.canWrite() && folders.canRead()) {
+                if(!folders.exists())
+                    folders.mkdirs();
+                File f = new File(folders.getAbsolutePath(),WWUtil.resolveBBOX(url));
+                if (f.createNewFile()) {
+                    FileOutputStream fos = new FileOutputStream(f);
+                    fos.write(buffer.array());
+                    fos.flush();
+                    fos.close();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     protected ShortBuffer decodeUnrecognized(ImageSource imageSource) {
         Logger.log(Logger.WARN, "Unrecognized image source \'" + imageSource + "\'");
         return null;
     }
 
-    protected ShortBuffer readTiffData(InputStream stream) throws IOException {
+    protected ByteBuffer readTiffDataFile(InputStream stream) throws IOException {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(stream.available());
+        stream.read(byteBuffer.array());
+        return byteBuffer;
+    }
+
+    protected ByteBuffer readTiffData(InputStream stream) throws IOException {
 
         ByteBuffer tiffBuffer = this.bufferPool.acquire();
         if (tiffBuffer == null) {
@@ -107,7 +173,7 @@ public class ElevationRetriever extends Retriever<ImageSource, Void, ShortBuffer
             result.clear();
 
             this.bufferPool.release(tiffBuffer);
-            return result.asShortBuffer();
+            return result;
         } else {
             throw new RuntimeException(
                 Logger.logMessage(Logger.ERROR, "ElevationRetriever", "readTiffData", "Tiff file format not supported"));
@@ -121,8 +187,8 @@ public class ElevationRetriever extends Retriever<ImageSource, Void, ShortBuffer
             subfile.getCompression() == 1;
     }
 
-    protected ShortBuffer readInt16Data(InputStream stream) throws IOException {
-        ShortBuffer result = this.bufferStream(stream, ByteBuffer.allocate(BUFFER_SIZE)).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
+    protected ByteBuffer readInt16Data(InputStream stream) throws IOException {
+        ByteBuffer result = this.bufferStream(stream, ByteBuffer.allocate(BUFFER_SIZE)).order(ByteOrder.LITTLE_ENDIAN);
         return result;
     }
 
