@@ -61,8 +61,6 @@ public class WcsElevationFragment extends BasicGlobeFragment {
         double distance = distanceRadians * globe.getRadiusAt(mtRainier.latitude, mtRainier.longitude);
 
         // Compute camera settings
-        double altitude = eye.altitude - mtRainier.altitude;
-        double range = Math.sqrt(altitude * altitude + distance * distance);
         double tilt = Math.toDegrees(Math.atan(distance / eye.altitude));
 
         // Apply the new view

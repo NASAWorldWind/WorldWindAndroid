@@ -20,6 +20,6 @@
         android:id="@+id/globe_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="left|top"
+        android:layout_gravity="start|top"
         />
 </LinearLayout>

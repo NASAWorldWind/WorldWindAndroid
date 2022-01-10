@@ -8,6 +8,7 @@ package gov.nasa.worldwindx;
 import android.util.Log;
 
 import java.io.File;
+import java.util.Objects;
 
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.layer.Layer;
@@ -27,7 +28,7 @@ public class GeoPackageFragment extends BasicGlobeFragment {
 
         // Unpack the tutorial GeoPackage asset to the Android application cache. GeoPackage relies on the Android
         // SQLite library which operates only on files in the local Android filesystem.
-        File geoPackageFile = TutorialUtil.unpackAsset(this.getContext(), "geopackage_tutorial.gpkg");
+        File geoPackageFile = Objects.requireNonNull(TutorialUtil.unpackAsset(this.getContext(), "geopackage_tutorial.gpkg"));
 
         // Create a layer factory, WorldWind's general component for creating layers
         // from complex data sources.

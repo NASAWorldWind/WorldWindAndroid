@@ -42,7 +42,7 @@ public class CameraControlFragment extends BasicGlobeFragment {
      * A custom WorldWindController that uses gestures to control the camera directly via the setAsCamera interface
      * instead of the default setAsLookAt interface.
      */
-    private class CameraController extends BasicWorldWindowController {
+    private static class CameraController extends BasicWorldWindowController {
 
         protected double beginHeading;
 
@@ -192,8 +192,7 @@ public class CameraControlFragment extends BasicGlobeFragment {
             double distanceToExtents = this.wwd.distanceToViewGlobeExtents();
 
             double minAltitude = 100;
-            double maxAltitude = distanceToExtents;
-            camera.position.altitude = WWMath.clamp(camera.position.altitude, minAltitude, maxAltitude);
+            camera.position.altitude = WWMath.clamp(camera.position.altitude, minAltitude, distanceToExtents);
 
             // Limit the tilt to between nadir and the horizon (roughly)
             double r = wwd.getGlobe().getRadiusAt(camera.position.latitude, camera.position.latitude);

@@ -8,17 +8,16 @@ package gov.nasa.worldwindx;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -29,7 +28,6 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
-import java.util.Date;
 import java.util.Locale;
 
 import gov.nasa.worldwind.FrameMetrics;
@@ -45,8 +43,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     protected static final int PRINT_METRICS_DELAY = 3000;
 
-    protected static final Date sessionTimestamp = new Date();
-
     protected static int selectedItemId = R.id.nav_basic_globe_activity;
 
     protected ActionBarDrawerToggle drawerToggle;
@@ -57,18 +53,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     protected String tutorialUrl;
 
-    protected String aboutBoxTitle = "WorldWind Tutorials";        // TODO: use a string resource, e.g., app name
+    protected final String aboutBoxTitle = "WorldWind Tutorials";        // TODO: use a string resource, e.g., app name
 
-    protected String aboutBoxText = "A collection of tutorials";    // TODO: make this a string resource
+    protected final String aboutBoxText = "A collection of tutorials";    // TODO: make this a string resource
 
-    protected Handler handler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message msg) {
-            if (msg.what == PRINT_METRICS) {
-                return printMetrics();
-            } else {
-                return false;
-            }
+    protected final Handler handler = new Handler(Looper.getMainLooper(), msg -> {
+        if (msg.what == PRINT_METRICS) {
+            return printMetrics();
+        } else {
+            return false;
         }
     });
 
@@ -99,18 +92,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         if (!twoPaneView) {
-            FloatingActionButton codeViewButton = (FloatingActionButton) findViewById(R.id.fab);
+            FloatingActionButton codeViewButton = findViewById(R.id.fab);
             codeViewButton.setVisibility(View.VISIBLE);    // is set to GONE in layout
-            codeViewButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Context context = view.getContext();
-                    Intent intent = new Intent(context, CodeActivity.class);
-                    Bundle bundle = new Bundle();
-                    bundle.putString("url", tutorialUrl);
-                    intent.putExtra("arguments", bundle);
-                    context.startActivity(intent);
-                }
+            codeViewButton.setOnClickListener(view -> {
+                Context context = view.getContext();
+                Intent intent = new Intent(context, CodeActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("url", tutorialUrl);
+                intent.putExtra("arguments", bundle);
+                context.startActivity(intent);
             });
         }
         if (savedInstanceState == null) {
@@ -129,17 +119,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     protected void onCreateDrawer() {
         // Add support for a Toolbar and set to act as the ActionBar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Add support for the navigation drawer full of examples
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         this.drawerToggle = new ActionBarDrawerToggle(
             this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(this.drawerToggle);
         this.drawerToggle.syncState();
 
-        this.navigationView = (NavigationView) findViewById(R.id.nav_view);
+        this.navigationView = findViewById(R.id.nav_view);
         this.navigationView.setNavigationItemSelectedListener(this);
         this.navigationView.setCheckedItem(selectedItemId);
     }
@@ -191,12 +181,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         alertDialogBuilder
             .setMessage(this.aboutBoxText)
             .setCancelable(true)
-            .setNegativeButton("Close", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    // if this button is clicked, just close
-                    // the dialog box and do nothing
-                    dialog.cancel();
-                }
+            .setNegativeButton("Close", (dialog, id) -> {
+                // if this button is clicked, just close
+                // the dialog box and do nothing
+                dialog.cancel();
             });
 
         AlertDialog alertDialog = alertDialogBuilder.create();
@@ -235,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -250,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         this.drawerToggle.onConfigurationChanged(newConfig);
     }
@@ -261,68 +249,47 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         selectedItemId = item.getItemId();
 
         // Handle navigation view item clicks here.
-        switch (selectedItemId) {
-
-            case R.id.nav_basic_globe_activity:
-                loadTutorial(BasicGlobeFragment.class, "file:///android_asset/basic_globe_tutorial.html", R.string.title_basic_globe);
-                break;
-            case R.id.nav_camera_view_activity:
-                loadTutorial(CameraViewFragment.class, "file:///android_asset/camera_view_tutorial.html",  R.string.title_camera_view);
-                break;
-            case R.id.nav_camera_control_activity:
-                loadTutorial(CameraControlFragment.class, "file:///android_asset/camera_control_tutorial.html",  R.string.title_camera_controls);
-                break;
-            case R.id.nav_ellipse_activity:
-                loadTutorial(EllipseFragment.class, "file:///android_asset/ellipse_tutorial.html", R.string.title_ellipse);
-                break;
-            case R.id.nav_geopackage_activity:
-                loadTutorial(GeoPackageFragment.class, "file:///android_asset/geopackage_tutorial.html", R.string.title_geopackage);
-                break;
-            case R.id.nav_labels_activity:
-                loadTutorial(LabelsFragment.class, "file:///android_asset/labels_tutorial.html", R.string.title_labels);
-                break;
-            case R.id.nav_look_at_view_activity:
-                loadTutorial(LookAtViewFragment.class, "file:///android_asset/look_at_view_tutorial.html", R.string.title_look_at_view);
-                break;
-            case R.id.nav_navigator_event_activity:
-                loadTutorial(NavigatorEventFragment.class, "file:///android_asset/navigator_events_tutorial.html",  R.string.title_navigator_event);
-                break;
-            case R.id.nav_omnidirectional_sightline_activity:
-                loadTutorial(OmnidirectionalSightlineFragment.class, "file:///android_asset/omnidirectional_sightline_tutorial.html", R.string.title_omni_sightline);
-                break;
-            case R.id.nav_paths_activity:
-                loadTutorial(PathsFragment.class, "file:///android_asset/paths_tutorial.html", R.string.title_paths);
-                break;
-            case R.id.nav_placemarks_activity:
-                loadTutorial(PlacemarksFragment.class, "file:///android_asset/placemarks_tutorial.html", R.string.title_placemarks);
-                break;
-            case R.id.nav_placemarks_picking_activity:
-                loadTutorial(PlacemarksPickingFragment.class, "file:///android_asset/placemarks_picking_tutorial.html", R.string.title_placemarks_picking);
-                break;
-            case R.id.nav_polygons_activity:
-                loadTutorial(PolygonsFragment.class, "file:///android_asset/polygons_tutorial.html", R.string.title_polygons);
-                break;
-            case R.id.nav_shapes_dash_and_fill:
-                loadTutorial(ShapesDashAndFillFragment.class, "file:///android_asset/shapes_dash_and_fill.html", R.string.title_shapes_dash_and_fill);
-                break;
-            case R.id.nav_show_tessellation_activity:
-                loadTutorial(ShowTessellationFragment.class, "file:///android_asset/show_tessellation_tutorial.html", R.string.title_show_tessellation);
-                break;
-            case R.id.nav_surface_image_activity:
-                loadTutorial(SurfaceImageFragment.class, "file:///android_asset/surface_image_tutorial.html", R.string.title_surface_image);
-                break;
-            case R.id.nav_wms_layer_activity:
-                loadTutorial(WmsLayerFragment.class, "file:///android_asset/wms_layer_tutorial.html", R.string.title_wms_layer);
-                break;
-            case R.id.nav_wmts_layer_activity:
-                loadTutorial(WmtsLayerFragment.class, "file:///android_asset/wmts_layer_tutorial.html", R.string.title_wmts_layer);
-                break;
-            case R.id.nav_wcs_elevation_activity:
-                loadTutorial(WcsElevationFragment.class, "file:///android_asset/wcs_elevation_tutorial.html", R.string.title_wcs_elevation_coverage);
-                break;
+        if (selectedItemId == R.id.nav_basic_globe_activity) {
+            loadTutorial(BasicGlobeFragment.class, "file:///android_asset/basic_globe_tutorial.html", R.string.title_basic_globe);
+        } else if (selectedItemId == R.id.nav_camera_view_activity) {
+            loadTutorial(CameraViewFragment.class, "file:///android_asset/camera_view_tutorial.html", R.string.title_camera_view);
+        } else if (selectedItemId == R.id.nav_camera_control_activity) {
+            loadTutorial(CameraControlFragment.class, "file:///android_asset/camera_control_tutorial.html", R.string.title_camera_controls);
+        } else if (selectedItemId == R.id.nav_ellipse_activity) {
+            loadTutorial(EllipseFragment.class, "file:///android_asset/ellipse_tutorial.html", R.string.title_ellipse);
+        } else if (selectedItemId == R.id.nav_geopackage_activity) {
+            loadTutorial(GeoPackageFragment.class, "file:///android_asset/geopackage_tutorial.html", R.string.title_geopackage);
+        } else if (selectedItemId == R.id.nav_labels_activity) {
+            loadTutorial(LabelsFragment.class, "file:///android_asset/labels_tutorial.html", R.string.title_labels);
+        } else if (selectedItemId == R.id.nav_look_at_view_activity) {
+            loadTutorial(LookAtViewFragment.class, "file:///android_asset/look_at_view_tutorial.html", R.string.title_look_at_view);
+        } else if (selectedItemId == R.id.nav_navigator_event_activity) {
+            loadTutorial(NavigatorEventFragment.class, "file:///android_asset/navigator_events_tutorial.html", R.string.title_navigator_event);
+        } else if (selectedItemId == R.id.nav_omnidirectional_sightline_activity) {
+            loadTutorial(OmnidirectionalSightlineFragment.class, "file:///android_asset/omnidirectional_sightline_tutorial.html", R.string.title_omni_sightline);
+        } else if (selectedItemId == R.id.nav_paths_activity) {
+            loadTutorial(PathsFragment.class, "file:///android_asset/paths_tutorial.html", R.string.title_paths);
+        } else if (selectedItemId == R.id.nav_placemarks_activity) {
+            loadTutorial(PlacemarksFragment.class, "file:///android_asset/placemarks_tutorial.html", R.string.title_placemarks);
+        } else if (selectedItemId == R.id.nav_placemarks_picking_activity) {
+            loadTutorial(PlacemarksPickingFragment.class, "file:///android_asset/placemarks_picking_tutorial.html", R.string.title_placemarks_picking);
+        } else if (selectedItemId == R.id.nav_polygons_activity) {
+            loadTutorial(PolygonsFragment.class, "file:///android_asset/polygons_tutorial.html", R.string.title_polygons);
+        } else if (selectedItemId == R.id.nav_shapes_dash_and_fill) {
+            loadTutorial(ShapesDashAndFillFragment.class, "file:///android_asset/shapes_dash_and_fill.html", R.string.title_shapes_dash_and_fill);
+        } else if (selectedItemId == R.id.nav_show_tessellation_activity) {
+            loadTutorial(ShowTessellationFragment.class, "file:///android_asset/show_tessellation_tutorial.html", R.string.title_show_tessellation);
+        } else if (selectedItemId == R.id.nav_surface_image_activity) {
+            loadTutorial(SurfaceImageFragment.class, "file:///android_asset/surface_image_tutorial.html", R.string.title_surface_image);
+        } else if (selectedItemId == R.id.nav_wms_layer_activity) {
+            loadTutorial(WmsLayerFragment.class, "file:///android_asset/wms_layer_tutorial.html", R.string.title_wms_layer);
+        } else if (selectedItemId == R.id.nav_wmts_layer_activity) {
+            loadTutorial(WmtsLayerFragment.class, "file:///android_asset/wmts_layer_tutorial.html", R.string.title_wmts_layer);
+        } else if (selectedItemId == R.id.nav_wcs_elevation_activity) {
+            loadTutorial(WcsElevationFragment.class, "file:///android_asset/wcs_elevation_tutorial.html", R.string.title_wcs_elevation_coverage);
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -349,14 +316,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             } else {
                 this.tutorialUrl = url;
             }
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
     }
 
-    protected static long getSessionTimestamp() {
-        return sessionTimestamp.getTime();
-    }
 }

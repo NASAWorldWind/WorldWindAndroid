@@ -17,10 +17,11 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import gov.nasa.worldwind.NavigatorEvent;
+import java.util.Locale;
+import java.util.Objects;
+
 import gov.nasa.worldwind.NavigatorListener;
 import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.LookAt;
 
@@ -38,7 +39,7 @@ public class NavigatorEventFragment extends BasicGlobeFragment {
     protected ViewGroup overlay;
 
     // Use pre-allocated lookAt state object to avoid per-event memory allocations
-    private LookAt lookAt = new LookAt();
+    private final LookAt lookAt = new LookAt();
 
     // Track the navigation event time so the overlay refresh rate can be throttled
     private long lastEventTime;
@@ -52,50 +53,47 @@ public class NavigatorEventFragment extends BasicGlobeFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Let the super class (BasicGlobeFragment) create the view and the WorldWindow
-        View rootView = super.onCreateView(inflater, container, savedInstanceState);
+        View rootView = Objects.requireNonNull(super.onCreateView(inflater, container, savedInstanceState));
 
         // Initialize the UI elements that we'll update upon the navigation events
-        this.crosshairs = (ImageView) rootView.findViewById(R.id.globe_crosshairs);
-        this.overlay = (ViewGroup) rootView.findViewById(R.id.globe_status);
+        this.crosshairs = rootView.findViewById(R.id.globe_crosshairs);
+        this.overlay = rootView.findViewById(R.id.globe_status);
         this.crosshairs.setVisibility(View.VISIBLE);
         this.overlay.setVisibility(View.VISIBLE);
-        this.latView = (TextView) rootView.findViewById(R.id.lat_value);
-        this.lonView = (TextView) rootView.findViewById(R.id.lon_value);
-        this.altView = (TextView) rootView.findViewById(R.id.alt_value);
+        this.latView = rootView.findViewById(R.id.lat_value);
+        this.lonView = rootView.findViewById(R.id.lon_value);
+        this.altView = rootView.findViewById(R.id.alt_value);
         ObjectAnimator fadeOut = ObjectAnimator.ofFloat(this.crosshairs, "alpha", 0f).setDuration(1500);
-        fadeOut.setStartDelay((long) 500);
+        fadeOut.setStartDelay(500);
         this.animatorSet = new AnimatorSet();
         this.animatorSet.play(fadeOut);
 
         // Create a simple Navigator Listener that logs navigator events emitted by the WorldWindow.
-        NavigatorListener listener = new NavigatorListener() {
-            @Override
-            public void onNavigatorEvent(WorldWindow wwd, NavigatorEvent event) {
-                long currentTime = System.currentTimeMillis();
-                long elapsedTime = currentTime - lastEventTime;
-                int eventAction = event.getAction();
-                boolean receivedUserInput = (eventAction == WorldWind.NAVIGATOR_MOVED && event.getLastInputEvent() != null);
+        NavigatorListener listener = (wwd, event) -> {
+            long currentTime = System.currentTimeMillis();
+            long elapsedTime = currentTime - lastEventTime;
+            int eventAction = event.getAction();
+            boolean receivedUserInput = (eventAction == WorldWind.NAVIGATOR_MOVED && event.getLastInputEvent() != null);
 
-                // Update the status overlay views whenever the navigator stops moving,
-                // and also it is moving but at an (arbitrary) maximum refresh rate of 20 Hz.
-                if (eventAction == WorldWind.NAVIGATOR_STOPPED || elapsedTime > 50) {
+            // Update the status overlay views whenever the navigator stops moving,
+            // and also it is moving but at an (arbitrary) maximum refresh rate of 20 Hz.
+            if (eventAction == WorldWind.NAVIGATOR_STOPPED || elapsedTime > 50) {
 
-                    // Get the current camera state to apply to the overlays
-                    event.getCamera().getAsLookAt(lookAt);
+                // Get the current camera state to apply to the overlays
+                event.getCamera().getAsLookAt(lookAt);
 
-                    // Update the overlays
-                    updateOverlayContents(lookAt, event.getCamera());
-                    updateOverlayColor(eventAction);
+                // Update the overlays
+                updateOverlayContents(lookAt, event.getCamera());
+                updateOverlayColor(eventAction);
 
-                    lastEventTime = currentTime;
-                }
+                lastEventTime = currentTime;
+            }
 
-                // Show the crosshairs while the user is gesturing and fade them out after the user stops
-                if (receivedUserInput) {
-                    showCrosshairs();
-                } else {
-                    fadeCrosshairs();
-                }
+            // Show the crosshairs while the user is gesturing and fade them out after the user stops
+            if (receivedUserInput) {
+                showCrosshairs();
+            } else {
+                fadeCrosshairs();
             }
         };
 
@@ -154,16 +152,16 @@ public class NavigatorEventFragment extends BasicGlobeFragment {
 
     protected String formatLatitude(double latitude) {
         int sign = (int) Math.signum(latitude);
-        return String.format("%6.3f°%s", (latitude * sign), (sign >= 0.0 ? "N" : "S"));
+        return String.format(Locale.getDefault(), "%6.3f°%s", (latitude * sign), (sign >= 0.0 ? "N" : "S"));
     }
 
     protected String formatLongitude(double longitude) {
         int sign = (int) Math.signum(longitude);
-        return String.format("%7.3f°%s", (longitude * sign), (sign >= 0.0 ? "E" : "W"));
+        return String.format(Locale.getDefault(), "%7.3f°%s", (longitude * sign), (sign >= 0.0 ? "E" : "W"));
     }
 
     protected String formatAltitude(double altitude) {
-        return String.format("Eye: %,.0f %s",
+        return String.format(Locale.getDefault(), "Eye: %,.0f %s",
             (altitude < 100000 ? altitude : altitude / 1000),
             (altitude < 100000 ? "m" : "km"));
     }

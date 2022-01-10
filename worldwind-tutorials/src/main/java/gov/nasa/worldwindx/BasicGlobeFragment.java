@@ -54,7 +54,7 @@ public class BasicGlobeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_globe, container, false);
-        FrameLayout globeLayout = (FrameLayout) rootView.findViewById(R.id.globe);
+        FrameLayout globeLayout = rootView.findViewById(R.id.globe);
 
         // Add the WorldWindow view object to the layout that was reserved for the globe.
         globeLayout.addView(this.createWorldWindow());

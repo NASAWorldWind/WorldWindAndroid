@@ -93,8 +93,8 @@ public class PlacemarksPickingFragment extends BasicGlobeFragment {
         /**
          * Assign a subclassed SimpleOnGestureListener to a GestureDetector to handle the "pick" events.
          */
-        protected GestureDetector pickGestureDetector = new GestureDetector(
-            getContext().getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
+        protected final GestureDetector pickGestureDetector = new GestureDetector(
+            requireContext().getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDown(MotionEvent event) {
                 pick(event);    // Pick the object(s) at the tap location

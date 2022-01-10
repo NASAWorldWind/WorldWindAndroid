@@ -11,7 +11,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_gravity="left|top"
+    android:layout_gravity="start|top"
     android:baselineAligned="false"
     android:divider="?android:attr/dividerVertical"
     android:orientation="horizontal"
@@ -26,7 +26,7 @@
         android:id="@+id/globe_container"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_gravity="left|top"
+        android:layout_gravity="start|top"
         android:layout_weight="3">
     </FrameLayout>
 

@@ -35,14 +35,6 @@ public class CameraViewFragment extends BasicGlobeFragment {
         // Apply the view
         wwd.getCamera().set(aircraft.latitude, aircraft.longitude, aircraft.altitude, WorldWind.ABSOLUTE, heading, tilt, 0); // No roll
 
-        // This works too!  Using the fluid api to manipulate the Navigator's camera:
-//        wwd.getNavigator()
-//            .setLatitude(aircraft.latitude)
-//            .setLongitude(aircraft.longitude)
-//            .setAltitude(aircraft.altitude)
-//            .setHeading(heading)
-//            .setTilt(tilt);
-
         return wwd;
     }
 }
