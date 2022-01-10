@@ -102,22 +102,22 @@ public class OmnidirectionalSightlineActivity extends BasicGlobeActivity {
 
         protected boolean isDraggingArmed = false;
 
-        private PointF dragRefPt = new PointF();
+        private final PointF dragRefPt = new PointF();
 
         /**
          * Pre-allocated to avoid memory allocations
          */
-        private Line ray = new Line();
+        private final Line ray = new Line();
 
         /**
          * Pre-allocated to avoid memory allocations
          */
-        private Vec3 pickPoint = new Vec3();
+        private final Vec3 pickPoint = new Vec3();
 
         /**
          * Assign a subclassed SimpleOnGestureListener to a GestureDetector to handle the drag gestures.
          */
-        protected GestureDetector selectDragDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
+        protected final GestureDetector selectDragDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
 
             @Override
             public boolean onDown(MotionEvent event) {
@@ -128,7 +128,7 @@ public class OmnidirectionalSightlineActivity extends BasicGlobeActivity {
             @Override
             public boolean onScroll(MotionEvent downEvent, MotionEvent moveEvent, float distanceX, float distanceY) {
                 if (isDraggingArmed) {
-                    return drag(downEvent, moveEvent, distanceX, distanceY);
+                    return drag(distanceX, distanceY);
                 }
                 return false;
             }
@@ -167,7 +167,7 @@ public class OmnidirectionalSightlineActivity extends BasicGlobeActivity {
          *
          * @return true if the event was consumed
          */
-        public boolean drag(MotionEvent downEvent, MotionEvent moveEvent, float distanceX, float distanceY) {
+        public boolean drag(float distanceX, float distanceY) {
             if (this.isDraggingArmed) {
                 // Signal that dragging is in progress
                 this.isDragging = true;

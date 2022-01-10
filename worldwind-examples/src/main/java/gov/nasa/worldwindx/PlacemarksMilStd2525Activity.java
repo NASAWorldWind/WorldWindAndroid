@@ -32,7 +32,7 @@ public class PlacemarksMilStd2525Activity extends GeneralGlobeActivity {
         // Create a TextView to show the MIL-STD-2525 renderer's initialization status
         this.statusText = new TextView(this);
         this.statusText.setTextColor(android.graphics.Color.YELLOW);
-        FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
+        FrameLayout globeLayout = findViewById(R.id.globe);
         globeLayout.addView(this.statusText);
 
         // Set the camera to look at the area where the symbols will be displayed.
@@ -81,7 +81,7 @@ public class PlacemarksMilStd2525Activity extends GeneralGlobeActivity {
             getWorldWindow().getLayers().addLayer(symbolLayer);
 
             // Add a "MIL-STD-2525 Friendly SOF Drone Aircraft"
-            SparseArray<String> modifiers = new SparseArray<String>();
+            SparseArray<String> modifiers = new SparseArray<>();
             modifiers.put(ModifiersUnits.Q_DIRECTION_OF_MOVEMENT, "235");
             Placemark drone = new Placemark(
                 Position.fromDegrees(32.4520, 63.44553, 3000),

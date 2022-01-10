@@ -8,18 +8,17 @@ package gov.nasa.worldwindx;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import androidx.annotation.LayoutRes;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -75,14 +74,11 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
     protected String aboutBoxText = "Description goes here;";
 
-    protected Handler handler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message msg) {
-            if (msg.what == PRINT_METRICS) {
-                return printMetrics();
-            } else {
-                return false;
-            }
+    protected final Handler handler = new Handler(Looper.getMainLooper(), msg -> {
+        if (msg.what == PRINT_METRICS) {
+            return printMetrics();
+        } else {
+            return false;
         }
     });
 
@@ -98,7 +94,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity
     /**
      * This method should be called by derived classes in their onCreate method.
      *
-     * @param layoutResID
+     * @param layoutResID Resource ID to be inflated.
      */
     @Override
     public void setContentView(@LayoutRes int layoutResID) {
@@ -108,17 +104,17 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
     protected void onCreateDrawer() {
         // Add support for a Toolbar and set to act as the ActionBar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Add support for the navigation drawer full of examples
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         this.drawerToggle = new ActionBarDrawerToggle(
             this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(this.drawerToggle);
         this.drawerToggle.syncState();
 
-        this.navigationView = (NavigationView) findViewById(R.id.nav_view);
+        this.navigationView = findViewById(R.id.nav_view);
         this.navigationView.setNavigationItemSelectedListener(this);
         this.navigationView.setCheckedItem(selectedItemId);
     }
@@ -239,12 +235,10 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         alertDialogBuilder
             .setMessage(this.aboutBoxText)
             .setCancelable(true)
-            .setNegativeButton("Close", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    // if this button is clicked, just close
-                    // the dialog box and do nothing
-                    dialog.cancel();
-                }
+            .setNegativeButton("Close", (dialog, id) -> {
+                // if this button is clicked, just close
+                // the dialog box and do nothing
+                dialog.cancel();
             });
 
         AlertDialog alertDialog = alertDialogBuilder.create();
@@ -277,7 +271,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -292,7 +286,7 @@ public abstract class AbstractMainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         this.drawerToggle.onConfigurationChanged(newConfig);
     }
@@ -303,59 +297,41 @@ public abstract class AbstractMainActivity extends AppCompatActivity
         selectedItemId = item.getItemId();
 
         // Handle navigation view item clicks here.
-        switch (selectedItemId) {
-
-            case R.id.nav_basic_performance_benchmark_activity:
-                startActivity(new Intent(getApplicationContext(), BasicPerformanceBenchmarkActivity.class));
-                break;
-            case R.id.nav_basic_stress_test_activity:
-                startActivity(new Intent(getApplicationContext(), BasicStressTestActivity.class));
-                break;
-            case R.id.nav_day_night_cycle_activity:
-                startActivity(new Intent(getApplicationContext(), DayNightCycleActivity.class));
-                break;
-            case R.id.nav_general_globe_activity:
-                startActivity(new Intent(getApplicationContext(), GeneralGlobeActivity.class));
-                break;
-            case R.id.nav_mgrs_graticule_activity:
-                startActivity(new Intent(getApplicationContext(), MGRSGraticuleActivity.class));
-                break;
-            case R.id.nav_multi_globe_activity:
-                startActivity(new Intent(getApplicationContext(), MultiGlobeActivity.class));
-                break;
-            case R.id.nav_omnidirectional_sightline_activity:
-                startActivity(new Intent(getApplicationContext(), OmnidirectionalSightlineActivity.class));
-                break;
-            case R.id.nav_paths_example:
-                startActivity(new Intent(getApplicationContext(), PathsExampleActivity.class));
-                break;
-            case R.id.nav_paths_and_polygons_activity:
-                startActivity(new Intent(getApplicationContext(), PathsPolygonsLabelsActivity.class));
-                break;
-            case R.id.nav_placemarks_demo_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksDemoActivity.class));
-                break;
-            case R.id.nav_placemarks_milstd2525_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525Activity.class));
-                break;
-            case R.id.nav_placemarks_milstd2525_demo_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525DemoActivity.class));
-                break;
-            case R.id.nav_placemarks_milstd2525_stress_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525StressActivity.class));
-                break;
-            case R.id.nav_placemarks_select_drag_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksSelectDragActivity.class));
-                break;
-            case R.id.nav_placemarks_stress_activity:
-                startActivity(new Intent(getApplicationContext(), PlacemarksStressTestActivity.class));
-                break;
-            case R.id.nav_texture_stress_test_activity:
-                startActivity(new Intent(getApplicationContext(), TextureStressTestActivity.class));
-                break;
+        if (selectedItemId == R.id.nav_basic_performance_benchmark_activity) {
+            startActivity(new Intent(getApplicationContext(), BasicPerformanceBenchmarkActivity.class));
+        } else if (selectedItemId == R.id.nav_basic_stress_test_activity) {
+            startActivity(new Intent(getApplicationContext(), BasicStressTestActivity.class));
+        } else if (selectedItemId == R.id.nav_day_night_cycle_activity) {
+            startActivity(new Intent(getApplicationContext(), DayNightCycleActivity.class));
+        } else if (selectedItemId == R.id.nav_general_globe_activity) {
+            startActivity(new Intent(getApplicationContext(), GeneralGlobeActivity.class));
+        } else if (selectedItemId == R.id.nav_mgrs_graticule_activity) {
+            startActivity(new Intent(getApplicationContext(), MGRSGraticuleActivity.class));
+        } else if (selectedItemId == R.id.nav_multi_globe_activity) {
+            startActivity(new Intent(getApplicationContext(), MultiGlobeActivity.class));
+        } else if (selectedItemId == R.id.nav_omnidirectional_sightline_activity) {
+            startActivity(new Intent(getApplicationContext(), OmnidirectionalSightlineActivity.class));
+        } else if (selectedItemId == R.id.nav_paths_example) {
+            startActivity(new Intent(getApplicationContext(), PathsExampleActivity.class));
+        } else if (selectedItemId == R.id.nav_paths_and_polygons_activity) {
+            startActivity(new Intent(getApplicationContext(), PathsPolygonsLabelsActivity.class));
+        } else if (selectedItemId == R.id.nav_placemarks_demo_activity) {
+            startActivity(new Intent(getApplicationContext(), PlacemarksDemoActivity.class));
+        } else if (selectedItemId == R.id.nav_placemarks_milstd2525_activity) {
+            startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525Activity.class));
+        } else if (selectedItemId == R.id.nav_placemarks_milstd2525_demo_activity) {
+            startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525DemoActivity.class));
+        } else if (selectedItemId == R.id.nav_placemarks_milstd2525_stress_activity) {
+            startActivity(new Intent(getApplicationContext(), PlacemarksMilStd2525StressActivity.class));
+        } else if (selectedItemId == R.id.nav_placemarks_select_drag_activity) {
+            startActivity(new Intent(getApplicationContext(), PlacemarksSelectDragActivity.class));
+        } else if (selectedItemId == R.id.nav_placemarks_stress_activity) {
+            startActivity(new Intent(getApplicationContext(), PlacemarksStressTestActivity.class));
+        } else if (selectedItemId == R.id.nav_texture_stress_test_activity) {
+            startActivity(new Intent(getApplicationContext(), TextureStressTestActivity.class));
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }

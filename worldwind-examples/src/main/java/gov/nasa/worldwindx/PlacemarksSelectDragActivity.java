@@ -6,7 +6,6 @@
 package gov.nasa.worldwindx;
 
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.view.GestureDetector;
@@ -190,41 +189,45 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
      * Helper method to create aircraft placemarks. The aircraft are selectable, movable, and editable.
      */
     protected static Placemark createAircraftPlacemark(Position position, String aircraftName, String aircraftType) {
-        if (!aircraftIconMap.containsKey(aircraftType)) {
+        Integer resId = aircraftIconMap.get(aircraftType);
+        if (resId != null) {
+            Placemark placemark = Placemark.createWithImage(position, ImageSource.fromResource(resId));
+            placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(NORMAL_IMAGE_SCALE).setDrawLeader(true);
+            placemark.getAttributes().getLeaderAttributes().setOutlineWidth(4);
+            placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(HIGHLIGHTED_IMAGE_SCALE).setImageColor(new Color(android.graphics.Color.YELLOW)));
+            placemark.setDisplayName(aircraftName);
+            // The AIRCRAFT_TYPE property is used to exchange the vehicle type with the VehicleTypeDialog
+            placemark.putUserProperty(AIRCRAFT_TYPE, aircraftType);
+            // The select/drag controller will examine a placemark's "capabilities" to determine what operations are applicable:
+            placemark.putUserProperty(SELECTABLE, null);
+            placemark.putUserProperty(EDITABLE, null);
+            placemark.putUserProperty(MOVABLE, null);
+            return placemark;
+        } else {
             throw new IllegalArgumentException(aircraftType + " is not valid.");
         }
-        Placemark placemark = Placemark.createWithImage(position, ImageSource.fromResource(aircraftIconMap.get(aircraftType)));
-        placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(NORMAL_IMAGE_SCALE).setDrawLeader(true);
-        placemark.getAttributes().getLeaderAttributes().setOutlineWidth(4);
-        placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(HIGHLIGHTED_IMAGE_SCALE).setImageColor(new Color(android.graphics.Color.YELLOW)));
-        placemark.setDisplayName(aircraftName);
-        // The AIRCRAFT_TYPE property is used to exchange the vehicle type with the VehicleTypeDialog
-        placemark.putUserProperty(AIRCRAFT_TYPE, aircraftType);
-        // The select/drag controller will examine a placemark's "capabilities" to determine what operations are applicable:
-        placemark.putUserProperty(SELECTABLE, null);
-        placemark.putUserProperty(EDITABLE, null);
-        placemark.putUserProperty(MOVABLE, null);
-        return placemark;
     }
 
     /**
      * Helper method to create vehicle placemarks.
      */
     protected static Placemark createAutomobilePlacemark(Position position, String name, String automotiveType) {
-        if (!automotiveIconMap.containsKey(automotiveType)) {
+        Integer resId = automotiveIconMap.get(automotiveType);
+        if (resId != null) {
+            Placemark placemark = Placemark.createWithImage(position, ImageSource.fromResource(resId));
+            placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(NORMAL_IMAGE_SCALE);
+            placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(HIGHLIGHTED_IMAGE_SCALE).setImageColor(new Color(android.graphics.Color.YELLOW)));
+            placemark.setDisplayName(name);
+            // The AUTOMOTIVE_TYPE property is used to exchange the vehicle type with the VehicleTypeDialog
+            placemark.putUserProperty(AUTOMOTIVE_TYPE, automotiveType);
+            // The select/drag controller will examine a placemark's "capabilities" to determine what operations are applicable:
+            placemark.putUserProperty(SELECTABLE, null);
+            placemark.putUserProperty(EDITABLE, null);
+            placemark.putUserProperty(MOVABLE, null);
+            return placemark;
+        } else {
             throw new IllegalArgumentException(automotiveType + " is not valid.");
         }
-        Placemark placemark = Placemark.createWithImage(position, ImageSource.fromResource(automotiveIconMap.get(automotiveType)));
-        placemark.getAttributes().setImageOffset(Offset.bottomCenter()).setImageScale(NORMAL_IMAGE_SCALE);
-        placemark.setHighlightAttributes(new PlacemarkAttributes(placemark.getAttributes()).setImageScale(HIGHLIGHTED_IMAGE_SCALE).setImageColor(new Color(android.graphics.Color.YELLOW)));
-        placemark.setDisplayName(name);
-        // The AUTOMOTIVE_TYPE property is used to exchange the vehicle type with the VehicleTypeDialog
-        placemark.putUserProperty(AUTOMOTIVE_TYPE, automotiveType);
-        // The select/drag controller will examine a placemark's "capabilities" to determine what operations are applicable:
-        placemark.putUserProperty(SELECTABLE, null);
-        placemark.putUserProperty(EDITABLE, null);
-        placemark.putUserProperty(MOVABLE, null);
-        return placemark;
     }
 
     /**
@@ -242,18 +245,16 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
 
         protected boolean isDraggingArmed = false;
 
-        private PointF dragRefPt = new PointF();
+        private final PointF dragRefPt = new PointF();
 
-        private Line ray = new Line();          // pre-allocated to avoid memory allocations
+        private final Line ray = new Line();          // pre-allocated to avoid memory allocations
 
-        private Vec3 pickPoint = new Vec3();    // pre-allocated to avoid memory allocations
-
-        private RenderableLayer layer;          // collection of Renderables for simulated picking
+        private final Vec3 pickPoint = new Vec3();    // pre-allocated to avoid memory allocations
 
         /**
          * Assign a subclassed SimpleOnGestureListener to a GestureDetector to handle the selection and drag gestures.
          */
-        protected GestureDetector selectDragDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
+        protected final GestureDetector selectDragDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDown(MotionEvent event) {
                 pick(event);    // Pick the object(s) at the tap location
@@ -280,7 +281,7 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
             @Override
             public boolean onScroll(MotionEvent downEvent, MotionEvent moveEvent, float distanceX, float distanceY) {
                 if (isDraggingArmed) {
-                    return drag(downEvent, moveEvent, distanceX, distanceY);    // Move the selected object
+                    return drag(distanceX, distanceY);    // Move the selected object
                 }
                 return false;
             }
@@ -396,7 +397,7 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
          *
          * @return true if the event was consumed
          */
-        public boolean drag(MotionEvent downEvent, MotionEvent moveEvent, float distanceX, float distanceY) {
+        public boolean drag(float distanceX, float distanceY) {
             if (this.isDraggingArmed && this.selectedObject != null) {
                 if (this.selectedObject instanceof Placemark) {
                     // Signal that dragging is in progress
@@ -509,7 +510,7 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
         @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            Bundle args = getArguments();
+            Bundle args = requireArguments();
             String title = args.getString("title", "");
 
             // Determine type of vehicles displayed in this dialog
@@ -531,41 +532,33 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
             }
 
             // Create "single selection" list of aircraft vehicleTypes
-            return new AlertDialog.Builder(getActivity())
+            return new AlertDialog.Builder(requireActivity())
                 .setTitle(title)
                 .setSingleChoiceItems(this.vehicleTypes, this.selectedItem,
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            selectedItem = which;
-                        }
-                    })
+                        (dialog, which) -> selectedItem = which)
                     // The OK button will update the selected placemark's aircraft type
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        onFinished(vehicleTypes[selectedItem]);
-                    }
-                })
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> onFinished(vehicleTypes[selectedItem]))
                     // A null handler will close the dialog
                 .setNegativeButton(android.R.string.cancel, null)
                 .create();
         }
 
         public void onFinished(String vehicleType) {
-            PlacemarksSelectDragActivity activity = (PlacemarksSelectDragActivity) getActivity();
+            PlacemarksSelectDragActivity activity = (PlacemarksSelectDragActivity) requireActivity();
             if (activity.controller.selectedObject instanceof Placemark) {
-
                 Placemark placemark = (Placemark) activity.controller.selectedObject;
                 String currentType = (String) placemark.getUserProperty(this.vehicleKey);
                 if (currentType.equals(vehicleType)) {
                     return;
                 }
                 // Update the placemark's icon attributes and vehicle type property.
-                ImageSource imageSource = ImageSource.fromResource(this.vehicleIcons.get(vehicleType));
-                placemark.putUserProperty(this.vehicleKey, vehicleType);
-                placemark.getAttributes().setImageSource(imageSource);
-                placemark.getHighlightAttributes().setImageSource(imageSource);
+                Integer resId = this.vehicleIcons.get(vehicleType);
+                if (resId != null) {
+                    ImageSource imageSource = ImageSource.fromResource(resId);
+                    placemark.putUserProperty(this.vehicleKey, vehicleType);
+                    placemark.getAttributes().setImageSource(imageSource);
+                    placemark.getHighlightAttributes().setImageSource(imageSource);
+                }
                 // Show the change
                 activity.getWorldWindow().requestRedraw();
             }

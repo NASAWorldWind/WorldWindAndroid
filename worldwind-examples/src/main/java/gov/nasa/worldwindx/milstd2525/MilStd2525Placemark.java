@@ -12,11 +12,11 @@ import gov.nasa.worldwind.shape.Placemark;
 
 public class MilStd2525Placemark extends Placemark {
 
-    protected String symbolCode;
+    protected final String symbolCode;
 
-    protected SparseArray<String> modifiers;
+    protected final SparseArray<String> modifiers;
 
-    protected SparseArray<String> attributes;
+    protected final SparseArray<String> attributes;
 
     /**
      * Constructs a MIL-STD-2525 Placemark with an appropriate level of detail for the current distance from the camera.

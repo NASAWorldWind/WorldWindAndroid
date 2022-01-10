@@ -6,7 +6,6 @@
 package gov.nasa.worldwindx;
 
 import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.GestureDetector;
@@ -16,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -63,7 +63,7 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
         // Add a TextView on top of the globe to convey the status of this activity
         this.statusText = new TextView(this);
         this.statusText.setTextColor(android.graphics.Color.YELLOW);
-        FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
+        FrameLayout globeLayout = findViewById(R.id.globe);
         globeLayout.addView(this.statusText);
 
         // Get a reference to the WorldWindow view
@@ -115,9 +115,7 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
 
         protected final static int LEVEL_5 = 5;
 
-        protected static PlacemarkAttributes defaultAttributes = new PlacemarkAttributes().setImageScale(15).setMinimumImageScale(5);
-
-        protected static HashMap<String, WeakReference<PlacemarkAttributes>> iconCache = new HashMap<>();
+        protected static final HashMap<String, WeakReference<PlacemarkAttributes>> iconCache = new HashMap<>();
 
         protected final Resources resources;
 
@@ -142,7 +140,7 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
         /**
          * Gets the active attributes for the current distance to the camera and highlighted state.
          *
-         * @param rc
+         * @param rc             Rendering context
          * @param placemark      The placemark needing a level of detail selection
          * @param cameraDistance The distance from the placemark to the camera (meters)
          */
@@ -207,7 +205,7 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
 
             if (highlightChanged) {
                 // Use a distinct set attributes when highlighted, otherwise used the shared attributes
-                if (highlighted) {
+                if (highlighted && this.attributes != null) {
                     // Create a copy of the shared attributes bundle and increase the scale
                     double scale = this.attributes.getImageScale();
                     this.attributes = new PlacemarkAttributes(this.attributes).setImageScale(scale * 2.0);
@@ -242,10 +240,10 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
                 resourceId = R.drawable.btn_rating_star_off_normal;
                 scale = 0.6;
             }
-            if (place.type == Place.NATIONAL_CAPITAL) {
+            if (place.type.equals(Place.NATIONAL_CAPITAL)) {
                 resourceId = R.drawable.star_big_on;
                 scale *= 2.5;
-            } else if (place.type == Place.STATE_CAPITAL) {
+            } else if (place.type.equals(Place.STATE_CAPITAL)) {
                 resourceId = R.drawable.star_big_on;
                 scale *= 1.79;
             }
@@ -262,62 +260,18 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
 
                 // Create the attributes bundle and add it to the cache.
                 // The actual bitmap will be lazily (re)created using a factory.
-                placemarkAttributes = createPlacemarkAttributes(resources, resourceId, scale);
-                if (placemarkAttributes == null) {
-                    throw new IllegalArgumentException("Cannot generate a icon for: " + iconKey);
-                }
+                placemarkAttributes = createPlacemarkAttributes(resourceId, scale);
                 // Add a weak reference to the attribute bundle to our cache
                 iconCache.put(iconKey, new WeakReference<>(placemarkAttributes));
             }
             return placemarkAttributes;
         }
 
-        protected static PlacemarkAttributes createPlacemarkAttributes(Resources resources, @DrawableRes int resourceId, double scale) {
+        @NonNull
+        protected static PlacemarkAttributes createPlacemarkAttributes(@DrawableRes int resourceId, double scale) {
             PlacemarkAttributes placemarkAttributes = new PlacemarkAttributes();
-            // Create a BitmapFactory instance with the values needed to create and recreate the symbol's bitmap
-            //IconBitmapFactory factory = new IconBitmapFactory(resources, resourceId);
-            //placemarkAttributes.setImageSource(ImageSource.fromBitmapFactory(factory)).setImageScale(scale);
             placemarkAttributes.setImageSource(ImageSource.fromResource(resourceId)).setImageScale(scale).setMinimumImageScale(0.5);
             return placemarkAttributes;
-        }
-    }
-
-    protected static class IconBitmapFactory implements ImageSource.BitmapFactory {
-
-        /**
-         * The default icon to use when the renderer cannot render an image.
-         */
-        protected static Bitmap defaultImage = android.graphics.BitmapFactory.decodeResource(Resources.getSystem(), android.R.drawable.ic_dialog_alert); // Warning sign
-
-        protected static android.graphics.BitmapFactory.Options options = defaultAndroidBitmapFactoryOptions();
-
-        protected final Resources resources;
-
-        protected final int resourceId;
-
-        public IconBitmapFactory(Resources resources, @DrawableRes int resourceId) {
-            this.resources = resources;
-            this.resourceId = resourceId;
-        }
-
-        @Override
-        public Bitmap createBitmap() {
-            System.out.println("createBitmap called");
-            // Use an Android BitmapFactory to convert the resource to a Bitmap
-            Bitmap bitmap = android.graphics.BitmapFactory.decodeResource(this.resources, this.resourceId, options);
-            if (bitmap == null) {
-                Logger.logMessage(Logger.ERROR, "IconBitmapFactory", "createBitmap", "Failed to decode resource for " + this.resourceId);
-                // TODO: File JIRA issue - must return a valid bitmap, else the ImageRetriever repeatedly attempts to create the bitmap.
-                return defaultImage;
-            }
-            // Return the bitmap
-            return bitmap;
-        }
-
-        protected static android.graphics.BitmapFactory.Options defaultAndroidBitmapFactoryOptions() {
-            android.graphics.BitmapFactory.Options options = new android.graphics.BitmapFactory.Options();
-            options.inScaled = false; // suppress default image scaling; load the image in its native dimensions
-            return options;
         }
     }
 
@@ -360,9 +314,10 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
         }
 
         protected boolean isCapital() {
-            return (this.type == Place.NATIONAL_CAPITAL) || (this.type == Place.STATE_CAPITAL);
+            return (this.type.equals(Place.NATIONAL_CAPITAL)) || (this.type.equals(Place.STATE_CAPITAL));
         }
 
+        @NonNull
         @Override
         public String toString() {
             return "Place{" +
@@ -388,7 +343,7 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
         /**
          * Assign a subclassed SimpleOnGestureListener to a GestureDetector to handle the "pick" events.
          */
-        protected GestureDetector pickGestureDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
+        protected final GestureDetector pickGestureDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDown(MotionEvent event) {
                 pick(event);    // Pick the object(s) at the tap location
@@ -481,9 +436,9 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
      */
     protected class CreatePlacesTask extends AsyncTask<Void, String, Void> {
 
-        private ArrayList<Place> places = new ArrayList<>();
+        private final ArrayList<Place> places = new ArrayList<>();
 
-        private RenderableLayer placeLayer = new RenderableLayer();
+        private final RenderableLayer placeLayer = new RenderableLayer();
 
         private int numPlacesCreated;
 

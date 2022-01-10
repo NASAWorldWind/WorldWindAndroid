@@ -29,8 +29,6 @@ import gov.nasa.worldwindx.milstd2525.MilStd2525Placemark;
 
 public class PlacemarksMilStd2525StressActivity extends GeneralGlobeActivity implements Choreographer.FrameCallback {
 
-    protected static final int NUM_PLACEMARKS = 10000;
-
     private final static String[] StandardIdentities = {
         "P",    // Pending
         "U",    // Unknown
@@ -1019,9 +1017,6 @@ public class PlacemarksMilStd2525StressActivity extends GeneralGlobeActivity imp
         "SRTT--",
         "SRU---"};
 
-    //////////////////////////////////////////////////////////
-
-    //////////////////////
     // Warfighting
 
     public static String[] SignalsIntelligenceSeaSurfaceFunctionIDs = {
@@ -1137,7 +1132,6 @@ public class PlacemarksMilStd2525StressActivity extends GeneralGlobeActivity imp
         "B-----",
         "C-----"};
 
-    //////////////////////
     //  Signals Intelligence
 
     public static String[] StabilityOperationsNonmilitaryFunctionIDs = {
@@ -1306,7 +1300,6 @@ public class PlacemarksMilStd2525StressActivity extends GeneralGlobeActivity imp
         "ED---------",
         "EE---------"};
 
-    ///////////////////////////////
     //  Stability Operations
 
     public static String[] EmergencyManagementInfrastructureFunctionIDs = {
@@ -1401,7 +1394,7 @@ public class PlacemarksMilStd2525StressActivity extends GeneralGlobeActivity imp
         // Add a TextView on top of the globe to convey the status of this activity
         this.statusText = new TextView(this);
         this.statusText.setTextColor(android.graphics.Color.YELLOW);
-        FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
+        FrameLayout globeLayout = findViewById(R.id.globe);
         globeLayout.addView(this.statusText);
 
         this.getWorldWindow().getLayers().clearLayers();
@@ -1459,11 +1452,11 @@ public class PlacemarksMilStd2525StressActivity extends GeneralGlobeActivity imp
     protected class InitializeSymbolsTask extends AsyncTask<Void, Void, Void> {
 
         // Formatter for a date-time group (DTG) string
-        private final SimpleDateFormat dateTimeGroup = new SimpleDateFormat("ddHHmmss'Z'MMMyyyy");
+        private final SimpleDateFormat dateTimeGroup = new SimpleDateFormat("ddHHmmss'Z'MMMyyyy", Locale.US);
 
         // Create a random number generator with an arbitrary seed
         // that will generate the same numbers between runs.
-        protected Random random = new Random(123);
+        protected final Random random = new Random(123);
 
         protected void onPreExecute() {
             super.onPreExecute();

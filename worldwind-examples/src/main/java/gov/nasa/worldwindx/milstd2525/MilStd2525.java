@@ -43,12 +43,12 @@ public class MilStd2525 {
     /**
      * The actual rendering engine for the MIL-STD-2525 graphics.
      */
-    private static MilStdIconRenderer renderer = MilStdIconRenderer.getInstance();
+    private static final MilStdIconRenderer renderer = MilStdIconRenderer.getInstance();
 
     /**
      * The handler used to schedule runnable to be executed on the main thread.
      */
-    private static Handler mainLoopHandler = new Handler(Looper.getMainLooper());
+    private static final Handler mainLoopHandler = new Handler(Looper.getMainLooper());
 
     /**
      * A cache of PlacemarkAttribute bundles containing MIL-STD-2525 symbols. Using a cache is essential for memory
@@ -56,9 +56,9 @@ public class MilStd2525 {
      * the attribute bundles so that the garbage collector can reclaim the memory when a Placemark releases an attribute
      * bundle, for instance when it changes its level-of-detail.
      */
-    private static HashMap<String, WeakReference<PlacemarkAttributes>> symbolCache = new HashMap<>();
+    private static final HashMap<String, WeakReference<PlacemarkAttributes>> symbolCache = new HashMap<>();
 
-    private static SparseArray<String> emptyArray = new SparseArray<>();    // may be used in a cache key
+    private static final SparseArray<String> emptyArray = new SparseArray<>();    // may be used in a cache key
 
     private static boolean initialized = false;
 
@@ -153,9 +153,6 @@ public class MilStd2525 {
             // Create the attributes bundle and add it to the cache.
             // The actual bitmap will be lazily (re)created using a factory.
             placemarkAttributes = MilStd2525.createPlacemarkAttributes(symbolCode, modifiers, attributes);
-            if (placemarkAttributes == null) {
-                throw new IllegalArgumentException("Cannot generate a symbol for: " + symbolKey);
-            }
             // Add a weak reference to the attribute bundle to our cache
             symbolCache.put(symbolKey, new WeakReference<>(placemarkAttributes));
 
@@ -202,8 +199,8 @@ public class MilStd2525 {
             throw new IllegalStateException(
                 Logger.logMessage(Logger.ERROR, "MilStd2525", "renderImage", "renderer has not been initialized."));
         }
-        SparseArray<String> unitModifiers = modifiers == null ? new SparseArray<String>() : modifiers;
-        SparseArray<String> renderAttributes = attributes == null ? new SparseArray<String>() : attributes;
+        SparseArray<String> unitModifiers = modifiers == null ? new SparseArray<>() : modifiers;
+        SparseArray<String> renderAttributes = attributes == null ? new SparseArray<>() : attributes;
         if (!renderer.CanRender(symbolCode, unitModifiers, renderAttributes)) {
             return null;
         }
@@ -274,12 +271,7 @@ public class MilStd2525 {
             // Apply the placemark offset to the attributes on the main thread. This is necessary to synchronize write
             // access to placemarkAttributes from the thread that invokes this BitmapFactory and read access from the
             // main thread.
-            mainLoopHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    placemarkAttributes.setImageOffset(placemarkOffset);
-                }
-            });
+            mainLoopHandler.post(() -> placemarkAttributes.setImageOffset(placemarkOffset));
 
             // Return the bitmap
             return imageInfo.getImage();

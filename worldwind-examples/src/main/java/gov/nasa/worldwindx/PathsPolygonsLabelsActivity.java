@@ -55,7 +55,7 @@ public class PathsPolygonsLabelsActivity extends GeneralGlobeActivity {
     // A component for displaying the status of this activity
     protected TextView statusText = null;
 
-    protected RenderableLayer shapesLayer = new RenderableLayer("Shapes");
+    protected final RenderableLayer shapesLayer = new RenderableLayer("Shapes");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +67,7 @@ public class PathsPolygonsLabelsActivity extends GeneralGlobeActivity {
         // Add a TextView on top of the globe to convey the status of this activity
         this.statusText = new TextView(this);
         this.statusText.setTextColor(android.graphics.Color.YELLOW);
-        FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
+        FrameLayout globeLayout = findViewById(R.id.globe);
         globeLayout.addView(this.statusText);
 
         // Get a reference to the WorldWindow view
@@ -94,7 +94,7 @@ public class PathsPolygonsLabelsActivity extends GeneralGlobeActivity {
 
         private int numPlacesCreated;
 
-        private Random random = new Random(22);    // Seed the random number generator for random color fills.
+        private final Random random = new Random(22);    // Seed the random number generator for random color fills.
 
         /**
          * Loads the world_highways and world_political_areas files a background thread. The {@link Renderable} objects
@@ -228,9 +228,9 @@ public class PathsPolygonsLabelsActivity extends GeneralGlobeActivity {
                     // Buildup the Path. Coordinate tuples are separated by ",".
                     List<Position> positions = new ArrayList<>();
                     String[] tuples = feature.split(",");
-                    for (int i = 0; i < tuples.length; i++) {
+                    for (String tuple : tuples) {
                         // The XY tuple components a separated by a space
-                        String[] xy = tuples[i].split(" ");
+                        String[] xy = tuple.split(" ");
                         positions.add(Position.fromDegrees(Double.parseDouble(xy[1]), Double.parseDouble(xy[0]), 0));
                     }
                     Path path = new Path(positions, attrs);
@@ -312,9 +312,9 @@ public class PathsPolygonsLabelsActivity extends GeneralGlobeActivity {
                         // Buildup the Polygon boundaries. Coordinate tuples are separated by ",".
                         List<Position> positions = new ArrayList<>();
                         String[] tuples = poly.split(",");
-                        for (int i = 0; i < tuples.length; i++) {
+                        for (String tuple : tuples) {
                             // The XY tuple components a separated by a space
-                            String[] xy = tuples[i].split(" ");
+                            String[] xy = tuple.split(" ");
                             positions.add(Position.fromDegrees(Double.parseDouble(xy[1]), Double.parseDouble(xy[0]), 0));
                         }
                         polygon.addBoundary(positions);
@@ -343,12 +343,12 @@ public class PathsPolygonsLabelsActivity extends GeneralGlobeActivity {
      */
     public class PickController extends BasicWorldWindowController {
 
-        protected ArrayList<Object> pickedObjects = new ArrayList<>();    // last picked objects from onDown events
+        protected final ArrayList<Object> pickedObjects = new ArrayList<>();    // last picked objects from onDown events
 
         /**
          * Assign a subclassed SimpleOnGestureListener to a GestureDetector to handle the "pick" events.
          */
-        protected GestureDetector pickGestureDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
+        protected final GestureDetector pickGestureDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onSingleTapUp(MotionEvent event) {
                 pick(event);    // Pick the object(s) at the tap location
@@ -384,8 +384,8 @@ public class PathsPolygonsLabelsActivity extends GeneralGlobeActivity {
 
             // Perform a new pick at the screen x, y
             PickedObjectList pickList = getWorldWindow().pickShapesInRect(
-                event.getX() - PICK_REGION_SIZE / 2,
-                event.getY() - PICK_REGION_SIZE / 2,
+                event.getX() - PICK_REGION_SIZE / 2.0f,
+                event.getY() - PICK_REGION_SIZE / 2.0f,
                 PICK_REGION_SIZE, PICK_REGION_SIZE);
 
             // pickShapesInRect can return multiple objects, i.e., they're may be more that one 'top object'
@@ -403,22 +403,22 @@ public class PathsPolygonsLabelsActivity extends GeneralGlobeActivity {
          * Toggles the highlighted state of a picked object.
          */
         public void togglePickedObjectHighlights() {
-            String message = "";
+            StringBuilder message = new StringBuilder();
             for (Object pickedObject : pickedObjects) {
 
                 if (pickedObject instanceof Highlightable) {
                     Highlightable highlightable = (Highlightable) pickedObject;
                     highlightable.setHighlighted(!highlightable.isHighlighted());
                     if (highlightable.isHighlighted()) {
-                        if (!message.isEmpty()) {
-                            message += ", ";
+                        if (message.length() > 0) {
+                            message.append(", ");
                         }
-                        message += ((Renderable) highlightable).getDisplayName();
+                        message.append(((Renderable) highlightable).getDisplayName());
                     }
                 }
             }
-            if (!message.isEmpty()) {
-                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+            if (message.length() > 0) {
+                Toast.makeText(getApplicationContext(), message.toString(), Toast.LENGTH_SHORT).show();
             }
             this.getWorldWindow().requestRedraw();
         }

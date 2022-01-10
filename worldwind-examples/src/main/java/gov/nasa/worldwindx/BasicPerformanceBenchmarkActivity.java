@@ -55,15 +55,15 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
 
     public static class AnimateCameraCommand implements Runnable {
 
-        protected WorldWindow wwd;
+        protected final WorldWindow wwd;
 
-        protected Camera beginCamera;
+        protected final Camera beginCamera;
 
-        protected Camera endCamera;
+        protected final Camera endCamera;
 
-        protected Camera curCamera;
+        protected final Camera curCamera;
 
-        protected int steps;
+        protected final int steps;
 
         public AnimateCameraCommand(WorldWindow wwd, Camera end, int steps) {
             this.wwd = wwd;
@@ -98,7 +98,7 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
 
     public static class SetCameraCommand implements Runnable {
 
-        private static Pools.Pool<SetCameraCommand> pool = new Pools.SynchronizedPool<>(10);
+        private static final Pools.Pool<SetCameraCommand> pool = new Pools.SynchronizedPool<>(10);
 
         private WorldWindow wwd;
 
@@ -138,7 +138,7 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
 
     public static class SleepCommand implements Runnable {
 
-        protected long durationMillis;
+        protected final long durationMillis;
 
         public SleepCommand(long durationMillis) {
             this.durationMillis = durationMillis;
@@ -152,7 +152,7 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
 
     public static class LogFrameMetricsCommand implements Runnable {
 
-        protected WorldWindow wwd;
+        protected final WorldWindow wwd;
 
         public LogFrameMetricsCommand(WorldWindow wwd) {
             this.wwd = wwd;
@@ -160,17 +160,17 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
 
         @Override
         public void run() {
-            if (!isActivityThread()) {
-                runOnActivityThread(this);
-            } else {
+            if (isActivityThread()) {
                 Logger.log(Logger.INFO, this.wwd.getFrameMetrics().toString());
+            } else {
+                runOnActivityThread(this);
             }
         }
     }
 
     public static class ClearFrameMetricsCommand implements Runnable {
 
-        protected WorldWindow wwd;
+        protected final WorldWindow wwd;
 
         public ClearFrameMetricsCommand(WorldWindow wwd) {
             this.wwd = wwd;
@@ -178,17 +178,17 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
 
         @Override
         public void run() {
-            if (!isActivityThread()) {
-                runOnActivityThread(this);
-            } else {
+            if (isActivityThread()) {
                 this.wwd.getFrameMetrics().reset();
+            } else {
+                runOnActivityThread(this);
             }
         }
     }
 
     protected static final int FRAME_INTERVAL = 67; // 67 millis; 15 frames per second
 
-    protected static Handler activityHandler = new Handler(Looper.getMainLooper());
+    protected static final Handler activityHandler = new Handler(Looper.getMainLooper());
 
     protected static ExecutorService commandExecutor;
 

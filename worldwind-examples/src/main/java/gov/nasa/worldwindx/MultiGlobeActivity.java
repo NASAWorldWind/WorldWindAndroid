@@ -19,6 +19,8 @@ import gov.nasa.worldwind.layer.atmosphere.AtmosphereLayer;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
+import androidx.annotation.NonNull;
+
 /**
  * This activity manifests two side-by-side globes with an adjustable splitter
  */
@@ -31,7 +33,7 @@ public class MultiGlobeActivity extends AbstractMainActivity {
     /**
      * The WorldWindow (GLSurfaceView) maintained by this activity
      */
-    protected ArrayList<WorldWindow> worldWindows = new ArrayList<>();
+    protected final ArrayList<WorldWindow> worldWindows = new ArrayList<>();
 
 
     @Override
@@ -50,7 +52,7 @@ public class MultiGlobeActivity extends AbstractMainActivity {
 
         // Get the standard/common layout used for a single globe activity
         // and replace it's contents with a multi-globe layout.
-        RelativeLayout layout = (RelativeLayout) findViewById(R.id.globe_content);
+        RelativeLayout layout = findViewById(R.id.globe_content);
         layout.removeAllViews();
 
         // Add the landscape or portrait layout
@@ -58,9 +60,9 @@ public class MultiGlobeActivity extends AbstractMainActivity {
         layout.addView(multiGlobeLayout);
 
         // Add a WorldWindow to each of the FrameLayouts in the multi-globe layout.
-        FrameLayout globe1 = (FrameLayout) findViewById(R.id.globe_one);
-        FrameLayout globe2 = (FrameLayout) findViewById(R.id.globe_two);
-        ImageButton splitter = (ImageButton) findViewById(R.id.splitter);
+        FrameLayout globe1 = findViewById(R.id.globe_one);
+        FrameLayout globe2 = findViewById(R.id.globe_two);
+        ImageButton splitter = findViewById(R.id.splitter);
 
         globe1.addView(getWorldWindow(0) == null ? createWorldWindow() : getWorldWindow(0), new FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT));
         globe2.addView(getWorldWindow(1) == null ? createWorldWindow() : getWorldWindow(1), new FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT));
@@ -88,15 +90,10 @@ public class MultiGlobeActivity extends AbstractMainActivity {
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
         // Checks the orientation of the screen
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            //Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
-        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            //Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
-        }
         deviceOrientation = newConfig.orientation;
         performLayout();
     }
@@ -154,45 +151,41 @@ public class MultiGlobeActivity extends AbstractMainActivity {
          */
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_MOVE:
-                    // Get screen coordinates of the touch point
-                    float rawX = event.getRawX();
-                    float rawY = event.getRawY();
-                    // Get the primary layout container for the multi-globe display
-                    LinearLayout parent = (LinearLayout) findViewById(R.id.multi_globe_content);
-                    // Get the layoutParams for each of the children. The parent will layout the
-                    // children based on the layout weights computed based on the splitter position.
-                    LinearLayout.LayoutParams layout1 = (LinearLayout.LayoutParams) one.getLayoutParams();
-                    LinearLayout.LayoutParams layout2 = (LinearLayout.LayoutParams) two.getLayoutParams();
-                    LinearLayout.LayoutParams layout3 = (LinearLayout.LayoutParams) splitter.getLayoutParams();
+            if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                // Get screen coordinates of the touch point
+                float rawX = event.getRawX();
+                float rawY = event.getRawY();
+                // Get the primary layout container for the multi-globe display
+                LinearLayout parent = findViewById(R.id.multi_globe_content);
+                // Get the layoutParams for each of the children. The parent will layout the
+                // children based on the layout weights computed based on the splitter position.
+                LinearLayout.LayoutParams layout1 = (LinearLayout.LayoutParams) one.getLayoutParams();
+                LinearLayout.LayoutParams layout2 = (LinearLayout.LayoutParams) two.getLayoutParams();
+                LinearLayout.LayoutParams layout3 = (LinearLayout.LayoutParams) splitter.getLayoutParams();
 
-                    int weightSum;
-                    if (deviceOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-                        // We're using the pixel values for the layout weights, with a fixed weight
-                        // for the splitter.
-                        weightSum = parent.getWidth();
-                        layout1.weight = Math.min(Math.max(0f, rawX - (splitterWeight / 2f)), weightSum - splitterWeight);
-                        layout2.weight = Math.min(Math.max(0f, weightSum - layout1.weight - splitterWeight), weightSum - splitterWeight);
-                        parent.setWeightSum(weightSum);
-                    } else {
-                        // We're using the pixel values for the layout weights, with a fixed weight
-                        // for the splitter.  In portrait mode we have a header that we must account for.
-                        int origin[] = new int[2];
-                        parent.getLocationOnScreen(origin);
-                        float y = rawY - origin[1];
-                        weightSum = parent.getHeight();
-                        layout2.weight = Math.min(Math.max(0f, y - (splitterWeight / 2f)), weightSum - splitterWeight);
-                        layout1.weight = Math.min(Math.max(0f, weightSum - layout2.weight - splitterWeight), weightSum - splitterWeight);
-                        parent.setWeightSum(weightSum);
-                    }
-                    layout3.weight = splitterWeight;
+                int weightSum;
+                if (deviceOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    // We're using the pixel values for the layout weights, with a fixed weight
+                    // for the splitter.
+                    weightSum = parent.getWidth();
+                    layout1.weight = Math.min(Math.max(0f, rawX - (splitterWeight / 2f)), weightSum - splitterWeight);
+                    layout2.weight = Math.min(Math.max(0f, weightSum - layout1.weight - splitterWeight), weightSum - splitterWeight);
+                } else {
+                    // We're using the pixel values for the layout weights, with a fixed weight
+                    // for the splitter.  In portrait mode we have a header that we must account for.
+                    int[] origin = new int[2];
+                    parent.getLocationOnScreen(origin);
+                    float y = rawY - origin[1];
+                    weightSum = parent.getHeight();
+                    layout1.weight = Math.min(Math.max(0f, y - (splitterWeight / 2f)), weightSum - splitterWeight);
+                    layout2.weight = Math.min(Math.max(0f, weightSum - layout1.weight - splitterWeight), weightSum - splitterWeight);
+                }
+                parent.setWeightSum(weightSum);
+                layout3.weight = splitterWeight;
 
-                    one.setLayoutParams(layout1);
-                    two.setLayoutParams(layout2);
-                    splitter.setLayoutParams(layout3);
-
-                    break;
+                one.setLayoutParams(layout1);
+                two.setLayoutParams(layout2);
+                splitter.setLayoutParams(layout3);
             }
             return false;
         }

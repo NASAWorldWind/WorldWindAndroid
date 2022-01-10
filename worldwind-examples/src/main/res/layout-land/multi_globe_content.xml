@@ -10,7 +10,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_gravity="left|top"
+    android:layout_gravity="start|top"
     android:orientation="horizontal"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".MultiGlobeActivity"
@@ -19,8 +19,7 @@
     android:focusable="false"
     android:clickable="false"
     android:baselineAligned="false"
-    android:contextClickable="false"
-    android:background="#00ffff">
+    android:contextClickable="false">
     <!--
    This layout is a two-pane layout for the multi-globe example
    -->
@@ -40,7 +39,7 @@
         android:src="@drawable/grip_vertical"
         android:background="@color/primary_material_light"
         android:layout_weight="25"
-        android:layout_gravity="left"/>
+        android:layout_gravity="start"/>
 
     <FrameLayout
         android:id="@+id/globe_two"

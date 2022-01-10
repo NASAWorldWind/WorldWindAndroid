@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Position;
@@ -29,13 +30,13 @@ import gov.nasa.worldwind.util.WWUtil;
 
 public class PathsExampleActivity extends GeneralGlobeActivity implements Handler.Callback {
 
-    protected ArrayList<Airport> airportTable = new ArrayList<>();
+    protected final ArrayList<Airport> airportTable = new ArrayList<>();
 
-    protected HashMap<String, Airport> airportIkoIndex = new HashMap<>();
+    protected final HashMap<String, Airport> airportIkoIndex = new HashMap<>();
 
-    protected RenderableLayer flightPathLayer = new RenderableLayer();
+    protected final RenderableLayer flightPathLayer = new RenderableLayer();
 
-    protected Handler handler = new Handler(Looper.getMainLooper(), this);
+    protected final Handler handler = new Handler(Looper.getMainLooper(), this);
 
     protected double animationAmount = 0;
 
@@ -129,7 +130,6 @@ public class PathsExampleActivity extends GeneralGlobeActivity implements Handle
                 apt.pos.latitude = Double.parseDouble(fields[LAT]);
                 apt.pos.longitude = Double.parseDouble(fields[LON]);
                 apt.pos.altitude = Double.parseDouble(fields[ALT]);
-                apt.nam = fields[NAM];
                 apt.iko = fields[IKO];
                 apt.na3 = fields[NA3];
                 apt.use = fields[USE];
@@ -149,7 +149,7 @@ public class PathsExampleActivity extends GeneralGlobeActivity implements Handle
         attrs.getInteriorColor().set(0.8f, 0.8f, 1.0f, 0.8f);
         attrs.getOutlineColor().set(1.0f, 1.0f, 0.0f, 1.0f);
 
-        Airport dept = this.airportIkoIndex.get("KSEA");
+        Airport dept = Objects.requireNonNull(this.airportIkoIndex.get("KSEA"));
 
         for (Airport dest : this.airportTable) {
             if (dest.equals(dept)) {
@@ -180,9 +180,7 @@ public class PathsExampleActivity extends GeneralGlobeActivity implements Handle
 
     protected static class Airport {
 
-        public Position pos = new Position();
-
-        public String nam;
+        public final Position pos = new Position();
 
         public String iko;
 

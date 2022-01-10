@@ -10,7 +10,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_gravity="left|top"
+    android:layout_gravity="start|top"
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".MultiGlobeActivity"
@@ -19,7 +19,6 @@
     android:clickable="false"
     android:baselineAligned="false"
     android:contextClickable="false"
-    android:background="#00ffff"
     android:weightSum="1774">
     <!--
    This layout is a two-pane portrait layout for the multi-globe example.

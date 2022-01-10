@@ -13,6 +13,8 @@ import android.util.SparseArray;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,7 +71,7 @@ public class PlacemarksMilStd2525DemoActivity extends GeneralGlobeActivity imple
     protected static final List<String> hostiles = Arrays.asList("RS", "IR");
 
     // The handler for the aircraft animation
-    protected Handler handler = new Handler(Looper.getMainLooper());
+    protected final Handler handler = new Handler(Looper.getMainLooper());
 
     protected boolean animationStared = false;
 
@@ -81,7 +83,7 @@ public class PlacemarksMilStd2525DemoActivity extends GeneralGlobeActivity imple
     protected TextView statusText = null;
 
     // A collection of aircraft to be animated
-    protected HashMap<Placemark, Position> aircraftPositions = new HashMap<>(NUM_AIRCRAFT);
+    protected final HashMap<Placemark, Position> aircraftPositions = new HashMap<>(NUM_AIRCRAFT);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +95,7 @@ public class PlacemarksMilStd2525DemoActivity extends GeneralGlobeActivity imple
         // Add a TextView on top of the globe to convey the status of this activity
         this.statusText = new TextView(this);
         this.statusText.setTextColor(android.graphics.Color.YELLOW);
-        FrameLayout globeLayout = (FrameLayout) findViewById(R.id.globe);
+        FrameLayout globeLayout = findViewById(R.id.globe);
         globeLayout.addView(this.statusText);
 
         // Initialize MIL-STD-2525 rendering library and symbols on background threads. AsyncTask tasks
@@ -138,12 +140,7 @@ public class PlacemarksMilStd2525DemoActivity extends GeneralGlobeActivity imple
         handler.post(this);
 
         // Clear the "Starting..." status text after a few seconds
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                statusText.setText("");
-            }
-        }, 3000);
+        handler.postDelayed(() -> statusText.setText(""), 3000);
     }
 
     /**
@@ -183,6 +180,7 @@ public class PlacemarksMilStd2525DemoActivity extends GeneralGlobeActivity imple
             this.country = country;
         }
 
+        @NonNull
         @Override
         public String toString() {
             return "Airport{" +
@@ -229,11 +227,11 @@ public class PlacemarksMilStd2525DemoActivity extends GeneralGlobeActivity imple
      */
     protected class CreateSymbolsTask extends AsyncTask<Void, String, Void> {
 
-        private ArrayList<Airport> airports = new ArrayList<>(NUM_AIRPORTS);
+        private final ArrayList<Airport> airports = new ArrayList<>(NUM_AIRPORTS);
 
-        private RenderableLayer airportLayer = new RenderableLayer();
+        private final RenderableLayer airportLayer = new RenderableLayer();
 
-        private RenderableLayer aircraftLayer = new RenderableLayer();
+        private final RenderableLayer aircraftLayer = new RenderableLayer();
 
         /**
          * Loads the aircraft database and creates the placemarks on a background thread. The {@link RenderableLayer}

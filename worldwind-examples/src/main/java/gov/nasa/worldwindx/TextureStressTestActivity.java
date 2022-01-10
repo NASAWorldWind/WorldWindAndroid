@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 
 import java.util.Arrays;
 
@@ -21,22 +20,19 @@ import gov.nasa.worldwind.shape.SurfaceImage;
 
 public class TextureStressTestActivity extends BasicGlobeActivity {
 
-    protected RenderableLayer layer = new RenderableLayer();
+    protected final RenderableLayer layer = new RenderableLayer();
 
-    protected Sector firstSector = new Sector();
+    protected final Sector firstSector = new Sector();
 
-    protected Sector sector = new Sector();
+    protected final Sector sector = new Sector();
 
     protected Bitmap bitmap;
 
-    protected Handler handler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message msg) {
-            if (msg.what == ADD_IMAGE) {
-                return addImage();
-            } else {
-                return false;
-            }
+    protected final Handler handler = new Handler(Looper.getMainLooper(), msg -> {
+        if (msg.what == ADD_IMAGE) {
+            return addImage();
+        } else {
+            return false;
         }
     });
 
@@ -70,12 +66,7 @@ public class TextureStressTestActivity extends BasicGlobeActivity {
     protected boolean addImage() {
         // Create an image source with a unique factory instance. This pattern is used in order to force WorldWind to
         // allocate a new OpenGL texture object for each surface image from a single bitmap instance.
-        ImageSource imageSource = ImageSource.fromBitmapFactory(new ImageSource.BitmapFactory() {
-            @Override
-            public Bitmap createBitmap() {
-                return bitmap;
-            }
-        });
+        ImageSource imageSource = ImageSource.fromBitmapFactory(() -> bitmap);
 
         // Add the surface image to this test's layer.
         this.layer.addRenderable(new SurfaceImage(new Sector(this.sector), imageSource));

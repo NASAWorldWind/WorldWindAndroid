@@ -15,7 +15,7 @@ import gov.nasa.worldwind.layer.atmosphere.AtmosphereLayer;
 
 public class DayNightCycleActivity extends BasicGlobeActivity implements Choreographer.FrameCallback {
 
-    protected Location sunLocation = new Location(0, -100);
+    protected final Location sunLocation = new Location(0, -100);
 
     protected AtmosphereLayer atmosphereLayer;
 
