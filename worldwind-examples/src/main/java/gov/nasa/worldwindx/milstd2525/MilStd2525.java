@@ -95,7 +95,7 @@ public class MilStd2525 {
         }
         // Tell the renderer where the cache folder is located which is needed to process the embedded xml files.
         String cacheDir = applicationContext.getCacheDir().getAbsoluteFile().getAbsolutePath();
-        renderer.init(cacheDir);
+        renderer.init(applicationContext, cacheDir);
 
         // Establish the default rendering values.
         // See: https://github.com/missioncommand/mil-sym-android/blob/master/Renderer/src/main/java/armyc2/c2sd/renderer/utilities/RendererSettings.java

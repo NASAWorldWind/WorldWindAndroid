@@ -29,10 +29,19 @@ android {
         }
     }
     testOptions {
-        // Setting returnDefaultValues to true prevents un-mocked Android objects from throwing exceptions.
-        // Use this only as a workaround; Mockito is preferred.
-        // TODO change unitTests.returnDefaultValues to false
-        unitTests.returnDefaultValues = true
+        unitTests {
+            // Setting returnDefaultValues to true prevents un-mocked Android objects from throwing exceptions.
+            // Use this only as a workaround; Mockito is preferred.
+            // TODO change unitTests.returnDefaultValues to false
+            returnDefaultValues = true
+            // Fix PowerMock2 reflection warnings
+            all {
+                //jvmArgs += '--illegal-access=deny' // Uncomment this line to show detailed errors description
+                jvmArgs += '--add-opens=java.base/java.io=ALL-UNNAMED'
+                jvmArgs += '--add-opens=java.base/java.nio=ALL-UNNAMED'
+                jvmArgs += '--add-opens=java.base/java.util.regex=ALL-UNNAMED'
+            }
+        }
     }
     productFlavors {
     }
@@ -41,26 +50,26 @@ android {
         disable 'GradleDependency'
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 }
 
 dependencies {
-    implementation 'androidx.annotation:annotation:1.1.0'
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.mockito:mockito-core:3.1.0'
+    implementation 'androidx.annotation:annotation:1.3.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:3.12.4'
     // PowerMockito is required to mock static methods like Logger.log
-    testImplementation('org.powermock:powermock-api-mockito2:2.0.4') {
+    testImplementation('org.powermock:powermock-api-mockito2:2.0.9') {
         exclude module: 'hamcrest-core'
         exclude module: 'objenesis'
     }
-    testImplementation('org.powermock:powermock-module-junit4:2.0.4') {
+    testImplementation('org.powermock:powermock-module-junit4:2.0.9') {
         exclude module: 'hamcrest-core'
         exclude module: 'objenesis'
     }
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test:rules:1.3.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test:rules:1.4.0'
 }
 
 project.afterEvaluate {
@@ -86,6 +95,10 @@ project.afterEvaluate {
             }
         }
     }
+    // Add project dependencies to classpath of compileJavadocSources task
+    compileJavadocSources.classpath += files(android.libraryVariants.collect { variant ->
+        variant.javaCompileProvider.get().classpath.files
+    })
 }
 
 bintray {
@@ -132,6 +145,13 @@ task compileJavadocSources(type: Javadoc) {
     options.memberLevel = JavadocMemberLevel.PUBLIC
     destinationDir file(new File(docOutput, 'javadoc'))
     failOnError false
+    // Add Android classpath to avoid Javadoc build issues
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    // Add explicit dependencies to suppress build time warnings
+    dependsOn 'generateDebugRFile'
+    dependsOn 'generateReleaseRFile'
+    // TODO Fix Javadoc HTML according to new requirements and remove this line
+    options.addStringOption('Xdoclint:none', '-quiet')
 }
 
 task bundleJavadocJar(type: Jar) {

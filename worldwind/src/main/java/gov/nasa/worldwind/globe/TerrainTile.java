@@ -43,9 +43,6 @@ public class TerrainTile extends Tile {
 
     private static long pointBufferSequence; // must be static to avoid cache collisions when a tile instances is destroyed and re-created
 
-    /**
-     * {@inheritDoc}
-     */
     public TerrainTile(Sector sector, Level level, int row, int column) {
         super(sector, level, row, column);
     }

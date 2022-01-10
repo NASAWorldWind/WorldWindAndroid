@@ -623,8 +623,9 @@ public class LocationTest {
         double distanceToResult = lax.linearDistance(result);
         Location test = lax.linearLocation(azimuthToOxr, distanceToResult, new Location());
         assertEquals("interpolated distance", distanceToOxr * amount, distanceToResult, TOLERANCE);
-        assertEquals("latitude", test.latitude, result.latitude, 0);
-        assertEquals("longitude", test.longitude, result.longitude, 0);
+        // Math.ulp delta was added due to migration to Java 11, which uses IEEE-floats instead of x87 FPU
+        assertEquals("latitude", test.latitude, result.latitude, Math.ulp(test.latitude));
+        assertEquals("longitude", test.longitude, result.longitude, Math.ulp(test.longitude));
     }
 
     /**
@@ -1438,7 +1439,7 @@ public class LocationTest {
 
         // delta longitude
         double result = end.longitude - begin.longitude;
-        double expected = 4.860293056378467;
+        double expected = 4.86029305637848;
 
         assertEquals("Delta Longitude", expected, result, 1e-15);
 

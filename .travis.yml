@@ -4,19 +4,24 @@
 # Set up to run the Android build script per the Travis CI documentation
 language: android
 
-# Configure the build to use Oracle JDK 8, required by Android API 24
-jdk:
-  - oraclejdk8
+# Configure the build to use JDK 11, required by Gradle 7.3.3
+jdk: openjdk11
 
 # Configure the Android build configuration to match the Gradle build
 android:
   components:
-    - platform-tools      # latest SDK platform-tools
-    - tools               # latest SDK tools
-    - android-29          # SDK version used to compile the project
-    - build-tools-29.0.2  # minimum build tools compatible with Android Gradle plugin 4.0.x
-    - extra-android-support
     - extra-android-m2repository
+
+env:
+  global:
+    - TARGET_VERSION=31
+    - ANDROID_HOME=~/android-sdk
+
+# Use Command Line Tools SDK manager which works with JDK 11, instead of standard one
+before_install:
+  - wget "https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip" -O commandlinetools.zip
+  - unzip commandlinetools.zip -d $ANDROID_HOME/
+  - yes | $ANDROID_HOME/cmdline-tools/bin/sdkmanager "platforms;android-${TARGET_VERSION}" --sdk_root=$ANDROID_HOME
 
 # Decrypt the keystore used to certify Android apps when the build is not a pull request
 #before_script:

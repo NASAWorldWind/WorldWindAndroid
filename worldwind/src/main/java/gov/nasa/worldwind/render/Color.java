@@ -57,7 +57,7 @@ public class Color {
 
     /**
      * Constructs a color with components stored in a color int. Color ints are stored as packed ints as follows:
-     * <code>(alpha << 24) | (red << 16) | (green << 8) | (blue)</code>. Each component is an 8 bit number between 0 and
+     * <code>(alpha &lt;&lt; 24) | (red &lt;&lt; 16) | (green &lt;&lt; 8) | (blue)</code>. Each component is an 8 bit number between 0 and
      * 255 with 0 indicating the component's intensity.
      *
      * @param colorInt the color int specifying the components
@@ -108,7 +108,7 @@ public class Color {
 
     /**
      * Sets this color to the components stored in a color int. Color ints are stored as packed ints as follows:
-     * <code>(alpha << 24) | (red << 16) | (green << 8) | (blue)</code>. Each component is an 8 bit number between 0 and
+     * <code>(alpha &lt;&lt; 24) | (red &lt;&lt; 16) | (green &lt;&lt; 8) | (blue)</code>. Each component is an 8 bit number between 0 and
      * 255 with 0 indicating the component's intensity.
      *
      * @param colorInt the color int specifying the new components
@@ -205,8 +205,8 @@ public class Color {
     }
 
     /**
-     * Returns this color's components as a color int. Color ints are stored as packed ints as follows: <code>(alpha <<
-     * 24) | (red << 16) | (green << 8) | (blue)</code>. Each component is an 8 bit number between 0 and 255 with 0
+     * Returns this color's components as a color int. Color ints are stored as packed ints as follows: <code>(alpha &lt;&lt;
+     * 24) | (red &lt;&lt; 16) | (green &lt;&lt; 8) | (blue)</code>. Each component is an 8 bit number between 0 and 255 with 0
      * indicating the component's intensity.
      *
      * @return this color converted to a color int

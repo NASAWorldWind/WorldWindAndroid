@@ -17,7 +17,7 @@ import gov.nasa.worldwind.util.Logger;
  * Displays NASA's global elevation coverage at 10m resolution within the continental United States, 30m resolution in
  * all other continents, and 900m resolution on the ocean floor, all from an OGC Web Map Service (WMS). By default,
  * BasicElevationCoverage is configured to retrieve elevation coverage from the WMS at <a
- * href="https://worldwind26.arc.nasa.gov/wms?SERVICE=WMS&REQUEST=GetCapabilities">https://worldwind26.arc.nasa.gov/wms</a>.
+ * href="https://worldwind26.arc.nasa.gov/wms?SERVICE=WMS&amp;REQUEST=GetCapabilities">https://worldwind26.arc.nasa.gov/wms</a>.
  */
 public class BasicElevationCoverage extends TiledElevationCoverage {
 
