@@ -21,7 +21,7 @@ public interface Attributable {
     /**
      * Specifies the shape's normal (non-highlight) attributes. If null and this shape is not highlighted, this shape is
      * not drawn.
-     * <p>
+     * <br>
      * It is permissible to share attribute bundles between shapes.
      *
      * @param attributes a reference to the shape's new normal attributes
@@ -38,7 +38,7 @@ public interface Attributable {
     /**
      * Specifies the shape's highlight attributes. If null and this shape is highlighted, this shape's normal attributes
      * are used. If they in turn are null, this shape is not drawn.
-     * <p>
+     * <br>
      * It is permissible to share attribute bundles between shapes.
      *
      * @param highlightAttributes a reference to the shape's new highlight attributes

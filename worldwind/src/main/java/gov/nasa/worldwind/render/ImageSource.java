@@ -20,11 +20,11 @@ import gov.nasa.worldwind.util.WWUtil;
  * Provides a mechanism for specifying images from a variety of sources. ImageSource retains the image source and its
  * associated type on behalf of the caller, making this information available to WorldWind components that load images
  * on the caller's behalf.
- * <p/>
+ * <br>
  * ImageSource supports four source types: <ul> <li>Android {@link android.graphics.Bitmap}</li> <li>WorldWind {@link
  * ImageSource.BitmapFactory}</li> <li>Android resource identifier</li> <li>File path</li> <li>Uniform Resource Locator
  * (URL)</li> </ul>
- * <p/>
+ * <br>
  * ImageSource instances are intended to be used as a key into a cache or other data structure that enables sharing of
  * loaded images.  Android bitmaps and WorldWind bitmap factories are compared by reference: two image sources are
  * equivalent if they reference the same bitmap or the same bitmap factory. Android resource identifiers with equivalent
@@ -43,7 +43,7 @@ public class ImageSource {
          * from a non-UI thread. Each invocation must return a bitmap with equivalent content, dimensions and
          * configuration. Any side effects applied to the WorldWind scene by the factory must be executed on the main
          * thread.
-         * <p/>
+         * <br>
          * The factory must not retain any reference to the returned bitmap and must not attempt to recycle the bitmap.
          *
          * @return the bitmap associated with this factory

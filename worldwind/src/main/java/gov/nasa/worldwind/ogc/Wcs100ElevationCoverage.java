@@ -12,7 +12,7 @@ import gov.nasa.worldwind.util.Logger;
 
 /**
  * Generates elevations from OGC Web Coverage Service (WCS) version 1.0.0.
- * <p/>
+ * <br>
  * Wcs100ElevationCoverage requires the WCS service address, coverage name, and coverage bounding sector. Get Coverage
  * requests generated for retrieving data use the WCS version 1.0.0 protocol and are limited to the "image/tiff" format
  * and the EPSG:4326 coordinate system. Wcs100ElevationCoverage does not perform version negotation and assumes the

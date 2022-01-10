@@ -16,9 +16,9 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Tests WorldWind's WGS84 definition to ensure it conforms to these ellipsoid parameters obtained from the official
  * WGS84 specifications: http://earth-info.nga.mil/GandG/publications/NGA_STND_0036_1_0_0_WGS84/NGA.STND.0036_1.0.0_WGS84.pdf
- * <p/>
+ * <br>
  * Semi Major Axis: 6378137
- * <p/>
+ * <br>
  * Flattening: 298.257223563
  */
 public class Wgs84Test {

@@ -292,7 +292,7 @@ public class Label extends AbstractRenderable implements Highlightable, Movable 
     /**
      * Sets this label's attributes to the supplied attributes bundle. If null and this label is not highlighted, this
      * this label displays nothing.
-     * <p/>
+     * <br>
      * It is permissible to share attribute bundles between labels.
      *
      * @param attributes a reference to an attributes bundle used by this label when not highlighted
@@ -317,7 +317,7 @@ public class Label extends AbstractRenderable implements Highlightable, Movable 
     /**
      * Sets the attributes used when this label's highlighted flag is true. If null and the highlighted flag is true,
      * this label's normal attributes are used. If they, too, are null, this label displays nothing.
-     * <p/>
+     * <br>
      * It is permissible to share attribute bundles between labels.
      *
      * @param highlightAttributes a reference to the attributes bundle used by this label when highlighted

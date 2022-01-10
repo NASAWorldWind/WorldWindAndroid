@@ -60,9 +60,7 @@ import gov.nasa.worldwind.util.glu.tessellator.GLUtessellatorImpl;
   * provides standard methods for setting up view volumes, building
   * mipmaps and performing other common operations.  The GLU NURBS
   * routines are not currently exposed.
-  * 
-  * <P>
-  *
+  * <BR>
   * Notes from the Reference Implementation for this class:
   * Thanks to the contributions of many individuals, this class is a
   * pure Java port of SGI's original C sources. All of the projection,
@@ -115,64 +113,65 @@ public class GLU
    * <b>gluTessProperty</b> is used to control properites stored in a
    * tessellation object.  These properties affect the way that the polygons are
    * interpreted and rendered.  The legal value for <i>which</i> are as
-   * follows:<P>
-   *
-   * <b>GLU_TESS_WINDING_RULE</b>
+   * follows:
    * <UL>
+   * <LI><b>GLU_TESS_WINDING_RULE</b>
+   *   <BR>
    *   Determines which parts of the polygon are on the "interior".
    *   <em>value</em> may be set to one of
    *   <BR><b>GLU_TESS_WINDING_ODD</b>,
    *   <BR><b>GLU_TESS_WINDING_NONZERO</b>,
    *   <BR><b>GLU_TESS_WINDING_POSITIVE</b>, or
    *   <BR><b>GLU_TESS_WINDING_NEGATIVE</b>, or
-   *   <BR><b>GLU_TESS_WINDING_ABS_GEQ_TWO</b>.<P>
-   *
+   *   <BR><b>GLU_TESS_WINDING_ABS_GEQ_TWO</b>.
+   *   <BR>
    *   To understand how the winding rule works, consider that the input
    *   contours partition the plane into regions.  The winding rule determines
-   *   which of these regions are inside the polygon.<P>
-   *
+   *   which of these regions are inside the polygon.
+   *   <BR>
    *   For a single contour C, the winding number of a point x is simply the
    *   signed number of revolutions we make around x as we travel once around C
    *   (where CCW is positive).  When there are several contours, the individual
    *   winding numbers are summed.  This procedure associates a signed integer
    *   value with each point x in the plane.  Note that the winding number is
-   *   the same for all points in a single region.<P>
-   *
+   *   the same for all points in a single region.
+   *   <BR>
    *   The winding rule classifies a region as "inside" if its winding number
    *   belongs to the chosen category (odd, nonzero, positive, negative, or
    *   absolute value of at least two).  The previous GLU tessellator (prior to
    *   GLU 1.2) used the "odd" rule.  The "nonzero" rule is another common way
    *   to define the interior.  The other three rules are useful for polygon CSG
    *   operations.
-   * </UL>
-   * <BR><b>GLU_TESS_BOUNDARY_ONLY</b>
-   * <UL>
+   * </LI>
+   * <LI><b>GLU_TESS_BOUNDARY_ONLY</b>
+   *   <BR>
    *   Is a boolean value ("value" should be set to GL_TRUE or GL_FALSE). When
    *   set to GL_TRUE, a set of closed contours separating the polygon interior
    *   and exterior are returned instead of a tessellation.  Exterior contours
    *   are oriented CCW with respect to the normal; interior contours are
    *   oriented CW. The <b>GLU_TESS_BEGIN</b> and <b>GLU_TESS_BEGIN_DATA</b>
    *   callbacks use the type GL_LINE_LOOP for each contour.
-   * </UL>
-   * <BR><b>GLU_TESS_TOLERANCE</b>
-   * <UL>
+   * </LI>
+   * <LI><b>GLU_TESS_TOLERANCE</b>
+   *   <BR>
    *   Specifies a tolerance for merging features to reduce the size of the
    *   output. For example, two vertices that are very close to each other
    *   might be replaced by a single vertex.  The tolerance is multiplied by the
    *   largest coordinate magnitude of any input vertex; this specifies the
    *   maximum distance that any feature can move as the result of a single
    *   merge operation.  If a single feature takes part in several merge
-   *   operations, the toal distance moved could be larger.<P>
-   *
+   *   operations, the toal distance moved could be larger.
+   *   <BR>
    *   Feature merging is completely optional; the tolerance is only a hint.
    *   The implementation is free to merge in some cases and not in others, or
-   *   to never merge features at all.  The initial tolerance is 0.<P>
-   *
+   *   to never merge features at all.  The initial tolerance is 0.
+   *   <BR>
    *   The current implementation merges vertices only if they are exactly
    *   coincident, regardless of the current tolerance.  A vertex is spliced
    *   into an edge only if the implementation is unable to distinguish which
    *   side of the edge the vertex lies on.  Two edges are merged only when both
    *   endpoints are identical.
+   * </LI>
    * </UL>
    *
    * @param tessellator
@@ -226,8 +225,8 @@ public class GLU
    * triangles will be oriented CCW with repsect to the normal (CW orientation
    * can be obtained by reversing the sign of the supplied normal).  For
    * example, if you know that all polygons lie in the x-y plane, call
-   * <b>gluTessNormal</b>(tess, 0.0, 0.0, 0.0) before rendering any polygons.<P>
-   *
+   * <b>gluTessNormal</b>(tess, 0.0, 0.0, 0.0) before rendering any polygons.
+   * <BR>
    * If the supplied normal is (0.0, 0.0, 0.0)(the initial value), the normal
    * is determined as follows.  The direction of the normal, up to its sign, is
    * found by fitting a plane to the vertices, without regard to how the
@@ -235,8 +234,8 @@ public class GLU
    * approximately in the plane; otherwise, projection perpendicular to one of
    * the three coordinate axes may substantially change the geometry.  The sign
    * of the normal is chosen so that the sum of the signed areas of all input
-   * contours is nonnegative (where a CCW contour has positive area).<P>
-   *
+   * contours is nonnegative (where a CCW contour has positive area).
+   * <BR>
    * The supplied normal persists until it is changed by another call to
    * <b>gluTessNormal</b>.
    *
@@ -262,8 +261,8 @@ public class GLU
    * <b>gluTessCallback</b> is used to indicate a callback to be used by a
    * tessellation object. If the specified callback is already defined, then it
    * is replaced. If <i>aCallback</i> is null, then the existing callback
-   * becomes undefined.<P>
-   *
+   * becomes undefined.
+   * <BR>
    * These callbacks are used by the tessellation object to describe how a
    * polygon specified by the user is broken into triangles. Note that there are
    * two versions of each callback: one with user-specified polygon data and one
@@ -272,10 +271,10 @@ public class GLU
    * polygonData parameter used by some of the methods is a copy of the
    * reference that was specified when
    * {@link #gluTessBeginPolygon gluTessBeginPolygon}
-   * was called. The legal callbacks are as follows:<P>
-   *
-   * <b>GLU_TESS_BEGIN</b>
+   * was called. The legal callbacks are as follows:
    * <UL>
+   * <LI><b>GLU_TESS_BEGIN</b>
+   *   <BR>
    *   The begin callback is invoked like
    *   glBegin to indicate the start of a (triangle) primitive. The method
    *   takes a single argument of type int. If the
@@ -285,25 +284,19 @@ public class GLU
    *   <b>GLU_TESS_BOUNDARY_ONLY</b> property is set to <b>GL_TRUE</b>, then the
    *   argument will be set to <b>GL_LINE_LOOP</b>. The method prototype for
    *   this callback is:
-   * </UL>
-   *
-   * <PRE>
-   *         void begin(int type);</PRE><P>
-   *
-   * <b>GLU_TESS_BEGIN_DATA</b>
-   * <UL>
+   *   <PRE>void begin(int type);</PRE>
+   * </LI>
+   * <LI><b>GLU_TESS_BEGIN_DATA</b>
+   *   <BR>
    *   The same as the <b>GLU_TESS_BEGIN</b> callback except
    *   that it takes an additional reference argument. This reference is
    *   identical to the opaque reference provided when
    *   {@link #gluTessBeginPolygon gluTessBeginPolygon}
    *   was called. The method prototype for this callback is:
-   * </UL>
-   *
-   * <PRE>
-   *         void beginData(int type, Object polygonData);</PRE>
-   *
-   * <b>GLU_TESS_EDGE_FLAG</b>
-   * <UL>
+   *   <PRE>void beginData(int type, Object polygonData);</PRE>
+   * </LI>
+   * <LI><b>GLU_TESS_EDGE_FLAG</b>
+   *   <BR>
    *   The edge flag callback is similar to
    *   glEdgeFlag. The method takes
    *   a single boolean boundaryEdge that indicates which edges lie on the
@@ -312,33 +305,27 @@ public class GLU
    *   an edge that separates an interior region from an exterior one. If the
    *   boundaryEdge is <b>GL_FALSE</b>, then each vertex that follows begins an
    *   edge that lies in the polygon interior. The edge flag callback (if
-   *   defined) is invoked before the first vertex callback.<P>
-   *
+   *   defined) is invoked before the first vertex callback.
+   *   <BR>
    *   Since triangle fans and triangle strips do not support edge flags, the
    *   begin callback is not called with <b>GL_TRIANGLE_FAN</b> or
    *   <b>GL_TRIANGLE_STRIP</b> if a non-null edge flag callback is provided.
    *   (If the callback is initialized to null, there is no impact on
    *   performance). Instead, the fans and strips are converted to independent
    *   triangles. The method prototype for this callback is:
-   * </UL>
-   *
-   * <PRE>
-   *         void edgeFlag(boolean boundaryEdge);</PRE>
-   *
-   * <b>GLU_TESS_EDGE_FLAG_DATA</b>
-   * <UL>
+   *   <PRE>void edgeFlag(boolean boundaryEdge);</PRE>
+   * </LI>
+   * <LI><b>GLU_TESS_EDGE_FLAG_DATA</b>
+   *   <BR>
    *   The same as the <b>GLU_TESS_EDGE_FLAG</b> callback except that it takes
    *   an additional reference argument. This reference is identical to the
    *   opaque reference provided when
    *   {@link #gluTessBeginPolygon gluTessBeginPolygon}
    *   was called. The method prototype for this callback is:
-   * </UL>
-   *
-   * <PRE>
-   *         void edgeFlagData(boolean boundaryEdge, Object polygonData);</PRE>
-   *
-   * <b>GLU_TESS_VERTEX</b>
-   * <UL>
+   *   <PRE>void edgeFlagData(boolean boundaryEdge, Object polygonData);</PRE>
+   * </LI>
+   * <LI><b>GLU_TESS_VERTEX</b>
+   *   <BR>
    *   The vertex callback is invoked between the begin and end callbacks. It is
    *   similar to glVertex3f, and it
    *   defines the vertices of the triangles created by the tessellation
@@ -347,78 +334,60 @@ public class GLU
    *   the vertex was described (see
    *   {@link #gluTessVertex gluTessVertex}). The method
    *   prototype for this callback is:
-   * </UL>
-   *
-   * <PRE>
-   *         void vertex(Object vertexData);</PRE>
-   *
-   * <b>GLU_TESS_VERTEX_DATA</b>
-   * <UL>
+   *   <PRE>void vertex(Object vertexData);</PRE>
+   * </LI>
+   * <LI><b>GLU_TESS_VERTEX_DATA</b>
+   *   <BR>
    *   The same as the <b>GLU_TESS_VERTEX</b> callback except that it takes an
    *   additional reference argument. This reference is identical to the opaque
    *   reference provided when
    *   {@link #gluTessBeginPolygon gluTessBeginPolygon}
    *   was called. The method prototype for this callback is:
-   * </UL>
-   *
-   * <PRE>
-   *         void vertexData(Object vertexData, Object polygonData);</PRE>
-   *
-   * <b>GLU_TESS_END</b>
-   * <UL>
+   *   <PRE>void vertexData(Object vertexData, Object polygonData);</PRE>
+   * </LI>
+   * <LI><b>GLU_TESS_END</b>
+   *   <BR>
    *   The end callback serves the same purpose as
    *   glEnd. It indicates the end of a
    *   primitive and it takes no arguments. The method prototype for this
    *   callback is:
-   * </UL>
-   *
-   * <PRE>
-   *         void end();</PRE>
-   *
-   * <b>GLU_TESS_END_DATA</b>
-   * <UL>
+   *   <PRE>void end();</PRE>
+   * </LI>
+   * <LI><b>GLU_TESS_END_DATA</b>
+   *   <BR>
    *   The same as the <b>GLU_TESS_END</b> callback except that it takes an
    *   additional reference argument. This reference is identical to the opaque
    *   reference provided when
    *   {@link #gluTessBeginPolygon gluTessBeginPolygon}
    *   was called. The method prototype for this callback is:
-   * </UL>
-   *
-   * <PRE>
-   *         void endData(Object polygonData);</PRE>
-   *
-   * <b>GLU_TESS_COMBINE</b>
-   * <UL>
+   *   <PRE>void endData(Object polygonData);</PRE>
+   * </LI>
+   * <LI><b>GLU_TESS_COMBINE</b>
+   *   <BR>
    *   The combine callback is called to create a new vertex when the
    *   tessellation detects an intersection, or wishes to merge features. The
    *   method takes four arguments: an array of three elements each of type
    *   double, an array of four references, an array of four elements each of
    *   type float, and a reference to a reference. The prototype is:
-   * </UL>
-   *
-   * <PRE>
-   *         void combine(double[] coords, Object[] data,
+   *   <PRE>void combine(double[] coords, Object[] data,
    *                      float[] weight, Object[] outData);</PRE>
-   *
-   * <UL>
    *   The vertex is defined as a linear combination of up to four existing
    *   vertices, stored in <i>data</i>. The coefficients of the linear
    *   combination are given by <i>weight</i>; these weights always add up to 1.
    *   All vertex pointers are valid even when some of the weights are 0.
-   *   <i>coords</i> gives the location of the new vertex.<P>
-   *
+   *   <i>coords</i> gives the location of the new vertex.
+   *   <BR>
    *   The user must allocate another vertex, interpolate parameters using
    *   <i>data</i> and <i>weight</i>, and return the new vertex pointer
    *   in <i>outData</i>. This handle is supplied during rendering callbacks.
    *   The user is responsible for freeing the memory some time after
    *   {@link #gluTessEndPolygon gluTessEndPolygon} is
-   *   called.<P>
-   *
+   *   called.
+   *   <BR>
    *   For example, if the polygon lies in an arbitrary plane in 3-space, and a
    *   color is associated with each vertex, the <b>GLU_TESS_COMBINE</b>
    *   callback might look like this:
-   * </UL>
-   * <PRE>
+   *   <PRE>
    *         void myCombine(double[] coords, Object[] data,
    *                        float[] weight, Object[] outData)
    *         {
@@ -445,31 +414,27 @@ public class GLU
    *                          weight[3]*data[3].a;
    *            outData = newVertex;
    *         }</PRE>
-   *
-   * <UL>
    *   If the tessellation detects an intersection, then the
    *   <b>GLU_TESS_COMBINE</b> or <b>GLU_TESS_COMBINE_DATA</b> callback (see
    *   below) must be defined, and it must write a non-null reference into
    *   <i>outData</i>. Otherwise the <b>GLU_TESS_NEED_COMBINE_CALLBACK</b> error
    *   occurs, and no output is generated.
-   * </UL>
-   *
-   * <b>GLU_TESS_COMBINE_DATA</b>
-   * <UL>
+   * </LI>
+   * <LI><b>GLU_TESS_COMBINE_DATA</b>
+   *   <BR>
    *   The same as the <b>GLU_TESS_COMBINE</b> callback except that it takes an
    *   additional reference argument. This reference is identical to the opaque
    *   reference provided when
    *   {@link #gluTessBeginPolygon gluTessBeginPolygon}
    *   was called. The method prototype for this callback is:
-   * </UL>
-   *
-   * <PRE>
+   *   <PRE>
    *         void combineData(double[] coords, Object[] data,
                               float[] weight, Object[] outData,
                               Object polygonData);</PRE>
    *
-   * <b>GLU_TESS_ERROR</b>
-   * <UL>
+   * </LI>
+   * <LI><b>GLU_TESS_ERROR</b>
+   *   <BR>
    *   The error callback is called when an error is encountered. The one
    *   argument is of type int; it indicates the specific error that occurred
    *   and will be set to one of <b>GLU_TESS_MISSING_BEGIN_POLYGON</b>,
@@ -480,12 +445,8 @@ public class GLU
    *   Character strings describing these errors can be retrieved with the
    *   {@link #gluErrorString gluErrorString} call. The
    *   method prototype for this callback is:
-   * </UL>
-   *
-   * <PRE>
+   *   <PRE>
    *         void error(int errnum);</PRE>
-   *
-   * <UL>
    *   The GLU library will recover from the first four errors by inserting the
    *   missing call(s). <b>GLU_TESS_COORD_TOO_LARGE</b> indicates that some
    *   vertex coordinate exceeded the predefined constant
@@ -497,19 +458,18 @@ public class GLU
    *   <b>GLU_TESS_COMBINE</b> or <b>GLU_TESS_COMBINE_DATA</b> callback was not
    *   provided. No output is generated. <b>GLU_OUT_OF_MEMORY</b> indicates that
    *   there is not enough memory so no output is generated.
-   * </UL>
-   *
-   * <b>GLU_TESS_ERROR_DATA</b>
-   * <UL>
+   * </LI>
+   * <LI><b>GLU_TESS_ERROR_DATA</b>
+   *   <BR>
    *   The same as the GLU_TESS_ERROR callback except that it takes an
    *   additional reference argument. This reference is identical to the opaque
    *   reference provided when
    *   {@link #gluTessBeginPolygon gluTessBeginPolygon}
    *   was called. The method prototype for this callback is:
-   * </UL>
-   *
-   * <PRE>
+   *   <PRE>
    *         void errorData(int errnum, Object polygonData);</PRE>
+   * </LI>
+   * </UL>
    *
    * @param tessellator
    *        Specifies the tessellation object (created with
@@ -544,8 +504,8 @@ public class GLU
    * For example, to describe a quadrilateral <b>gluTessVertex</b> should be
    * called four times. <b>gluTessVertex</b> can only be called between
    * {@link #gluTessBeginContour gluTessBeginContour} and
-   * {@link #gluTessBeginContour gluTessEndContour}.<P>
-   *
+   * {@link #gluTessBeginContour gluTessEndContour}.
+   * <BR>
    * <b>data</b> normally references to a structure containing the vertex
    * location, as well as other per-vertex attributes such as color and normal.
    * This reference is passed back to the user through the
@@ -591,14 +551,14 @@ public class GLU
    * linked to the first). See the {@link #gluTessVertex
    * gluTessVertex}, {@link #gluTessBeginContour
    * gluTessBeginContour}, and {@link #gluTessEndContour
-   * gluTessEndContour} reference pages for more details.<P>
-   *
+   * gluTessEndContour} reference pages for more details.
+   * <BR>
    * <b>data</b> is a reference to a user-defined data structure. If the
    * appropriate callback(s) are specified (see
    * {@link #gluTessCallback gluTessCallback}), then this
    * reference is returned to the callback method(s). Thus, it is a convenient
-   * way to store per-polygon information.<P>
-   *
+   * way to store per-polygon information.
+   * <BR>
    * Once {@link #gluTessEndPolygon gluTessEndPolygon} is
    * called, the polygon is tessellated, and the resulting triangles are
    * described through callbacks. See
@@ -702,8 +662,8 @@ public class GLU
    * linked to the first). See the {@link #gluTessVertex
    * gluTessVertex}, {@link #gluTessBeginContour
    * gluTessBeginContour} and {@link #gluTessEndContour
-   * gluTessEndContour} reference pages for more details.<P>
-   *
+   * gluTessEndContour} reference pages for more details.
+   * <BR>
    * Once <b>gluTessEndPolygon</b> is called, the polygon is tessellated, and
    * the resulting triangles are described through callbacks. See
    * {@link #gluTessCallback gluTessCallback} for

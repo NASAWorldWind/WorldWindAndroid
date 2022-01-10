@@ -302,7 +302,7 @@ public class ShapeAttributes {
      * Indicates the image source applied to shape interiors. When null, shape interiors are displayed in the interior
      * color. When non-null, image pixels appear in shape interiors, with each image pixel multiplied by the interior
      * RGBA color. Use a white interior color to display unmodified image pixels.
-     * <p/>
+     * <br>
      * By default, interior image sources are displayed as a repeating pattern across shape interiors. The pattern
      * matches image pixels to screen pixels, such that the image appears to repeat in screen coordinates.
      *
@@ -316,7 +316,7 @@ public class ShapeAttributes {
      * Sets the image source to apply to shape interiors. When null, shape interiors are displayed in the interior
      * color. When non-null, image pixels appear in shape interiors, with each image pixel multiplied by the interior
      * RGBA color. Use a white interior color to display the original image pixels.
-     * <p/>
+     * <br>
      * Interior images appear as a two-dimensional repeating pattern that fills each shape's interior. The image is
      * repeated both horizontally and vertically in screen coordinates, with camera perspective applied to the pattern.
      *
@@ -340,11 +340,11 @@ public class ShapeAttributes {
      * Sets the image source to apply to shape outlines. When null, shape outlines are displayed in the outline color.
      * When non-null, image pixels appear along shape outlines, with each image pixel multiplied by the outline RGBA
      * color. Use a white outline color to display the original image pixels.
-     * <p/>
+     * <br>
      * Outline images appear as a one-dimensional repeating pattern that fills each shape's outline. The first row of
      * image pixels is repeated linearly along shape outlines in screen coordinates, with camera perspective applied to
      * the pattern.
-     * <p/>
+     * <br>
      * Dashed shape outlines are accomplished with a one-dimensional outline image containing a mix of a transparent
      * pixels and white pixels. The image width indicates the pattern length in screen coordinates, while the
      * transparent pixels and white pixels indicate the dashing pattern. To display dashed lines similar to OpenGL's

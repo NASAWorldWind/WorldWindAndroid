@@ -16,11 +16,11 @@ import gov.nasa.worldwind.util.Logger;
 
 /**
  * Displays imagery from OGC Web Map Service (WMS) layers.
- * <p/>
+ * <br>
  * WMSLayer's configuration may be specified at construction or by calling <code>setConfiguration</code>, and must
  * include the following values: service address, WMS protocol version, layer names, coordinate reference system, sector
  * and resolution. All other WMS configuration values may be unspecified, in which case a default value is used.
- * <p/>
+ * <br>
  * WmsLayer defaults to retrieving imagery in the PNG format. This may be configured by calling
  * <code>setImageFormat</code>.
  */

@@ -17,7 +17,7 @@ import gov.nasa.worldwind.util.Logger;
  * Displays NASA's Blue Marble next generation imagery at 500m resolution from an OGC Web Map Service (WMS). By default,
  * BlueMarbleLayer is configured to retrieve imagery for May 2004 from the WMS at <a
  * href="https://worldwind25.arc.nasa.gov/wms?SERVICE=WMS&amp;REQUEST=GetCapabilities">https://worldwind25.arc.nasa.gov/wms</a>.
- * <p/>
+ * <br>
  * Information on NASA's Blue Marble next generation imagery can be found at http://earthobservatory.nasa.gov/Features/BlueMarble/
  */
 public class BlueMarbleLayer extends WmsLayer {

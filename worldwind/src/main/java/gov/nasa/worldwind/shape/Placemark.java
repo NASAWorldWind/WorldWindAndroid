@@ -29,7 +29,7 @@ import gov.nasa.worldwind.util.WWMath;
  * Represents a Placemark shape. A placemark displays an image, a label and a leader connecting the placemark's
  * geographic position to the ground. All three of these items are optional. By default, the leader is not pickable. See
  * {@link Placemark#setEnableLeaderPicking(boolean)}.
- * <p/>
+ * <br>
  * Placemarks may be drawn with either an image or as single-color square with a specified size. When the placemark
  * attributes indicate a valid image, the placemark's image is drawn as a rectangle in the image's original dimensions,
  * scaled by the image scale attribute. Otherwise, the placemark is drawn as a square with width and height equal to the
@@ -325,7 +325,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
     /**
      * Sets the placemark's attributes to the supplied attributes bundle. If null and this placemark is not highlighted,
      * this placemark is not drawn.
-     * <p/>
+     * <br>
      * It is permissible to share attribute bundles between placemarks.
      *
      * @param attributes A reference to an attributes bundle used by this placemark when not highlighted.
@@ -350,7 +350,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
     /**
      * Sets the attributes used when this placemark's highlighted flag is true. If null and the highlighted flag is
      * true, this placemark's normal attributes are used. If they, too, are null, this placemark is not drawn.
-     * <p/>
+     * <br>
      * It is permissible to share attribute bundles between placemarks.
      *
      * @param highlightAttributes A reference to the attributes bundle used by this placemark when highlighted
@@ -510,7 +510,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
     /**
      * Gets the type of rotation to apply if the {@link Placemark#getImageRotation()} is not zero. This value indicates
      * whether to apply this placemark's image rotation relative to the screen or the globe.
-     * <p/>
+     * <br>
      * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is rotated in the plane of the screen and its
      * orientation relative to the globe changes as the view changes. If {@link WorldWind#RELATIVE_TO_GLOBE}, this
      * placemark's image is rotated in a plane tangent to the globe at this placemark's position and retains its
@@ -526,7 +526,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
     /**
      * Sets the type of rotation to apply if the {@link Placemark#getImageRotation()} is not zero. This value indicates
      * whether to apply this placemark's image rotation relative to the screen or the globe.
-     * <p/>
+     * <br>
      * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is rotated in the plane of the screen and its
      * orientation relative to the globe changes as the view changes. If {@link WorldWind#RELATIVE_TO_GLOBE}, this
      * placemark's image is rotated in a plane tangent to the globe at this placemark's position and retains its
@@ -570,7 +570,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
     /**
      * Gets the type tilt to apply when {@link Placemark#getImageTilt()} is non-zero. This value indicates whether to
      * apply this placemark's image tilt relative to the screen or the globe.
-     * <p/>
+     * <br>
      * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is tilted inwards (for positive tilts) relative
      * to the plane of the screen, and its orientation relative to the globe changes as the view changes. If {@link
      * WorldWind#RELATIVE_TO_GLOBE}, this placemark's image is tilted towards the globe's surface, and retains its
@@ -586,7 +586,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
     /**
      * Sets the type tilt to apply when {@link Placemark#getImageTilt()} is non-zero. This value indicates whether to
      * apply this placemark's image tilt relative to the screen or the globe.
-     * <p/>
+     * <br>
      * If {@link WorldWind#RELATIVE_TO_SCREEN}, this placemark's image is tilted inwards (for positive tilts) relative
      * to the plane of the screen, and its orientation relative to the globe changes as the view changes. If {@link
      * WorldWind#RELATIVE_TO_GLOBE}, this placemark's image is tilted towards the globe's surface, and retains its

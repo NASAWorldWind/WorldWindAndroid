@@ -311,7 +311,7 @@ public class Matrix3 {
      * Sets this matrix to one that flips and shifts the y-axis. The resultant matrix maps Y=0 to Y=1 and Y=1 to Y=0.
      * All existing values are overwritten. This matrix is usually used to change the coordinate origin from an upper
      * left coordinate origin to a lower left coordinate origin.
-     * <p/>
+     * <br>
      * This matrix is typically necessary to align the coordinate system of images (top-left origin) with that of OpenGL
      * (bottom-left origin).
      *
@@ -339,7 +339,7 @@ public class Matrix3 {
      * Normalized coordinates within a sector range from 0 to 1, with (0, 0) indicating the lower left corner and (1, 1)
      * indicating the upper right. The resultant matrix maps a normalized source coordinate (X, Y) to its corresponding
      * normalized destination coordinate (X', Y').
-     * <p/>
+     * <br>
      * This matrix typically necessary to transform texture coordinates from one geographic region to another. For
      * example, the texture coordinates for a terrain tile spanning one region must be transformed to coordinates
      * appropriate for an image tile spanning a potentially different region.
@@ -475,7 +475,7 @@ public class Matrix3 {
      * Multiplies this matrix by a matrix that flips and shifts the y-axis. The vertical flip matrix maps Y=0 to Y=1 and
      * Y=1 to Y=0. This matrix is usually used to change the coordinate origin from an upper left coordinate origin to a
      * lower left coordinate origin.
-     * <p/>
+     * <br>
      * This is typically necessary to align the coordinate system of images (top-left origin) with that of OpenGL
      * (bottom-left origin).
      *
@@ -512,7 +512,7 @@ public class Matrix3 {
      * sector. Normalized coordinates within a sector range from 0 to 1, with (0, 0) indicating the lower left corner
      * and (1, 1) indicating the upper right. The resultant matrix maps a normalized source coordinate (X, Y) to its
      * corresponding normalized destination coordinate (X', Y').
-     * <p/>
+     * <br>
      * This matrix typically necessary to transform texture coordinates from one geographic region to another. For
      * example, the texture coordinates for a terrain tile spanning one region must be transformed to coordinates
      * appropriate for an image tile spanning a potentially different region.
@@ -740,7 +740,7 @@ public class Matrix3 {
 
     /**
      * Inverts this matrix in place.
-     * <p/>
+     * <br>
      * This throws an exception if this matrix is singular.
      *
      * @return this matrix, inverted
@@ -754,9 +754,9 @@ public class Matrix3 {
 
     /**
      * Inverts the specified matrix and stores the result in this matrix.
-     * <p/>
+     * <br>
      * This throws an exception if the matrix is singular.
-     * <p/>
+     * <br>
      * The result of this method is undefined if this matrix is passed in as the matrix to invert.
      *
      * @param matrix the matrix whose inverse is computed

@@ -92,7 +92,7 @@ public class Frustum {
      * Sets this frustum to one appropriate for a modelview-projection matrix. A modelview-projection matrix's view
      * frustum is a Cartesian volume that contains everything visible in a scene displayed using that
      * modelview-projection matrix.
-     * <p/>
+     * <br>
      * This method assumes that the specified matrices represents a projection matrix and a modelview matrix
      * respectively. If this is not the case the results are undefined.
      *
@@ -182,7 +182,7 @@ public class Frustum {
      * matrix's view frustum is a Cartesian volume that contains everything visible in a scene displayed using that
      * modelview-projection matrix. The subset is defined by the region within the original viewport that the frustum
      * contains.
-     * <p/>
+     * <br>
      * This method assumes that the specified matrices represents a projection matrix and a modelview matrix
      * respectively. If this is not the case the results are undefined.
      *

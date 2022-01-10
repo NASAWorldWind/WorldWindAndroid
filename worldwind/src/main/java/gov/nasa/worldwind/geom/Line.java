@@ -170,7 +170,7 @@ public class Line {
     /**
      * Computes the first intersection of a triangle strip with this line. This line is interpreted as a ray;
      * intersection points behind the line's origin are ignored.
-     * <p/>
+     * <br>
      * The triangle strip is specified by a list of vertex points and a list of elements indicating the triangle strip
      * tessellation of those vertices. The triangle strip elements are interpreted in the same manner as OpenGL, where
      * each index indicates a vertex position rather than an actual index into the points array (e.g. a triangle strip

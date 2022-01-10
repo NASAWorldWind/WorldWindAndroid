@@ -703,9 +703,9 @@ public class WmsTileFactoryTest {
     /**
      * Tests the generated url parameters match the properties of the {@link WmsTileFactory} used to generate the url.
      * This test evaluates the configuration: WMS version 1.3.0 using the EPSG:4326 coordinate format.
-     * <p/>
+     * <br>
      * <p>This is part of test suite detailed below:</p>
-     * <p/>
+     * <br>
      * <p>Essentially three different formats for describing the bounding box to the WMS servier. A four and fifth test
      * case provide for testing the optional STYLE and TIME parameters. 1. WMS Version 1.3.0 and EPSG:4326 2. WMS
      * Version 1.3.0 and CRS:84 3. Other WMS Version 4. Optional Styles Parameter 5. Optional Time Parameter</p>
@@ -734,9 +734,9 @@ public class WmsTileFactoryTest {
     /**
      * Tests the generated url parameters match the properties of the {@link WmsTileFactory} used to generate the url.
      * This test evaluates the configuration: WMS version 1.3.0 using the CRS:84 coordinate format.
-     * <p/>
+     * <br>
      * <p>This is part of test suite detailed below:</p>
-     * <p/>
+     * <br>
      * <p>Essentially three different formats for describing the bounding box to the WMS servier. A four and fifth test
      * case provide for testing the optional STYLE and TIME parameters. 1. WMS Version 1.3.0 and EPSG:4326 2. WMS
      * Version 1.3.0 and CRS:84 3. Other WMS Version 4. Optional Styles Parameter 5. Optional Time Parameter</p>
@@ -765,9 +765,9 @@ public class WmsTileFactoryTest {
     /**
      * Tests the generated url parameters match the properties of the {@link WmsTileFactory} used to generate the url.
      * This test evaluates the configuration: WMS Version other than 1.3.0.
-     * <p/>
+     * <br>
      * <p>This is part of test suite detailed below:</p>
-     * <p/>
+     * <br>
      * <p>Essentially three different formats for describing the bounding box to the WMS servier. A four and fifth test
      * case provide for testing the optional STYLE and TIME parameters. 1. WMS Version 1.3.0 and EPSG:4326 2. WMS
      * Version 1.3.0 and CRS:84 3. Other WMS Version 4. Optional Styles Parameter 5. Optional Time Parameter</p>
@@ -795,9 +795,9 @@ public class WmsTileFactoryTest {
     /**
      * Tests the generated url parameters match the properties of the {@link WmsTileFactory} used to generate the url.
      * This test evaluates the configuration: Addition of optional Style parameter.
-     * <p/>
+     * <br>
      * <p>This is part of test suite detailed below:</p>
-     * <p/>
+     * <br>
      * <p>Essentially three different formats for describing the bounding box to the WMS servier. A four and fifth test
      * case provide for testing the optional STYLE and TIME parameters. 1. WMS Version 1.3.0 and EPSG:4326 2. WMS
      * Version 1.3.0 and CRS:84 3. Other WMS Version 4. Optional Styles Parameter 5. Optional Time Parameter</p>
@@ -824,9 +824,9 @@ public class WmsTileFactoryTest {
     /**
      * Tests the generated url parameters match the properties of the {@link WmsTileFactory} used to generate the url.
      * This test evaluates the configuration: Additional optional image format.
-     * <p/>
+     * <br>
      * <p>This is part of test suite detailed below:</p>
-     * <p/>
+     * <br>
      * <p>Essentially three different formats for describing the bounding box to the WMS servier. A four and fifth test
      * case provide for testing the optional STYLE and TIME parameters. 1. WMS Version 1.3.0 and EPSG:4326 2. WMS
      * Version 1.3.0 and CRS:84 3. Other WMS Version 4. Optional Styles Parameter 5. Optional Time Parameter</p>
@@ -853,9 +853,9 @@ public class WmsTileFactoryTest {
     /**
      * Tests the generated url parameters match the properties of the {@link WmsTileFactory} used to generate the url.
      * This test evaluates the configuration: Additional optional time parameter.
-     * <p/>
+     * <br>
      * <p>This is part of test suite detailed below:</p>
-     * <p/>
+     * <br>
      * <p>Essentially three different formats for describing the bounding box to the WMS servier. A four and fifth test
      * case provide for testing the optional STYLE and TIME parameters. 1. WMS Version 1.3.0 and EPSG:4326 2. WMS
      * Version 1.3.0 and CRS:84 3. Other WMS Version 4. Optional Styles Parameter 5. Optional Time Parameter</p>

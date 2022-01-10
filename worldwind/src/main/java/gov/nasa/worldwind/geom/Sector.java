@@ -302,7 +302,7 @@ public class Sector {
      * Indicates whether this sector intersects a specified sector. Two sectors intersect when both the latitude
      * boundaries and the longitude boundaries overlap by a non-zero amount. An empty sector never intersects another
      * sector.
-     * <p/>
+     * <br>
      * The sectors are assumed to have normalized angles (angles within the range [-90, +90] latitude and [-180, +180]
      * longitude).
      *
@@ -328,7 +328,7 @@ public class Sector {
      * Indicates whether this sector intersects a specified sector. Two sectors intersect when both the latitude
      * boundaries and the longitude boundaries overlap by a non-zero amount. An empty sector never intersects another
      * sector.
-     * <p/>
+     * <br>
      * The sectors are assumed to have normalized angles (angles within the range [-90, +90] latitude and [-180, +180]
      * longitude).
      *
@@ -382,7 +382,7 @@ public class Sector {
      * whether or not the sectors intersect. Two sectors intersect when both the latitude boundaries and the longitude
      * boundaries overlap by a non-zero amount. An empty sector never intersects another sector. When there is no
      * intersection, this returns false and leaves this sector unchanged.
-     * <p/>
+     * <br>
      * The sectors are assumed to have normalized angles (angles within the range [-90, +90] latitude and [-180, +180]
      * longitude).
      *
@@ -421,7 +421,7 @@ public class Sector {
      * whether or not the sectors intersect. Two sectors intersect when both the latitude boundaries and the longitude
      * boundaries overlap by a non-zero amount. An empty sector never intersects another sector. When there is no
      * intersection, this returns false and leaves this sector unchanged.
-     * <p/>
+     * <br>
      * The sectors are assumed to have normalized angles (angles within the range [-90, +90] latitude and [-180, +180]
      * longitude).
      *
@@ -477,7 +477,7 @@ public class Sector {
      * Indicates whether this sector fully contains a specified sector. This sector contains the specified sector when
      * the specified sector's boundaries are completely contained within this sector's boundaries, or are equal to this
      * sector's boundaries. An empty sector never contains another sector.
-     * <p/>
+     * <br>
      * The sectors are assumed to have normalized angles (angles within the range [-90, +90] latitude and [-180, +180]
      * longitude).
      *
@@ -504,7 +504,7 @@ public class Sector {
      * Indicates whether this sector fully contains a specified sector. This sector contains the specified sector when
      * the specified sector's boundaries are completely contained within this sector's boundaries, or are equal to this
      * sector's boundaries. An empty sector never contains another sector.
-     * <p/>
+     * <br>
      * The sectors are assumed to have normalized angles (angles within the range [-90, +90] latitude and [-180, +180]
      * longitude).
      *
@@ -705,7 +705,7 @@ public class Sector {
 
     /**
      * Translates this sector by a specified geographic increment.
-     * <p>
+     * <br>
      * The translated sector is assumed to have normalized angles (angles within the range [-90, +90] latitude and
      * [-180, +180] longitude).
      *

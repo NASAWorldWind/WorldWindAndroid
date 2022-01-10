@@ -30,13 +30,13 @@ import gov.nasa.worldwind.util.WWUtil;
 
 /**
  * Generates elevations from OGC Web Coverage Service (WCS) version 2.0.1.
- * <p/>
+ * <br>
  * Wcs201ElevationCoverage requires the WCS service address, coverage name, and coverage bounding sector. Get Coverage
  * requests generated for retrieving data use the WCS version 2.0.1 protocol and are limited to the "image/tiff" format
  * and the EPSG:4326 coordinate system. Wcs201ElevationCoverage does not perform version negotiation and assumes the
  * service supports the format and coordinate system parameters detailed here. The subset CRS is configured as EPSG:4326
  * and the axis labels are set as "Lat" and "Long". The scaling axis labels are set as:
- * <p/>
+ * <br>
  * http://www.opengis.net/def/axis/OGC/1/i and http://www.opengis.net/def/axis/OGC/1/j
  */
 public class Wcs201ElevationCoverage extends TiledElevationCoverage {

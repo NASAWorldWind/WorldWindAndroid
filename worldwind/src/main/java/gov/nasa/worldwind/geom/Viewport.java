@@ -219,7 +219,7 @@ public class Viewport {
      * Computes the intersection of this viewport and a specified viewport, storing the result in this viewport and
      * returning whether or not the viewport intersect. Two viewport intersect when both overlap by a non-zero amount.
      * An empty viewport never intersects another viewport.
-     * <p/>
+     * <br>
      * When there is no intersection, this returns false and leaves this viewport unchanged. To test for intersection
      * without modifying this viewport, use {@link #intersects}.
      *
@@ -264,7 +264,7 @@ public class Viewport {
      * Computes the intersection of this viewport and a specified viewport, storing the result in this viewport and
      * returning whether or not the viewport intersect. Two viewport intersect when both overlap by a non-zero amount.
      * An empty viewport never intersects another viewport.
-     * <p/>
+     * <br>
      * When there is no intersection, this returns false and leaves this viewport unchanged. To test for intersection
      * without modifying this viewport, use {@link #intersects}.
      *

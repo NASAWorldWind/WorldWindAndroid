@@ -158,11 +158,11 @@ public class DrawContext {
     /**
      * Returns an OpenGL framebuffer object suitable for offscreen drawing. The framebuffer has a 32-bit color buffer
      * and a 32-bit depth buffer, both attached as OpenGL texture 2D objects.
-     * <p>
+     * <br>
      * The framebuffer may be used by any drawable and for any purpose. However, the draw context makes no guarantees
      * about the framebuffer's contents. Drawables must clear the framebuffer before use, and must assume its contents
      * may be modified by another drawable, either during the current frame or in a subsequent frame.
-     * <p>
+     * <br>
      * The OpenGL framebuffer object is created on first use and cached. Subsequent calls to this method return the
      * cached buffer object.
      *
@@ -307,7 +307,7 @@ public class DrawContext {
      * Returns an OpenGL buffer object containing a unit square expressed as four vertices at (0, 1), (0, 0), (1, 1) and
      * (1, 0). Each vertex is stored as two 32-bit floating point coordinates. The four vertices are in the order
      * required by a triangle strip.
-     * <p/>
+     * <br>
      * The OpenGL buffer object is created on first use and cached. Subsequent calls to this method return the cached
      * buffer object.
      *

@@ -149,7 +149,7 @@ public class RenderContext {
      * Returns the height of a pixel at a given distance from the eye point. This method assumes the model of a screen
      * composed of rectangular pixels, where pixel coordinates denote infinitely thin space between pixels. The units of
      * the returned size are in meters per pixel.
-     * <p/>
+     * <br>
      * The result of this method is undefined if the distance is negative.
      *
      * @param distance the distance from the eye point in meters
@@ -169,7 +169,7 @@ public class RenderContext {
     /**
      * Projects a Cartesian point to screen coordinates. The resultant screen point is in OpenGL screen coordinates,
      * with the origin in the bottom-left corner and axes that extend up and to the right from the origin.
-     * <p/>
+     * <br>
      * This stores the projected point in the result argument, and returns a boolean value indicating whether or not the
      * projection is successful. This returns false if the Cartesian point is clipped by the near clipping plane or the
      * far clipping plane.
@@ -240,16 +240,16 @@ public class RenderContext {
      * Projects a Cartesian point to screen coordinates, applying an offset to the point's projected depth value. The
      * resultant screen point is in OpenGL screen coordinates, with the origin in the bottom-left corner and axes that
      * extend up and to the right from the origin.
-     * <p/>
+     * <br>
      * This stores the projected point in the result argument, and returns a boolean value indicating whether or not the
      * projection is successful. This returns false if the Cartesian point is clipped by the near clipping plane or the
      * far clipping plane.
-     * <p/>
+     * <br>
      * The depth offset may be any real number and is typically used to move the screenPoint slightly closer to the
      * user's eye in order to give it visual priority over nearby objects or terrain. An offset of zero has no effect.
      * An offset less than zero brings the screenPoint closer to the eye, while an offset greater than zero pushes the
      * projected screen point away from the eye.
-     * <p/>
+     * <br>
      * Applying a non-zero depth offset has no effect on whether the model point is clipped by this method or by WebGL.
      * Clipping is performed on the original model point, ignoring the depth offset. The final depth value after
      * applying the offset is clamped to the range [0,1].

@@ -209,12 +209,12 @@ public class BoundingBox {
     /**
      * Sets this bounding box such that it contains a specified sector on a specified globe with min and max terrain
      * height.
-     * <p/>
+     * <br>
      * To create a bounding box that contains the sector at mean sea level, specify zero for the minimum and maximum
      * height. To create a bounding box that contains the terrain surface in this sector, specify the actual minimum and
      * maximum height values associated with the terrain in the sector, multiplied by the scene's vertical
      * exaggeration.
-     * <p/>
+     * <br>
      *
      * @param sector    the sector for which to create the bounding box
      * @param globe     the globe associated with the sector

@@ -35,28 +35,28 @@ import gov.nasa.worldwind.util.ShortArray;
 
 /**
  * Ellipse shape defined by a geographic center position and radii for the semi-major and semi-minor axes.
- * <p>
+ * <br>
  * <h3>Axes and Heading</h3>
- * <p>
+ * <br>
  * Ellipse axes, by default, are oriented such that the semi-major axis points East and the semi-minor axis points
  * North. Ellipse provides an optional heading, which when set to anything other than 0.0 rotates the semi-major and
  * semi-minor axes about the center position, while retaining the axes relative relationship to one another. Heading is
  * defined in degrees clockwise from North. Configuring ellipse with a heading of 45.0 results in the semi-major axis
  * pointing Southeast and the semi-minor axis pointing Northeast.
- * <p>
+ * <br>
  * <h3>Altitude Mode and Terrain Following</h3>
- * <p>
+ * <br>
  * Ellipse geometry displays at a constant altitude determined by the geographic center position and altitude mode. For
  * example, an ellipse with a center position altitude of 1km and altitude mode of ABSOLUTE displays at 1km above mean
  * sea level. The same ellipse with an altitude mode of RELATIVE_TO_GROUND displays at 1km above ground level, relative
  * to the ellipse's center location.
- * <p>
+ * <br>
  * Surface ellipse geometry, where an ellipse appears draped across the terrain, may be achieved by enabling ellipse's
  * terrain following state and setting its altitude mode to CLAMP_TO_GROUND. See {@link #setFollowTerrain(boolean)} and
  * {@link #setAltitudeMode(int)}.
- * <p>
+ * <br>
  * <h3>Display Granularity</h3>
- * <p>
+ * <br>
  * Ellipse's appearance on screen is composed of discrete segments which approximate the ellipse's geometry. This
  * approximation is chosen such that the display appears to be a continuous smooth ellipse. Applications can control the
  * maximum number of angular intervals used in this representation with {@link #setMaximumIntervals(int)}.
@@ -410,11 +410,11 @@ public class Ellipse extends AbstractShape {
 
     /**
      * Sets the maximum number of angular intervals that may be used to approximate this ellipse's on screen.
-     * <p>
+     * <br>
      * Ellipse may use a minimum number of intervals to ensure that its appearance on screen at least roughly
      * approximates the ellipse's shape. When the specified number of intervals is too small, it is clamped to an
      * implementation-defined minimum number of intervals.
-     * <p>
+     * <br>
      * Ellipse may require that the number of intervals is an even multiple of some integer. When the specified number
      * of intervals does not meet this criteria, the next smallest integer that meets ellipse's criteria is used
      * instead.

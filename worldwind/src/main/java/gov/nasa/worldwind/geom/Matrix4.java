@@ -228,7 +228,7 @@ public class Matrix4 {
      * Sets the rotation components of this matrix to a specified axis and angle. Positive angles are interpreted as
      * counter-clockwise rotation about the axis when viewed when viewed from the positive end of the axis, looking
      * toward the negative end of the axis.
-     * <p/>
+     * <br>
      * The result of this method is undefined if the axis components are not a unit vector.
      *
      * @param x            the X component of the rotation axis unit vector
@@ -324,7 +324,7 @@ public class Matrix4 {
      * Sets this matrix to a rotation matrix with a specified axis and angle. Positive angles are interpreted as
      * counter-clockwise rotation about the axis when viewed when viewed from the positive end of the axis, looking
      * toward the negative end of the axis.
-     * <p/>
+     * <br>
      * The result of this method is undefined if the axis components are not a unit vector.
      *
      * @param x            the X component of the rotation axis unit vector
@@ -442,12 +442,12 @@ public class Matrix4 {
     /**
      * Sets this matrix to an infinite perspective projection matrix for the specified viewport dimensions, vertical
      * field of view and near clip distance.
-     * <p/>
+     * <br>
      * An infinite perspective projection matrix maps points in a manner similar to a standard projection matrix, but is
      * not bounded by depth. Objects at any depth greater than or equal to the near distance may be rendered. In
      * addition, this matrix interprets vertices with a w-coordinate of 0 as infinitely far from the camera in the
      * direction indicated by the point's coordinates.
-     * <p/>
+     * <br>
      * The field of view must be positive and less than 180. The near distance must be positive.
      *
      * @param viewportWidth  the viewport width in screen coordinates
@@ -516,13 +516,13 @@ public class Matrix4 {
     /**
      * Sets this matrix to a perspective projection matrix for the specified viewport dimensions, vertical field of view
      * and clip distances.
-     * <p/>
+     * <br>
      * A perspective projection matrix maps points in eye coordinates into clip coordinates in a way that causes distant
      * objects to appear smaller, and preserves the appropriate depth information for each point. In model coordinates,
      * a perspective projection is defined by frustum originating at the eye position and extending outward in the
      * viewer's direction. The near distance and the far distance identify the minimum and maximum distance,
      * respectively, at which an object in the scene is visible.
-     * <p/>
+     * <br>
      * The field of view must be positive and less than 180. Near and far distances must be positive and must not be
      * equal to one another.
      *
@@ -599,7 +599,7 @@ public class Matrix4 {
 
     /**
      * Sets this matrix to a screen projection matrix for the specified viewport dimensions.
-     * <p/>
+     * <br>
      * A screen projection matrix is an orthographic projection that interprets points in model coordinates as
      * representing a screen XY and a Z depth. Screen projection matrices therefore map coordinates directly into screen
      * coordinates without modification. A point's XY coordinates are interpreted as literal screen coordinates and must
@@ -668,12 +668,12 @@ public class Matrix4 {
 
     /**
      * Sets this matrix to the symmetric covariance Matrix computed from an array of points.
-     * <p/>
+     * <br>
      * The computed covariance matrix represents the correlation between each pair of x-, y-, and z-coordinates as
      * they're distributed about the point array's arithmetic mean. Its layout is as follows:
-     * <p/>
-     * <code> C(x, x)  C(x, y)  C(x, z) <br/> C(x, y)  C(y, y)  C(y, z) <br/> C(x, z)  C(y, z)  C(z, z) </code>
-     * <p/>
+     * <br>
+     * <code> C(x, x)  C(x, y)  C(x, z) <br> C(x, y)  C(y, y)  C(y, z) <br> C(x, z)  C(y, z)  C(z, z) </code>
+     * <br>
      * C(i, j) is the covariance of coordinates i and j, where i or j are a coordinate's dispersion about its mean
      * value. If any entry is zero, then there's no correlation between the two coordinates defining that entry. If the
      * returned matrix is diagonal, then all three coordinates are uncorrelated, and the specified point is distributed
@@ -1094,7 +1094,7 @@ public class Matrix4 {
 
     /**
      * Inverts this matrix in place.
-     * <p/>
+     * <br>
      * This throws an exception if this matrix is singular.
      *
      * @return this matrix, inverted
@@ -1115,9 +1115,9 @@ public class Matrix4 {
 
     /**
      * Inverts the specified matrix and stores the result in this matrix.
-     * <p/>
+     * <br>
      * This throws an exception if the specified matrix is singular.
-     * <p/>
+     * <br>
      * The result of this method is undefined if this matrix is passed in as the matrix to invert.
      *
      * @param matrix the matrix whose inverse is computed
@@ -1145,7 +1145,7 @@ public class Matrix4 {
     /**
      * Inverts this orthonormal transform matrix in place. This matrix's upper 3x3 is transposed, then its fourth column
      * is transformed by the transposed upper 3x3 and negated.
-     * <p/>
+     * <br>
      * The result of this method is undefined if this matrix's values are not consistent with those of an orthonormal
      * transform.
      *
@@ -1188,7 +1188,7 @@ public class Matrix4 {
      * Inverts the specified orthonormal transform matrix and stores the result in 'this' matrix. The specified matrix's
      * upper 3x3 is transposed, then its fourth column is transformed by the transposed upper 3x3 and negated.  The
      * result is stored in 'this' matrix.
-     * <p/>
+     * <br>
      * The result of this method is undefined if this matrix is passed in as the matrix to invert, or if the matrix's
      * values are not consistent with those of an orthonormal transform.
      *
@@ -1236,22 +1236,22 @@ public class Matrix4 {
      * typically used to draw geometry slightly closer to the user's eye in order to give those shapes visual priority
      * over nearby or geometry. An offset of zero has no effect. An offset less than zero brings depth values closer to
      * the eye, while an offset greater than zero pushes depth values away from the eye.
-     * <p/>
+     * <br>
      * The result of this method is undefined if this matrix is not a projection matrix. Projection matrices can be
      * created by calling <code>setToPerspectiveProjection</code> or <code>setToScreenProjection</code>
-     * <p/>
+     * <br>
      * Depth offset may be applied to both perspective and screen projection matrices. The effect on each type is
      * outlined here:
-     * <p/>
+     * <br>
      * <strong>Perspective Projection</strong>
-     * <p/>
+     * <br>
      * The effect of depth offset on a perspective projection increases exponentially with distance from the eye. This
      * has the effect of adjusting the offset for the loss in depth precision with geometry drawn further from the eye.
      * Distant geometry requires a greater offset to differentiate itself from nearby geometry, while close geometry
      * does not.
-     * <p/>
+     * <br>
      * <strong>Screen Projection</strong>
-     * <p/>
+     * <br>
      * The effect of depth offset on an screen projection increases linearly with distance from the eye. While it is
      * reasonable to apply a depth offset to an screen projection, the effect is most appropriate when applied to the
      * projection used to draw the scene. For example, when an object's coordinates are projected by a perspective
@@ -1273,7 +1273,7 @@ public class Matrix4 {
     /**
      * Returns this viewing matrix's eye point. In model coordinates, a viewing matrix's eye point is the point the
      * viewer is looking from and maps to the center of the screen.
-     * <p/>
+     * <br>
      * The result of this method is undefined if this matrix is not a viewing matrix.
      *
      * @param result a pre-allocated <code>Vec3</code> in which to return the extracted value
@@ -1300,7 +1300,7 @@ public class Matrix4 {
 
     /**
      * Returns this viewing matrix's forward vector.
-     * <p/>
+     * <br>
      * The result of this method is undefined if this matrix is not a viewing matrix.
      *
      * @param result a pre-allocated <code>Vec3</code> in which to return the extracted value
@@ -1327,7 +1327,7 @@ public class Matrix4 {
     /**
      * Returns this viewing matrix's heading angle in degrees. The roll argument enables the caller to disambiguate
      * heading and roll when the two rotation axes for heading and roll are parallel, causing gimbal lock.
-     * <p>
+     * <br>
      * The result of this method is undefined if this matrix is not a viewing matrix.
      *
      * @param roll the viewing matrix's roll angle in degrees, or 0 if the roll angle is unknown
@@ -1346,7 +1346,7 @@ public class Matrix4 {
 
     /**
      * Returns this viewing matrix's tilt angle in degrees.
-     * <p>
+     * <br>
      * The result of this method is undefined if this matrix is not a viewing matrix.
      *
      * @return the extracted heading angle in degrees
@@ -1361,7 +1361,7 @@ public class Matrix4 {
      * Returns this symmetric matrix's eigenvectors. The eigenvectors are returned in the specified result arguments in
      * order of descending magnitude (most prominent to least prominent). Each eigenvector has length equal to its
      * corresponding eigenvalue.
-     * <p/>
+     * <br>
      * This method returns false if this matrix is not a symmetric matrix.
      *
      * @param result1 a pre-allocated Vec3 in which to return the most prominent eigenvector
@@ -1536,10 +1536,10 @@ public class Matrix4 {
      * Projects a Cartesian point to screen coordinates. This method assumes this matrix represents an inverse
      * modelview-projection matrix. The result of this method is undefined if this matrix is not an inverse
      * modelview-projection matrix.
-     * <p/>
+     * <br>
      * The resultant screen point is in OpenGL screen coordinates, with the origin in the bottom-left corner and axes
      * that extend up and to the right from the origin.
-     * <p/>
+     * <br>
      * This stores the projected point in the result argument, and returns a boolean value indicating whether or not the
      * projection is successful. This returns false if the Cartesian point is clipped by the near clipping plane or the
      * far clipping plane.
@@ -1609,10 +1609,10 @@ public class Matrix4 {
      * Un-projects a screen coordinate point to Cartesian coordinates at the near clip plane and the far clip plane.
      * This method assumes this matrix represents an inverse modelview-projection matrix. The result of this method is
      * undefined if this matrix is not an inverse modelview-projection matrix.
-     * <p/>
+     * <br>
      * The screen point is understood to be in OpenGL screen coordinates, with the origin in the bottom-left corner and
      * axes that extend up and to the right from the origin.
-     * <p/>
+     * <br>
      * This function stores the un-projected points in the result argument, and a boolean value indicating whether the
      * un-projection is successful.
      *

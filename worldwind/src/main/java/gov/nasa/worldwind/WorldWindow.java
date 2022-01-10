@@ -152,7 +152,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * Constructs a WorldWindow associated with the specified application context and attributes from an XML tag. This
      * constructor is included to provide support for creating WorldWindow from an Android XML layout file, and is not
      * intended to be used directly.
-     * <p/>
+     * <br>
      * This is called when a view is being constructed from an XML file, supplying attributes that were specified in the
      * XML file. This version uses a default style of 0, so the only attribute values applied are those in the Context's
      * Theme and the given AttributeSet.
@@ -213,7 +213,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     /**
      * Indicates the planet or celestial object displayed by this WorldWindow. Defines the reference ellipsoid and
      * elevation models. Globe expresses its ellipsoidal parameters and elevation values in meters.
-     * <p>
+     * <br>
      * WorldWindow's globe is initially configured with the WGS 84 reference ellipsoid.
      *
      * @return the globe displayed by this WorldWindow
@@ -383,17 +383,17 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     /**
      * Determines the WorldWind objects displayed at a screen point. The screen point is interpreted as coordinates in
      * Android screen pixels relative to this View.
-     * <p/>
+     * <br>
      * If the screen point intersects any number of WorldWind shapes, the returned list contains a picked object
      * identifying the top shape at the screen point. This picked object includes the shape renderable (or its non-null
      * pick delegate) and the WorldWind layer that displayed the shape. Shapes which are either hidden behind another
      * shape at the screen point or hidden behind terrain at the screen point are omitted from the returned list.
      * Therefore if the returned list contains a picked object identifying a shape, it is always marked as 'on top'.
-     * <p/>
+     * <br>
      * If the screen point intersects the WorldWind terrain, the returned list contains a picked object identifying the
      * associated geographic position. If there are no shapes in the WorldWind scene between the terrain and the screen
      * point, the terrain picked object is marked as 'on top'.
-     * <p/>
+     * <br>
      * This returns an empty list when nothing in the WorldWind scene intersects the screen point, when the screen
      * point is outside this View's bounds, or if the OpenGL thread displaying the WorldWindow's scene is paused (or
      * becomes paused while this method is executing).
@@ -446,13 +446,13 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     /**
      * Determines the WorldWind shapes displayed in a screen rectangle. The screen rectangle is interpreted as
      * coordinates in Android screen pixels relative to this view.
-     * <p/>
+     * <br>
      * If the screen rectangle intersects any number of WorldWind shapes, the returned list contains a picked object
      * identifying the all of the top shapes in the rectangle. This picked object includes the shape renderable (or its
      * non-null pick delegate) and the WorldWind layer that displayed the shape. Shapes which are entirely hidden
      * behind another shape in the screen rectangle or are entirely hidden behind terrain in the screen rectangle are
      * omitted from the returned list.
-     * <p/>
+     * <br>
      * This returns an empty list when no shapes in the WorldWind scene intersect the screen rectangle, when the screen
      * rectangle is outside this View's bounds, or if the OpenGL thread displaying the WorldWindow's scene is paused
      * (or becomes paused while this method is executing).
@@ -498,7 +498,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     /**
      * Transforms a Cartesian coordinate point to Android screen coordinates. The resultant screen point is in Android
      * screen pixels relative to this View.
-     * <p/>
+     * <br>
      * This stores the converted point in the result argument, and returns a boolean value indicating whether or not the
      * converted is successful. This returns false if the Cartesian point is clipped by either the WorldWindow's near
      * clipping plane or far clipping plane.
@@ -536,7 +536,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     /**
      * Transforms a geographic position to Android screen coordinates. The resultant screen point is in Android screen
      * pixels relative to this View.
-     * <p/>
+     * <br>
      * This stores the converted point in the result argument, and returns a boolean value indicating whether or not the
      * converted is successful. This returns false if the Cartesian point is clipped by either of the WorldWindow's
      * near clipping plane or far clipping plane.
@@ -605,7 +605,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
      * Returns the height of a pixel at a given distance from the eye point. This method assumes the model of a screen
      * composed of rectangular pixels, where pixel coordinates denote infinitely thin space between pixels. The units of
      * the returned size are in meters per pixel.
-     * <p/>
+     * <br>
      * The result of this method is undefined if the distance is negative.
      *
      * @param distance the distance from the eye point in meters

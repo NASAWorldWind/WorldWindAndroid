@@ -25,13 +25,13 @@ import gov.nasa.worldwind.util.WWMath;
  * potential visibility are represented by a Cartesian sphere with a center position and a range. Terrain features
  * within the sphere are considered visible if there is a direct line-of-sight between the center position and a given
  * terrain point.
- * <p>
+ * <br>
  * OmnidirectionalSightline displays an overlay on the WorldWind terrain indicating which terrain features are visible,
  * and which are occluded. Visible terrain features, those having a direct line-of-sight to the center position, appear
  * in the sightline's normal attributes or its highlight attributes, depending on the highlight state. Occluded terrain
  * features appear in the sightline's occlude attributes, regardless of highlight state. Terrain features outside the
  * sightline's range are excluded from the overlay.
- * <p>
+ * <br>
  * <h3>Limitations and Planned Improvements</h3> <ul> <li>OmnidirectionalSightline is currently limited to terrain-based
  * occlusion, and does not incorporate other 3D scene elements during visibility determination. Subsequent iterations
  * will support occlusion of both terrain and 3D polygons.</li> <li>The visibility overlay is drawn in ShapeAttributes'
@@ -248,7 +248,7 @@ public class OmnidirectionalSightline extends AbstractRenderable implements Attr
      * sightline's overlay when the highlighted flag is false, and there is a direct line-of-sight from the sightline's
      * center position to a terrain feature. If null and this sightline is not highlighted, visible terrain features are
      * excluded from the overlay.
-     * <p/>
+     * <br>
      * It is permissible to share attribute bundles between sightlines.
      *
      * @param attributes a reference to an attributes bundle used by this sightline when not highlighted
@@ -274,7 +274,7 @@ public class OmnidirectionalSightline extends AbstractRenderable implements Attr
      * highlighted flag is true, and there is a direct line-of-sight from the sightline's center position to a terrain
      * feature. If null and the highlighted flag is true, this sightline's normal attributes are used. If they, too, are
      * null, visible terrain features are excluded from the overlay.
-     * <p/>
+     * <br>
      * It is permissible to share attribute bundles between sightlines.
      *
      * @param highlightAttributes a reference to the attributes bundle used by this sightline when highlighted
@@ -298,7 +298,7 @@ public class OmnidirectionalSightline extends AbstractRenderable implements Attr
      * Sets this sightline's "occlude" attributes. These attributes are used for the sightline's overlay when there's no
      * direct line-of-sight from the sightline's center position to a terrain feature. If null, occluded terrain
      * features are excluded from the overlay.
-     * <p>
+     * <br>
      * It is permissible to share attribute bundles between sightlines.
      *
      * @param occludeAttributes a reference to an attributes bundle used by this sightline when occluded

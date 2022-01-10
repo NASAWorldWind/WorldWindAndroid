@@ -53,14 +53,14 @@ public class Tile {
     /**
      * A factor expressing the size of a pixel or elevation cell at the center of this tile, in radians per pixel (or
      * cell).
-     * <p>
+     * <br>
      * Texel size in meters is computed as <code>(tileDelta / tileWidth) * cos(lat) * R</code>, where lat is the
      * centroid latitude and R is the globe's equatorial radius. This is derived by considering that texels are laid out
      * continuously on the arc of constant latitude connecting the tile's east and west edges and passing through its
      * centroid. The radii for the corresponding circle of constant latitude is <code>cos(lat) * R</code>, and the arc
      * length is therefore <code>tileDelta * cos(lat) * R</code>. The size of a texel along this arc is then found by
      * dividing by the number of texels along that arc, defined by the property Level.tileWidth.
-     * <p>
+     * <br>
      * This property stores the constant part of the texel size computation, <code>(tileDelta / tileWidth) *
      * cos(lat)</code>, leaving the globe-dependant variable <code>R</code> to be incorporated by the globe attached to
      * the RenderContext.

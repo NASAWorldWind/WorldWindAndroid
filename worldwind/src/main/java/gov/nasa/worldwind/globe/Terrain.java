@@ -11,11 +11,11 @@ import gov.nasa.worldwind.geom.Vec3;
 
 /**
  * Surface of a planet or celestial object.
- * <p>
+ * <br>
  * Models the geometric surface defined by an ellipsoidal globe and its
  * associated elevations. Terrain uses the Cartesian coordinate system specified by a {@code GeographicProjection} and
  * is capable of representing both a 3D ellipsoid and a 2D map projection, though not simultaneously.
- * <p/>
+ * <br>
  * <h3>Caching Terrain Queries</h3>
  * <p>
  * Terrain implementations typically model a subset of the globe's surface at varying

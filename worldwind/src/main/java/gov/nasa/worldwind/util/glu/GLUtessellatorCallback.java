@@ -111,8 +111,8 @@ public interface GLUtessellatorCallback {
    * an edge that separates an interior region from an exterior one. If the
    * boundaryEdge is <b>GL_FALSE</b>, then each vertex that follows begins an
    * edge that lies in the polygon interior. The edge flag callback (if
-   * defined) is invoked before the first vertex callback.<P>
-   *
+   * defined) is invoked before the first vertex callback.
+   * <BR>
    * Since triangle fans and triangle strips do not support edge flags, the
    * begin callback is not called with <b>GL_TRIANGLE_FAN</b> or
    * <b>GL_TRIANGLE_STRIP</b> if a non-null edge flag callback is provided.
@@ -217,25 +217,24 @@ public interface GLUtessellatorCallback {
    * the tessellation detects an intersection, or wishes to merge features. The
    * method takes four arguments: an array of three elements each of type
    * double, an array of four references, an array of four elements each of
-   * type float, and a reference to a reference.<P>
-   *
+   * type float, and a reference to a reference.
+   * <BR>
    * The vertex is defined as a linear combination of up to four existing
    * vertices, stored in <i>data</i>. The coefficients of the linear combination
    * are given by <i>weight</i>; these weights always add up to 1. All vertex
    * pointers are valid even when some of the weights are 0. <i>coords</i> gives
-   * the location of the new vertex.<P>
-   *
+   * the location of the new vertex.
+   * <BR>
    * The user must allocate another vertex, interpolate parameters using
    * <i>data</i> and <i>weight</i>, and return the new vertex pointer in
    * <i>outData</i>. This handle is supplied during rendering callbacks. The
    * user is responsible for freeing the memory some time after
    * {@link GLU#gluTessEndPolygon gluTessEndPolygon} is
-   * called.<P>
-   *
+   * called.
+   * <BR>
    * For example, if the polygon lies in an arbitrary plane in 3-space, and a
    * color is associated with each vertex, the <b>GLU_TESS_COMBINE</b>
    * callback might look like this:
-   * </UL>
    * <PRE>
    *         void myCombine(double[] coords, Object[] data,
    *                        float[] weight, Object[] outData)
@@ -313,8 +312,8 @@ public interface GLUtessellatorCallback {
    * <b>GLU_TESS_MISSING_END_CONTOUR</b>, <b>GLU_TESS_COORD_TOO_LARGE</b>,
    * <b>GLU_TESS_NEED_COMBINE_CALLBACK</b> or <b>GLU_OUT_OF_MEMORY</b>.
    * Character strings describing these errors can be retrieved with the
-   * {@link GLU#gluErrorString gluErrorString} call.<P>
-   *
+   * {@link GLU#gluErrorString gluErrorString} call.
+   * <BR>
    * The GLU library will recover from the first four errors by inserting the
    * missing call(s). <b>GLU_TESS_COORD_TOO_LARGE</b> indicates that some
    * vertex coordinate exceeded the predefined constant

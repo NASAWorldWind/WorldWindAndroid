@@ -17,7 +17,7 @@ public class WWMath {
      * Restricts a value to the range [min, max] degrees, clamping values outside the range. Values less than min are
      * returned as min, and values greater than max are returned as max. Values within the range are returned
      * unmodified.
-     * <p/>
+     * <br>
      * The result of this method is undefined if min is greater than max.
      *
      * @param value the values to clamp
@@ -70,7 +70,7 @@ public class WWMath {
      * Computes the linear interpolation of two values according to a specified fractional amount. The fractional amount
      * is interpreted as a relative proportion of the two values, where 0.0 indicates the first value, 0.5 indicates a
      * 50/50 mix of the two values, and 1.0 indicates the second value.
-     * <p/>
+     * <br>
      * The result of this method is undefined if the amount is outside the range [0, 1].
      *
      * @param amount the fractional proportion of the two values in the range [0, 1]
@@ -88,7 +88,7 @@ public class WWMath {
      * fractional amount. The fractional amount is interpreted as a relative proportion of the two angles, where 0.0
      * indicates the first angle, 0.5 indicates an angle half way between the two angles, and 1.0 indicates the second
      * angle.
-     * <p/>
+     * <br>
      * The result of this method is undefined if the amount is outside the range [0, 1].
      *
      * @param amount   the fractional proportion of the two angles in the range [0, 1]
@@ -120,7 +120,7 @@ public class WWMath {
      * Computes the linear interpolation of two angles in the range [0, 360] degrees according to a specified fractional
      * amount. The fractional amount is interpreted as a relative proportion of the two angles, where 0.0 indicates the
      * first angle, 0.5 indicates an angle half way between the two angles, and 1.0 indicates the second angle.
-     * <p/>
+     * <br>
      * The result of this method is undefined if the amount is outside the range [0, 1].
      *
      * @param amount   the fractional proportion of the two angles in the range [0, 1]
