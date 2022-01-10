@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 
 import java.net.SocketTimeoutException;
@@ -55,7 +56,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
     }
 
     protected void init() {
-        this.handler = new Handler(this);
+        this.handler = new Handler(Looper.myLooper(), this);
         this.evictionQueue = new ConcurrentLinkedQueue<>();
         this.imageRetriever = new ImageRetriever(2);
         this.urlImageRetriever = new ImageRetriever(8);

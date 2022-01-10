@@ -18,12 +18,12 @@ import java.util.regex.Pattern;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.util.Logger;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(PowerMockRunner.class) // Support for mocking static methods
 @PrepareForTest(Logger.class)   // We mock the Logger class to avoid its calls to android.util.log
@@ -884,7 +884,7 @@ public class WmsTileFactoryTest {
     /**
      * Test the provided {@link String} url against the {@link WmsTileFactory} objects properties. This method will test
      * that the parameters of {@link WmsTileFactory} are properly represented in the url. This method uses the {@link
-     * junit.framework.Assert} methods to communicate test results.
+     * org.junit.Assert} methods to communicate test results.
      *
      * @param url     the generated {@link String} url to be evaluated
      * @param factory the {@link WmsTileFactory} which generated the url

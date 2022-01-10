@@ -22,9 +22,9 @@ import java.util.List;
 import gov.nasa.worldwind.test.R;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
 public class WmtsCapabilitiesTest {

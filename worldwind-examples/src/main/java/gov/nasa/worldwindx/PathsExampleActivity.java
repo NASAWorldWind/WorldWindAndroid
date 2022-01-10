@@ -7,6 +7,7 @@ package gov.nasa.worldwindx;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 
 import java.io.BufferedReader;
@@ -34,7 +35,7 @@ public class PathsExampleActivity extends GeneralGlobeActivity implements Handle
 
     protected RenderableLayer flightPathLayer = new RenderableLayer();
 
-    protected Handler handler = new Handler(this);
+    protected Handler handler = new Handler(Looper.getMainLooper(), this);
 
     protected double animationAmount = 0;
 

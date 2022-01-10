@@ -8,6 +8,7 @@ package gov.nasa.worldwindx;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.SparseArray;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -68,7 +69,7 @@ public class PlacemarksMilStd2525DemoActivity extends GeneralGlobeActivity imple
     protected static final List<String> hostiles = Arrays.asList("RS", "IR");
 
     // The handler for the aircraft animation
-    protected Handler handler = new Handler();
+    protected Handler handler = new Handler(Looper.getMainLooper());
 
     protected boolean animationStared = false;
 

@@ -123,7 +123,7 @@ public class TextRenderer {
             height += (strokeWidth_2 * 2);
         }
 
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444);
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         this.canvas.setBitmap(bitmap);
 
         if (this.enableOutline) {

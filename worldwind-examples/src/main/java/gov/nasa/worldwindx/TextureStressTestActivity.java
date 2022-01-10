@@ -8,6 +8,7 @@ package gov.nasa.worldwindx;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 
 import java.util.Arrays;
@@ -28,7 +29,7 @@ public class TextureStressTestActivity extends BasicGlobeActivity {
 
     protected Bitmap bitmap;
 
-    protected Handler handler = new Handler(new Handler.Callback() {
+    protected Handler handler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.what == ADD_IMAGE) {
