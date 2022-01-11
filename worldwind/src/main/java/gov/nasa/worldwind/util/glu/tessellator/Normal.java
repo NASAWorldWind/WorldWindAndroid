@@ -58,7 +58,7 @@ class Normal {
     private Normal() {
     }
 
-    static boolean SLANTED_SWEEP = false;
+    static final boolean SLANTED_SWEEP = false;
     static double S_UNIT_X;	/* Pre-normalized */
     static double S_UNIT_Y;
     private static final boolean TRUE_PROJECT = false;

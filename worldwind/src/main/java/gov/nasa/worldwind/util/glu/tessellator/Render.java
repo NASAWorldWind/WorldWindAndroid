@@ -1,55 +1,55 @@
 /*
-* Portions Copyright (C) 2003-2006 Sun Microsystems, Inc.
-* All rights reserved.
-*/
+ * Portions Copyright (C) 2003-2006 Sun Microsystems, Inc.
+ * All rights reserved.
+ */
 
 /*
-** License Applicability. Except to the extent portions of this file are
-** made subject to an alternative license as permitted in the SGI Free
-** Software License B, Version 1.1 (the "License"), the contents of this
-** file are subject only to the provisions of the License. You may not use
-** this file except in compliance with the License. You may obtain a copy
-** of the License at Silicon Graphics, Inc., attn: Legal Services, 1600
-** Amphitheatre Parkway, Mountain View, CA 94043-1351, or at:
-**
-** http://oss.sgi.com/projects/FreeB
-**
-** Note that, as provided in the License, the Software is distributed on an
-** "AS IS" basis, with ALL EXPRESS AND IMPLIED WARRANTIES AND CONDITIONS
-** DISCLAIMED, INCLUDING, WITHOUT LIMITATION, ANY IMPLIED WARRANTIES AND
-** CONDITIONS OF MERCHANTABILITY, SATISFACTORY QUALITY, FITNESS FOR A
-** PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
-**
-** NOTE:  The Original Code (as defined below) has been licensed to Sun
-** Microsystems, Inc. ("Sun") under the SGI Free Software License B
-** (Version 1.1), shown above ("SGI License").   Pursuant to Section
-** 3.2(3) of the SGI License, Sun is distributing the Covered Code to
-** you under an alternative license ("Alternative License").  This
-** Alternative License includes all of the provisions of the SGI License
-** except that Section 2.2 and 11 are omitted.  Any differences between
-** the Alternative License and the SGI License are offered solely by Sun
-** and not by SGI.
-**
-** Original Code. The Original Code is: OpenGL Sample Implementation,
-** Version 1.2.1, released January 26, 2000, developed by Silicon Graphics,
-** Inc. The Original Code is Copyright (c) 1991-2000 Silicon Graphics, Inc.
-** Copyright in any portions created by third parties is as indicated
-** elsewhere herein. All Rights Reserved.
-**
-** Additional Notice Provisions: The application programming interfaces
-** established by SGI in conjunction with the Original Code are The
-** OpenGL(R) Graphics System: A Specification (Version 1.2.1), released
-** April 1, 1999; The OpenGL(R) Graphics System Utility Library (Version
-** 1.3), released November 4, 1998; and OpenGL(R) Graphics with the X
-** Window System(R) (Version 1.3), released October 19, 1998. This software
-** was created using the OpenGL(R) version 1.2.1 Sample Implementation
-** published by SGI, but has not been independently verified as being
-** compliant with the OpenGL(R) version 1.2.1 Specification.
-**
-** Author: Eric Veach, July 1994
-** Java Port: Pepijn Van Eeckhoudt, July 2003
-** Java Port: Nathan Parker Burg, August 2003
-*/
+ * License Applicability. Except to the extent portions of this file are
+ * made subject to an alternative license as permitted in the SGI Free
+ * Software License B, Version 1.1 (the "License"), the contents of this
+ * file are subject only to the provisions of the License. You may not use
+ * this file except in compliance with the License. You may obtain a copy
+ * of the License at Silicon Graphics, Inc., attn: Legal Services, 1600
+ * Amphitheatre Parkway, Mountain View, CA 94043-1351, or at:
+ *
+ * http://oss.sgi.com/projects/FreeB
+ *
+ * Note that, as provided in the License, the Software is distributed on an
+ * "AS IS" basis, with ALL EXPRESS AND IMPLIED WARRANTIES AND CONDITIONS
+ * DISCLAIMED, INCLUDING, WITHOUT LIMITATION, ANY IMPLIED WARRANTIES AND
+ * CONDITIONS OF MERCHANTABILITY, SATISFACTORY QUALITY, FITNESS FOR A
+ * PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+ *
+ * NOTE:  The Original Code (as defined below) has been licensed to Sun
+ * Microsystems, Inc. ("Sun") under the SGI Free Software License B
+ * (Version 1.1), shown above ("SGI License").   Pursuant to Section
+ * 3.2(3) of the SGI License, Sun is distributing the Covered Code to
+ * you under an alternative license ("Alternative License").  This
+ * Alternative License includes all of the provisions of the SGI License
+ * except that Section 2.2 and 11 are omitted.  Any differences between
+ * the Alternative License and the SGI License are offered solely by Sun
+ * and not by SGI.
+ *
+ * Original Code. The Original Code is: OpenGL Sample Implementation,
+ * Version 1.2.1, released January 26, 2000, developed by Silicon Graphics,
+ * Inc. The Original Code is Copyright (c) 1991-2000 Silicon Graphics, Inc.
+ * Copyright in any portions created by third parties is as indicated
+ * elsewhere herein. All Rights Reserved.
+ *
+ * Additional Notice Provisions: The application programming interfaces
+ * established by SGI in conjunction with the Original Code are The
+ * OpenGL(R) Graphics System: A Specification (Version 1.2.1), released
+ * April 1, 1999; The OpenGL(R) Graphics System Utility Library (Version
+ * 1.3), released November 4, 1998; and OpenGL(R) Graphics with the X
+ * Window System(R) (Version 1.3), released October 19, 1998. This software
+ * was created using the OpenGL(R) version 1.2.1 Sample Implementation
+ * published by SGI, but has not been independently verified as being
+ * compliant with the OpenGL(R) version 1.2.1 Specification.
+ *
+ * Author: Eric Veach, July 1994
+ * Java Port: Pepijn Van Eeckhoudt, July 2003
+ * Java Port: Nathan Parker Burg, August 2003
+ */
 package gov.nasa.worldwind.util.glu.tessellator;
 
 import android.opengl.GLES10;
@@ -66,10 +66,10 @@ class Render {
     private static final RenderStrip renderStrip = new RenderStrip();
     private static final RenderTriangle renderTriangle = new RenderTriangle();
 
-/* This structure remembers the information we need about a primitive
- * to be able to render it later, once we have determined which
- * primitive is able to use the most triangles.
- */
+    /* This structure remembers the information we need about a primitive
+     * to be able to render it later, once we have determined which
+     * primitive is able to use the most triangles.
+     */
     private static class FaceCount {
         public FaceCount() {
         }
@@ -83,21 +83,21 @@ class Render {
         long size;		/* number of triangles used */
         GLUhalfEdge eStart;	/* edge where this primitive starts */
         renderCallBack render;
-    };
+    }
 
-    private static interface renderCallBack {
+    private interface renderCallBack {
         void render(GLUtessellatorImpl tess, GLUhalfEdge e, long size);
     }
 
     /************************ Strips and Fans decomposition ******************/
 
-/* __gl_renderMesh( tess, mesh ) takes a mesh and breaks it into triangle
- * fans, strips, and separate triangles.  A substantial effort is made
- * to use as few rendering primitives as possible (ie. to make the fans
- * and strips as large as possible).
- *
- * The rendering output is provided as callbacks (see the api).
- */
+    /* __gl_renderMesh( tess, mesh ) takes a mesh and breaks it into triangle
+     * fans, strips, and separate triangles.  A substantial effort is made
+     * to use as few rendering primitives as possible (ie. to make the fans
+     * and strips as large as possible).
+     *
+     * The rendering output is provided as callbacks (see the api).
+     */
     public static void __gl_renderMesh(GLUtessellatorImpl tess, GLUmesh mesh) {
         GLUface f;
 
@@ -135,7 +135,7 @@ class Render {
          */
         GLUhalfEdge e = fOrig.anEdge;
         FaceCount max = new FaceCount();
-        FaceCount newFace = new FaceCount();
+        FaceCount newFace;
 
         max.size = 1;
         max.eStart = e;
@@ -172,13 +172,13 @@ class Render {
     }
 
 
-/* Macros which keep track of faces we have marked temporarily, and allow
- * us to backtrack when necessary.  With triangle fans, this is not
- * really necessary, since the only awkward case is a loop of triangles
- * around a single origin vertex.  However with strips the situation is
- * more complicated, and we need a general tracking method like the
- * one here.
- */
+    /* Macros which keep track of faces we have marked temporarily, and allow
+     * us to backtrack when necessary.  With triangle fans, this is not
+     * really necessary, since the only awkward case is a loop of triangles
+     * around a single origin vertex.  However with strips the situation is
+     * more complicated, and we need a general tracking method like the
+     * one here.
+     */
     private static boolean Marked(GLUface f) {
         return !f.inside || f.marked;
     }
@@ -190,13 +190,9 @@ class Render {
     }
 
     private static void FreeTrail(GLUface t) {
-        if (true) {
-            while (t != null) {
-                t.marked = false;
-                t = t.trail;
-            }
-        } else {
-            /* absorb trailing semicolon */
+        while (t != null) {
+            t.marked = false;
+            t = t.trail;
         }
     }
 
@@ -375,10 +371,10 @@ class Render {
 
     /************************ Boundary contour decomposition ******************/
 
-/* __gl_renderBoundary( tess, mesh ) takes a mesh, and outputs one
- * contour for each face marked "inside".  The rendering output is
- * provided as callbacks (see the api).
- */
+    /* __gl_renderBoundary( tess, mesh ) takes a mesh, and outputs one
+     * contour for each face marked "inside".  The rendering output is
+     * provided as callbacks (see the api).
+     */
     public static void __gl_renderBoundary(GLUtessellatorImpl tess, GLUmesh mesh) {
         GLUface f;
         GLUhalfEdge e;
@@ -402,14 +398,14 @@ class Render {
     private static final int SIGN_INCONSISTENT = 2;
 
     static int ComputeNormal(GLUtessellatorImpl tess, double[] norm, boolean check)
-/*
- * If check==false, we compute the polygon normal and place it in norm[].
- * If check==true, we check that each triangle in the fan from v0 has a
- * consistent orientation with respect to norm[].  If triangles are
- * consistently oriented CCW, return 1; if CW, return -1; if all triangles
- * are degenerate return 0; otherwise (no consistent orientation) return
- * SIGN_INCONSISTENT.
- */ {
+        /*
+         * If check==false, we compute the polygon normal and place it in norm[].
+         * If check==true, we check that each triangle in the fan from v0 has a
+         * consistent orientation with respect to norm[].  If triangles are
+         * consistently oriented CCW, return 1; if CW, return -1; if all triangles
+         * are degenerate return 0; otherwise (no consistent orientation) return
+         * SIGN_INCONSISTENT.
+         */ {
         CachedVertex[] v = tess.cache;
 //            CachedVertex vn = v0 + tess.cacheCount;
         int vn = tess.cacheCount;
@@ -481,13 +477,13 @@ class Render {
         return sign;
     }
 
-/* __gl_renderCache( tess ) takes a single contour and tries to render it
- * as a triangle fan.  This handles convex polygons, as well as some
- * non-convex polygons if we get lucky.
- *
- * Returns true if the polygon was successfully rendered.  The rendering
- * output is provided as callbacks (see the api).
- */
+    /* __gl_renderCache( tess ) takes a single contour and tries to render it
+     * as a triangle fan.  This handles convex polygons, as well as some
+     * non-convex polygons if we get lucky.
+     *
+     * Returns true if the polygon was successfully rendered.  The rendering
+     * output is provided as callbacks (see the api).
+     */
     public static boolean __gl_renderCache(GLUtessellatorImpl tess) {
         CachedVertex[] v = tess.cache;
 //            CachedVertex vn = v0 + tess.cacheCount;

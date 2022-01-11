@@ -52,7 +52,7 @@ import gov.nasa.worldwind.util.glu.GLU;
  */
 public class Error {
 
-  private static String[] gluErrorStrings = {
+  private static final String[] gluErrorStrings = {
     "invalid enumerant",
     "invalid value",
     "out of memory",
