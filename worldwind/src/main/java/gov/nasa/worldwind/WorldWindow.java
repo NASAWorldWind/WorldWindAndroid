@@ -73,7 +73,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected double verticalExaggeration = 1;
 
-    protected final Camera camera = new Camera(this);
+    protected Camera camera = new Camera(this);
 
     @Deprecated
     protected Navigator navigator = new Navigator(this);
@@ -280,6 +280,15 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     public Camera getCamera() {
         return this.camera;
+    }
+
+    public void setCamera(Camera camera) {
+        if (camera == null) {
+            throw new IllegalArgumentException(
+                    Logger.logMessage(Logger.ERROR, "WorldWindow", "setCamera", "missingCamera"));
+        }
+
+        this.camera = camera;
     }
 
     @Deprecated
