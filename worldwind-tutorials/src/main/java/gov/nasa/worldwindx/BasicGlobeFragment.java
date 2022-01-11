@@ -18,6 +18,7 @@ import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.globe.BasicElevationCoverage;
 import gov.nasa.worldwind.layer.BackgroundLayer;
 import gov.nasa.worldwind.layer.BlueMarbleLandsatLayer;
+import gov.nasa.worldwind.layer.atmosphere.AtmosphereLayer;
 
 public class BasicGlobeFragment extends Fragment {
 
@@ -35,6 +36,7 @@ public class BasicGlobeFragment extends Fragment {
         // Setup the WorldWindow's layers.
         this.wwd.getLayers().addLayer(new BackgroundLayer());
         this.wwd.getLayers().addLayer(new BlueMarbleLandsatLayer());
+        this.wwd.getLayers().addLayer(new AtmosphereLayer());
         // Setup the WorldWindow's elevation coverages.
         this.wwd.getGlobe().getElevationModel().addCoverage(new BasicElevationCoverage());
         return this.wwd;
