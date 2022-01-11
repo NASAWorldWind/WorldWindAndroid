@@ -22,11 +22,11 @@ public class XmlModelParser {
 
     protected XmlPullParser xpp;
 
-    protected Map<QName, Class<? extends XmlModel>> xmlModelRegistry = new HashMap<>();
+    protected final Map<QName, Class<? extends XmlModel>> xmlModelRegistry = new HashMap<>();
 
-    protected Set<QName> txtModelRegistry = new HashSet<>();
+    protected final Set<QName> txtModelRegistry = new HashSet<>();
 
-    protected StringBuilder characters = new StringBuilder();
+    protected final StringBuilder characters = new StringBuilder();
 
     public XmlModelParser() {
     }

@@ -12,6 +12,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,7 +20,7 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.util.Logger;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -115,24 +116,21 @@ public class WmsTileFactoryTest {
 
         // Javadocs specify that the serviceAddress, wmsVersion, and layerNames cannot be null
         try {
-            WmsTileFactory wmsFactory
-                = new WmsTileFactory(null, COMMON_WMS_VERSION, COMMON_LAYER_NAMES, null);
+            new WmsTileFactory(null, COMMON_WMS_VERSION, COMMON_LAYER_NAMES, null);
             fail("Missing the serviceAddress, should not return");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
         }
 
         try {
-            WmsTileFactory wmsFactory
-                = new WmsTileFactory(COMMON_SERVICE_ADDRESS, null, COMMON_LAYER_NAMES, null);
+            new WmsTileFactory(COMMON_SERVICE_ADDRESS, null, COMMON_LAYER_NAMES, null);
             fail("Missing the wmsVersion, should not return");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
         }
 
         try {
-            WmsTileFactory wmsFactory
-                = new WmsTileFactory(COMMON_SERVICE_ADDRESS, COMMON_WMS_VERSION, null, null);
+            new WmsTileFactory(COMMON_SERVICE_ADDRESS, COMMON_WMS_VERSION, null, null);
             fail("Missing the layerNames, should not return");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
@@ -155,7 +153,7 @@ public class WmsTileFactoryTest {
     public void testConstructor_Config() {
 
         try {
-            WmsTileFactory wmsFactory = new WmsTileFactory(null);
+            new WmsTileFactory(null);
             fail("Missing config, should not return");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
@@ -165,7 +163,7 @@ public class WmsTileFactoryTest {
         // Test all null checks conducted by the config constructor
         WmsLayerConfig layerConfig = new WmsLayerConfig(null, null, null, null, null, null, false, null);
         try {
-            WmsTileFactory wmsFactory = new WmsTileFactory(layerConfig);
+            new WmsTileFactory(layerConfig);
             fail("Missing the serviceAddress, should not return");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
@@ -174,7 +172,7 @@ public class WmsTileFactoryTest {
         // Progressively add agruments and test for exceptions
         layerConfig.serviceAddress = COMMON_SERVICE_ADDRESS;
         try {
-            WmsTileFactory wmsFactory = new WmsTileFactory(layerConfig);
+            new WmsTileFactory(layerConfig);
             fail("Missing the wmsVersion, should not return");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
@@ -182,7 +180,7 @@ public class WmsTileFactoryTest {
 
         layerConfig.wmsVersion = COMMON_WMS_VERSION;
         try {
-            WmsTileFactory wmsFactory = new WmsTileFactory(layerConfig);
+            new WmsTileFactory(layerConfig);
             fail("Missing the layerNames, should not return");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
@@ -190,7 +188,7 @@ public class WmsTileFactoryTest {
 
         layerConfig.layerNames = COMMON_LAYER_NAMES;
         try {
-            WmsTileFactory wmsFactory = new WmsTileFactory(layerConfig);
+            new WmsTileFactory(layerConfig);
             fail("Missing the coordinateSystem, should not return");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex);
@@ -442,7 +440,7 @@ public class WmsTileFactoryTest {
 
         standardWmsMapFactory.setTransparent(!previousSetting);
 
-        assertFalse("ensure transparency set", previousSetting == standardWmsMapFactory.isTransparent());
+        assertNotEquals("ensure transparency set", previousSetting, standardWmsMapFactory.isTransparent());
     }
 
     /**
@@ -594,12 +592,6 @@ public class WmsTileFactoryTest {
      */
     @Test
     public void testUrlForTile_QueryDelimiterPositioning_BaseUrl() {
-
-        // Values used for the Blue Marble
-        String serviceAddress = COMMON_SERVICE_ADDRESS;
-        String wmsVersion = COMMON_WMS_VERSION;
-        String layerNames = COMMON_LAYER_NAMES;
-
         // Mocking of method object parameters - notional values
         int tileHeight = 5;
         int tileWidth = 4;
@@ -610,7 +602,7 @@ public class WmsTileFactoryTest {
         PowerMockito.when(sector.maxLongitude()).thenReturn(NOTIONAL_MAX_LON);
 
         // Provide the method a service address without a query delimiter
-        WmsTileFactory wmsFactory = new WmsTileFactory(serviceAddress, wmsVersion, layerNames, null);
+        WmsTileFactory wmsFactory = new WmsTileFactory(COMMON_SERVICE_ADDRESS, COMMON_WMS_VERSION, COMMON_LAYER_NAMES, null);
         String url = wmsFactory.urlForTile(sector, tileWidth, tileHeight);
 
         checkQueryDelimiter(url);
@@ -622,12 +614,6 @@ public class WmsTileFactoryTest {
      */
     @Test
     public void testUrlForTile_QueryDelimiterPositioning_DelimiterAppended() {
-
-        // Values used for the Blue Marble
-        String serviceAddress = COMMON_SERVICE_ADDRESS;
-        String wmsVersion = COMMON_WMS_VERSION;
-        String layerNames = COMMON_LAYER_NAMES;
-
         // Mocking of method object parameters - notional values
         int tileHeight = 5;
         int tileWidth = 4;
@@ -638,7 +624,7 @@ public class WmsTileFactoryTest {
         PowerMockito.when(sector.maxLongitude()).thenReturn(NOTIONAL_MAX_LON);
 
         // Provide the method a service address with a query delimiter appended
-        WmsTileFactory wmsFactory = new WmsTileFactory(serviceAddress + '?', wmsVersion, layerNames, null);
+        WmsTileFactory wmsFactory = new WmsTileFactory(COMMON_SERVICE_ADDRESS + '?', COMMON_WMS_VERSION, COMMON_LAYER_NAMES, null);
         String url = wmsFactory.urlForTile(sector, tileWidth, tileHeight);
 
         checkQueryDelimiter(url);
@@ -650,12 +636,6 @@ public class WmsTileFactoryTest {
      */
     @Test
     public void testUrlForTile_QueryDelimiterPositioning_BareUrl_AdditionalParameters() {
-
-        // Values used for the Blue Marble
-        String serviceAddress = COMMON_SERVICE_ADDRESS;
-        String wmsVersion = COMMON_WMS_VERSION;
-        String layerNames = COMMON_LAYER_NAMES;
-
         // Mocking of method object parameters - notional values
         int tileHeight = 5;
         int tileWidth = 4;
@@ -666,7 +646,7 @@ public class WmsTileFactoryTest {
         PowerMockito.when(sector.maxLongitude()).thenReturn(NOTIONAL_MAX_LON);
 
         // Provide the method a service address with a query delimiter and existing parameters
-        WmsTileFactory wmsFactory = new WmsTileFactory(serviceAddress + "?NOTIONAL=YES", wmsVersion, layerNames, null);
+        WmsTileFactory wmsFactory = new WmsTileFactory(COMMON_SERVICE_ADDRESS + "?NOTIONAL=YES", COMMON_WMS_VERSION, COMMON_LAYER_NAMES, null);
         String url = wmsFactory.urlForTile(sector, tileWidth, tileHeight);
 
         checkQueryDelimiter(url);
@@ -678,12 +658,6 @@ public class WmsTileFactoryTest {
      */
     @Test
     public void testUrlForTile_QueryDelimiterPositioning_BareUrl_AdditionalParametersWithAmpersand() {
-
-        // Values used for the Blue Marble
-        String serviceAddress = COMMON_SERVICE_ADDRESS;
-        String wmsVersion = COMMON_WMS_VERSION;
-        String layerNames = COMMON_LAYER_NAMES;
-
         // Mocking of method object parameters - notional values
         int tileHeight = 5;
         int tileWidth = 4;
@@ -694,7 +668,7 @@ public class WmsTileFactoryTest {
         PowerMockito.when(sector.maxLongitude()).thenReturn(NOTIONAL_MAX_LON);
 
         // Provide the method a service address with a query delimiter and existing parameters
-        WmsTileFactory wmsFactory = new WmsTileFactory(serviceAddress + "?NOTIONAL=YES&", wmsVersion, layerNames, null);
+        WmsTileFactory wmsFactory = new WmsTileFactory(COMMON_SERVICE_ADDRESS + "?NOTIONAL=YES&", COMMON_WMS_VERSION, COMMON_LAYER_NAMES, null);
         String url = wmsFactory.urlForTile(sector, tileWidth, tileHeight);
 
         checkQueryDelimiter(url);
@@ -942,7 +916,7 @@ public class WmsTileFactoryTest {
 
         if (m.find()) {
             // Now need to split up the values and parse to doubles
-            String[] values = m.group(1).split(",");
+            String[] values = Objects.requireNonNull(m.group(1)).split(",");
             if (values.length == 4) {
                 double[] coords = new double[4];
 
@@ -988,14 +962,14 @@ public class WmsTileFactoryTest {
         // Test Width and Height
         m = WIDTH_P.matcher(url);
         if (m.find()) {
-            assertEquals("width value test", NOTIONAL_WIDTH, Integer.parseInt(m.group(1)));
+            assertEquals("width value test", NOTIONAL_WIDTH, Integer.parseInt(Objects.requireNonNull(m.group(1))));
         } else {
             fail("did not find width parameter");
         }
 
         m = HEIGHT_P.matcher(url);
         if (m.find()) {
-            assertEquals("height value test", NOTIONAL_HEIGHT, Integer.parseInt(m.group(1)));
+            assertEquals("height value test", NOTIONAL_HEIGHT, Integer.parseInt(Objects.requireNonNull(m.group(1))));
         } else {
             fail("did not find height parameter");
         }
@@ -1051,12 +1025,12 @@ public class WmsTileFactoryTest {
 
         // ensure only one delimiter
         int lastIndex = url.lastIndexOf(queryDelimiter);
-        assertTrue("one delimiter", index == lastIndex);
+        assertEquals("one delimiter", index, lastIndex);
 
         // check parameters follow query delimiter
         assertTrue("no following parameters", (url.length() - 1) > index);
 
         // check trailing character isn't an ampersand
-        assertFalse("ampersand trailing", url.charAt(index + 1) == '&');
+        assertNotEquals("ampersand trailing", '&', url.charAt(index + 1));
     }
 }

@@ -14,7 +14,7 @@ public class OwsHttpMethod extends XmlModel {
 
     protected String url;
 
-    protected List<OwsConstraint> constraints = new ArrayList<>();
+    protected final List<OwsConstraint> constraints = new ArrayList<>();
 
     public OwsHttpMethod() {
     }

@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.geom;
 
+import androidx.annotation.NonNull;
+
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -89,6 +91,7 @@ public class Vec3 {
         return result;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return this.x + ", " + this.y + ", " + this.z;
@@ -465,11 +468,10 @@ public class Vec3 {
         }
 
         double w0 = 1 - weight;
-        double w1 = weight;
 
-        this.x = this.x * w0 + vector.x * w1;
-        this.y = this.y * w0 + vector.y * w1;
-        this.z = this.z * w0 + vector.z * w1;
+        this.x = this.x * w0 + vector.x * weight;
+        this.y = this.y * w0 + vector.y * weight;
+        this.z = this.z * w0 + vector.z * weight;
 
         return this;
     }

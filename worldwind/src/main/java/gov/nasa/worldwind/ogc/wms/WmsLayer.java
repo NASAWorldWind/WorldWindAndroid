@@ -16,7 +16,7 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 public class WmsLayer extends XmlModel {
 
     // Properties of the Layer element
-    protected List<WmsLayer> layers = new ArrayList<>();
+    protected final List<WmsLayer> layers = new ArrayList<>();
 
     protected String name;
 
@@ -24,37 +24,37 @@ public class WmsLayer extends XmlModel {
 
     protected String description;
 
-    protected List<String> keywordList = new ArrayList<>();
+    protected final List<String> keywordList = new ArrayList<>();
 
-    protected List<WmsStyle> styles = new ArrayList<>();
+    protected final List<WmsStyle> styles = new ArrayList<>();
 
     // The 1.3.0 Reference System
-    protected List<String> crses = new ArrayList<>();
+    protected final List<String> crses = new ArrayList<>();
 
     // The 1.1.1 Reference System
-    protected List<String> srses = new ArrayList<>();
+    protected final List<String> srses = new ArrayList<>();
 
     protected WmsGeographicBoundingBox geographicBoundingBox;
 
-    protected List<WmsBoundingBox> boundingBoxes = new ArrayList<>();
+    protected final List<WmsBoundingBox> boundingBoxes = new ArrayList<>();
 
     // The 1.3.0 Dimension Property
-    protected List<WmsDimension> dimensions = new ArrayList<>();
+    protected final List<WmsDimension> dimensions = new ArrayList<>();
 
     // The 1.1.1 Dimension Property
-    protected List<WmsDimension> extents = new ArrayList<>();
+    protected final List<WmsDimension> extents = new ArrayList<>();
 
     protected WmsAttribution attribution;
 
-    protected List<WmsAuthorityUrl> authorityUrls = new ArrayList<>();
+    protected final List<WmsAuthorityUrl> authorityUrls = new ArrayList<>();
 
-    protected List<WmsIdentifier> identifiers = new ArrayList<>();
+    protected final List<WmsIdentifier> identifiers = new ArrayList<>();
 
-    protected List<WmsInfoUrl> metadataUrls = new ArrayList<>();
+    protected final List<WmsInfoUrl> metadataUrls = new ArrayList<>();
 
-    protected List<WmsInfoUrl> dataUrls = new ArrayList<>();
+    protected final List<WmsInfoUrl> dataUrls = new ArrayList<>();
 
-    protected List<WmsInfoUrl> featureListUrls = new ArrayList<>();
+    protected final List<WmsInfoUrl> featureListUrls = new ArrayList<>();
 
     // The 1.3.0 Scale Property
     protected Double maxScaleDenominator;
@@ -437,62 +437,89 @@ public class WmsLayer extends XmlModel {
 
     @Override
     public void parseField(String keyName, Object value) {
-        if (keyName.equals("Layer")) {
-            this.layers.add((WmsLayer) value);
-        } else if (keyName.equals("Name")) {
-            this.name = (String) value;
-        } else if (keyName.equals("Title")) {
-            this.title = (String) value;
-        } else if (keyName.equals("Abstract")) {
-            this.description = (String) value;
-        } else if (keyName.equals("KeywordList")) {
-            this.keywordList.addAll(((WmsKeywords) value).getKeywords());
-        } else if (keyName.equals("Style")) {
-            this.styles.add((WmsStyle) value);
-        } else if (keyName.equals("CRS")) {
-            this.crses.add((String) value);
-        } else if (keyName.equals("SRS")) {
-            this.srses.add((String) value);
-        } else if (keyName.equals("EX_GeographicBoundingBox")) {
-            this.geographicBoundingBox = (WmsGeographicBoundingBox) value;
-        } else if (keyName.equals("LatLonBoundingBox")) {
-            this.geographicBoundingBox = (WmsGeographicBoundingBox) value;
-        } else if (keyName.equals("BoundingBox")) {
-            this.boundingBoxes.add((WmsBoundingBox) value);
-        } else if (keyName.equals("Dimension")) {
-            this.dimensions.add((WmsDimension) value);
-        } else if (keyName.equals("Extent")) {
-            this.extents.add((WmsDimension) value);
-        } else if (keyName.equals("Attribution")) {
-            this.attribution = (WmsAttribution) value;
-        } else if (keyName.equals("AuthorityURL")) {
-            this.authorityUrls.add((WmsAuthorityUrl) value);
-        } else if (keyName.equals("Identifier")) {
-            this.identifiers.add((WmsIdentifier) value);
-        } else if (keyName.equals("MetadataURL")) {
-            this.metadataUrls.add((WmsInfoUrl) value);
-        } else if (keyName.equals("DataURL")) {
-            this.dataUrls.add((WmsInfoUrl) value);
-        } else if (keyName.equals("FeatureListURL")) {
-            this.featureListUrls.add((WmsInfoUrl) value);
-        } else if (keyName.equals("MinScaleDenominator")) {
-            this.minScaleDenominator = Double.parseDouble((String) value);
-        } else if (keyName.equals("MaxScaleDenominator")) {
-            this.maxScaleDenominator = Double.parseDouble((String) value);
-        } else if (keyName.equals("ScaleHint")) {
-            this.scaleHint = (WmsScaleHint) value;
-        } else if (keyName.equals("queryable")) {
-            this.queryable = Boolean.parseBoolean((String) value);
-        } else if (keyName.equals("cascaded")) {
-            this.cascaded = Integer.parseInt((String) value);
-        } else if (keyName.equals("opaque")) {
-            this.opaque = Boolean.parseBoolean((String) value);
-        } else if (keyName.equals("noSubsets")) {
-            this.noSubsets = Boolean.parseBoolean((String) value);
-        } else if (keyName.equals("fixedWidth")) {
-            this.fixedWidth = Integer.parseInt((String) value);
-        } else if (keyName.equals("fixedHeight")) {
-            this.fixedHeight = Integer.parseInt((String) value);
+        switch (keyName) {
+            case "Layer":
+                this.layers.add((WmsLayer) value);
+                break;
+            case "Name":
+                this.name = (String) value;
+                break;
+            case "Title":
+                this.title = (String) value;
+                break;
+            case "Abstract":
+                this.description = (String) value;
+                break;
+            case "KeywordList":
+                this.keywordList.addAll(((WmsKeywords) value).getKeywords());
+                break;
+            case "Style":
+                this.styles.add((WmsStyle) value);
+                break;
+            case "CRS":
+                this.crses.add((String) value);
+                break;
+            case "SRS":
+                this.srses.add((String) value);
+                break;
+            case "EX_GeographicBoundingBox":
+            case "LatLonBoundingBox":
+                this.geographicBoundingBox = (WmsGeographicBoundingBox) value;
+                break;
+            case "BoundingBox":
+                this.boundingBoxes.add((WmsBoundingBox) value);
+                break;
+            case "Dimension":
+                this.dimensions.add((WmsDimension) value);
+                break;
+            case "Extent":
+                this.extents.add((WmsDimension) value);
+                break;
+            case "Attribution":
+                this.attribution = (WmsAttribution) value;
+                break;
+            case "AuthorityURL":
+                this.authorityUrls.add((WmsAuthorityUrl) value);
+                break;
+            case "Identifier":
+                this.identifiers.add((WmsIdentifier) value);
+                break;
+            case "MetadataURL":
+                this.metadataUrls.add((WmsInfoUrl) value);
+                break;
+            case "DataURL":
+                this.dataUrls.add((WmsInfoUrl) value);
+                break;
+            case "FeatureListURL":
+                this.featureListUrls.add((WmsInfoUrl) value);
+                break;
+            case "MinScaleDenominator":
+                this.minScaleDenominator = Double.parseDouble((String) value);
+                break;
+            case "MaxScaleDenominator":
+                this.maxScaleDenominator = Double.parseDouble((String) value);
+                break;
+            case "ScaleHint":
+                this.scaleHint = (WmsScaleHint) value;
+                break;
+            case "queryable":
+                this.queryable = Boolean.parseBoolean((String) value);
+                break;
+            case "cascaded":
+                this.cascaded = Integer.parseInt((String) value);
+                break;
+            case "opaque":
+                this.opaque = Boolean.parseBoolean((String) value);
+                break;
+            case "noSubsets":
+                this.noSubsets = Boolean.parseBoolean((String) value);
+                break;
+            case "fixedWidth":
+                this.fixedWidth = Integer.parseInt((String) value);
+                break;
+            case "fixedHeight":
+                this.fixedHeight = Integer.parseInt((String) value);
+                break;
         }
     }
 }

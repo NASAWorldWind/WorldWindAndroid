@@ -12,7 +12,7 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsKeywords extends XmlModel {
 
-    protected List<OwsLanguageString> keywords = new ArrayList<>();
+    protected final List<OwsLanguageString> keywords = new ArrayList<>();
 
     public List<OwsLanguageString> getKeywords() {
         return this.keywords;

@@ -13,7 +13,7 @@ import static org.junit.Assert.assertTrue;
 public class WWMathTest {
 
     @Test
-    public void testNormalizeDegrees() throws Exception {
+    public void testNormalizeDegrees() {
         // Starting at the prime meridian, travel eastward around the globe
         assertEquals("zero", 0.0, WWMath.normalizeAngle360(0.0), 0);
         assertEquals("180", 180.0, WWMath.normalizeAngle360(180.0), 0);

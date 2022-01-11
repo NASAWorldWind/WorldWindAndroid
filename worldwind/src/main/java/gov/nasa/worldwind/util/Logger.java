@@ -20,9 +20,9 @@ public class Logger {
 
     public static final int DEBUG = Log.DEBUG;
 
-    protected static String TAG = "gov.nasa.worldwind";
+    protected static final String TAG = "gov.nasa.worldwind";
 
-    protected static Map<String, String> messageTable;
+    protected static final Map<String, String> messageTable;
 
     static {
         messageTable = new HashMap<>();

@@ -33,9 +33,9 @@ public class AtmosphereLayer extends AbstractLayer {
 
     protected Location lightLocation;
 
-    protected Vec3 activeLightDirection = new Vec3();
+    protected final Vec3 activeLightDirection = new Vec3();
 
-    private Sector fullSphereSector = new Sector().setFullSphere();
+    private final Sector fullSphereSector = new Sector().setFullSphere();
 
     private static final String VERTEX_POINTS_KEY = AtmosphereLayer.class.getName() + ".points";
 

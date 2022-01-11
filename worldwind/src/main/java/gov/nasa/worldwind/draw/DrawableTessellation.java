@@ -17,11 +17,11 @@ public class DrawableTessellation implements Drawable {
 
     public BasicShaderProgram program;
 
-    public Color color = new Color();
+    public final Color color = new Color();
 
-    protected Matrix4 mvpMatrix = new Matrix4();
+    protected final Matrix4 mvpMatrix = new Matrix4();
 
-    protected Matrix4 offsetMvpMatrix = new Matrix4();
+    protected final Matrix4 offsetMvpMatrix = new Matrix4();
 
     private Pool<DrawableTessellation> pool;
 

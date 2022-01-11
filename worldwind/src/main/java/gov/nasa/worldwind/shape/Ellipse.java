@@ -94,7 +94,7 @@ public class Ellipse extends AbstractShape {
      * number of intervals so the keys are cached here. The element buffer object itself is in the
      * RenderResourceCache and subject to the restrictions and behavior of that cache.
      */
-    protected static SparseArray<Object> elementBufferKeys = new SparseArray<>();
+    protected static final SparseArray<Object> elementBufferKeys = new SparseArray<>();
 
     /**
      * The ellipse's geographic center position.
@@ -149,25 +149,25 @@ public class Ellipse extends AbstractShape {
 
     protected Object vertexBufferKey = new Object();
 
-    protected Vec3 vertexOrigin = new Vec3();
+    protected final Vec3 vertexOrigin = new Vec3();
 
     protected boolean isSurfaceShape;
 
     protected double texCoord1d;
 
-    protected Vec3 texCoord2d = new Vec3();
+    protected final Vec3 texCoord2d = new Vec3();
 
-    protected Matrix3 texCoordMatrix = new Matrix3();
+    protected final Matrix3 texCoordMatrix = new Matrix3();
 
     protected Matrix4 modelToTexCoord = new Matrix4();
 
     protected double cameraDistance;
 
-    protected Vec3 prevPoint = new Vec3();
+    protected final Vec3 prevPoint = new Vec3();
 
-    private static Position scratchPosition = new Position();
+    private static final Position scratchPosition = new Position();
 
-    private static Vec3 scratchPoint = new Vec3();
+    private static final Vec3 scratchPoint = new Vec3();
 
     static {
         defaultInteriorImageOptions.wrapMode = WorldWind.REPEAT;
@@ -761,11 +761,10 @@ public class Ellipse extends AbstractShape {
 
         if (this.vertexIndex == 0) {
             this.texCoord1d = 0;
-            this.prevPoint.set(point);
         } else {
             this.texCoord1d += point.distanceTo(this.prevPoint);
-            this.prevPoint.set(point);
         }
+        this.prevPoint.set(point);
 
         if (this.isSurfaceShape) {
             this.vertexArray[this.vertexIndex++] = (float) (longitude - this.vertexOrigin.x);
@@ -790,7 +789,7 @@ public class Ellipse extends AbstractShape {
                 this.vertexArray[offsetVertexIndex++] = (float) (point.z - this.vertexOrigin.z);
                 this.vertexArray[offsetVertexIndex++] = 0; //unused
                 this.vertexArray[offsetVertexIndex++] = 0; //unused
-                this.vertexArray[offsetVertexIndex++] = 0; //unused
+                this.vertexArray[offsetVertexIndex] = 0; //unused
             }
         }
     }

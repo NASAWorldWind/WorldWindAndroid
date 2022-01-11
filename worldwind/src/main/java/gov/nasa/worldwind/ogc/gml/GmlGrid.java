@@ -12,7 +12,7 @@ public class GmlGrid extends GmlAbstractGeometry {
 
     protected GmlGridLimits limits;
 
-    protected List<String> axisNames = new ArrayList<>();
+    protected final List<String> axisNames = new ArrayList<>();
 
     protected String dimension;
 

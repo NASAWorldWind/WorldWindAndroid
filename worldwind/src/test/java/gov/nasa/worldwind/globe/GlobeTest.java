@@ -52,7 +52,7 @@ public class GlobeTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         // Release the globe object
         globe = null;
     }
@@ -64,11 +64,9 @@ public class GlobeTest {
 
     /**
      * Ensures the equatorial radius matches the semi-major axis used to define the globe.
-     *
-     * @throws Exception
      */
     @Test
-    public void testGetEquatorialRadius() throws Exception {
+    public void testGetEquatorialRadius() {
         double equatorialRadius = globe.getEquatorialRadius();
 
         assertEquals("equatorial radius", OFFICIAL_WGS84_SEMI_MAJOR_AXIS, equatorialRadius, 0);
@@ -76,11 +74,9 @@ public class GlobeTest {
 
     /**
      * Ensures the polar radius matches the value derived from the globe definition.
-     *
-     * @throws Exception
      */
     @Test
-    public void testGetPolarRadius() throws Exception {
+    public void testGetPolarRadius() {
         double polarRadius = globe.getPolarRadius();
 
         // WGS84 official value:  6356752.3142
@@ -90,11 +86,9 @@ public class GlobeTest {
 
     /**
      * Ensures the correct calculation of the ellipsoidal radius at a geographic latitude.
-     *
-     * @throws Exception
      */
     @Test
-    public void testGetRadiusAt() throws Exception {
+    public void testGetRadiusAt() {
         // Test all whole number latitudes
         for (double lat = -90; lat <= 90; lat += 1.0) {
             double radiusExpected = computeRadiusOfEllipsoid(lat);
@@ -106,11 +100,9 @@ public class GlobeTest {
 
     /**
      * Ensures the eccentricity squared matches the value derived from the globe definition.
-     *
-     * @throws Exception
      */
     @Test
-    public void testGetEccentricitySquared() throws Exception {
+    public void testGetEccentricitySquared() {
         double eccentricitySquared = globe.getEllipsoid().eccentricitySquared();
 
         // Official value:        6.694379990141e-3
@@ -134,9 +126,8 @@ public class GlobeTest {
         // J. Clynch, Naval Post Graduate School, 2002
         double sinLatSquared = pow(sin(toRadians(geographicLat)), 2);
         double cosLatSquared = pow(cos(toRadians(geographicLat)), 2);
-        double a = OFFICIAL_WGS84_SEMI_MAJOR_AXIS;
         double eSquared = OFFICIAL_WGS84_EC2;
-        double radius = a * sqrt(pow(1 - eSquared, 2.0) * sinLatSquared + cosLatSquared);
+        double radius = OFFICIAL_WGS84_SEMI_MAJOR_AXIS * sqrt(pow(1 - eSquared, 2.0) * sinLatSquared + cosLatSquared);
         radius /= sqrt(1 - eSquared * sinLatSquared);
         return radius;
     }

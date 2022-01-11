@@ -22,7 +22,7 @@ public class Globe {
     /**
      * The globe's reference ellipsoid defining the globe's equatorial radius and polar radius.
      */
-    protected Ellipsoid ellipsoid = new Ellipsoid();
+    protected final Ellipsoid ellipsoid = new Ellipsoid();
 
     protected ElevationModel elevationModel = new ElevationModel();
 
@@ -294,7 +294,6 @@ public class Globe {
      *
      * @return the horizon distance in meters
      */
-    @SuppressWarnings("UnnecessaryLocalVariable")
     public double horizonDistance(double height) {
         double r = this.ellipsoid.semiMajorAxis();
         return Math.sqrt(height * (2 * r + height));

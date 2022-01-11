@@ -24,9 +24,9 @@ public class BasicFrameController implements FrameController {
 
     private Color pickColor;
 
-    private Vec3 pickPoint = new Vec3();
+    private final Vec3 pickPoint = new Vec3();
 
-    private Position pickPos = new Position();
+    private final Position pickPos = new Position();
 
     public BasicFrameController() {
     }
@@ -94,7 +94,7 @@ public class BasicFrameController implements FrameController {
                 next.draw(dc);
             } catch (Exception e) {
                 Logger.logMessage(Logger.ERROR, "BasicFrameController", "drawDrawables",
-                    "Exception while drawing \'" + next + "\'", e);
+                        "Exception while drawing '" + next + "'", e);
                 // Keep going. Draw the remaining drawables.
             }
         }

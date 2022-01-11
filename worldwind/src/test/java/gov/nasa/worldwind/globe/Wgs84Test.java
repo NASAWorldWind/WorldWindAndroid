@@ -32,19 +32,19 @@ public class Wgs84Test {
     private static final double OFFICIAL_WGS84_EC2 = 6.694379990141e-3;
 
     @Test
-    public void testWgs84SemiMajorAxis() throws Exception {
+    public void testWgs84SemiMajorAxis() {
 
         assertEquals("WGS84 semi-major axis", OFFICIAL_WGS84_SEMI_MAJOR_AXIS, WorldWind.WGS84_SEMI_MAJOR_AXIS, 0);
     }
 
     @Test
-    public void testWgs84InverseFlattening() throws Exception {
+    public void testWgs84InverseFlattening() {
 
         assertEquals("WGS84 inverse flattening", OFFICIAL_WGS84_INVERSE_FLATTENING, WorldWind.WGS84_INVERSE_FLATTENING, 0);
     }
 
     @Test
-    public void testWgs84Ellipsoid() throws Exception {
+    public void testWgs84Ellipsoid() {
         Ellipsoid ellipsoid = WorldWind.WGS84_ELLIPSOID;
 
         assertNotNull("WGS84 ellipsoid not null", ellipsoid);

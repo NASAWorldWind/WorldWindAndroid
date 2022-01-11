@@ -67,11 +67,11 @@ public class LayerFactory {
     public LayerFactory() {
     }
 
-    protected Handler mainLoopHandler = new Handler(Looper.getMainLooper());
+    protected final Handler mainLoopHandler = new Handler(Looper.getMainLooper());
 
-    protected List<String> compatibleImageFormats = Arrays.asList("image/png", "image/jpg", "image/jpeg", "image/gif", "image/bmp");
+    protected final List<String> compatibleImageFormats = Arrays.asList("image/png", "image/jpg", "image/jpeg", "image/gif", "image/bmp");
 
-    protected List<String> compatibleCoordinateSystems = Arrays.asList("urn:ogc:def:crs:OGC:1.3:CRS84", "urn:ogc:def:crs:EPSG::4326", "http://www.opengis.net/def/crs/OGC/1.3/CRS84");
+    protected final List<String> compatibleCoordinateSystems = Arrays.asList("urn:ogc:def:crs:OGC:1.3:CRS84", "urn:ogc:def:crs:EPSG::4326", "http://www.opengis.net/def/crs/OGC/1.3/CRS84");
 
     protected static final int DEFAULT_WMS_NUM_LEVELS = 20;
 
@@ -300,17 +300,14 @@ public class LayerFactory {
 
         // Add the tiled surface image to the layer on the main thread and notify the caller. Request a redraw to ensure
         // that the image displays on all WorldWindows the layer may be attached to.
-        this.mainLoopHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                finalLayer.addAllRenderables(gpkgRenderables);
-                finalCallback.creationSucceeded(LayerFactory.this, finalLayer);
-                WorldWind.requestRedraw();
-            }
+        this.mainLoopHandler.post(() -> {
+            finalLayer.addAllRenderables(gpkgRenderables);
+            finalCallback.creationSucceeded(LayerFactory.this, finalLayer);
+            WorldWind.requestRedraw();
         });
     }
 
-    protected void createFromWmsAsync(String serviceAddress, List<String> layerNames, Layer layer, Callback callback) throws Exception {
+    protected void createFromWmsAsync(String serviceAddress, List<String> layerNames, Layer layer, Callback callback) {
         // Parse and read the WMS Capabilities document at the provided service address
         WmsCapabilities wmsCapabilities = this.retrieveWmsCapabilities(serviceAddress);
         List<WmsLayer> layerCapabilities = new ArrayList<>();
@@ -329,7 +326,7 @@ public class LayerFactory {
         this.createWmsLayer(layerCapabilities, layer, callback);
     }
 
-    protected void createFromWmtsAsync(String serviceAddress, String layerIdentifier, Layer layer, Callback callback) throws Exception {
+    protected void createFromWmtsAsync(String serviceAddress, String layerIdentifier, Layer layer, Callback callback) {
         // Parse and read the WMTS Capabilities document at the provided service address
         WmtsCapabilities wmtsCapabilities = this.retrieveWmtsCapabilities(serviceAddress);
 
@@ -368,7 +365,9 @@ public class LayerFactory {
                     sb.append(",").append(layerCapability.getTitle());
                 }
             }
-            layer.setDisplayName(sb.toString());
+            if (sb != null) {
+                layer.setDisplayName(sb.toString());
+            }
 
             final TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
 
@@ -377,21 +376,13 @@ public class LayerFactory {
 
             // Add the tiled surface image to the layer on the main thread and notify the caller. Request a redraw to ensure
             // that the image displays on all WorldWindows the layer may be attached to.
-            this.mainLoopHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    finalLayer.addRenderable(surfaceImage);
-                    finalCallback.creationSucceeded(LayerFactory.this, finalLayer);
-                    WorldWind.requestRedraw();
-                }
+            this.mainLoopHandler.post(() -> {
+                finalLayer.addRenderable(surfaceImage);
+                finalCallback.creationSucceeded(LayerFactory.this, finalLayer);
+                WorldWind.requestRedraw();
             });
         } catch (final Throwable ex) {
-            this.mainLoopHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    finalCallback.creationFailed(LayerFactory.this, finalLayer, ex);
-                }
-            });
+            this.mainLoopHandler.post(() -> finalCallback.creationFailed(LayerFactory.this, finalLayer, ex));
         }
     }
 
@@ -430,27 +421,19 @@ public class LayerFactory {
 
             // Add the tiled surface image to the layer on the main thread and notify the caller. Request a redraw to ensure
             // that the image displays on all WorldWindows the layer may be attached to.
-            this.mainLoopHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    finalLayer.addRenderable(surfaceImage);
-                    finalCallback.creationSucceeded(LayerFactory.this, finalLayer);
-                    WorldWind.requestRedraw();
-                }
+            this.mainLoopHandler.post(() -> {
+                finalLayer.addRenderable(surfaceImage);
+                finalCallback.creationSucceeded(LayerFactory.this, finalLayer);
+                WorldWind.requestRedraw();
             });
         } catch (final Throwable ex) {
-            this.mainLoopHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    finalCallback.creationFailed(LayerFactory.this, finalLayer, ex);
-                }
-            });
+            this.mainLoopHandler.post(() -> finalCallback.creationFailed(LayerFactory.this, finalLayer, ex));
         }
     }
 
-    protected WmsCapabilities retrieveWmsCapabilities(String serviceAddress) throws Exception {
+    protected WmsCapabilities retrieveWmsCapabilities(String serviceAddress) {
         InputStream inputStream = null;
-        WmsCapabilities wmsCapabilities = null;
+        WmsCapabilities wmsCapabilities;
         try {
             // Build the appropriate request Uri given the provided service address
             Uri serviceUri = Uri.parse(serviceAddress).buildUpon()
@@ -477,9 +460,9 @@ public class LayerFactory {
         return wmsCapabilities;
     }
 
-    protected WmtsCapabilities retrieveWmtsCapabilities(String serviceAddress) throws Exception {
+    protected WmtsCapabilities retrieveWmtsCapabilities(String serviceAddress) {
         InputStream inputStream = null;
-        WmtsCapabilities wmtsCapabilities = null;
+        WmtsCapabilities wmtsCapabilities;
         try {
             // Build the appropriate request Uri given the provided service address
             Uri serviceUri = Uri.parse(serviceAddress).buildUpon()
@@ -528,7 +511,6 @@ public class LayerFactory {
             wmsLayerConfig.serviceAddress = requestUrl;
         }
 
-
         StringBuilder sb = null;
         Set<String> matchingCoordinateSystems = null;
         for (WmsLayer wmsLayer : wmsLayers) {
@@ -540,18 +522,18 @@ public class LayerFactory {
             }
             List<String> wmsLayerCoordinateSystems = wmsLayer.getReferenceSystems();
             if (matchingCoordinateSystems == null) {
-                matchingCoordinateSystems = new HashSet<>();
-                matchingCoordinateSystems.addAll(wmsLayerCoordinateSystems);
+                matchingCoordinateSystems = new HashSet<>(wmsLayerCoordinateSystems);
             } else {
                 matchingCoordinateSystems.retainAll(wmsLayerCoordinateSystems);
             }
         }
+        if (sb != null) {
+            wmsLayerConfig.layerNames = sb.toString();
+        }
 
-        wmsLayerConfig.layerNames = sb.toString();
-
-        if (matchingCoordinateSystems.contains("EPSG:4326")) {
+        if (matchingCoordinateSystems !=null && matchingCoordinateSystems.contains("EPSG:4326")) {
             wmsLayerConfig.coordinateSystem = "EPSG:4326";
-        } else if (matchingCoordinateSystems.contains("CRS:84")) {
+        } else if (matchingCoordinateSystems !=null && matchingCoordinateSystems.contains("CRS:84")) {
             wmsLayerConfig.coordinateSystem = "CRS:84";
         } else {
             throw new RuntimeException(
@@ -613,8 +595,7 @@ public class LayerFactory {
         } else if (minScaleHint != Double.MAX_VALUE) {
             // WMS 1.1.1 scale configuration, where ScaleHint indicates approximate resolution in ground distance
             // meters. Configures the maximum level not to exceed the specified min scale denominator.
-            double minMetersPerPixel = minScaleHint;
-            double minRadiansPerPixel = minMetersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS;
+            double minRadiansPerPixel = minScaleHint / WorldWind.WGS84_SEMI_MAJOR_AXIS;
             levelSetConfig.numLevels = levelSetConfig.numLevelsForMinResolution(minRadiansPerPixel);
         } else {
             // Default scale configuration when no minimum scale denominator or scale hint is provided.
@@ -852,13 +833,13 @@ public class LayerFactory {
 
     protected static class GeoPackageAsyncTask implements Runnable {
 
-        protected LayerFactory factory;
+        protected final LayerFactory factory;
 
-        protected String pathName;
+        protected final String pathName;
 
-        protected Layer layer;
+        protected final Layer layer;
 
-        protected Callback callback;
+        protected final Callback callback;
 
         public GeoPackageAsyncTask(LayerFactory factory, String pathName, Layer layer, Callback callback) {
             this.factory = factory;
@@ -872,27 +853,22 @@ public class LayerFactory {
             try {
                 this.factory.createFromGeoPackageAsync(this.pathName, this.layer, this.callback);
             } catch (final Throwable ex) {
-                this.factory.mainLoopHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.creationFailed(factory, layer, ex);
-                    }
-                });
+                this.factory.mainLoopHandler.post(() -> callback.creationFailed(factory, layer, ex));
             }
         }
     }
 
     protected static class WmsAsyncTask implements Runnable {
 
-        protected LayerFactory factory;
+        protected final LayerFactory factory;
 
-        protected String serviceAddress;
+        protected final String serviceAddress;
 
-        protected List<String> layerNames;
+        protected final List<String> layerNames;
 
-        protected Layer layer;
+        protected final Layer layer;
 
-        protected Callback callback;
+        protected final Callback callback;
 
         public WmsAsyncTask(LayerFactory factory, String serviceAddress, List<String> layerNames, Layer layer, Callback callback) {
             this.factory = factory;
@@ -907,27 +883,22 @@ public class LayerFactory {
             try {
                 this.factory.createFromWmsAsync(this.serviceAddress, this.layerNames, this.layer, this.callback);
             } catch (final Throwable ex) {
-                this.factory.mainLoopHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.creationFailed(factory, layer, ex);
-                    }
-                });
+                this.factory.mainLoopHandler.post(() -> callback.creationFailed(factory, layer, ex));
             }
         }
     }
 
     protected static class WmtsAsyncTask implements Runnable {
 
-        protected LayerFactory factory;
+        protected final LayerFactory factory;
 
-        protected String serviceAddress;
+        protected final String serviceAddress;
 
-        protected String layerName;
+        protected final String layerName;
 
-        protected Layer layer;
+        protected final Layer layer;
 
-        protected Callback callback;
+        protected final Callback callback;
 
         public WmtsAsyncTask(LayerFactory factory, String serviceAddress, String layerName, Layer layer, Callback callback) {
             this.factory = factory;
@@ -942,12 +913,7 @@ public class LayerFactory {
             try {
                 this.factory.createFromWmtsAsync(this.serviceAddress, this.layerName, this.layer, this.callback);
             } catch (final Throwable ex) {
-                this.factory.mainLoopHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.creationFailed(factory, layer, ex);
-                    }
-                });
+                this.factory.mainLoopHandler.post(() -> callback.creationFailed(factory, layer, ex));
             }
         }
     }
@@ -956,7 +922,7 @@ public class LayerFactory {
 
         protected String tileMatrixSetId;
 
-        protected List<String> tileMatrices = new ArrayList<>();
+        protected final List<String> tileMatrices = new ArrayList<>();
 
     }
 }

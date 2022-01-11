@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.geom;
 
+import androidx.annotation.NonNull;
+
 import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
@@ -89,6 +91,7 @@ public class Camera {
         return this;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "Camera{" +
@@ -134,15 +137,14 @@ public class Camera {
             // Use picked terrain position including approximate rendered altitude
             this.originPos.set(terrainPickedObject.getTerrainPosition());
             globe.geographicToCartesian(this.originPos.latitude, this.originPos.longitude, this.originPos.altitude, this.originPoint);
-            globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
         } else {
             // Center is outside the globe - use point on horizon
             this.modelview.extractEyePoint(this.forwardRay.origin);
             this.modelview.extractForwardVector(this.forwardRay.direction);
             this.forwardRay.pointAt(globe.horizonDistance(this.position.altitude), this.originPoint);
             globe.cartesianToGeographic(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.originPos);
-            globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
         }
+        globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
 
         this.modelview.multiplyByMatrix(this.origin);
 

@@ -13,7 +13,7 @@ import gov.nasa.worldwind.util.Pool;
 
 public class NavigatorEvent {
 
-    private static Pool<NavigatorEvent> pool = new BasicPool<>();
+    private static final Pool<NavigatorEvent> pool = new BasicPool<>();
 
     protected Camera camera;
 

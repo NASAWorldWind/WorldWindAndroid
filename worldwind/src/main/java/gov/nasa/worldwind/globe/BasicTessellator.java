@@ -37,9 +37,9 @@ public class BasicTessellator implements Tessellator, TileFactory {
 
     protected double detailControl = 80;
 
-    protected List<Tile> topLevelTiles = new ArrayList<>();
+    protected final List<Tile> topLevelTiles = new ArrayList<>();
 
-    protected BasicTerrain currentTerrain = new BasicTerrain();
+    protected final BasicTerrain currentTerrain = new BasicTerrain();
 
     /**
      * Memory cache for this tessellator's subdivision tiles. Each entry contains an array of four terrain tiles
@@ -47,7 +47,7 @@ public class BasicTessellator implements Tessellator, TileFactory {
      * number tuned to store the tiles needed to navigate a small region, given the tessellator's first level tile delta
      * of 90 degrees, tile dimensions of 32x32 and detail control of 80.
      */
-    protected LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(200);
+    protected final LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(200);
 
     protected float[] levelSetVertexTexCoords;
 
@@ -55,9 +55,9 @@ public class BasicTessellator implements Tessellator, TileFactory {
 
     protected short[] levelSetTriStripElements;
 
-    protected Range levelSetLineElementRange = new Range();
+    protected final Range levelSetLineElementRange = new Range();
 
-    protected Range levelSetTriStripElementRange = new Range();
+    protected final Range levelSetTriStripElementRange = new Range();
 
     protected BufferObject levelSetVertexTexCoordBuffer;
 

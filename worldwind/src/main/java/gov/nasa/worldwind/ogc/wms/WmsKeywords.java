@@ -12,7 +12,7 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsKeywords extends XmlModel {
 
-    protected List<String> keywords = new ArrayList<>();
+    protected final List<String> keywords = new ArrayList<>();
 
     public WmsKeywords() {
     }

@@ -22,13 +22,13 @@ public class DrawableSurfaceTexture implements Drawable, SurfaceTexture {
 
     public SurfaceTextureProgram program;
 
-    public Sector sector = new Sector();
+    public final Sector sector = new Sector();
 
-    public Color color = new Color();
+    public final Color color = new Color();
 
     public Texture texture;
 
-    public Matrix3 texCoordMatrix = new Matrix3();
+    public final Matrix3 texCoordMatrix = new Matrix3();
 
     private Pool<DrawableSurfaceTexture> pool;
 

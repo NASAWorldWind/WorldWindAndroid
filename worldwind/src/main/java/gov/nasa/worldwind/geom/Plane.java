@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.geom;
 
+import androidx.annotation.NonNull;
+
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -89,6 +91,7 @@ public class Plane {
         return result;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "normal=[" + this.normal + "], distance=" + this.distance;

@@ -62,17 +62,17 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
 
     protected static final double DEFAULT_DEPTH_OFFSET = -0.1;
 
-    private static Vec3 placePoint = new Vec3();
+    private static final Vec3 placePoint = new Vec3();
 
-    private static Vec3 screenPlacePoint = new Vec3();
+    private static final Vec3 screenPlacePoint = new Vec3();
 
-    private static Vec3 groundPoint = new Vec3();
+    private static final Vec3 groundPoint = new Vec3();
 
-    private static Vec2 offset = new Vec2();
+    private static final Vec2 offset = new Vec2();
 
-    private static Matrix4 unitSquareTransform = new Matrix4();
+    private static final Matrix4 unitSquareTransform = new Matrix4();
 
-    private static Viewport screenBounds = new Viewport();
+    private static final Viewport screenBounds = new Viewport();
 
     /**
      * The placemark's geographic position.
@@ -112,7 +112,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
 
     protected Color pickColor = new Color();
 
-    /**
+    /*
      * The label text to draw near the placemark.
      */
     // TODO: implement label property
@@ -246,7 +246,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         return new Placemark(position, PlacemarkAttributes.createWithImage(imageSource));
     }
 
-    /**
+    /*
      * This factory method creates a Placemark and an associated PlacemarkAttributes bundle (with TextAttributes) that
      * draws the given image centered on the supplied position with a nearby label.
      *
@@ -385,7 +385,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         this.levelOfDetailSelector = levelOfDetailSelector;
         return this;
     }
-    /**
+    /*
      * Gets the text used to label this placemark on the globe.
      *
      * @return The text used to label a placemark on the globe when labels are enabled
@@ -395,7 +395,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
 //        return label;
 //    }
 
-    /**
+    /*
      * Sets the text used for this placemark's label on the globe.
      *
      * @param label The new label text; may be null or empty

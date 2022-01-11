@@ -5,21 +5,23 @@
 
 package gov.nasa.worldwind;
 
+import androidx.annotation.NonNull;
+
 import java.util.Locale;
 
 import gov.nasa.worldwind.draw.DrawContext;
 import gov.nasa.worldwind.render.RenderContext;
-import gov.nasa.worldwind.util.LruMemoryCache;
+import gov.nasa.worldwind.render.RenderResourceCache;
 
 public class FrameMetrics {
 
     private final Object drawLock = new Object();
 
-    protected TimeMetrics renderMetrics = new TimeMetrics();
+    protected final TimeMetrics renderMetrics = new TimeMetrics();
 
-    protected TimeMetrics drawMetrics = new TimeMetrics();
+    protected final TimeMetrics drawMetrics = new TimeMetrics();
 
-    protected CacheMetrics renderResourceCacheMetrics = new CacheMetrics();
+    protected final CacheMetrics renderResourceCacheMetrics = new CacheMetrics();
 
     public FrameMetrics() {
     }
@@ -86,6 +88,7 @@ public class FrameMetrics {
         return this.renderResourceCacheMetrics.entryCount;
     }
 
+    @NonNull
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("FrameMetrics");
@@ -172,7 +175,7 @@ public class FrameMetrics {
         }
     }
 
-    protected void assembleCacheMetrics(CacheMetrics metrics, LruMemoryCache cache) {
+    protected void assembleCacheMetrics(CacheMetrics metrics, RenderResourceCache cache) {
         metrics.capacity = cache.getCapacity();
         metrics.usedCapacity = cache.getUsedCapacity();
         metrics.entryCount = cache.getEntryCount();

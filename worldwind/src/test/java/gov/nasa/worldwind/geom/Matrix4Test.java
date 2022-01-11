@@ -7,7 +7,6 @@ package gov.nasa.worldwind.geom;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
@@ -69,12 +68,8 @@ public class Matrix4Test {
         PowerMockito.mockStatic(Logger.class);
     }
 
-    @After
-    public void tearDown() {
-    }
-
     @Test
-    public void testConstructor_Default() throws Exception {
+    public void testConstructor_Default() {
         Matrix4 m1 = new Matrix4();
 
         assertNotNull("matrix not null", m1);
@@ -82,7 +77,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testConstructor_Copy() throws Exception {
+    public void testConstructor_Copy() {
         Matrix4 original = new Matrix4(
             M_11, M_12, M_13, M_14,
             M_21, M_22, M_23, M_24,
@@ -97,7 +92,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testConstructor_Doubles() throws Exception {
+    public void testConstructor_Doubles() {
         Matrix4 m1 = new Matrix4(
             M_11, M_12, M_13, M_14,
             M_21, M_22, M_23, M_24,
@@ -124,7 +119,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testEquals() throws Exception {
+    public void testEquals() {
         Matrix4 m1 = new Matrix4(
             M_11, M_12, M_13, M_14,
             M_21, M_22, M_23, M_24,
@@ -142,7 +137,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testHashCode() throws Exception {
+    public void testHashCode() {
         final double x44 = -44d; // different value
         Matrix4 m1 = new Matrix4(
             M_11, M_12, M_13, M_14,
@@ -161,16 +156,8 @@ public class Matrix4Test {
         assertNotEquals("hash codes", hashCode1, hashCode2);
     }
 
-    @Ignore("not implemented")
     @Test
-    public void testToString() throws Exception {
-
-        fail("The test case is a stub.");
-
-    }
-
-    @Test
-    public void testSet() throws Exception {
+    public void testSet() {
         Matrix4 m1 = new Matrix4(); // matrix under test
 
         Matrix4 m2 = m1.set(
@@ -200,7 +187,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testSet_FromMatrix() throws Exception {
+    public void testSet_FromMatrix() {
         Matrix4 m1 = new Matrix4(); // matrix under test
         Matrix4 m2 = new Matrix4(
             M_11, M_12, M_13, M_14,
@@ -218,7 +205,7 @@ public class Matrix4Test {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSet_WithNull() throws Exception {
+    public void testSet_WithNull() {
         Matrix4 m1 = new Matrix4(); // matrix under test
 
         m1.set(null);
@@ -227,7 +214,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testSetTranslation() throws Exception {
+    public void testSetTranslation() {
         final double dx = 3d;
         final double dy = 5d;
         final double dz = 7d;
@@ -270,7 +257,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testSetRotation() throws Exception {
+    public void testSetRotation() {
         Matrix4 m1 = new Matrix4();
         Vec3 u = new Vec3(0, 1, 0);   // unit vector on y axis
 
@@ -293,7 +280,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testSetScale() throws Exception {
+    public void testSetScale() {
         final double sx = 3d;
         final double sy = 5d;
         final double sz = 7d;
@@ -336,7 +323,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testSetToIdentity() throws Exception {
+    public void testSetToIdentity() {
         Matrix4 m1 = new Matrix4(   // matrix under test
             M_11, M_12, M_13, M_14,
             M_21, M_22, M_23, M_24,
@@ -350,7 +337,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testSetToTranslation() throws Exception {
+    public void testSetToTranslation() {
         final double dx = 3d;
         final double dy = 5d;
         final double dz = 7d;
@@ -393,7 +380,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testSetToRotation() throws Exception {
+    public void testSetToRotation() {
         Matrix4 mx = new Matrix4();
         Matrix4 my = new Matrix4();
         Matrix4 mz = new Matrix4();
@@ -413,7 +400,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testSetToScale() throws Exception {
+    public void testSetToScale() {
         final double sx = 3d;
         final double sy = 5d;
         final double sz = 7d;
@@ -455,7 +442,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testSetToMultiply() throws Exception {
+    public void testSetToMultiply() {
         Matrix4 m1 = new Matrix4(); // matrix under test
         Matrix4 a = new Matrix4(
             M_11, M_12, M_13, M_14,
@@ -505,32 +492,8 @@ public class Matrix4Test {
         assertEquals("b not mutated", bCopy, b);
     }
 
-    @Ignore("not implemented")
     @Test
-    public void testSetToPerspectiveProjection() throws Exception {
-
-        fail("The test case is a stub.");
-
-    }
-
-    @Ignore("not implemented")
-    @Test
-    public void testSetToScreenProjection() throws Exception {
-
-        fail("The test case is a stub.");
-
-    }
-
-    @Ignore("not implemented")
-    @Test
-    public void testSetToCovarianceOfBuffer() throws Exception {
-
-        fail("The test case is a stub.");
-
-    }
-
-    @Test
-    public void testMultiplyByTranslation() throws Exception {
+    public void testMultiplyByTranslation() {
         Matrix4 m1 = new Matrix4(); // identity matrix
         double dx = 3;
         double dy = 5;
@@ -563,7 +526,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testMultiplyByRotation() throws Exception {
+    public void testMultiplyByRotation() {
         // Rotate a unit vectors
         Vec3 r = new Vec3(0, 0, 1);
         Matrix4 m = new Matrix4();
@@ -652,7 +615,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testMultiplyByScale() throws Exception {
+    public void testMultiplyByScale() {
         Matrix4 m1 = new Matrix4(); // identity matrix
         double sx = 3;
         double sy = 5;
@@ -689,7 +652,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testMultiplyByMatrix() throws Exception {
+    public void testMultiplyByMatrix() {
         Matrix4 m1 = new Matrix4(   // matrix under test
             M_11, M_12, M_13, M_14,
             M_21, M_22, M_23, M_24,
@@ -741,7 +704,7 @@ public class Matrix4Test {
 
 
     @Test
-    public void testMultiplyByMatrix_Doubles() throws Exception {
+    public void testMultiplyByMatrix_Doubles() {
         Matrix4 m1 = new Matrix4(   // matrix under test
             M_11, M_12, M_13, M_14,
             M_21, M_22, M_23, M_24,
@@ -789,7 +752,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testTranspose() throws Exception {
+    public void testTranspose() {
         Matrix4 m1 = new Matrix4(
             M_11, M_12, M_13, M_14,
             M_21, M_22, M_23, M_24,
@@ -824,7 +787,7 @@ public class Matrix4Test {
 
 
     @Test
-    public void testTransposeMatrix() throws Exception {
+    public void testTransposeMatrix() {
         Matrix4 m1 = new Matrix4(); // matrix under test
         Matrix4 m2 = new Matrix4(   // matrix to be transposed    
             M_11, M_12, M_13, M_14,
@@ -859,7 +822,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testInvert() throws Exception {
+    public void testInvert() {
         Matrix4 m1 = new Matrix4(   // matrix to be inverted/tested
             3, -2, 0, 0,
             1, 4, -3, 0,
@@ -886,7 +849,7 @@ public class Matrix4Test {
 
 
     @Test
-    public void testInvertMatrix() throws Exception {
+    public void testInvertMatrix() {
         Matrix4 m1 = new Matrix4(); // matrix under test
         Matrix4 m2 = new Matrix4(   // matrix to be inverted
             3, -2, 0, 0,
@@ -914,11 +877,9 @@ public class Matrix4Test {
     /**
      * Tests the inverting of an orthogonal matrix whose columns and rows are orthogonal unit vectors (i.e., orthonormal
      * vectors).
-     *
-     * @throws Exception
      */
     @Test
-    public void testInvertOrthonormalMatrix() throws Exception {
+    public void testInvertOrthonormalMatrix() {
         double dx = 2;
         double dy = 3;
         double dz = 5;
@@ -944,7 +905,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testInvertOrthonormal() throws Exception {
+    public void testInvertOrthonormal() {
         double dx = 2;
         double dy = 3;
         double dz = 5;
@@ -969,7 +930,7 @@ public class Matrix4Test {
     }
 
     @Test
-    public void testTransposeToArray() throws Exception {
+    public void testTransposeToArray() {
         Matrix4 m1 = new Matrix4(   // matrix under test
             M_11, M_12, M_13, M_14,
             M_21, M_22, M_23, M_24,
@@ -984,40 +945,6 @@ public class Matrix4Test {
         }
 
     }
-
-
-    @Ignore("not implemented")
-    @Test
-    public void testOffsetProjectionDepth() throws Exception {
-
-        fail("The test case is a stub.");
-
-    }
-
-    @Ignore("not implemented")
-    @Test
-    public void testExtractEyePoint() throws Exception {
-
-        fail("The test case is a stub.");
-
-    }
-
-    @Ignore("not implemented")
-    @Test
-    public void testExtractForwardVector() throws Exception {
-
-        fail("The test case is a stub.");
-
-    }
-
-    @Ignore("not implemented")
-    @Test
-    public void testEigensystemFromSymmetricMatrix() throws Exception {
-
-        fail("The test case is a stub.");
-
-    }
-
 
     /////////////////////
     //  Helper methods
@@ -1037,13 +964,10 @@ public class Matrix4Test {
         // |m21  m22  m23| m24  = m11(m22*m33 - m23*m32) + m12(m23*m31 - m21*m33) + m13(m21*m32 - m22*m31)
         // |m31  m32  m33| m34
         //  m41  m42  m43  m44
-        double[] m = matrix.m;
-        double d
-            = (m11 * (m22 * m33 - m23 * m32)) //m11(m22*m33 - m23*m32)
-            + (m12 * (m23 * m31 - m21 * m33)) //m12(m23*m31 - m21*m33)
-            + (m13 * (m21 * m32 - m22 * m31));//m13(m21*m32 - m22*m31)
 
-        return d;
+        return (m11 * (m22 * m33 - m23 * m32))
+        + (m12 * (m23 * m31 - m21 * m33))
+        + (m13 * (m21 * m32 - m22 * m31));
     }
 
     static private Matrix3 extract3x3Matrix(Matrix4 matrix) {
@@ -1086,21 +1010,11 @@ public class Matrix4Test {
         //  m11 * |m32  m33  m34| - m12 * |m31  m33  m34| +  m13 * |m31  m32  m34| - m14 * |m31  m32  m33|
         //        |m42  m43  m44|         |m41  m43  m44|          |m41  m42  m44|         |m41  m42  m43|
         //
-        double determinant
-            = m11 * (m22 * (m33 * m44 - m34 * m43) + m23 * (m34 * m42 - m32 * m44) + m24 * (m32 * m43 - m33 * m42))
-            - m12 * (m21 * (m33 * m44 - m34 * m43) + m23 * (m34 * m41 - m31 * m44) + m24 * (m31 * m43 - m33 * m41))
-            + m13 * (m21 * (m32 * m44 - m34 * m42) + m22 * (m34 * m41 - m31 * m44) + m24 * (m31 * m42 - m32 * m41))
-            - m14 * (m21 * (m32 * m43 - m33 * m42) + m22 * (m33 * m41 - m31 * m43) + m23 * (m31 * m42 - m32 * m41));
 
-        return determinant;
-    }
-
-    static private void prettyPrint(Matrix4 m) {
-        System.out.println("Matrix4:");
-        System.out.println("[ " + m.m[0] + "  " + m.m[1] + "  " + m.m[2] + "  " + m.m[3] + " ]");
-        System.out.println("[ " + m.m[4] + "  " + m.m[5] + "  " + m.m[6] + "  " + m.m[7] + " ]");
-        System.out.println("[ " + m.m[8] + "  " + m.m[9] + "  " + m.m[10] + "  " + m.m[11] + " ]");
-        System.out.println("[ " + m.m[12] + "  " + m.m[13] + "  " + m.m[14] + "  " + m.m[15] + " ]");
+        return m11 * (m22 * (m33 * m44 - m34 * m43) + m23 * (m34 * m42 - m32 * m44) + m24 * (m32 * m43 - m33 * m42))
+        - m12 * (m21 * (m33 * m44 - m34 * m43) + m23 * (m34 * m41 - m31 * m44) + m24 * (m31 * m43 - m33 * m41))
+        + m13 * (m21 * (m32 * m44 - m34 * m42) + m22 * (m34 * m41 - m31 * m44) + m24 * (m31 * m42 - m32 * m41))
+        - m14 * (m21 * (m32 * m43 - m33 * m42) + m22 * (m33 * m41 - m31 * m43) + m23 * (m31 * m42 - m32 * m41));
     }
 
 }

@@ -29,12 +29,16 @@ public class OwsBoundingBox extends XmlModel {
 
     @Override
     protected void parseField(String keyName, Object value) {
-        if (keyName.equals("crs")) {
-            this.crs = (String) value;
-        } else if (keyName.equals("LowerCorner")) {
-            this.lowerCorner = (String) value;
-        } else if (keyName.equals("UpperCorner")) {
-            this.upperCorner = (String) value;
+        switch (keyName) {
+            case "crs":
+                this.crs = (String) value;
+                break;
+            case "LowerCorner":
+                this.lowerCorner = (String) value;
+                break;
+            case "UpperCorner":
+                this.upperCorner = (String) value;
+                break;
         }
     }
 }

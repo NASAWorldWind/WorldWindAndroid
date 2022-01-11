@@ -17,9 +17,9 @@ public class DrawableScreenTexture implements Drawable {
 
     public BasicShaderProgram program = null;
 
-    public Matrix4 unitSquareTransform = new Matrix4();
+    public final Matrix4 unitSquareTransform = new Matrix4();
 
-    public Color color = new Color();
+    public final Color color = new Color();
 
     public Texture texture = null;
 
@@ -27,7 +27,7 @@ public class DrawableScreenTexture implements Drawable {
 
     private Pool<DrawableScreenTexture> pool;
 
-    private Matrix4 mvpMatrix = new Matrix4();
+    private final Matrix4 mvpMatrix = new Matrix4();
 
     public DrawableScreenTexture() {
     }

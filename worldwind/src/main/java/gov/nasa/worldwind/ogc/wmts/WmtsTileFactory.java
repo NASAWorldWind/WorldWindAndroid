@@ -17,11 +17,11 @@ import gov.nasa.worldwind.util.TileFactory;
 
 public class WmtsTileFactory implements TileFactory {
 
-    public static String TILEMATRIX_TEMPLATE = "{TileMatrix}";
+    public static final String TILEMATRIX_TEMPLATE = "{TileMatrix}";
 
-    public static String TILEROW_TEMPLATE = "{TileRow}";
+    public static final String TILEROW_TEMPLATE = "{TileRow}";
 
-    public static String TILECOL_TEMPLATE = "{TileCol}";
+    public static final String TILECOL_TEMPLATE = "{TileCol}";
 
     protected String template;
 

@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.ogc.ows;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +14,7 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsException extends XmlModel {
 
-    protected List<String> exceptionText = new ArrayList<>();
+    protected final List<String> exceptionText = new ArrayList<>();
 
     protected String exceptionCode;
 
@@ -33,6 +35,7 @@ public class OwsException extends XmlModel {
         return locator;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "OwsException{" +

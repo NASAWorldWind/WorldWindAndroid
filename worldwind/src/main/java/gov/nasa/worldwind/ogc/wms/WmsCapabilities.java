@@ -112,14 +112,19 @@ public class WmsCapabilities extends XmlModel {
 
     @Override
     public void parseField(String keyName, Object value) {
-        if (keyName.equals("version")) {
-            this.version = (String) value;
-        } else if (keyName.equals("updateSequence")) {
-            this.updateSequence = (String) value;
-        } else if (keyName.equals("Service")) {
-            this.service = (WmsService) value;
-        } else if (keyName.equals("Capability")) {
-            this.capability = (WmsCapability) value;
+        switch (keyName) {
+            case "version":
+                this.version = (String) value;
+                break;
+            case "updateSequence":
+                this.updateSequence = (String) value;
+                break;
+            case "Service":
+                this.service = (WmsService) value;
+                break;
+            case "Capability":
+                this.capability = (WmsCapability) value;
+                break;
         }
     }
 }

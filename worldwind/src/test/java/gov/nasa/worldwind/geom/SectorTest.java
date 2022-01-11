@@ -36,25 +36,8 @@ public class SectorTest {
         PowerMockito.mockStatic(Logger.class);
     }
 
-
     @Test
-    public void reviewNaNBehavior() {
-        // Note: Two NaNs are NOT equal to each other
-        // Implication: Two "empty" sectors will not be equal to each other based on member equality.
-        assertFalse("equality", Double.NaN == Double.NaN);
-        assertTrue("inequality", Double.NaN != Double.NaN);
-
-        assertFalse("less than", Double.NaN < Double.NaN);
-        assertFalse("greater than", Double.NaN > Double.NaN);
-
-        // Examine how NaN values are used in hashCode
-        long temp = Double.doubleToLongBits(Double.NaN);
-        //System.out.println("doubleToLongBits:" + temp);
-
-    }
-
-    @Test
-    public void testConstructor_Default() throws Exception {
+    public void testConstructor_Default() {
         Sector sector = new Sector();
         assertNotNull(sector);
         assertTrue("NaN minLatitude", Double.isNaN(sector.minLatitude()));
@@ -66,7 +49,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testConstructor_Typical() throws Exception {
+    public void testConstructor_Typical() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 1.0;
@@ -84,7 +67,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testConstructor_Copy() throws Exception {
+    public void testConstructor_Copy() {
         Sector sector = new Sector(34.2, -119.2, 1.0, 2.0);
 
         Sector copy = new Sector(sector);
@@ -94,15 +77,15 @@ public class SectorTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_CopyWithNull() throws Exception {
+    public void testConstructor_CopyWithNull() {
 
-        Sector sector = new Sector(null);
+        new Sector(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
 
     @Test
-    public void testFromDegrees() throws Exception {
+    public void testFromDegrees() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 1.0;
@@ -120,7 +103,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testFromRadians() throws Exception {
+    public void testFromRadians() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 1.0;
@@ -143,7 +126,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testEquals() throws Exception {
+    public void testEquals() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 1.0;
@@ -163,7 +146,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testEquals_Inequality() throws Exception {
+    public void testEquals_Inequality() {
         Sector empty = new Sector();
         Sector other = new Sector();
         Sector typical = Sector.fromDegrees(34.2, -119.2, 1.0, 2.0);
@@ -178,7 +161,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testHashCode() throws Exception {
+    public void testHashCode() {
         Sector a = new Sector();
         Sector b = Sector.fromDegrees(34.2, -119.2, 1.0, 2.0);
         Sector c = Sector.fromDegrees(33.94, -118.4, 1.0, 2.0);
@@ -192,7 +175,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIsEmpty() throws Exception {
+    public void testIsEmpty() {
         Sector empty = new Sector();
         Sector noDim = Sector.fromDegrees(34.2, -119.2, 0, 0);
         Sector noWidth = Sector.fromDegrees(34.2, -119.2, 1.0, 0);
@@ -211,7 +194,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testMinLatitude() throws Exception {
+    public void testMinLatitude() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 1.0;
@@ -223,7 +206,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testMaxLatitude() throws Exception {
+    public void testMaxLatitude() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 1.0;
@@ -236,7 +219,7 @@ public class SectorTest {
 
 
     @Test
-    public void testMinLongitude() throws Exception {
+    public void testMinLongitude() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 1.0;
@@ -248,7 +231,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testMaxLongitude() throws Exception {
+    public void testMaxLongitude() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 1.0;
@@ -261,7 +244,7 @@ public class SectorTest {
 
 
     @Test
-    public void testDeltaLatitude() throws Exception {
+    public void testDeltaLatitude() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 1.0;
@@ -273,7 +256,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testDeltaLongitude() throws Exception {
+    public void testDeltaLongitude() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 1.0;
@@ -285,7 +268,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testCentroidLatitude() throws Exception {
+    public void testCentroidLatitude() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 2.0;
@@ -299,7 +282,7 @@ public class SectorTest {
 
 
     @Test
-    public void testCentroidLatitude_NoDimension() throws Exception {
+    public void testCentroidLatitude_NoDimension() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 0.0;  // No height!
@@ -312,7 +295,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testCentroidLatitude_NoLocation() throws Exception {
+    public void testCentroidLatitude_NoLocation() {
         double lat = Double.NaN;
         double lon = -119.2;
         double dLat = 2.0;
@@ -325,7 +308,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testCentroidLongitude() throws Exception {
+    public void testCentroidLongitude() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 2.0;
@@ -338,7 +321,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testCentroidLongitude_NoDimension() throws Exception {
+    public void testCentroidLongitude_NoDimension() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 2.0;
@@ -351,7 +334,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testCentroidLongitude_NoLocation() throws Exception {
+    public void testCentroidLongitude_NoLocation() {
         double lat = 34.2;
         double lon = Double.NaN;
         double dLat = 2.0;
@@ -364,7 +347,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testCentroid() throws Exception {
+    public void testCentroid() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 2.0;
@@ -379,7 +362,7 @@ public class SectorTest {
 
 
     @Test
-    public void testCentroid_NoDimension() throws Exception {
+    public void testCentroid_NoDimension() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 2.0;
@@ -392,7 +375,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testCentroid_NoLocation() throws Exception {
+    public void testCentroid_NoLocation() {
         double lat = 34.2;
         double lon = Double.NaN;
         double dLat = 2.0;
@@ -406,7 +389,7 @@ public class SectorTest {
 
 
     @Test
-    public void testSet_Doubles() throws Exception {
+    public void testSet_Doubles() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 1.0;
@@ -423,7 +406,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testSet() throws Exception {
+    public void testSet() {
         double lat = 34.2;
         double lon = -119.2;
         double dLat = 1.0;
@@ -440,7 +423,7 @@ public class SectorTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSet_WithNull() throws Exception {
+    public void testSet_WithNull() {
         Sector a = new Sector();
 
         a.set(null);
@@ -449,7 +432,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testSetEmpty() throws Exception {
+    public void testSetEmpty() {
         Sector a = new Sector(34.2, -119.2, 1.0, 2.0);
 
         a.setEmpty();
@@ -458,7 +441,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testSetFullSphere() throws Exception {
+    public void testSetFullSphere() {
         Sector a = new Sector(34.2, -119.2, 1.0, 2.0);
 
         a.setFullSphere();
@@ -472,7 +455,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersects_Doubles() throws Exception {
+    public void testIntersects_Doubles() {
         Sector a = Sector.fromDegrees(30, 100, 3.0, 3.0);
         Sector copy = new Sector(a);
 
@@ -485,7 +468,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersects_DoublesEmpty() throws Exception {
+    public void testIntersects_DoublesEmpty() {
         Sector a = Sector.fromDegrees(30, 100, 3.0, 3.0);
 
         assertFalse("no location", a.intersects(Double.NaN, Double.NaN, 0d, 0d));
@@ -498,7 +481,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersects_DoublesCoincident() throws Exception {
+    public void testIntersects_DoublesCoincident() {
         Sector a = Sector.fromDegrees(30, 100, 1.0, 1.0);
 
         assertTrue("coincident", a.intersects(30.0, 100.0, 1d, 1d));
@@ -513,7 +496,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersects() throws Exception {
+    public void testIntersects() {
         Sector a = Sector.fromDegrees(30, 100, 3.0, 3.0);
         Sector copy = new Sector(a);
 
@@ -527,7 +510,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersects_Empty() throws Exception {
+    public void testIntersects_Empty() {
         Sector a = Sector.fromDegrees(30, 100, 3.0, 3.0);
 
         assertFalse("empty", a.intersects(new Sector()));
@@ -541,7 +524,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersects_Coincident() throws Exception {
+    public void testIntersects_Coincident() {
         Sector a = Sector.fromDegrees(30, 100, 1.0, 1.0);
 
         assertTrue("coincident", a.intersects(new Sector(30.0, 100.0, 1d, 1d)));
@@ -557,7 +540,7 @@ public class SectorTest {
 
 
     @Test
-    public void testIntersect_Doubles() throws Exception {
+    public void testIntersect_Doubles() {
         Sector a = Sector.fromDegrees(30, 100, 3.0, 3.0);
         Sector inside = Sector.fromDegrees(31, 101, 1.0, 1.0);
 
@@ -569,7 +552,7 @@ public class SectorTest {
 
 
     @Test
-    public void testIntersect_DoublesNE() throws Exception {
+    public void testIntersect_DoublesNE() {
         Sector a = Sector.fromDegrees(30, 100, 2.0, 2.0);
         Sector northeast = Sector.fromDegrees(31, 101, 1.0, 1.0);
 
@@ -580,7 +563,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersect_DoublesNW() throws Exception {
+    public void testIntersect_DoublesNW() {
         Sector a = Sector.fromDegrees(30, 100, 2.0, 2.0);
         Sector northwest = Sector.fromDegrees(31, 100, 1.0, 1.0);
 
@@ -591,7 +574,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersect_DoublesSW() throws Exception {
+    public void testIntersect_DoublesSW() {
         Sector a = Sector.fromDegrees(30, 100, 2.0, 2.0);
         Sector southwest = Sector.fromDegrees(30, 100, 1.0, 1.0);
 
@@ -602,7 +585,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersect_DoublesSE() throws Exception {
+    public void testIntersect_DoublesSE() {
         Sector a = Sector.fromDegrees(30, 100, 2.0, 2.0);
         Sector southeast = Sector.fromDegrees(30, 101, 1.0, 1.0);
 
@@ -613,7 +596,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersect_DoublesAdjacent() throws Exception {
+    public void testIntersect_DoublesAdjacent() {
         Sector a = Sector.fromDegrees(30, 100, 1.0, 1.0);
         Sector copy = new Sector(a);
 
@@ -624,7 +607,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersect() throws Exception {
+    public void testIntersect() {
         Sector a = Sector.fromDegrees(30, 100, 2.0, 2.0);
         Sector b = Sector.fromDegrees(31, 101, 2.0, 2.0);
         Sector northeast = Sector.fromDegrees(31, 101, 1.0, 1.0);
@@ -636,7 +619,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersect_Inside() throws Exception {
+    public void testIntersect_Inside() {
         Sector a = Sector.fromDegrees(30, 100, 3.0, 3.0);
         Sector inside = Sector.fromDegrees(31, 101, 1.0, 1.0);
 
@@ -647,7 +630,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersect_East() throws Exception {
+    public void testIntersect_East() {
         Sector a = Sector.fromDegrees(30, 100, 3.0, 3.0);
         Sector east = Sector.fromDegrees(31, 102, 1.0, 2.0);
         Sector expected = Sector.fromDegrees(31, 102, 1.0, 1.0);
@@ -659,7 +642,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersect_West() throws Exception {
+    public void testIntersect_West() {
         Sector a = Sector.fromDegrees(30, 100, 3.0, 3.0);
         Sector west = Sector.fromDegrees(31, 99, 1.0, 2.0);
         Sector expected = Sector.fromDegrees(31, 100, 1.0, 1.0);
@@ -671,7 +654,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersect_North() throws Exception {
+    public void testIntersect_North() {
         Sector a = Sector.fromDegrees(30, 100, 3.0, 3.0);
         Sector north = Sector.fromDegrees(32, 101, 2.0, 1.0);
         Sector expected = Sector.fromDegrees(32, 101, 1.0, 1.0);
@@ -683,7 +666,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersect_South() throws Exception {
+    public void testIntersect_South() {
         Sector a = Sector.fromDegrees(30, 100, 3.0, 3.0);
         Sector south = Sector.fromDegrees(29, 101, 2.0, 1.0);
         Sector expected = Sector.fromDegrees(30, 101, 1.0, 1.0);
@@ -696,7 +679,7 @@ public class SectorTest {
 
 
     @Test
-    public void testIntersect_AdjacentEast() throws Exception {
+    public void testIntersect_AdjacentEast() {
         Sector a = Sector.fromDegrees(30, 100, 3.0, 3.0);
         Sector adjacentEast = Sector.fromDegrees(31, 103, 1.0, 1.0);
         Sector copy = new Sector(a);
@@ -708,7 +691,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersect_AdjacentWest() throws Exception {
+    public void testIntersect_AdjacentWest() {
         Sector a = Sector.fromDegrees(30, 100, 3.0, 3.0);
         Sector adjacentWest = Sector.fromDegrees(31, 99, 1.0, 1.0);
         Sector copy = new Sector(a);
@@ -720,7 +703,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersect_AdjacentNorth() throws Exception {
+    public void testIntersect_AdjacentNorth() {
         Sector a = Sector.fromDegrees(30, 100, 3.0, 3.0);
         Sector adjacentNorth = Sector.fromDegrees(33, 101, 1.0, 1.0);
         Sector copy = new Sector(a);
@@ -732,7 +715,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testIntersect_AdjacentSouth() throws Exception {
+    public void testIntersect_AdjacentSouth() {
         Sector a = Sector.fromDegrees(30, 100, 3.0, 3.0);
         Sector adjacentSouth = Sector.fromDegrees(29, 101, 1.0, 1.0);
         Sector copy = new Sector(a);
@@ -745,7 +728,7 @@ public class SectorTest {
 
 
     @Test
-    public void testContains() throws Exception {
+    public void testContains() {
         Sector a = Sector.fromDegrees(30, 100, 1.0, 1.0);
 
         assertTrue("inside", a.contains(30.5, 100.5));
@@ -757,14 +740,14 @@ public class SectorTest {
     }
 
     @Test
-    public void testContains_Empty() throws Exception {
+    public void testContains_Empty() {
         Sector a = new Sector();
 
         assertFalse("empty doesn't contain", a.contains(31, 101));
     }
 
     @Test
-    public void testContains_Doubles() throws Exception {
+    public void testContains_Doubles() {
         Sector a = Sector.fromDegrees(30, 100, 3.0, 3.0);
 
         assertTrue("coincident", a.contains(30, 100, 3.0, 3.0));
@@ -772,7 +755,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testContains_Sector() throws Exception {
+    public void testContains_Sector() {
         Sector a = Sector.fromDegrees(30, 100, 3.0, 3.0);
 
         assertTrue("coincident", a.contains(new Sector(30, 100, 3.0, 3.0)));
@@ -780,7 +763,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testUnion() throws Exception {
+    public void testUnion() {
         double latOxr = 34.2;
         double lonOxr = -119.2;
         double latLax = 33.94;
@@ -801,7 +784,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testUnion_ArrayOfLocations() throws Exception {
+    public void testUnion_ArrayOfLocations() {
         float[] array = {
             -119.2f, 34.2f, // OXR airport
             -118.4f, 33.94f, // LAX airport
@@ -820,7 +803,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testUnion_Doubles() throws Exception {
+    public void testUnion_Doubles() {
         Sector a = Sector.fromDegrees(-30, -100, 1.0, 1.0);
 
         Sector b = a.union(40, 110, 1.0, 1.0);
@@ -834,7 +817,7 @@ public class SectorTest {
     }
 
     @Test
-    public void testUnion_Sector() throws Exception {
+    public void testUnion_Sector() {
         Sector a = Sector.fromDegrees(-30, -100, 1.0, 1.0);
 
         Sector b = a.union(new Sector(40, 110, 1.0, 1.0));

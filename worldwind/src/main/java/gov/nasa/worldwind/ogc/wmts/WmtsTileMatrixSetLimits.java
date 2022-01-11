@@ -12,7 +12,7 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmtsTileMatrixSetLimits extends XmlModel {
 
-    protected List<WmtsTileMatrixLimits> tileMatrixLimits = new ArrayList<>();
+    protected final List<WmtsTileMatrixLimits> tileMatrixLimits = new ArrayList<>();
 
     public WmtsTileMatrixSetLimits() {
     }

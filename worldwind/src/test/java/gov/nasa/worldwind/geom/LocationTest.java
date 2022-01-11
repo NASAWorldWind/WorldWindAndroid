@@ -46,11 +46,9 @@ public class LocationTest {
 
     /**
      * Tests default constructor's member initialization.
-     *
-     * @throws Exception
      */
     @Test
-    public void testConstructor_Default() throws Exception {
+    public void testConstructor_Default() {
 
         Location location = new Location();
 
@@ -61,11 +59,9 @@ public class LocationTest {
 
     /**
      * Tests constructor from degrees member  initialization.
-     *
-     * @throws Exception
      */
     @Test
-    public void testConstructor_Degrees() throws Exception {
+    public void testConstructor_Degrees() {
 
         Location location = new Location(THETA, PHI);
 
@@ -76,11 +72,9 @@ public class LocationTest {
 
     /**
      * Tests the copy constructor.
-     *
-     * @throws Exception
      */
     @Test
-    public void testConstructor_Copy() throws Exception {
+    public void testConstructor_Copy() {
         // KOXR Airport
         double lat = 34.2;
         double lon = -119.2;
@@ -95,11 +89,9 @@ public class LocationTest {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_WithNull() throws Exception {
+    public void testConstructor_WithNull() {
 
         new Location(null);
 
@@ -108,11 +100,9 @@ public class LocationTest {
 
     /**
      * Tests factory method's member initialization from degrees.
-     *
-     * @throws Exception
      */
     @Test
-    public void testFromDegrees() throws Exception {
+    public void testFromDegrees() {
 
         Location location = Location.fromDegrees(THETA, PHI);
 
@@ -122,11 +112,9 @@ public class LocationTest {
 
     /**
      * Test factory method's member initialization from radians
-     *
-     * @throws Exception
      */
     @Test
-    public void testFromRadians() throws Exception {
+    public void testFromRadians() {
 
         Location location = Location.fromRadians(THETA, PHI);
 
@@ -137,11 +125,9 @@ public class LocationTest {
     /**
      * Ensures normalizeLatitude returns a correct value within the range of +/- 90 degrees. A typical use case is to
      * normalize the result of a latitude used in an arithmetic function.
-     *
-     * @throws Exception
      */
     @Test
-    public void testNormalizeLatitude() throws Exception {
+    public void testNormalizeLatitude() {
         // Orbit the globe, starting at the equator and move north
         // testing the sign at the hemisphere boundaries.
         assertEquals("zero", 0.0, Location.normalizeLatitude(0.0), 0);
@@ -191,11 +177,9 @@ public class LocationTest {
     /**
      * Ensures normalizeLongitude returns a correct value within the range of +/- 180 degrees. A typical use case is to
      * normalize the result of a longitude used in an arithmetic function.
-     *
-     * @throws Exception
      */
     @Test
-    public void testNormalizeLongitude() throws Exception {
+    public void testNormalizeLongitude() {
         // Test "normal" data
         assertEquals("zero", 0.0, Location.normalizeLongitude(0.0), 0);
         assertEquals("270", -90.0, Location.normalizeLongitude(270.0), 0);
@@ -225,11 +209,9 @@ public class LocationTest {
 
     /**
      * Ensures clampLatitude clamps to +/-90 degrees.
-     *
-     * @throws Exception
      */
     @Test
-    public void testClampLatitude() throws Exception {
+    public void testClampLatitude() {
         // Test "normal" data
         assertEquals("0", 0.0, Location.clampLatitude(0.0), 0);
         assertEquals("THETA", THETA, Location.clampLatitude(THETA), 0);
@@ -246,11 +228,9 @@ public class LocationTest {
 
     /**
      * Ensures clampLatitude clamps to +/-180 degrees.
-     *
-     * @throws Exception
      */
     @Test
-    public void testClampLongitude() throws Exception {
+    public void testClampLongitude() {
         // Test "normal" data
         assertEquals("0", 0.0, Location.clampLongitude(0.0), 0);
         assertEquals("PHI", PHI, Location.clampLongitude(PHI), 0);
@@ -267,11 +247,9 @@ public class LocationTest {
 
     /**
      * Tests equality.
-     *
-     * @throws Exception
      */
     @Test
-    public void testEquals() throws Exception {
+    public void testEquals() {
         double lat = 34.2;
         double lon = -119.2;
 
@@ -287,11 +265,9 @@ public class LocationTest {
 
     /**
      * Tests inequality.
-     *
-     * @throws Exception
      */
     @Test
-    public void testEquals_Inequality() throws Exception {
+    public void testEquals_Inequality() {
         // KOXR Airport
         double lat = 34.2;
         double lon = -119.2;
@@ -306,11 +282,9 @@ public class LocationTest {
 
     /**
      * Ensures hash codes are unique.
-     *
-     * @throws Exception
      */
     @Test
-    public void testHashCode() throws Exception {
+    public void testHashCode() {
         Location lax = Location.fromRadians(0.592539, -2.066470);
         Location jfk = Location.fromRadians(0.709185, -1.287762);
 
@@ -322,11 +296,9 @@ public class LocationTest {
 
     /**
      * Ensures string output contains member representations.
-     *
-     * @throws Exception
      */
     @Test
-    public void testToString() throws Exception {
+    public void testToString() {
         // KOXR Airport
         double lat = 34.2;
         double lon = -119.2;
@@ -338,11 +310,8 @@ public class LocationTest {
         assertTrue("lon", string.contains(Double.toString(lon)));
     }
 
-    /**
-     * @throws Exception
-     */
     @Test
-    public void testLocationsCrossAntimeridian() throws Exception {
+    public void testLocationsCrossAntimeridian() {
         List<Location> locations = new ArrayList<>();
         locations.add(new Location(0d, 165d));
         locations.add(new Location(0d, -165d));
@@ -353,7 +322,7 @@ public class LocationTest {
     }
 
     @Test
-    public void testLocationsCrossAntimeridian_Antipodal() throws Exception {
+    public void testLocationsCrossAntimeridian_Antipodal() {
         List<Location> locations = new ArrayList<>();
         locations.add(new Location(0d, -90d));
         locations.add(new Location(0d, 90d));
@@ -364,7 +333,7 @@ public class LocationTest {
     }
 
     @Test
-    public void testLocationsCrossAntimeridian_AlmostAntipodal_DoesCross() throws Exception {
+    public void testLocationsCrossAntimeridian_AlmostAntipodal_DoesCross() {
         List<Location> locations = new ArrayList<>();
         locations.add(new Location(0d, -90.0000001d));
         locations.add(new Location(0d, 90d));
@@ -375,7 +344,7 @@ public class LocationTest {
     }
 
     @Test
-    public void testLocationsCrossAntimeridian_AlmostAntipodal_DoesNotCross() throws Exception {
+    public void testLocationsCrossAntimeridian_AlmostAntipodal_DoesNotCross() {
         List<Location> locations = new ArrayList<>();
         locations.add(new Location(0d, -89.9999999d));
         locations.add(new Location(0d, 90d));
@@ -386,7 +355,7 @@ public class LocationTest {
     }
 
     @Test
-    public void testLocationsCrossAntimeridian_OnAntimeridian_SameSideWest() throws Exception {
+    public void testLocationsCrossAntimeridian_OnAntimeridian_SameSideWest() {
         List<Location> locations = new ArrayList<>();
         locations.add(new Location(90d, -180d));
         locations.add(new Location(-90d, -180d));
@@ -397,7 +366,7 @@ public class LocationTest {
     }
 
     @Test
-    public void testLocationsCrossAntimeridian_OnAntimeridian_SameSideEast() throws Exception {
+    public void testLocationsCrossAntimeridian_OnAntimeridian_SameSideEast() {
         List<Location> locations = new ArrayList<>();
         locations.add(new Location(90d, 180d));
         locations.add(new Location(-90d, 180d));
@@ -408,7 +377,7 @@ public class LocationTest {
     }
 
     @Test
-    public void testLocationsCrossAntimeridian_OnAntimeridian_OppositeSides() throws Exception {
+    public void testLocationsCrossAntimeridian_OnAntimeridian_OppositeSides() {
         List<Location> locations = new ArrayList<>();
         locations.add(new Location(0d, -180d));
         locations.add(new Location(0d, 180d));
@@ -419,7 +388,7 @@ public class LocationTest {
     }
 
     @Test
-    public void testLocationsCrossAntimeridian_OutsideNormalRange() throws Exception {
+    public void testLocationsCrossAntimeridian_OutsideNormalRange() {
         List<Location> locations = new ArrayList<>();
         locations.add(new Location(0d, -181d));
         locations.add(new Location(0d, 181d));
@@ -430,7 +399,7 @@ public class LocationTest {
     }
 
     @Test
-    public void testLocationsCrossAntimeridian_OutsideNormalRangeWest() throws Exception {
+    public void testLocationsCrossAntimeridian_OutsideNormalRangeWest() {
         List<Location> locations = new ArrayList<>();
         locations.add(new Location(0d, -179d));
         locations.add(new Location(0d, -181d));
@@ -441,7 +410,7 @@ public class LocationTest {
     }
 
     @Test
-    public void testLocationsCrossAntimeridian_OutsideNormalRangeEast() throws Exception {
+    public void testLocationsCrossAntimeridian_OutsideNormalRangeEast() {
         List<Location> locations = new ArrayList<>();
         locations.add(new Location(0d, 179d));
         locations.add(new Location(0d, 181d));
@@ -452,7 +421,7 @@ public class LocationTest {
     }
 
     @Test
-    public void testLocationsCrossAntimeridian_NaN() throws Exception {
+    public void testLocationsCrossAntimeridian_NaN() {
         List<Location> locations = new ArrayList<>();
         locations.add(new Location(Double.NaN, Double.NaN));
         locations.add(new Location(0d, -165d));
@@ -463,7 +432,7 @@ public class LocationTest {
     }
 
     @Test
-    public void testLocationsCrossAntimeridian_OneLocation() throws Exception {
+    public void testLocationsCrossAntimeridian_OneLocation() {
         List<Location> locations = new ArrayList<>();
         locations.add(new Location(0d, 165d));
 
@@ -473,7 +442,7 @@ public class LocationTest {
     }
 
     @Test
-    public void testLocationsCrossAntimeridian_NoLocations() throws Exception {
+    public void testLocationsCrossAntimeridian_NoLocations() {
         List<Location> locations = new ArrayList<>();
 
         boolean isCrossed = Location.locationsCrossAntimeridian(locations);
@@ -483,11 +452,9 @@ public class LocationTest {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testLocationsCrossAntimeridian_WithNull() throws Exception {
+    public void testLocationsCrossAntimeridian_WithNull() {
         PowerMockito.mockStatic(Logger.class);
 
         Location.locationsCrossAntimeridian(null);
@@ -497,25 +464,21 @@ public class LocationTest {
 
     /**
      * Ensures empty list argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test
-    public void testLocationsCrossAntimeridian_EmptyList() throws Exception {
+    public void testLocationsCrossAntimeridian_EmptyList() {
         PowerMockito.mockStatic(Logger.class);
 
-        boolean isCrossed = Location.locationsCrossAntimeridian(new ArrayList<Location>());
+        boolean isCrossed = Location.locationsCrossAntimeridian(new ArrayList<>());
 
         assertFalse("empty list", isCrossed);
     }
 
     /**
      * Tests that we read back the same doubles we set.
-     *
-     * @throws Exception
      */
     @Test
-    public void testSet_WithDoubles() throws Exception {
+    public void testSet_WithDoubles() {
         double lat = 34.2;
         double lon = -119.2;
         Location location = new Location();
@@ -528,11 +491,9 @@ public class LocationTest {
 
     /**
      * Test that we read back the same Location data that we set.
-     *
-     * @throws Exception
      */
     @Test
-    public void testSet() throws Exception {
+    public void testSet() {
         double lat = 34.2;
         double lon = -119.2;
         Location oxr = new Location(lat, lon);
@@ -546,11 +507,9 @@ public class LocationTest {
 
     /**
      * Tests that we handled a null argument correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testSet_WithNull() throws Exception {
+    public void testSet_WithNull() {
         Location location = new Location();
 
         location.set(null);
@@ -561,11 +520,9 @@ public class LocationTest {
     /**
      * Tests the great circle path interpolation. Ensures the interpolated location lies on the great circle path
      * between start and end.
-     *
-     * @throws Exception
      */
     @Test
-    public void testInterpolateAlongPath() throws Exception {
+    public void testInterpolateAlongPath() {
         Location lax = Location.fromRadians(0.592539, -2.066470);
         Location jfk = Location.fromRadians(0.709185, -1.287762);
         double distanceToJfk = lax.greatCircleDistance(jfk);
@@ -584,11 +541,9 @@ public class LocationTest {
     /**
      * Tests the rhumbline path interpolation. Ensures the interpolated location lies on the rhumb line path between
      * start and end.
-     *
-     * @throws Exception
      */
     @Test
-    public void testInterpolateAlongPath_Rhumbline() throws Exception {
+    public void testInterpolateAlongPath_Rhumbline() {
         Location lax = Location.fromRadians(0.592539, -2.066470);
         Location jfk = Location.fromRadians(0.709185, -1.287762);
         double distanceToJfk = lax.rhumbDistance(jfk);
@@ -607,11 +562,9 @@ public class LocationTest {
     /**
      * Tests the linear path interpolation. Ensures the interpolated location lies on the linear path between start and
      * end.
-     *
-     * @throws Exception
      */
     @Test
-    public void testInterpolateAlongPath_Linear() throws Exception {
+    public void testInterpolateAlongPath_Linear() {
         Location lax = Location.fromRadians(0.592539, -2.066470);
         Location oxr = Location.fromDegrees(34.2, -119.2);
         double distanceToOxr = lax.linearDistance(oxr);
@@ -630,11 +583,9 @@ public class LocationTest {
 
     /**
      * Tests the path interpolation using coincident start and end points.
-     *
-     * @throws Exception
      */
     @Test
-    public void testInterpolateAlongPath_Coincident() throws Exception {
+    public void testInterpolateAlongPath_Coincident() {
         Location start = Location.fromDegrees(34.2, -119.2);
         Location end = new Location(start);
         double amount = 0.25; // percent
@@ -646,11 +597,9 @@ public class LocationTest {
 
     /**
      * Tests that we handle a null argument correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testInterpolateAlongPath_NullEnd() throws Exception {
+    public void testInterpolateAlongPath_NullEnd() {
         Location location = new Location();
 
         location.interpolateAlongPath(null, WorldWind.GREAT_CIRCLE, 0.25, new Location());
@@ -660,11 +609,9 @@ public class LocationTest {
 
     /**
      * Tests that we handled a null argument correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testInterpolateAlongPath_NullResult() throws Exception {
+    public void testInterpolateAlongPath_NullResult() {
         Location location = new Location();
 
         location.interpolateAlongPath(location, WorldWind.GREAT_CIRCLE, 0.25, null);
@@ -674,11 +621,9 @@ public class LocationTest {
 
     /**
      * Ensures azimuth to north pole is 90.
-     *
-     * @throws Exception
      */
     @Test
-    public void testGreatCircleAzimuth_North() throws Exception {
+    public void testGreatCircleAzimuth_North() {
         Location origin = new Location();
         Location northPole = new Location(90, 0);
 
@@ -689,11 +634,9 @@ public class LocationTest {
 
     /**
      * Ensures azimuth to south pole is -90.
-     *
-     * @throws Exception
      */
     @Test
-    public void testGreatCircleAzimuth_South() throws Exception {
+    public void testGreatCircleAzimuth_South() {
         Location origin = new Location();
         Location southPole = new Location(-90, 0);
 
@@ -704,11 +647,9 @@ public class LocationTest {
 
     /**
      * Ensures eastward azimuth to dateline is 180.
-     *
-     * @throws Exception
      */
     @Test
-    public void testGreatCircleAzimuth_East() throws Exception {
+    public void testGreatCircleAzimuth_East() {
         Location origin = new Location();
         Location east = new Location(0, 180);
 
@@ -719,11 +660,9 @@ public class LocationTest {
 
     /**
      * Ensures westward azimuth to dateline is -180.
-     *
-     * @throws Exception
      */
     @Test
-    public void testGreatCircleAzimuth_West() throws Exception {
+    public void testGreatCircleAzimuth_West() {
         Location origin = new Location();
         Location west = new Location(0, -180);
 
@@ -734,12 +673,10 @@ public class LocationTest {
 
     /**
      * Ensures azimuth is NaN with NaN arguments.
-     *
-     * @throws Exception
      */
     @Ignore("NaN behavior TBD")
     @Test
-    public void testGreatCircleAzimuth_WithNaN() throws Exception {
+    public void testGreatCircleAzimuth_WithNaN() {
         Location origin = new Location(THETA, PHI);
         Location nanLat = new Location(Double.NaN, PHI);
         Location nanBoth = new Location(Double.NaN, Double.NaN);
@@ -752,11 +689,9 @@ public class LocationTest {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testGreatCircleAzimuth_WithNull() throws Exception {
+    public void testGreatCircleAzimuth_WithNull() {
         PowerMockito.mockStatic(Logger.class);
         Location begin = new Location(34.2, -119.2); // KOXR
 
@@ -767,11 +702,9 @@ public class LocationTest {
 
     /**
      * Ensures correct distance to known location.
-     *
-     * @throws Exception
      */
     @Test
-    public void testGreatCircleDistance() throws Exception {
+    public void testGreatCircleDistance() {
         Location begin = Location.fromDegrees(90.0, 45.0);
         Location end = Location.fromDegrees(36.0, 180.0);
 
@@ -782,11 +715,9 @@ public class LocationTest {
 
     /**
      * Ensures distance from prime meridian to dateline is +/- 180.
-     *
-     * @throws Exception
      */
     @Test
-    public void testGreatCircleDistance_AlongEquator() throws Exception {
+    public void testGreatCircleDistance_AlongEquator() {
         // Assert accurate max distances along the equator
         Location origin = new Location();
         double eastToDateLine = origin.greatCircleDistance(new Location(0, 180));
@@ -802,11 +733,9 @@ public class LocationTest {
 
     /**
      * Ensures distance correct distance across prime meridian.
-     *
-     * @throws Exception
      */
     @Test
-    public void testGreatCircleDistance_AcrossMeridian() throws Exception {
+    public void testGreatCircleDistance_AcrossMeridian() {
         Location west = new Location(0, -22.5);
         Location east = new Location(0, 22.5);
 
@@ -817,11 +746,9 @@ public class LocationTest {
 
     /**
      * Ensures distance correct distance across prime meridian.
-     *
-     * @throws Exception
      */
     @Test
-    public void testGreatCircleDistance_AcrossDateline() throws Exception {
+    public void testGreatCircleDistance_AcrossDateline() {
         Location west = new Location(0, -157.5);
         Location east = new Location(0, 157.5);
 
@@ -832,11 +759,9 @@ public class LocationTest {
 
     /**
      * Ensures distance from equator to poles is +/- 90.
-     *
-     * @throws Exception
      */
     @Test
-    public void testGreatCircleDistance_AlongMeridians() throws Exception {
+    public void testGreatCircleDistance_AlongMeridians() {
         // Assert accurate max distances along lines of longitude
         Location origin = new Location();
 
@@ -862,11 +787,9 @@ public class LocationTest {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testGreatCircleDistance_WithNull() throws Exception {
+    public void testGreatCircleDistance_WithNull() {
         PowerMockito.mockStatic(Logger.class);
         Location begin = new Location(34.2, -119.2); // KOXR
 
@@ -877,12 +800,10 @@ public class LocationTest {
 
     /**
      * Ensures distance is NaN when NaN members are used.
-     *
-     * @throws Exception
      */
     @Ignore("NaN behavior TBD")
     @Test
-    public void testGreatCircleDistance_WithNaN() throws Exception {
+    public void testGreatCircleDistance_WithNaN() {
         Location location = new Location(Double.NaN, Double.NaN);
 
         double nanDistance = location.greatCircleDistance(new Location(34.2, -119.2));
@@ -890,11 +811,8 @@ public class LocationTest {
         assertTrue("expecting NaN", Double.isNaN(nanDistance));
     }
 
-    /**
-     * @throws Exception
-     */
     @Test
-    public void testGreatCircleLocation_NorthPole() throws Exception {
+    public void testGreatCircleLocation_NorthPole() {
         // Trivial tests along prime meridian
         Location origin = new Location();
         Location result = new Location();
@@ -905,7 +823,7 @@ public class LocationTest {
     }
 
     @Test
-    public void testGreatCircleLocation_SouthPole() throws Exception {
+    public void testGreatCircleLocation_SouthPole() {
         // Trivial tests along prime meridian
         Location origin = new Location();
         Location result = new Location();
@@ -917,11 +835,9 @@ public class LocationTest {
 
     /**
      * Ensures the correct azimuth to a known location.
-     *
-     * @throws Exception
      */
     @Test
-    public void testRhumbAzimuth() throws Exception {
+    public void testRhumbAzimuth() {
         // From Ed Williams Aviation Formulary:
         //  LAX is 33deg 57min N, 118deg 24min W (0.592539, -2.066470),
         //  JFK is 40deg 38min N,  73deg 47min W (0.709185, -1.287762),
@@ -937,11 +853,9 @@ public class LocationTest {
 
     /**
      * Ensures the correct azimuth along the equator.
-     *
-     * @throws Exception
      */
     @Test
-    public void testRhumbAzimuth_AlongEquator() throws Exception {
+    public void testRhumbAzimuth_AlongEquator() {
         Location origin = new Location(0, 0);
         Location east = new Location(0, 1);
         Location west = new Location(0, -1);
@@ -955,11 +869,9 @@ public class LocationTest {
 
     /**
      * Ensures the correct azimuth along a meridian.
-     *
-     * @throws Exception
      */
     @Test
-    public void testRhumbAzimuth_AlongMeridian() throws Exception {
+    public void testRhumbAzimuth_AlongMeridian() {
         Location begin = new Location(0, 0);
         Location north = new Location(1, 0);
         Location south = new Location(-1, 0);
@@ -973,11 +885,9 @@ public class LocationTest {
 
     /**
      * Ensures the correct azimuth from poles.
-     *
-     * @throws Exception
      */
     @Test
-    public void testRhumbAzimuth_FromPoles() throws Exception {
+    public void testRhumbAzimuth_FromPoles() {
         Location northPole = new Location(90, 0);
         Location southPole = new Location(-90, 0);
         Location end = new Location(0, 0);
@@ -991,11 +901,9 @@ public class LocationTest {
 
     /**
      * Ensures the correct azimuth (shortest distance) across the +/-180 meridian.
-     *
-     * @throws Exception
      */
     @Test
-    public void testRhumbAzimuth_AcrossDateline() throws Exception {
+    public void testRhumbAzimuth_AcrossDateline() {
         Location end = new Location(45d, 165d);
         Location begin = new Location(45d, -165d);
 
@@ -1007,11 +915,9 @@ public class LocationTest {
 
     /**
      * Ensures a zero azimuth for coincident locations.
-     *
-     * @throws Exception
      */
     @Test
-    public void testRhumbAzimuth_CoincidentLocations() throws Exception {
+    public void testRhumbAzimuth_CoincidentLocations() {
         Location begin = new Location(34.2, -119.2);  // KOXR
         Location end = new Location(34.2, -119.2);
 
@@ -1022,12 +928,10 @@ public class LocationTest {
 
     /**
      * Ensures azimuth is NaN when NaN members are used.
-     *
-     * @throws Exception
      */
     @Ignore("NaN behavior TBD")
     @Test
-    public void testRhumbAzimuth_WithNaN() throws Exception {
+    public void testRhumbAzimuth_WithNaN() {
         Location begin = new Location(Double.NaN, Double.NaN);
         Location end = new Location(34.2, -119.2);  // KOXR
 
@@ -1038,11 +942,9 @@ public class LocationTest {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testRhumbAzimuth_WithNull() throws Exception {
+    public void testRhumbAzimuth_WithNull() {
         PowerMockito.mockStatic(Logger.class);
         Location begin = new Location(34.2, -119.2); // KOXR
 
@@ -1053,11 +955,9 @@ public class LocationTest {
 
     /**
      * Ensures correct distance between known locations.
-     *
-     * @throws Exception
      */
     @Test
-    public void testRhumbDistance() throws Exception {
+    public void testRhumbDistance() {
         // From Ed Williams Aviation Formulary:
         //  LAX is 33deg 57min N, 118deg 24min W (0.592539, -2.066470),
         //  JFK is 40deg 38min N,  73deg 47min W (0.709185, -1.287762),
@@ -1074,11 +974,9 @@ public class LocationTest {
 
     /**
      * Ensures correct distance across the +/- 180 meridian.
-     *
-     * @throws Exception
      */
     @Test
-    public void testRhumbDistance_AcrossDateline() throws Exception {
+    public void testRhumbDistance_AcrossDateline() {
         Location end = new Location(0d, 165d);
         Location begin = new Location(0d, -165d);
 
@@ -1089,12 +987,10 @@ public class LocationTest {
 
     /**
      * Ensures distance is NaN when NaN members are used.
-     *
-     * @throws Exception
      */
     @Ignore("NaN behavior TBD")
     @Test
-    public void testRhumbDistance_WithNaN() throws Exception {
+    public void testRhumbDistance_WithNaN() {
         Location begin = new Location(Double.NaN, Double.NaN);
         Location end = new Location(34.2, -119.2);  // KOXR
 
@@ -1105,11 +1001,9 @@ public class LocationTest {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testRhumbDistance_WithNull() throws Exception {
+    public void testRhumbDistance_WithNull() {
         PowerMockito.mockStatic(Logger.class);
         Location begin = new Location(34.2, -119.2); // KOXR
 
@@ -1120,11 +1014,9 @@ public class LocationTest {
 
     /**
      * Ensures a zero distance for coincident locations.
-     *
-     * @throws Exception
      */
     @Test
-    public void testRhumbDistance_CoincidentLocations() throws Exception {
+    public void testRhumbDistance_CoincidentLocations() {
         Location begin = new Location(34.2, -119.2);  // KOXR
         Location end = new Location(34.2, -119.2);
 
@@ -1135,11 +1027,9 @@ public class LocationTest {
 
     /**
      * Ensures the correct location using a known azimuth and distance.
-     *
-     * @throws Exception
      */
     @Test
-    public void testRhumbLocation() throws Exception {
+    public void testRhumbLocation() {
         // From Ed Williams Aviation Formulary:
         //  LAX is 33deg 57min N, 118deg 24min W (0.592539, -2.066470),
         //  JFK is 40deg 38min N,  73deg 47min W (0.709185, -1.287762),
@@ -1159,12 +1049,10 @@ public class LocationTest {
 
     /**
      * Ensures the proper handling of NaN values.
-     *
-     * @throws Exception
      */
     @Ignore("NaN behavior TBD")
     @Test
-    public void testRhumbLocation_WithNaN() throws Exception {
+    public void testRhumbLocation_WithNaN() {
         Location begin1 = Location.fromRadians(0.592539, -2.066470); // LAX
         Location begin2 = new Location(Double.NaN, Double.NaN);
         final double distance = 0.6296498957149533; // LAX to JFK
@@ -1187,11 +1075,9 @@ public class LocationTest {
 
     /**
      * Tests the linear azimuth (flat-earth approximate) using a well known right triangle.
-     *
-     * @throws Exception
      */
     @Test
-    public void testLinearAzimuth() throws Exception {
+    public void testLinearAzimuth() {
         // Create a 30-60-90 right triangle with a ratio of 1:2:sqrt(3)
         Location begin = Location.fromDegrees(0d, 0d);
         Location end = Location.fromDegrees(1d, Math.sqrt(3d));
@@ -1203,11 +1089,9 @@ public class LocationTest {
 
     /**
      * Tests the linear azimuth across the +/- 180 meridian.
-     *
-     * @throws Exception
      */
     @Test
-    public void testLinearAzimuth_AcrossDateline() throws Exception {
+    public void testLinearAzimuth_AcrossDateline() {
         // Create a 30-60-90 right triangle with a ratio of 1:2:sqrt(3)
         Location begin = Location.fromDegrees(0, 179.5d);
         Location end = Location.fromDegrees(Math.sqrt(3d), -179.5);
@@ -1219,12 +1103,10 @@ public class LocationTest {
 
     /**
      * Ensures linear azimuth is NaN when NaN members are used.
-     *
-     * @throws Exception
      */
     @Ignore("NaN behavior TBD")
     @Test
-    public void testLinearAzimuth_WithNaN() throws Exception {
+    public void testLinearAzimuth_WithNaN() {
         Location begin = new Location(Double.NaN, Double.NaN);
         Location end = new Location(34.2, -119.2);  // KOXR
 
@@ -1234,7 +1116,7 @@ public class LocationTest {
     }
 
     @Test
-    public void testLinearDistance() throws Exception {
+    public void testLinearDistance() {
         // Create a 30-60-90 right triangle with a ratio of 1:2:sqrt(3)
         Location begin = Location.fromDegrees(0d, 0d);
         Location end = Location.fromDegrees(1d, Math.sqrt(3d));
@@ -1246,12 +1128,10 @@ public class LocationTest {
 
     /**
      * Ensures linear distance is NaN when NaN members are used.
-     *
-     * @throws Exception
      */
     @Ignore("NaN behavior TBD")
     @Test
-    public void testLinearDistance_WithNaN() throws Exception {
+    public void testLinearDistance_WithNaN() {
         Location begin = new Location(Double.NaN, Double.NaN);
         Location end = new Location(34.2, -119.2);  // KOXR
 
@@ -1260,11 +1140,8 @@ public class LocationTest {
         assertTrue("expecting NaN", Double.isNaN(distance));
     }
 
-    /**
-     * @throws Exception
-     */
     @Test
-    public void testLinearLocation() throws Exception {
+    public void testLinearLocation() {
         // Create a 30-60-90 right triangle with a ratio of 1:2:sqrt(3)
         Location begin = Location.fromDegrees(34.2, -119.2);    // KOXR
         final double height = begin.latitude + 1d;
@@ -1281,12 +1158,10 @@ public class LocationTest {
 
     /**
      * Ensures the proper handling of NaN values.
-     *
-     * @throws Exception
      */
     @Ignore("NaN behavior TBD")
     @Test
-    public void testLinearLocation_WithNaN() throws Exception {
+    public void testLinearLocation_WithNaN() {
         Location begin1 = Location.fromRadians(0.592539, -2.066470); // LAX
         Location begin2 = new Location(Double.NaN, Double.NaN);
         final double distance = 0.6296498957149533; // LAX to JFK
@@ -1442,25 +1317,6 @@ public class LocationTest {
         double expected = 4.86029305637848;
 
         assertEquals("Delta Longitude", expected, result, 1e-15);
-
-//        // This loop was used to test and identify the tolerance used in rhumbLocation.
-//        double startLat =  2.892251645338908;
-//        double latitude = startLat;
-//        double longitude = -100.0;
-//        double distance = 0.08472006153859046;
-//        double azimuth = 90.0;
-//        Location begin = new Location();
-//        Location end = new Location();
-//
-//        while (latitude > startLat - 1e-16) {
-//            begin.set(latitude, longitude);
-//            begin.rhumbLocation(azimuth, distance, end);
-//            double dLon = end.longitude - begin.longitude;
-//
-//            assertTrue("Delta Longitude @ [" + latitude + "] (" + dLon + ") < 10", dLon < 10);
-//
-//            latitude -= 1e-18;
-//        }
     }
 
     @Test

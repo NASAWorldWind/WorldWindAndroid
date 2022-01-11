@@ -12,9 +12,9 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsDcp extends XmlModel {
 
-    protected List<OwsHttpMethod> getMethod = new ArrayList<>();
+    protected final List<OwsHttpMethod> getMethod = new ArrayList<>();
 
-    protected List<OwsHttpMethod> postMethod = new ArrayList<>();
+    protected final List<OwsHttpMethod> postMethod = new ArrayList<>();
 
     public OwsDcp() {
     }

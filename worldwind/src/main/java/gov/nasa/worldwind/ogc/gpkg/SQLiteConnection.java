@@ -40,12 +40,7 @@ public class SQLiteConnection {
         this.pathName = pathName;
         this.flags = flags;
         this.keepAliveTime = unit.toMillis(keepAliveTime);
-        this.handler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
-            @Override
-            public boolean handleMessage(Message msg) {
-                return SQLiteConnection.this.handleMessage(msg);
-            }
-        });
+        this.handler = new Handler(Looper.getMainLooper(), SQLiteConnection.this::handleMessage);
     }
 
     public String getPathName() {

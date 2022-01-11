@@ -57,8 +57,8 @@ public class TMCoord {
             throw new IllegalArgumentException("TM Conversion Error");
         }
 
-        return new TMCoord(latitude, longitude, converter.getEasting(), converter.getNorthing(),
-                originLatitude, centralMeridian);
+        return new TMCoord(latitude, longitude, converter.getEasting(), converter.getNorthing()
+        );
     }
 
     /**
@@ -96,7 +96,7 @@ public class TMCoord {
         }
 
         return new TMCoord(Math.toDegrees(converter.getLatitude()), Math.toDegrees(converter.getLongitude()),
-                easting, northing, originLatitude, centralMeridian);
+                easting, northing);
     }
 
     /**
@@ -106,13 +106,10 @@ public class TMCoord {
      * @param longitude the longitude <code>double</code>.
      * @param easting the easting distance value in meters.
      * @param northing the northing distance value in meters.
-     * @param originLatitude the origin latitude <code>double</code>.
-     * @param centralMeridian the central meridian longitude <code>double</code>.
      * @throws IllegalArgumentException if <code>latitude</code>, <code>longitude</code>, <code>originLatitude</code>
      * or <code>centralMeridian</code> is null.
      */
-    public TMCoord(double latitude, double longitude, double easting, double northing,
-                   double originLatitude, double centralMeridian) {
+    public TMCoord(double latitude, double longitude, double easting, double northing) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.easting = easting;

@@ -57,27 +57,19 @@ public enum Type {
     public int getSizeInBytes() {
         switch (this) {
             case UBYTE:
-                return 1;
             case ASCII:
-                return 1;
-            case USHORT:
-                return 2;
-            case ULONG:
-                return 4;
-            case RATIONAL:
-                return 8;
             case SBYTE:
-                return 1;
             case UNDEFINED:
                 return 1;
+            case USHORT:
             case SSHORT:
                 return 2;
+            case ULONG:
             case SLONG:
-                return 4;
-            case SRATIONAL:
-                return 8;
             case FLOAT:
                 return 4;
+            case RATIONAL:
+            case SRATIONAL:
             case DOUBLE:
                 return 8;
             default:

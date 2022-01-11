@@ -18,7 +18,7 @@ public class WmsStyle extends XmlModel {
 
     protected String description;
 
-    protected List<WmsLogoUrl> legendUrl = new ArrayList<>();
+    protected final List<WmsLogoUrl> legendUrl = new ArrayList<>();
 
     protected WmsInfoUrl styleSheetUrl;
 
@@ -53,18 +53,25 @@ public class WmsStyle extends XmlModel {
 
     @Override
     public void parseField(String keyName, Object value) {
-        if (keyName.equals("Name")) {
-            this.name = (String) value;
-        } else if (keyName.equals("Title")) {
-            this.title = (String) value;
-        } else if (keyName.equals("Abstract")) {
-            this.description = (String) value;
-        } else if (keyName.equals("LegendURL")) {
-            this.legendUrl.add((WmsLogoUrl) value);
-        } else if (keyName.equals("StyleSheetURL")) {
-            this.styleSheetUrl = (WmsInfoUrl) value;
-        } else if (keyName.equals("StyleURL")) {
-            this.styleUrl = (WmsInfoUrl) value;
+        switch (keyName) {
+            case "Name":
+                this.name = (String) value;
+                break;
+            case "Title":
+                this.title = (String) value;
+                break;
+            case "Abstract":
+                this.description = (String) value;
+                break;
+            case "LegendURL":
+                this.legendUrl.add((WmsLogoUrl) value);
+                break;
+            case "StyleSheetURL":
+                this.styleSheetUrl = (WmsInfoUrl) value;
+                break;
+            case "StyleURL":
+                this.styleUrl = (WmsInfoUrl) value;
+                break;
         }
     }
 }

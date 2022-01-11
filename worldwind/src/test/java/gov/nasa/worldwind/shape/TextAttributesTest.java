@@ -20,8 +20,12 @@ import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.util.Logger;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -41,7 +45,7 @@ public class TextAttributesTest {
     }
 
     @Test
-    public void testConstructor_Default() throws Exception {
+    public void testConstructor_Default() {
 
         TextAttributes attributes = new TextAttributes();
 
@@ -50,14 +54,14 @@ public class TextAttributesTest {
         assertEquals("textColor should be white", new Color(1, 1, 1, 1), attributes.textColor);
         assertEquals("textOffset should be bottom center", Offset.bottomCenter(), attributes.textOffset);
         assertEquals("textSize should be 24.0", 24.0f, attributes.textSize, 0.0f);
-        assertEquals("typeface should be null", null, attributes.typeface);
-        assertEquals("enableOutline should be true", true, attributes.enableOutline);
-        assertEquals("enableDepthTest should be true", true, attributes.enableDepthTest);
+        assertNull("typeface should be null", attributes.typeface);
+        assertTrue("enableOutline should be true", attributes.enableOutline);
+        assertTrue("enableDepthTest should be true", attributes.enableDepthTest);
         assertEquals("outlineWidth should be 3.0", 3.0f, attributes.outlineWidth, 0.0f);
     }
 
     @Test
-    public void testConstructor_Copy() throws Exception {
+    public void testConstructor_Copy() {
         TextAttributes attributes = new TextAttributes();
         attributes.setTypeface(Typeface.defaultFromStyle(Typeface.NORMAL));
 
@@ -66,14 +70,14 @@ public class TextAttributesTest {
         assertNotNull(copy);
         assertEquals(attributes, copy);
         // Ensure we made a deep copy of the colors
-        assertTrue(copy.textColor != attributes.textColor);
-        assertTrue(copy.textOffset != attributes.textOffset);
+        assertNotSame(copy.textColor, attributes.textColor);
+        assertNotSame(copy.textOffset, attributes.textOffset);
         // Ensure we copied the typeface by reference
-        assertTrue(copy.typeface == attributes.typeface);
+        assertSame(copy.typeface, attributes.typeface);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_CopyWithNull() throws Exception {
+    public void testConstructor_CopyWithNull() {
 
         new TextAttributes(null);
 
@@ -81,7 +85,7 @@ public class TextAttributesTest {
     }
 
     @Test
-    public void testSet() throws Exception {
+    public void testSet() {
         TextAttributes attributes = new TextAttributes();
         // create another attribute bundle with differing values
         TextAttributes other = new TextAttributes();
@@ -99,7 +103,7 @@ public class TextAttributesTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSet_WithNull() throws Exception {
+    public void testSet_WithNull() {
         TextAttributes attributes = new TextAttributes();
 
         attributes.set(null);
@@ -108,7 +112,7 @@ public class TextAttributesTest {
     }
 
     @Test
-    public void testEquals() throws Exception {
+    public void testEquals() {
         TextAttributes attributes = new TextAttributes();
         TextAttributes same = new TextAttributes();
 
@@ -125,7 +129,7 @@ public class TextAttributesTest {
     }
 
     @Test
-    public void testInequality() throws Exception {
+    public void testInequality() {
         TextAttributes typical = new TextAttributes();
         TextAttributes different = new TextAttributes();
         different.textColor = new Color(0, 0, 0, 0);
@@ -149,7 +153,7 @@ public class TextAttributesTest {
     }
 
     @Test
-    public void testHashCode() throws Exception {
+    public void testHashCode() {
         // Three differing sets of attributes
         TextAttributes a = new TextAttributes();
         TextAttributes b = new TextAttributes();
@@ -167,7 +171,7 @@ public class TextAttributesTest {
     }
 
     @Test
-    public void testGetTextColor() throws Exception {
+    public void testGetTextColor() {
         TextAttributes attributes = new TextAttributes();
         Color black = new Color(0, 0, 0, 1);
         attributes.textColor = black;
@@ -176,7 +180,7 @@ public class TextAttributesTest {
     }
 
     @Test
-    public void testSetTextColor() throws Exception {
+    public void testSetTextColor() {
         TextAttributes attributes = new TextAttributes();
         Color black = new Color(0, 0, 0, 1);
 
@@ -184,11 +188,11 @@ public class TextAttributesTest {
 
         // Verify that the object is an equivalent deep copy.
         assertEquals(black, attributes.textColor);
-        assertTrue(black != attributes.textColor);
+        assertNotSame(black, attributes.textColor);
     }
 
     @Test
-    public void testGetTextOffset() throws Exception {
+    public void testGetTextOffset() {
         TextAttributes attributes = new TextAttributes();
         Offset lowerLeft = new Offset(WorldWind.OFFSET_PIXELS, 0, WorldWind.OFFSET_PIXELS, 0);
         attributes.textOffset = lowerLeft;
@@ -197,7 +201,7 @@ public class TextAttributesTest {
     }
 
     @Test
-    public void testSetTextOffset() throws Exception {
+    public void testSetTextOffset() {
         TextAttributes attributes = new TextAttributes();
         Offset lowerLeft = new Offset(WorldWind.OFFSET_PIXELS, 0, WorldWind.OFFSET_PIXELS, 0);
 
@@ -205,11 +209,11 @@ public class TextAttributesTest {
 
         // Verify that the object is an equivalent deep copy.
         assertEquals(lowerLeft, attributes.textOffset);
-        assertTrue(lowerLeft != attributes.textOffset);
+        assertNotSame(lowerLeft, attributes.textOffset);
     }
 
     @Test
-    public void testGetTextSize() throws Exception {
+    public void testGetTextSize() {
         TextAttributes attributes = new TextAttributes();
         float size = 2.5f;
         attributes.textSize = size;
@@ -218,7 +222,7 @@ public class TextAttributesTest {
     }
 
     @Test
-    public void testSetTextSize() throws Exception {
+    public void testSetTextSize() {
         TextAttributes attributes = new TextAttributes();
         float size = 2.5f;
 
@@ -228,7 +232,7 @@ public class TextAttributesTest {
     }
 
     @Test
-    public void testGetTypeface() throws Exception {
+    public void testGetTypeface() {
         TextAttributes attributes = new TextAttributes();
         Typeface typeface = Typeface.defaultFromStyle(Typeface.NORMAL);
         attributes.typeface = typeface;
@@ -237,7 +241,7 @@ public class TextAttributesTest {
     }
 
     @Test
-    public void testSetTypeface() throws Exception {
+    public void testSetTypeface() {
         TextAttributes attributes = new TextAttributes();
         Typeface typeface = Typeface.defaultFromStyle(Typeface.NORMAL);
 
@@ -247,63 +251,59 @@ public class TextAttributesTest {
     }
 
     @Test
-    public void testGetTypeface_Null() throws Exception {
+    public void testGetTypeface_Null() {
         TextAttributes attributes = new TextAttributes();
 
         attributes.typeface = null;
 
-        assertEquals(null, attributes.getTypeface());
+        assertNull(attributes.getTypeface());
     }
 
     @Test
-    public void testSetTypeface_Null() throws Exception {
+    public void testSetTypeface_Null() {
         TextAttributes attributes = new TextAttributes();
 
         attributes.setTypeface(null);
 
-        assertEquals(null, attributes.typeface);
+        assertNull(attributes.typeface);
     }
 
     @Test
-    public void testGetEnableOutline() throws Exception {
+    public void testGetEnableOutline() {
         TextAttributes attributes = new TextAttributes();
-        boolean enable = false;
-        attributes.enableOutline = enable;
+        attributes.enableOutline = false;
 
-        assertEquals(enable, attributes.isEnableOutline());
+        assertFalse(attributes.isEnableOutline());
     }
 
     @Test
-    public void testSetEnableOutline() throws Exception {
+    public void testSetEnableOutline() {
         TextAttributes attributes = new TextAttributes();
-        boolean enable = false;
 
-        attributes.setEnableOutline(enable);
+        attributes.setEnableOutline(false);
 
-        assertEquals(enable, attributes.enableOutline);
+        assertFalse(attributes.enableOutline);
     }
 
     @Test
-    public void testGetEnableDepthTest() throws Exception {
+    public void testGetEnableDepthTest() {
         TextAttributes attributes = new TextAttributes();
-        boolean enable = false;
-        attributes.enableDepthTest = enable;
+        attributes.enableDepthTest = false;
 
-        assertEquals(enable, attributes.isEnableDepthTest());
+        assertFalse(attributes.isEnableDepthTest());
     }
 
     @Test
-    public void testSetEnableDepthTest() throws Exception {
+    public void testSetEnableDepthTest() {
         TextAttributes attributes = new TextAttributes();
-        boolean enable = false;
 
-        attributes.setEnableDepthTest(enable);
+        attributes.setEnableDepthTest(false);
 
-        assertEquals(enable, attributes.enableDepthTest);
+        assertFalse(attributes.enableDepthTest);
     }
 
     @Test
-    public void testGetOutlineWidth() throws Exception {
+    public void testGetOutlineWidth() {
         TextAttributes attributes = new TextAttributes();
         float width = 0.0f;
         attributes.outlineWidth = width;
@@ -312,7 +312,7 @@ public class TextAttributesTest {
     }
 
     @Test
-    public void testSetOutlineWidth() throws Exception {
+    public void testSetOutlineWidth() {
         TextAttributes attributes = new TextAttributes();
         float width = 0.0f;
 

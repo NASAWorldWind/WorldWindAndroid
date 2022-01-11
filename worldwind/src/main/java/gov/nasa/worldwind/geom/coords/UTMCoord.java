@@ -118,6 +118,6 @@ public class UTMCoord {
     @Override
     @NonNull
     public String toString() {
-        return String.valueOf(zone) + " " + hemisphere + " " + easting + "E" + " " + northing + "N";
+        return zone + " " + hemisphere + " " + easting + "E" + " " + northing + "N";
     }
 }

@@ -26,11 +26,11 @@ public class TextRenderer {
 
     protected float outlineWidth;
 
-    protected Paint paint;
+    protected final Paint paint;
 
-    protected Canvas canvas;
+    protected final Canvas canvas;
 
-    protected Rect scratchBounds = new Rect();
+    protected final Rect scratchBounds = new Rect();
 
     public TextRenderer() {
         this.paint = new Paint();

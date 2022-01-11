@@ -6,6 +6,8 @@
 package gov.nasa.worldwind.geom;
 
 
+import androidx.annotation.NonNull;
+
 import java.util.Arrays;
 
 import gov.nasa.worldwind.util.Logger;
@@ -105,6 +107,7 @@ public class Matrix3 {
         return Arrays.hashCode(this.m);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "[" + this.m[0] + ", " + this.m[1] + ", " + this.m[2] + "], " +

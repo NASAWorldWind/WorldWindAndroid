@@ -42,7 +42,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetServiceIdentification_Title() throws Exception {
+    public void testGetServiceIdentification_Title() {
         OwsServiceIdentification serviceIdentification = this.wmtsCapabilities.getServiceIdentification();
         String expected = "World example Web Map Tile Service";
 
@@ -52,7 +52,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetServiceIdentification_Abstract() throws Exception {
+    public void testGetServiceIdentification_Abstract() {
         OwsServiceIdentification serviceIdentification = this.wmtsCapabilities.getServiceIdentification();
         String expected = "Example service that contrains some world layers in the" +
             "            urn:ogc:def:wkss:OGC:1.0:GlobalCRS84Pixel Well-known scale set";
@@ -63,7 +63,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetServiceIdentification_Keywords() throws Exception {
+    public void testGetServiceIdentification_Keywords() {
         OwsServiceIdentification serviceIdentification = this.wmtsCapabilities.getServiceIdentification();
         List<String> expected = Arrays.asList("World", "Global", "Digital Elevation Model", "Administrative Boundaries");
 
@@ -76,7 +76,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetServiceIdentification_ServiceType() throws Exception {
+    public void testGetServiceIdentification_ServiceType() {
         OwsServiceIdentification serviceIdentification = this.wmtsCapabilities.getServiceIdentification();
         String expected = "OGC WMTS";
 
@@ -86,7 +86,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetServiceIdentification_ServiceTypeVersion() throws Exception {
+    public void testGetServiceIdentification_ServiceTypeVersion() {
         OwsServiceIdentification serviceIdentification = this.wmtsCapabilities.getServiceIdentification();
         String expected = "1.0.0";
 
@@ -96,7 +96,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetServiceIdentification_Fees() throws Exception {
+    public void testGetServiceIdentification_Fees() {
         OwsServiceIdentification serviceIdentification = this.wmtsCapabilities.getServiceIdentification();
         String expected = "none";
 
@@ -106,7 +106,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetServiceIdentification_AccessConstraints() throws Exception {
+    public void testGetServiceIdentification_AccessConstraints() {
         OwsServiceIdentification serviceIdentification = this.wmtsCapabilities.getServiceIdentification();
         String expected = "none";
 
@@ -116,7 +116,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetServiceProvider_Name() throws Exception {
+    public void testGetServiceProvider_Name() {
         OwsServiceProvider serviceProvider = this.wmtsCapabilities.getServiceProvider();
         String expected = "UAB-CREAF-MiraMon";
 
@@ -126,7 +126,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetServiceProvider_Site() throws Exception {
+    public void testGetServiceProvider_Site() {
         OwsServiceProvider serviceProvider = this.wmtsCapabilities.getServiceProvider();
         String expected = "http://www.creaf.uab.es/miramon";
 
@@ -136,7 +136,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetServiceProvider_Contact_Name() throws Exception {
+    public void testGetServiceProvider_Contact_Name() {
         OwsServiceProvider serviceProvider = this.wmtsCapabilities.getServiceProvider();
         String expected = "Joan Maso Pau";
 
@@ -146,7 +146,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetServiceProvider_Contact_Position() throws Exception {
+    public void testGetServiceProvider_Contact_Position() {
         OwsServiceProvider serviceProvider = this.wmtsCapabilities.getServiceProvider();
         String expected = "Senior Software Engineer";
 
@@ -156,7 +156,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetServiceProvider_Contact_InfoPhone() throws Exception {
+    public void testGetServiceProvider_Contact_InfoPhone() {
         OwsContactInfo contactInfo = this.wmtsCapabilities.getServiceProvider().getServiceContact().getContactInfo();
         String expectedVoice = "+34 93 581 1312";
         String expectedFax = "+34 93 581 4151";
@@ -169,7 +169,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetServiceProvider_Contact_InfoAddress() throws Exception {
+    public void testGetServiceProvider_Contact_InfoAddress() {
         OwsContactInfo contactInfo = this.wmtsCapabilities.getServiceProvider().getServiceContact().getContactInfo();
         String expectedDeliveryPoint = "Fac Ciencies UAB";
         String expectedCity = "Bellaterra";
@@ -194,7 +194,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetOperationsMetadata_GetCapabilities() throws Exception {
+    public void testGetOperationsMetadata_GetCapabilities() {
         OwsOperation getCapabilities = this.wmtsCapabilities.getOperationsMetadata().getGetCapabilities();
         String expectedName = "GetCapabilities";
         String expectedLink = "http://www.opengis.uab.es/cgi-bin/world/MiraMon5_0.cgi?";
@@ -207,7 +207,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetOperationsMetadata_GetTile() throws Exception {
+    public void testGetOperationsMetadata_GetTile() {
         OwsOperation getTile = this.wmtsCapabilities.getOperationsMetadata().getGetTile();
         String expectedName = "GetTile";
         String expectedLink = "http://www.opengis.uab.es/cgi-bin/world/MiraMon5_0.cgi?";
@@ -220,7 +220,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetLayer_Title() throws Exception {
+    public void testGetLayer_Title() {
         List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedTitleOne = "etopo2";
         String expectedTitleTwo = "Administrative Boundaries";
@@ -233,7 +233,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetLayer_Abstract() throws Exception {
+    public void testGetLayer_Abstract() {
         List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedInAbstractOne = "1. The seafloor data between latitudes 64— North and 72— South";
         String expectedInAbstractTwo = " at scales to about 1:10,000,000. The data were ge";
@@ -246,7 +246,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetLayer_WGS84BoundingBox() throws Exception {
+    public void testGetLayer_WGS84BoundingBox() {
         List<WmtsLayer> layers = this.wmtsCapabilities.getContents().getLayers();
         double expectedMinXOne = -180;
         double expectedMaxXOne = 180;
@@ -279,7 +279,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetLayer_Identifier() throws Exception {
+    public void testGetLayer_Identifier() {
         List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedIdentifierOne = "etopo2";
         String expectedIdentifierTwo = "AdminBoundaries";
@@ -292,7 +292,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetLayer_Metadata() throws Exception {
+    public void testGetLayer_Metadata() {
         List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedHrefOne = "http://www.opengis.uab.es/SITiled/world/etopo2/metadata.htm";
         String expectedHrefTwo = "http://www.opengis.uab.es/SITiled/world/AdminBoundaries/metadata.htm";
@@ -305,14 +305,12 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetLayer_Styles() throws Exception {
+    public void testGetLayer_Styles() {
         List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedTitleOne = "default";
         String expectedTitleTwo = "default";
         String expectedIdentifierOne = "default";
         String expectedIdentifierTwo = "default";
-        boolean expectedIsDefaultOne = true;
-        boolean expectedIsDefaultTwo = true;
 
         String actualTitleOne = layer.get(0).getStyles().get(0).getTitles().get(0).getValue();
         String actualTitleTwo = layer.get(1).getStyles().get(0).getTitles().get(0).getValue();
@@ -325,12 +323,12 @@ public class WmtsCapabilitiesTest {
         assertEquals("Layer Style Title Two", expectedTitleTwo, actualTitleTwo);
         assertEquals("Layer Style Identifier One", expectedIdentifierOne, actualIdentifierOne);
         assertEquals("Layer Style Identifier Two", expectedIdentifierTwo, actualIdentifierTwo);
-        assertEquals("Layer Style IsDefault One", expectedIsDefaultOne, actualIsDefaultOne);
-        assertEquals("Layer Style IsDefault Two", expectedIsDefaultTwo, actualIsDefaultTwo);
+        assertTrue("Layer Style IsDefault One", actualIsDefaultOne);
+        assertTrue("Layer Style IsDefault Two", actualIsDefaultTwo);
     }
 
     @Test
-    public void testGetLayer_Formats() throws Exception {
+    public void testGetLayer_Formats() {
         List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedFormatOne = "image/png";
         String expectedFormatTwo = "image/png";
@@ -351,7 +349,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetLayer_TileMatrixSets() throws Exception {
+    public void testGetLayer_TileMatrixSets() {
         List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedTileMatrixSetOne = "WholeWorld_CRS_84";
         String expectedTileMatrixSetTwo = "World84-90_CRS_84";
@@ -372,7 +370,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetLayer_ResourceURLs_One() throws Exception {
+    public void testGetLayer_ResourceURLs_One() {
         List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedResourceUrlFormatOne = "image/png";
         String expectedResourceUrlFormatTwo = "application/gml+xml; version=3.1";
@@ -399,7 +397,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetLayer_ResourceURLs_Two() throws Exception {
+    public void testGetLayer_ResourceURLs_Two() {
         List<WmtsLayer> layer = this.wmtsCapabilities.getContents().getLayers();
         String expectedResourceUrlFormatOne = "image/png";
         String expectedResourceUrlFormatTwo = "application/gml+xml; version=3.1";
@@ -426,9 +424,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetTileMatrixSets_OverallSets() throws Exception {
-        String setOneName = "WholeWorld_CRS_84";
-        String setTwoName = "World84-90_CRS_84";
+    public void testGetTileMatrixSets_OverallSets() {
         int expectedCount = 2;
 
         WmtsTileMatrixSet matrixSetOne = this.wmtsCapabilities.getContents().getTileMatrixSets().get(0);
@@ -441,7 +437,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetTileMatrixSets_MatrixSetZero() throws Exception {
+    public void testGetTileMatrixSets_MatrixSetZero() {
         WmtsTileMatrixSet wmtsTileMatrixSet = this.wmtsCapabilities.getContents().getTileMatrixSets().get(0);
         String expectedIdentifier = "WholeWorld_CRS_84";
         String expectedSupportedCRS = "urn:ogc:def:crs:OGC:1.3:CRS84";
@@ -460,7 +456,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetTileMatrixSets_MatrixSetOne() throws Exception {
+    public void testGetTileMatrixSets_MatrixSetOne() {
         WmtsTileMatrixSet wmtsTileMatrixSet = this.wmtsCapabilities.getContents().getTileMatrixSets().get(1);
         String expectedIdentifier = "World84-90_CRS_84";
         String expectedSupportedCRS = "urn:ogc:def:crs:OGC:1.3:CRS84";
@@ -479,7 +475,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetTileMatrixSets_TileMatrixSetZero_TileMatrixZero() throws Exception {
+    public void testGetTileMatrixSets_TileMatrixSetZero_TileMatrixZero() {
         WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.getContents().getTileMatrixSets().get(0).getTileMatrices().get(0);
         String expectedIdentifier = "2g";
         double expectedScaleDenominator = 795139219.951954;
@@ -507,7 +503,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetTileMatrixSets_TileMatrixSetZero_TileMatrixOne() throws Exception {
+    public void testGetTileMatrixSets_TileMatrixSetZero_TileMatrixOne() {
         WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.getContents().getTileMatrixSets().get(0).getTileMatrices().get(1);
         String expectedIdentifier = "1g";
         double expectedScaleDenominator = 397569609.975977;
@@ -535,7 +531,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetTileMatrixSets_TileMatrixSetOne_TileMatrixZero() throws Exception {
+    public void testGetTileMatrixSets_TileMatrixSetOne_TileMatrixZero() {
         WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.getContents().getTileMatrixSets().get(1).getTileMatrices().get(0);
         String expectedIdentifier = "2g";
         double expectedScaleDenominator = 795139219.951954;
@@ -563,7 +559,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetTileMatrixSets_TileMatrixSetOne_TileMatrixOne() throws Exception {
+    public void testGetTileMatrixSets_TileMatrixSetOne_TileMatrixOne() {
         WmtsTileMatrix wmtsTileMatrix = this.wmtsCapabilities.getContents().getTileMatrixSets().get(1).getTileMatrices().get(1);
         String expectedIdentifier = "1g";
         double expectedScaleDenominator = 397569609.975977;
@@ -591,7 +587,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetThemes_ParentTheme() throws Exception {
+    public void testGetThemes_ParentTheme() {
         WmtsTheme parentTheme = this.wmtsCapabilities.getThemes().get(0);
         String expectedTitle = "Foundation";
         String expectedAbstract = "World reference data";
@@ -607,7 +603,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetThemes_ChildThemeOne() throws Exception {
+    public void testGetThemes_ChildThemeOne() {
         WmtsTheme theme = this.wmtsCapabilities.getThemes().get(0).getThemes().get(0);
         String expectedTitle = "Digital Elevation Model";
         String expectedLayerRef = "etopo2";
@@ -623,7 +619,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetThemes_ChildThemeTwo() throws Exception {
+    public void testGetThemes_ChildThemeTwo() {
         WmtsTheme theme = this.wmtsCapabilities.getThemes().get(0).getThemes().get(1);
         String expectedTitle = "Administrative Boundaries";
         String expectedLayerRef = "AdminBoundaries";
@@ -639,7 +635,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetServiceMetadataUrl() throws Exception {
+    public void testGetServiceMetadataUrl() {
         WmtsElementLink serviceMetadataUrl = this.wmtsCapabilities.serviceMetadataUrls.iterator().next();
         String expectedHref = "http://www.opengis.uab.es/SITiled/world/1.0.0/WMTSCapabilities.xml";
 
@@ -649,17 +645,16 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testGetTileDcpSupportsKVP() throws Exception {
+    public void testGetTileDcpSupportsKVP() {
         OwsOperation operation = this.wmtsCapabilities.getOperationsMetadata().getGetTile();
-        Boolean expectedValue = true;
 
-        Boolean actualValue = operation.getDcps().get(0).getGetMethods().get(0).getConstraints().get(0).getAllowedValues().contains("KVP");
+        boolean actualValue = operation.getDcps().get(0).getGetMethods().get(0).getConstraints().get(0).getAllowedValues().contains("KVP");
 
-        assertEquals("DCP Register KVP Support", expectedValue, actualValue);
+        assertTrue("DCP Register KVP Support", actualValue);
     }
 
     @Test
-    public void testTileMatrixSetLimits_Count() throws Exception {
+    public void testTileMatrixSetLimits_Count() {
         WmtsTileMatrixSetLimits tileMatrixSetLimits = this.wmtsCapabilities.getContents().getLayers().get(0)
             .getTileMatrixSetLinks().get(0).getTileMatrixSetLimits();
         int expectedTileMatrixLimits = 22;
@@ -670,7 +665,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testTileMatrixSetLimits_TileMatixLimitZero() throws Exception {
+    public void testTileMatrixSetLimits_TileMatixLimitZero() {
         WmtsTileMatrixLimits tileMatrixLimits = this.wmtsCapabilities.getContents().getLayers().get(0)
             .getTileMatrixSetLinks().get(0).getTileMatrixSetLimits().getTileMatrixLimits().get(0);
         String expectedTileMatrixIdentifier = "EPSG:4326:0";
@@ -693,7 +688,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testTileMatrixSetLimits_TileMatixLimitOne() throws Exception {
+    public void testTileMatrixSetLimits_TileMatixLimitOne() {
         WmtsTileMatrixLimits tileMatrixLimits = this.wmtsCapabilities.getContents().getLayers().get(0)
             .getTileMatrixSetLinks().get(0).getTileMatrixSetLimits().getTileMatrixLimits().get(1);
         String expectedTileMatrixIdentifier = "EPSG:4326:1";
@@ -716,7 +711,7 @@ public class WmtsCapabilitiesTest {
     }
 
     @Test
-    public void testTileMatrixSetLimits_TileMatixLimitNine() throws Exception {
+    public void testTileMatrixSetLimits_TileMatixLimitNine() {
         WmtsTileMatrixLimits tileMatrixLimits = this.wmtsCapabilities.getContents().getLayers().get(0)
             .getTileMatrixSetLinks().get(0).getTileMatrixSetLimits().getTileMatrixLimits().get(9);
         String expectedTileMatrixIdentifier = "EPSG:4326:9";

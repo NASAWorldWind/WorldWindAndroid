@@ -20,9 +20,9 @@ import gov.nasa.worldwind.util.xml.XmlModelParser;
 
 public class OwsXmlParser extends XmlModelParser {
 
-    protected String ows20Namespace = "http://www.opengis.net/ows/2.0";
+    protected static final String ows20Namespace = "http://www.opengis.net/ows/2.0";
 
-    protected String xmlNamespace = "http://www.w3.org/2001/XMLSchema";
+    protected static final String xmlNamespace = "http://www.w3.org/2001/XMLSchema";
 
     public OwsXmlParser() {
         registerOws20Models(ows20Namespace);

@@ -5,7 +5,7 @@
  */
 package gov.nasa.worldwind.geom.coords;
 
-/**
+/*
  * Converter used to translate UTM coordinates to and from geodetic latitude and longitude.
  *
  * @author Patrick Murris
@@ -31,8 +31,6 @@ class UTMCoordConverter {
     public final static int UTM_TM_ERROR = 0x0200;
 
     private final static double PI = 3.14159265358979323;
-    //private final static double MIN_LAT = ((-80.5 * PI) / 180.0); /* -80.5 degrees in radians    */
-    //private final static double MAX_LAT = ((84.5 * PI) / 180.0);  /* 84.5 degrees in radians     */
     private final static double MIN_LAT = ((-82 * PI) / 180.0); /* -82 degrees in radians    */
     private final static double MAX_LAT = ((86 * PI) / 180.0);  /* 86 degrees in radians     */
 
@@ -196,8 +194,6 @@ class UTMCoordConverter {
             Error_Code |= UTM_ZONE_ERROR;
         if (!hemisphere.equals(Hemisphere.S) && !hemisphere.equals(Hemisphere.N))
             Error_Code |= UTM_HEMISPHERE_ERROR;
-//        if ((easting < MIN_EASTING) || (easting > MAX_EASTING))    //removed check to enable reprojecting images
-//            Error_Code |= UTM_EASTING_ERROR;                       //that extend into another zone
         if ((Northing < MIN_NORTHING) || (Northing > MAX_NORTHING))
             Error_Code |= UTM_NORTHING_ERROR;
 

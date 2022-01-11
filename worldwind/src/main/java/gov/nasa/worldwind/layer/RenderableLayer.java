@@ -5,8 +5,11 @@
 
 package gov.nasa.worldwind.layer;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Objects;
 
 import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.render.Renderable;
@@ -14,7 +17,7 @@ import gov.nasa.worldwind.util.Logger;
 
 public class RenderableLayer extends AbstractLayer implements Iterable<Renderable> {
 
-    protected ArrayList<Renderable> renderables = new ArrayList<>();
+    protected final ArrayList<Renderable> renderables = new ArrayList<>();
 
     public RenderableLayer() {
     }
@@ -82,7 +85,7 @@ public class RenderableLayer extends AbstractLayer implements Iterable<Renderabl
 
         for (int idx = 0, len = this.renderables.size(); idx < len; idx++) {
             String renderableName = this.renderables.get(idx).getDisplayName();
-            if ((renderableName == null) ? (name == null) : renderableName.equals(name)) {
+            if (Objects.equals(renderableName, name)) {
                 return idx;
             }
         }
@@ -96,7 +99,7 @@ public class RenderableLayer extends AbstractLayer implements Iterable<Renderabl
             Renderable renderable = this.renderables.get(idx);
             if (renderable.hasUserProperty(key)) {
                 Object layerValue = renderable.getUserProperty(key);
-                if ((layerValue == null) ? (value == null) : layerValue.equals(value)) {
+                if (Objects.equals(layerValue, value)) {
                     return idx;
                 }
             }
@@ -201,6 +204,7 @@ public class RenderableLayer extends AbstractLayer implements Iterable<Renderabl
         this.renderables.clear();
     }
 
+    @NonNull
     @Override
     public Iterator<Renderable> iterator() {
         return this.renderables.iterator();
@@ -214,7 +218,7 @@ public class RenderableLayer extends AbstractLayer implements Iterable<Renderabl
                 renderable.render(rc);
             } catch (Exception e) {
                 Logger.logMessage(Logger.ERROR, "RenderableLayer", "doRender",
-                    "Exception while rendering shape \'" + renderable.getDisplayName() + "\'", e);
+                        "Exception while rendering shape '" + renderable.getDisplayName() + "'", e);
                 // Keep going. Draw the remaining renderables.
             }
         }

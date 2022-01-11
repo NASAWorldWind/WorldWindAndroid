@@ -39,13 +39,13 @@ public abstract class AbstractShape extends AbstractRenderable implements Attrib
 
     protected Color pickColor = new Color();
 
-    protected Sector boundingSector = new Sector();
+    protected final Sector boundingSector = new Sector();
 
-    protected BoundingBox boundingBox = new BoundingBox();
+    protected final BoundingBox boundingBox = new BoundingBox();
 
     protected static final double NEAR_ZERO_THRESHOLD = 1.0e-10;
 
-    private Vec3 scratchPoint = new Vec3();
+    private final Vec3 scratchPoint = new Vec3();
 
     public AbstractShape() {
         this.attributes = new ShapeAttributes();

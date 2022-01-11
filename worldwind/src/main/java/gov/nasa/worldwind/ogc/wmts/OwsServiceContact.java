@@ -29,12 +29,16 @@ public class OwsServiceContact extends XmlModel {
 
     @Override
     protected void parseField(String keyName, Object value) {
-        if (keyName.equals("IndividualName")) {
-            this.individualName = (String) value;
-        } else if (keyName.equals("PositionName")) {
-            this.positionName = (String) value;
-        } else if (keyName.equals("ContactInfo")) {
-            this.contactInfo = (OwsContactInfo) value;
+        switch (keyName) {
+            case "IndividualName":
+                this.individualName = (String) value;
+                break;
+            case "PositionName":
+                this.positionName = (String) value;
+                break;
+            case "ContactInfo":
+                this.contactInfo = (OwsContactInfo) value;
+                break;
         }
     }
 }

@@ -21,17 +21,17 @@ public class DrawableGroundAtmosphere implements Drawable {
 
     public GroundProgram program;
 
-    public Vec3 lightDirection = new Vec3();
+    public final Vec3 lightDirection = new Vec3();
 
     public double globeRadius;
 
     public Texture nightTexture;
 
-    protected Matrix4 mvpMatrix = new Matrix4();
+    protected final Matrix4 mvpMatrix = new Matrix4();
 
-    protected Matrix3 texCoordMatrix = new Matrix3();
+    protected final Matrix3 texCoordMatrix = new Matrix3();
 
-    protected Sector fullSphereSector = new Sector().setFullSphere();
+    protected final Sector fullSphereSector = new Sector().setFullSphere();
 
     private Pool<DrawableGroundAtmosphere> pool;
 

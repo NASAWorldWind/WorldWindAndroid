@@ -31,11 +31,9 @@ public class Vec3Test {
 
     /**
      * Tests default constructor member initialization.
-     *
-     * @throws Exception
      */
     @Test
-    public void testConstructor_Default() throws Exception {
+    public void testConstructor_Default() {
 
         Vec3 u = new Vec3();
 
@@ -47,11 +45,9 @@ public class Vec3Test {
 
     /**
      * Tests constructor member initialization from doubles.
-     *
-     * @throws Exception
      */
     @Test
-    public void testConstructor_Doubles() throws Exception {
+    public void testConstructor_Doubles() {
         final double x1 = 3.1;
         final double y1 = 4.2;
         final double z1 = 5.3;
@@ -66,11 +62,9 @@ public class Vec3Test {
 
     /**
      * Ensures equality of object and its members.
-     *
-     * @throws Exception
      */
     @Test
-    public void testEquals() throws Exception {
+    public void testEquals() {
         final double x1 = 3.1;
         final double y1 = 4.2;
         final double z1 = 5.3;
@@ -86,26 +80,10 @@ public class Vec3Test {
     }
 
     /**
-     * Ensures inequality with null object.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testEquals_WithNull() throws Exception {
-
-        Vec3 u = new Vec3();
-        Vec3 v = null;
-
-        assertNotEquals("inequality with null", u, v);
-    }
-
-    /**
      * Ensures inequality of object and members.
-     *
-     * @throws Exception
      */
     @Test
-    public void testEquals_Inequality() throws Exception {
+    public void testEquals_Inequality() {
         final double x1 = 3.1;
         final double y1 = 4.2;
         final double z1 = 5.3;
@@ -124,11 +102,9 @@ public class Vec3Test {
 
     /**
      * Ensures string output contains member representations.
-     *
-     * @throws Exception
      */
     @Test
-    public void testToString() throws Exception {
+    public void testToString() {
         final double x1 = 3.1;
         final double y1 = 4.2;
         final double z1 = 5.3;
@@ -143,11 +119,9 @@ public class Vec3Test {
 
     /**
      * Ensures the correct computation of vector's magnitude, or length..
-     *
-     * @throws Exception
      */
     @Test
-    public void testMagnitude() throws Exception {
+    public void testMagnitude() {
         final double x1 = 3.1;
         final double y1 = 4.2;
         final double z1 = -5.3;
@@ -160,11 +134,9 @@ public class Vec3Test {
 
     /**
      * Ensures a zero length vector from default constructor.
-     *
-     * @throws Exception
      */
     @Test
-    public void testMagnitude_ZeroLength() throws Exception {
+    public void testMagnitude_ZeroLength() {
 
         Vec3 u = new Vec3();
         double magnitude = u.magnitude();
@@ -174,11 +146,9 @@ public class Vec3Test {
 
     /**
      * Ensures length is NaN when a member is NaN.
-     *
-     * @throws Exception
      */
     @Test
-    public void testMagnitude_NaN() throws Exception {
+    public void testMagnitude_NaN() {
         final double x1 = 3.1;
         final double y1 = 4.2;
         final double z1 = Double.NaN;
@@ -191,11 +161,9 @@ public class Vec3Test {
 
     /**
      * Tests the squared length of a vector with a well known right-triangle.
-     *
-     * @throws Exception
      */
     @Test
-    public void testMagnitudeSquared() throws Exception {
+    public void testMagnitudeSquared() {
         final double x1 = 3.1;
         final double y1 = 4.2;
         final double z1 = -5.3;
@@ -208,11 +176,9 @@ public class Vec3Test {
 
     /**
      * Tests the distance (or displacement) between two opposing position-vectors.
-     *
-     * @throws Exception
      */
     @Test
-    public void testDistanceTo() throws Exception {
+    public void testDistanceTo() {
         final double x1 = 3.1;
         final double y1 = 4.2;
         final double z1 = -5.3;
@@ -230,27 +196,23 @@ public class Vec3Test {
 
     /**
      * Ensures distanceTo with null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testDistanceTo_NullArgument() throws Exception {
+    public void testDistanceTo_NullArgument() {
         // Mock all the static methods in Logger
         PowerMockito.mockStatic(Logger.class);
 
         Vec3 u = new Vec3(3, 4, 5);
-        double distanceTo = u.distanceTo(null);
+        u.distanceTo(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
 
     /**
      * Tests the squared distance (or displacement) between two opposing position-vectors.
-     *
-     * @throws Exception
      */
     @Test
-    public void testDistanceToSquared() throws Exception {
+    public void testDistanceToSquared() {
         final double x1 = 3.1;
         final double y1 = 4.2;
         final double z1 = -5.3;
@@ -268,27 +230,23 @@ public class Vec3Test {
 
     /**
      * Ensures distanceToSquared with null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testDistanceToSquared_NullArgument() throws Exception {
+    public void testDistanceToSquared_NullArgument() {
         // Mock all the static methods in Logger
         PowerMockito.mockStatic(Logger.class);
 
         Vec3 u = new Vec3(3, 4, 5);
-        double distanceToSquared = u.distanceToSquared(null);
+        u.distanceToSquared(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
 
     /**
      * Ensures the members are equal to the set method arguments.
-     *
-     * @throws Exception
      */
     @Test
-    public void testSet() throws Exception {
+    public void testSet() {
         final double x1 = 3.1;
         final double y1 = 4.2;
         final double z1 = -5.3;
@@ -305,11 +263,9 @@ public class Vec3Test {
 
     /**
      * Ensures the components of the two vectors are swapped and the fluent API is maintained.
-     *
-     * @throws Exception
      */
     @Test
-    public void testSwap() throws Exception {
+    public void testSwap() {
         final double x1 = 3.1;
         final double y1 = 4.2;
         final double z1 = -5.3;
@@ -333,11 +289,9 @@ public class Vec3Test {
 
     /**
      * Ensures swap with null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testSwap_WithNull() throws Exception {
+    public void testSwap_WithNull() {
         PowerMockito.mockStatic(Logger.class);
 
         Vec3 u = new Vec3(3, 4, 5);
@@ -348,11 +302,9 @@ public class Vec3Test {
 
     /**
      * Ensures the correct addition of two vectors, arguments are not mutated, and the proper fluent API result.
-     *
-     * @throws Exception
      */
     @Test
-    public void testAdd() throws Exception {
+    public void testAdd() {
         final double x1 = 3.1d;
         final double y1 = 4.3d;
         final double z1 = 5.5d;
@@ -377,11 +329,9 @@ public class Vec3Test {
 
     /**
      * Ensures add with null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testAdd_WithNull() throws Exception {
+    public void testAdd_WithNull() {
         PowerMockito.mockStatic(Logger.class);
 
         Vec3 u = new Vec3(3, 4, 5);
@@ -392,11 +342,9 @@ public class Vec3Test {
 
     /**
      * Ensures the correct subtraction of two vectors, arguments are not mutated, and the proper fluent API result.
-     *
-     * @throws Exception
      */
     @Test
-    public void testSubtract() throws Exception {
+    public void testSubtract() {
         final double x1 = 3.1d;
         final double y1 = 4.3d;
         final double z1 = 5.5d;
@@ -421,11 +369,9 @@ public class Vec3Test {
 
     /**
      * Ensures subtract with null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testSubtract_WithNull() throws Exception {
+    public void testSubtract_WithNull() {
         PowerMockito.mockStatic(Logger.class);
 
         Vec3 u = new Vec3(3, 4, 5);
@@ -436,11 +382,9 @@ public class Vec3Test {
 
     /**
      * Ensures the correct multiplication of a vector and a scalar, and the proper fluent API result.
-     *
-     * @throws Exception
      */
     @Test
-    public void testMultiply() throws Exception {
+    public void testMultiply() {
         final double x1 = 3d;
         final double y1 = 4d;
         final double z1 = 5d;
@@ -457,7 +401,7 @@ public class Vec3Test {
     }
 
     @Test
-    public void testMultiplyByMatrix() throws Exception {
+    public void testMultiplyByMatrix() {
         double theta = 30d;
         double x = 2;
         double y = 3;
@@ -473,11 +417,9 @@ public class Vec3Test {
 
     /**
      * Ensures the correct division of a vector by a divisor, and the proper fluent API result.
-     *
-     * @throws Exception
      */
     @Test
-    public void testDivide() throws Exception {
+    public void testDivide() {
         final double x1 = 3d;
         final double y1 = 4d;
         final double z1 = 5d;
@@ -495,11 +437,9 @@ public class Vec3Test {
 
     /**
      * Ensures the correct negation of the components and the proper fluent API result.
-     *
-     * @throws Exception
      */
     @Test
-    public void testNegate() throws Exception {
+    public void testNegate() {
         final double x1 = 3d;
         final double y1 = -4d;
         final double z1 = 5d;
@@ -516,11 +456,9 @@ public class Vec3Test {
 
     /**
      * Ensures the correct unit vector components and length and the proper fluent API result.
-     *
-     * @throws Exception
      */
     @Test
-    public void testNormalize() throws Exception {
+    public void testNormalize() {
         final double x1 = 3d;
         final double y1 = 4d;
         final double z1 = 5d;
@@ -540,11 +478,9 @@ public class Vec3Test {
 
     /**
      * Ensures the correct dot product (or inner product) of two vectors and vectors are not mutated.
-     *
-     * @throws Exception
      */
     @Test
-    public void testDot() throws Exception {
+    public void testDot() {
         final double x1 = 3.1d;
         final double y1 = 4.3d;
         final double z1 = 5.5d;
@@ -570,15 +506,13 @@ public class Vec3Test {
 
     /**
      * Ensures dot with null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testDot_WithNull() throws Exception {
+    public void testDot_WithNull() {
         PowerMockito.mockStatic(Logger.class);
 
         Vec3 u = new Vec3(3, 4, 5);
-        double dot = u.dot(null);
+        u.dot(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -586,11 +520,9 @@ public class Vec3Test {
     /**
      * Ensures the correct cross product (or outer product), arguments are not mutated, and the fluent API is
      * maintained.
-     *
-     * @throws Exception
      */
     @Test
-    public void testCross() throws Exception {
+    public void testCross() {
         final double x1 = 1d;
         final double y1 = 3d;
         final double z1 = -4d;
@@ -621,11 +553,9 @@ public class Vec3Test {
 
     /**
      * Ensures cross with null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testCross_WithNull() throws Exception {
+    public void testCross_WithNull() {
         PowerMockito.mockStatic(Logger.class);
 
         Vec3 u = new Vec3(3, 4, 5);
@@ -637,11 +567,9 @@ public class Vec3Test {
     /**
      * Ensures the correct interpolation between two vectors, arguments are not mutated, and the proper fluent API
      * result.
-     *
-     * @throws Exception
      */
     @Test
-    public void testMix() throws Exception {
+    public void testMix() {
         final double weight = 0.75;
         final double x1 = 3.1d;
         final double y1 = 4.3d;
@@ -667,11 +595,9 @@ public class Vec3Test {
 
     /**
      * Ensures mix with null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testMix_WithNull() throws Exception {
+    public void testMix_WithNull() {
         PowerMockito.mockStatic(Logger.class);
         final double weight = 5d;
 

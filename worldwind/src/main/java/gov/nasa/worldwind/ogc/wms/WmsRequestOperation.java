@@ -14,7 +14,7 @@ public class WmsRequestOperation extends XmlModel {
 
     protected String name;
 
-    protected List<String> formats = new ArrayList<>();
+    protected final List<String> formats = new ArrayList<>();
 
     protected String getUrl;
 
@@ -41,14 +41,18 @@ public class WmsRequestOperation extends XmlModel {
 
     @Override
     public void parseField(String keyName, Object value) {
-        if (keyName.equals("name")) {
-            this.name = (String) value;
-        } else if (keyName.equals("Format")) {
-            this.formats.add((String) value);
-        } else if (keyName.equals("DCPType")) {
-            WmsDcpType dcpType = (WmsDcpType) value;
-            this.getUrl = dcpType.getGetHref();
-            this.postUrl = dcpType.getPostHref();
+        switch (keyName) {
+            case "name":
+                this.name = (String) value;
+                break;
+            case "Format":
+                this.formats.add((String) value);
+                break;
+            case "DCPType":
+                WmsDcpType dcpType = (WmsDcpType) value;
+                this.getUrl = dcpType.getGetHref();
+                this.postUrl = dcpType.getPostHref();
+                break;
         }
     }
 }

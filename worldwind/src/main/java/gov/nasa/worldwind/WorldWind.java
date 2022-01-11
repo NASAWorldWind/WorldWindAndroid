@@ -322,13 +322,13 @@ public class WorldWind {
      * Provides a global mechanism for broadcasting notifications within the WorldWind library and WorldWind
      * applications.
      */
-    protected static MessageService messageService = new MessageService();
+    protected static final MessageService messageService = new MessageService();
 
     /**
      * Provides a global service for running asynchronous tasks within the WorldWind library and WorldWind
      * applications.
      */
-    protected static TaskService taskService = new TaskService();
+    protected static final TaskService taskService = new TaskService();
 
     /**
      * Returns a singleton MessageService instance that provides a mechanism for broadcasting notifications within the

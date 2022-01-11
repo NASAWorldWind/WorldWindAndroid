@@ -52,7 +52,7 @@ public interface GeographicProjection {
     /**
      * Converts a Cartesian point to a geographic position.
      *
-     * @param globe
+     * @param globe  Globe model
      * @param x      the Cartesian point's X component
      * @param y      the Cartesian point's Y component
      * @param z      the Cartesian point's Z component

@@ -24,11 +24,11 @@ public abstract class Retriever<K, O, V> {
 
     protected final Object lock = new Object();
 
-    protected int maxAsyncTasks;
+    protected final int maxAsyncTasks;
 
-    protected Set<K> asyncTaskSet;
+    protected final Set<K> asyncTaskSet;
 
-    protected Pool<AsyncTask<K, O, V>> asyncTaskPool;
+    protected final Pool<AsyncTask<K, O, V>> asyncTaskPool;
 
     public Retriever(int maxSimultaneousRetrievals) {
         this.maxAsyncTasks = maxSimultaneousRetrievals;

@@ -12,7 +12,7 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class Wcs201CoverageDescriptions extends XmlModel {
 
-    protected List<Wcs201CoverageDescription> coverageDescriptions = new ArrayList<>();
+    protected final List<Wcs201CoverageDescription> coverageDescriptions = new ArrayList<>();
 
     public Wcs201CoverageDescriptions() {
     }
@@ -35,10 +35,8 @@ public class Wcs201CoverageDescriptions extends XmlModel {
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
 
-        switch (keyName) {
-            case "CoverageDescription":
-                coverageDescriptions.add((Wcs201CoverageDescription) value);
-                break;
+        if ("CoverageDescription".equals(keyName)) {
+            coverageDescriptions.add((Wcs201CoverageDescription) value);
         }
     }
 }

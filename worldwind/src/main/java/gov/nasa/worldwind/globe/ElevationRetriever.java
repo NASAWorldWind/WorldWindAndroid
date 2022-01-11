@@ -24,9 +24,9 @@ import gov.nasa.worldwind.util.WWUtil;
 
 public class ElevationRetriever extends Retriever<ImageSource, Void, ShortBuffer> {
 
-    protected SynchronizedPool<byte[]> pagePool = new SynchronizedPool<>();
+    protected final SynchronizedPool<byte[]> pagePool = new SynchronizedPool<>();
 
-    protected SynchronizedPool<ByteBuffer> bufferPool = new SynchronizedPool<>();
+    protected final SynchronizedPool<ByteBuffer> bufferPool = new SynchronizedPool<>();
 
     protected static final int PAGE_SIZE = 1024 * 16;
 
@@ -86,7 +86,7 @@ public class ElevationRetriever extends Retriever<ImageSource, Void, ShortBuffer
     }
 
     protected ShortBuffer decodeUnrecognized(ImageSource imageSource) {
-        Logger.log(Logger.WARN, "Unrecognized image source \'" + imageSource + "\'");
+        Logger.log(Logger.WARN, "Unrecognized image source '" + imageSource + "'");
         return null;
     }
 
@@ -122,8 +122,7 @@ public class ElevationRetriever extends Retriever<ImageSource, Void, ShortBuffer
     }
 
     protected ShortBuffer readInt16Data(InputStream stream) throws IOException {
-        ShortBuffer result = this.bufferStream(stream, ByteBuffer.allocate(BUFFER_SIZE)).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
-        return result;
+        return this.bufferStream(stream, ByteBuffer.allocate(BUFFER_SIZE)).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
     }
 
     protected ByteBuffer bufferStream(InputStream stream, ByteBuffer buffer) throws IOException {

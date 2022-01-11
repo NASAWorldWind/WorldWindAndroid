@@ -19,7 +19,7 @@ import gov.nasa.worldwind.util.xml.XmlModelParser;
 
 public class WcsXmlParser extends XmlModelParser {
 
-    protected String wcs20Namespace = "http://www.opengis.net/wcs/2.0";
+    protected static final String wcs20Namespace = "http://www.opengis.net/wcs/2.0";
 
     public WcsXmlParser() {
         registerOwsModels();

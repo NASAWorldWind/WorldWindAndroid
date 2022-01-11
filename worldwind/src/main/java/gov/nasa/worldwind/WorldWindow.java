@@ -73,12 +73,12 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected double verticalExaggeration = 1;
 
-    protected Camera camera = new Camera(this);
+    protected final Camera camera = new Camera(this);
 
     @Deprecated
     protected Navigator navigator = new Navigator(this);
 
-    protected NavigatorEventSupport navigatorEvents = new NavigatorEventSupport(this);
+    protected final NavigatorEventSupport navigatorEvents = new NavigatorEventSupport(this);
 
     protected FrameController frameController = new BasicFrameController();
 
@@ -88,19 +88,19 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected RenderResourceCache renderResourceCache;
 
-    protected RenderContext rc = new RenderContext();
+    protected final RenderContext rc = new RenderContext();
 
-    protected DrawContext dc = new DrawContext();
+    protected final DrawContext dc = new DrawContext();
 
-    protected Viewport viewport = new Viewport();
+    protected final Viewport viewport = new Viewport();
 
     protected int depthBits;
 
-    protected Pool<Frame> framePool = new SynchronizedPool<>();
+    protected final Pool<Frame> framePool = new SynchronizedPool<>();
 
-    protected Queue<Frame> frameQueue = new ConcurrentLinkedQueue<>();
+    protected final Queue<Frame> frameQueue = new ConcurrentLinkedQueue<>();
 
-    protected Queue<Frame> pickQueue = new ConcurrentLinkedQueue<>();
+    protected final Queue<Frame> pickQueue = new ConcurrentLinkedQueue<>();
 
     protected Frame currentFrame;
 
@@ -108,7 +108,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected boolean isWaitingForRedraw;
 
-    protected Handler mainThreadHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
+    protected final Handler mainThreadHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.what == MSG_ID_CLEAR_CACHE) {
@@ -124,11 +124,11 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         }
     });
 
-    private Matrix4 scratchModelview = new Matrix4();
+    private final Matrix4 scratchModelview = new Matrix4();
 
-    private Matrix4 scratchProjection = new Matrix4();
+    private final Matrix4 scratchProjection = new Matrix4();
 
-    private Vec3 scratchPoint = new Vec3();
+    private final Vec3 scratchPoint = new Vec3();
 
     /**
      * Constructs a WorldWindow associated with the specified application context. This is the constructor to use when
@@ -669,19 +669,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
             this.renderFrame(frame);
         } catch (Exception e) {
             Logger.logMessage(Logger.ERROR, "WorldWindow", "doFrame",
-                "Exception while rendering frame in Choreographer callback \'" + frameTimeNanos + "\'", e);
+                    "Exception while rendering frame in Choreographer callback '" + frameTimeNanos + "'", e);
         }
-    }
-
-    /**
-     * Requests that this WorldWindow's OpenGL renderer display another frame on the OpenGL thread. Does not cause the
-     * WorldWindow's to display changes in its Camera, Globe or Layers. Use {@link #requestRedraw()} instead.
-     *
-     * @deprecated Use {@link #requestRedraw} instead.
-     */
-    @Deprecated
-    public void requestRender() {
-        super.requestRender();
     }
 
     /**
@@ -870,7 +859,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
             }
         } catch (Exception e) {
             Logger.logMessage(Logger.ERROR, "WorldWindow", "onTouchEvent",
-                "Exception while handling touch event \'" + event + "\'", e);
+                    "Exception while handling touch event '" + event + "'", e);
         }
 
         // Always return true indicating that the event was handled, otherwise Android suppresses subsequent events.
@@ -933,11 +922,10 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         // Enqueue the frame for processing on the OpenGL thread as soon as possible and wake the OpenGL thread.
         if (pickMode) {
             this.pickQueue.offer(frame);
-            super.requestRender();
         } else {
             this.frameQueue.offer(frame);
-            super.requestRender();
         }
+        super.requestRender();
 
         // Propagate redraw requests submitted during rendering. The render context provides a layer of indirection that
         // insulates rendering code from establishing a dependency on a specific WorldWindow.

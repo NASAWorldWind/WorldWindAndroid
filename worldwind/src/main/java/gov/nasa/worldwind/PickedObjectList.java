@@ -7,17 +7,20 @@ package gov.nasa.worldwind;
 
 import android.util.SparseArray;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 
 import gov.nasa.worldwind.util.Logger;
 
 public class PickedObjectList {
 
-    protected SparseArray<PickedObject> entries = new SparseArray<>();
+    protected final SparseArray<PickedObject> entries = new SparseArray<>();
 
     public PickedObjectList() {
     }
 
+    @NonNull
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("PickedObjectList{");

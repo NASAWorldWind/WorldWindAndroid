@@ -5,6 +5,12 @@
 
 package gov.nasa.worldwind.geom;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,20 +20,13 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import gov.nasa.worldwind.util.Logger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 @RunWith(PowerMockRunner.class) // Support for mocking static methods
 @PrepareForTest(Logger.class)   // We mock the Logger class to avoid its calls to android.util.log
 
 public class LineTest {
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // To accommodate WorldWind exception handling, we must mock all
         // the static methods in Logger to avoid calls to android.util.log
         PowerMockito.mockStatic(Logger.class);
@@ -51,8 +50,8 @@ public class LineTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_NullArgument() throws Exception {
-        Line copy = new Line(null);
+    public void testConstructor_NullArgument() {
+        new Line(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -70,22 +69,22 @@ public class LineTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_FromVectors_NullFirst() throws Exception {
-        Line line = new Line(null, new Vec3());
+    public void testConstructor_FromVectors_NullFirst() {
+        new Line(null, new Vec3());
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_FromVectors_NullSecond() throws Exception {
-        Line line = new Line(new Vec3(), null);
+    public void testConstructor_FromVectors_NullSecond() {
+        new Line(new Vec3(), null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
 
 
     @Test
-    public void testEquals() throws Exception {
+    public void testEquals() {
         Vec3 origin = new Vec3(1, 2, 3);
         Vec3 direction = new Vec3(0, 0, 1);
 
@@ -94,32 +93,32 @@ public class LineTest {
 
         assertEquals("origin", line1.origin, line2.origin);
         assertEquals("direction", line1.direction, line2.direction);
-        assertTrue("equals", line1.equals(line2));
+        assertEquals("equals", line1, line2);
     }
 
     @Test
-    public void testEquals_Null() throws Exception {
+    public void testEquals_Null() {
         Vec3 origin = new Vec3(1, 2, 3);
         Vec3 direction = new Vec3(0, 0, 1);
 
         Line line1 = new Line(origin, direction);
 
-        assertFalse("inequality with null", line1.equals(null));
+        assertNotEquals("inequality with null", null, line1);
     }
 
     @Test
-    public void testEquals_Inequality() throws Exception {
+    public void testEquals_Inequality() {
         Vec3 origin = new Vec3(1, 2, 3);
         Vec3 direction = new Vec3(0, 0, 1);
 
         Line line1 = new Line(origin, direction);
         Line line2 = new Line(direction, origin);   // reversed vectors
 
-        assertFalse("not equals", line1.equals(line2));
+        assertNotEquals("not equals", line1, line2);
     }
 
     @Test
-    public void testHashCode() throws Exception {
+    public void testHashCode() {
         Vec3 origin = new Vec3(1, 2, 3);
         Vec3 direction1 = new Vec3(0, 0, 1);
         Vec3 direction2 = new Vec3(0, 1, 0);
@@ -136,7 +135,7 @@ public class LineTest {
     }
 
     @Test
-    public void testToString() throws Exception {
+    public void testToString() {
         Vec3 origin = new Vec3(1, 2, 3);
         Vec3 direction = new Vec3(4, 5, 6);
         Line line = new Line(origin, direction);
@@ -153,7 +152,7 @@ public class LineTest {
     }
 
     @Test
-    public void testSet() throws Exception {
+    public void testSet() {
         Vec3 origin = new Vec3(1, 2, 3);
         Vec3 direction = new Vec3(0, 0, 1);
         Line line = new Line();
@@ -165,7 +164,7 @@ public class LineTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSet_NullFirst() throws Exception {
+    public void testSet_NullFirst() {
         Line line = new Line();
 
         line.set(null, new Vec3());
@@ -174,7 +173,7 @@ public class LineTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSet_NullSecond() throws Exception {
+    public void testSet_NullSecond() {
         Line line = new Line();
 
         line.set(new Vec3(), null);
@@ -184,7 +183,7 @@ public class LineTest {
 
 
     @Test
-    public void testSetToSegment() throws Exception {
+    public void testSetToSegment() {
         Vec3 pointA = new Vec3(1, 2, 3);
         Vec3 pointB = new Vec3(4, 5, 6);
         Vec3 origin = new Vec3(pointA);
@@ -198,7 +197,7 @@ public class LineTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSetToSegment_NullFirst() throws Exception {
+    public void testSetToSegment_NullFirst() {
         Line line = new Line();
 
         line.setToSegment(null, new Vec3());
@@ -207,7 +206,7 @@ public class LineTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSetToSegment_NullSecond() throws Exception {
+    public void testSetToSegment_NullSecond() {
         Line line = new Line();
 
         line.setToSegment(new Vec3(), null);
@@ -216,7 +215,7 @@ public class LineTest {
     }
 
     @Test
-    public void testPointAt() throws Exception {
+    public void testPointAt() {
         Vec3 origin = new Vec3(1, 2, 3);
         Vec3 direction = new Vec3(4, 5, 6);
         Line line = new Line(origin, direction);
@@ -229,7 +228,7 @@ public class LineTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testPointAt_NullArgument() throws Exception {
+    public void testPointAt_NullArgument() {
         Line line = new Line();
 
         line.pointAt(0, null);
@@ -238,7 +237,7 @@ public class LineTest {
     }
 
     @Test
-    public void testPointAt_NaN() throws Exception {
+    public void testPointAt_NaN() {
         Line line = new Line();
 
         Vec3 point = line.pointAt(Double.NaN, new Vec3());

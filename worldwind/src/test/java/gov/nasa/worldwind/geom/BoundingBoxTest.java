@@ -33,7 +33,7 @@ public class BoundingBoxTest {
     private Globe globe = null;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // To accommodate WorldWind exception handling, we must mock all
         // the static methods in Logger to avoid calls to android.util.log
         PowerMockito.mockStatic(Logger.class);
@@ -42,20 +42,20 @@ public class BoundingBoxTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         // Release the globe object
         globe = null;
     }
 
     @Test
-    public void testConstructor() throws Exception {
+    public void testConstructor() {
         BoundingBox bb = new BoundingBox();
 
         assertNotNull(bb);
     }
 
     @Test
-    public void testSetToSector() throws Exception {
+    public void testSetToSector() {
         BoundingBox boundingBox = new BoundingBox();
         double centerLat = 0;
         double centerLon = 0;
@@ -89,9 +89,9 @@ public class BoundingBoxTest {
         assertEquals("large center z", point.z, boundingBox.center.z, 300);
     }
 
-    @Ignore
+    @Ignore("The test case is a stub.")
     @Test
-    public void testIntersectsFrustum() throws Exception {
+    public void testIntersectsFrustum() {
         BoundingBox boundingBox = new BoundingBox();
         float minElevation = 0;
         float maxElevation = 1000;
@@ -103,7 +103,7 @@ public class BoundingBoxTest {
     }
 
     @Test
-    public void testDistanceTo() throws Exception {
+    public void testDistanceTo() {
         BoundingBox boundingBox = new BoundingBox();
         double radius = globe.getEquatorialRadius();
         float minElevation = 0;
@@ -120,12 +120,12 @@ public class BoundingBoxTest {
     /**
      * Creates Sector with a centroid set to the specified latitude and longitude.
      *
-     * @param centroidLat
-     * @param centroidLon
-     * @param deltaLat
-     * @param deltaLon
+     * @param centroidLat Centroid latitude
+     * @param centroidLon Centroid Longitude
+     * @param deltaLat Delta latitude
+     * @param deltaLon Delta longitude
      *
-     * @return
+     * @return Sector from centroid set
      */
     private static Sector sectorFromCentroid(double centroidLat, double centroidLon, double deltaLat, double deltaLon) {
         return Sector.fromDegrees(centroidLat - deltaLat / 2, centroidLon - deltaLon / 2, deltaLat, deltaLon);

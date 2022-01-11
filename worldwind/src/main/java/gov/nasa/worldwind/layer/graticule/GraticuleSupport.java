@@ -24,9 +24,9 @@ import gov.nasa.worldwind.shape.ShapeAttributes;
  */
 public class GraticuleSupport {
 
-    private Map<Renderable, String> renderables = new HashMap<>();
-    private Map<String, GraticuleRenderingParams> namedParams = new HashMap<>();
-    private Map<String, ShapeAttributes> namedShapeAttributes = new HashMap<>();
+    private final Map<Renderable, String> renderables = new HashMap<>();
+    private final Map<String, GraticuleRenderingParams> namedParams = new HashMap<>();
+    private final Map<String, ShapeAttributes> namedShapeAttributes = new HashMap<>();
     private GraticuleRenderingParams defaultParams;
 
     public void addRenderable(Renderable renderable, String paramsKey) {

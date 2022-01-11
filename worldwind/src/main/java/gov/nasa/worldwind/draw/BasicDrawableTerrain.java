@@ -15,13 +15,13 @@ import gov.nasa.worldwind.util.Pool;
 
 public class BasicDrawableTerrain implements DrawableTerrain {
 
-    public Sector sector = new Sector();
+    public final Sector sector = new Sector();
 
-    public Vec3 vertexOrigin = new Vec3();
+    public final Vec3 vertexOrigin = new Vec3();
 
-    public Range lineElementRange = new Range();
+    public final Range lineElementRange = new Range();
 
-    public Range triStripElementRange = new Range();
+    public final Range triStripElementRange = new Range();
 
     public BufferObject vertexPoints;
 

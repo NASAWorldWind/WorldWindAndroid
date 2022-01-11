@@ -36,14 +36,14 @@ public class TiledSurfaceImage extends AbstractRenderable {
 
     protected double detailControl = 4;
 
-    protected List<Tile> topLevelTiles = new ArrayList<>();
+    protected final List<Tile> topLevelTiles = new ArrayList<>();
 
     /**
      * Memory cache for this layer's subdivision tiles. Each entry contains an array of four image tiles corresponding
      * to the subdivision of the group's common parent tile. The cache is configured to hold 500 groups, a number
      * empirically determined to be sufficient for storing the tiles needed to navigate a small region.
      */
-    protected LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(500);
+    protected final LruMemoryCache<String, Tile[]> tileCache = new LruMemoryCache<>(500);
 
     protected SurfaceTextureProgram activeProgram;
 
@@ -51,7 +51,7 @@ public class TiledSurfaceImage extends AbstractRenderable {
 
     protected Texture ancestorTexture;
 
-    protected Matrix3 ancestorTexCoordMatrix = new Matrix3();
+    protected final Matrix3 ancestorTexCoordMatrix = new Matrix3();
 
     public TiledSurfaceImage() {
         super("Tiled Surface Image");

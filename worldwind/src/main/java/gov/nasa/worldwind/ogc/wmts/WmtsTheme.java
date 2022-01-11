@@ -12,9 +12,9 @@ public class WmtsTheme extends OwsDescription {
 
     protected String identifier;
 
-    protected List<WmtsTheme> themes = new ArrayList<>();
+    protected final List<WmtsTheme> themes = new ArrayList<>();
 
-    protected List<String> layerRefs = new ArrayList<>();
+    protected final List<String> layerRefs = new ArrayList<>();
 
     public WmtsTheme() {
     }
@@ -34,12 +34,16 @@ public class WmtsTheme extends OwsDescription {
     @Override
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
-        if (keyName.equals("Identifier")) {
-            this.identifier = (String) value;
-        } else if (keyName.equals("Theme")) {
-            this.themes.add((WmtsTheme) value);
-        } else if (keyName.equals("LayerRef")) {
-            this.layerRefs.add((String) value);
+        switch (keyName) {
+            case "Identifier":
+                this.identifier = (String) value;
+                break;
+            case "Theme":
+                this.themes.add((WmtsTheme) value);
+                break;
+            case "LayerRef":
+                this.layerRefs.add((String) value);
+                break;
         }
     }
 }

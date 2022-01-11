@@ -20,10 +20,8 @@ public class GmlPoint extends GmlAbstractGeometricPrimitive {
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
 
-        switch (keyName) {
-            case "pos":
-                pos = (GmlDirectPosition) value;
-                break;
+        if ("pos".equals(keyName)) {
+            pos = (GmlDirectPosition) value;
         }
     }
 }

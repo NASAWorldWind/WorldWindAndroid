@@ -5,6 +5,9 @@
 
 package gov.nasa.worldwind.formats.tiff;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,13 +16,12 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Objects;
 
 import gov.nasa.worldwind.util.Logger;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(PowerMockRunner.class) // Support for mocking static methods
 @PrepareForTest(Logger.class)   // We mock the Logger class to avoid its calls to android.util.log
@@ -30,15 +32,15 @@ public class TiffTest {
     protected byte[] blendtiffData;
 
     @Before
-    public void setup() throws Exception {
+    public void setup() throws IOException {
         String resourceName = "test_gov_nasa_worldwind_geotiff.tif";
         this.geotiffData = this.setupData(resourceName);
         resourceName = "test_gov_nasa_worldwind_blend.tif";
         this.blendtiffData = this.setupData(resourceName);
     }
 
-    protected byte[] setupData(String resourceName) throws Exception {
-        BufferedInputStream inputStream = new BufferedInputStream(this.getClass().getClassLoader().getResourceAsStream(resourceName));
+    protected byte[] setupData(String resourceName) throws IOException {
+        BufferedInputStream inputStream = new BufferedInputStream(Objects.requireNonNull(this.getClass().getClassLoader()).getResourceAsStream(resourceName));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         int nRead;
         byte[] dataBuffer = new byte[4096];
@@ -53,7 +55,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testImageWidthAndLength_GeoTiff() throws Exception {
+    public void testImageWidthAndLength_GeoTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expected = 512;
@@ -66,7 +68,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetOffsets_GeoTiff() throws Exception {
+    public void testGetOffsets_GeoTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
         Subfile file = tiff.getSubfiles().get(0);
         // the first twelve values and the last
@@ -78,11 +80,11 @@ public class TiffTest {
         int[] modActualOffsets = Arrays.copyOfRange(actualOffsets, 0, 13);
         modActualOffsets[12] = actualOffsets[actualOffsets.length - 1];
 
-        assertTrue("image offsets", Arrays.equals(expectedOffsets, modActualOffsets));
+        assertArrayEquals("image offsets", expectedOffsets, modActualOffsets);
     }
 
     @Test
-    public void testGetDataSize_GeoTiff() throws Exception {
+    public void testGetDataSize_GeoTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedSize = 524288;
@@ -93,7 +95,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetData_Execution_GeoTiff() throws Exception {
+    public void testGetData_Execution_GeoTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
         Subfile file = tiff.getSubfiles().get(0);
         ByteBuffer data = ByteBuffer.allocate(file.getDataSize());
@@ -105,7 +107,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetBitsPerSample_GeoTiff() throws Exception {
+    public void testGetBitsPerSample_GeoTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedBitsPerSample = 16;
@@ -118,7 +120,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetByteCounts_GeoTiff() throws Exception {
+    public void testGetByteCounts_GeoTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int[] expectedByteCounts = {8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192};
@@ -129,11 +131,11 @@ public class TiffTest {
         int[] modActualByteCounts = Arrays.copyOf(actualByteCounts, 13);
         modActualByteCounts[12] = actualByteCounts[actualByteCounts.length - 1];
 
-        assertTrue("byte counts", Arrays.equals(expectedByteCounts, modActualByteCounts));
+        assertArrayEquals("byte counts", expectedByteCounts, modActualByteCounts);
     }
 
     @Test
-    public void testGetCompression_GeoTiff() throws Exception {
+    public void testGetCompression_GeoTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 1;
@@ -144,7 +146,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetPhotometricInterpretation_GeoTiff() throws Exception {
+    public void testGetPhotometricInterpretation_GeoTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 1;
@@ -155,7 +157,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetResolutionUnit_GeoTiff() throws Exception {
+    public void testGetResolutionUnit_GeoTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 2;
@@ -165,7 +167,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetRowsPerStrip_GeoTiff() throws Exception {
+    public void testGetRowsPerStrip_GeoTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 8;
@@ -176,7 +178,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetSampleFormat_GeoTiff() throws Exception {
+    public void testGetSampleFormat_GeoTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedSampleFormat = 2;
@@ -189,7 +191,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testSamplesPerPixel_GeoTiff() throws Exception {
+    public void testSamplesPerPixel_GeoTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 1;
@@ -200,7 +202,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetResolutions_GeoTiff() throws Exception {
+    public void testGetResolutions_GeoTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.geotiffData));
         Subfile file = tiff.getSubfiles().get(0);
         double delta = 1e-9;
@@ -214,7 +216,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testImageWidthAndLength_BlendTiff() throws Exception {
+    public void testImageWidthAndLength_BlendTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedWidth = 640;
@@ -228,18 +230,18 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetOffsets_BlendTiff() throws Exception {
+    public void testGetOffsets_BlendTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int[] expectedOffsets = {8, 40968, 81928, 122888, 163848, 204808, 245768};
 
         int[] actualOffsets = file.getStripOffsets();
 
-        assertTrue("image offsets", Arrays.equals(expectedOffsets, actualOffsets));
+        assertArrayEquals("image offsets", expectedOffsets, actualOffsets);
     }
 
     @Test
-    public void testGetDataSize_BlendTiff() throws Exception {
+    public void testGetDataSize_BlendTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedSize = 256000;
@@ -250,7 +252,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetData_Execution_BlendTiff() throws Exception {
+    public void testGetData_Execution_BlendTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
         Subfile file = tiff.getSubfiles().get(0);
         ByteBuffer data = ByteBuffer.allocate(file.getDataSize());
@@ -262,7 +264,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetBitsPerSample_BlendTiff() throws Exception {
+    public void testGetBitsPerSample_BlendTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedBitsPerSample = 8;
@@ -275,18 +277,18 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetByteCounts_BlendTiff() throws Exception {
+    public void testGetByteCounts_BlendTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int[] expectedByteCounts = {40960, 40960, 40960, 40960, 40960, 40960, 10240};
 
         int[] actualByteCounts = file.getStripByteCounts();
 
-        assertTrue("byte counts", Arrays.equals(expectedByteCounts, actualByteCounts));
+        assertArrayEquals("byte counts", expectedByteCounts, actualByteCounts);
     }
 
     @Test
-    public void testGetCompression_BlendTiff() throws Exception {
+    public void testGetCompression_BlendTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 1;
@@ -297,7 +299,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetPhotometricInterpretation_BlendTiff() throws Exception {
+    public void testGetPhotometricInterpretation_BlendTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 1;
@@ -308,7 +310,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetResolutionUnit_BlendTiff() throws Exception {
+    public void testGetResolutionUnit_BlendTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 2;
@@ -318,7 +320,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetRowsPerStrip_BlendTiff() throws Exception {
+    public void testGetRowsPerStrip_BlendTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 64;
@@ -329,7 +331,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetSampleFormat_BlendTiff() throws Exception {
+    public void testGetSampleFormat_BlendTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedSampleFormat = 1;
@@ -342,7 +344,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testSamplesPerPixel_BlendTiff() throws Exception {
+    public void testSamplesPerPixel_BlendTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
         Subfile file = tiff.getSubfiles().get(0);
         int expectedValue = 1;
@@ -353,7 +355,7 @@ public class TiffTest {
     }
 
     @Test
-    public void testGetResolutions_BlendTiff() throws Exception {
+    public void testGetResolutions_BlendTiff() {
         Tiff tiff = new Tiff(ByteBuffer.wrap(this.blendtiffData));
         Subfile file = tiff.getSubfiles().get(0);
         double delta = 1e-9;
@@ -372,11 +374,9 @@ public class TiffTest {
      * uses a 3x3 grid of 16x16 pixels with 3 samples per pixel and 8 bits per sample. The tiles are stored in tiles
      * and referenced by the tileOffset field. For this test, the original tiles use byte values indicating their tile
      * index in the tileOffset array. This method also tests that overlap of a tile past the image border is considered.
-     *
-     * @throws Exception
      */
     @Test
-    public void testTileCombination() throws Exception {
+    public void testTileCombination() {
         ByteBuffer raw = ByteBuffer.allocate(6912);
         raw.put((byte) 'M');
         raw.put((byte) 'M');

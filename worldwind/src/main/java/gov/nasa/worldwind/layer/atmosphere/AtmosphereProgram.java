@@ -87,7 +87,7 @@ public class AtmosphereProgram extends ShaderProgram {
 
     protected int exposureId;
 
-    private float[] array = new float[16];
+    private final float[] array = new float[16];
 
     public AtmosphereProgram() {
     }
@@ -220,9 +220,8 @@ public class AtmosphereProgram extends ShaderProgram {
     }
 
     public void loadGlobeRadius(double equatorialRadius) {
-        double gr = equatorialRadius;
-        double ar = gr + this.altitude;
-        GLES20.glUniform1f(this.globeRadiusId, (float) gr);
+        double ar = equatorialRadius + this.altitude;
+        GLES20.glUniform1f(this.globeRadiusId, (float) equatorialRadius);
         GLES20.glUniform1f(this.atmosphereRadiusId, (float) ar);
         GLES20.glUniform1f(this.atmosphereRadius2Id, (float) (ar * ar));
     }

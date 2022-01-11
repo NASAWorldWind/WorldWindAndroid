@@ -10,6 +10,7 @@ import android.graphics.Typeface;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.PickedObjectList;
@@ -58,15 +59,15 @@ public class RenderContext {
 
     public Vec3 cameraPoint = new Vec3();
 
-    public Viewport viewport = new Viewport();
+    public final Viewport viewport = new Viewport();
 
-    public Matrix4 projection = new Matrix4();
+    public final Matrix4 projection = new Matrix4();
 
-    public Matrix4 modelview = new Matrix4();
+    public final Matrix4 modelview = new Matrix4();
 
-    public Matrix4 modelviewProjection = new Matrix4();
+    public final Matrix4 modelviewProjection = new Matrix4();
 
-    public Frustum frustum = new Frustum();
+    public final Frustum frustum = new Frustum();
 
     public RenderResourceCache renderResourceCache;
 
@@ -94,15 +95,15 @@ public class RenderContext {
 
     private GLUtessellator tessellator;
 
-    private TextRenderer textRenderer = new TextRenderer();
+    private final TextRenderer textRenderer = new TextRenderer();
 
-    private TextCacheKey scratchTextCacheKey = new TextCacheKey();
+    private final TextCacheKey scratchTextCacheKey = new TextCacheKey();
 
-    private Map<Object, Pool<?>> drawablePools = new HashMap<>();
+    private final Map<Object, Pool<?>> drawablePools = new HashMap<>();
 
-    private Map<Object, Object> userProperties = new HashMap<>();
+    private final Map<Object, Object> userProperties = new HashMap<>();
 
-    private Vec3 scratchVector = new Vec3();
+    private final Vec3 scratchVector = new Vec3();
 
     public RenderContext() {
     }
@@ -585,12 +586,12 @@ public class RenderContext {
             }
 
             TextCacheKey that = (TextCacheKey) o;
-            return ((this.text == null) ? (that.text == null) : this.text.equals(that.text))
-                && ((this.textColor == null) ? (that.textColor == null) : this.textColor.equals(that.textColor))
+            return (Objects.equals(this.text, that.text))
+                && (Objects.equals(this.textColor, that.textColor))
                 && this.textSize == that.textSize
-                && ((this.typeface == null) ? (that.typeface == null) : this.typeface.equals(that.typeface))
+                && (Objects.equals(this.typeface, that.typeface))
                 && this.enableOutline == that.enableOutline
-                && ((this.outlineColor == null) ? (that.outlineColor == null) : this.outlineColor.equals(that.outlineColor))
+                && (Objects.equals(this.outlineColor, that.outlineColor))
                 && this.outlineWidth == that.outlineWidth;
         }
 

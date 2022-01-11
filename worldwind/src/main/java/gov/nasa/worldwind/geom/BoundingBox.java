@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.geom;
 
+import androidx.annotation.NonNull;
+
 import java.util.Arrays;
 
 import gov.nasa.worldwind.globe.Globe;
@@ -18,45 +20,46 @@ public class BoundingBox {
     /**
      * The box's center point.
      */
-    protected Vec3 center = new Vec3(0, 0, 0);
+    protected final Vec3 center = new Vec3(0, 0, 0);
 
     /**
      * The center point of the box's bottom. (The origin of the R axis.)
      */
-    protected Vec3 bottomCenter = new Vec3(-0.5, 0, 0);
+    protected final Vec3 bottomCenter = new Vec3(-0.5, 0, 0);
 
     /**
      * The center point of the box's top. (The end of the R axis.)
      */
-    protected Vec3 topCenter = new Vec3(0.5, 0, 0);
+    protected final Vec3 topCenter = new Vec3(0.5, 0, 0);
 
     /**
      * The box's R axis, its longest axis.
      */
-    protected Vec3 r = new Vec3(1, 0, 0);
+    protected final Vec3 r = new Vec3(1, 0, 0);
 
     /**
      * The box's S axis, its mid-length axis.
      */
-    protected Vec3 s = new Vec3(0, 1, 0);
+    protected final Vec3 s = new Vec3(0, 1, 0);
 
     /**
      * The box's T axis, its shortest axis.
      */
-    protected Vec3 t = new Vec3(0, 0, 1);
+    protected final Vec3 t = new Vec3(0, 0, 1);
 
     /**
      * The box's radius. (The half-length of its diagonal.)
      */
     protected double radius = Math.sqrt(3);
 
-    private Vec3 endPoint1 = new Vec3();
+    private final Vec3 endPoint1 = new Vec3();
 
-    private Vec3 endPoint2 = new Vec3();
+    private final Vec3 endPoint2 = new Vec3();
 
     public BoundingBox() {
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "center=[" + center +
@@ -255,16 +258,16 @@ public class BoundingBox {
         double centroidLat = sector.centroidLatitude();
         double centroidLon = sector.centroidLongitude();
         Matrix4 matrix = globe.geographicToCartesianTransform(centroidLat, centroidLon, 0, new Matrix4());
-        double m[] = matrix.m;
+        double[] m = matrix.m;
 
         this.r.set(m[0], m[4], m[8]);
         this.s.set(m[1], m[5], m[9]);
         this.t.set(m[2], m[6], m[10]);
 
         // Find the extremes along each axis.
-        double rExtremes[] = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
-        double sExtremes[] = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
-        double tExtremes[] = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
+        double[] rExtremes = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
+        double[] sExtremes = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
+        double[] tExtremes = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
         Vec3 p = new Vec3();
         for (int idx = 0, len = points.length; idx < len; idx += 3) {
             p.set(points[idx], points[idx + 1], points[idx + 2]);
@@ -401,31 +404,8 @@ public class BoundingBox {
         this.endPoint1.set(this.bottomCenter);
         this.endPoint2.set(this.topCenter);
 
-        if (this.intersectsAt(frustum.near) < 0) {
-            return false;
-        }
-
-        if (this.intersectsAt(frustum.far) < 0) {
-            return false;
-        }
-
-        if (this.intersectsAt(frustum.left) < 0) {
-            return false;
-        }
-
-        if (this.intersectsAt(frustum.right) < 0) {
-            return false;
-        }
-
-        if (this.intersectsAt(frustum.top) < 0) {
-            return false;
-        }
-
-        if (this.intersectsAt(frustum.bottom) < 0) {
-            return false;
-        }
-
-        return true;
+        return intersectsAt(frustum.near) >= 0 && intersectsAt(frustum.far) >= 0 && intersectsAt(frustum.left) >= 0
+                && intersectsAt(frustum.right) >= 0 && intersectsAt(frustum.top) >= 0 && intersectsAt(frustum.bottom) >= 0;
     }
 
     private double intersectsAt(Plane plane) {

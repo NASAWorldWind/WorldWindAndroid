@@ -27,7 +27,7 @@ public class WWMath {
      * @return the specified values clamped to the range [min, max] degrees
      */
     public static double clamp(double value, double min, double max) {
-        return value > max ? max : (value < min ? min : value);
+        return value > max ? max : Math.max(value, min);
     }
 
     /**

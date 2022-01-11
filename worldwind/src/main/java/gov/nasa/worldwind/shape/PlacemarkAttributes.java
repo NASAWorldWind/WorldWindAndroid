@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.shape;
 
+import java.util.Objects;
+
 import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.ImageSource;
@@ -130,15 +132,15 @@ public class PlacemarkAttributes {
         }
 
         PlacemarkAttributes that = (PlacemarkAttributes) o;
-        return ((this.imageSource == null) ? (that.imageSource == null) : this.imageSource.equals(that.imageSource))
+        return (Objects.equals(this.imageSource, that.imageSource))
             && this.imageColor.equals(that.imageColor)
             && this.imageOffset.equals(that.imageOffset)
             && this.imageScale == that.imageScale
             && this.minimumImageScale == that.minimumImageScale
             && this.drawLeader == that.drawLeader
             && this.depthTest == that.depthTest
-            && ((this.labelAttributes == null) ? (that.labelAttributes == null) : this.labelAttributes.equals(that.labelAttributes))
-            && ((this.leaderAttributes == null) ? (that.leaderAttributes == null) : this.leaderAttributes.equals(that.leaderAttributes));
+            && (Objects.equals(this.labelAttributes, that.labelAttributes))
+            && (Objects.equals(this.leaderAttributes, that.leaderAttributes));
     }
 
     @Override

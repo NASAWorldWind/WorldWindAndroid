@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind;
 
+import androidx.annotation.NonNull;
+
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.Layer;
 import gov.nasa.worldwind.render.Color;
@@ -89,6 +91,7 @@ public class PickedObject {
         return (r8 << 16) | (g8 << 8) | (b8);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "PickedObject{" +

@@ -44,16 +44,22 @@ public class WmtsTileMatrixLimits extends XmlModel {
 
     @Override
     protected void parseField(String keyName, Object value) {
-        if (keyName.equals("TileMatrix")) {
-            this.tileMatrixIdentifier = ((WmtsTileMatrix) value).getLimitIdentifier();
-        } else if (keyName.equals("MinTileRow")) {
-            this.minTileRow = Integer.parseInt((String) value);
-        } else if (keyName.equals("MaxTileRow")) {
-            this.maxTileRow = Integer.parseInt((String) value);
-        } else if (keyName.equals("MinTileCol")) {
-            this.minTileCol = Integer.parseInt((String) value);
-        } else if (keyName.equals("MaxTileCol")) {
-            this.maxTileCol = Integer.parseInt((String) value);
+        switch (keyName) {
+            case "TileMatrix":
+                this.tileMatrixIdentifier = ((WmtsTileMatrix) value).getLimitIdentifier();
+                break;
+            case "MinTileRow":
+                this.minTileRow = Integer.parseInt((String) value);
+                break;
+            case "MaxTileRow":
+                this.maxTileRow = Integer.parseInt((String) value);
+                break;
+            case "MinTileCol":
+                this.minTileCol = Integer.parseInt((String) value);
+                break;
+            case "MaxTileCol":
+                this.maxTileCol = Integer.parseInt((String) value);
+                break;
         }
     }
 }

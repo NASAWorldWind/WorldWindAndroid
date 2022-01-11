@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.geom;
 
+import androidx.annotation.NonNull;
+
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -46,6 +48,7 @@ public class BoundingSphere {
         return result;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "center=" + center + ", radius=" + radius;
@@ -99,30 +102,11 @@ public class BoundingSphere {
 
         double nr = -this.radius;
 
-        if (frustum.near.distanceToPoint(this.center) <= nr) {
-            return false;
-        }
-
-        if (frustum.far.distanceToPoint(this.center) <= nr) {
-            return false;
-        }
-
-        if (frustum.left.distanceToPoint(this.center) <= nr) {
-            return false;
-        }
-
-        if (frustum.right.distanceToPoint(this.center) <= nr) {
-            return false;
-        }
-
-        if (frustum.top.distanceToPoint(this.center) <= nr) {
-            return false;
-        }
-
-        if (frustum.bottom.distanceToPoint(this.center) <= nr) {
-            return false;
-        }
-
-        return true;
+        return frustum.near.distanceToPoint(this.center) > nr
+                && frustum.far.distanceToPoint(this.center) > nr
+                && frustum.left.distanceToPoint(this.center) > nr
+                && frustum.right.distanceToPoint(this.center) > nr
+                && frustum.top.distanceToPoint(this.center) > nr
+                && frustum.bottom.distanceToPoint(this.center) > nr;
     }
 }

@@ -8,13 +8,15 @@ package gov.nasa.worldwind.ogc;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 public class WmsLayerConfigTest {
 
     @Test
     public void testConstructor_Default() {
-        assertNotNull("instantiation", new WmsLayerConfig());
+        WmsLayerConfig wmsLayerConfig = new WmsLayerConfig();
+        assertNotNull("instantiation", wmsLayerConfig);
     }
 
     @Test
@@ -39,11 +41,10 @@ public class WmsLayerConfigTest {
         String styleNames = "style1";
         String coordinateSystem = WmsTileFactoryTest.SYSTEM_CRS84;
         String imageFormat = "type/name";
-        boolean transparent = false;
         String time = "1600-ZULU";
 
         WmsLayerConfig wmsLayerConfig = new WmsLayerConfig(serviceAddess, wmsVersion, layerNames, styleNames,
-            coordinateSystem, imageFormat, transparent, time);
+            coordinateSystem, imageFormat, false, time);
 
         assertNotNull("instantiation", wmsLayerConfig);
         assertEquals("service address", serviceAddess, wmsLayerConfig.serviceAddress);
@@ -52,7 +53,7 @@ public class WmsLayerConfigTest {
         assertEquals("style names", styleNames, wmsLayerConfig.styleNames);
         assertEquals("coordinate system", coordinateSystem, wmsLayerConfig.coordinateSystem);
         assertEquals("image format", imageFormat, wmsLayerConfig.imageFormat);
-        assertEquals("transparency", transparent, wmsLayerConfig.transparent);
+        assertFalse("transparency", wmsLayerConfig.transparent);
         assertEquals("time", time, wmsLayerConfig.timeString);
     }
 }

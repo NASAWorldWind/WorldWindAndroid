@@ -5,7 +5,7 @@
  */
 package gov.nasa.worldwind.geom.coords;
 
-/**
+/*
  * Converter used to translate MGRS coordinate strings to and from geodetic latitude and longitude.
  *
  * @author Patrick Murris
@@ -14,6 +14,8 @@ package gov.nasa.worldwind.geom.coords;
  */
 
 import androidx.annotation.NonNull;
+
+import java.util.Locale;
 
 /**
  * Ported to Java from the NGA GeoTrans mgrs.c and mgrs.h code. Contains routines to convert from Geodetic to MGRS and
@@ -30,7 +32,6 @@ class MGRSCoordConverter {
     private static final int MGRS_PRECISION_ERROR = 0x0008;
     private static final int MGRS_EASTING_ERROR = 0x0040;
     private static final int MGRS_NORTHING_ERROR = 0x0080;
-    private static final int MGRS_ZONE_ERROR = 0x0100;
     private static final int MGRS_HEMISPHERE_ERROR = 0x0200;
     private static final int MGRS_LAT_WARNING = 0x0400;
     private static final int MGRS_UTM_ERROR = 0x1000;
@@ -136,7 +137,7 @@ class MGRSCoordConverter {
         {LETTER_W, 7000000.0, 72.0, 64.0, 6000000.0},
         {LETTER_X, 7900000.0, 84.5, 72.0, 6000000.0}};
 
-    private class MGRSComponents {
+    private static class MGRSComponents {
         private final int zone;
         private final int latitudeBand;
         private final int squareLetter1;
@@ -230,7 +231,7 @@ class MGRSCoordConverter {
         int num_digits;
         int num_letters;
         int i = 0;
-        int j = 0;
+        int j;
         long error_code = MGRS_NO_ERROR;
 
         int zone = 0;
@@ -252,8 +253,6 @@ class MGRSCoordConverter {
                 if ((zone < 1) || (zone > 60)) {
                     error_code |= MGRS_STRING_ERROR;
                 }
-            } else {
-                zone = 0;
             }
         }
         j = i;
@@ -784,7 +783,7 @@ class MGRSCoordConverter {
         long north;
 
         if (Zone != 0)
-            MGRSString = String.format("%02d", Zone);
+            MGRSString = String.format(Locale.getDefault(), "%02d", Zone);
         else
             MGRSString = "  ";
 
@@ -801,8 +800,8 @@ class MGRSCoordConverter {
         east = (long) (Easting / divisor);
 
         // Here we need to only use the number requesting in the precision
-        Integer iEast = (int) east;
-        StringBuilder sEast = new StringBuilder(iEast.toString());
+        int iEast = (int) east;
+        StringBuilder sEast = new StringBuilder(Integer.toString(iEast));
         if (sEast.length() > Precision)
             sEast = new StringBuilder(sEast.substring(0, (int) Precision - 1));
         else {
@@ -819,8 +818,8 @@ class MGRSCoordConverter {
             Northing = 99999.0;
         north = (long) (Northing / divisor);
 
-        Integer iNorth = (int) north;
-        StringBuilder sNorth = new StringBuilder(iNorth.toString());
+        int iNorth = (int) north;
+        StringBuilder sNorth = new StringBuilder(Integer.toString(iNorth));
         if (sNorth.length() > Precision)
             sNorth = new StringBuilder(sNorth.substring(0, (int) Precision - 1));
         else
@@ -852,16 +851,14 @@ class MGRSCoordConverter {
         double false_northing;      /* False northing for 3rd letter              */
         double grid_easting;        /* easting for 100,000 meter grid square      */
         double grid_northing;       /* northing for 100,000 meter grid square     */
-        int index = 0;
+        int index;
         long error_code = MGRS_NO_ERROR;
 
         Hemisphere hemisphere;
         double easting, northing;
 
         MGRSComponents mgrs = breakMGRSString(MGRS);
-        if (mgrs == null) {
-            error_code = this.last_error;
-        } else {
+        if (mgrs != null) {
             if (mgrs.zone > 0) {
                 error_code |= MGRS_STRING_ERROR;
             }

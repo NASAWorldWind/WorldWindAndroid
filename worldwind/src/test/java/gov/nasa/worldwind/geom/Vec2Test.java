@@ -39,11 +39,9 @@ public class Vec2Test {
 
     /**
      * Tests default constructor member initialization.
-     *
-     * @throws Exception
      */
     @Test
-    public void testConstructor_Default() throws Exception {
+    public void testConstructor_Default() {
         Vec2 u = new Vec2();
         assertNotNull(u);
         assertEquals("x", 0d, u.x, 0d);
@@ -53,11 +51,9 @@ public class Vec2Test {
 
     /**
      * Tests constructor member initialization from doubles.
-     *
-     * @throws Exception
      */
     @Test
-    public void testConstructor_Doubles() throws Exception {
+    public void testConstructor_Doubles() {
         Vec2 u = new Vec2(X, Y);
 
         assertNotNull(u);
@@ -67,11 +63,9 @@ public class Vec2Test {
 
     /**
      * Tests constructor member initialization from doubles.
-     *
-     * @throws Exception
      */
     @Test
-    public void testConstructor_Copy() throws Exception {
+    public void testConstructor_Copy() {
         Vec2 u = new Vec2(X, Y);
         Vec2 copy = new Vec2(u);
 
@@ -82,12 +76,10 @@ public class Vec2Test {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_WithNull() throws Exception {
-        Vec2 u = new Vec2(null);
+    public void testConstructor_WithNull() {
+        new Vec2(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -95,11 +87,9 @@ public class Vec2Test {
 
     /**
      * Ensures equality of object and its members.
-     *
-     * @throws Exception
      */
     @Test
-    public void testEquals() throws Exception {
+    public void testEquals() {
         Vec2 u = new Vec2(X, Y);
         Vec2 v = new Vec2(X, Y);
 
@@ -111,11 +101,9 @@ public class Vec2Test {
 
     /**
      * Ensures inequality of object and members.
-     *
-     * @throws Exception
      */
     @Test
-    public void testEquals_Inequality() throws Exception {
+    public void testEquals_Inequality() {
         Vec2 u = new Vec2(X, Y);
         Vec2 v = new Vec2(X, X);
         Vec2 w = new Vec2(Y, Y);
@@ -128,11 +116,9 @@ public class Vec2Test {
 
     /**
      * Ensures string output contains member representations.
-     *
-     * @throws Exception
      */
     @Test
-    public void testToString() throws Exception {
+    public void testToString() {
         Vec2 u = new Vec2(X, Y);
 
         String string = u.toString();
@@ -143,11 +129,9 @@ public class Vec2Test {
 
     /**
      * Ensures array elements match converted vector components.
-     *
-     * @throws Exception
      */
     @Test
-    public void testToArray() throws Exception {
+    public void testToArray() {
         Vec2 u = new Vec2(X, Y);
 
         float[] a = u.toArray(new float[2], 0);
@@ -158,11 +142,9 @@ public class Vec2Test {
 
     /**
      * Ensures the correct offset is written to the array and that the other elements are not altered.
-     *
-     * @throws Exception
      */
     @Test
-    public void testToArray_Offset() throws Exception {
+    public void testToArray_Offset() {
         Vec2 u = new Vec2(X, Y);
         int offset = 2;
         float[] array = new float[6];
@@ -180,7 +162,7 @@ public class Vec2Test {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testToArray_ArrayTooSmall() throws Exception {
+    public void testToArray_ArrayTooSmall() {
         Vec2 u = new Vec2(X, Y);
 
         u.toArray(new float[2], 1);
@@ -191,11 +173,9 @@ public class Vec2Test {
 
     /**
      * Tests the length of the vector with well known right-triangle hypotenuse.
-     *
-     * @throws Exception
      */
     @Test
-    public void testMagnitude() throws Exception {
+    public void testMagnitude() {
         Vec2 u = new Vec2(3d, 4d);
 
         double magnitude = u.magnitude();
@@ -205,11 +185,9 @@ public class Vec2Test {
 
     /**
      * Ensures positive length with negative members.
-     *
-     * @throws Exception
      */
     @Test
-    public void testMagnitude_NegativeValues() throws Exception {
+    public void testMagnitude_NegativeValues() {
         Vec2 u = new Vec2(-3d, 4d);
         Vec2 v = new Vec2(-3d, -4d);
 
@@ -222,11 +200,9 @@ public class Vec2Test {
 
     /**
      * Ensures zero length from default constructor.
-     *
-     * @throws Exception
      */
     @Test
-    public void testMagnitude_ZeroLength() throws Exception {
+    public void testMagnitude_ZeroLength() {
         Vec2 u = new Vec2();
 
         double magnitude = u.magnitude();
@@ -236,11 +212,9 @@ public class Vec2Test {
 
     /**
      * Tests the limits of a really small vector.
-     *
-     * @throws Exception
      */
     @Test
-    public void testMagnitude_ReallySmall() throws Exception {
+    public void testMagnitude_ReallySmall() {
         // Between 1e-154 and 1e-162, the accuracy of the magnitude drops off
         Vec2 small = new Vec2(1e-154, 0);
         Vec2 tooSmall = new Vec2(1e-155, 0);
@@ -253,11 +227,9 @@ public class Vec2Test {
 
     /**
      * Tests the limits of a really big vector.
-     *
-     * @throws Exception
      */
     @Test
-    public void testMagnitude_ReallyBig() throws Exception {
+    public void testMagnitude_ReallyBig() {
         Vec2 big = new Vec2(1e-154, 0);
         Vec2 tooBig = new Vec2(1e-155, 0);
 
@@ -267,11 +239,9 @@ public class Vec2Test {
 
     /**
      * Ensures length is NaN when a member is NaN.
-     *
-     * @throws Exception
      */
     @Test
-    public void testMagnitude_NaN() throws Exception {
+    public void testMagnitude_NaN() {
         Vec2 u = new Vec2(Double.NaN, 0);
 
         double magnitude = u.magnitude();
@@ -281,11 +251,9 @@ public class Vec2Test {
 
     /**
      * Tests the squared length of a vector to a well known right-triangle.
-     *
-     * @throws Exception
      */
     @Test
-    public void testMagnitudeSquared() throws Exception {
+    public void testMagnitudeSquared() {
         Vec2 u = new Vec2(3, 4);
 
         double magnitudeSquared = u.magnitudeSquared();
@@ -294,7 +262,7 @@ public class Vec2Test {
     }
 
     @Test
-    public void testMagnitudeSquared_NaN() throws Exception {
+    public void testMagnitudeSquared_NaN() {
         Vec2 u = new Vec2(3d, Double.NaN);
         Vec2 v = new Vec2(Double.NaN, 4d);
 
@@ -307,11 +275,9 @@ public class Vec2Test {
 
     /**
      * Tests the distance (or displacement) between two opposing position-vectors using a well known right triangle.
-     *
-     * @throws Exception
      */
     @Test
-    public void testDistanceTo() throws Exception {
+    public void testDistanceTo() {
         Vec2 u = new Vec2(3, 4);
         Vec2 v = new Vec2(-3, -4);
 
@@ -322,14 +288,12 @@ public class Vec2Test {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testDistanceTo_NullArgument() throws Exception {
+    public void testDistanceTo_NullArgument() {
         Vec2 u = new Vec2();
 
-        double distanceTo = u.distanceTo(null);
+        u.distanceTo(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -337,11 +301,9 @@ public class Vec2Test {
     /**
      * Tests the squared distance (or displacement) between two opposing position-vectors using a well known right
      * triangle.
-     *
-     * @throws Exception
      */
     @Test
-    public void testDistanceToSquared() throws Exception {
+    public void testDistanceToSquared() {
         Vec2 u = new Vec2(3, 4);
         Vec2 v = new Vec2(-3, -4);
 
@@ -352,11 +314,9 @@ public class Vec2Test {
 
     /**
      * Ensures propagation of NaN values.
-     *
-     * @throws Exception
      */
     @Test
-    public void testDistanceToSquared_NaN() throws Exception {
+    public void testDistanceToSquared_NaN() {
         Vec2 u = new Vec2(3, 4);
 
         assertTrue("1st NaN", Double.isNaN(u.distanceToSquared(new Vec2(Double.NaN, 4d))));
@@ -366,25 +326,21 @@ public class Vec2Test {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testDistanceToSquared_NullArgument() throws Exception {
+    public void testDistanceToSquared_NullArgument() {
         Vec2 u = new Vec2();
 
-        double distanceToSquared = u.distanceToSquared(null);
+        u.distanceToSquared(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
 
     /**
      * Ensures the members are equal to the set method arguments.
-     *
-     * @throws Exception
      */
     @Test
-    public void testSet() throws Exception {
+    public void testSet() {
         Vec2 u = new Vec2();
 
         Vec2 v = u.set(new Vec2(X, Y));
@@ -395,7 +351,7 @@ public class Vec2Test {
     }
 
     @Test
-    public void testSet_Doubles() throws Exception {
+    public void testSet_Doubles() {
         Vec2 u = new Vec2();
 
         Vec2 v = u.set(X, Y);
@@ -407,11 +363,9 @@ public class Vec2Test {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testSet_WithNull() throws Exception {
+    public void testSet_WithNull() {
         Vec2 u = new Vec2();
 
         u.set(null);
@@ -422,11 +376,9 @@ public class Vec2Test {
 
     /**
      * Ensures the components of the two vectors are swapped and the fluent API is maintained.
-     *
-     * @throws Exception
      */
     @Test
-    public void testSwap() throws Exception {
+    public void testSwap() {
         final double ux = 3d;
         final double uy = 4d;
         final double vx = 5d;
@@ -446,11 +398,9 @@ public class Vec2Test {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testSwap_WithNull() throws Exception {
+    public void testSwap_WithNull() {
         Vec2 u = new Vec2();
 
         u.swap(null);
@@ -460,11 +410,9 @@ public class Vec2Test {
 
     /**
      * Ensures the correct addition of two vectors, arguments are not mutated, and the proper fluent API result.
-     *
-     * @throws Exception
      */
     @Test
-    public void testAdd() throws Exception {
+    public void testAdd() {
         final double ux = 3d;
         final double uy = 4d;
         final double vx = 5d;
@@ -484,7 +432,7 @@ public class Vec2Test {
     }
 
     @Test
-    public void testAdd_NaN() throws Exception {
+    public void testAdd_NaN() {
         Vec2 u = new Vec2();
         Vec2 v = new Vec2();
 
@@ -494,11 +442,9 @@ public class Vec2Test {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testAdd_WithNull() throws Exception {
+    public void testAdd_WithNull() {
         Vec2 u = new Vec2();
 
         u.add(null);
@@ -509,11 +455,9 @@ public class Vec2Test {
 
     /**
      * Ensures the correct subtraction of two vectors, arguments are not mutated, and the proper fluent API result.
-     *
-     * @throws Exception
      */
     @Test
-    public void testSubtract() throws Exception {
+    public void testSubtract() {
         final double x1 = 3d;
         final double y1 = 4d;
         final double x2 = 5d;
@@ -533,7 +477,7 @@ public class Vec2Test {
     }
 
     @Test
-    public void testSubtract_NaN() throws Exception {
+    public void testSubtract_NaN() {
         Vec2 u = new Vec2();
         Vec2 v = new Vec2();
 
@@ -543,11 +487,9 @@ public class Vec2Test {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testSubtract_WithNull() throws Exception {
+    public void testSubtract_WithNull() {
         Vec2 u = new Vec2();
 
         u.subtract(null);
@@ -557,11 +499,9 @@ public class Vec2Test {
 
     /**
      * Ensures the correct multiplication of a vector and a scalar, and the proper fluent API result.
-     *
-     * @throws Exception
      */
     @Test
-    public void testMultiply() throws Exception {
+    public void testMultiply() {
         final double x1 = 3d;
         final double y1 = 4d;
         final double scalar = 5d;
@@ -576,7 +516,7 @@ public class Vec2Test {
     }
 
     @Test
-    public void testMultiply_NaN() throws Exception {
+    public void testMultiply_NaN() {
 
         assertTrue("1st Nan", hasNaN(new Vec2(3, 4).multiply(Double.NaN)));
         assertTrue("2nd Nan", hasNaN(new Vec2(Double.NaN, 4).multiply(5)));
@@ -586,11 +526,9 @@ public class Vec2Test {
 
     /**
      * Ensures the correct vector component values after it is by a rotation and translation matrix
-     *
-     * @throws Exception
      */
     @Test
-    public void testMultiplyByMatrix() throws Exception {
+    public void testMultiplyByMatrix() {
         double theta = 30d;
         double x = 2;
         double y = 3;
@@ -604,7 +542,7 @@ public class Vec2Test {
     }
 
     @Test
-    public void testMultiplyByMatrix_NaN() throws Exception {
+    public void testMultiplyByMatrix_NaN() {
         Matrix3 m = new Matrix3().multiplyByRotation(Double.NaN);
 
         assertTrue("Rotation NaN", hasNaN(new Vec2(1, 0).multiplyByMatrix(m)));
@@ -612,11 +550,9 @@ public class Vec2Test {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testMultiplyByMatrix_WithNull() throws Exception {
+    public void testMultiplyByMatrix_WithNull() {
         Vec2 u = new Vec2();
 
         u.multiplyByMatrix(null);
@@ -626,11 +562,9 @@ public class Vec2Test {
 
     /**
      * Ensures the correct division of a vector by a divisor, and the proper fluent API result.
-     *
-     * @throws Exception
      */
     @Test
-    public void testDivide() throws Exception {
+    public void testDivide() {
         final double x1 = 3d;
         final double y1 = 4d;
         final double divisor = 5d;
@@ -644,12 +578,12 @@ public class Vec2Test {
     }
 
     @Test
-    public void testDivide_ByZero() throws Exception {
+    public void testDivide_ByZero() {
         assertTrue("Infinity", hasInfinite(new Vec2(3, 4).divide(0)));
     }
 
     @Test
-    public void testDivide_NaN() throws Exception {
+    public void testDivide_NaN() {
 
         assertTrue("1st Nan", hasNaN(new Vec2(3, 4).divide(Double.NaN)));
         assertTrue("2nd Nan", hasNaN(new Vec2(Double.NaN, 4).divide(5)));
@@ -658,11 +592,9 @@ public class Vec2Test {
 
     /**
      * Ensures the correct unit vector components and length and the proper fluent API result.
-     *
-     * @throws Exception
      */
     @Test
-    public void testNormalize() throws Exception {
+    public void testNormalize() {
         final double x1 = 3d;
         final double y1 = 4d;
         final double length = 5d;
@@ -679,11 +611,9 @@ public class Vec2Test {
 
     /**
      * Tests the limits of normalizing a really small vector along the x axis. The length limit is 1e-154.
-     *
-     * @throws Exception
      */
     @Test
-    public void testNormalize_ReallySmall() throws Exception {
+    public void testNormalize_ReallySmall() {
 
         Vec2 small = new Vec2(1e-154, 0).normalize();
         Vec2 tooSmall = new Vec2(1e-155, 0).normalize();
@@ -694,11 +624,9 @@ public class Vec2Test {
 
     /**
      * Tests the limits of normalizing a really big vector long the x axis. The length limit is 1e154.
-     *
-     * @throws Exception
      */
     @Test
-    public void testNormalize_ReallyBig() throws Exception {
+    public void testNormalize_ReallyBig() {
 
         Vec2 big = new Vec2(1e154, 0).normalize();
         Vec2 tooBig = new Vec2(1e155, 0).normalize();
@@ -709,7 +637,7 @@ public class Vec2Test {
 
 
     @Test
-    public void testNormalize_BigAndSmallComponents() throws Exception {
+    public void testNormalize_BigAndSmallComponents() {
 
         Vec2 extreme = new Vec2(1e154, 1e-154).normalize();
         Vec2 tooExtreme = new Vec2(1e155, 1e-155).normalize();
@@ -720,11 +648,9 @@ public class Vec2Test {
 
     /**
      * Ensures the correct negation of the components and the proper fluent API result.
-     *
-     * @throws Exception
      */
     @Test
-    public void testNegate() throws Exception {
+    public void testNegate() {
         final double x1 = 3d;
         final double y1 = -4d;
 
@@ -737,7 +663,7 @@ public class Vec2Test {
     }
 
     @Test
-    public void testNegate_NaN() throws Exception {
+    public void testNegate_NaN() {
 
         assertTrue("2nd Nan", hasNaN(new Vec2(Double.NaN, 4).negate()));
         assertTrue("2nd Nan", hasNaN(new Vec2(3, Double.NaN).negate()));
@@ -745,11 +671,9 @@ public class Vec2Test {
 
     /**
      * Ensures the correct dot product of two vectors and vectors are not mutated.
-     *
-     * @throws Exception
      */
     @Test
-    public void testDot() throws Exception {
+    public void testDot() {
         final double x1 = 3d;
         final double y1 = 4d;
         final double x2 = 5d;
@@ -770,14 +694,12 @@ public class Vec2Test {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testDot_WithNull() throws Exception {
+    public void testDot_WithNull() {
         Vec2 u = new Vec2();
 
-        double dot = u.dot(null);
+        u.dot(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -785,11 +707,9 @@ public class Vec2Test {
     /**
      * Ensures the correct interpolation between two vectors, arguments are not mutated, and the proper fluent API
      * result.
-     *
-     * @throws Exception
      */
     @Test
-    public void testMix() throws Exception {
+    public void testMix() {
         final double x1 = 3d;
         final double y1 = 4d;
         final double x2 = 5d;
@@ -811,11 +731,9 @@ public class Vec2Test {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testMix_WithNull() throws Exception {
+    public void testMix_WithNull() {
         final double weight = 5d;
 
         Vec2 u = new Vec2();

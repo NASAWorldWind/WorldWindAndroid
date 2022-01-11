@@ -73,18 +73,16 @@ class MGRSOverview extends AbstractGraticuleTile {
                 // 'regular' UTM meridians
                 maxLat = 84;
                 positions.add(Position.fromDegrees(60, longitude, 10e3));
-                positions.add(Position.fromDegrees(maxLat, longitude, 10e3));
             } else {
                 // Exceptions: shorter meridians around and north-east of Norway
                 if (lon == 6) {
                     maxLat = 56;
-                    positions.add(Position.fromDegrees(maxLat, longitude, 10e3));
                 } else {
                     maxLat = 72;
                     positions.add(Position.fromDegrees(60, longitude, 10e3));
-                    positions.add(Position.fromDegrees(maxLat, longitude, 10e3));
                 }
             }
+            positions.add(Position.fromDegrees(maxLat, longitude, 10e3));
             Renderable polyline = getLayer().createLineRenderable(new ArrayList<>(positions), WorldWind.GREAT_CIRCLE);
             Sector sector = Sector.fromDegrees(-80, lon, maxLat + 80, 1E-15);
             this.getGridElements().add(new GridElement(sector, polyline, GridElement.TYPE_LINE));

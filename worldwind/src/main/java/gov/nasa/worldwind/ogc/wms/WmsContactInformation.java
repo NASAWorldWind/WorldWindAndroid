@@ -47,18 +47,25 @@ public class WmsContactInformation extends XmlModel {
 
     @Override
     public void parseField(String keyName, Object value) {
-        if (keyName.equals("ContactPosition")) {
-            this.contactPosition = (String) value;
-        } else if (keyName.equals("ContactVoiceTelephone")) {
-            this.contactVoiceTelephone = (String) value;
-        } else if (keyName.equals("ContactFacsimileNumber")) {
-            this.contactFacsimileTelephone = (String) value;
-        } else if (keyName.equals("ContactElectronicMailAddress")) {
-            this.contactElectronicMailAddress = (String) value;
-        } else if (keyName.equals("ContactPersonPrimary")) {
-            this.contactPersonPrimary = (WmsContactPersonPrimary) value;
-        } else if (keyName.equals("ContactAddress")) {
-            this.contactAddress = (WmsAddress) value;
+        switch (keyName) {
+            case "ContactPosition":
+                this.contactPosition = (String) value;
+                break;
+            case "ContactVoiceTelephone":
+                this.contactVoiceTelephone = (String) value;
+                break;
+            case "ContactFacsimileNumber":
+                this.contactFacsimileTelephone = (String) value;
+                break;
+            case "ContactElectronicMailAddress":
+                this.contactElectronicMailAddress = (String) value;
+                break;
+            case "ContactPersonPrimary":
+                this.contactPersonPrimary = (WmsContactPersonPrimary) value;
+                break;
+            case "ContactAddress":
+                this.contactAddress = (WmsAddress) value;
+                break;
         }
     }
 }

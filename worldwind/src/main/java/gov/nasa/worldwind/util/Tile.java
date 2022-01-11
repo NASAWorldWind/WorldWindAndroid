@@ -75,7 +75,7 @@ public class Tile {
     /**
      * The nearest point on the tile to the camera. Altitude value is based on the minimum height for the tile.
      */
-    protected Vec3 nearestPoint = new Vec3();
+    protected final Vec3 nearestPoint = new Vec3();
 
     protected float[] heightLimits;
 

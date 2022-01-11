@@ -23,11 +23,11 @@ public class BasicShaderProgram extends ShaderProgram {
 
     protected boolean enableTexture;
 
-    protected Matrix4 mvpMatrix = new Matrix4();
+    protected final Matrix4 mvpMatrix = new Matrix4();
 
-    protected Matrix3 texCoordMatrix = new Matrix3();
+    protected final Matrix3 texCoordMatrix = new Matrix3();
 
-    protected Color color = new Color();
+    protected final Color color = new Color();
 
     protected int enablePickModeId;
 
@@ -41,7 +41,7 @@ public class BasicShaderProgram extends ShaderProgram {
 
     protected int colorId;
 
-    private float[] array = new float[16];
+    private final float[] array = new float[16];
 
     public BasicShaderProgram(Resources resources) {
         try {

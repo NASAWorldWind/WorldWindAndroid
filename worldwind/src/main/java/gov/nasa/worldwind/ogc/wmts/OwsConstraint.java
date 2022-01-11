@@ -14,7 +14,7 @@ public class OwsConstraint extends XmlModel {
 
     protected String name;
 
-    protected List<String> allowedValues = new ArrayList<>();
+    protected final List<String> allowedValues = new ArrayList<>();
 
     public OwsConstraint() {
     }
@@ -29,12 +29,16 @@ public class OwsConstraint extends XmlModel {
 
     @Override
     protected void parseField(String keyName, Object value) {
-        if (keyName.equals("name")) {
-            this.name = (String) value;
-        } else if (keyName.equals("AllowedValues")) {
-            this.allowedValues.addAll(((OwsAllowedValues) value).getAllowedValues());
-        } else if (keyName.equals("AnyValue")) {
-            this.allowedValues.add("AnyValue");
+        switch (keyName) {
+            case "name":
+                this.name = (String) value;
+                break;
+            case "AllowedValues":
+                this.allowedValues.addAll(((OwsAllowedValues) value).getAllowedValues());
+                break;
+            case "AnyValue":
+                this.allowedValues.add("AnyValue");
+                break;
         }
     }
 }

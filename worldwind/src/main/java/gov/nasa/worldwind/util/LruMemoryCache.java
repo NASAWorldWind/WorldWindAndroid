@@ -14,11 +14,8 @@ public class LruMemoryCache<K, V> {
 
     protected final HashMap<K, Entry<K, V>> entries = new HashMap<>();
 
-    protected final Comparator<Entry<K, V>> lruComparator = new Comparator<Entry<K, V>>() {
-        @Override
-        public int compare(Entry<K, V> lhs, Entry<K, V> rhs) {
-            return (int) (lhs.lastUsed - rhs.lastUsed); // sorts entries from least recently used to most recently used
-        }
+    protected final Comparator<Entry<K, V>> lruComparator = (lhs, rhs) -> {
+        return (int) (lhs.lastUsed - rhs.lastUsed); // sorts entries from least recently used to most recently used
     };
 
     protected int capacity;
@@ -162,10 +159,7 @@ public class LruMemoryCache<K, V> {
 
     protected ArrayList<Entry<K, V>> assembleSortedEntries() {
         // Gather the cache entries into a data structure that's efficiently sortable.
-        ArrayList<Entry<K, V>> sortedEntries = new ArrayList<>(this.entries.size());
-        for (Entry<K, V> entry : this.entries.values()) {
-            sortedEntries.add(entry);
-        }
+        ArrayList<Entry<K, V>> sortedEntries = new ArrayList<>(this.entries.values());
 
         // Sort the entries from least recently used to most recently used.
         Collections.sort(sortedEntries, this.lruComparator);

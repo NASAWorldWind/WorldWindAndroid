@@ -11,12 +11,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 public class RangeTest {
 
     @Test
-    public void testConstructor_Default() throws Exception {
+    public void testConstructor_Default() {
         Range range = new Range();
 
         assertNotNull(range);
@@ -25,7 +26,7 @@ public class RangeTest {
     }
 
     @Test
-    public void testConstructor_Copy() throws Exception {
+    public void testConstructor_Copy() {
         Range original = new Range(1, 2);
         Range range = new Range(original);
 
@@ -35,7 +36,7 @@ public class RangeTest {
     }
 
     @Test
-    public void testConstructor_Parameters() throws Exception {
+    public void testConstructor_Parameters() {
         Range range = new Range(1, 2);
 
         assertNotNull(range);
@@ -44,30 +45,30 @@ public class RangeTest {
     }
 
     @Test
-    public void testEquals() throws Exception {
+    public void testEquals() {
         Range range1 = new Range(1, 2);
         Range range2 = new Range(1, 2);
 
-        assertTrue("equals", range1.equals(range2));
+        assertEquals("equals", range1, range2);
     }
 
     @Test
-    public void testEquals_Null() throws Exception {
+    public void testEquals_Null() {
         Range range = new Range(1, 2);
 
-        assertFalse("inequality with null", range.equals(null));
+        assertNotEquals("inequality with null", null, range);
     }
 
     @Test
-    public void testEquals_Inequality() throws Exception {
+    public void testEquals_Inequality() {
         Range range1 = new Range(1, 2);
         Range range2 = new Range(2, 1);
 
-        assertFalse("not equals", range1.equals(range2));
+        assertNotEquals("not equals", range1, range2);
     }
 
     @Test
-    public void testHashCode() throws Exception {
+    public void testHashCode() {
         Range range1 = new Range(1, 2);
         Range range2 = new Range(range1);
         Range range3 = new Range(2, 1);
@@ -81,7 +82,7 @@ public class RangeTest {
     }
 
     @Test
-    public void testToString() throws Exception {
+    public void testToString() {
         Range range = new Range(1, 2);
         String string = range.toString();
 
@@ -91,7 +92,7 @@ public class RangeTest {
     }
 
     @Test
-    public void testSet_Parameters() throws Exception {
+    public void testSet_Parameters() {
         Range range = new Range();
         range.set(1, 2);
 
@@ -100,18 +101,18 @@ public class RangeTest {
     }
 
     @Test
-    public void testSet_Copy() throws Exception {
+    public void testSet_Copy() {
         Range original = new Range(1, 2);
         Range range = new Range();
         range.set(original);
 
-        assertTrue("not the same reference", original != range);
+        assertNotSame("not the same reference", original, range);
         assertEquals("lower", 1, range.lower);
         assertEquals("upper", 2, range.upper);
     }
 
     @Test
-    public void testSetEmpty() throws Exception {
+    public void testSetEmpty() {
         Range range = new Range(1, 2);
         range.setEmpty();
 
@@ -120,7 +121,7 @@ public class RangeTest {
     }
 
     @Test
-    public void testIsEmpty() throws Exception {
+    public void testIsEmpty() {
         Range range1 = new Range();
         Range range2 = new Range(1, 2);
 
@@ -129,14 +130,14 @@ public class RangeTest {
     }
 
     @Test
-    public void testLength() throws Exception {
+    public void testLength() {
         Range range = new Range(1, 2);
 
         assertEquals("length", 1, range.length());
     }
 
     @Test
-    public void testLength_Empty() throws Exception {
+    public void testLength_Empty() {
         Range range = new Range();
 
         assertEquals("length", 0, range.length());

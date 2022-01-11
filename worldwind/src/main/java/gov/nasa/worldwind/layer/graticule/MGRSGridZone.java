@@ -98,7 +98,6 @@ class MGRSGridZone extends AbstractGraticuleTile {
         List<Position> positions = new ArrayList<>();
 
         // left meridian segment
-        positions.clear();
         positions.add(Position.fromDegrees(this.getSector().minLatitude(), this.getSector().minLongitude(), 10e3));
         positions.add(Position.fromDegrees(this.getSector().maxLatitude(), this.getSector().minLongitude(), 10e3));
         Renderable polyline = getLayer().createLineRenderable(new ArrayList<>(positions), WorldWind.LINEAR);
@@ -156,7 +155,7 @@ class MGRSGridZone extends AbstractGraticuleTile {
         UTM = UTMCoord.fromLatLon(this.getSector().minLatitude(), this.getSector().minLongitude());
         double minEasting = UTM.getEasting();
         UTM = UTMCoord.fromLatLon(this.getSector().maxLatitude(), this.getSector().minLongitude());
-        minEasting = UTM.getEasting() < minEasting ? UTM.getEasting() : minEasting;
+        minEasting = Math.min(UTM.getEasting(), minEasting);
         double maxEasting = 1e6 - minEasting;
 
         // Compensate for some distorted zones

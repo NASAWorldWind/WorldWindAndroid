@@ -22,10 +22,8 @@ public class GmlAbstractGml extends XmlModel {
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
 
-        switch (keyName) {
-            case "id":
-                id = (String) value;
-                break;
+        if ("id".equals(keyName)) {
+            id = (String) value;
         }
     }
 }

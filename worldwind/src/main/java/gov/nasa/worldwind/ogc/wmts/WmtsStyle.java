@@ -14,7 +14,7 @@ public class WmtsStyle extends OwsDescription {
 
     protected boolean isDefault = false;
 
-    protected List<WmtsElementLink> legendUrls = new ArrayList<>();
+    protected final List<WmtsElementLink> legendUrls = new ArrayList<>();
 
     public WmtsStyle() {
     }
@@ -34,12 +34,16 @@ public class WmtsStyle extends OwsDescription {
     @Override
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
-        if (keyName.equals("Identifier")) {
-            this.identifier = (String) value;
-        } else if (keyName.equals("isDefault")) {
-            this.isDefault = Boolean.parseBoolean((String) value);
-        } else if (keyName.equals("LegendURL")) {
-            this.legendUrls.add((WmtsElementLink) value);
+        switch (keyName) {
+            case "Identifier":
+                this.identifier = (String) value;
+                break;
+            case "isDefault":
+                this.isDefault = Boolean.parseBoolean((String) value);
+                break;
+            case "LegendURL":
+                this.legendUrls.add((WmtsElementLink) value);
+                break;
         }
     }
 }

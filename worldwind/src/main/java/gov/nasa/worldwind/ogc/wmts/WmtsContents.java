@@ -12,9 +12,9 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmtsContents extends XmlModel {
 
-    protected List<WmtsLayer> layers = new ArrayList<>();
+    protected final List<WmtsLayer> layers = new ArrayList<>();
 
-    protected List<WmtsTileMatrixSet> tileMatrixSets = new ArrayList<>();
+    protected final List<WmtsTileMatrixSet> tileMatrixSets = new ArrayList<>();
 
     public List<WmtsLayer> getLayers() {
         return this.layers;

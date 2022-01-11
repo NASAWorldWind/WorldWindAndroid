@@ -5,15 +5,18 @@
 
 package gov.nasa.worldwind.layer;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Objects;
 
 import gov.nasa.worldwind.render.RenderContext;
 import gov.nasa.worldwind.util.Logger;
 
 public class LayerList implements Iterable<Layer> {
 
-    protected ArrayList<Layer> layers = new ArrayList<>();
+    protected final ArrayList<Layer> layers = new ArrayList<>();
 
     public LayerList() {
     }
@@ -76,7 +79,7 @@ public class LayerList implements Iterable<Layer> {
 
         for (int idx = 0, len = this.layers.size(); idx < len; idx++) {
             String layerName = this.layers.get(idx).getDisplayName();
-            if ((layerName == null) ? (name == null) : layerName.equals(name)) {
+            if (Objects.equals(layerName, name)) {
                 return idx;
             }
         }
@@ -90,7 +93,7 @@ public class LayerList implements Iterable<Layer> {
             Layer layer = this.layers.get(idx);
             if (layer.hasUserProperty(key)) {
                 Object layerValue = layer.getUserProperty(key);
-                if ((layerValue == null) ? (value == null) : layerValue.equals(value)) {
+                if (Objects.equals(layerValue, value)) {
                     return idx;
                 }
             }
@@ -195,6 +198,7 @@ public class LayerList implements Iterable<Layer> {
         this.layers.clear();
     }
 
+    @NonNull
     @Override
     public Iterator<Layer> iterator() {
         return this.layers.iterator();
@@ -207,7 +211,7 @@ public class LayerList implements Iterable<Layer> {
                 rc.currentLayer.render(rc);
             } catch (Exception e) {
                 Logger.logMessage(Logger.ERROR, "LayerList", "render",
-                    "Exception while rendering layer \'" + rc.currentLayer.getDisplayName() + "\'", e);
+                        "Exception while rendering layer '" + rc.currentLayer.getDisplayName() + "'", e);
                 // Keep going. Draw the remaining layers.
             }
         }

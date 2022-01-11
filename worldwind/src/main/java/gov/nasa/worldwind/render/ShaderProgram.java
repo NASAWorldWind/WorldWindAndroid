@@ -35,7 +35,7 @@ public class ShaderProgram implements RenderResource {
      */
     protected int programId;
 
-    protected int[] shaderId = new int[2];
+    protected final int[] shaderId = new int[2];
 
     protected boolean mustBuildProgram = true;
 

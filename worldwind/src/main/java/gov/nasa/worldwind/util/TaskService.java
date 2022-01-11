@@ -5,8 +5,6 @@
 
 package gov.nasa.worldwind.util;
 
-import androidx.annotation.NonNull;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -31,7 +29,7 @@ public class TaskService {
     protected ExecutorService executorService() {
         if (this.executorService == null) {
             this.executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
-                new SynchronousQueue<Runnable>(),
+                    new SynchronousQueue<>(),
                 this.threadFactory(),
                 this.rejectedExecutionHandler());
         }
@@ -43,22 +41,16 @@ public class TaskService {
         final String threadName = "WorldWind Task Service ";
         final AtomicInteger threadNumber = new AtomicInteger(1);
 
-        return new ThreadFactory() {
-            @Override
-            public Thread newThread(@NonNull Runnable r) {
-                Thread thread = new Thread(r, threadName + threadNumber.getAndIncrement());
-                thread.setDaemon(true); // task threads do not prevent the process from terminating
-                return thread;
-            }
+        return r -> {
+            Thread thread = new Thread(r, threadName + threadNumber.getAndIncrement());
+            thread.setDaemon(true); // task threads do not prevent the process from terminating
+            return thread;
         };
     }
 
     protected RejectedExecutionHandler rejectedExecutionHandler() {
-        return new RejectedExecutionHandler() {
-            @Override
-            public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-                throw new RejectedExecutionException(); // throw an exception but suppress the message to avoid string allocation
-            }
+        return (r, executor) -> {
+            throw new RejectedExecutionException(); // throw an exception but suppress the message to avoid string allocation
         };
     }
 }

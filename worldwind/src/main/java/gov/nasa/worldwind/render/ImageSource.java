@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -292,6 +293,7 @@ public class ImageSource {
         return this.type + 31 * this.source.hashCode();
     }
 
+    @NonNull
     @Override
     public String toString() {
         if (this.type == TYPE_BITMAP) {
@@ -413,9 +415,9 @@ public class ImageSource {
 
     protected static class LineStippleBitmapFactory implements BitmapFactory {
 
-        protected int factor;
+        protected final int factor;
 
-        protected short pattern;
+        protected final short pattern;
 
         public LineStippleBitmapFactory(int factor, short pattern) {
             this.factor = factor;
@@ -457,6 +459,7 @@ public class ImageSource {
             }
         }
 
+        @NonNull
         @Override
         public String toString() {
             return "LineStippleBitmapFactory factor=" + this.factor + ", pattern=" + Integer.toHexString(this.pattern & 0xFFFF);

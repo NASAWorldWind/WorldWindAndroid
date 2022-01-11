@@ -28,7 +28,7 @@ import static org.junit.Assert.fail;
 public class PlaneTest {
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // To accommodate WorldWind exception handling, we must mock all
         // the static methods in Logger to avoid calls to android.util.log
         PowerMockito.mockStatic(Logger.class);
@@ -93,14 +93,14 @@ public class PlaneTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_NullArgument() throws Exception {
+    public void testConstructor_NullArgument() {
         new Plane(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
 
     @Test
-    public void testEquals() throws Exception {
+    public void testEquals() {
         Vec3 n = new Vec3(3, 4, 5).normalize();
         double distance = 6;
 
@@ -109,11 +109,11 @@ public class PlaneTest {
 
         assertEquals("normal", plane1.normal, plane2.normal);
         assertEquals("distance", plane1.distance, plane2.distance, 0);
-        assertTrue("equals", plane1.equals(plane2));
+        assertEquals("equals", plane1, plane2);
     }
 
     @Test
-    public void testEquals_Inequality() throws Exception {
+    public void testEquals_Inequality() {
         Vec3 n = new Vec3(3, 4, 5).normalize();
         double distance1 = 6;
         double distance2 = 7;
@@ -122,24 +122,12 @@ public class PlaneTest {
         Plane plane2 = new Plane(n.x, n.y, n.z, distance2);
         Plane plane3 = new Plane(0, 1, 0, distance1);
 
-        assertFalse("not equals", plane1.equals(plane2));
-        assertFalse("not equals", plane1.equals(plane3));
-    }
-
-    @SuppressWarnings("ObjectEqualsNull")
-    @Test
-    public void testEquals_Null() throws Exception {
-        Vec3 n = new Vec3(3, 4, 5).normalize();
-        double distance = 10;
-        Plane plane1 = new Plane(n.x, n.y, n.z, distance);
-
-        boolean result = plane1.equals(null);
-
-        assertFalse("not equals", result);
+        assertNotEquals("not equals", plane1, plane2);
+        assertNotEquals("not equals", plane1, plane3);
     }
 
     @Test
-    public void testHashCode() throws Exception {
+    public void testHashCode() {
         Vec3 n = new Vec3(3, 4, 5).normalize();
         double distance1 = 6;
         double distance2 = 7;
@@ -156,7 +144,7 @@ public class PlaneTest {
     }
 
     @Test
-    public void testToString() throws Exception {
+    public void testToString() {
         Vec3 n = new Vec3(3, 4, 5).normalize();
         double distance = 6;
         Plane plane = new Plane(n.x, n.y, n.z, distance);
@@ -170,7 +158,7 @@ public class PlaneTest {
     }
 
     @Test
-    public void testDistanceToPoint() throws Exception {
+    public void testDistanceToPoint() {
         Vec3 normal = new Vec3(3, 4, 5).normalize();// arbitrary orientation
         double distance = 10;                       // arbitrary distance
         Plane plane = new Plane(normal.x, normal.y, normal.z, distance);
@@ -187,7 +175,7 @@ public class PlaneTest {
     }
 
     @Test
-    public void testSet() throws Exception {
+    public void testSet() {
         Vec3 n = new Vec3(3, 4, 5).normalize();
         double distance = 6;
         Plane plane = new Plane(0, 0, 1, 10);
@@ -227,7 +215,7 @@ public class PlaneTest {
     }
 
     @Test
-    public void testSet_Plane() throws Exception {
+    public void testSet_Plane() {
         Vec3 n = new Vec3(3, 4, 5).normalize();
         double distance = 6;
         Plane plane1 = new Plane(0, 0, 1, 10);
@@ -240,7 +228,7 @@ public class PlaneTest {
     }
 
     @Test
-    public void testTransformByMatrix() throws Exception {
+    public void testTransformByMatrix() {
         Plane p = new Plane(0, 0, -1, 10);
         // An arbitrary transformation matrix. Note that planes are transformed by the inverse transpose 4x4 matrix.
         final double theta = 30.0;
@@ -263,7 +251,7 @@ public class PlaneTest {
     }
 
     @Test
-    public void testDot() throws Exception {
+    public void testDot() {
         double distance = 6;
         Vec3 n = new Vec3(3, 4, 5).normalize();
         Vec3 u = new Vec3(7, 8, 9);
@@ -276,7 +264,7 @@ public class PlaneTest {
     }
 
     @Test
-    public void testIntersectsSegment() throws Exception {
+    public void testIntersectsSegment() {
         Plane p = new Plane(0, 0, -1, 0);
         boolean result;
 
@@ -307,7 +295,7 @@ public class PlaneTest {
     }
 
     @Test
-    public void testOnSameSide() throws Exception {
+    public void testOnSameSide() {
         Plane p = new Plane(0, 0, -1, 0); // a plane at the origin
         int result;
 
@@ -334,7 +322,7 @@ public class PlaneTest {
     }
 
     @Test
-    public void testClip() throws Exception {
+    public void testClip() {
         Plane p = new Plane(0, 0, -1, 0); // a plane at the origin
         Vec3[] result;
         Vec3 a = new Vec3(1, 2, 0);
@@ -349,7 +337,7 @@ public class PlaneTest {
     }
 
     @Test
-    public void testClip_NonIntersecting() throws Exception {
+    public void testClip_NonIntersecting() {
         Plane p = new Plane(0, 0, -1, 0); // a plane at the origin
         Vec3[] result;
         Vec3 a = new Vec3(1, 2, -1);
@@ -362,7 +350,7 @@ public class PlaneTest {
     }
 
     @Test
-    public void testClip_PositiveDirection() throws Exception {
+    public void testClip_PositiveDirection() {
         // If the direction of the line formed by the two points is positive with respect to this plane's normal vector,
         // the first point in the array will be the intersection point on the plane, and the second point will be the
         // original segment end point.
@@ -381,7 +369,7 @@ public class PlaneTest {
     }
 
     @Test
-    public void testClip_NegativeDirection() throws Exception {
+    public void testClip_NegativeDirection() {
         // If the direction of the line is negative with respect to this plane's normal vector, the first point in the
         // array will be the original segment's begin point, and the second point will be the intersection point on the
         // plane.

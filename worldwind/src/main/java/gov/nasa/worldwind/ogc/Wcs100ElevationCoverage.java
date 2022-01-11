@@ -52,11 +52,6 @@ public class Wcs100ElevationCoverage extends TiledElevationCoverage {
                 Logger.makeMessage("Wcs100ElevationCoverage", "constructor", "missingCoverage"));
         }
 
-        if (numLevels < 0) {
-            throw new IllegalArgumentException(
-                Logger.makeMessage("Wcs100ElevationCoverage", "constructor", "The number of levels must be greater than 0"));
-        }
-
         int matrixWidth = sector.isFullSphere() ? 2 : 1;
         int matrixHeight = 1;
         int tileWidth = 256;

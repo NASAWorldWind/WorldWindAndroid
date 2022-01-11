@@ -11,12 +11,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 public class ViewportTest {
 
     @Test
-    public void testConstructor_Default() throws Exception {
+    public void testConstructor_Default() {
         Viewport viewport = new Viewport();
 
         assertNotNull(viewport);
@@ -27,7 +28,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testConstructor_Copy() throws Exception {
+    public void testConstructor_Copy() {
         Viewport original = new Viewport(1, 2, 3, 4);
         Viewport viewport = new Viewport(original);
 
@@ -39,7 +40,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testConstructor_Parameters() throws Exception {
+    public void testConstructor_Parameters() {
         Viewport viewport = new Viewport(1, 2, 3, 4);
 
         assertNotNull(viewport);
@@ -50,30 +51,30 @@ public class ViewportTest {
     }
 
     @Test
-    public void testEquals() throws Exception {
+    public void testEquals() {
         Viewport viewport1 = new Viewport(1, 2, 3, 4);
         Viewport viewport2 = new Viewport(1, 2, 3, 4);
 
-        assertTrue("equals", viewport1.equals(viewport2));
+        assertEquals("equals", viewport1, viewport2);
     }
 
     @Test
-    public void testEquals_Null() throws Exception {
+    public void testEquals_Null() {
         Viewport viewport = new Viewport(1, 2, 3, 4);
 
-        assertFalse("inequality with null", viewport.equals(null));
+        assertNotEquals("inequality with null", null, viewport);
     }
 
     @Test
-    public void testEquals_Inequality() throws Exception {
+    public void testEquals_Inequality() {
         Viewport viewport1 = new Viewport(1, 2, 3, 4);
         Viewport viewport2 = new Viewport(4, 3, 2, 1);
 
-        assertFalse("not equals", viewport1.equals(viewport2));
+        assertNotEquals("not equals", viewport1, viewport2);
     }
 
     @Test
-    public void testHashCode() throws Exception {
+    public void testHashCode() {
         Viewport viewport1 = new Viewport(1, 2, 3, 4);
         Viewport viewport2 = new Viewport(viewport1);
         Viewport viewport3 = new Viewport(4, 3, 2, 1);
@@ -87,7 +88,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testToString() throws Exception {
+    public void testToString() {
         Viewport viewport = new Viewport(1, 2, 3, 4);
         String string = viewport.toString();
 
@@ -99,7 +100,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testSet_Parameters() throws Exception {
+    public void testSet_Parameters() {
         Viewport viewport = new Viewport();
         viewport.set(1, 2, 3, 4);
 
@@ -110,12 +111,12 @@ public class ViewportTest {
     }
 
     @Test
-    public void testSet_Copy() throws Exception {
+    public void testSet_Copy() {
         Viewport original = new Viewport(1, 2, 3, 4);
         Viewport viewport = new Viewport();
         viewport.set(original);
 
-        assertTrue("not the same reference", original != viewport);
+        assertNotSame("not the same reference", original, viewport);
         assertEquals("x", 1, viewport.x);
         assertEquals("y", 2, viewport.y);
         assertEquals("width", 3, viewport.width);
@@ -123,7 +124,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testSetEmpty() throws Exception {
+    public void testSetEmpty() {
         Viewport viewport = new Viewport(1, 2, 3, 4);
         viewport.setEmpty();
 
@@ -134,7 +135,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIsEmpty() throws Exception {
+    public void testIsEmpty() {
         Viewport viewport1 = new Viewport();
         Viewport viewport2 = new Viewport(1, 2, 3, 4);
 
@@ -143,7 +144,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testContains() throws Exception {
+    public void testContains() {
         Viewport viewport = new Viewport(1, 2, 3, 4);
 
         assertTrue("contains x, y", viewport.contains(viewport.x, viewport.y));
@@ -154,7 +155,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testContains_Empty() throws Exception {
+    public void testContains_Empty() {
         Viewport empty = new Viewport(1, 2, 0, 0);
         Viewport emptyWidth = new Viewport(1, 2, 3, 0);
         Viewport emptyHeight = new Viewport(1, 2, 0, 3);
@@ -165,7 +166,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect() throws Exception {
+    public void testIntersect() {
         Viewport a = new Viewport(30, 100, 2, 2);
         Viewport b = new Viewport(31, 101, 2, 2);
         Viewport northeast = new Viewport(31, 101, 1, 1);
@@ -177,7 +178,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_Empty() throws Exception {
+    public void testIntersect_Empty() {
         Viewport a = new Viewport(30, 100, 2, 2);
         Viewport b = new Viewport(31, 101, 0, 0);
 
@@ -189,7 +190,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_Inside() throws Exception {
+    public void testIntersect_Inside() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport inside = new Viewport(31, 101, 1, 1);
 
@@ -200,7 +201,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_East() throws Exception {
+    public void testIntersect_East() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport east = new Viewport(31, 102, 1, 2);
         Viewport expected = new Viewport(31, 102, 1, 1);
@@ -212,7 +213,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_West() throws Exception {
+    public void testIntersect_West() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport west = new Viewport(31, 99, 1, 2);
         Viewport expected = new Viewport(31, 100, 1, 1);
@@ -224,7 +225,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_North() throws Exception {
+    public void testIntersect_North() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport north = new Viewport(32, 101, 2, 1);
         Viewport expected = new Viewport(32, 101, 1, 1);
@@ -236,7 +237,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_South() throws Exception {
+    public void testIntersect_South() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport south = new Viewport(29, 101, 2, 1);
         Viewport expected = new Viewport(30, 101, 1, 1);
@@ -248,7 +249,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_AdjacentEast() throws Exception {
+    public void testIntersect_AdjacentEast() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport adjacentEast = new Viewport(31, 103, 1, 1);
         Viewport copy = new Viewport(a);
@@ -260,7 +261,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_AdjacentWest() throws Exception {
+    public void testIntersect_AdjacentWest() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport adjacentWest = new Viewport(31, 99, 1, 1);
         Viewport copy = new Viewport(a);
@@ -272,7 +273,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_AdjacentNorth() throws Exception {
+    public void testIntersect_AdjacentNorth() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport adjacentNorth = new Viewport(33, 101, 1, 1);
         Viewport copy = new Viewport(a);
@@ -284,7 +285,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_AdjacentSouth() throws Exception {
+    public void testIntersect_AdjacentSouth() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport adjacentSouth = new Viewport(29, 101, 1, 1);
         Viewport copy = new Viewport(a);
@@ -296,7 +297,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_Doubles() throws Exception {
+    public void testIntersect_Doubles() {
         Viewport a = new Viewport(30, 100, 2, 2);
         Viewport b = new Viewport(31, 101, 2, 2);
         Viewport northeast = new Viewport(31, 101, 1, 1);
@@ -308,7 +309,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_DoublesEmpty() throws Exception {
+    public void testIntersect_DoublesEmpty() {
         Viewport a = new Viewport(30, 100, 2, 2);
         Viewport b = new Viewport(31, 101, 0, 0);
 
@@ -320,7 +321,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_DoublesInside() throws Exception {
+    public void testIntersect_DoublesInside() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport inside = new Viewport(31, 101, 1, 1);
 
@@ -331,7 +332,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_DoublesEast() throws Exception {
+    public void testIntersect_DoublesEast() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport east = new Viewport(31, 102, 1, 2);
         Viewport expected = new Viewport(31, 102, 1, 1);
@@ -343,7 +344,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_DoublesWest() throws Exception {
+    public void testIntersect_DoublesWest() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport west = new Viewport(31, 99, 1, 2);
         Viewport expected = new Viewport(31, 100, 1, 1);
@@ -355,7 +356,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_DoublesNorth() throws Exception {
+    public void testIntersect_DoublesNorth() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport north = new Viewport(32, 101, 2, 1);
         Viewport expected = new Viewport(32, 101, 1, 1);
@@ -367,7 +368,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_DoublesSouth() throws Exception {
+    public void testIntersect_DoublesSouth() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport south = new Viewport(29, 101, 2, 1);
         Viewport expected = new Viewport(30, 101, 1, 1);
@@ -379,7 +380,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_DoublesAdjacentEast() throws Exception {
+    public void testIntersect_DoublesAdjacentEast() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport adjacentEast = new Viewport(31, 103, 1, 1);
         Viewport copy = new Viewport(a);
@@ -391,7 +392,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_DoublesAdjacentWest() throws Exception {
+    public void testIntersect_DoublesAdjacentWest() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport adjacentWest = new Viewport(31, 99, 1, 1);
         Viewport copy = new Viewport(a);
@@ -403,7 +404,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_DoublesAdjacentNorth() throws Exception {
+    public void testIntersect_DoublesAdjacentNorth() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport adjacentNorth = new Viewport(33, 101, 1, 1);
         Viewport copy = new Viewport(a);
@@ -415,7 +416,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersect_DoublesAdjacentSouth() throws Exception {
+    public void testIntersect_DoublesAdjacentSouth() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport adjacentSouth = new Viewport(29, 101, 1, 1);
         Viewport copy = new Viewport(a);
@@ -427,7 +428,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersects() throws Exception {
+    public void testIntersects() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport copy = new Viewport(a);
 
@@ -440,7 +441,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersects_Empty() throws Exception {
+    public void testIntersects_Empty() {
         Viewport a = new Viewport(30, 100, 3, 3);
 
         assertFalse("empty", a.intersects(new Viewport()));
@@ -450,7 +451,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersects_Coincident() throws Exception {
+    public void testIntersects_Coincident() {
         Viewport a = new Viewport(30, 100, 1, 1);
 
         assertTrue("coincident", a.intersects(new Viewport(30, 100, 1, 1)));
@@ -465,7 +466,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersects_Doubles() throws Exception {
+    public void testIntersects_Doubles() {
         Viewport a = new Viewport(30, 100, 3, 3);
         Viewport copy = new Viewport(a);
 
@@ -478,7 +479,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersects_DoublesEmpty() throws Exception {
+    public void testIntersects_DoublesEmpty() {
         Viewport a = new Viewport(30, 100, 3, 3);
 
         assertFalse("empty", a.intersects(0, 0, 0, 0));
@@ -488,7 +489,7 @@ public class ViewportTest {
     }
 
     @Test
-    public void testIntersects_DoublesCoincident() throws Exception {
+    public void testIntersects_DoublesCoincident() {
         Viewport a = new Viewport(30, 100, 1, 1);
 
         assertTrue("coincident", a.intersects(30, 100, 1, 1));

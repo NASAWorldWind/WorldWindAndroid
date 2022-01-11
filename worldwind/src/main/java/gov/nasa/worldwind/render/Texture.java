@@ -31,7 +31,7 @@ public class Texture implements RenderResource {
 
     protected int textureByteCount;
 
-    protected Matrix3 texCoordTransform = new Matrix3();
+    protected final Matrix3 texCoordTransform = new Matrix3();
 
     protected SparseIntArray texParameters;
 
@@ -190,7 +190,7 @@ public class Texture implements RenderResource {
         } catch (Exception e) {
             // The Android utility was unable to load the texture image data.
             Logger.logMessage(Logger.ERROR, "Texture", "loadTexImage",
-                "Exception attempting to load texture image \'" + bitmap + "\'", e);
+                    "Exception attempting to load texture image '" + bitmap + "'", e);
         }
     }
 
@@ -247,6 +247,7 @@ public class Texture implements RenderResource {
             case GLES20.GL_UNSIGNED_BYTE:
                 switch (format) {
                     case GLES20.GL_ALPHA:
+                    case GLES20.GL_LUMINANCE:
                         bytesPerRow = widthPow2; // 8 bits per pixel
                         break;
                     case GLES20.GL_RGB:
@@ -254,9 +255,6 @@ public class Texture implements RenderResource {
                         break;
                     case GLES20.GL_RGBA:
                         bytesPerRow = widthPow2 * 4; // 32 bits per pixel
-                        break;
-                    case GLES20.GL_LUMINANCE:
-                        bytesPerRow = widthPow2; // 8 bits per pixel
                         break;
                     case GLES20.GL_LUMINANCE_ALPHA:
                         bytesPerRow = widthPow2 * 2; // 16 bits per pixel

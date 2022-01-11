@@ -61,20 +61,28 @@ public class WmtsTileMatrix extends OwsDescription {
     @Override
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
-        if (keyName.equals("Identifier")) {
-            this.identifier = (String) value;
-        } else if (keyName.equals("ScaleDenominator")) {
-            this.scaleDenominator = Double.parseDouble((String) value);
-        } else if (keyName.equals("TopLeftCorner")) {
-            this.topLeftCorner = (String) value;
-        } else if (keyName.equals("TileWidth")) {
-            this.tileWidth = Integer.parseInt((String) value);
-        } else if (keyName.equals("TileHeight")) {
-            this.tileHeight = Integer.parseInt((String) value);
-        } else if (keyName.equals("MatrixWidth")) {
-            this.matrixWidth = Integer.parseInt((String) value);
-        } else if (keyName.equals("MatrixHeight")) {
-            this.matrixHeight = Integer.parseInt((String) value);
+        switch (keyName) {
+            case "Identifier":
+                this.identifier = (String) value;
+                break;
+            case "ScaleDenominator":
+                this.scaleDenominator = Double.parseDouble((String) value);
+                break;
+            case "TopLeftCorner":
+                this.topLeftCorner = (String) value;
+                break;
+            case "TileWidth":
+                this.tileWidth = Integer.parseInt((String) value);
+                break;
+            case "TileHeight":
+                this.tileHeight = Integer.parseInt((String) value);
+                break;
+            case "MatrixWidth":
+                this.matrixWidth = Integer.parseInt((String) value);
+                break;
+            case "MatrixHeight":
+                this.matrixHeight = Integer.parseInt((String) value);
+                break;
         }
     }
 

@@ -55,7 +55,7 @@ public class PanRecognizer extends GestureRecognizer {
     protected void actionMove(MotionEvent event) {
         int state = this.getState();
         if (state == WorldWind.POSSIBLE) {
-            if (this.shouldInterpret(event)) {
+            if (this.shouldInterpret()) {
                 if (this.shouldRecognize(event)) {
                     this.transitionToState(event, WorldWind.BEGAN);
                 } else {
@@ -74,7 +74,7 @@ public class PanRecognizer extends GestureRecognizer {
         this.setTranslationY(0);
     }
 
-    protected boolean shouldInterpret(MotionEvent event) {
+    protected boolean shouldInterpret() {
         float dx = this.getTranslationX();
         float dy = this.getTranslationY();
         float distance = (float) Math.sqrt(dx * dx + dy * dy);

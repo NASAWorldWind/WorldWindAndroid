@@ -20,7 +20,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -29,13 +31,13 @@ import static org.junit.Assert.fail;
 public class ShapeAttributesTest {
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // Mock all the static methods in Logger
         PowerMockito.mockStatic(Logger.class);
     }
 
     @Test
-    public void testConstructor_Default() throws Exception {
+    public void testConstructor_Default() {
 
         ShapeAttributes shapeAttributes = new ShapeAttributes();
 
@@ -54,7 +56,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testConstructor_Copy() throws Exception {
+    public void testConstructor_Copy() {
         ShapeAttributes attributes = new ShapeAttributes();
         attributes.interiorImageSource = ImageSource.fromObject(new Object());
         attributes.outlineImageSource = ImageSource.fromObject(new Object());
@@ -64,23 +66,23 @@ public class ShapeAttributesTest {
         assertNotNull(copy);
         assertEquals(attributes, copy);
         // Ensure we made a deep copy of the colors
-        assertTrue(copy.interiorColor != attributes.interiorColor);
-        assertTrue(copy.outlineColor != attributes.outlineColor);
+        assertNotSame(copy.interiorColor, attributes.interiorColor);
+        assertNotSame(copy.outlineColor, attributes.outlineColor);
         // Ensure we copied the image sources by reference
-        assertTrue(copy.interiorImageSource == attributes.interiorImageSource);
-        assertTrue(copy.outlineImageSource == attributes.outlineImageSource);
+        assertSame(copy.interiorImageSource, attributes.interiorImageSource);
+        assertSame(copy.outlineImageSource, attributes.outlineImageSource);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_CopyWithNull() throws Exception {
+    public void testConstructor_CopyWithNull() {
 
-        ShapeAttributes attributes = new ShapeAttributes(null);
+        new ShapeAttributes(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
 
     @Test
-    public void testSet() throws Exception {
+    public void testSet() {
         ShapeAttributes attributes = new ShapeAttributes();
         // create another attribute bundle with differing values
         ShapeAttributes other = new ShapeAttributes();
@@ -101,7 +103,7 @@ public class ShapeAttributesTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSet_WithNull() throws Exception {
+    public void testSet_WithNull() {
         ShapeAttributes attributes = new ShapeAttributes();
 
         attributes.set(null);
@@ -110,7 +112,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testEquals() throws Exception {
+    public void testEquals() {
         ShapeAttributes attributes = new ShapeAttributes();
         ShapeAttributes same = new ShapeAttributes();
 
@@ -130,7 +132,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testInequality() throws Exception {
+    public void testInequality() {
         ShapeAttributes typical = new ShapeAttributes();
         ShapeAttributes different = new ShapeAttributes();
         different.drawInterior = false;
@@ -160,7 +162,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testHashCode() throws Exception {
+    public void testHashCode() {
         // Three differing sets of attributes
         ShapeAttributes a = new ShapeAttributes();
         ShapeAttributes b = new ShapeAttributes();
@@ -178,7 +180,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testIsDrawInterior() throws Exception {
+    public void testIsDrawInterior() {
         ShapeAttributes attributes = new ShapeAttributes();
 
         // Assert the getter is returning the changed member
@@ -190,7 +192,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testSetDrawInterior() throws Exception {
+    public void testSetDrawInterior() {
         ShapeAttributes attributes = new ShapeAttributes();
         attributes.drawInterior = true;
 
@@ -200,7 +202,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testIsDrawOutline() throws Exception {
+    public void testIsDrawOutline() {
         ShapeAttributes attributes = new ShapeAttributes();
 
         // Assert the getter is returning the changed member
@@ -212,7 +214,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testSetDrawOutline() throws Exception {
+    public void testSetDrawOutline() {
         ShapeAttributes attributes = new ShapeAttributes();
         attributes.drawOutline = true;
 
@@ -222,7 +224,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testIsDrawVerticals() throws Exception {
+    public void testIsDrawVerticals() {
         ShapeAttributes attributes = new ShapeAttributes();
         // Assert the getter is returning the changed member
         attributes.drawVerticals = true;
@@ -233,7 +235,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testSetDrawVerticals() throws Exception {
+    public void testSetDrawVerticals() {
         ShapeAttributes attributes = new ShapeAttributes();
         attributes.drawVerticals = true;
 
@@ -243,7 +245,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testIsDepthTest() throws Exception {
+    public void testIsDepthTest() {
         ShapeAttributes attributes = new ShapeAttributes();
         // Assert the getter is returning the changed member
         attributes.depthTest = true;
@@ -254,7 +256,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testSetDepthTest() throws Exception {
+    public void testSetDepthTest() {
         ShapeAttributes attributes = new ShapeAttributes();
         attributes.depthTest = true;
 
@@ -264,7 +266,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testIsEnableLighting() throws Exception {
+    public void testIsEnableLighting() {
         ShapeAttributes attributes = new ShapeAttributes();
         // Assert the getter is returning the changed member
         attributes.enableLighting = true;
@@ -275,7 +277,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testSetEnableLighting() throws Exception {
+    public void testSetEnableLighting() {
         ShapeAttributes attributes = new ShapeAttributes();
         attributes.enableLighting = true;
 
@@ -285,7 +287,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testGetInteriorColor() throws Exception {
+    public void testGetInteriorColor() {
         ShapeAttributes attributes = new ShapeAttributes();
         Color black = new Color(0, 0, 0, 1);
         attributes.interiorColor = black;
@@ -294,7 +296,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testSetInteriorColor() throws Exception {
+    public void testSetInteriorColor() {
         ShapeAttributes attributes = new ShapeAttributes();
         Color black = new Color(0, 0, 0, 1);
 
@@ -302,11 +304,11 @@ public class ShapeAttributesTest {
 
         // Verify that the object is an equivalent deep copy.
         assertEquals(black, attributes.interiorColor);
-        assertTrue(black != attributes.interiorColor);
+        assertNotSame(black, attributes.interiorColor);
     }
 
     @Test
-    public void testGetOutlineColor() throws Exception {
+    public void testGetOutlineColor() {
         ShapeAttributes attributes = new ShapeAttributes();
         Color black = new Color(0, 0, 0, 1);
         attributes.outlineColor = black;
@@ -315,7 +317,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testSetOutlineColor() throws Exception {
+    public void testSetOutlineColor() {
         ShapeAttributes attributes = new ShapeAttributes();
         Color black = new Color(0, 0, 0, 1);
 
@@ -323,11 +325,11 @@ public class ShapeAttributesTest {
 
         // Verify that the object is an equivalent deep copy.
         assertEquals(black, attributes.outlineColor);
-        assertTrue(black != attributes.outlineColor);
+        assertNotSame(black, attributes.outlineColor);
     }
 
     @Test
-    public void testGetOutlineWidth() throws Exception {
+    public void testGetOutlineWidth() {
         ShapeAttributes attributes = new ShapeAttributes();
         float width = 2.5f;
         attributes.outlineWidth = width;
@@ -336,7 +338,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testSetOutlineWidth() throws Exception {
+    public void testSetOutlineWidth() {
         ShapeAttributes attributes = new ShapeAttributes();
         float width = 2.5f;
 
@@ -346,7 +348,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testGetInteriorImageSource() throws Exception {
+    public void testGetInteriorImageSource() {
         ShapeAttributes attributes = new ShapeAttributes();
         ImageSource imageSource = ImageSource.fromObject(new Object());
         attributes.interiorImageSource = imageSource;
@@ -355,7 +357,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testSetInteriorImageSource() throws Exception {
+    public void testSetInteriorImageSource() {
         ShapeAttributes attributes = new ShapeAttributes();
         ImageSource imageSource = ImageSource.fromObject(new Object());
 
@@ -365,7 +367,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testGetOutlineImageSource() throws Exception {
+    public void testGetOutlineImageSource() {
         ShapeAttributes attributes = new ShapeAttributes();
         ImageSource imageSource = ImageSource.fromObject(new Object());
         attributes.outlineImageSource = imageSource;
@@ -374,7 +376,7 @@ public class ShapeAttributesTest {
     }
 
     @Test
-    public void testSetOutlineImageSource() throws Exception {
+    public void testSetOutlineImageSource() {
         ShapeAttributes attributes = new ShapeAttributes();
         ImageSource imageSource = ImageSource.fromObject(new Object());
 

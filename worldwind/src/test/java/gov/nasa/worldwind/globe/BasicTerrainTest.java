@@ -32,8 +32,6 @@ public class BasicTerrainTest {
 
     private static final double TOLERANCE = 0.0015; // Cartesian XYZ components must be within 1.5 millimeters
 
-    private Globe globe;
-
     private Terrain terrain;
 
     private static Vec3 officialWgs84Ecef(double latitude, double longitude, double altitude) {
@@ -76,7 +74,7 @@ public class BasicTerrainTest {
         PowerMockito.mockStatic(Logger.class);
 
         // Create the globe object used by the test
-        this.globe = new Globe(WorldWind.WGS84_ELLIPSOID, new ProjectionWgs84());
+        Globe globe = new Globe(WorldWind.WGS84_ELLIPSOID, new ProjectionWgs84());
 
         // Create the terrain object used by the test
         this.terrain = new BasicTerrain();
@@ -91,21 +89,21 @@ public class BasicTerrainTest {
         int tileHeight = tile.level.tileHeight;
         int rowStride = (tileWidth + 2) * 3;
         float[] points = new float[(tileWidth + 2) * (tileHeight + 2) * 3];
-        Vec3 tileOrigin = this.globe.geographicToCartesian(0.5, 0.5, 0.0, new Vec3());
-        this.globe.geographicToCartesianGrid(tile.sector, tileWidth, tileHeight, null, 1.0f, tileOrigin, points, rowStride + 3, rowStride);
-        this.globe.geographicToCartesianBorder(tile.sector, tileWidth + 2, tileHeight + 2, 0.0f, tileOrigin, points);
+        Vec3 tileOrigin = globe.geographicToCartesian(0.5, 0.5, 0.0, new Vec3());
+        globe.geographicToCartesianGrid(tile.sector, tileWidth, tileHeight, null, 1.0f, tileOrigin, points, rowStride + 3, rowStride);
+        globe.geographicToCartesianBorder(tile.sector, tileWidth + 2, tileHeight + 2, 0.0f, tileOrigin, points);
         tile.setOrigin(tileOrigin);
         tile.setPoints(points);
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         // Release the terrain object
         this.terrain = null;
     }
 
     @Test
-    public void testGetSector() throws Exception {
+    public void testGetSector() {
         Sector expected = new Sector(0, 0, 1, 1);
 
         Sector actual = this.terrain.getSector();
@@ -115,7 +113,7 @@ public class BasicTerrainTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    public void testSurfacePoint_SouthwestCorner() throws Exception {
+    public void testSurfacePoint_SouthwestCorner() {
         double lat = 0.0;
         double lon = 0.0;
         double alt = 0.0;
@@ -133,7 +131,7 @@ public class BasicTerrainTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    public void testSurfacePoint_SoutheastCorner() throws Exception {
+    public void testSurfacePoint_SoutheastCorner() {
         double lat = 0.0;
         double lon = 1.0;
         double alt = 0.0;
@@ -151,7 +149,7 @@ public class BasicTerrainTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    public void testSurfacePoint_NorthwestCorner() throws Exception {
+    public void testSurfacePoint_NorthwestCorner() {
         double lat = 1.0;
         double lon = 0.0;
         double alt = 0.0;
@@ -169,7 +167,7 @@ public class BasicTerrainTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    public void testSurfacePoint_NortheastCorner() throws Exception {
+    public void testSurfacePoint_NortheastCorner() {
         double lat = 1.0;
         double lon = 1.0;
         double alt = 0.0;
@@ -187,7 +185,7 @@ public class BasicTerrainTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    public void testSurfacePoint_SouthEdge() throws Exception {
+    public void testSurfacePoint_SouthEdge() {
         double lat = 0.0;
         double lon = 0.5;
         double alt = 0.0;
@@ -205,7 +203,7 @@ public class BasicTerrainTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    public void testSurfacePoint_NorthEdge() throws Exception {
+    public void testSurfacePoint_NorthEdge() {
         double lat = 1.0;
         double lon = 0.5;
         double alt = 0.0;
@@ -223,7 +221,7 @@ public class BasicTerrainTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    public void testSurfacePoint_WestEdge() throws Exception {
+    public void testSurfacePoint_WestEdge() {
         double lat = 0.5;
         double lon = 0.0;
         double alt = 0.0;
@@ -241,7 +239,7 @@ public class BasicTerrainTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    public void testSurfacePoint_EastEdge() throws Exception {
+    public void testSurfacePoint_EastEdge() {
         double lat = 0.5;
         double lon = 1.0;
         double alt = 0.0;
@@ -259,7 +257,7 @@ public class BasicTerrainTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    public void testSurfacePoint_SouthwestCell() throws Exception {
+    public void testSurfacePoint_SouthwestCell() {
         Vec3 sw = officialWgs84Ecef(0.0, 0.0, 0.0);
         Vec3 se = officialWgs84Ecef(0.0, 0.25, 0.0);
         Vec3 nw = officialWgs84Ecef(0.25, 0.0, 0.0);
@@ -278,7 +276,7 @@ public class BasicTerrainTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    public void testSurfacePoint_SoutheastCell() throws Exception {
+    public void testSurfacePoint_SoutheastCell() {
         Vec3 sw = officialWgs84Ecef(0.0, 0.75, 0.0);
         Vec3 se = officialWgs84Ecef(0.0, 1.0, 0.0);
         Vec3 nw = officialWgs84Ecef(0.25, 0.75, 0.0);
@@ -297,7 +295,7 @@ public class BasicTerrainTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    public void testSurfacePoint_NorthwestCell() throws Exception {
+    public void testSurfacePoint_NorthwestCell() {
         Vec3 sw = officialWgs84Ecef(0.75, 0.0, 0.0);
         Vec3 se = officialWgs84Ecef(0.75, 0.25, 0.0);
         Vec3 nw = officialWgs84Ecef(1.0, 0.0, 0.0);
@@ -316,7 +314,7 @@ public class BasicTerrainTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    public void testSurfacePoint_NortheastCell() throws Exception {
+    public void testSurfacePoint_NortheastCell() {
         Vec3 sw = officialWgs84Ecef(0.75, 0.75, 0.0);
         Vec3 se = officialWgs84Ecef(0.75, 1.0, 0.0);
         Vec3 nw = officialWgs84Ecef(1.0, 0.75, 0.0);
@@ -335,7 +333,7 @@ public class BasicTerrainTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    public void testSurfacePoint_Centroid() throws Exception {
+    public void testSurfacePoint_Centroid() {
         double lat = 0.5;
         double lon = 0.5;
         double alt = 0.0;

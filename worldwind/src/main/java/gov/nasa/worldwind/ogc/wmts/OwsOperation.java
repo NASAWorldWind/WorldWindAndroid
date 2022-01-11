@@ -14,7 +14,7 @@ public class OwsOperation extends XmlModel {
 
     protected String name;
 
-    protected List<OwsDcp> dcps = new ArrayList<>();
+    protected final List<OwsDcp> dcps = new ArrayList<>();
 
     public OwsOperation() {
     }

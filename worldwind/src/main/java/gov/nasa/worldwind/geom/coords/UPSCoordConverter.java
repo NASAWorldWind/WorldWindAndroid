@@ -4,7 +4,6 @@
  * All Rights Reserved.
  */
 
-/********************************************************************/
 /* RSC IDENTIFIER: UPS
  *
  *
@@ -129,7 +128,7 @@ public class UPSCoordConverter {
     private double latitude = 0.0;
     private double longitude = 0.0;
 
-    private PolarCoordConverter polarConverter = new PolarCoordConverter();
+    private final PolarCoordConverter polarConverter = new PolarCoordConverter();
 
     UPSCoordConverter(){}
 

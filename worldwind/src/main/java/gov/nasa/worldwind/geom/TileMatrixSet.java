@@ -12,7 +12,7 @@ import gov.nasa.worldwind.util.Logger;
 
 public class TileMatrixSet {
 
-    public Sector sector = new Sector();
+    public final Sector sector = new Sector();
 
     protected TileMatrix[] entries = new TileMatrix[0];
 
@@ -31,7 +31,7 @@ public class TileMatrixSet {
         }
 
         this.sector.set(sector);
-        this.entries = tileMatrixList.toArray(new TileMatrix[tileMatrixList.size()]);
+        this.entries = tileMatrixList.toArray(new TileMatrix[0]);
     }
 
     public static TileMatrixSet fromTilePyramid(Sector sector, int matrixWidth, int matrixHeight, int tileWidth, int tileHeight, int numLevels) {

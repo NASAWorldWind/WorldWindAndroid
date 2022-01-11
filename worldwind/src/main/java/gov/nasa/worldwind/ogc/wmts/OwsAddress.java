@@ -12,17 +12,17 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsAddress extends XmlModel {
 
-    protected List<String> deliveryPoint = new ArrayList<>();
+    protected final List<String> deliveryPoint = new ArrayList<>();
 
     protected String city;
 
     protected String administrativeArea;
 
-    protected List<String> postalCode = new ArrayList<>();
+    protected final List<String> postalCode = new ArrayList<>();
 
-    protected List<String> country = new ArrayList<>();
+    protected final List<String> country = new ArrayList<>();
 
-    protected List<String> email = new ArrayList<>();
+    protected final List<String> email = new ArrayList<>();
 
     public OwsAddress() {
     }
@@ -53,18 +53,25 @@ public class OwsAddress extends XmlModel {
 
     @Override
     protected void parseField(String keyName, Object value) {
-        if (keyName.equals("DeliveryPoint")) {
-            this.deliveryPoint.add((String) value);
-        } else if (keyName.equals("City")) {
-            this.city = (String) value;
-        } else if (keyName.equals("AdministrativeArea")) {
-            this.administrativeArea = (String) value;
-        } else if (keyName.equals("PostalCode")) {
-            this.postalCode.add((String) value);
-        } else if (keyName.equals("Country")) {
-            this.country.add((String) value);
-        } else if (keyName.equals("ElectronicMailAddress")) {
-            this.email.add((String) value);
+        switch (keyName) {
+            case "DeliveryPoint":
+                this.deliveryPoint.add((String) value);
+                break;
+            case "City":
+                this.city = (String) value;
+                break;
+            case "AdministrativeArea":
+                this.administrativeArea = (String) value;
+                break;
+            case "PostalCode":
+                this.postalCode.add((String) value);
+                break;
+            case "Country":
+                this.country.add((String) value);
+                break;
+            case "ElectronicMailAddress":
+                this.email.add((String) value);
+                break;
         }
     }
 }

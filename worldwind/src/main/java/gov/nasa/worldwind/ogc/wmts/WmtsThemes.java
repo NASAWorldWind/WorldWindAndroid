@@ -12,7 +12,7 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmtsThemes extends XmlModel {
 
-    protected List<WmtsTheme> themes = new ArrayList<>();
+    protected final List<WmtsTheme> themes = new ArrayList<>();
 
     @Override
     protected void parseField(String keyName, Object value) {

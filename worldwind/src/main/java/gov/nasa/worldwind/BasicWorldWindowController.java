@@ -24,7 +24,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
 
     private static final float ZOOM_FACTOR = 1.5f;
 
-    protected WorldWindow wwd;
+    protected final WorldWindow wwd;
 
     protected float lastX;
 
@@ -32,23 +32,23 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
 
     protected float lastRotation;
 
-    protected LookAt lookAt = new LookAt();
+    protected final LookAt lookAt = new LookAt();
 
-    protected LookAt beginLookAt = new LookAt();
+    protected final LookAt beginLookAt = new LookAt();
 
     protected int activeGestures;
 
-    protected GestureRecognizer panRecognizer = new PanRecognizer();
+    protected final GestureRecognizer panRecognizer = new PanRecognizer();
 
-    protected GestureRecognizer pinchRecognizer = new PinchRecognizer();
+    protected final GestureRecognizer pinchRecognizer = new PinchRecognizer();
 
-    protected GestureRecognizer rotationRecognizer = new RotationRecognizer();
+    protected final GestureRecognizer rotationRecognizer = new RotationRecognizer();
 
-    protected GestureRecognizer tiltRecognizer = new PanRecognizer();
+    protected final GestureRecognizer tiltRecognizer = new PanRecognizer();
 
-    protected GestureRecognizer mouseTiltRecognizer = new MousePanRecognizer();
+    protected final GestureRecognizer mouseTiltRecognizer = new MousePanRecognizer();
 
-    protected List<GestureRecognizer> allRecognizers = Arrays.asList(
+    protected final List<GestureRecognizer> allRecognizers = Arrays.asList(
         this.panRecognizer, this.pinchRecognizer, this.rotationRecognizer, this.tiltRecognizer, this.mouseTiltRecognizer);
 
     public BasicWorldWindowController(WorldWindow wwd) {

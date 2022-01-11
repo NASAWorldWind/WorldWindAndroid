@@ -50,18 +50,25 @@ public class WmsAddress extends XmlModel {
 
     @Override
     public void parseField(String keyName, Object value) {
-        if (keyName.equals("Address")) {
-            this.address = (String) value;
-        } else if (keyName.equals("AddressType")) {
-            this.addressType = (String) value;
-        } else if (keyName.equals("City")) {
-            this.city = (String) value;
-        } else if (keyName.equals("StateOrProvince")) {
-            this.stateOrProvince = (String) value;
-        } else if (keyName.equals("PostCode")) {
-            this.postCode = (String) value;
-        } else if (keyName.equals("Country")) {
-            this.country = (String) value;
+        switch (keyName) {
+            case "Address":
+                this.address = (String) value;
+                break;
+            case "AddressType":
+                this.addressType = (String) value;
+                break;
+            case "City":
+                this.city = (String) value;
+                break;
+            case "StateOrProvince":
+                this.stateOrProvince = (String) value;
+                break;
+            case "PostCode":
+                this.postCode = (String) value;
+                break;
+            case "Country":
+                this.country = (String) value;
+                break;
         }
     }
 }

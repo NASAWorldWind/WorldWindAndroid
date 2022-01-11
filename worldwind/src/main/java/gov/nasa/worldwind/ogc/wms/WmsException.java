@@ -12,7 +12,7 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsException extends XmlModel {
 
-    protected List<String> formats = new ArrayList<>();
+    protected final List<String> formats = new ArrayList<>();
 
     public WmsException() {
     }

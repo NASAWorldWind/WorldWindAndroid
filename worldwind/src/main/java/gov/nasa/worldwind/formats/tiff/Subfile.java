@@ -30,7 +30,7 @@ public class Subfile {
     /**
      * The {@link Field} associated with this Subfile and provided in the Image File Directory (IFD).
      */
-    protected Map<Integer, Field> fields = new HashMap<>();
+    protected final Map<Integer, Field> fields = new HashMap<>();
 
     // Minimum Required Tags to support Bi-level and Gray-scale Tiffs
 
@@ -523,14 +523,14 @@ public class Subfile {
         // decompressed as this detiles the tiles, each tile should be decompressed prior to this operation
         int tilesAcross = (this.imageWidth + this.tileWidth - 1) / this.tileWidth;
         // int tilesDown = (this.imageLength + this.tileLength - 1) / this.tileLength;
-        int currentTileRow = 0;
-        int currentTileCol = 0;
-        int tileIndex = 0;
-        int tilePixelRow = 0;
-        int tilePixelCol = 0;
-        int tilePixelIndex = 0;
+        int currentTileRow;
+        int currentTileCol;
+        int tileIndex;
+        int tilePixelRow;
+        int tilePixelCol;
+        int tilePixelIndex;
         int totalBytesPerSample = this.getTotalBytesPerPixel();
-        int offsetIndex = 0;
+        int offsetIndex;
         for (int pixelRow = 0; pixelRow < this.imageLength; pixelRow++) {
             currentTileRow = floorDiv(pixelRow, this.tileLength);
             tilePixelRow = pixelRow - currentTileRow * this.tileLength;
@@ -552,11 +552,11 @@ public class Subfile {
     }
 
     protected int getTotalBytesPerPixel() {
-        int totalBytesPerSample = 0;
-        for (int i = 0; i < this.bitsPerSample.length; i++) {
-            totalBytesPerSample += this.bitsPerSample[i];
+        int totalBitsPerSample = 0;
+        for (int bits : this.bitsPerSample) {
+            totalBitsPerSample += bits;
         }
-        return totalBytesPerSample / 8;
+        return totalBitsPerSample / 8;
     }
 
     protected double calculateRational(ByteBuffer buffer) {
@@ -568,10 +568,10 @@ public class Subfile {
     /**
      * Borrowed from 1.8 Math package
      *
-     * @param x
-     * @param y
+     * @param x X value
+     * @param y Y value
      *
-     * @return
+     * @return Result
      */
     private static int floorDiv(int x, int y) {
         int r = x / y;

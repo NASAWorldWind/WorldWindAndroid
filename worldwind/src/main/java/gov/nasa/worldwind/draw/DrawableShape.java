@@ -12,9 +12,9 @@ import gov.nasa.worldwind.util.Pool;
 
 public class DrawableShape implements Drawable {
 
-    public DrawShapeState drawState = new DrawShapeState();
+    public final DrawShapeState drawState = new DrawShapeState();
 
-    private Matrix4 mvpMatrix = new Matrix4();
+    private final Matrix4 mvpMatrix = new Matrix4();
 
     private Pool<DrawableShape> pool;
 

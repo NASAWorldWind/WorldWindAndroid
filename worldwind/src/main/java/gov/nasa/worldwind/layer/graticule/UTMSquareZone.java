@@ -101,7 +101,6 @@ class UTMSquareZone extends UTMSquareSector {
         Sector lineSector;
 
         // left segment
-        positions.clear();
         if (this.isTruncated) {
             getLayer().computeTruncatedSegment(sw, nw, this.UTMZoneSector, positions);
         } else {

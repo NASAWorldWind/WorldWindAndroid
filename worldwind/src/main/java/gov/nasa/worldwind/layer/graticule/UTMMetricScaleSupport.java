@@ -13,7 +13,7 @@ import gov.nasa.worldwind.render.Renderable;
 
 class UTMMetricScaleSupport {
 
-    private class UTMExtremes {
+    private static class UTMExtremes {
         double minX, maxX, minY, maxY;
         Hemisphere minYHemisphere, maxYHemisphere;
 
@@ -98,19 +98,19 @@ class UTMMetricScaleSupport {
         if (ge.type.equals(GridElement.TYPE_LINE_EASTING)
             || ge.type.equals(GridElement.TYPE_LINE_EAST)
             || ge.type.equals(GridElement.TYPE_LINE_WEST)) {
-            levelExtremes.minX = ge.value < levelExtremes.minX ? ge.value : levelExtremes.minX;
-            levelExtremes.maxX = ge.value > levelExtremes.maxX ? ge.value : levelExtremes.maxX;
+            levelExtremes.minX = Math.min(ge.value, levelExtremes.minX);
+            levelExtremes.maxX = Math.max(ge.value, levelExtremes.maxX);
         } else if (ge.type.equals(GridElement.TYPE_LINE_NORTHING)
             || ge.type.equals(GridElement.TYPE_LINE_SOUTH)
             || ge.type.equals(GridElement.TYPE_LINE_NORTH)) {
             if (hemisphere.equals(levelExtremes.minYHemisphere))
-                levelExtremes.minY = ge.value < levelExtremes.minY ? ge.value : levelExtremes.minY;
+                levelExtremes.minY = Math.min(ge.value, levelExtremes.minY);
             else if (hemisphere.equals(Hemisphere.S)) {
                 levelExtremes.minY = ge.value;
                 levelExtremes.minYHemisphere = hemisphere;
             }
             if (hemisphere.equals(levelExtremes.maxYHemisphere))
-                levelExtremes.maxY = ge.value > levelExtremes.maxY ? ge.value : levelExtremes.maxY;
+                levelExtremes.maxY = Math.max(ge.value, levelExtremes.maxY);
             else if (hemisphere.equals(Hemisphere.N)) {
                 levelExtremes.maxY = ge.value;
                 levelExtremes.maxYHemisphere = hemisphere;
@@ -216,7 +216,7 @@ class UTMMetricScaleSupport {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 5; i++) {
             sb.append("level ");
-            sb.append(String.valueOf(i));
+            sb.append(i);
             sb.append(" : ");
             UTMExtremes levelExtremes = this.extremes[i];
             if (levelExtremes.minX < levelExtremes.maxX ||

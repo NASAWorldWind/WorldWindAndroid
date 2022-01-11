@@ -12,7 +12,7 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class GmlPointProperty extends XmlModel {
 
-    protected List<GmlPoint> points = new ArrayList<>();
+    protected final List<GmlPoint> points = new ArrayList<>();
 
     protected String nilReason;
 

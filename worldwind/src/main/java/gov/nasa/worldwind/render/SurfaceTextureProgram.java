@@ -23,9 +23,9 @@ public class SurfaceTextureProgram extends ShaderProgram {
 
     public static final Object KEY = SurfaceTextureProgram.class;
 
-    public Matrix4 mvpMatrix = new Matrix4();
+    public final Matrix4 mvpMatrix = new Matrix4();
 
-    public Matrix3[] texCoordMatrix = {new Matrix3(), new Matrix3()};
+    public final Matrix3[] texCoordMatrix = {new Matrix3(), new Matrix3()};
 
     protected int enablePickModeId;
 
@@ -39,11 +39,11 @@ public class SurfaceTextureProgram extends ShaderProgram {
 
     protected int colorId;
 
-    private float[] mvpMatrixArray = new float[16];
+    private final float[] mvpMatrixArray = new float[16];
 
-    private float[] texCoordMatrixArray = new float[9 * 2];
+    private final float[] texCoordMatrixArray = new float[9 * 2];
 
-    private Color color = new Color();
+    private final Color color = new Color();
 
     public SurfaceTextureProgram(Resources resources) {
         try {

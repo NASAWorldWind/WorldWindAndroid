@@ -9,7 +9,7 @@ import gov.nasa.worldwind.util.xml.XmlModelParser;
 
 public class GmlParser extends XmlModelParser {
 
-    protected String gml32Namespace = "http://www.opengis.net/gml/3.2";
+    protected static final String gml32Namespace = "http://www.opengis.net/gml/3.2";
 
     public GmlParser() {
         registerGmlModels(gml32Namespace);

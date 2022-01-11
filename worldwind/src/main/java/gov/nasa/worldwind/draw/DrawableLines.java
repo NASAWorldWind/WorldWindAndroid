@@ -18,11 +18,11 @@ public class DrawableLines implements Drawable {
 
     public BasicShaderProgram program = null;
 
-    public float[] vertexPoints = new float[6]; // initially sized to store two xyz points
+    public final float[] vertexPoints = new float[6]; // initially sized to store two xyz points
 
-    public Matrix4 mvpMatrix = new Matrix4();
+    public final Matrix4 mvpMatrix = new Matrix4();
 
-    public Color color = new Color();
+    public final Color color = new Color();
 
     public float lineWidth = 1;
 

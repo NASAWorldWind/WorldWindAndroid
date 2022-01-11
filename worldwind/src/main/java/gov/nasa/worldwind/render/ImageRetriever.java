@@ -116,7 +116,7 @@ public class ImageRetriever extends Retriever<ImageSource, ImageOptions, Bitmap>
     }
 
     protected Bitmap decodeUnrecognized(ImageSource imageSource) {
-        Logger.log(Logger.WARN, "Unrecognized image source \'" + imageSource + "\'");
+        Logger.log(Logger.WARN, "Unrecognized image source '" + imageSource + "'");
         return null;
     }
 

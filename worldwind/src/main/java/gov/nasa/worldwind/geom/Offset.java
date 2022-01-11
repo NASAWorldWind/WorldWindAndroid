@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.geom;
 
+import androidx.annotation.NonNull;
+
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.util.Logger;
 
@@ -181,6 +183,7 @@ public class Offset {
         return result;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "{" +

@@ -16,7 +16,7 @@ public class Framebuffer implements RenderResource {
 
     protected int[] framebufferName = UNINITIALIZED_NAME;
 
-    protected SparseArray<Texture> attachedTextures = new SparseArray<>();
+    protected final SparseArray<Texture> attachedTextures = new SparseArray<>();
 
     public Framebuffer() {
     }

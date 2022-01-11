@@ -27,7 +27,7 @@ public class TerrainTile extends Tile {
      * Minimum elevation value used by the BasicTessellator to determine the terrain mesh edge extension depth (skirt).
      * This value is scaled by the vertical exaggeration when the terrain is generated.
      */
-    protected float minTerrainElevation = -Short.MAX_VALUE;
+    protected final float minTerrainElevation = -Short.MAX_VALUE;
 
     protected float[] heights;
 

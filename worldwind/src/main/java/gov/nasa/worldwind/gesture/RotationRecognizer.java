@@ -20,7 +20,7 @@ public class RotationRecognizer extends GestureRecognizer {
 
     protected float interpretAngle = 20;
 
-    protected int[] pointerIds = new int[2];
+    protected final int[] pointerIds = new int[2];
 
     protected int pointerIdCount = 0;
 

@@ -5,6 +5,11 @@
 
 package gov.nasa.worldwind.ogc;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,11 +21,6 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.shape.TiledSurfaceImage;
 import gov.nasa.worldwind.util.Logger;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 @RunWith(PowerMockRunner.class) // Support for mocking static methods
 @PrepareForTest(Logger.class)   // We mock the Logger class to avoid its calls to android.util.log
@@ -38,8 +38,8 @@ public class WmsLayerTest {
      */
     @Test
     public void testConstructor() {
-
-        assertNotNull("assure WmsLayer creation", new WmsLayer());
+        WmsLayer wmsLayer = new WmsLayer();
+        assertNotNull("assure WmsLayer creation", wmsLayer);
     }
 
     /**
@@ -56,39 +56,24 @@ public class WmsLayerTest {
 
         // Test null/invalid submissions throw exceptions
         try {
-
-            WmsLayer wmsLayer = new WmsLayer(null, metersPerPixel, null);
-
+            new WmsLayer(null, metersPerPixel, null);
             fail("submitted null parameters");
-
         } catch (IllegalArgumentException ex) {
-
             assertNotNull("null exception thrown", ex);
-
         }
 
         try {
-
-            WmsLayer wmsLayer = new WmsLayer(sector, -metersPerPixel, null);
-
+            new WmsLayer(sector, -metersPerPixel, null);
             fail("submitted illegal parameters");
-
         } catch (IllegalArgumentException ex) {
-
             assertNotNull("null exception thrown", ex);
-
         }
 
         try {
-
-            WmsLayer wmsLayer = new WmsLayer(sector, metersPerPixel, null);
-
+            new WmsLayer(sector, metersPerPixel, null);
             fail("submitted null parameter");
-
         } catch (IllegalArgumentException ex) {
-
             assertNotNull("null exception thrown", ex);
-
         }
 
         WmsLayer wmsLayer = new WmsLayer(sector, metersPerPixel, wmsLayerConfig);
@@ -118,51 +103,31 @@ public class WmsLayerTest {
 
         // Test null/invalid submissions throw exceptions
         try {
-
-            WmsLayer wmsLayer = new WmsLayer(null, null, metersPerPixel, null);
-
+            new WmsLayer(null, null, metersPerPixel, null);
             fail("provided null parameters");
-
         } catch (IllegalArgumentException ex) {
-
             assertNotNull("null exception thrown", ex);
-
         }
 
         try {
-
-            WmsLayer wmsLayer = new WmsLayer(sector, null, metersPerPixel, null);
-
+            new WmsLayer(sector, null, metersPerPixel, null);
             fail("provided null parameters");
-
         } catch (IllegalArgumentException ex) {
-
             assertNotNull("null exception thrown", ex);
-
         }
 
         try {
-
-            WmsLayer wmsLayer = new WmsLayer(sector, globe, -metersPerPixel, null);
-
+            new WmsLayer(sector, globe, -metersPerPixel, null);
             fail("provided illegal parameters");
-
         } catch (IllegalArgumentException ex) {
-
             assertNotNull("null exception thrown", ex);
-
         }
 
         try {
-
-            WmsLayer wmsLayer = new WmsLayer(sector, globe, metersPerPixel, null);
-
+            new WmsLayer(sector, globe, metersPerPixel, null);
             fail("provided null parameters");
-
         } catch (IllegalArgumentException ex) {
-
             assertNotNull("null exception thrown", ex);
-
         }
 
         WmsLayer wmsLayer = new WmsLayer(sector, globe, metersPerPixel, wmsLayerConfig);
@@ -284,7 +249,7 @@ public class WmsLayerTest {
         int numberOfLevels = ((TiledSurfaceImage) wmsLayer.getRenderable(0)).getLevelSet().numLevels();
 
         // assertEquals is not used as the determination of the number of levels is a function of LevelSetConfig
-        assertFalse("levels updated", originalNumberOfLevels == numberOfLevels);
+        assertNotEquals("levels updated", originalNumberOfLevels, numberOfLevels);
     }
 
     /**
@@ -414,7 +379,7 @@ public class WmsLayerTest {
         wmsLayer.setConfiguration(initialSector, alternativeGlobe, metersPerPixel, initialWmsLayerConfig);
         int numberOfLevels = ((TiledSurfaceImage) wmsLayer.getRenderable(0)).getLevelSet().numLevels();
 
-        assertFalse("layer levels updated by globe object change", initialLayers == numberOfLevels);
+        assertNotEquals("layer levels updated by globe object change", initialLayers, numberOfLevels);
     }
 
     /**
@@ -444,6 +409,6 @@ public class WmsLayerTest {
         wmsLayer.setConfiguration(initialSector, initialGlobe, alternativeMetersPerPixel, initialWmsLayerConfig);
         int numberOfLevels = ((TiledSurfaceImage) wmsLayer.getRenderable(0)).getLevelSet().numLevels();
 
-        assertFalse("levels updated", originalNumberOfLevels == numberOfLevels);
+        assertNotEquals("levels updated", originalNumberOfLevels, numberOfLevels);
     }
 }

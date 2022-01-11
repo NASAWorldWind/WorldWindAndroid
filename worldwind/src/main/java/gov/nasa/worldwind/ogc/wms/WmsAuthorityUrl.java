@@ -14,7 +14,7 @@ public class WmsAuthorityUrl extends WmsInfoUrl {
 
     protected String type;
 
-    protected List<String> formats = new ArrayList<>();
+    protected final List<String> formats = new ArrayList<>();
 
     protected String url;
 
@@ -36,14 +36,19 @@ public class WmsAuthorityUrl extends WmsInfoUrl {
 
     @Override
     public void parseField(String keyName, Object value) {
-        if (keyName.equals("Format")) {
-            this.formats.add((String) value);
-        } else if (keyName.equals("OnlineResource")) {
-            this.url = ((WmsOnlineResource) value).getUrl();
-        } else if (keyName.equals("type")) {
-            this.type = (String) value;
-        } else if (keyName.equals("name")) {
-            this.name = (String) value;
+        switch (keyName) {
+            case "Format":
+                this.formats.add((String) value);
+                break;
+            case "OnlineResource":
+                this.url = ((WmsOnlineResource) value).getUrl();
+                break;
+            case "type":
+                this.type = (String) value;
+                break;
+            case "name":
+                this.name = (String) value;
+                break;
         }
     }
 }

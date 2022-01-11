@@ -12,13 +12,13 @@ public class OwsServiceIdentification extends OwsDescription {
 
     protected String serviceType;
 
-    protected List<String> serviceTypeVersions = new ArrayList<>();
+    protected final List<String> serviceTypeVersions = new ArrayList<>();
 
-    protected List<String> profiles = new ArrayList<>();
+    protected final List<String> profiles = new ArrayList<>();
 
     protected String fees;
 
-    protected List<String> accessConstraints = new ArrayList<>();
+    protected final List<String> accessConstraints = new ArrayList<>();
 
     public OwsServiceIdentification() {
     }
@@ -42,16 +42,22 @@ public class OwsServiceIdentification extends OwsDescription {
     @Override
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
-        if (keyName.equals("ServiceType")) {
-            this.serviceType = (String) value;
-        } else if (keyName.equals("ServiceTypeVersion")) {
-            this.serviceTypeVersions.add((String) value);
-        } else if (keyName.equals("Fees")) {
-            this.fees = (String) value;
-        } else if (keyName.equals("AccessConstraints")) {
-            this.accessConstraints.add((String) value);
-        } else if (keyName.equals("Profile")) {
-            this.profiles.add((String) value);
+        switch (keyName) {
+            case "ServiceType":
+                this.serviceType = (String) value;
+                break;
+            case "ServiceTypeVersion":
+                this.serviceTypeVersions.add((String) value);
+                break;
+            case "Fees":
+                this.fees = (String) value;
+                break;
+            case "AccessConstraints":
+                this.accessConstraints.add((String) value);
+                break;
+            case "Profile":
+                this.profiles.add((String) value);
+                break;
         }
     }
 }

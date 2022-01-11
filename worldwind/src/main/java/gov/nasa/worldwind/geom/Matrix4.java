@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.geom;
 
+import androidx.annotation.NonNull;
+
 import java.util.Arrays;
 
 import gov.nasa.worldwind.util.Logger;
@@ -129,6 +131,7 @@ public class Matrix4 {
         return Arrays.hashCode(this.m);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "[" + this.m[0] + ", " + this.m[1] + ", " + this.m[2] + ", " + this.m[3] + "], " +
@@ -486,24 +489,23 @@ public class Matrix4 {
         double tanfovy_2 = Math.tan(Math.toRadians(fovyDegrees * 0.5));
         double nearHeight = 2 * nearDistance * tanfovy_2;
         double nearWidth = nearHeight * aspect;
-        double near = nearDistance;
 
         // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, equation 4.52.
 
-        this.m[0] = (2 * near) / nearWidth;
+        this.m[0] = (2 * nearDistance) / nearWidth;
         this.m[1] = 0;
         this.m[2] = 0;
         this.m[3] = 0;
 
         this.m[4] = 0;
-        this.m[5] = (2 * near) / nearHeight;
+        this.m[5] = (2 * nearDistance) / nearHeight;
         this.m[6] = 0;
         this.m[7] = 0;
 
         this.m[8] = 0;
         this.m[9] = 0;
         this.m[10] = -1;
-        this.m[11] = -2 * near;
+        this.m[11] = -2 * nearDistance;
 
         this.m[12] = 0;
         this.m[13] = 0;
@@ -569,25 +571,23 @@ public class Matrix4 {
         double tanfovy_2 = Math.tan(Math.toRadians(fovyDegrees * 0.5));
         double nearHeight = 2 * nearDistance * tanfovy_2;
         double nearWidth = nearHeight * aspect;
-        double near = nearDistance;
-        double far = farDistance;
 
         // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, equation 4.52.
 
-        this.m[0] = (2 * near) / nearWidth;
+        this.m[0] = (2 * nearDistance) / nearWidth;
         this.m[1] = 0;
         this.m[2] = 0;
         this.m[3] = 0;
 
         this.m[4] = 0;
-        this.m[5] = (2 * near) / nearHeight;
+        this.m[5] = (2 * nearDistance) / nearHeight;
         this.m[6] = 0;
         this.m[7] = 0;
 
         this.m[8] = 0;
         this.m[9] = 0;
-        this.m[10] = -(far + near) / (far - near);
-        this.m[11] = -(2 * near * far) / (far - near);
+        this.m[10] = -(farDistance + nearDistance) / (farDistance - nearDistance);
+        this.m[11] = -(2 * nearDistance * farDistance) / (farDistance - nearDistance);
 
         this.m[12] = 0;
         this.m[13] = 0;
@@ -640,16 +640,13 @@ public class Matrix4 {
         //
         // The result is that a point's z coordinate is effectively passed to the GPU without modification.
 
-        double width = viewportWidth;
-        double height = viewportHeight;
-
-        this.m[0] = 2 / width;
+        this.m[0] = 2 / viewportWidth;
         this.m[1] = 0;
         this.m[2] = 0;
         this.m[3] = -1;
 
         this.m[4] = 0;
-        this.m[5] = 2 / height;
+        this.m[5] = 2 / viewportHeight;
         this.m[6] = 0;
         this.m[7] = -1;
 

@@ -17,6 +17,7 @@ import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.util.Logger;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -34,7 +35,7 @@ public class EllipseTest {
     public void testDefaultConstructor() {
         Ellipse ellipse = new Ellipse();
 
-        assertTrue("default null position", ellipse.getCenter() == null);
+        assertNull("default null position", ellipse.getCenter());
         assertEquals("default zero major radius", 0, ellipse.majorRadius, 1e-9);
         assertEquals("default zero minor radius", 0, ellipse.minorRadius, 1e-9);
         assertEquals("default zero heading", 0, ellipse.heading, 1e-9);
@@ -114,7 +115,7 @@ public class EllipseTest {
 
         ellipse.setCenter(null);
 
-        assertEquals("set to null center setter", null, ellipse.center);
+        assertNull("set to null center setter", ellipse.center);
     }
 
     @Test

@@ -45,7 +45,7 @@ public class OmnidirectionalSightline extends AbstractRenderable implements Attr
     /**
      * The sightline's center position.
      */
-    protected Position position = new Position();
+    protected final Position position = new Position();
 
     /**
      * The sightline's altitude mode. See {@link gov.nasa.worldwind.WorldWind.AltitudeMode}
@@ -83,17 +83,17 @@ public class OmnidirectionalSightline extends AbstractRenderable implements Attr
      */
     protected boolean highlighted;
 
-    private Vec3 centerPoint = new Vec3();
+    private final Vec3 centerPoint = new Vec3();
 
-    private Vec3 scratchPoint = new Vec3();
+    private final Vec3 scratchPoint = new Vec3();
 
-    private Vec3 scratchVector = new Vec3();
+    private final Vec3 scratchVector = new Vec3();
 
     private int pickedObjectId;
 
     private Color pickColor = new Color();
 
-    private BoundingSphere boundingSphere = new BoundingSphere();
+    private final BoundingSphere boundingSphere = new BoundingSphere();
 
     /**
      * Constructs an OmnidirectionalSightline that displays the line-of-sight from a specified center position and

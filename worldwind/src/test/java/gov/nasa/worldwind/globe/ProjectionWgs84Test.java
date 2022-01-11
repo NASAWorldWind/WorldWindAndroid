@@ -40,7 +40,7 @@ public class ProjectionWgs84Test {
     private Globe globe;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // To accommodate WorldWind exception handling, we must mock all
         // the static methods in Logger to avoid calls to android.util.log
         PowerMockito.mockStatic(Logger.class);
@@ -50,7 +50,7 @@ public class ProjectionWgs84Test {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         this.globe = null;
     }
 
@@ -62,7 +62,7 @@ public class ProjectionWgs84Test {
     }
 
     @Test
-    public void testGetDisplayName() throws Exception {
+    public void testGetDisplayName() {
         ProjectionWgs84 wgs84 = new ProjectionWgs84();
 
         String string = wgs84.getDisplayName();
@@ -73,11 +73,9 @@ public class ProjectionWgs84Test {
     /**
      * Tests the cartesian coordinates against values defined in the NIMA WGS specifications:
      * http://earth-info.nga.mil/GandG/publications/tr8350.2/Addendum%20NIMA%20TR8350.2.pdf
-     *
-     * @throws Exception
      */
     @Test
-    public void testGeographicToCartesian() throws Exception {
+    public void testGeographicToCartesian() {
         ProjectionWgs84 wgs84 = new ProjectionWgs84();
         Map<String, Object[]> stations = getStations();
         for (Map.Entry<String, Object[]> station : stations.entrySet()) {
@@ -98,11 +96,9 @@ public class ProjectionWgs84Test {
 
     /**
      * Simply tests that the reciprocal method will regenerate the original value.
-     *
-     * @throws Exception
      */
     @Test
-    public void testGeographicToCartesian_Reciprocal() throws Exception {
+    public void testGeographicToCartesian_Reciprocal() {
         ProjectionWgs84 wgs84 = new ProjectionWgs84();
         double lat = 34.2;      // KOXR airport
         double lon = -119.2;
@@ -120,15 +116,12 @@ public class ProjectionWgs84Test {
 
     /**
      * Simple test ensures the computed normal aligns to an expected result.
-     *
-     * @throws Exception
      */
     @Test
-    public void testGeographicToCartesianNormal() throws Exception {
+    public void testGeographicToCartesianNormal() {
         ProjectionWgs84 wgs84 = new ProjectionWgs84();
         double lat = 34.2;  // KOXR airport
         double lon = -119.2;
-        double latRad = Math.toRadians(lat);
 
         Vec3 result = wgs84.geographicToCartesianNormal(globe, lat, lon, new Vec3());
 
@@ -140,11 +133,9 @@ public class ProjectionWgs84Test {
 
     /**
      * Ensures that transform matrix agrees with manual cartesian transform of a position.
-     *
-     * @throws Exception
      */
     @Test
-    public void testGeographicToCartesianTransform() throws Exception {
+    public void testGeographicToCartesianTransform() {
         // The expectation of geographicToCartesianTransform is that the
         // coordinate system is perpendicular to the geodetic tangent plane
         // at the position. So the Z axes points along the normal to the
@@ -178,7 +169,7 @@ public class ProjectionWgs84Test {
 
     @Ignore("not implemented yet.")
     @Test
-    public void testGeographicToCartesianGrid() throws Exception {
+    public void testGeographicToCartesianGrid() {
         ProjectionWgs84 wgs84 = new ProjectionWgs84();
 
         int stride = 5;
@@ -189,7 +180,6 @@ public class ProjectionWgs84Test {
         float verticalExaggeration = 1.0f;
         Sector sector = new Sector();
         Vec3 referencePoint = new Vec3();
-        Vec3 offset = new Vec3();
         float[] result = new float[count];
 
         wgs84.geographicToCartesianGrid(globe, sector, numLat, numLon, elevations, verticalExaggeration, referencePoint, result, stride, 0);
@@ -200,11 +190,9 @@ public class ProjectionWgs84Test {
     /**
      * Tests the geodetic coordinates against values defined in the NIMA WGS specifications:
      * http://earth-info.nga.mil/GandG/publications/tr8350.2/Addendum%20NIMA%20TR8350.2.pdf
-     *
-     * @throws Exception
      */
     @Test
-    public void testCartesianToGeographic() throws Exception {
+    public void testCartesianToGeographic() {
         ProjectionWgs84 wgs84 = new ProjectionWgs84();
         Map<String, Object[]> stations = getStations();
         for (Map.Entry<String, Object[]> station : stations.entrySet()) {
@@ -224,11 +212,9 @@ public class ProjectionWgs84Test {
 
     /**
      * Simply tests that the reciprocal method will regenerate the original value.
-     *
-     * @throws Exception
      */
     @Test
-    public void testCartesianToGeographic_Reciprocal() throws Exception {
+    public void testCartesianToGeographic_Reciprocal() {
         ProjectionWgs84 wgs84 = new ProjectionWgs84();
         double x = -4610466.9131683465; // KOXR airport
         double y = 3565379.0227454384;
@@ -247,11 +233,9 @@ public class ProjectionWgs84Test {
     /**
      * This test case was provided by the COE EMP team. Visually, it is obvious the Line in this examples has a
      * direction and origin that will not intersect the ellipsoid.
-     *
-     * @throws Exception
      */
     @Test
-    public void testEmpBackwardInstance() throws Exception {
+    public void testEmpBackwardInstance() {
         ProjectionWgs84 wgs84 = new ProjectionWgs84();
         Line ray = new Line(new Vec3(990474.8037403631, 3007310.9566306924, 5583923.602748461), new Vec3(-0.1741204769506282, 0.9711294099374702, -0.16306357245254538));
 
@@ -262,11 +246,9 @@ public class ProjectionWgs84Test {
 
     /**
      * An instance which is easily visualized for understanding the backwards intersection instance.
-     *
-     * @throws Exception
      */
     @Test
-    public void testSimpleBackwardsIntersection() throws Exception {
+    public void testSimpleBackwardsIntersection() {
         ProjectionWgs84 wgs84 = new ProjectionWgs84();
         Globe mockedGlobe = PowerMockito.mock(Globe.class);
         PowerMockito.when(mockedGlobe.getEquatorialRadius()).thenReturn(1.0);
@@ -280,11 +262,9 @@ public class ProjectionWgs84Test {
 
     /**
      * An instance which is easily visualized for understanding the forwards intersection instance.
-     *
-     * @throws Exception
      */
     @Test
-    public void testSimpleIntersection() throws Exception {
+    public void testSimpleIntersection() {
         ProjectionWgs84 wgs84 = new ProjectionWgs84();
         Globe mockedGlobe = PowerMockito.mock(Globe.class);
         PowerMockito.when(mockedGlobe.getEquatorialRadius()).thenReturn(1.0);
@@ -299,11 +279,9 @@ public class ProjectionWgs84Test {
     /**
      * An instance which demonstrates two intersections, but the closest, or first surface intersection position is
      * desired.
-     *
-     * @throws Exception
      */
     @Test
-    public void testSimpleTwoIntersection() throws Exception {
+    public void testSimpleTwoIntersection() {
         ProjectionWgs84 wgs84 = new ProjectionWgs84();
         Globe mockedGlobe = PowerMockito.mock(Globe.class);
         PowerMockito.when(mockedGlobe.getEquatorialRadius()).thenReturn(1.0);
@@ -321,11 +299,9 @@ public class ProjectionWgs84Test {
 
     /**
      * An instance which demonstrates two intersections with a ray originating within the ellipsoid.
-     *
-     * @throws Exception
      */
     @Test
-    public void testSimpleTwoIntersectionInternal() throws Exception {
+    public void testSimpleTwoIntersectionInternal() {
         ProjectionWgs84 wgs84 = new ProjectionWgs84();
         Globe mockedGlobe = PowerMockito.mock(Globe.class);
         PowerMockito.when(mockedGlobe.getEquatorialRadius()).thenReturn(1.0);
@@ -356,9 +332,9 @@ public class ProjectionWgs84Test {
     /**
      * Creates a Vec3 in the WorldWind coordinate system from WGS84 ECEF coordinates.
      *
-     * @param xEcef
-     * @param yEcef
-     * @param zEcef
+     * @param xEcef X coordinate
+     * @param yEcef Y coordinate
+     * @param zEcef Z coordinate
      *
      * @return a Vec3 compatible with the WorldWind graphics coordinate system.
      */

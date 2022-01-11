@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.geom;
 
+import androidx.annotation.NonNull;
+
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -83,6 +85,7 @@ public class Ellipsoid {
         return result;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "semiMajorAxis=" + this.semiMajorAxis + ", inverseFlattening=" + this.inverseFlattening;

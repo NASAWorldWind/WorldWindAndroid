@@ -15,7 +15,7 @@ import gov.nasa.worldwind.util.Pool;
 
 public class ShowTessellationLayer extends AbstractLayer {
 
-    protected Color color = new Color();
+    protected final Color color = new Color();
 
     public ShowTessellationLayer() {
         super("Terrain Tessellation");

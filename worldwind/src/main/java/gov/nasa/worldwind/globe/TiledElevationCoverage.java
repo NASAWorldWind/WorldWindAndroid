@@ -7,7 +7,6 @@ package gov.nasa.worldwind.globe;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.util.LongSparseArray;
 import android.util.SparseIntArray;
 
@@ -36,13 +35,13 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
 
     protected TileFactory tileFactory;
 
-    protected LruMemoryCache<Long, ImageSource> coverageSource;
+    protected final LruMemoryCache<Long, ImageSource> coverageSource;
 
-    protected LruMemoryCache<ImageSource, short[]> coverageCache;
+    protected final LruMemoryCache<ImageSource, short[]> coverageCache;
 
-    protected ElevationRetriever coverageRetriever;
+    protected final ElevationRetriever coverageRetriever;
 
-    protected Handler coverageHandler;
+    protected final Handler coverageHandler;
 
     protected boolean enableRetrieval;
 
@@ -52,12 +51,7 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         this.coverageSource = new LruMemoryCache<>(200);
         this.coverageCache = new LruMemoryCache<>(1024 * 1024 * 8);
         this.coverageRetriever = new ElevationRetriever(4);
-        this.coverageHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
-            @Override
-            public boolean handleMessage(Message msg) {
-                return false;
-            }
-        });
+        this.coverageHandler = new Handler(Looper.getMainLooper(), msg -> false);
 
         Logger.log(Logger.INFO, String.format(Locale.US, "Coverage cache initialized  %,.0f KB",
             this.coverageCache.getCapacity() / 1024.0));
@@ -296,9 +290,7 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         long lord = (tileMatrix.ordinal & 0xFFL); // 8 bits
         long lrow = (row & 0xFFFFFFFL); // 28 bits
         long lcol = (column & 0xFFFFFFFL); // 28 bits
-        long key = (lord << 56) | (lrow << 28) | lcol;
-
-        return key;
+        return (lord << 56) | (lrow << 28) | lcol;
     }
 
     protected void readHeightGrid(Sector gridSector, int gridWidth, int gridHeight, TileBlock tileBlock, float[] result) {
@@ -437,40 +429,38 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
         }
     }
 
-    public void retrievalSucceeded(Retriever retriever, ImageSource key, Void unused, ShortBuffer value) {
+    @Override
+    public void retrievalSucceeded(Retriever<ImageSource, Void, ShortBuffer> retriever, ImageSource key, Void unused, ShortBuffer value) {
         final ImageSource finalKey = key;
         final short[] finalArray = new short[value.remaining()];
         value.get(finalArray);
 
-        this.coverageHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                coverageCache.put(finalKey, finalArray, finalArray.length * 2);
-                updateTimestamp();
-                WorldWind.requestRedraw();
-            }
+        this.coverageHandler.post(() -> {
+            coverageCache.put(finalKey, finalArray, finalArray.length * 2);
+            updateTimestamp();
+            WorldWind.requestRedraw();
         });
 
         if (Logger.isLoggable(Logger.DEBUG)) {
-            Logger.log(Logger.DEBUG, "Coverage retrieval succeeded \'" + key + "\'");
+            Logger.log(Logger.DEBUG, "Coverage retrieval succeeded '" + key + "'");
         }
     }
 
     @Override
-    public void retrievalFailed(Retriever retriever, ImageSource key, Throwable ex) {
+    public void retrievalFailed(Retriever<ImageSource, Void, ShortBuffer> retriever, ImageSource key, Throwable ex) {
         if (ex instanceof SocketTimeoutException) { // log socket timeout exceptions while suppressing the stack trace
-            Logger.log(Logger.ERROR, "Socket timeout retrieving coverage \'" + key + "\'");
+            Logger.log(Logger.ERROR, "Socket timeout retrieving coverage '" + key + "'");
         } else if (ex != null) { // log checked exceptions with the entire stack trace
-            Logger.log(Logger.ERROR, "Coverage retrieval failed with exception \'" + key + "\'", ex);
+            Logger.log(Logger.ERROR, "Coverage retrieval failed with exception '" + key + "'", ex);
         } else {
-            Logger.log(Logger.ERROR, "Coverage retrieval failed \'" + key + "\'");
+            Logger.log(Logger.ERROR, "Coverage retrieval failed '" + key + "'");
         }
     }
 
     @Override
-    public void retrievalRejected(Retriever retriever, ImageSource key) {
+    public void retrievalRejected(Retriever<ImageSource, Void, ShortBuffer> retriever, ImageSource key) {
         if (Logger.isLoggable(Logger.DEBUG)) {
-            Logger.log(Logger.DEBUG, "Coverage retrieval rejected \'" + key + "\'");
+            Logger.log(Logger.DEBUG, "Coverage retrieval rejected '" + key + "'");
         }
     }
 
@@ -478,11 +468,11 @@ public class TiledElevationCoverage extends AbstractElevationCoverage implements
 
         public TileMatrix tileMatrix;
 
-        public SparseIntArray rows = new SparseIntArray();
+        public final SparseIntArray rows = new SparseIntArray();
 
-        public SparseIntArray cols = new SparseIntArray();
+        public final SparseIntArray cols = new SparseIntArray();
 
-        public LongSparseArray<short[]> arrays = new LongSparseArray<>();
+        public final LongSparseArray<short[]> arrays = new LongSparseArray<>();
 
         private int texelRow = -1;
 

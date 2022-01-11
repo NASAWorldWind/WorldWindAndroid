@@ -21,20 +21,17 @@ public class DrawableQueue {
     /**
      * Sorts drawables by ascending group ID, then ascending order, then by ascending ordinal.
      */
-    protected Comparator<Entry> sortComparator = new Comparator<Entry>() {
-        @Override
-        public int compare(Entry lhs, Entry rhs) {
-            if (lhs.groupId < rhs.groupId) { // sort by ascending group ID
-                return -1;
-            } else if (lhs.groupId > rhs.groupId) {
-                return 1;
-            } else if (lhs.order < rhs.order) { // sort by ascending order
-                return -1;
-            } else if (lhs.order > rhs.order) {
-                return 1;
-            } else { // sort by ascending ordinal
-                return lhs.ordinal - rhs.ordinal;
-            }
+    protected final Comparator<Entry> sortComparator = (lhs, rhs) -> {
+        if (lhs.groupId < rhs.groupId) { // sort by ascending group ID
+            return -1;
+        } else if (lhs.groupId > rhs.groupId) {
+            return 1;
+        } else if (lhs.order < rhs.order) { // sort by ascending order
+            return -1;
+        } else if (lhs.order > rhs.order) {
+            return 1;
+        } else { // sort by ascending ordinal
+            return lhs.ordinal - rhs.ordinal;
         }
     };
 

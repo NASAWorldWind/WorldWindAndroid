@@ -8,7 +8,7 @@ package gov.nasa.worldwind.layer.graticule;
 import android.content.res.Resources;
 import android.graphics.Typeface;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import gov.nasa.worldwind.geom.Sector;
@@ -54,7 +54,8 @@ public class UTMGraticuleLayer extends AbstractUTMGraticuleLayer implements Grid
 
     @Override
     protected List<String> getOrderedTypes() {
-        List<String> orderedTypes = Arrays.asList(GRATICULE_UTM_ZONE);
+        List<String> orderedTypes = new ArrayList<>();
+        orderedTypes.add(GRATICULE_UTM_ZONE);
         orderedTypes.addAll(super.getOrderedTypes());
         return orderedTypes;
     }

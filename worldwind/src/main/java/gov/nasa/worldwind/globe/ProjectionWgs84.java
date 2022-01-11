@@ -22,7 +22,7 @@ import gov.nasa.worldwind.util.Logger;
  */
 public class ProjectionWgs84 implements GeographicProjection {
 
-    private Position scratchPos = new Position();
+    private final Position scratchPos = new Position();
 
     /**
      * Constructs a WGS 84 geographic projection.
@@ -394,12 +394,11 @@ public class ProjectionWgs84 implements GeographicProjection {
                 double rad2 = Math.sqrt(e4 * p * q);
 
                 // 10*e2 is my arbitrary decision of what Vermeille means by "near... the cusps of the evolute".
+                double rad = Math.cbrt((rad1 + rad2) * (rad1 + rad2));
                 if (evoluteBorderTest > 10 * e2) {
-                    double rad3 = Math.cbrt((rad1 + rad2) * (rad1 + rad2));
-                    u = r + 0.5 * rad3 + 2 * r * r / rad3;
+                    u = r + 0.5 * rad + 2 * r * r / rad;
                 } else {
-                    u = r + 0.5 * Math.cbrt((rad1 + rad2) * (rad1 + rad2)) + 0.5 * Math.cbrt(
-                        (rad1 - rad2) * (rad1 - rad2));
+                    u = r + 0.5 * rad + 0.5 * Math.cbrt((rad1 - rad2) * (rad1 - rad2));
                 }
             } else {
                 // Step 3: near evolute

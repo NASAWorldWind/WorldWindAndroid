@@ -45,27 +45,27 @@ public class Polygon extends AbstractShape {
 
     protected static final ImageOptions defaultOutlineImageOptions = new ImageOptions();
 
-    protected List<List<Position>> boundaries = new ArrayList<>();
+    protected final List<List<Position>> boundaries = new ArrayList<>();
 
     protected boolean extrude;
 
     protected boolean followTerrain;
 
-    protected FloatArray vertexArray = new FloatArray();
+    protected final FloatArray vertexArray = new FloatArray();
 
-    protected ShortArray topElements = new ShortArray();
+    protected final ShortArray topElements = new ShortArray();
 
-    protected ShortArray sideElements = new ShortArray();
+    protected final ShortArray sideElements = new ShortArray();
 
-    protected ShortArray outlineElements = new ShortArray();
+    protected final ShortArray outlineElements = new ShortArray();
 
-    protected ShortArray verticalElements = new ShortArray();
+    protected final ShortArray verticalElements = new ShortArray();
 
     protected Object vertexBufferKey = nextCacheKey();
 
     protected Object elementBufferKey = nextCacheKey();
 
-    protected Vec3 vertexOrigin = new Vec3();
+    protected final Vec3 vertexOrigin = new Vec3();
 
     protected boolean isSurfaceShape;
 
@@ -73,7 +73,7 @@ public class Polygon extends AbstractShape {
 
     protected double texCoord1d;
 
-    protected GLUtessellatorCallbackAdapter tessCallback = new GLUtessellatorCallbackAdapter() {
+    protected final GLUtessellatorCallbackAdapter tessCallback = new GLUtessellatorCallbackAdapter() {
         @Override
         public void combineData(double[] coords, Object[] data, float[] weight, Object[] outData, Object polygonData) {
             tessCombine((RenderContext) polygonData, coords, data, weight, outData);
@@ -101,23 +101,23 @@ public class Polygon extends AbstractShape {
 
     protected static final int VERTEX_COMBINED = 2;
 
-    private Vec3 point = new Vec3();
+    private final Vec3 point = new Vec3();
 
-    private Vec3 prevPoint = new Vec3();
+    private final Vec3 prevPoint = new Vec3();
 
-    private Vec3 texCoord2d = new Vec3();
+    private final Vec3 texCoord2d = new Vec3();
 
-    private Matrix3 texCoordMatrix = new Matrix3();
+    private final Matrix3 texCoordMatrix = new Matrix3();
 
-    private Matrix4 modelToTexCoord = new Matrix4();
+    private final Matrix4 modelToTexCoord = new Matrix4();
 
-    private Location intermediateLocation = new Location();
+    private final Location intermediateLocation = new Location();
 
-    private double[] tessCoords = new double[3];
+    private final double[] tessCoords = new double[3];
 
-    private int[] tessVertices = new int[3];
+    private final int[] tessVertices = new int[3];
 
-    private boolean[] tessEdgeFlags = new boolean[3];
+    private final boolean[] tessEdgeFlags = new boolean[3];
 
     private boolean tessEdgeFlag = true;
 
@@ -547,11 +547,10 @@ public class Polygon extends AbstractShape {
                 this.vertexOrigin.set(point);
             }
             this.texCoord1d = 0;
-            this.prevPoint.set(point);
         } else {
             this.texCoord1d += point.distanceTo(this.prevPoint);
-            this.prevPoint.set(point);
         }
+        this.prevPoint.set(point);
 
         if (this.isSurfaceShape) {
             this.vertexArray.add((float) (longitude - this.vertexOrigin.x));
@@ -612,7 +611,7 @@ public class Polygon extends AbstractShape {
         my /= numPoints;
         mz /= numPoints;
 
-        this.modelToTexCoord = rc.globe.cartesianToLocalTransform(mx, my, mz, this.modelToTexCoord);
+        rc.globe.cartesianToLocalTransform(mx, my, mz, this.modelToTexCoord);
         this.modelToTexCoord.invertOrthonormal();
     }
 
@@ -671,6 +670,6 @@ public class Polygon extends AbstractShape {
 
     protected void tessError(RenderContext rc, int errnum) {
         String errstr = GLU.gluErrorString(errnum);
-        Logger.logMessage(Logger.WARN, "Polygon", "assembleGeometry", "Error attempting to tessellate polygon \'" + errstr + "\'");
+        Logger.logMessage(Logger.WARN, "Polygon", "assembleGeometry", "Error attempting to tessellate polygon '" + errstr + "'");
     }
 }

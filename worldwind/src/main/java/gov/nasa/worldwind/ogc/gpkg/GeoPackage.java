@@ -23,23 +23,23 @@ public class GeoPackage {
 
     protected SQLiteConnection connection;
 
-    protected List<GpkgSpatialReferenceSystem> spatialReferenceSystem = new ArrayList<>();
+    protected final List<GpkgSpatialReferenceSystem> spatialReferenceSystem = new ArrayList<>();
 
-    protected List<GpkgContent> content = new ArrayList<>();
+    protected final List<GpkgContent> content = new ArrayList<>();
 
-    protected List<GpkgTileMatrixSet> tileMatrixSet = new ArrayList<>();
+    protected final List<GpkgTileMatrixSet> tileMatrixSet = new ArrayList<>();
 
-    protected List<GpkgTileMatrix> tileMatrix = new ArrayList<>();
+    protected final List<GpkgTileMatrix> tileMatrix = new ArrayList<>();
 
-    protected List<GpkgTileUserMetrics> tileUserMetrics = new ArrayList<>();
+    protected final List<GpkgTileUserMetrics> tileUserMetrics = new ArrayList<>();
 
-    protected SparseIntArray srsIdIndex = new SparseIntArray();
+    protected final SparseIntArray srsIdIndex = new SparseIntArray();
 
-    protected Map<String, Integer> tileMatrixSetIndex = new HashMap<>();
+    protected final Map<String, Integer> tileMatrixSetIndex = new HashMap<>();
 
-    protected Map<String, SparseArray<GpkgTileMatrix>> tileMatrixIndex = new HashMap<>();
+    protected final Map<String, SparseArray<GpkgTileMatrix>> tileMatrixIndex = new HashMap<>();
 
-    protected Map<String, GpkgTileUserMetrics> tileUserMetricsIndex = new HashMap<>();
+    protected final Map<String, GpkgTileUserMetrics> tileUserMetricsIndex = new HashMap<>();
 
     public GeoPackage(String pathName) {
         if (pathName == null) {
@@ -198,7 +198,7 @@ public class GeoPackage {
                 int index = this.tileMatrixSet.size();
                 this.tileMatrixSet.add(tileMatrixSet);
                 this.tileMatrixSetIndex.put(tileMatrixSet.getTableName(), index);
-                this.tileMatrixIndex.put(tileMatrixSet.getTableName(), new SparseArray<GpkgTileMatrix>());
+                this.tileMatrixIndex.put(tileMatrixSet.getTableName(), new SparseArray<>());
             }
         } finally {
             WWUtil.closeSilently(cursor);
@@ -234,7 +234,10 @@ public class GeoPackage {
                 tileMatrix.setPixelXSize(cursor.getDouble(pixel_x_size));
                 tileMatrix.setPixelYSize(cursor.getDouble(pixel_y_size));
                 this.tileMatrix.add(tileMatrix);
-                this.tileMatrixIndex.get(tileMatrix.getTableName()).put(tileMatrix.getZoomLevel(), tileMatrix);
+                SparseArray<GpkgTileMatrix> index = this.tileMatrixIndex.get(tileMatrix.getTableName());
+                if (index != null) {
+                    index.put(tileMatrix.getZoomLevel(), tileMatrix);
+                }
             }
         } finally {
             WWUtil.closeSilently(cursor);

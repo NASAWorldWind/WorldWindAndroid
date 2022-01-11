@@ -32,12 +32,16 @@ public class WmsAttribution extends XmlModel {
 
     @Override
     public void parseField(String keyName, Object value) {
-        if (keyName.equals("Title")) {
-            this.title = (String) value;
-        } else if (keyName.equals("OnlineResource")) {
-            this.url = ((WmsOnlineResource) value).getUrl();
-        } else if (keyName.equals("LogoURL")) {
-            this.logoUrl = (WmsLogoUrl) value;
+        switch (keyName) {
+            case "Title":
+                this.title = (String) value;
+                break;
+            case "OnlineResource":
+                this.url = ((WmsOnlineResource) value).getUrl();
+                break;
+            case "LogoURL":
+                this.logoUrl = (WmsLogoUrl) value;
+                break;
         }
     }
 }

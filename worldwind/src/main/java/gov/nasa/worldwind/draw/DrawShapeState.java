@@ -22,7 +22,7 @@ public class DrawShapeState {
 
     public BufferObject elementBuffer;
 
-    public Vec3 vertexOrigin = new Vec3();
+    public final Vec3 vertexOrigin = new Vec3();
 
     public int vertexStride;
 
@@ -32,19 +32,19 @@ public class DrawShapeState {
 
     public double depthOffset;
 
-    protected Color color = new Color();
+    protected final Color color = new Color();
 
     protected float lineWidth = 1;
 
     protected Texture texture;
 
-    protected Matrix3 texCoordMatrix = new Matrix3();
+    protected final Matrix3 texCoordMatrix = new Matrix3();
 
-    protected VertexAttrib texCoordAttrib = new VertexAttrib();
+    protected final VertexAttrib texCoordAttrib = new VertexAttrib();
 
     protected int primCount;
 
-    protected DrawElements[] prims = new DrawElements[MAX_DRAW_ELEMENTS];
+    protected final DrawElements[] prims = new DrawElements[MAX_DRAW_ELEMENTS];
 
     public DrawShapeState() {
         for (int idx = 0; idx < MAX_DRAW_ELEMENTS; idx++) {
@@ -119,15 +119,15 @@ public class DrawShapeState {
 
         public int offset;
 
-        public Color color = new Color();
+        public final Color color = new Color();
 
         public float lineWidth;
 
         public Texture texture;
 
-        public Matrix3 texCoordMatrix = new Matrix3();
+        public final Matrix3 texCoordMatrix = new Matrix3();
 
-        public VertexAttrib texCoordAttrib = new VertexAttrib();
+        public final VertexAttrib texCoordAttrib = new VertexAttrib();
     }
 
     protected static class VertexAttrib {

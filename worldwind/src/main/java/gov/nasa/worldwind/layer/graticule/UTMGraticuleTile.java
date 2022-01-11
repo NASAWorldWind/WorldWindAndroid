@@ -77,7 +77,7 @@ class UTMGraticuleTile extends AbstractGraticuleTile {
         UTM = UTMCoord.fromLatLon(this.getSector().minLatitude(), this.getSector().minLongitude());
         double minEasting = UTM.getEasting();
         UTM = UTMCoord.fromLatLon(this.getSector().maxLatitude(), this.getSector().minLongitude());
-        minEasting = UTM.getEasting() < minEasting ? UTM.getEasting() : minEasting;
+        minEasting = Math.min(UTM.getEasting(), minEasting);
         double maxEasting = 1e6 - minEasting;
 
         // Create squares
@@ -92,7 +92,6 @@ class UTMGraticuleTile extends AbstractGraticuleTile {
         List<Position> positions = new ArrayList<>();
 
         // Generate west meridian
-        positions.clear();
         positions.add(Position.fromDegrees(this.getSector().minLatitude(), this.getSector().minLongitude(), 0));
         positions.add(Position.fromDegrees(this.getSector().maxLatitude(), this.getSector().minLongitude(), 0));
         Renderable polyline = getLayer().createLineRenderable(new ArrayList<>(positions), WorldWind.LINEAR);

@@ -41,7 +41,7 @@ import gov.nasa.worldwind.util.WWUtil;
  */
 public class Wcs201ElevationCoverage extends TiledElevationCoverage {
 
-    protected Handler handler = new Handler(Looper.getMainLooper());
+    protected final Handler handler = new Handler(Looper.getMainLooper());
 
     /**
      * Constructs a Web Coverage Service (WCS) elevation coverage with specified WCS configuration values.
@@ -73,11 +73,6 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
         if (coverage == null) {
             throw new IllegalArgumentException(
                 Logger.makeMessage("Wcs201ElevationCoverage", "constructor", "missingCoverage"));
-        }
-
-        if (numLevels < 0) {
-            throw new IllegalArgumentException(
-                Logger.makeMessage("Wcs201ElevationCoverage", "constructor", "The number of levels must be greater than 0"));
         }
 
         int matrixWidth = sector.isFullSphere() ? 2 : 1;
@@ -114,15 +109,12 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
         // Fetch the DescribeCoverage document and determine the bounding box and number of levels
         final String finalServiceAddress = serviceAddress;
         final String finalCoverageId = coverage;
-        WorldWind.taskService().execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    initAsync(finalServiceAddress, finalCoverageId);
-                } catch (Throwable logged) {
-                    Logger.logMessage(Logger.ERROR, "Wcs201ElevationCoverage", "constructor",
-                        "Exception initializing WCS coverage serviceAddress:" + finalServiceAddress + " coverage:" + finalCoverageId, logged);
-                }
+        WorldWind.taskService().execute(() -> {
+            try {
+                initAsync(finalServiceAddress, finalCoverageId);
+            } catch (Throwable logged) {
+                Logger.logMessage(Logger.ERROR, "Wcs201ElevationCoverage", "constructor",
+                    "Exception initializing WCS coverage serviceAddress:" + finalServiceAddress + " coverage:" + finalCoverageId, logged);
             }
         });
     }
@@ -138,13 +130,10 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
         final TileFactory factory = new Wcs201TileFactory(serviceAddress, coverage);
         final TileMatrixSet matrixSet = this.tileMatrixSetFromCoverageDescription(coverageDescription);
 
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                setTileFactory(factory);
-                setTileMatrixSet(matrixSet);
-                WorldWind.requestRedraw();
-            }
+        handler.post(() -> {
+            setTileFactory(factory);
+            setTileMatrixSet(matrixSet);
+            WorldWind.requestRedraw();
         });
     }
 
@@ -196,7 +185,7 @@ public class Wcs201ElevationCoverage extends TiledElevationCoverage {
 
     protected Wcs201CoverageDescriptions describeCoverage(String serviceAddress, String coverageId) throws Exception {
         InputStream inputStream = null;
-        Object responseXml = null;
+        Object responseXml;
         try {
             // Build the appropriate request Uri given the provided service address
             Uri serviceUri = Uri.parse(serviceAddress).buildUpon()

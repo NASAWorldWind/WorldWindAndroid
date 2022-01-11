@@ -56,20 +56,28 @@ public class WmsDimension extends XmlModel {
 
     @Override
     public void parseField(String keyName, Object value) {
-        if (keyName.equals("name")) {
-            this.name = (String) value;
-        } else if (keyName.equals("units")) {
-            this.units = (String) value;
-        } else if (keyName.equals("unitSymbol")) {
-            this.unitSymbol = (String) value;
-        } else if (keyName.equals("default")) {
-            this.defaultValue = (String) value;
-        } else if (keyName.equals("multipleValues")) {
-            this.multipleValues = Boolean.parseBoolean((String) value);
-        } else if (keyName.equals("nearestValue")) {
-            this.nearestValue = Boolean.parseBoolean((String) value);
-        } else if (keyName.equals("current")) {
-            this.current = Boolean.parseBoolean((String) value);
+        switch (keyName) {
+            case "name":
+                this.name = (String) value;
+                break;
+            case "units":
+                this.units = (String) value;
+                break;
+            case "unitSymbol":
+                this.unitSymbol = (String) value;
+                break;
+            case "default":
+                this.defaultValue = (String) value;
+                break;
+            case "multipleValues":
+                this.multipleValues = Boolean.parseBoolean((String) value);
+                break;
+            case "nearestValue":
+                this.nearestValue = Boolean.parseBoolean((String) value);
+                break;
+            case "current":
+                this.current = Boolean.parseBoolean((String) value);
+                break;
         }
     }
 }

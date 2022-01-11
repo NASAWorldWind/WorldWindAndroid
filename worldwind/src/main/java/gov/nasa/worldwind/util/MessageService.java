@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class MessageService {
 
-    protected List<MessageListener> listenerList = new ArrayList<>();
+    protected final List<MessageListener> listenerList = new ArrayList<>();
 
     public MessageService() {
     }

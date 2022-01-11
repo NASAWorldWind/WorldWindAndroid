@@ -28,7 +28,7 @@ public class SightlineProgram extends ShaderProgram {
 
     protected int colorId;
 
-    private float[] array = new float[32];
+    private final float[] array = new float[32];
 
     public SightlineProgram(Resources resources) {
         try {

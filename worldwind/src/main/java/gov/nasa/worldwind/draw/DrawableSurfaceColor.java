@@ -17,7 +17,7 @@ public class DrawableSurfaceColor implements Drawable {
 
     public Color color = new Color();
 
-    private Matrix4 mvpMatrix = new Matrix4();
+    private final Matrix4 mvpMatrix = new Matrix4();
 
     private Pool<DrawableSurfaceColor> pool;
 

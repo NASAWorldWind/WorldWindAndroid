@@ -21,19 +21,19 @@ public class DrawableSightline implements Drawable {
 
     public float range;
 
-    public Color visibleColor = new Color(0, 0, 0, 0);
+    public final Color visibleColor = new Color(0, 0, 0, 0);
 
-    public Color occludedColor = new Color(0, 0, 0, 0);
+    public final Color occludedColor = new Color(0, 0, 0, 0);
 
     public SightlineProgram program = null;
 
-    private Matrix4 sightlineView = new Matrix4();
+    private final Matrix4 sightlineView = new Matrix4();
 
-    private Matrix4 matrix = new Matrix4();
+    private final Matrix4 matrix = new Matrix4();
 
-    private Matrix4 cubeMapProjection = new Matrix4();
+    private final Matrix4 cubeMapProjection = new Matrix4();
 
-    private Matrix4[] cubeMapFace = {
+    private final Matrix4[] cubeMapFace = {
         new Matrix4().setToRotation(0, 0, 1, -90).multiplyByRotation(1, 0, 0, 90), // positive X
         new Matrix4().setToRotation(0, 0, 1, 90).multiplyByRotation(1, 0, 0, 90), // negative X
         new Matrix4().setToRotation(1, 0, 0, 90), // positive Y
@@ -85,9 +85,9 @@ public class DrawableSightline implements Drawable {
         // TODO accumulate only the visible terrain, which can be used in both passes
         // TODO give terrain a bounding box, test with a frustum set using depthviewProjection
 
-        for (int idx = 0, len = this.cubeMapFace.length; idx < len; idx++) {
+        for (Matrix4 m : this.cubeMapFace) {
             this.sightlineView.set(this.centerTransform);
-            this.sightlineView.multiplyByMatrix(this.cubeMapFace[idx]);
+            this.sightlineView.multiplyByMatrix(m);
             this.sightlineView.invertOrthonormal();
 
             if (this.drawSceneDepth(dc)) {

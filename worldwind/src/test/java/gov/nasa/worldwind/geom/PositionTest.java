@@ -38,11 +38,9 @@ public class PositionTest {
 
     /**
      * Tests default constructor's member initialization.
-     *
-     * @throws Exception
      */
     @Test
-    public void testConstructor_Default() throws Exception {
+    public void testConstructor_Default() {
 
         Position position = new Position();
 
@@ -54,11 +52,9 @@ public class PositionTest {
 
     /**
      * Tests constructor from degrees member  initialization.
-     *
-     * @throws Exception
      */
     @Test
-    public void testConstructor_Degrees() throws Exception {
+    public void testConstructor_Degrees() {
         double lat = 34.2; // KOXR Airport
         double lon = -119.2;
         double elev = 13.7; // 45'
@@ -73,11 +69,9 @@ public class PositionTest {
 
     /**
      * Tests the copy constructor.
-     *
-     * @throws Exception
      */
     @Test
-    public void testConstructor_Copy() throws Exception {
+    public void testConstructor_Copy() {
         // KOXR Airport
         double lat = 34.2;
         double lon = -119.2;
@@ -94,13 +88,11 @@ public class PositionTest {
 
     /**
      * Ensures null argument is handled correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructor_WithNull() throws Exception {
+    public void testConstructor_WithNull() {
 
-        Position position = new Position(null);
+        new Position(null);
 
         fail("Expected an IllegalArgumentException to be thrown.");
     }
@@ -108,11 +100,9 @@ public class PositionTest {
 
     /**
      * Tests the factory method using decimal degrees and meters.
-     *
-     * @throws Exception
      */
     @Test
-    public void testFromDegrees() throws Exception {
+    public void testFromDegrees() {
         double lat = 34.2; // KOXR Airport
         double lon = -119.2;
         double elev = 13.7; // 45'
@@ -128,11 +118,9 @@ public class PositionTest {
 
     /**
      * Tests the factory method using radians and meters.
-     *
-     * @throws Exception
      */
     @Test
-    public void testFromRadians() throws Exception {
+    public void testFromRadians() {
         double lat = 34.2; // KOXR Airport
         double lon = -119.2;
         double elev = 13.7; // 45'
@@ -149,11 +137,9 @@ public class PositionTest {
 
     /**
      * Tests equality.
-     *
-     * @throws Exception
      */
     @Test
-    public void testEquals() throws Exception {
+    public void testEquals() {
         double lat = 34.2; // KOXR Airport
         double lon = -119.2;
         double elev = 13.7; // 45'
@@ -170,11 +156,9 @@ public class PositionTest {
 
     /**
      * Tests inequality.
-     *
-     * @throws Exception
      */
     @Test
-    public void testEquals_Inequality() throws Exception {
+    public void testEquals_Inequality() {
         // KOXR Airport
         double lat = 34.2;
         double lon = -119.2;
@@ -193,11 +177,9 @@ public class PositionTest {
 
     /**
      * Ensures hash codes are unique.
-     *
-     * @throws Exception
      */
     @Test
-    public void testHashCode() throws Exception {
+    public void testHashCode() {
         Position oxr = Position.fromDegrees(34.2, -119.2, 13.7);
         Position lax = Position.fromDegrees(33.94, -118.4, 38.7);
 
@@ -209,11 +191,9 @@ public class PositionTest {
 
     /**
      * Ensures string output contains member representations.
-     *
-     * @throws Exception
      */
     @Test
-    public void testToString() throws Exception {
+    public void testToString() {
         // KOXR Airport
         double lat = 34.2;
         double lon = -119.2;
@@ -230,11 +210,9 @@ public class PositionTest {
 
     /**
      * Test that we read back the same Location data that we set.
-     *
-     * @throws Exception
      */
     @Test
-    public void testSet() throws Exception {
+    public void testSet() {
         // KOXR Airport
         double lat = 34.2;
         double lon = -119.2;
@@ -251,11 +229,9 @@ public class PositionTest {
 
     /**
      * Tests that we read back the same doubles we set.
-     *
-     * @throws Exception
      */
     @Test
-    public void testSet_WithDoubles() throws Exception {
+    public void testSet_WithDoubles() {
         // KOXR Airport
         double lat = 34.2;
         double lon = -119.2;
@@ -271,11 +247,9 @@ public class PositionTest {
 
     /**
      * Tests that we handled a null argument correctly.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testSet_WithNull() throws Exception {
+    public void testSet_WithNull() {
         Position position = new Position();
 
         position.set(null);
@@ -286,11 +260,9 @@ public class PositionTest {
     /**
      * Tests the great circle path interpolation. Ensures the interpolated position lies on the great circle path
      * between start and end.
-     *
-     * @throws Exception
      */
     @Test
-    public void testInterpolateAlongPath() throws Exception {
+    public void testInterpolateAlongPath() {
         Position lax = Position.fromDegrees(33.94, -118.4, 38.7);
         Position oxr = Position.fromDegrees(34.2, -119.2, 13.7);
         double distanceToOxr = lax.greatCircleDistance(oxr);
@@ -309,11 +281,9 @@ public class PositionTest {
     /**
      * Tests the rhumbline path interpolation. Ensures the interpolated position lies on the rhumb line path between
      * start and end.
-     *
-     * @throws Exception
      */
     @Test
-    public void testInterpolateAlongPath_Rhumbline() throws Exception {
+    public void testInterpolateAlongPath_Rhumbline() {
         Position lax = Position.fromDegrees(33.94, -118.4, 38.7);
         Position oxr = Position.fromDegrees(34.2, -119.2, 13.7);
         double distanceToOxr = lax.rhumbDistance(oxr);
@@ -332,11 +302,9 @@ public class PositionTest {
     /**
      * Tests the linear path interpolation. Ensures the interpolated position lies on the linear path between start and
      * end.
-     *
-     * @throws Exception
      */
     @Test
-    public void testInterpolateAlongPath_Linear() throws Exception {
+    public void testInterpolateAlongPath_Linear() {
         Position lax = Position.fromDegrees(33.94, -118.4, 38.7);
         Position oxr = Position.fromDegrees(34.2, -119.2, 13.7);
         double distanceToOxr = lax.linearDistance(oxr);
@@ -355,13 +323,10 @@ public class PositionTest {
 
     /**
      * Tests the handling of a null end point.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testInterpolateAlongPath_NullEnd() throws Exception {
+    public void testInterpolateAlongPath_NullEnd() {
         Position lax = Position.fromDegrees(33.94, -118.4, 38.7);
-        Position oxr = Position.fromDegrees(34.2, -119.2, 13.7);
         double amount = 0.25; // percent
 
         lax.interpolateAlongPath(null, WorldWind.LINEAR, amount, new Position());
@@ -371,11 +336,9 @@ public class PositionTest {
 
     /**
      * Tests the handling of a null result.
-     *
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testInterpolateAlongPath_NullResult() throws Exception {
+    public void testInterpolateAlongPath_NullResult() {
         Position lax = Position.fromDegrees(33.94, -118.4, 38.7);
         Position oxr = Position.fromDegrees(34.2, -119.2, 13.7);
         double amount = 0.25; // percent

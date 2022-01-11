@@ -35,12 +35,8 @@ public class Matrix3Test {
         PowerMockito.mockStatic(Logger.class);
     }
 
-
-    /**
-     * @throws Exception
-     */
     @Test
-    public void testConstructor_Default() throws Exception {
+    public void testConstructor_Default() {
         Matrix3 m1 = new Matrix3();
 
         assertNotNull(m1);
@@ -48,7 +44,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testConstructor_Doubles() throws Exception {
+    public void testConstructor_Doubles() {
         Matrix3 m1 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
         final double[] elements = {11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d}; // identical
 
@@ -57,7 +53,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testEquals() throws Exception {
+    public void testEquals() {
         Matrix3 m1 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
         Matrix3 m2 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d); // identical
 
@@ -66,7 +62,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testEquals_Inequality() throws Exception {
+    public void testEquals_Inequality() {
         Matrix3 m1 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
         Matrix3 m2 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 0d); // last element is different
 
@@ -74,14 +70,14 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testEquals_WithNull() throws Exception {
+    public void testEquals_WithNull() {
         Matrix3 m1 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
 
         assertNotEquals("null matrix", null, m1);
     }
 
     @Test
-    public void testHashCode() throws Exception {
+    public void testHashCode() {
         Matrix3 m1 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
         Matrix3 m2 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 0d);
 
@@ -92,7 +88,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testToString() throws Exception {
+    public void testToString() {
         String string = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d).toString();
 
         assertTrue("all elements in proper order", string.contains("[11.0, 12.0, 13.0], [21.0, 22.0, 23.0], [31.0, 32.0, 33.0]"));
@@ -100,7 +96,7 @@ public class Matrix3Test {
 
 
     @Test
-    public void testSet() throws Exception {
+    public void testSet() {
         Matrix3 m1 = new Matrix3(); // matrix under test
         Matrix3 m2 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
 
@@ -111,7 +107,7 @@ public class Matrix3Test {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSet_WithNull() throws Exception {
+    public void testSet_WithNull() {
         //PowerMockito.mockStatic(Logger.class);
         Matrix3 m1 = new Matrix3(); // matrix under test
 
@@ -121,7 +117,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testSet_Doubles() throws Exception {
+    public void testSet_Doubles() {
         final double m11 = 11d;
         final double m12 = 12d;
         final double m13 = 13d;
@@ -148,7 +144,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testSetTranslation() throws Exception {
+    public void testSetTranslation() {
         Matrix3 m1 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
         Matrix3 m2 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);  // identical
         final double dx = 5d;
@@ -173,7 +169,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testSetRotation() throws Exception {
+    public void testSetRotation() {
         Matrix3 m1 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
         Matrix3 m2 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);  // identical
         final double theta = 30d;    // rotation angle degrees
@@ -199,7 +195,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testSetScale() throws Exception {
+    public void testSetScale() {
         Matrix3 m1 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
         Matrix3 m2 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);  // identical
         final double sx = 5d;
@@ -224,7 +220,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testSetToIdentity() throws Exception {
+    public void testSetToIdentity() {
         Matrix3 m1 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
 
         Matrix3 m2 = m1.setToIdentity();
@@ -234,7 +230,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testSetToTranslation() throws Exception {
+    public void testSetToTranslation() {
         Matrix3 m1 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
         final double dx = 5d;
         final double dy = 7d;
@@ -258,7 +254,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testSetToRotation() throws Exception {
+    public void testSetToRotation() {
         Matrix3 m1 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
         final double theta = 30d;    // rotation angle degrees
         final double c = Math.cos(Math.toRadians(theta));
@@ -284,7 +280,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testSetToScale() throws Exception {
+    public void testSetToScale() {
         Matrix3 m1 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
         final double sx = 5d;
         final double sy = 7d;
@@ -308,7 +304,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testSetToVerticalFlip() throws Exception {
+    public void testSetToVerticalFlip() {
         Matrix3 m1 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
 
         Matrix3 m2 = m1.setToVerticalFlip();
@@ -331,7 +327,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testSetToMultiply() throws Exception {
+    public void testSetToMultiply() {
         Matrix3 m1 = new Matrix3();
         Matrix3 a = new Matrix3(
             11d, 12d, 13d,
@@ -367,7 +363,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testMultiplyByTranslation() throws Exception {
+    public void testMultiplyByTranslation() {
         Matrix3 m1 = new Matrix3(); // identity matrix
         double dx = 2;
         double dy = 3;
@@ -392,7 +388,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testMultiplyByRotation() throws Exception {
+    public void testMultiplyByRotation() {
         Matrix3 m1 = new Matrix3(); // identity matrix
         final double theta = 30d;   // rotation angle degrees
         final double c = Math.cos(Math.toRadians(theta));
@@ -418,7 +414,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testMultiplyByScale() throws Exception {
+    public void testMultiplyByScale() {
         Matrix3 m1 = new Matrix3();
         final double sx = 5d;
         final double sy = 7d;
@@ -442,7 +438,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testMultiplyByVerticalFlip() throws Exception {
+    public void testMultiplyByVerticalFlip() {
         Matrix3 m1 = new Matrix3(); // identity matrix
 
         Matrix3 m2 = m1.multiplyByVerticalFlip();
@@ -465,7 +461,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testMultiplyByMatrix() throws Exception {
+    public void testMultiplyByMatrix() {
         Matrix3 m1 = new Matrix3(   // matrix under test
             11d, 12d, 13d,
             21d, 22d, 23d,
@@ -502,7 +498,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testMultiplyByMatrix_Doubles() throws Exception {
+    public void testMultiplyByMatrix_Doubles() {
         // multipliers
         final double m11 = 11d;
         final double m12 = 12d;
@@ -549,7 +545,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testTranspose() throws Exception {
+    public void testTranspose() {
         final double m11 = 11d;
         final double m12 = 12d;
         final double m13 = 13d;
@@ -576,7 +572,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testTransposeMatrix() throws Exception {
+    public void testTransposeMatrix() {
         final double m11 = 11d;
         final double m12 = 12d;
         final double m13 = 13d;
@@ -605,7 +601,7 @@ public class Matrix3Test {
 
     @Ignore("invert is not implemented at time of test")
     @Test
-    public void testInvert() throws Exception {
+    public void testInvert() {
         Matrix3 m1 = new Matrix3(   // matrix to be tested/inverted
             -4, -3, 3,
             0, 2, -2,
@@ -621,7 +617,7 @@ public class Matrix3Test {
 
     @Ignore("invertMatrix was not implemented at time of test")
     @Test
-    public void testInvertMatrix() throws Exception {
+    public void testInvertMatrix() {
         Matrix3 m1 = new Matrix3();
         Matrix3 m2 = new Matrix3(   // matrix to be inverted
             -4, -3, 3,
@@ -639,7 +635,7 @@ public class Matrix3Test {
     }
 
     @Test
-    public void testTransposeToArray() throws Exception {
+    public void testTransposeToArray() {
 
         Matrix3 m1 = new Matrix3(11d, 12d, 13d, 21d, 22d, 23d, 31d, 32d, 33d);
 
@@ -661,19 +657,10 @@ public class Matrix3Test {
         // |m21  m22  m23| = m11(m22*m33 - m23*m32) + m12(m23*m31 - m21*m33) + m13(m21*m32 - m22*m31)
         // |m31  m32  m33|
         double[] m = matrix.m;
-        double d
-            = (m[0] * (m[4] * m[8] - m[5] * m[7])) //m11(m22*m33 - m23*m32)
-            + (m[1] * (m[5] * m[6] - m[3] * m[8])) //m12(m23*m31 - m21*m33)
-            + (m[2] * (m[3] * m[7] - m[4] * m[6]));//m13(m21*m32 - m22*m31)
 
-        return d;
+        return (m[0] * (m[4] * m[8] - m[5] * m[7]))
+        + (m[1] * (m[5] * m[6] - m[3] * m[8]))
+        + (m[2] * (m[3] * m[7] - m[4] * m[6]));
     }
-
-    static private void prettyPrint(Matrix3 m) {
-        System.out.println("[ " + m.m[0] + "  " + m.m[1] + "  " + m.m[2] + " ]");
-        System.out.println("[ " + m.m[3] + "  " + m.m[4] + "  " + m.m[5] + " ]");
-        System.out.println("[ " + m.m[6] + "  " + m.m[7] + "  " + m.m[8] + " ]");
-    }
-
 
 }

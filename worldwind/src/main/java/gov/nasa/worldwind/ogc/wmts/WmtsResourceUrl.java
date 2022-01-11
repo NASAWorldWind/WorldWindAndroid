@@ -29,12 +29,16 @@ public class WmtsResourceUrl extends XmlModel {
 
     @Override
     protected void parseField(String keyName, Object value) {
-        if (keyName.equals("format")) {
-            this.format = (String) value;
-        } else if (keyName.equals("resourceType")) {
-            this.resourceType = (String) value;
-        } else if (keyName.equals("template")) {
-            this.template = (String) value;
+        switch (keyName) {
+            case "format":
+                this.format = (String) value;
+                break;
+            case "resourceType":
+                this.resourceType = (String) value;
+                break;
+            case "template":
+                this.template = (String) value;
+                break;
         }
     }
 }

@@ -16,13 +16,13 @@ import gov.nasa.worldwind.util.WWMath;
 
 public class BasicTerrain implements Terrain {
 
-    protected List<TerrainTile> tiles = new ArrayList<>();
+    protected final List<TerrainTile> tiles = new ArrayList<>();
 
-    protected Sector sector = new Sector();
+    protected final Sector sector = new Sector();
 
     protected short[] triStripElements;
 
-    private Vec3 intersectPoint = new Vec3();
+    private final Vec3 intersectPoint = new Vec3();
 
     public BasicTerrain() {
     }

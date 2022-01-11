@@ -21,7 +21,7 @@ public class DrawableSkyAtmosphere implements Drawable {
 
     public BufferObject triStripElements;
 
-    public Vec3 lightDirection = new Vec3();
+    public final Vec3 lightDirection = new Vec3();
 
     public double globeRadius;
 

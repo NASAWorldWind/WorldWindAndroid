@@ -33,9 +33,9 @@ public class GestureRecognizer {
 
     protected float centroidShiftY;
 
-    protected float[] centroidArray = new float[2];
+    protected final float[] centroidArray = new float[2];
 
-    protected List<GestureListener> listenerList = new ArrayList<>();
+    protected final List<GestureListener> listenerList = new ArrayList<>();
 
     @WorldWind.GestureState
     private int state = WorldWind.POSSIBLE;
@@ -139,17 +139,10 @@ public class GestureRecognizer {
     protected void transitionToState(MotionEvent event, @WorldWind.GestureState int newState) {
         switch (newState) {
             case WorldWind.POSSIBLE:
-                this.state = newState;
-                break;
             case WorldWind.FAILED:
                 this.state = newState;
                 break;
             case WorldWind.RECOGNIZED:
-                this.state = newState;
-                this.stateSequence++;
-                this.prepareToRecognize(event);
-                this.notifyListeners(event);
-                break;
             case WorldWind.BEGAN:
                 this.state = newState;
                 this.stateSequence++;
@@ -157,15 +150,7 @@ public class GestureRecognizer {
                 this.notifyListeners(event);
                 break;
             case WorldWind.CHANGED:
-                this.state = newState;
-                this.stateSequence++;
-                this.notifyListeners(event);
-                break;
             case WorldWind.CANCELLED:
-                this.state = newState;
-                this.stateSequence++;
-                this.notifyListeners(event);
-                break;
             case WorldWind.ENDED:
                 this.state = newState;
                 this.stateSequence++;
@@ -209,7 +194,7 @@ public class GestureRecognizer {
                 default:
                     if (Logger.isLoggable(Logger.DEBUG)) {
                         Logger.logMessage(Logger.DEBUG, "GestureRecognizer", "onTouchEvent",
-                            "Unrecognized event action \'" + action + "\'");
+                                "Unrecognized event action '" + action + "'");
                     }
                     break;
             }
@@ -321,7 +306,6 @@ public class GestureRecognizer {
     }
 
     protected void actionCancel(MotionEvent event) {
-
     }
 
     protected void actionUp(MotionEvent event) {

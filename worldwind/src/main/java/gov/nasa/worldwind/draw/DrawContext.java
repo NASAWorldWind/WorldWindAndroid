@@ -29,17 +29,17 @@ public class DrawContext {
 
     public Vec3 eyePoint = new Vec3();
 
-    public Viewport viewport = new Viewport();
+    public final Viewport viewport = new Viewport();
 
-    public Matrix4 projection = new Matrix4();
+    public final Matrix4 projection = new Matrix4();
 
-    public Matrix4 modelview = new Matrix4();
+    public final Matrix4 modelview = new Matrix4();
 
-    public Matrix4 modelviewProjection = new Matrix4();
+    public final Matrix4 modelviewProjection = new Matrix4();
 
-    public Matrix4 infiniteProjection = new Matrix4();
+    public final Matrix4 infiniteProjection = new Matrix4();
 
-    public Matrix4 screenProjection = new Matrix4();
+    public final Matrix4 screenProjection = new Matrix4();
 
     public DrawableQueue drawableQueue;
 
@@ -59,7 +59,7 @@ public class DrawContext {
 
     private int textureUnit = GLES20.GL_TEXTURE0;
 
-    private int[] textureId = new int[32];
+    private final int[] textureId = new int[32];
 
     private int arrayBufferId;
 
@@ -71,9 +71,9 @@ public class DrawContext {
 
     private ByteBuffer scratchBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder());
 
-    private ArrayList<Object> scratchList = new ArrayList<>();
+    private final ArrayList<Object> scratchList = new ArrayList<>();
 
-    private byte[] pixelArray = new byte[4];
+    private final byte[] pixelArray = new byte[4];
 
     public DrawContext() {
     }

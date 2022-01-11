@@ -22,10 +22,8 @@ public class GmlAbstractFeature extends GmlAbstractGml {
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
 
-        switch (keyName) {
-            case "boundedBy":
-                boundedBy = (GmlBoundingShape) value;
-                break;
+        if ("boundedBy".equals(keyName)) {
+            boundedBy = (GmlBoundingShape) value;
         }
     }
 }

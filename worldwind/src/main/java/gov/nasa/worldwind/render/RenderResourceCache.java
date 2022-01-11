@@ -93,11 +93,11 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
             try {
                 evicted.release(dc);
                 if (Logger.isLoggable(Logger.DEBUG)) {
-                    Logger.log(Logger.DEBUG, "Released render resource \'" + evicted + "\'");
+                    Logger.log(Logger.DEBUG, "Released render resource '" + evicted + "'");
                 }
-            } catch (Exception ignored) {
+            } catch (Exception e) {
                 if (Logger.isLoggable(Logger.ERROR)) {
-                    Logger.log(Logger.ERROR, "Exception releasing render resource \'" + evicted + "\'", ignored);
+                    Logger.log(Logger.ERROR, "Exception releasing render resource '" + evicted + "'", e);
                 }
             }
         }
@@ -115,7 +115,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
 
         // Bitmap image sources are already in memory, so a texture may be created and put into the cache immediately.
         if (imageSource.isBitmap()) {
-            Texture texture = this.createTexture(imageSource, options, imageSource.asBitmap());
+            Texture texture = this.createTexture(options, imageSource.asBitmap());
             this.put(imageSource, texture, texture.getByteCount());
             return texture;
         }
@@ -126,7 +126,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
         // corresponding texture if found.
         Bitmap bitmap = this.imageRetrieverCache.remove(imageSource);
         if (bitmap != null) {
-            Texture texture = this.createTexture(imageSource, options, bitmap);
+            Texture texture = this.createTexture(options, bitmap);
             this.put(imageSource, texture, texture.getByteCount());
             return texture;
         }
@@ -143,7 +143,7 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
         return null;
     }
 
-    protected Texture createTexture(ImageSource imageSource, ImageOptions options, Bitmap bitmap) {
+    protected Texture createTexture(ImageOptions options, Bitmap bitmap) {
         Texture texture = new Texture(bitmap);
 
         if (options != null && options.resamplingMode == WorldWind.NEAREST_NEIGHBOR) {
@@ -169,25 +169,25 @@ public class RenderResourceCache extends LruMemoryCache<Object, RenderResource>
         }
 
         if (Logger.isLoggable(Logger.DEBUG)) {
-            Logger.log(Logger.DEBUG, "Image retrieval succeeded \'" + key + "\'");
+            Logger.log(Logger.DEBUG, "Image retrieval succeeded '" + key + "'");
         }
     }
 
     @Override
     public void retrievalFailed(Retriever<ImageSource, ImageOptions, Bitmap> retriever, ImageSource key, Throwable ex) {
         if (ex instanceof SocketTimeoutException) { // log socket timeout exceptions while suppressing the stack trace
-            Logger.log(Logger.ERROR, "Socket timeout retrieving image \'" + key + "\'");
+            Logger.log(Logger.ERROR, "Socket timeout retrieving image '" + key + "'");
         } else if (ex != null) { // log checked exceptions with the entire stack trace
-            Logger.log(Logger.ERROR, "Image retrieval failed with exception \'" + key + "\'", ex);
+            Logger.log(Logger.ERROR, "Image retrieval failed with exception '" + key + "'", ex);
         } else {
-            Logger.log(Logger.ERROR, "Image retrieval failed \'" + key + "\'");
+            Logger.log(Logger.ERROR, "Image retrieval failed '" + key + "'");
         }
     }
 
     @Override
     public void retrievalRejected(Retriever<ImageSource, ImageOptions, Bitmap> retriever, ImageSource key) {
         if (Logger.isLoggable(Logger.DEBUG)) {
-            Logger.log(Logger.DEBUG, "Image retrieval rejected \'" + key + "\'");
+            Logger.log(Logger.DEBUG, "Image retrieval rejected '" + key + "'");
         }
     }
 

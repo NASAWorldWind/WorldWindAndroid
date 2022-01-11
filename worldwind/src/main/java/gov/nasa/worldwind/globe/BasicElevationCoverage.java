@@ -6,7 +6,6 @@
 package gov.nasa.worldwind.globe;
 
 import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.geom.TileMatrix;
 import gov.nasa.worldwind.geom.TileMatrixSet;
 import gov.nasa.worldwind.ogc.WmsLayerConfig;
 import gov.nasa.worldwind.ogc.WmsTileFactory;
@@ -55,13 +54,10 @@ public class BasicElevationCoverage extends TiledElevationCoverage {
         layerConfig.imageFormat = "application/bil16";
         final WmsTileFactory wmsTileFactory = new WmsTileFactory(layerConfig);
 
-        this.setTileFactory(new TiledElevationCoverage.TileFactory() {
-            @Override
-            public ImageSource createTileSource(TileMatrix tileMatrix, int row, int column) {
-                Sector sector = tileMatrix.tileSector(row, column);
-                String urlString = wmsTileFactory.urlForTile(sector, tileMatrix.tileWidth, tileMatrix.tileHeight);
-                return ImageSource.fromUrl(urlString);
-            }
+        this.setTileFactory((tileMatrix, row, column) -> {
+            Sector tileSector = tileMatrix.tileSector(row, column);
+            String urlString = wmsTileFactory.urlForTile(tileSector, tileMatrix.tileWidth, tileMatrix.tileHeight);
+            return ImageSource.fromUrl(urlString);
         });
     }
 }

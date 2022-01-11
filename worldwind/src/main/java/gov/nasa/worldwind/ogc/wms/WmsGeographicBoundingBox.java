@@ -29,22 +29,23 @@ public class WmsGeographicBoundingBox extends XmlModel {
 
     @Override
     public void parseField(String keyName, Object value) {
-        if (keyName.equals("minx")) {
-            this.west = Double.parseDouble((String) value);
-        } else if (keyName.equals("miny")) {
-            this.south = Double.parseDouble((String) value);
-        } else if (keyName.equals("maxx")) {
-            this.east = Double.parseDouble((String) value);
-        } else if (keyName.equals("maxy")) {
-            this.north = Double.parseDouble((String) value);
-        } else if (keyName.equals("westBoundLongitude")) {
-            this.west = Double.parseDouble((String) value);
-        } else if (keyName.equals("southBoundLatitude")) {
-            this.south = Double.parseDouble((String) value);
-        } else if (keyName.equals("eastBoundLongitude")) {
-            this.east = Double.parseDouble((String) value);
-        } else if (keyName.equals("northBoundLatitude")) {
-            this.north = Double.parseDouble((String) value);
+        switch (keyName) {
+            case "minx":
+            case "westBoundLongitude":
+                this.west = Double.parseDouble((String) value);
+                break;
+            case "miny":
+            case "southBoundLatitude":
+                this.south = Double.parseDouble((String) value);
+                break;
+            case "maxx":
+            case "eastBoundLongitude":
+                this.east = Double.parseDouble((String) value);
+                break;
+            case "maxy":
+            case "northBoundLatitude":
+                this.north = Double.parseDouble((String) value);
+                break;
         }
     }
 }

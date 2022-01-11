@@ -56,23 +56,30 @@ public class WmsBoundingBox extends XmlModel {
 
     @Override
     public void parseField(String keyName, Object value) {
-        if (keyName.equals("CRS")) {
-            // Convention is to be in upper case
-            this.crs = ((String) value).toUpperCase();
-        } else if (keyName.equals("SRS")) {
-            this.crs = ((String) value).toUpperCase();
-        } else if (keyName.equals("minx")) {
-            this.minx = Double.parseDouble((String) value);
-        } else if (keyName.equals("miny")) {
-            this.miny = Double.parseDouble((String) value);
-        } else if (keyName.equals("maxx")) {
-            this.maxx = Double.parseDouble((String) value);
-        } else if (keyName.equals("maxy")) {
-            this.maxy = Double.parseDouble((String) value);
-        } else if (keyName.equals("resx")) {
-            this.resx = Double.parseDouble((String) value);
-        } else if (keyName.equals("resy")) {
-            this.resy = Double.parseDouble((String) value);
+        switch (keyName) {
+            case "CRS":
+            case "SRS":
+                // Convention is to be in upper case
+                this.crs = ((String) value).toUpperCase();
+                break;
+            case "minx":
+                this.minx = Double.parseDouble((String) value);
+                break;
+            case "miny":
+                this.miny = Double.parseDouble((String) value);
+                break;
+            case "maxx":
+                this.maxx = Double.parseDouble((String) value);
+                break;
+            case "maxy":
+                this.maxy = Double.parseDouble((String) value);
+                break;
+            case "resx":
+                this.resx = Double.parseDouble((String) value);
+                break;
+            case "resy":
+                this.resy = Double.parseDouble((String) value);
+                break;
         }
     }
 }

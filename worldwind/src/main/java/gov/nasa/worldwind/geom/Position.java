@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.geom;
 
+import androidx.annotation.NonNull;
+
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.util.Logger;
 
@@ -109,6 +111,7 @@ public class Position extends Location {
         return result;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return this.latitude + "\u00b0, " + this.longitude + "\u00b0, " + this.altitude;

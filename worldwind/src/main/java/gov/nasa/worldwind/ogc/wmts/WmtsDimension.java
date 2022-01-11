@@ -20,7 +20,7 @@ public class WmtsDimension extends OwsDescription {
 
     protected Boolean current;
 
-    protected List<String> values = new ArrayList<>();
+    protected final List<String> values = new ArrayList<>();
 
     public WmtsDimension() {
     }
@@ -52,18 +52,25 @@ public class WmtsDimension extends OwsDescription {
     @Override
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
-        if (keyName.equals("Identifier")) {
-            this.identifier = (String) value;
-        } else if (keyName.equals("UOM")) {
-            this.unitOfMeasure = (String) value;
-        } else if (keyName.equals("UnitSymbol")) {
-            this.unitSymbol = (String) value;
-        } else if (keyName.equals("Default")) {
-            this.valueDefault = (String) value;
-        } else if (keyName.equals("Current")) {
-            this.current = Boolean.parseBoolean((String) value);
-        } else if (keyName.equals("Value")) {
-            this.values.add((String) value);
+        switch (keyName) {
+            case "Identifier":
+                this.identifier = (String) value;
+                break;
+            case "UOM":
+                this.unitOfMeasure = (String) value;
+                break;
+            case "UnitSymbol":
+                this.unitSymbol = (String) value;
+                break;
+            case "Default":
+                this.valueDefault = (String) value;
+                break;
+            case "Current":
+                this.current = Boolean.parseBoolean((String) value);
+                break;
+            case "Value":
+                this.values.add((String) value);
+                break;
         }
     }
 }

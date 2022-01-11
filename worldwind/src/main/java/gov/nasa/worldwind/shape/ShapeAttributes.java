@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.shape;
 
+import java.util.Objects;
+
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.util.Logger;
@@ -102,8 +104,8 @@ public class ShapeAttributes {
             && this.interiorColor.equals(that.interiorColor)
             && this.outlineColor.equals(that.outlineColor)
             && this.outlineWidth == that.outlineWidth
-            && ((this.interiorImageSource == null) ? (that.interiorImageSource == null) : this.interiorImageSource.equals(that.interiorImageSource))
-            && ((this.outlineImageSource == null) ? (that.outlineImageSource == null) : this.outlineImageSource.equals(that.outlineImageSource));
+            && (Objects.equals(this.interiorImageSource, that.interiorImageSource))
+            && (Objects.equals(this.outlineImageSource, that.outlineImageSource));
     }
 
     @Override

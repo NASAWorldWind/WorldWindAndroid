@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.geom;
 
+import androidx.annotation.NonNull;
+
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.util.Logger;
 
@@ -78,6 +80,7 @@ public class LookAt {
         return this;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "LookAt{" +

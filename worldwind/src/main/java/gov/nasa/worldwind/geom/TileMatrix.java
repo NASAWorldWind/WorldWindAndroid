@@ -7,7 +7,7 @@ package gov.nasa.worldwind.geom;
 
 public class TileMatrix {
 
-    public Sector sector = new Sector();
+    public final Sector sector = new Sector();
 
     public int ordinal;
 

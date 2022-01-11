@@ -12,7 +12,7 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsOperationsMetadata extends XmlModel {
 
-    protected List<OwsOperation> operations = new ArrayList<>();
+    protected final List<OwsOperation> operations = new ArrayList<>();
 
     public OwsOperationsMetadata() {
     }

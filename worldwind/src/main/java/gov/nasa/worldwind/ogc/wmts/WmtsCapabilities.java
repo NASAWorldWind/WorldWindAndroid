@@ -31,9 +31,9 @@ public class WmtsCapabilities extends XmlModel {
 
     protected WmtsContents contents;
 
-    protected List<WmtsTheme> themes = new ArrayList<>();
+    protected final List<WmtsTheme> themes = new ArrayList<>();
 
-    protected List<WmtsElementLink> serviceMetadataUrls = new ArrayList<>();
+    protected final List<WmtsElementLink> serviceMetadataUrls = new ArrayList<>();
 
     public static WmtsCapabilities getCapabilities(InputStream inputStream) throws Exception {
         XmlPullParser pullParser = Xml.newPullParser();
@@ -113,22 +113,31 @@ public class WmtsCapabilities extends XmlModel {
 
     @Override
     protected void parseField(String keyName, Object value) {
-        if (keyName.equals("ServiceIdentification")) {
-            this.serviceIdentification = (OwsServiceIdentification) value;
-        } else if (keyName.equals("ServiceProvider")) {
-            this.serviceProvider = (OwsServiceProvider) value;
-        } else if (keyName.equals("OperationsMetadata")) {
-            this.operationsMetadata = (OwsOperationsMetadata) value;
-        } else if (keyName.equals("Contents")) {
-            this.contents = (WmtsContents) value;
-        } else if (keyName.equals("Themes")) {
-            this.themes.addAll(((WmtsThemes) value).themes);
-        } else if (keyName.equals("ServiceMetadataURL")) {
-            this.serviceMetadataUrls.add((WmtsElementLink) value);
-        } else if (keyName.equals("version")) {
-            this.version = (String) value;
-        } else if (keyName.equals("updateSequence")) {
-            this.updateSequence = (String) value;
+        switch (keyName) {
+            case "ServiceIdentification":
+                this.serviceIdentification = (OwsServiceIdentification) value;
+                break;
+            case "ServiceProvider":
+                this.serviceProvider = (OwsServiceProvider) value;
+                break;
+            case "OperationsMetadata":
+                this.operationsMetadata = (OwsOperationsMetadata) value;
+                break;
+            case "Contents":
+                this.contents = (WmtsContents) value;
+                break;
+            case "Themes":
+                this.themes.addAll(((WmtsThemes) value).themes);
+                break;
+            case "ServiceMetadataURL":
+                this.serviceMetadataUrls.add((WmtsElementLink) value);
+                break;
+            case "version":
+                this.version = (String) value;
+                break;
+            case "updateSequence":
+                this.updateSequence = (String) value;
+                break;
         }
     }
 }

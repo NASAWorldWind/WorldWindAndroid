@@ -22,10 +22,8 @@ public class GmlGridLimits extends XmlModel {
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
 
-        switch (keyName) {
-            case "GridEnvelope":
-                gridEnvelope = (GmlGridEnvelope) value;
-                break;
+        if ("GridEnvelope".equals(keyName)) {
+            gridEnvelope = (GmlGridEnvelope) value;
         }
     }
 }

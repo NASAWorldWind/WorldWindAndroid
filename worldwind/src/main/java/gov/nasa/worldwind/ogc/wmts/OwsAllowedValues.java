@@ -12,7 +12,7 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class OwsAllowedValues extends XmlModel {
 
-    protected List<String> allowedValues = new ArrayList<>();
+    protected final List<String> allowedValues = new ArrayList<>();
 
     public OwsAllowedValues() {
     }

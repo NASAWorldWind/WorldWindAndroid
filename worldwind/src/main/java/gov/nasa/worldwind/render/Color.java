@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.render;
 
+import androidx.annotation.NonNull;
+
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -176,6 +178,7 @@ public class Color {
         return result;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "(r=" + this.red + ", g=" + this.green + ", b=" + this.blue + ", a=" + this.alpha + ")";

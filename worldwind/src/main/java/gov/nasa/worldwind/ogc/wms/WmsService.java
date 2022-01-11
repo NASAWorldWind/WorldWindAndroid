@@ -22,7 +22,7 @@ public class WmsService extends XmlModel {
 
     protected String accessConstraints;
 
-    protected List<String> keywordList = new ArrayList<>();
+    protected final List<String> keywordList = new ArrayList<>();
 
     protected String url;
 
@@ -83,28 +83,40 @@ public class WmsService extends XmlModel {
 
     @Override
     public void parseField(String keyName, Object value) {
-        if (keyName.equals("Name")) {
-            this.name = (String) value;
-        } else if (keyName.equals("Title")) {
-            this.title = (String) value;
-        } else if (keyName.equals("Abstract")) {
-            this.description = (String) value;
-        } else if (keyName.equals("KeywordList")) {
-            this.keywordList.addAll(((WmsKeywords) value).getKeywords());
-        } else if (keyName.equals("OnlineResource")) {
-            this.url = ((WmsOnlineResource) value).getUrl();
-        } else if (keyName.equals("ContactInformation")) {
-            this.contactInformation = (WmsContactInformation) value;
-        } else if (keyName.equals("Fees")) {
-            this.fees = (String) value;
-        } else if (keyName.equals("AccessConstraints")) {
-            this.accessConstraints = (String) value;
-        } else if (keyName.equals("MaxWidth")) {
-            this.maxWidth = Integer.parseInt((String) value);
-        } else if (keyName.equals("MaxHeight")) {
-            this.maxHeight = Integer.parseInt((String) value);
-        } else if (keyName.equals("LayerLimit")) {
-            this.layerLimit = Integer.parseInt((String) value);
+        switch (keyName) {
+            case "Name":
+                this.name = (String) value;
+                break;
+            case "Title":
+                this.title = (String) value;
+                break;
+            case "Abstract":
+                this.description = (String) value;
+                break;
+            case "KeywordList":
+                this.keywordList.addAll(((WmsKeywords) value).getKeywords());
+                break;
+            case "OnlineResource":
+                this.url = ((WmsOnlineResource) value).getUrl();
+                break;
+            case "ContactInformation":
+                this.contactInformation = (WmsContactInformation) value;
+                break;
+            case "Fees":
+                this.fees = (String) value;
+                break;
+            case "AccessConstraints":
+                this.accessConstraints = (String) value;
+                break;
+            case "MaxWidth":
+                this.maxWidth = Integer.parseInt((String) value);
+                break;
+            case "MaxHeight":
+                this.maxHeight = Integer.parseInt((String) value);
+                break;
+            case "LayerLimit":
+                this.layerLimit = Integer.parseInt((String) value);
+                break;
         }
     }
 }

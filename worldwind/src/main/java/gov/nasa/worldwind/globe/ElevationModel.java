@@ -5,15 +5,18 @@
 
 package gov.nasa.worldwind.globe;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Objects;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.util.Logger;
 
 public class ElevationModel implements Iterable<ElevationCoverage> {
 
-    protected ArrayList<ElevationCoverage> coverages = new ArrayList<>();
+    protected final ArrayList<ElevationCoverage> coverages = new ArrayList<>();
 
     public ElevationModel() {
     }
@@ -52,7 +55,7 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
         for (int idx = 0, len = this.coverages.size(); idx < len; idx++) {
             ElevationCoverage coverage = this.coverages.get(idx);
             String coverageName = coverage.getDisplayName();
-            if ((coverageName == null) ? (name == null) : coverageName.equals(name)) {
+            if (Objects.equals(coverageName, name)) {
                 return coverage;
             }
         }
@@ -66,7 +69,7 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
             ElevationCoverage coverage = this.coverages.get(idx);
             if (coverage.hasUserProperty(key)) {
                 Object coverageValue = coverage.getUserProperty(key);
-                if ((coverageValue == null) ? (value == null) : coverageValue.equals(value)) {
+                if (Objects.equals(coverageValue, value)) {
                     return coverage;
                 }
             }
@@ -90,9 +93,8 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
                 Logger.logMessage(Logger.ERROR, "ElevationModel", "addAllCoverages", "missingModel"));
         }
 
-        ArrayList<ElevationCoverage> thisList = this.coverages;
         ArrayList<ElevationCoverage> thatList = model.coverages;
-        thisList.ensureCapacity(thatList.size());
+        this.coverages.ensureCapacity(thatList.size());
         boolean changed = false;
 
         for (int idx = 0, len = thatList.size(); idx < len; idx++) {
@@ -125,6 +127,7 @@ public class ElevationModel implements Iterable<ElevationCoverage> {
         this.coverages.clear();
     }
 
+    @NonNull
     @Override
     public Iterator<ElevationCoverage> iterator() {
         return this.coverages.iterator();

@@ -15,9 +15,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.globe.Globe;
-import gov.nasa.worldwind.globe.ProjectionWgs84;
 import gov.nasa.worldwind.util.Logger;
 
 import static org.junit.Assert.assertEquals;
@@ -30,25 +27,25 @@ import static org.junit.Assert.assertTrue;
 
 public class FrustumTest {
 
-    private Globe globe;
+//    private Globe globe;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // To accommodate WorldWind exception handling, we must mock all
         // the static methods in Logger to avoid calls to android.util.log
         PowerMockito.mockStatic(Logger.class);
-        // Create the globe object used by the test
-        globe = new Globe(WorldWind.WGS84_ELLIPSOID, new ProjectionWgs84());
+//        // Create the globe object used by the test
+//        globe = new Globe(WorldWind.WGS84_ELLIPSOID, new ProjectionWgs84());
     }
 
     @After
-    public void tearDown() throws Exception {
-        // Release the globe object
-        globe = null;
+    public void tearDown() {
+//        // Release the globe object
+//        globe = null;
     }
 
     @Test
-    public void testConstructor_Default() throws Exception {
+    public void testConstructor_Default() {
         // Constructs a new unit frustum with each of its planes 1 meter from the center.
         Frustum frustum = new Frustum();
 
@@ -69,7 +66,7 @@ public class FrustumTest {
     }
 
     @Test
-    public void testConstructor() throws Exception {
+    public void testConstructor() {
         Plane left = new Plane(0, 1, 0, 2);
         Plane right = new Plane(0, -1, 0, 2);
         Plane bottom = new Plane(0, 0, 1, 2);
@@ -91,7 +88,7 @@ public class FrustumTest {
     }
 
     @Test
-    public void testSetToUnitFrustum() throws Exception {
+    public void testSetToUnitFrustum() {
         Plane left = new Plane(0, 1, 0, 2);
         Plane right = new Plane(0, -1, 0, 2);
         Plane bottom = new Plane(0, 0, 1, 2);
@@ -113,7 +110,7 @@ public class FrustumTest {
     }
 
     @Test
-    public void testContainsPoint() throws Exception {
+    public void testContainsPoint() {
         // Simple test using a unit frustum
         Frustum frustum = new Frustum();
 
@@ -141,7 +138,7 @@ public class FrustumTest {
     }
 
     @Test
-    public void testIntersectsSegment() throws Exception {
+    public void testIntersectsSegment() {
         // Perform simple tests with a unit frustum using segments with an endpoint at the origin
         Frustum frustum = new Frustum();
         Vec3 origin = new Vec3(0, 0, 0);
@@ -176,9 +173,10 @@ public class FrustumTest {
         assertFalse("outside far", frustum.intersectsSegment(new Vec3(0, 0, 2), new Vec3(0, 0, 1.0000001)));
     }
 
-// NOTE Camera is now dependent on WorldWindow instance which is dependent on Android Context. Move this tests to androidTest section?
+// TODO Camera is now dependent on WorldWindow instance which is dependent on Android Context. Move following tests to androidTest section?
+
 //    @Test
-//    public void testSetToModelviewProjection() throws Exception {
+//    public void testSetToModelviewProjection() {
 //        // The expected test values were obtained via SystemOut on Frustum object
 //        // at a time in the development cycle when the setToModelviewProjection
 //        // was known to be working correctly (via observed runtime behavior).
@@ -225,7 +223,7 @@ public class FrustumTest {
 //    }
 //
 //    @Test
-//    public void testSetToModelviewProjection_SubViewport() throws Exception {
+//    public void testSetToModelviewProjection_SubViewport() {
 //        // The expected test values were obtained via SystemOut on Frustum object
 //        // at a time in the development cycle when the setToModelviewProjection
 //        // was known to be working correctly (via observed runtime behavior).
@@ -273,7 +271,7 @@ public class FrustumTest {
 //    }
 
     @Test
-    public void testIntersectsViewport() throws Exception {
+    public void testIntersectsViewport() {
         Plane plane = new Plane(0, 0, 0, 0);
         Viewport viewport1 = new Viewport(1, 2, 3, 4);
         Viewport viewport2 = new Viewport(2, 3, 4, 5);

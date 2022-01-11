@@ -9,9 +9,9 @@ import gov.nasa.worldwind.util.xml.XmlModelParser;
 
 public class WmtsXmlParser extends XmlModelParser {
 
-    protected String owsNamespace = "http://www.opengis.net/ows/1.1";
+    protected static final String owsNamespace = "http://www.opengis.net/ows/1.1";
 
-    protected String wmtsNamespace = "http://www.opengis.net/wmts/1.0";
+    protected static final String wmtsNamespace = "http://www.opengis.net/wmts/1.0";
 
     public WmtsXmlParser() {
         this.registerParsers();

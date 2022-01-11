@@ -14,13 +14,13 @@ public class WmsCapability extends XmlModel {
 
     protected WmsRequest request;
 
-    protected List<WmsLayer> layers = new ArrayList<>();
+    protected final List<WmsLayer> layers = new ArrayList<>();
 
     /**
      * Object representation of an Exception element. Pre-allocated to prevent NPE in the event the server does not
      * include an Exception block.
      */
-    protected WmsException exception = new WmsException();
+    protected final WmsException exception = new WmsException();
 
     public WmsCapability() {
     }
@@ -52,12 +52,16 @@ public class WmsCapability extends XmlModel {
 
     @Override
     public void parseField(String keyName, Object value) {
-        if (keyName.equals("Request")) {
-            this.request = (WmsRequest) value;
-        } else if (keyName.equals("Exception")) {
-            this.exception.formats.addAll(((WmsException) value).getFormats());
-        } else if (keyName.equals("Layer")) {
-            this.layers.add((WmsLayer) value);
+        switch (keyName) {
+            case "Request":
+                this.request = (WmsRequest) value;
+                break;
+            case "Exception":
+                this.exception.formats.addAll(((WmsException) value).getFormats());
+                break;
+            case "Layer":
+                this.layers.add((WmsLayer) value);
+                break;
         }
     }
 }

@@ -12,7 +12,7 @@ import gov.nasa.worldwind.util.xml.XmlModel;
 
 public class WmsLogoUrl extends XmlModel {
 
-    protected Set<String> formats = new LinkedHashSet<>();
+    protected final Set<String> formats = new LinkedHashSet<>();
 
     protected String url;
 
@@ -41,14 +41,19 @@ public class WmsLogoUrl extends XmlModel {
 
     @Override
     public void parseField(String keyName, Object value) {
-        if (keyName.equals("Format")) {
-            this.formats.add((String) value);
-        } else if (keyName.equals("OnlineResource")) {
-            this.url = ((WmsOnlineResource) value).getUrl();
-        } else if (keyName.equals("width")) {
-            this.width = Integer.parseInt((String) value);
-        } else if (keyName.equals("height")) {
-            this.height = Integer.parseInt((String) value);
+        switch (keyName) {
+            case "Format":
+                this.formats.add((String) value);
+                break;
+            case "OnlineResource":
+                this.url = ((WmsOnlineResource) value).getUrl();
+                break;
+            case "width":
+                this.width = Integer.parseInt((String) value);
+                break;
+            case "height":
+                this.height = Integer.parseInt((String) value);
+                break;
         }
     }
 }

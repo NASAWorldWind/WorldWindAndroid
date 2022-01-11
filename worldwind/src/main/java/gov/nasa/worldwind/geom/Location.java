@@ -7,6 +7,8 @@ package gov.nasa.worldwind.geom;
 
 import android.util.SparseIntArray;
 
+import androidx.annotation.NonNull;
+
 import java.util.List;
 import java.util.TimeZone;
 
@@ -20,7 +22,7 @@ import gov.nasa.worldwind.util.Logger;
  */
 public class Location {
 
-    protected static SparseIntArray timeZoneLatitudes = new SparseIntArray();
+    protected static final SparseIntArray timeZoneLatitudes = new SparseIntArray();
 
     protected final static double NEAR_ZERO_THRESHOLD = 1e-15;
 
@@ -145,7 +147,7 @@ public class Location {
         int offsetHours = (int) (offsetMillis / millisPerHour);
 
         double lat = timeZoneLatitudes.get(offsetHours, 0); // use a pre-determined latitude or 0 if none is available
-        double lon = 180 * offsetHours / 12; // center on the time zone's average longitude
+        double lon = 180.0 * offsetHours / 12; // center on the time zone's average longitude
         return new Location(lat, lon);
     }
 
@@ -273,6 +275,7 @@ public class Location {
         return result;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return this.latitude + "\u00b0, " + this.longitude + "\u00b0";

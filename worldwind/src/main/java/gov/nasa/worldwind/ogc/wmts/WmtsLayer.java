@@ -14,23 +14,23 @@ public class WmtsLayer extends OwsDescription {
 
     protected String identifier;
 
-    protected List<OwsBoundingBox> boundingBoxes = new ArrayList<>();
+    protected final List<OwsBoundingBox> boundingBoxes = new ArrayList<>();
 
     protected OwsWgs84BoundingBox wgs84BoundingBox;
 
-    protected List<WmtsElementLink> metadata = new ArrayList<>();
+    protected final List<WmtsElementLink> metadata = new ArrayList<>();
 
-    protected List<WmtsStyle> styles = new ArrayList<>();
+    protected final List<WmtsStyle> styles = new ArrayList<>();
 
-    protected List<String> formats = new ArrayList<>();
+    protected final List<String> formats = new ArrayList<>();
 
-    protected List<String> infoFormats = new ArrayList<>();
+    protected final List<String> infoFormats = new ArrayList<>();
 
-    protected List<WmtsTileMatrixSetLink> tileMatrixSetLinks = new ArrayList<>();
+    protected final List<WmtsTileMatrixSetLink> tileMatrixSetLinks = new ArrayList<>();
 
-    protected List<WmtsResourceUrl> resourceUrls = new ArrayList<>();
+    protected final List<WmtsResourceUrl> resourceUrls = new ArrayList<>();
 
-    protected List<WmtsDimension> dimensions = new ArrayList<>();
+    protected final List<WmtsDimension> dimensions = new ArrayList<>();
 
     public WmtsLayer() {
     }
@@ -103,26 +103,37 @@ public class WmtsLayer extends OwsDescription {
     @Override
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
-        if (keyName.equals("WGS84BoundingBox")) {
-            this.wgs84BoundingBox = (OwsWgs84BoundingBox) value;
-        } else if (keyName.equals("Identifier")) {
-            this.identifier = (String) value;
-        } else if (keyName.equals("Metadata")) {
-            this.metadata.add((WmtsElementLink) value);
-        } else if (keyName.equals("Style")) {
-            this.styles.add((WmtsStyle) value);
-        } else if (keyName.equals("Format")) {
-            this.formats.add((String) value);
-        } else if (keyName.equals("InfoFormat")) {
-            this.infoFormats.add((String) value);
-        } else if (keyName.equals("TileMatrixSetLink")) {
-            this.tileMatrixSetLinks.add((WmtsTileMatrixSetLink) value);
-        } else if (keyName.equals("ResourceURL")) {
-            this.resourceUrls.add((WmtsResourceUrl) value);
-        } else if (keyName.equals("BoundingBox")) {
-            this.boundingBoxes.add((OwsBoundingBox) value);
-        } else if (keyName.equals("Dimension")) {
-            this.dimensions.add((WmtsDimension) value);
+        switch (keyName) {
+            case "WGS84BoundingBox":
+                this.wgs84BoundingBox = (OwsWgs84BoundingBox) value;
+                break;
+            case "Identifier":
+                this.identifier = (String) value;
+                break;
+            case "Metadata":
+                this.metadata.add((WmtsElementLink) value);
+                break;
+            case "Style":
+                this.styles.add((WmtsStyle) value);
+                break;
+            case "Format":
+                this.formats.add((String) value);
+                break;
+            case "InfoFormat":
+                this.infoFormats.add((String) value);
+                break;
+            case "TileMatrixSetLink":
+                this.tileMatrixSetLinks.add((WmtsTileMatrixSetLink) value);
+                break;
+            case "ResourceURL":
+                this.resourceUrls.add((WmtsResourceUrl) value);
+                break;
+            case "BoundingBox":
+                this.boundingBoxes.add((OwsBoundingBox) value);
+                break;
+            case "Dimension":
+                this.dimensions.add((WmtsDimension) value);
+                break;
         }
     }
 }

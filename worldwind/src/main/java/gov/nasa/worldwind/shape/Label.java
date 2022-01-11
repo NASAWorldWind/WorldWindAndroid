@@ -38,12 +38,12 @@ public class Label extends AbstractRenderable implements Highlightable, Movable 
     /**
      * The label's properties associated with the current render pass.
      */
-    private static RenderData renderData = new RenderData();
+    private static final RenderData renderData = new RenderData();
 
     /**
      * The label's geographic position.
      */
-    protected Position position = new Position();
+    protected final Position position = new Position();
 
     /**
      * The label's altitude mode. See {@link gov.nasa.worldwind.WorldWind.AltitudeMode}
@@ -507,27 +507,27 @@ public class Label extends AbstractRenderable implements Highlightable, Movable 
         /**
          * The model coordinate point corresponding to the label's position.
          */
-        public Vec3 placePoint = new Vec3();
+        public final Vec3 placePoint = new Vec3();
 
         /**
          * The screen coordinate point corresponding to the label's position.
          */
-        public Vec3 screenPlacePoint = new Vec3();
+        public final Vec3 screenPlacePoint = new Vec3();
 
         /**
          * The screen coordinate offset corresponding to the active attributes.
          */
-        public Vec2 offset = new Vec2();
+        public final Vec2 offset = new Vec2();
 
         /**
          * The screen coordinate transform to apply to the drawable unit square.
          */
-        public Matrix4 unitSquareTransform = new Matrix4();
+        public final Matrix4 unitSquareTransform = new Matrix4();
 
         /**
          * The screen viewport indicating the label's screen bounds.
          */
-        public Viewport screenBounds = new Viewport();
+        public final Viewport screenBounds = new Viewport();
 
         /**
          * Unique identifier associated with the label during picking.

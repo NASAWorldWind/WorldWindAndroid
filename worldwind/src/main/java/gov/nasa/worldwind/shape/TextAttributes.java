@@ -7,6 +7,8 @@ package gov.nasa.worldwind.shape;
 
 import android.graphics.Typeface;
 
+import java.util.Objects;
+
 import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.render.Color;
 import gov.nasa.worldwind.util.Logger;
@@ -90,7 +92,7 @@ public class TextAttributes {
         return this.textColor.equals(that.textColor)
             && this.textOffset.equals(that.textOffset)
             && this.textSize == that.textSize
-            && ((this.typeface == null) ? (that.typeface == null) : this.typeface.equals(that.typeface))
+            && (Objects.equals(this.typeface, that.typeface))
             && this.enableOutline == that.enableOutline
             && this.outlineColor.equals(that.outlineColor)
             && this.enableDepthTest == that.enableDepthTest

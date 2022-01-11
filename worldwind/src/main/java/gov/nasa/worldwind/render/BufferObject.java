@@ -16,17 +16,17 @@ import gov.nasa.worldwind.util.Logger;
 
 public class BufferObject implements RenderResource {
 
-    protected int[] bufferId = new int[1];
+    protected final int[] bufferId = new int[1];
 
-    protected int bufferTarget;
+    protected final int bufferTarget;
 
-    protected int bufferLength;
+    protected final int bufferLength;
 
-    protected int bufferByteCount;
+    protected final int bufferByteCount;
 
     protected Buffer buffer;
 
-    public SparseArray<Range> ranges = new SparseArray<>();
+    public final SparseArray<Range> ranges = new SparseArray<>();
 
     public BufferObject(int target, int size, Buffer buffer) {
         this.bufferTarget = target;

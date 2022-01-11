@@ -20,7 +20,7 @@ public class WmtsTileMatrixSet extends OwsDescription {
 
     protected OwsBoundingBox boundingBox;
 
-    protected List<WmtsTileMatrix> tileMatrices = new ArrayList<>();
+    protected final List<WmtsTileMatrix> tileMatrices = new ArrayList<>();
 
     public WmtsTileMatrixSet() {
     }
@@ -52,16 +52,22 @@ public class WmtsTileMatrixSet extends OwsDescription {
     @Override
     protected void parseField(String keyName, Object value) {
         super.parseField(keyName, value);
-        if (keyName.equals("Identifier")) {
-            this.identifier = (String) value;
-        } else if (keyName.equals("SupportedCRS")) {
-            this.supportedCrs = (String) value;
-        } else if (keyName.equals("WellKnownScaleSet")) {
-            this.wellKnownScaleSet = (String) value;
-        } else if (keyName.equals("BoundingBox")) {
-            this.boundingBox = (OwsBoundingBox) value;
-        } else if (keyName.equals("TileMatrix")) {
-            this.tileMatrices.add((WmtsTileMatrix) value);
+        switch (keyName) {
+            case "Identifier":
+                this.identifier = (String) value;
+                break;
+            case "SupportedCRS":
+                this.supportedCrs = (String) value;
+                break;
+            case "WellKnownScaleSet":
+                this.wellKnownScaleSet = (String) value;
+                break;
+            case "BoundingBox":
+                this.boundingBox = (OwsBoundingBox) value;
+                break;
+            case "TileMatrix":
+                this.tileMatrices.add((WmtsTileMatrix) value);
+                break;
         }
     }
 

@@ -7,6 +7,7 @@ package gov.nasa.worldwind.layer.graticule;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Position;
@@ -148,7 +149,7 @@ abstract class AbstractLatLonGraticuleLayer extends AbstractGraticuleLayer imple
 
         double mf = s == 0 ? m : m + s / 60.0;
 
-        return (sign == -1 ? "-" : "") + d + '\u00B0' + ' ' + String.format("%5.2f", mf) + '\u2019';
+        return (sign == -1 ? "-" : "") + d + '\u00B0' + ' ' + String.format(Locale.getDefault(), "%5.2f", mf) + '\u2019';
     }
 
     private double[] toDMS(double angle) {
@@ -182,9 +183,9 @@ abstract class AbstractLatLonGraticuleLayer extends AbstractGraticuleLayer imple
             else {
                 double[] dms = toDMS(angle);
                 if (dms[1] < epsilon && dms[2] < epsilon)
-                    label = String.format("%4d\u00B0", (int) dms[0]);
+                    label = String.format(Locale.getDefault(), "%4d\u00B0", (int) dms[0]);
                 else if (dms[2] < epsilon)
-                    label = String.format("%4d\u00B0 %2d\u2019", (int) dms[0], (int) dms[1]);
+                    label = String.format(Locale.getDefault(), "%4d\u00B0 %2d\u2019", (int) dms[0], (int) dms[1]);
                 else
                     label = toDMSString(angle);
             }
@@ -194,9 +195,9 @@ abstract class AbstractLatLonGraticuleLayer extends AbstractGraticuleLayer imple
             else {
                 double[] dms = toDMS(angle);
                 if (dms[1] < epsilon && dms[2] < epsilon)
-                    label = String.format("%4d\u00B0", (int) dms[0]);
+                    label = String.format(Locale.getDefault(), "%4d\u00B0", (int) dms[0]);
                 else if (dms[2] < epsilon)
-                    label = String.format("%4d\u00B0 %2d\u2019", (int) dms[0], (int) dms[1]);
+                    label = String.format(Locale.getDefault(), "%4d\u00B0 %2d\u2019", (int) dms[0], (int) dms[1]);
                 else
                     label = toDMString(angle);
             }

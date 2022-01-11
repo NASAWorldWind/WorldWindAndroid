@@ -28,7 +28,7 @@ public class Frustum {
 
     protected final Viewport viewport = new Viewport(0, 0, 1, 1);
 
-    private Matrix4 scratchMatrix = new Matrix4();
+    private final Matrix4 scratchMatrix = new Matrix4();
 
     /**
      * Constructs a new unit frustum with each of its planes 1 meter from the center and a viewport with width and
@@ -267,20 +267,8 @@ public class Frustum {
         // provides a distance to each plane. If this distance is less than 0, the point is clipped by that plane and
         // neither intersects nor is contained by the space enclosed by this Frustum.
 
-        if (this.far.dot(point) <= 0)
-            return false;
-        if (this.left.dot(point) <= 0)
-            return false;
-        if (this.right.dot(point) <= 0)
-            return false;
-        if (this.top.dot(point) <= 0)
-            return false;
-        if (this.bottom.dot(point) <= 0)
-            return false;
-        if (this.near.dot(point) <= 0)
-            return false;
-
-        return true;
+        return far.dot(point) > 0 && left.dot(point) > 0 && right.dot(point) > 0
+                && top.dot(point) > 0 && bottom.dot(point) > 0 && near.dot(point) > 0;
     }
 
     /**

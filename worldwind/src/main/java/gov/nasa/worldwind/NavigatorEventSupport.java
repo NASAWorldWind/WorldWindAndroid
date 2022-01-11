@@ -7,7 +7,6 @@ package gov.nasa.worldwind;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.view.InputEvent;
 import android.view.MotionEvent;
 
@@ -23,7 +22,7 @@ public class NavigatorEventSupport {
 
     protected WorldWindow wwd;
 
-    protected List<NavigatorListener> listeners = new ArrayList<>();
+    protected final List<NavigatorListener> listeners = new ArrayList<>();
 
     protected long stoppedEventDelay = 250;
 
@@ -33,20 +32,14 @@ public class NavigatorEventSupport {
 
     protected MotionEvent stopTouchEvent;
 
-    protected Handler stopHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message msg) {
-            onNavigatorStopped();
-            return false;
-        }
+    protected final Handler stopHandler = new Handler(Looper.getMainLooper(), msg -> {
+        onNavigatorStopped();
+        return false;
     });
 
-    protected Handler moveHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message msg) {
-            onNavigatorMoved();
-            return false;
-        }
+    protected final Handler moveHandler = new Handler(Looper.getMainLooper(), msg -> {
+        onNavigatorMoved();
+        return false;
     });
 
     public NavigatorEventSupport(WorldWindow wwd) {

@@ -88,7 +88,7 @@ public class Tiff {
     /**
      * The {@link Subfile} contained within this Tiff.
      */
-    protected List<Subfile> subfiles = new ArrayList<>();
+    protected final List<Subfile> subfiles = new ArrayList<>();
 
     /**
      * {@link ByteBuffer} facilitating the view of the underlying Tiff data buffer.

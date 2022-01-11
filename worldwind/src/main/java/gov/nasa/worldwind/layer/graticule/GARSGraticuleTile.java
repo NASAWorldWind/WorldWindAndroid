@@ -2,6 +2,7 @@ package gov.nasa.worldwind.layer.graticule;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.Location;
@@ -78,7 +79,7 @@ class GARSGraticuleTile extends AbstractGraticuleTile {
 
     static {
         for (int i = 1; i <= 720; i++) {
-            LON_LABELS.add(String.format("%03d", i));
+            LON_LABELS.add(String.format(Locale.getDefault(), "%03d", i));
         }
 
         for (int i = 0; i < 360; i++) {

@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.geom;
 
+import androidx.annotation.NonNull;
+
 import gov.nasa.worldwind.util.Logger;
 
 /**
@@ -113,6 +115,7 @@ public class Sector {
         return result;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "minLatitude=" + minLatitude + ", maxLatitude=" + maxLatitude + ", minLongitude=" + minLongitude + ", maxLongitude=" + maxLongitude;

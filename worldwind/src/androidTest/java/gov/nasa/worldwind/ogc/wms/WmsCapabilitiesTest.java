@@ -5,6 +5,14 @@
 
 package gov.nasa.worldwind.ogc.wms;
 
+import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import android.content.res.Resources;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -16,18 +24,10 @@ import org.junit.runner.RunWith;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.test.R;
-
-import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 @RunWith(AndroidJUnit4.class)
 public class WmsCapabilitiesTest {
@@ -58,12 +58,12 @@ public class WmsCapabilitiesTest {
 
     @Test
     public void testGetVersion_Version130() {
-        assertTrue("Version", this.wmsCapabilities130.getVersion().equals("1.3.0"));
+        assertEquals("Version", "1.3.0", this.wmsCapabilities130.getVersion());
     }
 
     @Test
     public void testGetVersion_Version111() {
-        assertTrue("Version", this.wmsCapabilities111.getVersion().equals("1.1.1"));
+        assertEquals("Version", "1.1.1", this.wmsCapabilities111.getVersion());
     }
 
     @Test
@@ -627,10 +627,10 @@ public class WmsCapabilitiesTest {
 
         Sector sector = wmsLayer.getGeographicBoundingBox();
 
-        assertEquals("Layer Geographic Bounding Box West", expectedGeographicBoundingBoxWestLong, sector.minLongitude());
-        assertEquals("Layer Geographic Bounding Box East", expectedGeographicBoundingBoxEastLong, sector.maxLongitude());
-        assertEquals("Layer Geographic Bounding Box North", expectedGeographicBoundingBoxNorthLat, sector.maxLatitude());
-        assertEquals("Layer Geographic Bounding Box South", expectedGeographicBoundingBoxSouthLat, sector.minLatitude());
+        assertEquals("Layer Geographic Bounding Box West", expectedGeographicBoundingBoxWestLong, sector.minLongitude(), 0.0);
+        assertEquals("Layer Geographic Bounding Box East", expectedGeographicBoundingBoxEastLong, sector.maxLongitude(), 0.0);
+        assertEquals("Layer Geographic Bounding Box North", expectedGeographicBoundingBoxNorthLat, sector.maxLatitude(), 0.0);
+        assertEquals("Layer Geographic Bounding Box South", expectedGeographicBoundingBoxSouthLat, sector.minLatitude(), 0.0);
     }
 
     @Test
@@ -643,10 +643,10 @@ public class WmsCapabilitiesTest {
 
         Sector sector = wmsLayer.getGeographicBoundingBox();
 
-        assertEquals("Layer Geographic Bounding Box West", expectedGeographicBoundingBoxWestLong, sector.minLongitude());
-        assertEquals("Layer Geographic Bounding Box East", expectedGeographicBoundingBoxEastLong, sector.maxLongitude());
-        assertEquals("Layer Geographic Bounding Box North", expectedGeographicBoundingBoxNorthLat, sector.maxLatitude());
-        assertEquals("Layer Geographic Bounding Box South", expectedGeographicBoundingBoxSouthLat, sector.minLatitude());
+        assertEquals("Layer Geographic Bounding Box West", expectedGeographicBoundingBoxWestLong, sector.minLongitude(), 0.0);
+        assertEquals("Layer Geographic Bounding Box East", expectedGeographicBoundingBoxEastLong, sector.maxLongitude(), 0.0);
+        assertEquals("Layer Geographic Bounding Box North", expectedGeographicBoundingBoxNorthLat, sector.maxLatitude(), 0.0);
+        assertEquals("Layer Geographic Bounding Box South", expectedGeographicBoundingBoxSouthLat, sector.minLatitude(), 0.0);
     }
 
     @Test
@@ -662,24 +662,22 @@ public class WmsCapabilitiesTest {
         WmsLayer wmsLayer = this.wmsCapabilities130.getNamedLayer("ROADS_1M");
 
         List<WmsBoundingBox> boxes = wmsLayer.getBoundingBoxes();
-        Iterator<WmsBoundingBox> boxIterator = boxes.iterator();
 
-        while (boxIterator.hasNext()) {
-            WmsBoundingBox box = boxIterator.next();
+        for (WmsBoundingBox box : boxes) {
             double minx = box.getMinx();
             double miny = box.getMiny();
             double maxx = box.getMaxx();
             double maxy = box.getMaxy();
             if (box.getCRS().equals("CRS:84")) {
-                assertEquals("Layer Bounding Box CRS:84 Minx", expectedCrs84BoundingBoxMinx, minx);
-                assertEquals("Layer Bounding Box CRS:84 Miny", expectedCrs84BoundingBoxMiny, miny);
-                assertEquals("Layer Bounding Box CRS:84 Maxx", expectedCrs84BoundingBoxMaxx, maxx);
-                assertEquals("Layer Bounding Box CRS:84 Maxy", expectedCrs84BoundingBoxMaxy, maxy);
+                assertEquals("Layer Bounding Box CRS:84 Minx", expectedCrs84BoundingBoxMinx, minx, 0.0);
+                assertEquals("Layer Bounding Box CRS:84 Miny", expectedCrs84BoundingBoxMiny, miny, 0.0);
+                assertEquals("Layer Bounding Box CRS:84 Maxx", expectedCrs84BoundingBoxMaxx, maxx, 0.0);
+                assertEquals("Layer Bounding Box CRS:84 Maxy", expectedCrs84BoundingBoxMaxy, maxy, 0.0);
             } else if (box.getCRS().equals("EPSG:26986")) {
-                assertEquals("Layer Bounding Box EPSG:26986 Minx", expectedEpsgBoundingBoxMinx, minx);
-                assertEquals("Layer Bounding Box EPSG:26986 Miny", expectedEpsgBoundingBoxMiny, miny);
-                assertEquals("Layer Bounding Box EPSG:26986 Maxx", expectedEpsgBoundingBoxMaxx, maxx);
-                assertEquals("Layer Bounding Box EPSG:26986 Maxy", expectedEpsgBoundingBoxMaxy, maxy);
+                assertEquals("Layer Bounding Box EPSG:26986 Minx", expectedEpsgBoundingBoxMinx, minx, 0.0);
+                assertEquals("Layer Bounding Box EPSG:26986 Miny", expectedEpsgBoundingBoxMiny, miny, 0.0);
+                assertEquals("Layer Bounding Box EPSG:26986 Maxx", expectedEpsgBoundingBoxMaxx, maxx, 0.0);
+                assertEquals("Layer Bounding Box EPSG:26986 Maxy", expectedEpsgBoundingBoxMaxy, maxy, 0.0);
             } else {
                 fail("Unexpected Layer Coordinate System");
             }
@@ -700,24 +698,22 @@ public class WmsCapabilitiesTest {
         WmsLayer wmsLayer = this.wmsCapabilities111.getNamedLayer("ROADS_1M");
 
         List<WmsBoundingBox> boxes = wmsLayer.getBoundingBoxes();
-        Iterator<WmsBoundingBox> boxIterator = boxes.iterator();
 
-        while (boxIterator.hasNext()) {
-            WmsBoundingBox box = boxIterator.next();
+        for (WmsBoundingBox box : boxes) {
             double minx = box.getMinx();
             double miny = box.getMiny();
             double maxx = box.getMaxx();
             double maxy = box.getMaxy();
             if (box.getCRS().equals("EPSG:4326")) {
-                assertEquals("Layer Bounding Box CRS:84 Minx", expectedEpsg4326BoundingBoxMinx, minx);
-                assertEquals("Layer Bounding Box CRS:84 Miny", expectedEpsg4326BoundingBoxMiny, miny);
-                assertEquals("Layer Bounding Box CRS:84 Maxx", expectedEpsg4326BoundingBoxMaxx, maxx);
-                assertEquals("Layer Bounding Box CRS:84 Maxy", expectedEpsg4326BoundingBoxMaxy, maxy);
+                assertEquals("Layer Bounding Box CRS:84 Minx", expectedEpsg4326BoundingBoxMinx, minx, 0.0);
+                assertEquals("Layer Bounding Box CRS:84 Miny", expectedEpsg4326BoundingBoxMiny, miny, 0.0);
+                assertEquals("Layer Bounding Box CRS:84 Maxx", expectedEpsg4326BoundingBoxMaxx, maxx, 0.0);
+                assertEquals("Layer Bounding Box CRS:84 Maxy", expectedEpsg4326BoundingBoxMaxy, maxy, 0.0);
             } else if (box.getCRS().equals("EPSG:26986")) {
-                assertEquals("Layer Bounding Box EPSG:26986 Minx", expectedEpsgBoundingBoxMinx, minx);
-                assertEquals("Layer Bounding Box EPSG:26986 Miny", expectedEpsgBoundingBoxMiny, miny);
-                assertEquals("Layer Bounding Box EPSG:26986 Maxx", expectedEpsgBoundingBoxMaxx, maxx);
-                assertEquals("Layer Bounding Box EPSG:26986 Maxy", expectedEpsgBoundingBoxMaxy, maxy);
+                assertEquals("Layer Bounding Box EPSG:26986 Minx", expectedEpsgBoundingBoxMinx, minx, 0.0);
+                assertEquals("Layer Bounding Box EPSG:26986 Miny", expectedEpsgBoundingBoxMiny, miny, 0.0);
+                assertEquals("Layer Bounding Box EPSG:26986 Maxx", expectedEpsgBoundingBoxMaxx, maxx, 0.0);
+                assertEquals("Layer Bounding Box EPSG:26986 Maxy", expectedEpsgBoundingBoxMaxy, maxy, 0.0);
             } else {
                 fail("Unexpected Layer Coordinate System");
             }
@@ -753,8 +749,8 @@ public class WmsCapabilitiesTest {
     @Test
     public void testScaleHint_Version111() {
         WmsLayer wmsLayer = this.wmsCapabilities111.getNamedLayer("ROADS_1M");
-        Double expectedMinScaleHint = 4000d;
-        Double expectedMaxScaleHint = 35000d;
+        double expectedMinScaleHint = 4000d;
+        double expectedMaxScaleHint = 35000d;
 
         Double minScaleHint = wmsLayer.getScaleHint().getMin();
         Double maxScaleHint = wmsLayer.getScaleHint().getMax();

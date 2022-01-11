@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class DefaultXmlModel extends XmlModel {
 
-    protected Map<String, Object> fields = new HashMap<>();
+    protected final Map<String, Object> fields = new HashMap<>();
 
     protected String text;
 

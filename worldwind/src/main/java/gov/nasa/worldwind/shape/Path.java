@@ -45,31 +45,31 @@ public class Path extends AbstractShape {
 
     protected boolean followTerrain;
 
-    protected FloatArray vertexArray = new FloatArray();
+    protected final FloatArray vertexArray = new FloatArray();
 
-    protected ShortArray interiorElements = new ShortArray();
+    protected final ShortArray interiorElements = new ShortArray();
 
-    protected ShortArray outlineElements = new ShortArray();
+    protected final ShortArray outlineElements = new ShortArray();
 
-    protected ShortArray verticalElements = new ShortArray();
+    protected final ShortArray verticalElements = new ShortArray();
 
     protected Object vertexBufferKey = nextCacheKey();
 
     protected Object elementBufferKey = nextCacheKey();
 
-    protected Vec3 vertexOrigin = new Vec3();
+    protected final Vec3 vertexOrigin = new Vec3();
 
     protected boolean isSurfaceShape;
 
     protected double texCoord1d;
 
-    private Vec3 point = new Vec3();
+    private final Vec3 point = new Vec3();
 
-    private Vec3 prevPoint = new Vec3();
+    private final Vec3 prevPoint = new Vec3();
 
-    private Matrix3 texCoordMatrix = new Matrix3();
+    private final Matrix3 texCoordMatrix = new Matrix3();
 
-    private Location intermediateLocation = new Location();
+    private final Location intermediateLocation = new Location();
 
     protected static Object nextCacheKey() {
         return new Object();
@@ -356,11 +356,10 @@ public class Path extends AbstractShape {
                 this.vertexOrigin.set(point);
             }
             this.texCoord1d = 0;
-            this.prevPoint.set(point);
         } else {
             this.texCoord1d += point.distanceTo(this.prevPoint);
-            this.prevPoint.set(point);
         }
+        this.prevPoint.set(point);
 
         if (this.isSurfaceShape) {
             this.vertexArray.add((float) (longitude - this.vertexOrigin.x));
