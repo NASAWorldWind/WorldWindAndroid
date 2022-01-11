@@ -16,15 +16,15 @@ import gov.nasa.worldwind.util.Logger;
  * Displays NASA's global elevation coverage at 10m resolution within the continental United States, 30m resolution in
  * all other continents, and 900m resolution on the ocean floor, all from an OGC Web Map Service (WMS). By default,
  * BasicElevationCoverage is configured to retrieve elevation coverage from the WMS at <a
- * href="https://worldwind26.arc.nasa.gov/wms?SERVICE=WMS&amp;REQUEST=GetCapabilities">https://worldwind26.arc.nasa.gov/wms</a>.
+ * href="https://wms.worldwind.earth/elev?SERVICE=WMS&amp;REQUEST=GetCapabilities">https://wms.worldwind.earth/elev</a>.
  */
 public class BasicElevationCoverage extends TiledElevationCoverage {
 
     /**
-     * Constructs a global elevation coverage with the WMS at https://worldwind26.arc.nasa.gov/wms.
+     * Constructs a global elevation coverage with the WMS at https://wms.worldwind.earth/elev.
      */
     public BasicElevationCoverage() {
-        this("https://worldwind26.arc.nasa.gov/elev");
+        this("https://wms.worldwind.earth/elev");
     }
 
     /**
@@ -50,7 +50,7 @@ public class BasicElevationCoverage extends TiledElevationCoverage {
 
         WmsLayerConfig layerConfig = new WmsLayerConfig();
         layerConfig.serviceAddress = serviceAddress;
-        layerConfig.layerNames = "GEBCO,aster_v2,USGS-NED";
+        layerConfig.layerNames = "SRTM-CGIAR,GEBCO";
         layerConfig.imageFormat = "application/bil16";
         final WmsTileFactory wmsTileFactory = new WmsTileFactory(layerConfig);
 
