@@ -5,13 +5,14 @@
 
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
+uniform highp sampler2D depthSampler;
 #else
 precision mediump float;
+uniform mediump sampler2D depthSampler;
 #endif
 
 uniform float range;
 uniform vec4 color[2];
-uniform sampler2D depthSampler;
 
 varying vec4 sightlinePosition;
 varying float sightlineDistance;
@@ -32,7 +33,7 @@ void main() {
     /* Compute a mask that's on when the object's depth is less than the sightline's depth. The depth texture contains
        the scene's minimum depth at each position, from the sightline's point of view. */
     vec3 sightlineCoord = clipCoord * 0.5 + 0.5;
-    float sightlineDepth = texture2D(depthSampler, sightlineCoord.xy).z;
+    float sightlineDepth = texture2D(depthSampler, sightlineCoord.xy).r;
     float occludeMask = step(sightlineDepth, sightlineCoord.z);
 
     /* Modulate the RGBA color with the computed masks to display fragments according to the sightline's configuration. */
