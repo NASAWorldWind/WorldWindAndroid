@@ -45,7 +45,7 @@ android {
     }
     productFlavors {
     }
-    lintOptions {
+    lint {
         abortOnError false
         disable 'GradleDependency'
     }
