@@ -970,7 +970,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         this.dc.modelview.set(frame.modelview);
         this.dc.modelviewProjection.setToMultiply(frame.projection, frame.modelview);
         this.dc.infiniteProjection.set(frame.infiniteProjection);
-        this.dc.screenProjection.setToScreenProjection(frame.viewport.width, frame.viewport.height);
+        // remapz range [-0.6 * maxDim .. 0.6 * maxDim] to [-1 .. 1] in order to avoid tilted icons clipping by near/far clip planes
+        double maxDim = frame.viewport.width > frame.viewport.height ? frame.viewport.width : frame.viewport.height;
+        this.dc.screenProjection.setToScreenProjection(frame.viewport.width, frame.viewport.height, -0.6 * maxDim, 0.6 * maxDim);
 
         // Process the drawables in the frame's drawable queue and drawable terrain data structures.
         this.dc.drawableQueue = frame.drawableQueue;

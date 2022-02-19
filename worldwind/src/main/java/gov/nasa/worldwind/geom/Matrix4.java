@@ -613,6 +613,25 @@ public class Matrix4 {
      * @throws IllegalArgumentException If either the width or the height is less than or equal to zero
      */
     public Matrix4 setToScreenProjection(double viewportWidth, double viewportHeight) {
+        return setToScreenProjection(viewportWidth, viewportHeight, 0, 1);
+    }
+
+    /**
+     * Sets this matrix to a screen projection matrix for the specified viewport dimensions and depth range.
+     * <br>
+     * A screen projection matrix is an orthographic projection that interprets points in model coordinates as
+     * representing a screen XY and a Z depth. Screen projection matrices therefore map coordinates directly into screen
+     * coordinates without modification. A point's XY coordinates are interpreted as literal screen coordinates and must
+     * be in the viewport to be visible. A point's Z coordinate is remapped from [zmin..zmax] depth range to NDC [-1..1] range.
+     *
+     * @param viewportWidth  the viewport width in screen coordinates
+     * @param viewportHeight the viewport height in screen coordinates
+     * @param zmin           lower z range value
+     * @param zmax           upper z range value
+     *
+     * @throws IllegalArgumentException If either the width or the height is less than or equal to zero
+     */
+    public Matrix4 setToScreenProjection(double viewportWidth, double viewportHeight, double zmin, double zmax) {
         if (viewportWidth <= 0) {
             throw new IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Matrix4", "setToScreenProjection",
                 "invalidWidth"));
@@ -652,8 +671,8 @@ public class Matrix4 {
 
         this.m[8] = 0;
         this.m[9] = 0;
-        this.m[10] = 2;
-        this.m[11] = -1;
+        this.m[10] = 2 / (zmax - zmin);
+        this.m[11] = - (zmax + zmin) / (zmax - zmin);
 
         this.m[12] = 0;
         this.m[13] = 0;

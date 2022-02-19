@@ -808,31 +808,43 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         // offset is defined with its origin at the image's bottom-left corner and axes that extend up and to the right
         // from the origin point. When the placemark has no active texture the image scale defines the image size and no
         // other scaling is applied.
+
+        unitSquareTransform.multiplyByTranslation(
+            screenPlacePoint.x,
+            screenPlacePoint.y,
+            screenPlacePoint.z);
+
+        double scaleX, scaleY;
+        double offsetX, offsetY;
         if (this.activeTexture != null) {
             int w = this.activeTexture.getWidth();
             int h = this.activeTexture.getHeight();
             double s = this.activeAttributes.imageScale * visibilityScale;
+            scaleX = w * s;
+            scaleY = h * s;
+
             this.activeAttributes.imageOffset.offsetForSize(w, h, offset);
-
-            unitSquareTransform.multiplyByTranslation(
-                screenPlacePoint.x - offset.x * s,
-                screenPlacePoint.y - offset.y * s,
-                screenPlacePoint.z);
-
-            unitSquareTransform.multiplyByScale(w * s, h * s, 1);
+            offsetX = -offset.x * s;
+            offsetY = -offset.y * s;
         } else {
             // This branch serves both non-textured attributes and also textures that haven't been loaded yet.
             // We set the size for non-loaded textures to the typical size of a contemporary "small" icon (24px)
             double size = this.activeAttributes.imageSource != null ? 24 : this.activeAttributes.imageScale;
             size *= visibilityScale;
+            scaleX = scaleY = size;
+
             this.activeAttributes.imageOffset.offsetForSize(size, size, offset);
+            offsetX = -offset.x;
+            offsetY = -offset.y;
+        }
 
-            unitSquareTransform.multiplyByTranslation(
-                screenPlacePoint.x - offset.x,
-                screenPlacePoint.y - offset.y,
-                screenPlacePoint.z);
+        // NOTE: transform order is important!!!
 
-            unitSquareTransform.multiplyByScale(size, size, 1);
+        // ... perform the tilt so that the image tilts back from its base into the view volume.
+        if (this.imageTilt != 0) {
+            double tilt = this.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
+                    rc.camera.tilt + this.imageTilt : this.imageTilt;
+            unitSquareTransform.multiplyByRotation(-1, 0, 0, tilt);
         }
 
         // ... perform image rotation
@@ -844,12 +856,14 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
             unitSquareTransform.multiplyByTranslation(-0.5, -0.5, 0);
         }
 
-        // ... and perform the tilt so that the image tilts back from its base into the view volume.
-        if (this.imageTilt != 0) {
-            double tilt = this.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
-                rc.camera.tilt + this.imageTilt : this.imageTilt;
-            unitSquareTransform.multiplyByRotation(-1, 0, 0, tilt);
-        }
+        // ... apply pivot translation
+        unitSquareTransform.multiplyByTranslation(
+                offsetX,
+                offsetY,
+                screenPlacePoint.z);
+
+        // ... apply scale
+        unitSquareTransform.multiplyByScale(scaleX, scaleY, 1);
     }
 
     /**
