@@ -269,7 +269,8 @@ public class MilStd2525 {
             Rect bounds = imageInfo.getImageBounds();       // The extents of the image, including text modifiers
             this.placemarkOffset = new Offset(
                 WorldWind.OFFSET_PIXELS, centerPoint.x, // x offset
-                WorldWind.OFFSET_PIXELS, bounds.height() - centerPoint.y); // y offset converted to lower-left origin
+                // Use billboarding or lollipopping to prevent icon clipping by terrain as described in MIL-STD-2525C APPENDIX F.5.1.1.2
+                WorldWind.OFFSET_PIXELS, 0/*bounds.height() - centerPoint.y*/); // y offset converted to lower-left origin
 
             // Apply the placemark offset to the attributes on the main thread. This is necessary to synchronize write
             // access to placemarkAttributes from the thread that invokes this BitmapFactory and read access from the

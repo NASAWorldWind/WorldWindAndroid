@@ -60,7 +60,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
      */
     protected static final double DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD = 1e6;
 
-    protected static final double DEFAULT_DEPTH_OFFSET = -0.1;
+    protected static final double DEFAULT_DEPTH_OFFSET = -0.03;
 
     private static Vec3 placePoint = new Vec3();
 
@@ -684,8 +684,9 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
 
         // Compute a screen depth offset appropriate for the current viewing parameters.
         double depthOffset = 0;
-        if (this.cameraDistance < rc.horizonDistance) {
-            depthOffset = DEFAULT_DEPTH_OFFSET;
+        double absTilt = Math.abs( rc.camera.tilt );
+        if (this.cameraDistance < rc.horizonDistance && absTilt <= 90) {
+            depthOffset = ( 1 - absTilt / 90 ) * DEFAULT_DEPTH_OFFSET;
         }
 
         // Project the placemark's model point to screen coordinates, using the screen depth offset to push the screen

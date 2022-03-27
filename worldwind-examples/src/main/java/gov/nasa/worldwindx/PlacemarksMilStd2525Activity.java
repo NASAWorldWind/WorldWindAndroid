@@ -86,6 +86,7 @@ public class PlacemarksMilStd2525Activity extends GeneralGlobeActivity {
             Placemark drone = new Placemark(
                 Position.fromDegrees(32.4520, 63.44553, 3000),
                 MilStd2525.getPlacemarkAttributes("SFAPMFQM--GIUSA", modifiers, null));
+            drone.getAttributes().setDrawLeader(true);
 
             symbolLayer.addRenderable(drone);
 
@@ -96,6 +97,7 @@ public class PlacemarksMilStd2525Activity extends GeneralGlobeActivity {
             Placemark launcher = new Placemark(
                 Position.fromDegrees(32.4014, 63.3894, 0),
                 MilStd2525.getPlacemarkAttributes("SHGXUCFRMS----G", modifiers, null));
+            launcher.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
 
             symbolLayer.addRenderable(launcher);
 
@@ -109,6 +111,7 @@ public class PlacemarksMilStd2525Activity extends GeneralGlobeActivity {
             Placemark machineGun = new Placemark(
                 Position.fromDegrees(32.3902, 63.4161, 0),
                 MilStd2525.getPlacemarkAttributes("SFGPEWRH--MTUSG", modifiers, null));
+            machineGun.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
 
             symbolLayer.addRenderable(machineGun);
 
