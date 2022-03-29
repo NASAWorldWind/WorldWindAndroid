@@ -432,7 +432,7 @@ public class RenderContext {
     }
 
     public Texture renderText(String text, TextAttributes attributes) {
-        TextCacheKey key = new TextCacheKey().set(text, attributes);
+        TextCacheKey key = this.scratchTextCacheKey.set(text, attributes);
         Texture texture = null;
 
         if (text != null && attributes != null) {

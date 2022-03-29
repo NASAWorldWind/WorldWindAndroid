@@ -306,7 +306,7 @@ public class PlacemarkAttributes {
     /**
      * Returns the attributes to apply to the placemark's label, if any. If null, the placemark's label is not drawn.
      */
-    public Object getLabelAttributes() {
+    public TextAttributes getLabelAttributes() {
         return labelAttributes;
     }
 

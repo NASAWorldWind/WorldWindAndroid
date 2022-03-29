@@ -62,17 +62,21 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
 
     protected static final double DEFAULT_DEPTH_OFFSET = -0.03;
 
-    private static Vec3 placePoint = new Vec3();
+    private static final Vec3 placePoint = new Vec3();
 
-    private static Vec3 screenPlacePoint = new Vec3();
+    private static final Vec3 screenPlacePoint = new Vec3();
 
-    private static Vec3 groundPoint = new Vec3();
+    private static final Vec3 groundPoint = new Vec3();
 
-    private static Vec2 offset = new Vec2();
+    private static final Vec2 offset = new Vec2();
 
-    private static Matrix4 unitSquareTransform = new Matrix4();
+    private static final Matrix4 imageTransform = new Matrix4();
 
-    private static Viewport screenBounds = new Viewport();
+    private static final Matrix4 labelTransform = new Matrix4();
+
+    private static final Viewport imageBounds = new Viewport();
+
+    private static final Viewport labelBounds = new Viewport();
 
     /**
      * The placemark's geographic position.
@@ -106,6 +110,11 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
     protected Texture activeTexture;
 
     /**
+     * The texture associated with the label attributes, or null if the attributes specify no image.
+     */
+    protected Texture labelTexture;
+
+    /**
      * The picked object ID associated with the placemark during the current render pass.
      */
     protected int pickedObjectId;
@@ -115,8 +124,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
     /**
      * The label text to draw near the placemark.
      */
-    // TODO: implement label property
-//    protected String label;
+    protected String label;
 
     /**
      * Determines whether the normal or highlighted attibutes should be used.
@@ -210,7 +218,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         this.setPosition(position);
         this.setAltitudeMode(WorldWind.ABSOLUTE);
         this.setDisplayName(name == null || name.isEmpty() ? "Placemark" : name);
-        // this.setLabel(name); // TODO: call setLabel(name)
+        // this.setLabel(name); // Do not use display name as label by default
         this.attributes = attributes;
         this.eyeDistanceScaling = false;
         this.eyeDistanceScalingThreshold = DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD;
@@ -257,10 +265,9 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
      *
      * @return A new Placemark with a PlacemarkAttributes bundle containing TextAttributes.
      */
-    // TODO: implement createWithImageAndLabel factory method
-//    public static Placemark createWithImageAndLabel(Position position, ImageSource imageSource, String label) {
-//        return new Placemark(position, PlacemarkAttributes.createWithImage(imageSource), label);
-//    }
+    public static Placemark createWithImageAndLabel(Position position, ImageSource imageSource, String label) {
+        return new Placemark(position, PlacemarkAttributes.createWithImage(imageSource), label);
+    }
 
     /**
      * Gets this placemark's geographic position.
@@ -385,15 +392,15 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         this.levelOfDetailSelector = levelOfDetailSelector;
         return this;
     }
-    /**
+
+    /*
      * Gets the text used to label this placemark on the globe.
      *
      * @return The text used to label a placemark on the globe when labels are enabled
      */
-    // TODO: implement getLabel()
-//    public String getLabel() {
-//        return label;
-//    }
+    public String getLabel() {
+        return label;
+    }
 
     /**
      * Sets the text used for this placemark's label on the globe.
@@ -402,11 +409,10 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
      *
      * @return This placemark
      */
-    // TODO: implement setLabel()
-//    public Placemark setLabel(String label) {
-//        this.label = label;
-//        return this;
-//    }
+    public Placemark setLabel(String label) {
+        this.label = label;
+        return this;
+    }
 
     /**
      * Indicates whether this placemark's size is reduced at higher eye distances. If true, this placemark's size is
@@ -749,61 +755,13 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         // Compute the placemark icon's active texture.
         this.determineActiveTexture(rc);
 
-        // If the placemark's icon is visible, enqueue a drawable icon for processing on the OpenGL thread.
-        WWMath.boundingRectForUnitSquare(unitSquareTransform, screenBounds);
-        if (rc.frustum.intersectsViewport(screenBounds)) {
-            Pool<DrawableScreenTexture> pool = rc.getDrawablePool(DrawableScreenTexture.class);
-            DrawableScreenTexture drawable = DrawableScreenTexture.obtain(pool);
-            this.prepareDrawableIcon(rc, drawable);
-            rc.offerShapeDrawable(drawable, this.cameraDistance);
-        }
-
-        // Release references to objects stored in the render resource cache.
-        this.activeTexture = null;
-
-        // Enqueue a picked object that associates the placemark's icon and leader with its picked object ID.
-        if (rc.pickMode && rc.drawableCount() != drawableCount) {
-            rc.offerPickedObject(PickedObject.fromRenderable(this.pickedObjectId, this, rc.currentLayer));
-        }
-    }
-
-    /**
-     * Determines the placemark attributes to use for the current render pass.
-     *
-     * @param rc the current render context
-     */
-    protected void determineActiveAttributes(RenderContext rc) {
-        if (this.highlighted && this.highlightAttributes != null) {
-            this.activeAttributes = this.highlightAttributes;
-        } else {
-            this.activeAttributes = this.attributes;
-        }
-    }
-
-    /**
-     * Determines the image texture and unit square transform to use for the current render pass.
-     *
-     * @param rc the current render context
-     */
-    protected void determineActiveTexture(RenderContext rc) {
-        // TODO: Refactor!
-        if (this.activeAttributes.imageSource != null) {
-            // Earlier in doRender(), an attempt was made to 'get' the activeTexture from the cache.
-            // If was not found in the cache we need to retrieve a texture from the image source.
-            if (this.activeTexture == null) {
-                this.activeTexture = rc.retrieveTexture(this.activeAttributes.imageSource, null); // puts retrieved textures in the cache
-            }
-        } else {
-            this.activeTexture = null; // there is no imageSource; draw a simple colored square
-        }
-
         // Compute an camera-position proximity scaling factor, so that distant placemarks can be scaled smaller than
         // nearer placemarks.
         double visibilityScale = this.isEyeDistanceScaling() ?
             Math.max(this.activeAttributes.minimumImageScale, Math.min(1, this.getEyeDistanceScalingThreshold() / this.cameraDistance)) : 1;
 
         // Initialize the unit square transform to the identity matrix.
-        unitSquareTransform.setToIdentity();
+        imageTransform.setToIdentity();
 
         // Apply the icon's translation and scale according to the image size, image offset and image scale. The image
         // offset is defined with its origin at the image's bottom-left corner and axes that extend up and to the right
@@ -831,34 +789,113 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         }
 
         // Position image on screen
-        unitSquareTransform.multiplyByTranslation(
+        imageTransform.multiplyByTranslation(
                 screenPlacePoint.x,
                 screenPlacePoint.y,
                 screenPlacePoint.z);
 
         // Divide Z by 2^24 to prevent texture clipping when tilting (where 24 is depth buffer bit size).
         // Doing so will limit depth range to (diagonal length)/2^24 and make its value within 0..1 range.
-        unitSquareTransform.multiplyByScale(1, 1, 1d / (1 << 24) );
+        imageTransform.multiplyByScale(1, 1, 1d / (1 << 24) );
 
         // Perform the tilt so that the image tilts back from its base into the view volume
         if (this.imageTilt != 0) {
-            double tilt = this.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
+            double actualTilt = this.imageTiltReference == WorldWind.RELATIVE_TO_GLOBE ?
                     rc.camera.tilt + this.imageTilt : this.imageTilt;
-            unitSquareTransform.multiplyByRotation(-1, 0, 0, tilt);
+            imageTransform.multiplyByRotation(-1, 0, 0, actualTilt);
         }
 
         // Perform image rotation
         if (this.imageRotation != 0) {
-            double rotation = this.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
+            double actualRotation = this.imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ?
                     rc.camera.heading - this.imageRotation : -this.imageRotation;
-            unitSquareTransform.multiplyByRotation(0, 0, 1, rotation);
+            imageTransform.multiplyByRotation(0, 0, 1, actualRotation);
         }
 
         // Apply pivot translation
-        unitSquareTransform.multiplyByTranslation(-offsetX, -offsetY, 0);
+        imageTransform.multiplyByTranslation(-offsetX, -offsetY, 0);
 
         // Apply scale
-        unitSquareTransform.multiplyByScale(scaleX, scaleY, 1);
+        imageTransform.multiplyByScale(scaleX, scaleY, 1);
+
+        // If the placemark's icon is visible, enqueue a drawable icon for processing on the OpenGL thread.
+        WWMath.boundingRectForUnitSquare(imageTransform, imageBounds);
+        if (rc.frustum.intersectsViewport(imageBounds)) {
+            Pool<DrawableScreenTexture> pool = rc.getDrawablePool(DrawableScreenTexture.class);
+            DrawableScreenTexture drawable = DrawableScreenTexture.obtain(pool);
+            this.prepareDrawableIcon(rc, drawable);
+            rc.offerShapeDrawable(drawable, this.cameraDistance);
+        }
+
+        // If there's a label, perform these same operations for the label texture.
+        if (this.mustDrawLabel(rc)) {
+            // Render the label's texture when the label's position is in the frustum. If the label's position is outside
+            // the frustum we don't do anything. This ensures that label textures are rendered only as necessary.
+            this.labelTexture = rc.getText(this.label, this.activeAttributes.labelAttributes);
+            if (this.labelTexture == null && rc.frustum.containsPoint(placePoint)) {
+                this.labelTexture = rc.renderText(this.label, this.activeAttributes.labelAttributes);
+            }
+
+            if (this.labelTexture != null) {
+                int w = this.labelTexture.getWidth();
+                int h = this.labelTexture.getHeight();
+                this.activeAttributes.labelAttributes.textOffset.offsetForSize(w, h, offset);
+
+                labelTransform.setTranslation(
+                        screenPlacePoint.x - offset.x,
+                        screenPlacePoint.y - offset.y,
+                        screenPlacePoint.z);
+
+                labelTransform.setScale(w, h, 1);
+
+                WWMath.boundingRectForUnitSquare(labelTransform, labelBounds);
+                if (rc.frustum.intersectsViewport(labelBounds)) {
+                    Pool<DrawableScreenTexture> pool = rc.getDrawablePool(DrawableScreenTexture.class);
+                    DrawableScreenTexture drawable = DrawableScreenTexture.obtain(pool);
+                    this.prepareDrawableLabel(rc, drawable);
+                    rc.offerShapeDrawable(drawable, this.cameraDistance);
+                }
+            }
+        }
+
+        // Release references to objects stored in the render resource cache.
+        this.activeTexture = null;
+        this.labelTexture = null;
+
+        // Enqueue a picked object that associates the placemark's icon and leader with its picked object ID.
+        if (rc.pickMode && rc.drawableCount() != drawableCount) {
+            rc.offerPickedObject(PickedObject.fromRenderable(this.pickedObjectId, this, rc.currentLayer));
+        }
+    }
+
+    /**
+     * Determines the placemark attributes to use for the current render pass.
+     *
+     * @param rc the current render context
+     */
+    protected void determineActiveAttributes(RenderContext rc) {
+        if (this.highlighted && this.highlightAttributes != null) {
+            this.activeAttributes = this.highlightAttributes;
+        } else {
+            this.activeAttributes = this.attributes;
+        }
+    }
+
+    /**
+     * Determines the image texture and unit square transform to use for the current render pass.
+     *
+     * @param rc the current render context
+     */
+    protected void determineActiveTexture(RenderContext rc) {
+        if (this.activeAttributes.imageSource != null) {
+            // Earlier in doRender(), an attempt was made to 'get' the activeTexture from the cache.
+            // If was not found in the cache we need to retrieve a texture from the image source.
+            if (this.activeTexture == null) {
+                this.activeTexture = rc.retrieveTexture(this.activeAttributes.imageSource, null); // puts retrieved textures in the cache
+            }
+        } else {
+            this.activeTexture = null; // there is no imageSource; draw a simple colored square
+        }
     }
 
     /**
@@ -876,7 +913,7 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         }
 
         // Use the plaemark's unit square transform matrix.
-        drawable.unitSquareTransform.set(unitSquareTransform);
+        drawable.unitSquareTransform.set(imageTransform);
 
         // Configure the drawable according to the placemark's active attributes. Use a color appropriate for the pick
         // mode. When picking use a unique color associated with the picked object ID. Use the texture associated with
@@ -885,6 +922,37 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         drawable.color.set(rc.pickMode ? this.pickColor : this.activeAttributes.imageColor);
         drawable.texture = this.activeTexture;
         drawable.enableDepthTest = this.activeAttributes.depthTest;
+    }
+
+    /**
+     * Prepares this placemark's label for processing in a subsequent drawing pass. Implementations must be
+     * careful not to leak resources from Placemark into the Drawable.
+     *
+     * @param rc       the current render context
+     * @param drawable the Drawable to be prepared
+     */
+    protected void prepareDrawableLabel(RenderContext rc, DrawableScreenTexture drawable) {
+        // Use the basic GLSL program to draw the placemark's label.
+        drawable.program = (BasicShaderProgram) rc.getShaderProgram(BasicShaderProgram.KEY);
+        if (drawable.program == null) {
+            drawable.program = (BasicShaderProgram) rc.putShaderProgram(BasicShaderProgram.KEY, new BasicShaderProgram(rc.resources));
+        }
+
+        // Use the label's unit square transform matrix.
+        drawable.unitSquareTransform.set(labelTransform);
+
+        // Configure the drawable according to the active label attributes. Use a color appropriate for the pick mode. When
+        // picking use a unique color associated with the picked object ID. Use the texture associated with the active
+        // attributes' text image and its associated tex coord transform. The text texture includes the appropriate
+        // color for drawing, specifying white for normal drawing ensures the color multiplication in the shader results
+        // in the texture's color.
+        if (rc.pickMode) {
+            drawable.color.set(this.pickColor);
+        } else {
+            drawable.color.set(1, 1, 1, 1);
+        }
+        drawable.texture = this.labelTexture;
+        drawable.enableDepthTest = this.activeAttributes.labelAttributes.isEnableDepthTest();
     }
 
     /**
@@ -925,13 +993,10 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
      *
      * @return True if there is a valid label and label attributes.
      */
-
     protected boolean mustDrawLabel(RenderContext rc) {
-        return false;
-        // TODO: implement mustDrawLabel()
-//        return this.label != null
-//            && !this.label.isEmpty()
-//            && this.activeAttributes.labelAttributes != null;
+        return this.label != null
+            && !this.label.isEmpty()
+            && this.activeAttributes.labelAttributes != null;
     }
 
     /**

@@ -30,6 +30,8 @@ import java.util.Locale;
 import gov.nasa.worldwind.BasicWorldWindowController;
 import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.PickedObjectList;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.render.ImageSource;
@@ -273,6 +275,7 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
             //IconBitmapFactory factory = new IconBitmapFactory(resources, resourceId);
             //placemarkAttributes.setImageSource(ImageSource.fromBitmapFactory(factory)).setImageScale(scale);
             placemarkAttributes.setImageSource(ImageSource.fromResource(resourceId)).setImageScale(scale).setMinimumImageScale(0.5);
+            placemarkAttributes.getLabelAttributes().setTextOffset(new Offset(WorldWind.OFFSET_PIXELS, -24, WorldWind.OFFSET_FRACTION, 0.0));
             return placemarkAttributes;
         }
     }
@@ -560,6 +563,8 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
                 placemark.setLevelOfDetailSelector(new PlaceLevelOfDetailSelector(getResources(), place));
                 placemark.setEyeDistanceScaling(true);
                 placemark.setEyeDistanceScalingThreshold(PlaceLevelOfDetailSelector.LEVEL_1_DISTANCE);
+                placemark.setLabel(place.name);
+                placemark.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
 
                 // On a background thread, we can add Placemarks to a RenderableLayer that is
                 // NOT attached to the WorldWindow. If the layer was attached to the WorldWindow
