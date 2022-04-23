@@ -49,8 +49,10 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
          * @param rc             The current render context
          * @param placemark      The placemark needing a level of detail selection
          * @param cameraDistance The distance from the placemark to the camera (meters)
+         *
+         * @return if placemark should display or skip its rendering
          */
-        void selectLevelOfDetail(RenderContext rc, Placemark placemark, double cameraDistance);
+        boolean selectLevelOfDetail(RenderContext rc, Placemark placemark, double cameraDistance);
     }
 
     /**
@@ -702,8 +704,9 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
         }
 
         // Allow the placemark to adjust the level of detail based on distance to the camera
-        if (this.levelOfDetailSelector != null) {
-            this.levelOfDetailSelector.selectLevelOfDetail(rc, this, this.cameraDistance);
+        if (this.levelOfDetailSelector != null
+                && !this.levelOfDetailSelector.selectLevelOfDetail(rc, this, this.cameraDistance)) {
+            return; // skip rendering
         }
 
         // Determine the attributes to use for the current render pass.

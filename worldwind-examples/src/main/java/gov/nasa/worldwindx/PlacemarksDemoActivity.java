@@ -142,9 +142,11 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
          * @param rc
          * @param placemark      The placemark needing a level of detail selection
          * @param cameraDistance The distance from the placemark to the camera (meters)
+         *
+         * @return if placemark should display or skip its rendering
          */
         @Override
-        public void selectLevelOfDetail(RenderContext rc, Placemark placemark, double cameraDistance) {
+        public boolean selectLevelOfDetail(RenderContext rc, Placemark placemark, double cameraDistance) {
 
             boolean highlighted = placemark.isHighlighted();
             boolean highlightChanged = this.lastHighlightState != highlighted;
@@ -213,7 +215,13 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
             this.lastHighlightState = highlighted;
 
             // Update the placemark's attributes bundle
-            placemark.setAttributes(this.attributes);
+            if (this.attributes != null) {
+                this.attributes.setDrawLabel(highlighted || cameraDistance <= LEVEL_1_DISTANCE);
+                placemark.setAttributes(this.attributes);
+                return true; // Placemark visible
+            } else {
+                return false; // Placemark invisible
+            }
         }
 
         protected static PlacemarkAttributes getPlacemarkAttributes(Resources resources, Place place) {
