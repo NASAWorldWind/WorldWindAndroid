@@ -15,7 +15,7 @@ class GARSGraticuleTile extends AbstractGraticuleTile {
     /**
      * Indicates the eye altitudes in meters below which each level should be displayed.
      */
-    private static final double[] THRESHOLDS = new double[] {1200e3, 600e3, 180e3}; // 30 min, 15 min, 5 min
+    private static final double[] THRESHOLDS = new double[] {600e3, 300e3, 90e3}; // 30 min, 15 min, 5 min
 
     /**
      * Specifies the eye altitude below which the 30 minute grid is displayed.
