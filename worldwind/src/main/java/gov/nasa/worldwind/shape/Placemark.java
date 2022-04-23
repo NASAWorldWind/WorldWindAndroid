@@ -994,8 +994,8 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
      * @return True if there is a valid label and label attributes.
      */
     protected boolean mustDrawLabel(RenderContext rc) {
-        return this.label != null
-            && !this.label.isEmpty()
+        return this.activeAttributes.drawLabel
+            && this.label != null && !this.label.isEmpty()
             && this.activeAttributes.labelAttributes != null;
     }
 
