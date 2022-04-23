@@ -281,7 +281,7 @@ public class LayerFactory {
                     tileMatrixSet.getMaxX() - tileMatrixSet.getMinX());
             config.tileOrigin.set(tileMatrixSet.getMinY(), tileMatrixSet.getMinX());
             config.firstLevelDelta = (tileMatrixSet.getMaxY() - tileMatrixSet.getMinY()) / tileMatrix.valueAt(0).getMatrixHeight();
-            config.numLevels = tileMatrix.size();
+            config.numLevels = tileMatrix.keyAt(tileMatrix.size() - 1) - tileMatrix.keyAt(0) + 1;
 
             TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
             surfaceImage.setDisplayName(content.getIdentifier());
