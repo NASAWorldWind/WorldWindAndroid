@@ -840,16 +840,22 @@ public class Placemark extends AbstractRenderable implements Highlightable, Mova
             }
 
             if (this.labelTexture != null) {
+                // Compute an camera-position proximity scaling factor, so that distant placemarks can be scaled smaller than
+                // nearer placemarks.
+                visibilityScale = this.isEyeDistanceScaling() ?
+                        Math.max(this.activeAttributes.minimumImageScale, Math.min(1, this.getEyeDistanceScalingLabelThreshold() / this.cameraDistance)) : 1;
+
                 int w = this.labelTexture.getWidth();
                 int h = this.labelTexture.getHeight();
+                double s = this.activeAttributes.labelAttributes.scale * visibilityScale;
                 this.activeAttributes.labelAttributes.textOffset.offsetForSize(w, h, offset);
 
                 labelTransform.setTranslation(
-                        screenPlacePoint.x - offset.x,
-                        screenPlacePoint.y - offset.y,
+                        screenPlacePoint.x - offset.x * s,
+                        screenPlacePoint.y - offset.y * s,
                         screenPlacePoint.z);
 
-                labelTransform.setScale(w, h, 1);
+                labelTransform.setScale(w * s, h * s, 1);
 
                 WWMath.boundingRectForUnitSquare(labelTransform, labelBounds);
                 if (rc.frustum.intersectsViewport(labelBounds)) {

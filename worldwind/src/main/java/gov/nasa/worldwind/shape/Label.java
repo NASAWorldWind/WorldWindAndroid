@@ -445,10 +445,11 @@ public class Label extends AbstractRenderable implements Highlightable, Movable 
         // origin at the text's bottom-left corner and axes that extend up and to the right from the origin point.
         int w = texture.getWidth();
         int h = texture.getHeight();
+        double s = this.activeAttributes.scale;
         this.activeAttributes.textOffset.offsetForSize(w, h, renderData.offset);
         renderData.unitSquareTransform.setTranslation(
-            renderData.screenPlacePoint.x - renderData.offset.x,
-            renderData.screenPlacePoint.y - renderData.offset.y,
+            renderData.screenPlacePoint.x - renderData.offset.x * s,
+            renderData.screenPlacePoint.y - renderData.offset.y * s,
             renderData.screenPlacePoint.z);
 
         // Apply the label's rotation according to its rotation value and orientation mode. The rotation is applied
@@ -462,7 +463,7 @@ public class Label extends AbstractRenderable implements Highlightable, Movable 
         }
 
         // Apply the label's translation and scale according to its text size.
-        renderData.unitSquareTransform.multiplyByScale(w, h, 1);
+        renderData.unitSquareTransform.multiplyByScale(w * s, h * s, 1);
 
         WWMath.boundingRectForUnitSquare(renderData.unitSquareTransform, renderData.screenBounds);
         if (!rc.frustum.intersectsViewport(renderData.screenBounds)) {
