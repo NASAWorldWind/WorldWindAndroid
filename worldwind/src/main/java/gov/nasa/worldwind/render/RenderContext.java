@@ -383,7 +383,7 @@ public class RenderContext {
                     return result; // found a point relative to the terrain
                 } else if (this.globe != null) {
                     // TODO use elevation model height as a fallback
-                    return this.globe.geographicToCartesian(latitude, longitude, altitude, result);
+                    return this.globe.geographicToCartesian(latitude, longitude, altitude * this.verticalExaggeration, result);
                 }
         }
 

@@ -108,9 +108,8 @@ public class Camera {
                     Logger.logMessage(Logger.ERROR, "Camera", "computeViewingTransform", "missingResult"));
         }
 
-        // TODO interpret altitude mode other than absolute
         // Transform by the local cartesian transform at the camera's position.
-        this.wwd.getGlobe().geographicToCartesianTransform(this.position.latitude, this.position.longitude, this.position.altitude, result);
+        this.geographicToCartesianTransform(this.position, this.altitudeMode, result);
 
         // Transform by the heading, tilt and roll.
         result.multiplyByRotation(0, 0, 1, -this.heading); // rotate clockwise about the Z axis
@@ -166,6 +165,7 @@ public class Camera {
         this.modelview.multiplyByMatrix(this.origin);
 
         this.position.set(this.originPos);
+        this.altitudeMode = WorldWind.ABSOLUTE; // Calculated position is absolute
         this.heading = this.modelview.extractHeading(lookAt.roll); // disambiguate heading and roll
         this.tilt = this.modelview.extractTilt();
         this.roll = lookAt.roll; // roll passes straight through
@@ -193,9 +193,8 @@ public class Camera {
     }
 
     protected Matrix4 lookAtToViewingTransform(LookAt lookAt, Matrix4 result) {
-        // TODO interpret altitude mode other than absolute
         // Transform by the local cartesian transform at the look-at's position.
-        this.wwd.getGlobe().geographicToCartesianTransform(lookAt.position.latitude, lookAt.position.longitude, lookAt.position.altitude, result);
+        this.geographicToCartesianTransform(lookAt.position, lookAt.altitudeMode, result);
 
         // Transform by the heading and tilt.
         result.multiplyByRotation(0, 0, 1, -lookAt.heading); // rotate clockwise about the Z axis
@@ -209,6 +208,25 @@ public class Camera {
         result.invertOrthonormal();
 
         return result;
+    }
+
+    protected void geographicToCartesianTransform(Position position, @WorldWind.AltitudeMode int altitudeMode, Matrix4 result) {
+        switch (altitudeMode) {
+            case WorldWind.ABSOLUTE:
+                this.wwd.getGlobe().geographicToCartesianTransform(
+                    position.latitude, position.longitude, position.altitude * this.wwd.getVerticalExaggeration(), result);
+                break;
+            case WorldWind.CLAMP_TO_GROUND:
+                this.wwd.getGlobe().geographicToCartesianTransform(
+                    position.latitude, position.longitude, this.wwd.getGlobe().getElevationAtLocation(
+                            position.latitude, position.longitude) * this.wwd.getVerticalExaggeration(), result);
+                break;
+            case WorldWind.RELATIVE_TO_GROUND:
+                this.wwd.getGlobe().geographicToCartesianTransform(
+                    position.latitude, position.longitude, (position.altitude + this.wwd.getGlobe().getElevationAtLocation(
+                            position.latitude, position.longitude)) * this.wwd.getVerticalExaggeration(), result);
+                break;
+        }
     }
 
 }

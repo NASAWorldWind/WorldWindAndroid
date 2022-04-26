@@ -438,7 +438,7 @@ public abstract class AbstractGraticuleLayer extends AbstractLayer {
     Vec3 getSurfacePoint(RenderContext rc, double latitude, double longitude) {
         if (!rc.terrain.surfacePoint(latitude, longitude, surfacePoint))
             rc.globe.geographicToCartesian(latitude, longitude,
-                    rc.globe.getElevationAtLocation(latitude, longitude), surfacePoint);
+                    rc.globe.getElevationAtLocation(latitude, longitude) * rc.verticalExaggeration, surfacePoint);
 
         return surfacePoint;
     }
