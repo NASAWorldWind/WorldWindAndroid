@@ -116,7 +116,16 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
             } else if (msg.what == MSG_ID_REQUEST_REDRAW) {
                 requestRedraw();
             } else if (msg.what == MSG_ID_SET_VIEWPORT) {
-                viewport.set((Viewport) msg.obj);
+                Viewport newViewport = (Viewport) msg.obj;
+                // Keep map scale by adopting field of view on view port resize
+                if (viewport.height != 0) {
+                    try {
+                        camera.setFieldOfView(camera.getFieldOfView() * newViewport.height / viewport.height);
+                    } catch (IllegalArgumentException ignore) {
+                        // Keep original field of view in case new one does not fit requirements
+                    }
+                }
+                viewport.set(newViewport);
             } else if (msg.what == MSG_ID_SET_DEPTH_BITS) {
                 depthBits = (Integer) msg.obj;
             }
