@@ -33,7 +33,7 @@ import gov.nasa.worldwind.util.TileFactory;
 public class BasicTessellator implements Tessellator, TileFactory {
 
     // ~0.6 meter resolution
-    protected LevelSet levelSet = new LevelSet(new Sector().setFullSphere(), new Location(-90, -180), 90, 20, 32, 32);
+    protected LevelSet levelSet = new LevelSet(new Sector().setFullSphere(), new Location(-90, -180), new Location(90, 90), 20, 32, 32);
 
     protected double detailControl = 80;
 

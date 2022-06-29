@@ -25,9 +25,9 @@ public class LevelSetConfig {
     public final Location tileOrigin = new Location(-90, -180);
 
     /**
-     * The geographic width and height in degrees of tiles in the first level (lowest resolution) of the level set.
+     * The geographic width and height in degrees of tiles in the first level (the lowest resolution) of the level set.
      */
-    public double firstLevelDelta = 90;
+    public final Location firstLevelDelta = new Location(90, 90);
 
     /**
      * The number of levels in the level set.
@@ -69,12 +69,12 @@ public class LevelSetConfig {
      *                        sample points in the latitudinal direction of elevation tiles associate with the level
      *                        set
      */
-    public LevelSetConfig(Sector sector, double firstLevelDelta, int numLevels, int tileWidth, int tileHeight) {
+    public LevelSetConfig(Sector sector, Location firstLevelDelta, int numLevels, int tileWidth, int tileHeight) {
         if (sector != null) {
             this.sector.set(sector);
         }
 
-        this.firstLevelDelta = firstLevelDelta;
+        this.firstLevelDelta.set(firstLevelDelta);
         this.numLevels = numLevels;
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
@@ -97,7 +97,7 @@ public class LevelSetConfig {
         }
 
         double degreesPerPixel = Math.toDegrees(radiansPerPixel);
-        double firstLevelDegreesPerPixel = this.firstLevelDelta / Math.min(this.tileWidth, this.tileHeight);
+        double firstLevelDegreesPerPixel = Math.max(this.firstLevelDelta.longitude / this.tileWidth, this.firstLevelDelta.latitude / this.tileHeight);
         double level = Math.log(firstLevelDegreesPerPixel / degreesPerPixel) / Math.log(2); // fractional level address
         int levelNumber = (int) Math.ceil(level); // ceiling captures the resolution
 
@@ -126,7 +126,7 @@ public class LevelSetConfig {
         }
 
         double degreesPerPixel = Math.toDegrees(radiansPerPixel);
-        double firstLevelDegreesPerPixel = this.firstLevelDelta / this.tileHeight;
+        double firstLevelDegreesPerPixel = Math.max(this.firstLevelDelta.longitude / this.tileWidth, this.firstLevelDelta.latitude / this.tileHeight);
         double level = Math.log(firstLevelDegreesPerPixel / degreesPerPixel) / Math.log(2); // fractional level address
         int levelNumber = (int) Math.floor(level); // floor prevents exceeding the min scale
 

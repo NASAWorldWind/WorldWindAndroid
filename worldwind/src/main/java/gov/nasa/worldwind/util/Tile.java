@@ -109,7 +109,7 @@ public class Tile {
         this.row = row;
         this.column = column;
         this.tileKey = level.levelNumber + "." + row + "." + column;
-        this.texelSizeFactor = Math.toRadians(level.tileDelta / level.tileWidth) * Math.cos(Math.toRadians(sector.centroidLatitude()));
+        this.texelSizeFactor = Math.toRadians(level.tileDelta.longitude / level.tileWidth) * Math.cos(Math.toRadians(sector.centroidLatitude()));
     }
 
     /**
@@ -217,29 +217,25 @@ public class Tile {
 
         Sector sector = level.parent.sector;
         Location tileOrigin = level.parent.tileOrigin;
-        double tileDelta = level.tileDelta;
+        Location tileDelta = level.tileDelta;
 
-        int firstRow = Tile.computeRow(tileDelta, sector.minLatitude(), tileOrigin.latitude);
-        int lastRow = Tile.computeLastRow(tileDelta, sector.maxLatitude(), tileOrigin.latitude);
-        int firstCol = Tile.computeColumn(tileDelta, sector.minLongitude(), tileOrigin.longitude);
-        int lastCol = Tile.computeLastColumn(tileDelta, sector.maxLongitude(), tileOrigin.longitude);
+        int firstRow = Tile.computeRow(tileDelta.latitude, sector.minLatitude(), tileOrigin.latitude);
+        int lastRow = Tile.computeLastRow(tileDelta.latitude, sector.maxLatitude(), tileOrigin.latitude);
+        int firstCol = Tile.computeColumn(tileDelta.longitude, sector.minLongitude(), tileOrigin.longitude);
+        int lastCol = Tile.computeLastColumn(tileDelta.longitude, sector.maxLongitude(), tileOrigin.longitude);
 
-        double firstRowLat = tileOrigin.latitude + firstRow * tileDelta;
-        double firstRowLon = tileOrigin.longitude + firstCol * tileDelta;
+        double firstRowLat = tileOrigin.latitude + firstRow * tileDelta.latitude;
+        double firstColLon = tileOrigin.longitude + firstCol * tileDelta.longitude;
+
         double lat = firstRowLat;
-        double lon;
-
         for (int row = firstRow; row <= lastRow; row++) {
-            lon = firstRowLon;
-
+            double lon = firstColLon;
             for (int col = firstCol; col <= lastCol; col++) {
-                Sector tileSector = new Sector(lat, lon, tileDelta, tileDelta);
+                Sector tileSector = new Sector(lat, lon, tileDelta.latitude, tileDelta.longitude);
                 result.add(tileFactory.createTile(tileSector, level, row, col));
-
-                lon += tileDelta;
+                lon += tileDelta.longitude;
             }
-
-            lat += tileDelta;
+            lat += tileDelta.latitude;
         }
 
         return result;
@@ -334,26 +330,27 @@ public class Tile {
         double lonMin = this.sector.minLongitude();
         double latMid = this.sector.centroidLatitude();
         double lonMid = this.sector.centroidLongitude();
-        double childDelta = this.level.tileDelta * 0.5;
+        double childDeltaLat = this.level.tileDelta.latitude * 0.5;
+        double childDeltaLon = this.level.tileDelta.longitude * 0.5;
 
         int childRow = 2 * this.row;
         int childCol = 2 * this.column;
-        Sector childSector = new Sector(latMin, lonMin, childDelta, childDelta);
+        Sector childSector = new Sector(latMin, lonMin, childDeltaLat, childDeltaLon);
         children[0] = tileFactory.createTile(childSector, childLevel, childRow, childCol); // Southwest
 
         childRow = 2 * this.row;
         childCol = 2 * this.column + 1;
-        childSector = new Sector(latMin, lonMid, childDelta, childDelta);
+        childSector = new Sector(latMin, lonMid, childDeltaLat, childDeltaLon);
         children[1] = tileFactory.createTile(childSector, childLevel, childRow, childCol); // Southeast
 
         childRow = 2 * this.row + 1;
         childCol = 2 * this.column;
-        childSector = new Sector(latMid, lonMin, childDelta, childDelta);
+        childSector = new Sector(latMid, lonMin, childDeltaLat, childDeltaLon);
         children[2] = tileFactory.createTile(childSector, childLevel, childRow, childCol); // Northwest
 
         childRow = 2 * this.row + 1;
         childCol = 2 * this.column + 1;
-        childSector = new Sector(latMid, lonMid, childDelta, childDelta);
+        childSector = new Sector(latMid, lonMid, childDeltaLat, childDeltaLon);
         children[3] = tileFactory.createTile(childSector, childLevel, childRow, childCol); // Northeast
 
         return children;

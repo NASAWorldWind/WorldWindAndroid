@@ -280,7 +280,10 @@ public class LayerFactory {
                     tileMatrixSet.getMaxY() - tileMatrixSet.getMinY(),
                     tileMatrixSet.getMaxX() - tileMatrixSet.getMinX());
             config.tileOrigin.set(tileMatrixSet.getMinY(), tileMatrixSet.getMinX());
-            config.firstLevelDelta = (tileMatrixSet.getMaxY() - tileMatrixSet.getMinY()) / tileMatrix.valueAt(0).getMatrixHeight();
+            config.firstLevelDelta.set(
+                (tileMatrixSet.getMaxY() - tileMatrixSet.getMinY()) / tileMatrix.valueAt(0).getMatrixHeight(),
+                (tileMatrixSet.getMaxX() - tileMatrixSet.getMinX()) / tileMatrix.valueAt(0).getMatrixWidth()
+            );
             config.numLevels = tileMatrix.keyAt(tileMatrix.size() - 1) - tileMatrix.keyAt(0) + 1;
 
             TiledSurfaceImage surfaceImage = new TiledSurfaceImage();
@@ -681,7 +684,7 @@ public class LayerFactory {
         }
         int imageSize = tileMatrixSet.getTileMatrices().get(0).getTileHeight();
 
-        return new LevelSet(boundingBox, new Location(-90, -180), 90, compatibleTileMatrixSet.tileMatrices.size(), imageSize, imageSize);
+        return new LevelSet(boundingBox, new Location(-90, -180), new Location(90, 90), compatibleTileMatrixSet.tileMatrices.size(), imageSize, imageSize);
     }
 
     protected String buildWmtsKvpTemplate(String kvpServiceAddress, String layer, String format, String styleIdentifier, String tileMatrixSet) {

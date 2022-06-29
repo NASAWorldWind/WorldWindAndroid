@@ -25,9 +25,9 @@ public class LevelSet {
     public final Location tileOrigin = new Location();
 
     /**
-     * The geographic width and height in degrees of tiles in the first level (lowest resolution) of this level set.
+     * The geographic width and height in degrees of tiles in the first level (the lowest resolution) of this level set.
      */
-    public final double firstLevelDelta;
+    public final Location firstLevelDelta = new Location();
 
     /**
      * The width in pixels of images associated with tiles in this level set, or the number of sample points in the
@@ -51,7 +51,6 @@ public class LevelSet {
      * <code>firstLevel</code> and <code>lastLevel</code> always return null.
      */
     public LevelSet() {
-        this.firstLevelDelta = 0;
         this.tileWidth = 0;
         this.tileHeight = 0;
         this.levels = new Level[0];
@@ -74,7 +73,7 @@ public class LevelSet {
      *
      * @throws IllegalArgumentException If any argument is null, or if any dimension is zero
      */
-    public LevelSet(Sector sector, Location tileOrigin, double firstLevelDelta, int numLevels, int tileWidth, int tileHeight) {
+    public LevelSet(Sector sector, Location tileOrigin, Location firstLevelDelta, int numLevels, int tileWidth, int tileHeight) {
         if (sector == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingSector"));
@@ -85,7 +84,7 @@ public class LevelSet {
                     Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingTileOrigin"));
         }
 
-        if (firstLevelDelta <= 0) {
+        if (firstLevelDelta == null || firstLevelDelta.latitude <= 0 || firstLevelDelta.longitude <= 0) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidTileDelta"));
         }
@@ -102,7 +101,7 @@ public class LevelSet {
 
         this.sector.set(sector);
         this.tileOrigin.set(tileOrigin);
-        this.firstLevelDelta = firstLevelDelta;
+        this.firstLevelDelta.set(firstLevelDelta);
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
         this.levels = new Level[numLevels];
@@ -129,12 +128,7 @@ public class LevelSet {
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingSector"));
         }
 
-        if (config.tileOrigin == null) {
-            throw new IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingTileOrigin"));
-        }
-
-        if (config.firstLevelDelta <= 0) {
+        if (config.firstLevelDelta.latitude <= 0 || config.firstLevelDelta.longitude <= 0) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidTileDelta"));
         }
@@ -151,7 +145,7 @@ public class LevelSet {
 
         this.sector.set(config.sector);
         this.tileOrigin.set(config.tileOrigin);
-        this.firstLevelDelta = config.firstLevelDelta;
+        this.firstLevelDelta.set(config.firstLevelDelta);
         this.tileWidth = config.tileWidth;
         this.tileHeight = config.tileHeight;
         this.levels = new Level[config.numLevels];
@@ -160,7 +154,8 @@ public class LevelSet {
 
     protected void assembleLevels() {
         for (int i = 0, len = this.levels.length; i < len; i++) {
-            double delta = firstLevelDelta / (1 << i);
+            int n = 1 << i;
+            Location delta = new Location(firstLevelDelta.latitude / n, firstLevelDelta.longitude / n);
             this.levels[i] = new Level(this, i, delta);
         }
     }
@@ -209,7 +204,7 @@ public class LevelSet {
         }
 
         double degreesPerPixel = Math.toDegrees(radiansPerPixel);
-        double firstLevelDegreesPerPixel = this.firstLevelDelta / Math.min(this.tileWidth, this.tileHeight);
+        double firstLevelDegreesPerPixel = Math.max(this.firstLevelDelta.longitude / this.tileWidth, this.firstLevelDelta.latitude / this.tileHeight);
         double level = Math.log(firstLevelDegreesPerPixel / degreesPerPixel) / Math.log(2); // fractional level address
         int levelNumber = (int) Math.round(level); // nearest neighbor level
 

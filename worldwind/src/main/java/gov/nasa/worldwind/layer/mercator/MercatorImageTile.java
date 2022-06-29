@@ -53,23 +53,25 @@ class MercatorImageTile extends ImageTile implements ImageSource.Transformer {
         // NOTE LevelSet.sector is final Sector attribute and thus can not be cast to MercatorSector!
         MercatorSector sector = MercatorSector.fromSector(level.parent.sector);
         Location tileOrigin = level.parent.tileOrigin;
-        double dLat = level.tileDelta / 2;
-        double dLon = level.tileDelta;
+        double dLat = level.tileDelta.latitude;
+        double dLon = level.tileDelta.longitude;
 
         int firstRow = Tile.computeRow(dLat, sector.minLatitude(), tileOrigin.latitude);
         int lastRow = Tile.computeLastRow(dLat, sector.maxLatitude(), tileOrigin.latitude);
         int firstCol = Tile.computeColumn(dLon, sector.minLongitude(), tileOrigin.longitude);
         int lastCol = Tile.computeLastColumn(dLon, sector.maxLongitude(), tileOrigin.longitude);
 
-        double deltaLat = dLat / 90;
-        double d1 = sector.minLatPercent() + deltaLat * firstRow;
+        double dLatPercent = dLat / sector.deltaLatitude() * (sector.maxLatPercent() - sector.minLatPercent());
+        double firstRowPercent = MercatorSector.gudermannianInverse(tileOrigin.latitude) + firstRow * dLatPercent;
+        double firstColLon = tileOrigin.longitude + firstCol * dLon;
+
+        double d1 = firstRowPercent;
         for (int row = firstRow; row <= lastRow; row++) {
-            double d2 = d1 + deltaLat;
-            double t1 = tileOrigin.longitude + (firstCol * dLon);
+            double d2 = d1 + dLatPercent;
+            double t1 = firstColLon;
             for (int col = firstCol; col <= lastCol; col++) {
-                double t2;
-                t2 = t1 + dLon;
-                result.add(tileFactory.createTile(MercatorSector.fromDegrees(d1, d2, t1, t2), level, row, col));
+                double t2 = t1 + dLon;
+                result.add(tileFactory.createTile(new MercatorSector(d1, d2, t1, t2), level, row, col));
                 t1 = t2;
             }
             d1 = d2;
@@ -114,10 +116,10 @@ class MercatorImageTile extends ImageTile implements ImageSource.Transformer {
         int eastCol = westCol + 1;
 
         Tile[] children = new Tile[4];
-        children[0] = tileFactory.createTile(MercatorSector.fromDegrees(d0, d1, t0, t1), childLevel, northRow, westCol);
-        children[1] = tileFactory.createTile(MercatorSector.fromDegrees(d0, d1, t1, t2), childLevel, northRow, eastCol);
-        children[2] = tileFactory.createTile(MercatorSector.fromDegrees(d1, d2, t0, t1), childLevel, southRow, westCol);
-        children[3] = tileFactory.createTile(MercatorSector.fromDegrees(d1, d2, t1, t2), childLevel, southRow, eastCol);
+        children[0] = tileFactory.createTile(new MercatorSector(d0, d1, t0, t1), childLevel, northRow, westCol);
+        children[1] = tileFactory.createTile(new MercatorSector(d0, d1, t1, t2), childLevel, northRow, eastCol);
+        children[2] = tileFactory.createTile(new MercatorSector(d1, d2, t0, t1), childLevel, southRow, westCol);
+        children[3] = tileFactory.createTile(new MercatorSector(d1, d2, t1, t2), childLevel, southRow, eastCol);
 
         return children;
     }

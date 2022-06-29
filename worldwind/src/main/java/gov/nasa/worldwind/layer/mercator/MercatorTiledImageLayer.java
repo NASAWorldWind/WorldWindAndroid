@@ -13,8 +13,6 @@ import gov.nasa.worldwind.util.TileFactory;
 
 public abstract class MercatorTiledImageLayer extends RenderableLayer implements TileFactory {
 
-    private static final double FULL_SPHERE = 360;
-
     private final int firstLevelOffset;
 
     public MercatorTiledImageLayer(String name, int numLevels, int firstLevelOffset, int tileSize, boolean overlay) {
@@ -22,10 +20,12 @@ public abstract class MercatorTiledImageLayer extends RenderableLayer implements
         this.setPickEnabled(false);
         this.firstLevelOffset = firstLevelOffset;
 
+        MercatorSector sector = new MercatorSector(-1.0, 1.0, -180.0, 180.0);
+        Location tileOrigin = new Location(sector.minLatitude(), sector.minLongitude());
+        int n = 1 << firstLevelOffset;
+        Location firstLevelDelta = new Location(sector.deltaLatitude() / n, sector.deltaLongitude() / n);
         MercatorTiledSurfaceImage surfaceImage = new MercatorTiledSurfaceImage();
-        surfaceImage.setLevelSet(new LevelSet(
-                MercatorSector.fromDegrees(-1.0, 1.0, - FULL_SPHERE / 2, FULL_SPHERE / 2), new Location(-90, -180),
-                FULL_SPHERE / (1 << firstLevelOffset), numLevels - firstLevelOffset, tileSize, tileSize));
+        surfaceImage.setLevelSet(new LevelSet(sector, tileOrigin, firstLevelDelta, numLevels - firstLevelOffset, tileSize, tileSize));
         surfaceImage.setTileFactory(this);
         if(!overlay) {
             surfaceImage.setImageOptions(new ImageOptions(WorldWind.RGB_565)); // reduce memory usage by using a 16-bit configuration with no alpha

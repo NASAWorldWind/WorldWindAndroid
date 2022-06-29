@@ -6,8 +6,7 @@ public class MercatorSector extends Sector {
 
     private final double minLatPercent, maxLatPercent;
 
-    private MercatorSector(double minLatPercent, double maxLatPercent,
-                           double minLongitude, double maxLongitude) {
+    public MercatorSector(double minLatPercent, double maxLatPercent, double minLongitude, double maxLongitude) {
         this.minLatPercent = minLatPercent;
         this.maxLatPercent = maxLatPercent;
         this.minLatitude = gudermannian(minLatPercent);

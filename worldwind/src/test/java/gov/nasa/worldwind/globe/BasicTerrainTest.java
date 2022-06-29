@@ -82,7 +82,7 @@ public class BasicTerrainTest {
         this.terrain = new BasicTerrain();
 
         // Add a terrain tile used to the mocked terrain
-        LevelSet levelSet = new LevelSet(new Sector().setFullSphere(), new Location(-90, -180), 1.0, 1, 5, 5); // tiles with 5x5 vertices
+        LevelSet levelSet = new LevelSet(new Sector().setFullSphere(), new Location(-90, -180), new Location(1.0, 1.0), 1, 5, 5); // tiles with 5x5 vertices
         TerrainTile tile = new TerrainTile(new Sector(0, 0, 1, 1), levelSet.firstLevel(), 90, 180);
         ((BasicTerrain) this.terrain).addTile(tile);
 
