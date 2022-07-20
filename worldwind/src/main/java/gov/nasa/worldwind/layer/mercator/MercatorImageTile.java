@@ -5,15 +5,15 @@ import android.graphics.Bitmap;
 import java.util.Collection;
 
 import gov.nasa.worldwind.geom.Location;
-import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.ImageTile;
+import gov.nasa.worldwind.util.DownloadPostprocessor;
 import gov.nasa.worldwind.util.Level;
 import gov.nasa.worldwind.util.LevelSet;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Tile;
 import gov.nasa.worldwind.util.TileFactory;
 
-class MercatorImageTile extends ImageTile implements ImageSource.Transformer {
+class MercatorImageTile extends ImageTile implements DownloadPostprocessor<Bitmap> {
 
     /**
      * Constructs a tile with a specified sector, level, row and column.
@@ -125,22 +125,24 @@ class MercatorImageTile extends ImageTile implements ImageSource.Transformer {
     }
 
     @Override
-    public Bitmap transform(Bitmap bitmap) {
+    public Bitmap process(Bitmap resource) {
         // Re-project mercator tile to equirectangular
-        Bitmap trans = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
+        int[] pixels = new int[resource.getWidth() * resource.getHeight()];
+        int[] result = new int[resource.getWidth() * resource.getHeight()];
+        resource.getPixels(pixels, 0, resource.getWidth(), 0, 0, resource.getWidth(), resource.getHeight());
         double miny = ((MercatorSector) sector).minLatPercent();
         double maxy = ((MercatorSector) sector).maxLatPercent();
-        for (int y = 0; y < bitmap.getHeight(); y++) {
-            double sy = 1.0 - y / (double) (bitmap.getHeight() - 1);
+        for (int y = 0; y < resource.getHeight(); y++) {
+            double sy = 1.0 - y / (double) (resource.getHeight() - 1);
             double lat = sy * (sector.maxLatitude() - sector.minLatitude()) + sector.minLatitude();
             double dy = 1.0 - (MercatorSector.gudermannianInverse(lat) - miny) / (maxy - miny);
             dy = Math.max(0.0, Math.min(1.0, dy));
-            int iy = (int) (dy * (bitmap.getHeight() - 1));
-            for (int x = 0; x < bitmap.getWidth(); x++) {
-                trans.setPixel(x, y, bitmap.getPixel(x, iy));
+            int iy = (int) (dy * (resource.getHeight() - 1));
+            for (int x = 0; x < resource.getWidth(); x++) {
+                result[x + y * resource.getWidth()] = pixels[x + iy * resource.getWidth()];
             }
         }
-        return trans;
+        return Bitmap.createBitmap(result, resource.getWidth(), resource.getHeight(), resource.getConfig());
     }
 
 }

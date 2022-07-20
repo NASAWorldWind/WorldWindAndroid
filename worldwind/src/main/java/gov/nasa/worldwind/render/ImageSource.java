@@ -12,6 +12,7 @@ import android.support.annotation.DrawableRes;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import gov.nasa.worldwind.util.DownloadPostprocessor;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.WWUtil;
 
@@ -50,18 +51,6 @@ public class ImageSource {
         Bitmap createBitmap();
     }
 
-    /**
-     * Interface for remote image source post-transformation
-     */
-    public interface Transformer {
-        /**
-         * Transforms image according to specified algorithm implementation
-         * @param bitmap original bitmap
-         * @return transformed bitmap
-         */
-        Bitmap transform(Bitmap bitmap);
-    }
-
     protected static final HashMap<Object, BitmapFactory> lineStippleFactories = new HashMap<>();
 
     protected static final int TYPE_UNRECOGNIZED = 0;
@@ -80,7 +69,7 @@ public class ImageSource {
 
     protected Object source;
 
-    protected Transformer transformer;
+    protected DownloadPostprocessor<Bitmap> postprocessor;
 
     protected ImageSource() {
     }
@@ -192,15 +181,15 @@ public class ImageSource {
      * application's manifest must include the permissions that allow network connections.
      *
      * @param urlString complete URL string
-     * @param transformer implementation of image post-transformation routine
+     * @param postprocessor implementation of image post-transformation routine
      *
      * @return the new image source
      *
      * @throws IllegalArgumentException If the URL string is null
      */
-    public static ImageSource fromUrl(String urlString, Transformer transformer) {
+    public static ImageSource fromUrl(String urlString, DownloadPostprocessor<Bitmap> postprocessor) {
         ImageSource imageSource = fromUrl(urlString);
-        imageSource.transformer = transformer;
+        imageSource.postprocessor = postprocessor;
         return imageSource;
     }
 

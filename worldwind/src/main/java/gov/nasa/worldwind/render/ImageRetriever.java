@@ -16,6 +16,7 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.util.DownloadPostprocessor;
 import gov.nasa.worldwind.util.Logger;
 import gov.nasa.worldwind.util.Retriever;
 import gov.nasa.worldwind.util.WWUtil;
@@ -72,7 +73,7 @@ public class ImageRetriever extends Retriever<ImageSource, ImageOptions, Bitmap>
         }
 
         if (imageSource.isUrl()) {
-            return this.decodeUrl(imageSource.asUrl(), imageOptions, imageSource.transformer);
+            return this.decodeUrl(imageSource.asUrl(), imageOptions, imageSource.postprocessor);
         }
 
         return this.decodeUnrecognized(imageSource);
@@ -88,7 +89,7 @@ public class ImageRetriever extends Retriever<ImageSource, ImageOptions, Bitmap>
         return BitmapFactory.decodeFile(pathName, factoryOptions);
     }
 
-    protected Bitmap decodeUrl(String urlString, ImageOptions imageOptions, ImageSource.Transformer transformer) throws IOException {
+    protected Bitmap decodeUrl(String urlString, ImageOptions imageOptions, DownloadPostprocessor<Bitmap> postprocessor) throws IOException {
         // TODO establish a file caching service for remote resources
         // TODO retry absent resources, they are currently handled but suppressed entirely after the first failure
         // TODO configurable connect and read timeouts
@@ -105,8 +106,8 @@ public class ImageRetriever extends Retriever<ImageSource, ImageOptions, Bitmap>
             Bitmap bitmap = BitmapFactory.decodeStream(stream, null, factoryOptions);
 
             // Apply bitmap transformation if required
-            if (transformer != null && bitmap != null) {
-                bitmap = transformer.transform(bitmap);
+            if (postprocessor != null && bitmap != null) {
+                bitmap = postprocessor.process(bitmap);
             }
 
             return bitmap;
