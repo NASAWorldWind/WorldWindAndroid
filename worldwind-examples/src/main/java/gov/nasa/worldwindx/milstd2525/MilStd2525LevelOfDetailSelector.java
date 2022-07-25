@@ -59,9 +59,11 @@ public class MilStd2525LevelOfDetailSelector implements Placemark.LevelOfDetailS
      * @param rc             The current render contents
      * @param placemark      The placemark needing a level of detail selection
      * @param cameraDistance The distance from the placemark to the camera (meters)
+     *
+     * @return if placemark should display or skip its rendering
      */
     @Override
-    public void selectLevelOfDetail(RenderContext rc, Placemark placemark, double cameraDistance) {
+    public boolean selectLevelOfDetail(RenderContext rc, Placemark placemark, double cameraDistance) {
         if (!(placemark instanceof MilStd2525Placemark)) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "MilStd2525LevelOfDetailSelector", "selectLevelOfDetail",
@@ -108,5 +110,7 @@ public class MilStd2525LevelOfDetailSelector implements Placemark.LevelOfDetailS
         if (this.placemarkAttributes != null) {
             milStdPlacemark.setAttributes(this.placemarkAttributes);
         }
+
+        return true; // Placemark is always visible
     }
 }

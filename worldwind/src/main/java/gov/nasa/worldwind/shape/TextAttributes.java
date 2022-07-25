@@ -32,6 +32,8 @@ public class TextAttributes {
 
     protected float outlineWidth;
 
+    protected double scale;
+
     public TextAttributes() {
         this.textColor = new Color(1, 1, 1, 1);
         this.textOffset = Offset.bottomCenter();
@@ -41,6 +43,7 @@ public class TextAttributes {
         this.outlineColor = new Color(0, 0, 0, 1);
         this.enableDepthTest = true;
         this.outlineWidth = 3;
+        this.scale = 1;
     }
 
     public TextAttributes(TextAttributes attributes) {
@@ -57,6 +60,7 @@ public class TextAttributes {
         this.enableOutline = attributes.enableOutline;
         this.enableDepthTest = attributes.enableDepthTest;
         this.outlineWidth = attributes.outlineWidth;
+        this.scale = attributes.scale;
     }
 
     public TextAttributes set(TextAttributes attributes) {
@@ -73,6 +77,7 @@ public class TextAttributes {
         this.outlineColor.set(attributes.outlineColor);
         this.enableDepthTest = attributes.enableDepthTest;
         this.outlineWidth = attributes.outlineWidth;
+        this.scale = attributes.scale;
 
         return this;
     }
@@ -94,7 +99,8 @@ public class TextAttributes {
             && this.enableOutline == that.enableOutline
             && this.outlineColor.equals(that.outlineColor)
             && this.enableDepthTest == that.enableDepthTest
-            && this.outlineWidth == that.outlineWidth;
+            && this.outlineWidth == that.outlineWidth
+            && this.scale == that.scale;
     }
 
     @Override
@@ -107,6 +113,8 @@ public class TextAttributes {
         result = 31 * result + this.outlineColor.hashCode();
         result = 31 * result + (this.enableDepthTest ? 1 : 0);
         result = 31 * result + (this.outlineWidth != +0.0f ? Float.floatToIntBits(this.outlineWidth) : 0);
+        long temp = Double.doubleToLongBits(this.scale);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
     }
 
@@ -194,6 +202,15 @@ public class TextAttributes {
 
     public TextAttributes setOutlineWidth(float lineWidth) {
         this.outlineWidth = lineWidth;
+        return this;
+    }
+
+    public double getScale() {
+        return this.scale;
+    }
+
+    public TextAttributes setScale(double scale) {
+        this.scale = scale;
         return this;
     }
 }

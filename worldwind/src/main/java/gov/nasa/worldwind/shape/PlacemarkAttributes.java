@@ -25,6 +25,8 @@ public class PlacemarkAttributes {
 
     protected double minimumImageScale;
 
+    protected boolean drawLabel;
+
     protected boolean drawLeader;
 
     protected boolean depthTest;
@@ -43,6 +45,7 @@ public class PlacemarkAttributes {
         this.imageOffset = Offset.center();
         this.imageScale = 1;
         this.minimumImageScale = 0;
+        this.drawLabel = true;
         this.drawLeader = false;
         this.depthTest = true;
         this.labelAttributes = new TextAttributes();
@@ -68,6 +71,7 @@ public class PlacemarkAttributes {
         this.imageOffset = new Offset(attributes.imageOffset);
         this.imageScale = attributes.imageScale;
         this.minimumImageScale = attributes.minimumImageScale;
+        this.drawLabel = attributes.drawLabel;
         this.drawLeader = attributes.drawLeader;
         this.depthTest = attributes.depthTest;
         this.labelAttributes = attributes.labelAttributes != null ? new TextAttributes(attributes.labelAttributes) : null;
@@ -85,6 +89,7 @@ public class PlacemarkAttributes {
         this.imageOffset.set(attributes.imageOffset);
         this.imageScale = attributes.imageScale;
         this.minimumImageScale = attributes.minimumImageScale;
+        this.drawLabel = attributes.drawLabel;
         this.drawLeader = attributes.drawLeader;
         this.depthTest = attributes.depthTest;
 
@@ -135,6 +140,7 @@ public class PlacemarkAttributes {
             && this.imageOffset.equals(that.imageOffset)
             && this.imageScale == that.imageScale
             && this.minimumImageScale == that.minimumImageScale
+            && this.drawLabel == that.drawLabel
             && this.drawLeader == that.drawLeader
             && this.depthTest == that.depthTest
             && ((this.labelAttributes == null) ? (that.labelAttributes == null) : this.labelAttributes.equals(that.labelAttributes))
@@ -152,6 +158,7 @@ public class PlacemarkAttributes {
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(this.minimumImageScale);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + (this.drawLabel ? 1 : 0);
         result = 31 * result + (this.drawLeader ? 1 : 0);
         result = 31 * result + (this.depthTest ? 1 : 0);
         result = 31 * result + (this.labelAttributes != null ? this.labelAttributes.hashCode() : 0);
@@ -264,6 +271,23 @@ public class PlacemarkAttributes {
     }
 
     /**
+     * Returns whether to draw a placemark's label.
+     */
+    public boolean isDrawLabel() {
+        return drawLabel;
+    }
+
+    /**
+     * Sets whether to draw a placemark's label.
+     *
+     * @param drawLabel The new draw label setting.
+     */
+    public PlacemarkAttributes setDrawLabel(boolean drawLabel) {
+        this.drawLabel = drawLabel;
+        return this;
+    }
+
+    /**
      * Returns whether to draw a line from the placemark's geographic position to the ground.
      */
     public boolean isDrawLeader() {
@@ -306,7 +330,7 @@ public class PlacemarkAttributes {
     /**
      * Returns the attributes to apply to the placemark's label, if any. If null, the placemark's label is not drawn.
      */
-    public Object getLabelAttributes() {
+    public TextAttributes getLabelAttributes() {
         return labelAttributes;
     }
 

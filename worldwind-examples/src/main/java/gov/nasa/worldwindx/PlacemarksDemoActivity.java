@@ -30,6 +30,8 @@ import java.util.Locale;
 import gov.nasa.worldwind.BasicWorldWindowController;
 import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.PickedObjectList;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.geom.Offset;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layer.RenderableLayer;
 import gov.nasa.worldwind.render.ImageSource;
@@ -140,9 +142,11 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
          * @param rc
          * @param placemark      The placemark needing a level of detail selection
          * @param cameraDistance The distance from the placemark to the camera (meters)
+         *
+         * @return if placemark should display or skip its rendering
          */
         @Override
-        public void selectLevelOfDetail(RenderContext rc, Placemark placemark, double cameraDistance) {
+        public boolean selectLevelOfDetail(RenderContext rc, Placemark placemark, double cameraDistance) {
 
             boolean highlighted = placemark.isHighlighted();
             boolean highlightChanged = this.lastHighlightState != highlighted;
@@ -211,7 +215,13 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
             this.lastHighlightState = highlighted;
 
             // Update the placemark's attributes bundle
-            placemark.setAttributes(this.attributes);
+            if (this.attributes != null) {
+                this.attributes.setDrawLabel(highlighted || cameraDistance <= LEVEL_1_DISTANCE);
+                placemark.setAttributes(this.attributes);
+                return true; // Placemark visible
+            } else {
+                return false; // Placemark invisible
+            }
         }
 
         protected static PlacemarkAttributes getPlacemarkAttributes(Resources resources, Place place) {
@@ -273,6 +283,7 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
             //IconBitmapFactory factory = new IconBitmapFactory(resources, resourceId);
             //placemarkAttributes.setImageSource(ImageSource.fromBitmapFactory(factory)).setImageScale(scale);
             placemarkAttributes.setImageSource(ImageSource.fromResource(resourceId)).setImageScale(scale).setMinimumImageScale(0.5);
+            placemarkAttributes.getLabelAttributes().setTextOffset(new Offset(WorldWind.OFFSET_PIXELS, -24, WorldWind.OFFSET_FRACTION, 0.0));
             return placemarkAttributes;
         }
     }
@@ -560,6 +571,8 @@ public class PlacemarksDemoActivity extends GeneralGlobeActivity {
                 placemark.setLevelOfDetailSelector(new PlaceLevelOfDetailSelector(getResources(), place));
                 placemark.setEyeDistanceScaling(true);
                 placemark.setEyeDistanceScalingThreshold(PlaceLevelOfDetailSelector.LEVEL_1_DISTANCE);
+                placemark.setLabel(place.name);
+                placemark.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
 
                 // On a background thread, we can add Placemarks to a RenderableLayer that is
                 // NOT attached to the WorldWindow. If the layer was attached to the WorldWindow
