@@ -204,7 +204,7 @@ public class LevelSet {
         }
 
         double degreesPerPixel = Math.toDegrees(radiansPerPixel);
-        double firstLevelDegreesPerPixel = Math.max(this.firstLevelDelta.longitude / this.tileWidth, this.firstLevelDelta.latitude / this.tileHeight);
+        double firstLevelDegreesPerPixel = this.firstLevelDelta.latitude / this.tileHeight;
         double level = Math.log(firstLevelDegreesPerPixel / degreesPerPixel) / Math.log(2); // fractional level address
         int levelNumber = (int) Math.round(level); // nearest neighbor level
 

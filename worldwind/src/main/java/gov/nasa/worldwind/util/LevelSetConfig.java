@@ -97,7 +97,7 @@ public class LevelSetConfig {
         }
 
         double degreesPerPixel = Math.toDegrees(radiansPerPixel);
-        double firstLevelDegreesPerPixel = Math.max(this.firstLevelDelta.longitude / this.tileWidth, this.firstLevelDelta.latitude / this.tileHeight);
+        double firstLevelDegreesPerPixel = this.firstLevelDelta.latitude / this.tileHeight;
         double level = Math.log(firstLevelDegreesPerPixel / degreesPerPixel) / Math.log(2); // fractional level address
         int levelNumber = (int) Math.ceil(level); // ceiling captures the resolution
 
@@ -126,7 +126,7 @@ public class LevelSetConfig {
         }
 
         double degreesPerPixel = Math.toDegrees(radiansPerPixel);
-        double firstLevelDegreesPerPixel = Math.max(this.firstLevelDelta.longitude / this.tileWidth, this.firstLevelDelta.latitude / this.tileHeight);
+        double firstLevelDegreesPerPixel = this.firstLevelDelta.latitude / this.tileHeight;
         double level = Math.log(firstLevelDegreesPerPixel / degreesPerPixel) / Math.log(2); // fractional level address
         int levelNumber = (int) Math.floor(level); // floor prevents exceeding the min scale
 
