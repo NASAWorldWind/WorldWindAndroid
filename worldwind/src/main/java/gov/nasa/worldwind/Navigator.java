@@ -8,74 +8,75 @@ package gov.nasa.worldwind;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Matrix4;
+import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.util.Logger;
 
 @Deprecated
 public class Navigator {
 
-    private final WorldWindow wwd;
+    private final Camera camera;
 
-    public Navigator(WorldWindow wwd) {
-        if (wwd == null) {
+    public Navigator(Camera camera) {
+        if (camera == null) {
             throw new IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Navigator", "constructor", "missingWorldWindow"));
+                    Logger.logMessage(Logger.ERROR, "Navigator", "constructor", "missingCamera"));
         }
 
-        this.wwd = wwd;
+        this.camera = camera;
     }
 
     public double getLatitude() {
-        return this.wwd.getCamera().position.latitude;
+        return this.camera.position.latitude;
     }
 
     public Navigator setLatitude(double latitude) {
-        this.wwd.getCamera().position.latitude = latitude;
+        this.camera.position.latitude = latitude;
         return this;
     }
 
     public double getLongitude() {
-        return this.wwd.getCamera().position.longitude;
+        return this.camera.position.longitude;
     }
 
     public Navigator setLongitude(double longitude) {
-        this.wwd.getCamera().position.longitude = longitude;
+        this.camera.position.longitude = longitude;
         return this;
     }
 
     public double getAltitude() {
-        return this.wwd.getCamera().position.altitude;
+        return this.camera.position.altitude;
     }
 
     public Navigator setAltitude(double altitude) {
-        this.wwd.getCamera().position.altitude = altitude;
+        this.camera.position.altitude = altitude;
         return this;
     }
 
     public double getHeading() {
-        return this.wwd.getCamera().heading;
+        return this.camera.heading;
     }
 
     public Navigator setHeading(double headingDegrees) {
-        this.wwd.getCamera().heading = headingDegrees;
+        this.camera.heading = headingDegrees;
         return this;
     }
 
     public double getTilt() {
-        return this.wwd.getCamera().tilt;
+        return this.camera.tilt;
     }
 
     public Navigator setTilt(double tiltDegrees) {
-        this.wwd.getCamera().tilt = tiltDegrees;
+        this.camera.tilt = tiltDegrees;
         return this;
     }
 
     public double getRoll() {
-        return this.wwd.getCamera().roll;
+        return this.camera.roll;
     }
 
     public Navigator setRoll(double rollDegrees) {
-        this.wwd.getCamera().roll = rollDegrees;
+        this.camera.roll = rollDegrees;
         return this;
     }
 
@@ -90,7 +91,7 @@ public class Navigator {
                 Logger.logMessage(Logger.ERROR, "Navigator", "getAsCamera", "missingResult"));
         }
 
-        result.set(this.wwd.camera);
+        result.set(this.camera);
 
         return result;
     }
@@ -106,12 +107,12 @@ public class Navigator {
                 Logger.logMessage(Logger.ERROR, "Navigator", "setAsCamera", "missingCamera"));
         }
 
-        this.wwd.camera.set(camera);
+        this.camera.set(camera);
 
         return this;
     }
 
-    public LookAt getAsLookAt(Globe globe, LookAt result) {
+    public LookAt getAsLookAt(Globe globe, double verticalExaggeration, Position terrainPosition, LookAt result) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Navigator", "getAsLookAt", "missingGlobe"));
@@ -122,12 +123,12 @@ public class Navigator {
                 Logger.logMessage(Logger.ERROR, "Navigator", "getAsLookAt", "missingResult"));
         }
 
-        this.wwd.getCamera().getAsLookAt(result);
+        this.camera.getAsLookAt(globe, verticalExaggeration, terrainPosition, result);
 
         return result;
     }
 
-    public Navigator setAsLookAt(Globe globe, LookAt lookAt) {
+    public Navigator setAsLookAt(Globe globe, double verticalExaggeration, LookAt lookAt) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Navigator", "setAsLookAt", "missingGlobe"));
@@ -138,12 +139,12 @@ public class Navigator {
                 Logger.logMessage(Logger.ERROR, "Navigator", "setAsLookAt", "missingLookAt"));
         }
 
-        this.wwd.getCamera().setFromLookAt(lookAt);
+        this.camera.setFromLookAt(globe, verticalExaggeration, lookAt);
 
         return this;
     }
 
-    public Matrix4 getAsViewingMatrix(Globe globe, Matrix4 result) {
+    public Matrix4 getAsViewingMatrix(Globe globe, double verticalExaggeration, Matrix4 result) {
         if (globe == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Navigator", "getAsViewingMatrix", "missingGlobe"));
@@ -154,7 +155,7 @@ public class Navigator {
                 Logger.logMessage(Logger.ERROR, "Navigator", "getAsViewingMatrix", "missingResult"));
         }
 
-        this.wwd.getCamera().computeViewingTransform(result);
+        this.camera.computeViewingTransform(globe, verticalExaggeration, result);
 
         return result;
     }

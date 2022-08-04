@@ -10,12 +10,15 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Location;
+import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.gesture.GestureRecognizer;
 import gov.nasa.worldwind.gesture.PinchRecognizer;
 import gov.nasa.worldwind.gesture.RotationRecognizer;
 import gov.nasa.worldwind.util.WWMath;
 
 public class CameraControlFragment extends BasicGlobeFragment {
+
+    private static final double COLLISION_THRESHOLD = 20.0; // 20m above surface
 
     /**
      * Creates a new WorldWindow object with a custom WorldWindowController.
@@ -42,7 +45,7 @@ public class CameraControlFragment extends BasicGlobeFragment {
      * A custom WorldWindController that uses gestures to control the camera directly via the setAsCamera interface
      * instead of the default setAsLookAt interface.
      */
-    private class CameraController extends BasicWorldWindowController {
+    private static class CameraController extends BasicWorldWindowController {
 
         protected double beginHeading;
 
@@ -189,15 +192,22 @@ public class CameraControlFragment extends BasicGlobeFragment {
         }
 
         protected void applyLimits(Camera camera) {
-            double distanceToExtents = this.wwd.distanceToViewGlobeExtents();
+            Position position = camera.position;
 
             double minAltitude = 100;
-            double maxAltitude = distanceToExtents;
-            camera.position.altitude = WWMath.clamp(camera.position.altitude, minAltitude, maxAltitude);
+            double maxAltitude = this.wwd.distanceToViewGlobeExtents();
+            position.altitude = WWMath.clamp(position.altitude, minAltitude, maxAltitude);
+
+            // Check if camera altitude is not under the surface
+            double elevation = this.wwd.getGlobe().getElevationAtLocation(position.latitude, position.longitude)
+                    * wwd.getVerticalExaggeration() + COLLISION_THRESHOLD;
+            if (elevation > position.altitude) {
+                position.altitude = elevation;
+            }
 
             // Limit the tilt to between nadir and the horizon (roughly)
-            double r = wwd.getGlobe().getRadiusAt(camera.position.latitude, camera.position.latitude);
-            double maxTilt = Math.toDegrees(Math.asin(r / (r + camera.position.altitude)));
+            double r = wwd.getGlobe().getRadiusAt(position.latitude, position.latitude);
+            double maxTilt = Math.toDegrees(Math.asin(r / (r + position.altitude)));
             double minTilt = 0;
             camera.tilt = WWMath.clamp(camera.tilt, minTilt, maxTilt);
         }

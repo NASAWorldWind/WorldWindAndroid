@@ -69,6 +69,6 @@ public class OmnidirectionalSightlineFragment extends BasicGlobeFragment {
 
     protected void positionView(WorldWindow wwd) {
         LookAt lookAt = new LookAt().set(46.230, -122.190, 500, WorldWind.ABSOLUTE, 1.5e4 /*range*/, 45.0 /*heading*/, 70.0 /*tilt*/, 0 /*roll*/);
-        wwd.getCamera().setFromLookAt(lookAt);
+        wwd.getCamera().setFromLookAt(wwd.getGlobe(), wwd.getVerticalExaggeration(), lookAt);
     }
 }

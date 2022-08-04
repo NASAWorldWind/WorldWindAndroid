@@ -5,17 +5,15 @@
 
 package gov.nasa.worldwind.geom;
 
-import gov.nasa.worldwind.PickedObject;
+import androidx.annotation.NonNull;
+
 import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.util.Logger;
 
 public class Camera {
 
     private final static double COLLISION_THRESHOLD = 10.0; // 10m above surface
-
-    private final WorldWindow wwd;
 
     public final Position position = new Position();
 
@@ -39,15 +37,6 @@ public class Camera {
     private final Position originPos = new Position();
 
     private final Line forwardRay = new Line();
-
-    public Camera(WorldWindow wwd) {
-        if (wwd == null) {
-            throw new IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Camera", "constructor", "missingWorldWindow"));
-        }
-
-        this.wwd = wwd;
-    }
 
     public Camera set(double latitude, double longitude, double altitude, @WorldWind.AltitudeMode int altitudeMode,
                       double heading, double tilt, double roll) {
@@ -89,6 +78,7 @@ public class Camera {
         return this;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "Camera{" +
@@ -102,14 +92,14 @@ public class Camera {
             '}';
     }
 
-    public Matrix4 computeViewingTransform(Matrix4 result) {
+    public Matrix4 computeViewingTransform(Globe globe, double verticalExaggeration, Matrix4 result) {
         if (result == null) {
             throw new IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "Camera", "computeViewingTransform", "missingResult"));
         }
 
         // Transform by the local cartesian transform at the camera's position.
-        this.geographicToCartesianTransform(this.position, this.altitudeMode, result);
+        this.geographicToCartesianTransform(globe, verticalExaggeration, this.position, this.altitudeMode, result);
 
         // Transform by the heading, tilt and roll.
         result.multiplyByRotation(0, 0, 1, -this.heading); // rotate clockwise about the Z axis
@@ -122,26 +112,21 @@ public class Camera {
         return result;
     }
 
-    public LookAt getAsLookAt(LookAt result) {
-        Globe globe = this.wwd.getGlobe();
+    public LookAt getAsLookAt(Globe globe, double verticalExaggeration, Position terrainPosition, LookAt result) {
+        this.computeViewingTransform(globe, verticalExaggeration, this.modelview);
 
-        this.computeViewingTransform(this.modelview);
-
-        // Pick terrain located behind the viewport center point
-        PickedObject terrainPickedObject = wwd.pick(wwd.getViewport().width / 2f, wwd.getViewport().height / 2f).terrainPickedObject();
-        if (terrainPickedObject != null) {
+        if (terrainPosition != null) {
             // Use picked terrain position including approximate rendered altitude
-            this.originPos.set(terrainPickedObject.getTerrainPosition());
+            this.originPos.set(terrainPosition);
             globe.geographicToCartesian(this.originPos.latitude, this.originPos.longitude, this.originPos.altitude, this.originPoint);
-            globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
         } else {
             // Center is outside the globe - use point on horizon
             this.modelview.extractEyePoint(this.forwardRay.origin);
             this.modelview.extractForwardVector(this.forwardRay.direction);
             this.forwardRay.pointAt(globe.horizonDistance(this.position.altitude), this.originPoint);
             globe.cartesianToGeographic(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.originPos);
-            globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
         }
+        globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
 
         this.modelview.multiplyByMatrix(this.origin);
 
@@ -154,10 +139,8 @@ public class Camera {
         return result;
     }
 
-    public Camera setFromLookAt(LookAt lookAt) {
-        Globe globe = this.wwd.getGlobe();
-
-        this.lookAtToViewingTransform(lookAt, this.modelview);
+    public Camera setFromLookAt(Globe globe, double verticalExaggeration, LookAt lookAt) {
+        this.lookAtToViewingTransform(globe, verticalExaggeration, lookAt, this.modelview);
         this.modelview.extractEyePoint(this.originPoint);
 
         globe.cartesianToGeographic(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.originPos);
@@ -171,7 +154,7 @@ public class Camera {
         this.roll = lookAt.roll; // roll passes straight through
 
         // Check if camera altitude is not under the surface
-        double elevation = globe.getElevationAtLocation(this.position.latitude, this.position.longitude) * wwd.getVerticalExaggeration() + COLLISION_THRESHOLD;
+        double elevation = globe.getElevationAtLocation(this.position.latitude, this.position.longitude) * verticalExaggeration + COLLISION_THRESHOLD;
         if(elevation > this.position.altitude) {
             // Set camera altitude above the surface
             this.position.altitude = elevation;
@@ -192,9 +175,9 @@ public class Camera {
         return this;
     }
 
-    protected Matrix4 lookAtToViewingTransform(LookAt lookAt, Matrix4 result) {
+    protected Matrix4 lookAtToViewingTransform(Globe globe, double verticalExaggeration, LookAt lookAt, Matrix4 result) {
         // Transform by the local cartesian transform at the look-at's position.
-        this.geographicToCartesianTransform(lookAt.position, lookAt.altitudeMode, result);
+        this.geographicToCartesianTransform(globe, verticalExaggeration, lookAt.position, lookAt.altitudeMode, result);
 
         // Transform by the heading and tilt.
         result.multiplyByRotation(0, 0, 1, -lookAt.heading); // rotate clockwise about the Z axis
@@ -210,21 +193,22 @@ public class Camera {
         return result;
     }
 
-    protected void geographicToCartesianTransform(Position position, @WorldWind.AltitudeMode int altitudeMode, Matrix4 result) {
+    protected void geographicToCartesianTransform(Globe globe, double verticalExaggeration, Position position,
+                                                  @WorldWind.AltitudeMode int altitudeMode, Matrix4 result) {
         switch (altitudeMode) {
             case WorldWind.ABSOLUTE:
-                this.wwd.getGlobe().geographicToCartesianTransform(
-                    position.latitude, position.longitude, position.altitude * this.wwd.getVerticalExaggeration(), result);
+                globe.geographicToCartesianTransform(
+                    position.latitude, position.longitude, position.altitude, result);
                 break;
             case WorldWind.CLAMP_TO_GROUND:
-                this.wwd.getGlobe().geographicToCartesianTransform(
-                    position.latitude, position.longitude, this.wwd.getGlobe().getElevationAtLocation(
-                            position.latitude, position.longitude) * this.wwd.getVerticalExaggeration(), result);
+                globe.geographicToCartesianTransform(
+                    position.latitude, position.longitude, globe.getElevationAtLocation(
+                            position.latitude, position.longitude) * verticalExaggeration, result);
                 break;
             case WorldWind.RELATIVE_TO_GROUND:
-                this.wwd.getGlobe().geographicToCartesianTransform(
-                    position.latitude, position.longitude, (position.altitude + this.wwd.getGlobe().getElevationAtLocation(
-                            position.latitude, position.longitude)) * this.wwd.getVerticalExaggeration(), result);
+                globe.geographicToCartesianTransform(
+                    position.latitude, position.longitude, (position.altitude + globe.getElevationAtLocation(
+                            position.latitude, position.longitude)) * verticalExaggeration, result);
                 break;
         }
     }

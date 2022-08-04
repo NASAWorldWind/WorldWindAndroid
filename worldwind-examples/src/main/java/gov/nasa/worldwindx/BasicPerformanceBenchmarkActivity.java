@@ -67,9 +67,9 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
         public AnimateCameraCommand(WorldWindow wwd, Camera end, int steps) {
             this.wwd = wwd;
 
-            this.beginCamera = new Camera(wwd);
-            this.endCamera = new Camera(wwd);
-            this.curCamera = new Camera(wwd);
+            this.beginCamera = new Camera();
+            this.endCamera = new Camera();
+            this.curCamera = new Camera();
 
             this.endCamera.set(end);
             this.steps = steps;
@@ -117,7 +117,7 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
 
         private SetCameraCommand set(WorldWindow wwd, Camera camera) {
             this.wwd = wwd;
-            this.camera = new Camera(wwd);
+            this.camera = new Camera();
             this.camera.set(camera);
             return this;
         }
@@ -240,12 +240,12 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
         exec.execute(new ClearFrameMetricsCommand(wwd));
 
         // After a 1/2 second delay, fly to NASA Ames Research Center over 100 frames.
-        Camera cam = new Camera(this.getWorldWindow()).set(arc.latitude, arc.longitude, 10e3, WorldWind.ABSOLUTE, 0, 0, 0);
+        Camera cam = new Camera().set(arc.latitude, arc.longitude, 10e3, WorldWind.ABSOLUTE, 0, 0, 0);
         exec.execute(new AnimateCameraCommand(wwd, cam, 100));
 
         // After a 1/2 second delay, rotate the camera to look at NASA Goddard Space Flight Center over 50 frames.
         double azimuth = arc.greatCircleAzimuth(gsfc);
-        cam = new Camera(this.getWorldWindow()).set(arc.latitude, arc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 70, 0);
+        cam = new Camera().set(arc.latitude, arc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 70, 0);
         exec.execute(new SleepCommand(500));
         exec.execute(new AnimateCameraCommand(wwd, cam, 50));
 
@@ -253,27 +253,27 @@ public class BasicPerformanceBenchmarkActivity extends GeneralGlobeActivity {
         Location midLoc = arc.interpolateAlongPath(gsfc, WorldWind.GREAT_CIRCLE, 0.5, new Location());
         azimuth = midLoc.greatCircleAzimuth(gsfc);
         exec.execute(new SleepCommand(500));
-        cam = new Camera(this.getWorldWindow()).set(midLoc.latitude, midLoc.longitude, 1000e3, WorldWind.ABSOLUTE, azimuth, 0, 0);
+        cam = new Camera().set(midLoc.latitude, midLoc.longitude, 1000e3, WorldWind.ABSOLUTE, azimuth, 0, 0);
         exec.execute(new AnimateCameraCommand(wwd, cam, 100));
-        cam = new Camera(this.getWorldWindow()).set(gsfc.latitude, gsfc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 70, 0);
+        cam = new Camera().set(gsfc.latitude, gsfc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 70, 0);
         exec.execute(new AnimateCameraCommand(wwd, cam, 100));
 
         // After a 1/2 second delay, rotate the camera to look at ESA Centre for Earth Observation over 50 frames.
         azimuth = gsfc.greatCircleAzimuth(esrin);
-        cam = new Camera(this.getWorldWindow()).set(gsfc.latitude, gsfc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 90, 0);
+        cam = new Camera().set(gsfc.latitude, gsfc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 90, 0);
         exec.execute(new SleepCommand(500));
         exec.execute(new AnimateCameraCommand(wwd, cam, 50));
 
         // After a 1/2 second delay, fly the camera to ESA Centre for Earth Observation over 200 frames.
         midLoc = gsfc.interpolateAlongPath(esrin, WorldWind.GREAT_CIRCLE, 0.5, new Location());
         exec.execute(new SleepCommand(500));
-        cam = new Camera(this.getWorldWindow()).set(midLoc.latitude, midLoc.longitude, 1000e3, WorldWind.ABSOLUTE, azimuth, 60, 0);
+        cam = new Camera().set(midLoc.latitude, midLoc.longitude, 1000e3, WorldWind.ABSOLUTE, azimuth, 60, 0);
         exec.execute(new AnimateCameraCommand(wwd, cam, 100));
-        cam = new Camera(this.getWorldWindow()).set(esrin.latitude, esrin.longitude, 100e3, WorldWind.ABSOLUTE, azimuth, 30, 0);
+        cam = new Camera().set(esrin.latitude, esrin.longitude, 100e3, WorldWind.ABSOLUTE, azimuth, 30, 0);
         exec.execute(new AnimateCameraCommand(wwd, cam, 100));
 
         // After a 1/2 second delay, back the camera out to look at ESA Centre for Earth Observation over 100 frames.
-        cam = new Camera(this.getWorldWindow()).set(esrin.latitude, esrin.longitude, 2000e3, WorldWind.ABSOLUTE, 0, 0, 0);
+        cam = new Camera().set(esrin.latitude, esrin.longitude, 2000e3, WorldWind.ABSOLUTE, 0, 0, 0);
         exec.execute(new SleepCommand(500));
         exec.execute(new AnimateCameraCommand(wwd, cam, 100));
 

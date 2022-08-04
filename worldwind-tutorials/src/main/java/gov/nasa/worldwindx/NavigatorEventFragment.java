@@ -18,10 +18,12 @@ import android.widget.TextView;
 
 import gov.nasa.worldwind.NavigatorEvent;
 import gov.nasa.worldwind.NavigatorListener;
+import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.LookAt;
+import gov.nasa.worldwind.geom.Position;
 
 public class NavigatorEventFragment extends BasicGlobeFragment {
 
@@ -78,9 +80,12 @@ public class NavigatorEventFragment extends BasicGlobeFragment {
                 // Update the status overlay views whenever the navigator stops moving,
                 // and also it is moving but at an (arbitrary) maximum refresh rate of 20 Hz.
                 if (eventAction == WorldWind.NAVIGATOR_STOPPED || elapsedTime > 50) {
+                    // Pick terrain located behind the viewport center point
+                    PickedObject terrainPickedObject = wwd.pick(wwd.getViewport().width / 2f, wwd.getViewport().height / 2f).terrainPickedObject();
+                    Position terrainPosition = terrainPickedObject != null ? terrainPickedObject.getTerrainPosition() : null;
 
                     // Get the current camera state to apply to the overlays
-                    event.getCamera().getAsLookAt(lookAt);
+                    event.getCamera().getAsLookAt(wwd.getGlobe(), wwd.getVerticalExaggeration(), terrainPosition, lookAt);
 
                     // Update the overlays
                     updateOverlayContents(lookAt, event.getCamera());

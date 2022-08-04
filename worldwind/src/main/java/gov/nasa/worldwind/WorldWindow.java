@@ -73,10 +73,10 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected double verticalExaggeration = 1;
 
-    protected Camera camera = new Camera(this);
+    protected Camera camera = new Camera();
 
     @Deprecated
-    protected Navigator navigator = new Navigator(this);
+    protected Navigator navigator = new Navigator(camera);
 
     protected NavigatorEventSupport navigatorEvents = new NavigatorEventSupport(this);
 
@@ -1062,6 +1062,6 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         projection.setToPerspectiveProjection(this.viewport.width, this.viewport.height, this.camera.getFieldOfView(), near, far);
 
         // Compute a Cartesian transform matrix from the Camera.
-        this.camera.computeViewingTransform(modelview);
+        this.camera.computeViewingTransform(globe, verticalExaggeration, modelview);
     }
 }
