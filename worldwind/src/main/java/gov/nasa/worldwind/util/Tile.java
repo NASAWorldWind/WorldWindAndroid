@@ -13,6 +13,7 @@ import java.util.Collection;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.BoundingBox;
 import gov.nasa.worldwind.geom.Frustum;
+import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.Vec3;
 import gov.nasa.worldwind.render.RenderContext;
@@ -108,7 +109,7 @@ public class Tile {
         this.row = row;
         this.column = column;
         this.tileKey = level.levelNumber + "." + row + "." + column;
-        this.texelSizeFactor = Math.toRadians(level.tileDelta / level.tileWidth) * Math.cos(Math.toRadians(sector.centroidLatitude()));
+        this.texelSizeFactor = Math.toRadians(level.tileDelta.longitude / level.tileWidth) * Math.cos(Math.toRadians(sector.centroidLatitude()));
     }
 
     /**
@@ -116,13 +117,14 @@ public class Tile {
      *
      * @param tileDelta the level's tile delta in degrees
      * @param latitude  the tile's minimum latitude in degrees
+     * @param origin    the origin of the grid
      *
      * @return the computed row number
      */
-    public static int computeRow(double tileDelta, double latitude) {
-        int row = (int) Math.floor((latitude + 90) / tileDelta);
+    public static int computeRow(double tileDelta, double latitude, double origin) {
+        int row = (int) Math.floor((latitude - origin) / tileDelta);
 
-        if (latitude == 90) {
+        if (latitude - origin == 180) {
             row -= 1; // if latitude is at the end of the grid, subtract 1 from the computed row to return the last row
         }
 
@@ -134,13 +136,14 @@ public class Tile {
      *
      * @param tileDelta the level's tile delta in degrees
      * @param longitude the tile's minimum longitude in degrees
+     * @param origin    the origin of the grid
      *
      * @return The computed column number
      */
-    public static int computeColumn(double tileDelta, double longitude) {
-        int col = (int) Math.floor((longitude + 180) / tileDelta);
+    public static int computeColumn(double tileDelta, double longitude, double origin) {
+        int col = (int) Math.floor((longitude - origin) / tileDelta);
 
-        if (longitude == 180) {
+        if (longitude - origin == 360) {
             col -= 1; // if longitude is at the end of the grid, subtract 1 from the computed column to return the last column
         }
 
@@ -152,13 +155,14 @@ public class Tile {
      *
      * @param tileDelta   the level's tile delta in degrees
      * @param maxLatitude the tile's maximum latitude in degrees
+     * @param origin    the origin of the grid
      *
      * @return the computed row number
      */
-    public static int computeLastRow(double tileDelta, double maxLatitude) {
-        int row = (int) Math.ceil((maxLatitude + 90) / tileDelta - 1);
+    public static int computeLastRow(double tileDelta, double maxLatitude, double origin) {
+        int row = (int) Math.ceil((maxLatitude - origin) / tileDelta - 1);
 
-        if (maxLatitude + 90 < tileDelta) {
+        if (maxLatitude - origin < tileDelta) {
             row = 0; // if max latitude is in the first row, set the max row to 0
         }
 
@@ -170,13 +174,14 @@ public class Tile {
      *
      * @param tileDelta    the level's tile delta in degrees
      * @param maxLongitude the tile's maximum longitude in degrees
+     * @param origin    the origin of the grid
      *
      * @return The computed column number
      */
-    public static int computeLastColumn(double tileDelta, double maxLongitude) {
-        int col = (int) Math.ceil((maxLongitude + 180) / tileDelta - 1);
+    public static int computeLastColumn(double tileDelta, double maxLongitude, double origin) {
+        int col = (int) Math.ceil((maxLongitude - origin) / tileDelta - 1);
 
-        if (maxLongitude + 180 < tileDelta) {
+        if (maxLongitude - origin < tileDelta) {
             col = 0; // if max longitude is in the first column, set the max column to 0
         }
 
@@ -211,29 +216,26 @@ public class Tile {
         }
 
         Sector sector = level.parent.sector;
-        double tileDelta = level.tileDelta;
+        Location tileOrigin = level.parent.tileOrigin;
+        Location tileDelta = level.tileDelta;
 
-        int firstRow = Tile.computeRow(tileDelta, sector.minLatitude());
-        int lastRow = Tile.computeLastRow(tileDelta, sector.maxLatitude());
-        int firstCol = Tile.computeColumn(tileDelta, sector.minLongitude());
-        int lastCol = Tile.computeLastColumn(tileDelta, sector.maxLongitude());
+        int firstRow = Tile.computeRow(tileDelta.latitude, sector.minLatitude(), tileOrigin.latitude);
+        int lastRow = Tile.computeLastRow(tileDelta.latitude, sector.maxLatitude(), tileOrigin.latitude);
+        int firstCol = Tile.computeColumn(tileDelta.longitude, sector.minLongitude(), tileOrigin.longitude);
+        int lastCol = Tile.computeLastColumn(tileDelta.longitude, sector.maxLongitude(), tileOrigin.longitude);
 
-        double firstRowLat = -90 + firstRow * tileDelta;
-        double firstRowLon = -180 + firstCol * tileDelta;
+        double firstRowLat = tileOrigin.latitude + firstRow * tileDelta.latitude;
+        double firstColLon = tileOrigin.longitude + firstCol * tileDelta.longitude;
+
         double lat = firstRowLat;
-        double lon;
-
         for (int row = firstRow; row <= lastRow; row++) {
-            lon = firstRowLon;
-
+            double lon = firstColLon;
             for (int col = firstCol; col <= lastCol; col++) {
-                Sector tileSector = new Sector(lat, lon, tileDelta, tileDelta);
+                Sector tileSector = new Sector(lat, lon, tileDelta.latitude, tileDelta.longitude);
                 result.add(tileFactory.createTile(tileSector, level, row, col));
-
-                lon += tileDelta;
+                lon += tileDelta.longitude;
             }
-
-            lat += tileDelta;
+            lat += tileDelta.latitude;
         }
 
         return result;
@@ -328,26 +330,27 @@ public class Tile {
         double lonMin = this.sector.minLongitude();
         double latMid = this.sector.centroidLatitude();
         double lonMid = this.sector.centroidLongitude();
-        double childDelta = this.level.tileDelta * 0.5;
+        double childDeltaLat = this.level.tileDelta.latitude * 0.5;
+        double childDeltaLon = this.level.tileDelta.longitude * 0.5;
 
         int childRow = 2 * this.row;
         int childCol = 2 * this.column;
-        Sector childSector = new Sector(latMin, lonMin, childDelta, childDelta);
+        Sector childSector = new Sector(latMin, lonMin, childDeltaLat, childDeltaLon);
         children[0] = tileFactory.createTile(childSector, childLevel, childRow, childCol); // Southwest
 
         childRow = 2 * this.row;
         childCol = 2 * this.column + 1;
-        childSector = new Sector(latMin, lonMid, childDelta, childDelta);
+        childSector = new Sector(latMin, lonMid, childDeltaLat, childDeltaLon);
         children[1] = tileFactory.createTile(childSector, childLevel, childRow, childCol); // Southeast
 
         childRow = 2 * this.row + 1;
         childCol = 2 * this.column;
-        childSector = new Sector(latMid, lonMin, childDelta, childDelta);
+        childSector = new Sector(latMid, lonMin, childDeltaLat, childDeltaLon);
         children[2] = tileFactory.createTile(childSector, childLevel, childRow, childCol); // Northwest
 
         childRow = 2 * this.row + 1;
         childCol = 2 * this.column + 1;
-        childSector = new Sector(latMid, lonMid, childDelta, childDelta);
+        childSector = new Sector(latMid, lonMid, childDeltaLat, childDeltaLon);
         children[3] = tileFactory.createTile(childSector, childLevel, childRow, childCol); // Northeast
 
         return children;

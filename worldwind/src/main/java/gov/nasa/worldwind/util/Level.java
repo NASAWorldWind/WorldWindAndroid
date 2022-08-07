@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.util;
 
+import gov.nasa.worldwind.geom.Location;
+
 /**
  * Represents a level of a specific resolution in a {@link LevelSet}.
  */
@@ -35,7 +37,7 @@ public class Level {
     /**
      * The geographic width and height in degrees of tiles within this level.
      */
-    public final double tileDelta;
+    public final Location tileDelta;
 
     /**
      * The parent LevelSet's tileWidth.
@@ -54,21 +56,21 @@ public class Level {
      * @param levelNumber the level's ordinal within its parent level set
      * @param tileDelta   the geographic width and height in degrees of tiles within this level
      */
-    public Level(LevelSet parent, int levelNumber, double tileDelta) {
+    public Level(LevelSet parent, int levelNumber, Location tileDelta) {
         if (parent == null) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Level", "constructor", "The parent level set is null"));
         }
 
-        if (tileDelta <= 0) {
+        if (tileDelta == null || tileDelta.latitude <= 0 || tileDelta.longitude <= 0) {
             throw new IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Level", "constructor", "The tile delta is zero"));
         }
 
         this.parent = parent;
         this.levelNumber = levelNumber;
-        this.levelWidth = (int) Math.round(parent.tileWidth * 360 / tileDelta);
-        this.levelHeight = (int) Math.round(parent.tileHeight * 180 / tileDelta);
+        this.levelWidth = (int) Math.round(parent.tileWidth * parent.sector.deltaLongitude() / tileDelta.longitude);
+        this.levelHeight = (int) Math.round(parent.tileHeight * parent.sector.deltaLatitude() / tileDelta.latitude);
         this.tileDelta = tileDelta;
         this.tileWidth = parent.tileWidth;
         this.tileHeight = parent.tileHeight;

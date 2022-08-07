@@ -5,6 +5,8 @@
 
 package gov.nasa.worldwind.ogc.gpkg;
 
+import android.util.SparseArray;
+
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.render.ImageSource;
 import gov.nasa.worldwind.render.ImageTile;
@@ -40,23 +42,24 @@ public class GpkgTileFactory implements TileFactory {
 
         ImageTile tile = new ImageTile(sector, level, row, column);
 
-        String tableName = this.tiles.getTableName();
-        int zoomLevel = level.levelNumber;
-
-        // Attempt to find the GeoPackage tile matrix associated with the WorldWind level. Assumes that the WorldWind
-        // levels match the GeoPackage tile matrix zoom levels. If there's no match then the GeoPackage contains no
-        // tiles for this level and this tile has no image source.
         GeoPackage geoPackage = this.tiles.getContainer();
-        GpkgTileMatrix tileMatrix = geoPackage.getTileMatrix(tableName).get(zoomLevel);
+        String tableName = this.tiles.getTableName();
+        SparseArray<GpkgTileMatrix> tileMatrixByZoomLevel = geoPackage.getTileMatrix(tableName);
         GpkgTileUserMetrics tileUserMetrics = geoPackage.getTileUserMetrics(tableName);
 
+        // Attempt to find the GeoPackage tile matrix associated with the WorldWind level.
+        int zoomLevel = level.levelNumber + tileMatrixByZoomLevel.keyAt(0);
+        GpkgTileMatrix tileMatrix = tileMatrixByZoomLevel.get(zoomLevel);
+
+        // Check if content table has any tiles on this zoom level.
         if (tileMatrix != null && tileUserMetrics.hasZoomLevel(zoomLevel)) {
-            // Convert the WorldWind tile address to the equivalent GeoPackage tile address. Assumes that the World
-            // Wind level set matchs the GeoPackage tile matrix set, with the exception of tile rows which are inverted.
-            int gpkgRow = tileMatrix.getMatrixHeight() - row - 1;
-            // Configure the tile with a bitmap factory that reads directly from the GeoPackage.
-            ImageSource.BitmapFactory bitmapFactory = new GpkgBitmapFactory(this.tiles, zoomLevel, column, gpkgRow);
-            tile.setImageSource(ImageSource.fromBitmapFactory(bitmapFactory));
+            // Convert the WorldWind tile row to the equivalent GeoPackage tile row.
+            int gpkgRow = level.levelHeight / level.tileHeight - row - 1;
+            if (column < tileMatrix.getMatrixWidth() && gpkgRow < tileMatrix.getMatrixHeight()) {
+                // Configure the tile with a bitmap factory that reads directly from the GeoPackage.
+                ImageSource.BitmapFactory bitmapFactory = new GpkgBitmapFactory(this.tiles, zoomLevel, column, gpkgRow);
+                tile.setImageSource(ImageSource.fromBitmapFactory(bitmapFactory));
+            }
         }
 
         return tile;

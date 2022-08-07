@@ -85,7 +85,7 @@ public class BlueMarbleLandsatLayer extends RenderableLayer implements TileFacto
 
     @Override
     public Tile createTile(Sector sector, Level level, int row, int column) {
-        double radiansPerPixel = Math.toRadians(level.tileDelta) / level.tileHeight;
+        double radiansPerPixel = Math.toRadians(level.tileDelta.latitude) / level.tileHeight;
         double metersPerPixel = radiansPerPixel * WorldWind.WGS84_SEMI_MAJOR_AXIS;
 
         if (metersPerPixel < 2.0e3) { // switch to Landsat at 2km resolution
