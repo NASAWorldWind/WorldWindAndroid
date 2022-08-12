@@ -41,6 +41,14 @@ public class NavigatorEventSupport {
         }
     });
 
+    protected Handler moveHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            onNavigatorMoved();
+            return false;
+        }
+    });
+
     public NavigatorEventSupport(WorldWindow wwd) {
         if (wwd == null) {
             throw new IllegalArgumentException(
@@ -53,6 +61,7 @@ public class NavigatorEventSupport {
     public void reset() {
         this.lastModelview = null;
         this.stopHandler.removeMessages(0 /*what*/);
+        this.moveHandler.removeMessages(0 /*what*/);
 
         if (this.lastTouchEvent != null) {
             this.lastTouchEvent.recycle();
@@ -113,10 +122,13 @@ public class NavigatorEventSupport {
 
         if (this.lastModelview == null) { // this is the first frame; copy the frame's modelview
             this.lastModelview = new Matrix4(rc.modelview);
+            // Notify listeners with stopped event on first frame
+            this.stopHandler.removeMessages(0 /*what*/);
+            this.stopHandler.sendEmptyMessage(0 /*what*/);
         } else if (!this.lastModelview.equals(rc.modelview)) { // the frame's modelview has changed
             this.lastModelview.set(rc.modelview);
             // Notify the listeners of a navigator moved event.
-            this.onNavigatorMoved();
+            this.moveHandler.sendEmptyMessage(0/*what*/);
             // Schedule a navigator stopped event after a specified delay in milliseconds.
             this.stopHandler.removeMessages(0 /*what*/);
             this.stopHandler.sendEmptyMessageDelayed(0 /*what*/, this.stoppedEventDelay);
