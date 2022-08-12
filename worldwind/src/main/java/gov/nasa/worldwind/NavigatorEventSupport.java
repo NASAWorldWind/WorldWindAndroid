@@ -128,7 +128,6 @@ public class NavigatorEventSupport {
         } else if (!this.lastModelview.equals(rc.modelview)) { // the frame's modelview has changed
             this.lastModelview.set(rc.modelview);
             // Notify the listeners of a navigator moved event.
-            this.moveHandler.removeMessages(0 /*what*/);
             this.moveHandler.sendEmptyMessage(0/*what*/);
             // Schedule a navigator stopped event after a specified delay in milliseconds.
             this.stopHandler.removeMessages(0 /*what*/);
