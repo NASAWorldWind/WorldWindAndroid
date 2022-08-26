@@ -85,12 +85,8 @@ public class NavigatorEventFragment extends BasicGlobeFragment {
                 // Update the status overlay views whenever the navigator stops moving,
                 // and also it is moving but at an (arbitrary) maximum refresh rate of 20 Hz.
                 if (eventAction == WorldWind.NAVIGATOR_STOPPED || elapsedTime > 50) {
-                    // Pick terrain located behind the viewport center point
-                    PickedObject terrainPickedObject = wwd.pick(wwd.getViewport().width / 2f, wwd.getViewport().height / 2f).terrainPickedObject();
-                    Position terrainPosition = terrainPickedObject != null ? terrainPickedObject.getTerrainPosition() : null;
-
                     // Get the current camera state to apply to the overlays
-                    event.getCamera().getAsLookAt(wwd.getGlobe(), wwd.getVerticalExaggeration(), terrainPosition, lookAt);
+                    wwd.cameraAsLookAt(lookAt);
 
                     // Update the overlays
                     updateOverlayContents(lookAt, event.getCamera());

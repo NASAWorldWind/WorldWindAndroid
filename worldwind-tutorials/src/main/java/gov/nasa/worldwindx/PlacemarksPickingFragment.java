@@ -53,7 +53,7 @@ public class PlacemarksPickingFragment extends BasicGlobeFragment {
 
         // Position the viewer to look near the airports
         LookAt lookAt = new LookAt().set(34.15, -119.15, 0, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
-        wwd.getCamera().setFromLookAt(wwd.getGlobe(), wwd.getVerticalExaggeration(), lookAt);
+        wwd.cameraFromLookAt(lookAt);
 
         return wwd;
     }

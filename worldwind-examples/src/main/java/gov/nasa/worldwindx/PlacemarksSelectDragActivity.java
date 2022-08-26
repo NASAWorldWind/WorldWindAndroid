@@ -172,7 +172,7 @@ public class PlacemarksSelectDragActivity extends GeneralGlobeActivity {
 
         // And finally, for this demo, position the viewer to look at the placemarks
         LookAt lookAt = new LookAt().set(34.150, -119.150, 0, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
-        this.getWorldWindow().getCamera().setFromLookAt(this.wwd.getGlobe(), this.wwd.getVerticalExaggeration(), lookAt);
+        this.getWorldWindow().cameraFromLookAt(lookAt);
     }
 
     /**

@@ -27,13 +27,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import gov.nasa.worldwind.draw.DrawContext;
-import gov.nasa.worldwind.geom.Camera;
-import gov.nasa.worldwind.geom.Line;
-import gov.nasa.worldwind.geom.Location;
-import gov.nasa.worldwind.geom.Matrix4;
-import gov.nasa.worldwind.geom.Vec2;
-import gov.nasa.worldwind.geom.Vec3;
-import gov.nasa.worldwind.geom.Viewport;
+import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globe.BasicTessellator;
 import gov.nasa.worldwind.globe.Globe;
 import gov.nasa.worldwind.globe.ProjectionWgs84;
@@ -62,6 +56,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected static final int MSG_ID_SET_DEPTH_BITS = 4;
 
+    protected final static double COLLISION_THRESHOLD = 10.0; // 10m above surface
+
     /**
      * Planet or celestial object displayed by this WorldWindow.
      */
@@ -76,7 +72,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     protected Camera camera = new Camera();
 
     @Deprecated
-    protected Navigator navigator = new Navigator(camera);
+    protected Navigator navigator = new Navigator(this);
 
     protected NavigatorEventSupport navigatorEvents = new NavigatorEventSupport(this);
 
@@ -138,6 +134,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     private Matrix4 scratchProjection = new Matrix4();
 
     private Vec3 scratchPoint = new Vec3();
+
+    private Line scratchRay = new Line();
 
     /**
      * Constructs a WorldWindow associated with the specified application context. This is the constructor to use when
@@ -387,6 +385,89 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     public Viewport getViewport() {
         return this.viewport;
+    }
+
+    /**
+     * Get look at orientation and range based on current camera position and terrain position at the viewport center
+     *
+     * @param result Pre-allocated look at object
+     * @return Look at orientation and range based on current camera position and terrain position at the viewport center
+     */
+    public LookAt cameraAsLookAt(LookAt result) {
+        PickedObject terrainPickedObject = pick(viewport.width / 2f, viewport.height / 2f).terrainPickedObject();
+        return cameraAsLookAt(terrainPickedObject != null ? terrainPickedObject.terrainPosition : null, result);
+    }
+
+    /**
+     * Get look at orientation and range based on current camera position and specified geographic position
+     *
+     * @param lookAtPos Geographic position to calculate look at orientation
+     * @param result Pre-allocated look at object
+     * @return Look at orientation and range based on current camera position and specified geographic position
+     */
+    public LookAt cameraAsLookAt(Position lookAtPos, LookAt result) {
+        this.cameraToViewingTransform(this.scratchModelview);
+
+        if (lookAtPos != null) {
+            // Use picked terrain position including approximate rendered altitude
+            globe.geographicToCartesian(lookAtPos.latitude, lookAtPos.longitude, lookAtPos.altitude, this.scratchPoint);
+            result.position.set(lookAtPos);
+        } else {
+            // Center is outside the globe - use point on horizon
+            this.scratchModelview.extractEyePoint(this.scratchRay.origin);
+            this.scratchModelview.extractForwardVector(this.scratchRay.direction);
+            this.scratchRay.pointAt(globe.horizonDistance(this.camera.position.altitude), this.scratchPoint);
+            globe.cartesianToGeographic(this.scratchPoint.x, this.scratchPoint.y, this.scratchPoint.z, result.position);
+        }
+        globe.cartesianToLocalTransform(this.scratchPoint.x, this.scratchPoint.y, this.scratchPoint.z, this.scratchProjection);
+
+        this.scratchModelview.multiplyByMatrix(this.scratchProjection);
+
+        result.range = -this.scratchModelview.m[11];
+        result.heading = this.scratchModelview.extractHeading(this.camera.roll); // disambiguate heading and roll
+        result.tilt = this.scratchModelview.extractTilt();
+        result.roll = this.camera.roll; // roll passes straight through
+
+        return result;
+    }
+
+    /**
+     * Set camera position and orientation, based on look at position, orientation and range
+     *
+     * @param lookAt Look at position, orientation and range
+     */
+    public void cameraFromLookAt(LookAt lookAt) {
+        this.lookAtToViewingTransform(lookAt, this.scratchModelview);
+        this.scratchModelview.extractEyePoint(this.scratchPoint);
+
+        globe.cartesianToGeographic(this.scratchPoint.x, this.scratchPoint.y, this.scratchPoint.z, this.camera.position);
+        globe.cartesianToLocalTransform(this.scratchPoint.x, this.scratchPoint.y, this.scratchPoint.z, this.scratchProjection);
+        this.scratchModelview.multiplyByMatrix(this.scratchProjection);
+
+        this.camera.altitudeMode = WorldWind.ABSOLUTE; // Calculated position is absolute
+        this.camera.heading = this.scratchModelview.extractHeading(lookAt.roll); // disambiguate heading and roll
+        this.camera.tilt = this.scratchModelview.extractTilt();
+        this.camera.roll = lookAt.roll; // roll passes straight through
+
+        // Check if camera altitude is not under the surface
+        Position position = this.camera.position;
+        double elevation = globe.getElevationAtLocation(position.latitude, position.longitude) * verticalExaggeration + COLLISION_THRESHOLD;
+        if(elevation > position.altitude) {
+            // Set camera altitude above the surface
+            position.altitude = elevation;
+            // Compute new camera point
+            globe.geographicToCartesian(position.latitude, position.longitude, position.altitude, scratchPoint);
+            // Compute look at point
+            globe.geographicToCartesian(lookAt.position.latitude, lookAt.position.longitude, lookAt.position.altitude, scratchRay.origin);
+            // Compute normal to globe in look at point
+            globe.geographicToCartesianNormal(lookAt.position.latitude, lookAt.position.longitude, scratchRay.direction);
+            // Calculate tilt angle between new camera point and look at point
+            scratchPoint.subtract(scratchRay.origin).normalize();
+            double dot = scratchRay.direction.dot(scratchPoint);
+            if (dot >= -1 || dot <= 1) {
+                this.camera.tilt = Math.toDegrees(Math.acos(dot));
+            }
+        }
     }
 
     /**
@@ -1062,6 +1143,64 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
         projection.setToPerspectiveProjection(this.viewport.width, this.viewport.height, this.camera.getFieldOfView(), near, far);
 
         // Compute a Cartesian transform matrix from the Camera.
-        this.camera.computeViewingTransform(globe, verticalExaggeration, modelview);
+        this.cameraToViewingTransform(modelview);
     }
+
+    protected Matrix4 cameraToViewingTransform(Matrix4 result) {
+        if (result == null) {
+            throw new IllegalArgumentException(
+                    Logger.logMessage(Logger.ERROR, "Camera", "computeViewingTransform", "missingResult"));
+        }
+
+        // Transform by the local cartesian transform at the camera's position.
+        this.geographicToCartesianTransform(this.camera.position, this.camera.altitudeMode, result);
+
+        // Transform by the heading, tilt and roll.
+        result.multiplyByRotation(0, 0, 1, -this.camera.heading); // rotate clockwise about the Z axis
+        result.multiplyByRotation(1, 0, 0, this.camera.tilt); // rotate counter-clockwise about the X axis
+        result.multiplyByRotation(0, 0, 1, this.camera.roll); // rotate counter-clockwise about the Z axis (again)
+
+        // Make the transform a viewing matrix.
+        result.invertOrthonormal();
+
+        return result;
+    }
+
+    protected Matrix4 lookAtToViewingTransform(LookAt lookAt, Matrix4 result) {
+        // Transform by the local cartesian transform at the look-at's position.
+        this.geographicToCartesianTransform(lookAt.position, lookAt.altitudeMode, result);
+
+        // Transform by the heading and tilt.
+        result.multiplyByRotation(0, 0, 1, -lookAt.heading); // rotate clockwise about the Z axis
+        result.multiplyByRotation(1, 0, 0, lookAt.tilt); // rotate counter-clockwise about the X axis
+        result.multiplyByRotation(0, 0, 1, lookAt.roll); // rotate counter-clockwise about the Z axis (again)
+
+        // Transform by the range.
+        result.multiplyByTranslation(0, 0, lookAt.range);
+
+        // Make the transform a viewing matrix.
+        result.invertOrthonormal();
+
+        return result;
+    }
+
+    protected void geographicToCartesianTransform(Position position, @WorldWind.AltitudeMode int altitudeMode, Matrix4 result) {
+        switch (altitudeMode) {
+            case WorldWind.ABSOLUTE:
+                globe.geographicToCartesianTransform(
+                        position.latitude, position.longitude, position.altitude, result);
+                break;
+            case WorldWind.CLAMP_TO_GROUND:
+                globe.geographicToCartesianTransform(
+                        position.latitude, position.longitude, globe.getElevationAtLocation(
+                                position.latitude, position.longitude) * verticalExaggeration, result);
+                break;
+            case WorldWind.RELATIVE_TO_GROUND:
+                globe.geographicToCartesianTransform(
+                        position.latitude, position.longitude, (position.altitude + globe.getElevationAtLocation(
+                                position.latitude, position.longitude)) * verticalExaggeration, result);
+                break;
+        }
+    }
+
 }

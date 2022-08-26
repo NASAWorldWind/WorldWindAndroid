@@ -80,7 +80,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.lookAt.tilt = 0;
             this.lookAt.roll = 0;
         }
-        this.wwd.getCamera().setFromLookAt(this.wwd.getGlobe(), this.wwd.getVerticalExaggeration(), this.lookAt);
+        this.wwd.cameraFromLookAt(this.lookAt);
         this.wwd.requestRedraw();
         this.gestureDidEnd();
     }
@@ -89,7 +89,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
         this.gestureDidBegin();
         this.lookAt.range /= ZOOM_FACTOR;
         this.applyLimits(lookAt);
-        this.wwd.getCamera().setFromLookAt(this.wwd.getGlobe(), this.wwd.getVerticalExaggeration(), this.lookAt);
+        this.wwd.cameraFromLookAt(this.lookAt);
         this.wwd.requestRedraw();
         this.gestureDidEnd();
     }
@@ -98,7 +98,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
         this.gestureDidBegin();
         this.lookAt.range *= ZOOM_FACTOR;
         this.applyLimits(lookAt);
-        this.wwd.getCamera().setFromLookAt(this.wwd.getGlobe(), this.wwd.getVerticalExaggeration(), this.lookAt);
+        this.wwd.cameraFromLookAt(this.lookAt);
         this.wwd.requestRedraw();
         this.gestureDidEnd();
     }
@@ -187,7 +187,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
                 this.lookAt.position.longitude = lon;
             }
 
-            this.wwd.getCamera().setFromLookAt(this.wwd.getGlobe(), this.wwd.getVerticalExaggeration(), this.lookAt);
+            this.wwd.cameraFromLookAt(this.lookAt);
             this.wwd.requestRedraw();
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             this.gestureDidEnd();
@@ -206,7 +206,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
                 this.lookAt.range = this.beginLookAt.range / scale;
                 this.applyLimits(this.lookAt);
 
-                this.wwd.getCamera().setFromLookAt(this.wwd.getGlobe(), this.wwd.getVerticalExaggeration(), this.lookAt);
+                this.wwd.cameraFromLookAt(this.lookAt);
                 this.wwd.requestRedraw();
             }
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
@@ -227,7 +227,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.lookAt.heading = WWMath.normalizeAngle360(this.lookAt.heading + headingDegrees);
             this.lastRotation = rotation;
 
-            this.wwd.getCamera().setFromLookAt(this.wwd.getGlobe(), this.wwd.getVerticalExaggeration(), this.lookAt);
+            this.wwd.cameraFromLookAt(this.lookAt);
             this.wwd.requestRedraw();
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             this.gestureDidEnd();
@@ -251,7 +251,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
             this.lookAt.tilt = this.beginLookAt.tilt + tiltDegrees;
             this.applyLimits(this.lookAt);
 
-            this.wwd.getCamera().setFromLookAt(this.wwd.getGlobe(), this.wwd.getVerticalExaggeration(), this.lookAt);
+            this.wwd.cameraFromLookAt(this.lookAt);
             this.wwd.requestRedraw();
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             this.gestureDidEnd();
@@ -275,9 +275,7 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
     protected void gestureDidBegin() {
         if (this.activeGestures++ == 0) {
             // Pick terrain located behind the viewport center point
-            PickedObject terrainPickedObject = wwd.pick(wwd.getViewport().width / 2f, wwd.getViewport().height / 2f).terrainPickedObject();
-            Position terrainPosition = terrainPickedObject != null ? terrainPickedObject.getTerrainPosition() : null;
-            this.wwd.getCamera().getAsLookAt(wwd.getGlobe(), wwd.getVerticalExaggeration(), terrainPosition, this.beginLookAt);
+            this.wwd.cameraAsLookAt(this.beginLookAt);
             this.lookAt.set(this.beginLookAt);
         }
     }
