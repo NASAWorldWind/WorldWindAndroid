@@ -56,7 +56,9 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected static final int MSG_ID_SET_DEPTH_BITS = 4;
 
-    protected final static double COLLISION_THRESHOLD = 10.0; // 10m above surface
+    protected static final double COLLISION_CHECK_LIMIT = 8848.86; // Everest mountain altitude
+
+    protected static final double COLLISION_THRESHOLD = 10.0; // 10m above surface
 
     /**
      * Planet or celestial object displayed by this WorldWindow.
@@ -451,21 +453,23 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
         // Check if camera altitude is not under the surface
         Position position = this.camera.position;
-        double elevation = globe.getElevationAtLocation(position.latitude, position.longitude) * verticalExaggeration + COLLISION_THRESHOLD;
-        if(elevation > position.altitude) {
-            // Set camera altitude above the surface
-            position.altitude = elevation;
-            // Compute new camera point
-            globe.geographicToCartesian(position.latitude, position.longitude, position.altitude, scratchPoint);
-            // Compute look at point
-            globe.geographicToCartesian(lookAt.position.latitude, lookAt.position.longitude, lookAt.position.altitude, scratchRay.origin);
-            // Compute normal to globe in look at point
-            globe.geographicToCartesianNormal(lookAt.position.latitude, lookAt.position.longitude, scratchRay.direction);
-            // Calculate tilt angle between new camera point and look at point
-            scratchPoint.subtract(scratchRay.origin).normalize();
-            double dot = scratchRay.direction.dot(scratchPoint);
-            if (dot >= -1 || dot <= 1) {
-                this.camera.tilt = Math.toDegrees(Math.acos(dot));
+        if (position.altitude < COLLISION_CHECK_LIMIT * verticalExaggeration + COLLISION_THRESHOLD) {
+            double elevation = globe.getElevationAtLocation(position.latitude, position.longitude) * verticalExaggeration + COLLISION_THRESHOLD;
+            if (elevation > position.altitude) {
+                // Set camera altitude above the surface
+                position.altitude = elevation;
+                // Compute new camera point
+                globe.geographicToCartesian(position.latitude, position.longitude, position.altitude, scratchPoint);
+                // Compute look at point
+                globe.geographicToCartesian(lookAt.position.latitude, lookAt.position.longitude, lookAt.position.altitude, scratchRay.origin);
+                // Compute normal to globe in look at point
+                globe.geographicToCartesianNormal(lookAt.position.latitude, lookAt.position.longitude, scratchRay.direction);
+                // Calculate tilt angle between new camera point and look at point
+                scratchPoint.subtract(scratchRay.origin).normalize();
+                double dot = scratchRay.direction.dot(scratchPoint);
+                if (dot >= -1 || dot <= 1) {
+                    this.camera.tilt = Math.toDegrees(Math.acos(dot));
+                }
             }
         }
     }

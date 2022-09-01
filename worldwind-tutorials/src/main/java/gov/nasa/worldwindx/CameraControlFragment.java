@@ -18,6 +18,8 @@ import gov.nasa.worldwind.util.WWMath;
 
 public class CameraControlFragment extends BasicGlobeFragment {
 
+    private static final double COLLISION_CHECK_LIMIT = 8848.86; // Everest mountain altitude
+
     private static final double COLLISION_THRESHOLD = 20.0; // 20m above surface
 
     /**
@@ -199,10 +201,13 @@ public class CameraControlFragment extends BasicGlobeFragment {
             position.altitude = WWMath.clamp(position.altitude, minAltitude, maxAltitude);
 
             // Check if camera altitude is not under the surface
-            double elevation = this.wwd.getGlobe().getElevationAtLocation(position.latitude, position.longitude)
-                    * wwd.getVerticalExaggeration() + COLLISION_THRESHOLD;
-            if (elevation > position.altitude) {
-                position.altitude = elevation;
+            double ve = wwd.getVerticalExaggeration();
+            if (position.altitude < COLLISION_CHECK_LIMIT * ve + COLLISION_THRESHOLD) {
+                double elevation = this.wwd.getGlobe().getElevationAtLocation(position.latitude, position.longitude)
+                        * ve + COLLISION_THRESHOLD;
+                if (elevation > position.altitude) {
+                    position.altitude = elevation;
+                }
             }
 
             // Limit the tilt to between nadir and the horizon (roughly)
