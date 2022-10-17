@@ -92,6 +92,8 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
 
     protected Viewport viewport = new Viewport();
 
+    protected boolean keepScale = true;
+
     protected int depthBits;
 
     protected Pool<Frame> framePool = new SynchronizedPool<>();
@@ -116,7 +118,7 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
             } else if (msg.what == MSG_ID_SET_VIEWPORT) {
                 Viewport newViewport = (Viewport) msg.obj;
                 // Keep map scale by adopting field of view on view port resize
-                if (viewport.height != 0) {
+                if (keepScale && viewport.height != 0) {
                     try {
                         camera.setFieldOfView(camera.getFieldOfView() * newViewport.height / viewport.height);
                     } catch (IllegalArgumentException ignore) {
@@ -304,6 +306,19 @@ public class WorldWindow extends GLSurfaceView implements Choreographer.FrameCal
     @Deprecated
     public Navigator getNavigator() {
         return this.navigator;
+    }
+
+    public boolean isKeepScale() {
+        return keepScale;
+    }
+
+    /**
+     * Keep pixel scale when changing the height of viewport by adapting field of view
+     *
+     * @param keepScale if true, then field of view will be changed on viewport height change to keep pixel scale
+     */
+    public void setKeepScale(boolean keepScale) {
+        this.keepScale = keepScale;
     }
 
     public void addNavigatorListener(NavigatorListener listener) {
