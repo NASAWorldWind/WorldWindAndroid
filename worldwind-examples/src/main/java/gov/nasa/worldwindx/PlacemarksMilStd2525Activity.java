@@ -39,7 +39,7 @@ public class PlacemarksMilStd2525Activity extends GeneralGlobeActivity {
         Position pos = new Position(32.4520, 63.44553, 0);
         LookAt lookAt = new LookAt().set(pos.latitude, pos.longitude, pos.altitude, WorldWind.ABSOLUTE,
             1e5 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
-        this.getWorldWindow().getNavigator().setAsLookAt(this.getWorldWindow().getGlobe(), lookAt);
+        this.getWorldWindow().cameraFromLookAt(lookAt);
 
         // The MIL-STD-2525 rendering library takes time initialize, we'll perform this task via the
         // AsyncTask's background thread and then load the symbols in its post execute handler.

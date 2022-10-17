@@ -14,6 +14,7 @@ import gov.nasa.worldwind.BasicWorldWindowController;
 import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.PickedObjectList;
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.geom.Position;
@@ -83,12 +84,12 @@ public class OmnidirectionalSightlineActivity extends BasicGlobeActivity {
         this.wwd.getLayers().addLayer(sightlineLayer);
 
         // Override the WorldWindow's built-in navigation behavior with conditional dragging support.
-        this.controller = new SimpleSelectDragNavigateController();
+        this.controller = new SimpleSelectDragNavigateController(this.wwd);
         this.wwd.setWorldWindowController(this.controller);
 
         // And finally, for this demo, position the viewer to look at the sightline position
         LookAt lookAt = new LookAt().set(pos.latitude, pos.longitude, pos.altitude, WorldWind.ABSOLUTE, 2e4 /*range*/, 0 /*heading*/, 45 /*tilt*/, 0 /*roll*/);
-        this.getWorldWindow().getNavigator().setAsLookAt(this.getWorldWindow().getGlobe(), lookAt);
+        this.getWorldWindow().cameraFromLookAt(lookAt);
     }
 
     /**
@@ -132,6 +133,10 @@ public class OmnidirectionalSightlineActivity extends BasicGlobeActivity {
                 return false;
             }
         });
+
+        public SimpleSelectDragNavigateController(WorldWindow wwd) {
+            super(wwd);
+        }
 
         /**
          * Delegates events to the select/drag handlers or the native World Wind navigation handlers.

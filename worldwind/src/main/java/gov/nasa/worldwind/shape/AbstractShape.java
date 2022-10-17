@@ -155,8 +155,8 @@ public abstract class AbstractShape extends AbstractRenderable implements Attrib
     }
 
     protected double cameraDistanceGeographic(RenderContext rc, Sector boundingSector) {
-        double lat = WWMath.clamp(rc.camera.latitude, boundingSector.minLatitude(), boundingSector.maxLatitude());
-        double lon = WWMath.clamp(rc.camera.longitude, boundingSector.minLongitude(), boundingSector.maxLongitude());
+        double lat = WWMath.clamp(rc.camera.position.latitude, boundingSector.minLatitude(), boundingSector.maxLatitude());
+        double lon = WWMath.clamp(rc.camera.position.longitude, boundingSector.minLongitude(), boundingSector.maxLongitude());
         Vec3 point = rc.geographicToCartesian(lat, lon, 0, WorldWind.CLAMP_TO_GROUND, this.scratchPoint);
 
         return point.distanceTo(rc.cameraPoint);

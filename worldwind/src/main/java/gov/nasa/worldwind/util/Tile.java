@@ -433,16 +433,16 @@ public class Tile {
      */
     protected double distanceToCamera(RenderContext rc) {
         // determine the nearest latitude
-        double nearestLat = WWMath.clamp(rc.camera.latitude, this.sector.minLatitude(), this.sector.maxLatitude());
+        double nearestLat = WWMath.clamp(rc.camera.position.latitude, this.sector.minLatitude(), this.sector.maxLatitude());
         // determine the nearest longitude and account for the antimeridian discontinuity
         double nearestLon;
-        double lonDifference = rc.camera.longitude - this.sector.centroidLongitude();
+        double lonDifference = rc.camera.position.longitude - this.sector.centroidLongitude();
         if (lonDifference < -180.0) {
             nearestLon = this.sector.maxLongitude();
         } else if (lonDifference > 180.0) {
             nearestLon = this.sector.minLongitude();
         } else {
-            nearestLon = WWMath.clamp(rc.camera.longitude, this.sector.minLongitude(), this.sector.maxLongitude());
+            nearestLon = WWMath.clamp(rc.camera.position.longitude, this.sector.minLongitude(), this.sector.maxLongitude());
         }
 
         float minHeight = (float) (this.heightLimits[0] * rc.verticalExaggeration);

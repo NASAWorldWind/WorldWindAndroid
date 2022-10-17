@@ -44,34 +44,6 @@ public class WorldWindowTest {
 
     @Ignore
     @Test
-    public void testGetNavigator() throws Exception {
-        fail("The test case is a stub");
-
-    }
-
-    @Ignore
-    @Test
-    public void testSetNavigator() throws Exception {
-        fail("The test case is a stub");
-
-    }
-
-    @Ignore
-    @Test
-    public void testGetNavigatorController() throws Exception {
-        fail("The test case is a stub");
-
-    }
-
-    @Ignore
-    @Test
-    public void testSetNavigatorController() throws Exception {
-        fail("The test case is a stub");
-
-    }
-
-    @Ignore
-    @Test
     public void testGetFrameController() throws Exception {
         fail("The test case is a stub");
 

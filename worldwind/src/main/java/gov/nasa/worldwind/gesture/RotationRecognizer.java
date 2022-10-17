@@ -35,6 +35,14 @@ public class RotationRecognizer extends GestureRecognizer {
         return (float) WWMath.normalizeAngle180(this.rotation + this.rotationOffset);
     }
 
+    public float getInterpretAngle() {
+        return this.interpretAngle;
+    }
+
+    public void setInterpretAngle(float angle) {
+        this.interpretAngle = angle;
+    }
+
     protected void reset() {
         super.reset();
         this.rotation = 0;

@@ -90,7 +90,7 @@ public class AtmosphereLayer extends AbstractLayer {
         if (this.lightLocation != null) {
             rc.globe.geographicToCartesianNormal(this.lightLocation.latitude, this.lightLocation.longitude, this.activeLightDirection);
         } else {
-            rc.globe.geographicToCartesianNormal(rc.camera.latitude, rc.camera.longitude, this.activeLightDirection);
+            rc.globe.geographicToCartesianNormal(rc.camera.position.latitude, rc.camera.position.longitude, this.activeLightDirection);
         }
     }
 

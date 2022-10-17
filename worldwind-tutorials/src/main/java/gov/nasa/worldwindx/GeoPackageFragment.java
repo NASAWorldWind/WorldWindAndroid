@@ -43,9 +43,7 @@ public class GeoPackageFragment extends BasicGlobeFragment {
                     // Add the finished GeoPackage layer to the WorldWindow.
                     getWorldWindow().getLayers().addLayer(layer);
                     // Place the viewer directly over the GeoPackage image.
-                    getWorldWindow().getNavigator().setLatitude(36.8139677556754);
-                    getWorldWindow().getNavigator().setLongitude(-76.03260320181615);
-                    getWorldWindow().getNavigator().setAltitude(20e3);
+                    getWorldWindow().getCamera().position.set(36.8139677556754, -76.03260320181615, 20e3);
                     Log.i("gov.nasa.worldwind", "GeoPackage layer creation succeeded");
                 }
 

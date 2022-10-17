@@ -16,10 +16,12 @@ import android.widget.TextView;
 
 import gov.nasa.worldwind.NavigatorEvent;
 import gov.nasa.worldwind.NavigatorListener;
+import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.LookAt;
+import gov.nasa.worldwind.geom.Position;
 
 /**
  * Creates a general purpose globe view with touch navigation, a few layers, and a coordinates overlay.
@@ -29,12 +31,12 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
     // UI elements
     protected TextView latView;
     protected TextView lonView;
+    protected TextView elevView;
     protected TextView altView;
     protected ImageView crosshairs;
     protected ViewGroup overlay;
-    // Use pre-allocated navigator state objects to avoid per-event memory allocations
+    // Use pre-allocated lookAt state object to avoid per-event memory allocations
     private LookAt lookAt = new LookAt();
-    private Camera camera = new Camera();
     // Track the navigation event time so the overlay refresh rate can be throttled
     private long lastEventTime;
     // Animation object used to fade the overlays
@@ -60,6 +62,7 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
         this.overlay.setVisibility(View.VISIBLE);
         this.latView = (TextView) findViewById(R.id.lat_value);
         this.lonView = (TextView) findViewById(R.id.lon_value);
+        this.elevView = (TextView) findViewById(R.id.elev_value);
         this.altView = (TextView) findViewById(R.id.alt_value);
         ObjectAnimator fadeOut = ObjectAnimator.ofFloat(this.crosshairs, "alpha", 0f).setDuration(1500);
         fadeOut.setStartDelay((long) 500);
@@ -78,13 +81,11 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
                 // Update the status overlay views whenever the navigator stops moving,
                 // and also it is moving but at an (arbitrary) maximum refresh rate of 20 Hz.
                 if (eventAction == WorldWind.NAVIGATOR_STOPPED || elapsedTime > 50) {
-
-                    // Get the current navigator state to apply to the overlays
-                    event.getNavigator().getAsLookAt(wwd.getGlobe(), lookAt);
-                    event.getNavigator().getAsCamera(wwd.getGlobe(), camera);
+                    // Get the current camera state to apply to the overlays
+                    wwd.cameraAsLookAt(lookAt);
 
                     // Update the overlays
-                    updateOverlayContents(lookAt, camera);
+                    updateOverlayContents(lookAt, event.getCamera());
                     updateOverlayColor(eventAction);
 
                     lastEventTime = currentTime;
@@ -127,15 +128,16 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
     }
 
     /**
-     * Displays navigator state information in the status overlay views.
+     * Displays camera state information in the status overlay views.
      *
-     * @param lookAt Where the navigator is looking
+     * @param lookAt Where the camera is looking
      * @param camera Where the camera is positioned
      */
     protected void updateOverlayContents(LookAt lookAt, Camera camera) {
-        latView.setText(formatLatitude(lookAt.latitude));
-        lonView.setText(formatLongitude(lookAt.longitude));
-        altView.setText(formatAltitude(camera.altitude));
+        latView.setText(formatLatitude(lookAt.position.latitude));
+        lonView.setText(formatLongitude(lookAt.position.longitude));
+        elevView.setText(formatElevaton(wwd.getGlobe().getElevationAtLocation(lookAt.position.latitude, lookAt.position.longitude)));
+        altView.setText(formatAltitude(camera.position.altitude));
     }
 
     /**
@@ -147,6 +149,7 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
         int color = (eventAction == WorldWind.NAVIGATOR_STOPPED) ? 0xA0FFFF00 /*semi-transparent yellow*/ : Color.YELLOW;
         latView.setTextColor(color);
         lonView.setTextColor(color);
+        elevView.setTextColor(color);
         altView.setTextColor(color);
     }
 
@@ -158,6 +161,12 @@ public class GeneralGlobeActivity extends BasicGlobeActivity {
     protected String formatLongitude(double longitude) {
         int sign = (int) Math.signum(longitude);
         return String.format("%7.3f°%s", (longitude * sign), (sign >= 0.0 ? "E" : "W"));
+    }
+
+    protected String formatElevaton(double elevation) {
+        return String.format("Alt: %,.0f %s",
+                (elevation < 100000 ? elevation : elevation / 1000),
+                (elevation < 100000 ? "m" : "km"));
     }
 
     protected String formatAltitude(double altitude) {

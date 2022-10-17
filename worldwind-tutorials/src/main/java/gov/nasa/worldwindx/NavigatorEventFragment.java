@@ -18,10 +18,12 @@ import android.widget.TextView;
 
 import gov.nasa.worldwind.NavigatorEvent;
 import gov.nasa.worldwind.NavigatorListener;
+import gov.nasa.worldwind.PickedObject;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.LookAt;
+import gov.nasa.worldwind.geom.Position;
 
 public class NavigatorEventFragment extends BasicGlobeFragment {
 
@@ -36,10 +38,8 @@ public class NavigatorEventFragment extends BasicGlobeFragment {
 
     protected ViewGroup overlay;
 
-    // Use pre-allocated navigator state objects to avoid per-event memory allocations
+    // Use pre-allocated lookAt state object to avoid per-event memory allocations
     private LookAt lookAt = new LookAt();
-
-    private Camera camera = new Camera();
 
     // Track the navigation event time so the overlay refresh rate can be throttled
     private long lastEventTime;
@@ -80,13 +80,11 @@ public class NavigatorEventFragment extends BasicGlobeFragment {
                 // Update the status overlay views whenever the navigator stops moving,
                 // and also it is moving but at an (arbitrary) maximum refresh rate of 20 Hz.
                 if (eventAction == WorldWind.NAVIGATOR_STOPPED || elapsedTime > 50) {
-
-                    // Get the current navigator state to apply to the overlays
-                    event.getNavigator().getAsLookAt(wwd.getGlobe(), lookAt);
-                    event.getNavigator().getAsCamera(wwd.getGlobe(), camera);
+                    // Get the current camera state to apply to the overlays
+                    wwd.cameraAsLookAt(lookAt);
 
                     // Update the overlays
-                    updateOverlayContents(lookAt, camera);
+                    updateOverlayContents(lookAt, event.getCamera());
                     updateOverlayColor(eventAction);
 
                     lastEventTime = currentTime;
@@ -131,15 +129,15 @@ public class NavigatorEventFragment extends BasicGlobeFragment {
     }
 
     /**
-     * Displays navigator state information in the status overlay views.
+     * Displays camera state information in the status overlay views.
      *
-     * @param lookAt Where the navigator is looking
+     * @param lookAt Where the camera is looking
      * @param camera Where the camera is positioned
      */
     protected void updateOverlayContents(LookAt lookAt, Camera camera) {
-        latView.setText(formatLatitude(lookAt.latitude));
-        lonView.setText(formatLongitude(lookAt.longitude));
-        altView.setText(formatAltitude(camera.altitude));
+        latView.setText(formatLatitude(lookAt.position.latitude));
+        lonView.setText(formatLongitude(lookAt.position.longitude));
+        altView.setText(formatAltitude(camera.position.altitude));
     }
 
     /**

@@ -80,7 +80,7 @@ public class PlacemarksFragment extends BasicGlobeFragment {
         Position pos = airport.getPosition();
         LookAt lookAt = new LookAt().set(pos.latitude, pos.longitude, pos.altitude, WorldWind.ABSOLUTE,
             1e5 /*range*/, 0 /*heading*/, 80 /*tilt*/, 0 /*roll*/);
-        wwd.getNavigator().setAsLookAt(wwd.getGlobe(), lookAt);
+        wwd.cameraFromLookAt(lookAt);
 
         return wwd;
     }

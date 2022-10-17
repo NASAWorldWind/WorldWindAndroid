@@ -85,10 +85,6 @@ public class OmnidirectionalSightline extends AbstractRenderable implements Attr
 
     private Vec3 centerPoint = new Vec3();
 
-    private Vec3 scratchPoint = new Vec3();
-
-    private Vec3 scratchVector = new Vec3();
-
     private int pickedObjectId;
 
     private Color pickColor = new Color();
@@ -383,33 +379,9 @@ public class OmnidirectionalSightline extends AbstractRenderable implements Attr
     }
 
     protected boolean determineCenterPoint(RenderContext rc) {
-        double lat = this.position.latitude;
-        double lon = this.position.longitude;
-        double alt = this.position.altitude;
-
-        switch (this.altitudeMode) {
-            case WorldWind.ABSOLUTE:
-                if (rc.globe != null) {
-                    rc.globe.geographicToCartesian(lat, lon, alt * rc.verticalExaggeration, this.centerPoint);
-                }
-                break;
-            case WorldWind.CLAMP_TO_GROUND:
-                if (rc.terrain != null && rc.terrain.surfacePoint(lat, lon, this.scratchPoint)) {
-                    this.centerPoint.set(this.scratchPoint); // found a point on the terrain
-                }
-                break;
-            case WorldWind.RELATIVE_TO_GROUND:
-                if (rc.terrain != null && rc.terrain.surfacePoint(lat, lon, this.scratchPoint)) {
-                    this.centerPoint.set(this.scratchPoint); // found a point on the terrain
-                    if (alt != 0) { // Offset along the normal vector at the terrain surface point.
-                        rc.globe.geographicToCartesianNormal(lat, lon, this.scratchVector);
-                        this.centerPoint.x += this.scratchVector.x * alt;
-                        this.centerPoint.y += this.scratchVector.y * alt;
-                        this.centerPoint.z += this.scratchVector.z * alt;
-                    }
-                }
-                break;
-        }
+        rc.geographicToCartesian(
+                this.position.latitude, this.position.longitude, this.position.altitude,
+                this.altitudeMode, this.centerPoint);
 
         return this.centerPoint.x != 0
             && this.centerPoint.y != 0
