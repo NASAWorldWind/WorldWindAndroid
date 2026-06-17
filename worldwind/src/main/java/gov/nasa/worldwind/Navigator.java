@@ -192,16 +192,27 @@ public class Navigator {
     }
 
     protected LookAt cameraToLookAt(Globe globe, Camera camera, LookAt result) {
-        this.cameraToViewingMatrix(globe, camera, this.modelview);
-        this.modelview.extractEyePoint(this.forwardRay.origin);
-        this.modelview.extractForwardVector(this.forwardRay.direction);
+        return this.cameraToLookAt(globe, camera, null, result);
+    }
 
-        if (!globe.intersect(this.forwardRay, this.originPoint)) {
-            double horizon = globe.horizonDistance(camera.altitude);
-            this.forwardRay.pointAt(horizon, this.originPoint);
+    protected LookAt cameraToLookAt(Globe globe, Camera camera, Position lookAtPosition, LookAt result) {
+        this.cameraToViewingMatrix(globe, camera, this.modelview);
+
+        if (lookAtPosition != null) {
+            this.originPos.set(lookAtPosition);
+            globe.geographicToCartesian(this.originPos.latitude, this.originPos.longitude, this.originPos.altitude, this.originPoint);
+        } else {
+            this.modelview.extractEyePoint(this.forwardRay.origin);
+            this.modelview.extractForwardVector(this.forwardRay.direction);
+
+            if (!globe.intersect(this.forwardRay, this.originPoint)) {
+                double horizon = globe.horizonDistance(camera.altitude);
+                this.forwardRay.pointAt(horizon, this.originPoint);
+            }
+
+            globe.cartesianToGeographic(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.originPos);
         }
 
-        globe.cartesianToGeographic(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.originPos);
         globe.cartesianToLocalTransform(this.originPoint.x, this.originPoint.y, this.originPoint.z, this.origin);
         this.modelview.multiplyByMatrix(this.origin);
 
