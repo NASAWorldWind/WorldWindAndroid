@@ -10,6 +10,7 @@ import android.view.MotionEvent;
 import java.util.Arrays;
 import java.util.List;
 
+import gov.nasa.worldwind.geom.Camera;
 import gov.nasa.worldwind.geom.Location;
 import gov.nasa.worldwind.geom.LookAt;
 import gov.nasa.worldwind.gesture.GestureListener;
@@ -32,6 +33,8 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
     protected LookAt lookAt = new LookAt();
 
     protected LookAt beginLookAt = new LookAt();
+
+    protected Camera camera = new Camera();
 
     protected int activeGestures;
 
@@ -225,8 +228,23 @@ public class BasicWorldWindowController implements WorldWindowController, Gestur
     protected void gestureDidBegin() {
         if (this.activeGestures++ == 0) {
             this.wwd.getNavigator().getAsLookAt(this.wwd.getGlobe(), this.beginLookAt);
+            this.trySetBeginLookAtToTerrain();
             this.lookAt.set(this.beginLookAt);
         }
+    }
+
+    protected void trySetBeginLookAtToTerrain() {
+        if (this.wwd.getWidth() <= 0 || this.wwd.getHeight() <= 0) {
+            return;
+        }
+
+        PickedObject terrain = this.wwd.pick(this.wwd.getWidth() / 2f, this.wwd.getHeight() / 2f).terrainPickedObject();
+        if (terrain == null || terrain.getTerrainPosition() == null) {
+            return;
+        }
+
+        this.wwd.getNavigator().getAsCamera(this.wwd.getGlobe(), this.camera);
+        this.wwd.getNavigator().cameraToLookAt(this.wwd.getGlobe(), this.camera, terrain.getTerrainPosition(), this.beginLookAt);
     }
 
     protected void gestureDidEnd() {
